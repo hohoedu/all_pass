@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- Custom Css / Js -->
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script th:src="@{/js/custom.js}"></script>
+  <!-- Html menu Load -->
+  <script th:src="@{/js/loadHTML.js}"></script>
+  <title>학생 정보</title>
+</head>
+
+<body>
+  <div class="main-container">
+    <!-- header -->
+    <div id="header-load"></div>
+    <div class="main-frame">
+      <!-- left nav bar -->
+      <div id="sidebar-load"></div>
+      <main class="main-info">
+        <div class="student-frame">
+          <!-- section:left -->
+          <section class="info-summary">
+            <div class="common-title">
+              <h2>학생 정보</h2>
+              <div>
+                <div class="grade-up common-btn">학년 내리기</div>
+                <div class="grade-down common-btn">학년 올리기</div>
+                <a th:href="@{/student/join}">
+                  <div class="new-regist common-btn">+ 신규 등록</div>
+                </a>
+              </div>
+            </div>
+            <div class="info-filters">
+              <div class="info-arrange">
+                <div class="stu-left">
+                  <div class="basic-select sl1">
+                    <select name="student" id="student-filter">
+                      <option value="student1">전체 학생</option>
+                      <option value="student2">김호일</option>
+                      <option value="student3">김호이</option>
+                      <option value="student3">김호삼</option>
+                    </select>
+                  </div>
+                  <div class="basic-select sl2">
+                    <select name="subject" id="subject-filter">
+                      <option value="all">화 19:00~19:50 초등천재 3호</option>
+                      <option value="">영재</option>
+                      <option value="">수재</option>
+                      <option value="">신동</option>
+                      <option value="">천재</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="stu-right">
+                  <div class="sl3">
+                    <div class="basic-select" style="flex: 1;">
+                      <select name="stuName" id="stu-name">
+                        <option value="all">이름</option>
+                        <option value="">김호호</option>
+                        <option value="">김호호</option>
+                        <option value="">김호호</option>
+                        <option value="">김호호</option>
+                      </select>
+                    </div>
+                    <div class="search-box" style="flex: 2;">
+                      <input type="text" id="search-name" name="searchName">
+                    </div>
+                  </div>
+                  <div class="explore common-btn sl4">검색</div>
+                </div>
+              </div>
+            </div>
+            <div class="table-frame stu-info-t">
+              <table class="basic-table yh">
+                <colgroup>
+                  <col width="5%">
+                  <col width="5%">
+                  <col width="5%">
+                  <col width="5%">
+                  <col width="10%">
+                  <col width="10%">
+                  <col width="10%">
+                  <col width="10%">
+                  <col width="10%">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th class="checkbox-group">
+                      <input type="checkbox" id="" name="">
+                    </th>
+                    <th>No</th>
+                    <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">상태</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">입회일</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강과목</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">연령/학년</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학교/유치원</th>
+                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">형제연결</th>
+                  </tr>
+                </thead>
+                <tbody id="student-tbody" class="stripe" th:if="${students}">
+                  <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentNo}" onclick="openModal(this)">
+                    <td class="checkbox-group">
+                      <input type="checkbox" th:id="${s.studentNo}" name="studentCheck">
+                    </td>
+                    <td th:text="${iterStat.count}">1</td>
+                    <td th:text="${s.studentName}">김호호</td>
+                    <td th:switch="${s.status}">
+                      <span th:case="1">재원중</span>
+                      <span th:case="2">입학취소</span>
+                      <span th:case="3">휴원</span>
+                      <span th:case="4">탈퇴</span>
+                      <span th:case="*">-</span>
+                    </td>
+                    <td th:text="${#dates.format(s.createdAt, 'yyyy.MM.dd')}">2025.06.27</td>
+                    <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass 
+             : (s.hanClass != null ? s.hanClass 
+             : (s.bookClass != null ? s.bookClass : ''))}">초등천재, 새움</td>
+                    <td th:text="${s.grade}">05</td>
+                    <td th:text="${s.school}">호호유치원</td>
+                    <td>
+                      <img th:if="${s.reason == null}" th:src="@{/image/link.png}" alt="링크" class="link">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div th:replace="~{student/student-modal :: studentModal}"></div>
+
+</body>
+
+</html>

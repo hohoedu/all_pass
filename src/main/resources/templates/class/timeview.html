@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- Custom Css / Js -->
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script th:src="@{/js/custom.js}"></script>
+  <!-- Html menu Load -->
+  <script th:src="@{/js/loadHTML.js}"></script>
+  <title>시간표 조회</title>
+</head>
+
+<body>
+  <div class="main-container" style="height: auto;">
+    <div class="main-frame">
+      <!-- left nav bar -->
+      <div id="sidebar-load"></div>
+      <main class="main-info">
+        <div class="student-frame timeview-frame">
+          <!-- section:left -->
+          <section class="time-table-index">
+            <div class="manager-list-frame">
+              <a class="print-title" href="print-timeview.html">
+                <div class="common-title">
+                  <h2>전입 / 전출</h2>
+                </div>
+                <div class="print">인쇄</div>
+              </a>
+              <div class="month-navigation month-adjust">
+                <button class="arrow-left"></button>
+                <span class="current-month">2025년 1월</span>
+                <button class="arrow-right"></button>
+              </div>
+              <div class="table-frame timeview-table-frame">
+                <table class="basic-table timeview-table">
+                  <thead>
+                    <tr>
+                      <th colspan="2">월</th>
+                      <th colspan="2">화</th>
+                      <th colspan="2">수</th>
+                      <th colspan="2">목</th>
+                      <th colspan="2">금</th>
+                      <th colspan="2">토</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- row: 1 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">호샌즈</div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                    <!-- row: 2 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">호샌즈</div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                    <!-- row: 3 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">
+                          <div><img th:src="@{/image/warning-sign.png}" alt="">강하연</div>
+                        </div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                    <!-- row: 4 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">호샌즈</div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                    <!-- row: 5 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">
+                          <div>
+                            <img th:src="@{/image/warning-sign.png}" alt="">강하연
+                          </div>
+                        </div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">호샌즈</div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                    <!-- row: 6 -->
+                    <tr>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                        <span class="badge-han">한</span>초등박사 1호
+                      </td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">02:00 ~ 02:50</p>
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged"></td>
+                      <td colspan="2" class="merged">
+                        <p id="timetable-time">
+                          02:00 ~ 02:50</p><span class="badge-book">북</span>새움 1호
+                      </td>
+                      <td colspan="2" class="merged"></td>
+                    </tr>
+                    <tr>
+                      <td class="dotted">
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                        <div class="name-tag">이도현</div>
+                        <div class="name-tag">박지환</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                        <div class="name-tag">정서호</div>
+                        <div class="name-tag">이도혁</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                        <div class="name-tag">김범</div>
+                        <div class="name-tag">박호야</div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag">박여우</div>
+                        <div class="name-tag">김호랭</div>
+                        <div class="name-tag">호샌즈</div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                      <td class="dotted">
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                        <div class="name-tag"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="table-frame">
+                  <table class="basic-table timeview-tfoot">
+                    <tbody>
+                      <tr class="timeview-tfoot-header">
+                        <td rowspan="3" class="vertical-header">회원현황</td>
+                        <td>입회</td>
+                        <td>탈퇴</td>
+                        <td>전입</td>
+                        <td>전출</td>
+                        <td>1-2주</td>
+                      </tr>
+                      <!-- row: 1 -->
+                      <tr class="timeview-tfoot-header">
+                        <td>1</td>
+                        <td>0</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>0</td>
+                      </tr>
+                      <tr class="name-details">
+                        <td>양찬희</td>
+                        <td>강하연</td>
+                        <td>김하니(한스쿨), 박윤아(북스쿨)</td>
+                        <td>이도현(한스쿨), 정서호(북스쿨)</td>
+                        <td>없음</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="6" class="all-hands">
+                          총원: 30명
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+
+</html>

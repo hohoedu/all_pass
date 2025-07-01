@@ -1,0 +1,363 @@
+/* 13inch notebook 1280px~1440px */
+@media (min-width: 1000px) and (max-width: 1440px) {
+  body {
+    font-size: 14px;
+    /* background-color: lightgray; */
+  }
+  section {
+    height: auto;
+  }
+  .container {
+    width: 80%;
+    margin: auto;
+  }
+  .main-container {
+    height: auto;
+  }
+  .sidebar {
+    height: 100vh;
+  }
+  .quick-nav ul {
+    gap: 10px;
+  }
+  .quick-nav a {
+    font-size: 16px;
+  }
+  .form-row {
+    gap: 15px;
+  }
+  ::placeholder,
+  textarea::placeholder {
+    font-size: 11px;
+  }
+  .main-info {
+    padding: 0px 0px 0px 20px;
+  }
+  .title {
+    font-size: 16px;
+  }
+  #sidebar-load {
+    flex: 1.7;
+  }
+  .radio-group input[type="radio"], 
+  .checkbox-group input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+  label {
+    font-size: 14px;
+    margin-right: 5px;
+  }
+  .checkbox-group input[type="checkbox"] + label {
+    margin-right: 10px;
+    font-size: 14px;
+  }
+  .radio-group input[type="radio"]:checked::after,
+.checkbox-group input[type="checkbox"]:checked::after {
+  font-size: 10px;
+}
+  /* ======================= student-main page ======================= */
+  .info-summary {
+    flex: 5;
+  }
+  .info-desc {
+    flex: 6;
+  }
+  /* .student-frame > section {
+    padding: 30px;
+  } */
+  .info-tab-btn {
+    max-width: 100%;
+  }
+  .info-tab-btn a {
+    padding: 8px;
+    font-size: 15px;
+  }
+  .tab {
+    width: 100%;
+  }
+  .form-row label {
+    width: 60px;
+    font-size: 15px;
+  }
+  .dash {
+    padding: 4px;
+  }
+  .student-form .phone-group input {
+    padding: 4px;
+  }
+  #tab2 .save-btn {
+    margin-bottom: 10px;
+  }
+  .stu-m-con {
+    width: 80%;
+  }
+  .modal-scroll {
+    display: flex;
+    justify-content: center;
+  }
+  .all-info {
+    width: 100%;
+  }
+  .card-left {
+    width: 40%;
+  }
+  .student-card {
+    width: 100%;
+  }
+  .card-right {
+    width: 60%;
+    margin-right: 10px;
+  }
+  .calendar-container {
+    width: 100%;
+  }
+  .modal-inner {
+    padding: 0 30px 0 0;
+  }
+  
+  /* ======================= student-inout page ======================= */
+  .info-arrange {
+  }
+  .move-summary {
+    flex: 4;
+  }
+  .mover-desc {
+    flex: 5;
+  }
+  .move-reason-frame, .move-list-frame {
+    width: 100%;
+  }.content-table th {
+    padding: 0px;
+  }
+  
+  /* ======================= student-out page ======================= */
+  .student-num-frame {
+    gap: 10px;
+  }
+  
+  /* ======================= class-titmetable page ======================= */
+  .time-frame {
+    width: 100%;
+  }
+  /* ======================= time-view page ======================= */
+  .timeview-frame {
+    width: 100%;
+  }
+  /* ======================= bfclass page ======================= */
+  .class-info-frame {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .bf-main .student-frame > section {
+    height: auto;
+  }
+  .before-send-section {
+    margin-top: 10px;
+  }
+  .modify-info-frame {
+    display: flex;
+    align-items: center;
+    line-height: 2rem;
+  }
+  
+  /* ======================= afclass page ======================= */
+  .class-log-section {
+    flex: 4;
+  }
+  .details-frame {
+    width: 100%;
+  }
+  .log-table th:nth-child(4) {
+    width: 10%;
+  }
+  .consult-box {
+    flex-direction: column;
+    height: 450px;
+  }
+  .consult-type {
+    width: 100%;
+    height: 200px;
+  }
+  .consult-desc {
+    width: 100%;
+  }
+  .consult-desc th:nth-child(2) {
+    width: 10%;
+  }
+  .jumpup-test label {
+    margin: 0px 10px 0px 0px;
+  }
+  .attend-btn {
+    font-size: 14px;
+  }
+  .jumpup-test .checkbox-group, 
+  .book-table .checkbox-group {
+    display: flex;
+    justify-content: flex-start;
+  }
+  .book-table .checkbox-group {
+    margin: 0 10px;
+  }
+  .personal-sms {
+    display: block;
+    height: auto;
+  }
+  .sms-type {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 20px;
+  }
+  .sms-table {
+    background: #fff;
+  }
+
+  /* ======================= consult page ======================= */
+  .counsel-write th {
+  padding: 5px;
+  }
+  .counsel-write td:nth-child(8), 
+  .counsel-write td:nth-child(9) {
+    padding: 0px 5px;
+  }
+  .counsel-write td:nth-child(10) {
+    margin: 0px 10px;
+  }
+  .join-btn {
+    font-size: 12px;
+    display: inline-block;
+    width: 100px;
+  }
+  .counsel-write .date-input {
+    width: 100%;
+  }
+  /* ======================= order page ======================= */
+  .order-frame {
+    width: 100%;
+  }
+  
+  /* ======================= manage-sms page ======================= */
+  .manage-sms-frame {
+    width: 100%;
+  }
+  .sms-word-table td:first-child {
+    width: 30%;
+  }
+  #check-point {
+    font-size: 12px;
+  }
+  /* ======================= manage-teacher page ======================= */
+  .manage-frame {
+    width: 100%;
+  }
+  .manager-list,
+  .manager-info {
+    flex: 1;
+  }
+
+  /* ======================= menu page ======================= */
+  .menu-title {
+    margin: 0 30px;
+  }
+  .menu-logo img {
+    width: 250px;
+  }
+  .menu-greet {
+    font-size: 20px;
+  }
+  .menu-notice {
+    font-size: 20px;
+    padding: 20px 30px;
+    margin: 20px 0px 30px 0px;
+  }
+  .menu-item img {
+    width: 150px;
+    margin-bottom: 0;
+  }
+  .menu-item:nth-last-child(2) img {
+    width: 130px;
+  }
+  .menu-item h2 {
+    font-size: 30px;
+  }
+  .menu-item p {
+    font-size: 16px;
+  }
+  .menu-item {
+    background: #fff;
+    padding: 5px 30px 30px 30px;
+  }
+  .menu-item > button {
+    font-size: 16px;
+  }
+  .input-label {
+    font-size: 16px;
+  }
+  .input-button {
+    font-size: 16px;
+    padding: 0;
+  }
+  .menu-input {
+    flex: 4;
+  }
+  .evaluation-button {
+    font-size: 20px;
+  }
+
+  /* ======================= index page ======================= */
+  .welcome-greet h1 {
+    font-size: 1.6rem;
+  }
+  .class-title {
+    font-size: 16px;
+  }
+  .mini-menu {
+    font-size: 1.3rem;
+  }
+  span.number {
+    font-size: 2.5rem;
+  }
+  .payment-num, .unpaid-num {
+    font-size: 2rem;
+  }
+  
+    /* ======================= notice page ======================= */
+  .notice-inner {
+    width: 1000px;
+  }
+}
+
+/* join page smartphone 320 ~ 480px */
+@media (min-width:320px) and (max-width:480px) {
+  .join-title {
+    font-size: 2rem;
+  }
+  .join-group h2 {
+    font-size: 1.1rem;
+  }
+  .join-line {
+    margin: 60px 0 60px 0;
+  }
+  .join-group p {
+    font-size: 14px;
+    text-align: left;
+    margin-bottom: 50px;
+  }
+  .join-group label {
+    font-size: 14px;
+  }
+  #privacy-agree label,
+  #guardian-agree label {
+    font-size: 12px;
+  }
+  #clear-button {
+    padding: 5px 10px;
+  }
+}
+
+/* join page tablet Pc 320 ~ 480px */
+@media (min-width:481) and (max-width: 768px) {
+
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+        namespace="com.hohoedu.all_pass.user.repository.UserRepository">
+
+    <insert id="insert" parameterType="com.hohoedu.all_pass.user.model.User" useGeneratedKeys="true"
+            keyProperty="userNo" keyColumn="user_no">
+        insert into user_tb(user_id, password, username, user_role_no, center_no, created_at)
+        values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
+    </insert>
+
+    <select id="findAll" resultType="com.hohoedu.all_pass.user.model.User">
+        select *
+        from user_tb
+    </select>
+
+    <select id="findAllCount" resultType="int">
+        select count(*)
+        from user_tb
+    </select>
+
+</mapper>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper
+        namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
+
+    <insert id="insert" parameterType="com.hohoedu.all_pass.student.model.Student" useGeneratedKeys="true"
+            keyProperty="studentNo" keyColumn="student_no">
+        INSERT INTO student_tb
+        (student_id, student_name, birth, school, address, address_detail, gender, entry_han_date, entry_book_date, created_at, grade_no, level_no, status_no, student_privacy_agree)
+        values (#{studentId}, #{studentName}, #{birth}, #{school}, #{address},  #{addressDetail}, #{gender}, #{entryHanDate}, #{entryBookDate}, CURRENT_TIMESTAMP, 
+        #{gradeNo}, #{levelNo}, #{statusNo}, #{studentPrivacyAgree});
+        
+    </insert>
+
+    <select id="findAll" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentsListDTO">
+        SELECT
+            s.student_no AS studentNo,
+            s.student_name AS studentName,
+            s.school AS school,
+            grade.grade AS grade,
+            l.level AS level,
+            CASE 
+            WHEN s.gender = true then '남'
+            WHEN s.gender = false then '여'
+            END AS gender,
+            s.birth AS birth,
+            s.address AS address,
+            s.address_detail AS addressDetail,
+            c.center_name AS center,
+            s.entry_han_date AS entryHanDate,
+            s.entry_book_date AS entryBookDate,
+            sh.created_at AS statusModifiedAt,
+            sc.status AS status,
+            sh.reason AS reason,
+            s.created_at AS createdAt,
+        
+           MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
+           MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass
+        
+        FROM STUDENT_TB s
+        
+        LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
+        LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
+        LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
+        
+       LEFT JOIN (
+            SELECT student_no, status_no, reason, created_at
+            FROM (
+                SELECT student_no, status_no, reason, created_at, ROW_NUMBER() 
+                    OVER (PARTITION BY student_no ORDER BY created_at DESC) AS rn
+                FROM STATUS_HISTORY
+                ) tmp
+            WHERE rn = 1
+            ) sh ON s.student_no = sh.student_no
+        LEFT JOIN STATUS_CODE sc ON sh.status_no = sc.status_no
+        LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
+        LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
+        
+        GROUP BY s.student_no
+    </select>
+
+    <select id="findAllCount" resultType="int">
+        select count(*)
+        from student_tb
+    </select>
+
+    <select id="findStudentByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
+    SELECT
+        s.student_no AS studentNo,
+        s.student_name AS studentName,
+        s.school AS school,
+        grade.grade AS grade,
+        l.level AS level,
+        CASE 
+            WHEN s.gender = true THEN '남'
+            WHEN s.gender = false THEN '여'
+        END AS gender,
+        s.birth AS birth,
+        s.address AS address,
+        s.address_detail AS addressDetail,
+        c.center_name AS center,
+        s.entry_han_date AS entryHanDate,
+        s.entry_book_date AS entryBookDate,
+        sh.created_at AS statusModifiedAt,
+        sc.status AS status,
+        sh.reason AS reason,
+        s.created_at AS createdAt,
+    
+           MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
+           MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass,
+
+        CASE
+            WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL THEN NULL
+            ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
+        END AS parentTel
+    
+    FROM STUDENT_TB s
+    
+    LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
+    LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
+    LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
+    LEFT JOIN (
+        SELECT student_no, status_no, reason, created_at
+        FROM (
+            SELECT student_no, status_no, reason, created_at,
+                ROW_NUMBER() OVER (PARTITION BY student_no ORDER BY created_at DESC) AS rn
+            FROM STATUS_HISTORY
+        ) tmp
+        WHERE rn = 1
+    ) sh ON s.student_no = sh.student_no
+    LEFT JOIN STATUS_CODE sc ON sh.status_no = sc.status_no
+    LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
+    LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
+    LEFT JOIN PARENT p ON p.student_no = s.student_no
+
+    WHERE s.student_no = #{studentId}
+    
+    GROUP BY s.student_no
+
+    </select>
+
+</mapper>

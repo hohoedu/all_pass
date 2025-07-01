@@ -1,0 +1,53 @@
+  <div class="modal">
+    <div class="modal-content counsel-modal">
+      <div class="modal-header">
+        <h2>
+          상담 기록 추가
+        </h2>
+        <a href="#" class="btn-close"></a>
+      </div>
+      <!-- 이름, 학교 -->
+      <div class="form-row">
+        <label for="student-name">이름</label>
+        <input type="text" id="student-name" name="studentName" class="basic-input" placeholder="이름을 입력해주세요">
+        <label for="school-name">학교</label>
+        <input type="text" id="school-name"  name="school" class="basic-input" placeholder="생년월일을 입력해주세요">
+      </div>
+      <!-- 학교, 부모HP -->
+      <div class="form-row">
+        <label for="grade-filter">학년</label>
+        <div class="basic-select">
+          <select name="grade" id="grade-filter">
+            <option value="">초1</option>
+            <option value="">초2</option>
+          </select>
+        </div>
+        <label for="phone1">부모HP</label>
+        <div class="phone-group" id="guardian-contact-group">
+          <input type="text" id="phone1" class="basic-input" name="guardPhone1" maxlength="3" placeholder="010">
+          <span class="dash">-</span>
+          <input type="text" id="phone2" class="basic-input" name="guardPhone2" maxlength="4" placeholder="0000">
+          <span class="dash">-</span>
+          <input type="text" id="phone3" class="basic-input" name="guardPhone3" maxlength="4" placeholder="0000">
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="inflow-route">유입경로</label>
+        <div class="basic-select">
+          <select name="inflowRoute" id="inflow-route">
+            <option value="">인터넷 광고</option>
+            <option value="">지인소개</option>
+            <option value="">인스타그램</option>
+            <option value="">블로그</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="memo">메모사항</label>
+        <textarea id="memo" name="notes" rows="6"></textarea>
+      </div>
+      <div class="save-btn-frame">
+        <button type="submit" class="save-btn">저장하기</button>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- Custom Css / Js -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/media.css">
+  <script src="js/custom.js"></script>
+  <!-- Html header Load -->
+  <script src="js/loadHeader.js"></script>
+  <title>보강 관리</title>
+</head>
+<body>
+  <div class="notice-container">
+    <!-- header -->
+    <div id="header-load" style="padding: 20px 20px 0 20px; background: #DCE4F8;"></div>
+      <!-- left nav bar -->
+      <section class="notice-section">
+        <div class="notice-inner">
+          <div class="notice-header">
+            <h1>공지사항</h1>
+          </div>
+          <div class="notice-search">
+            <div class="left-search">
+              <div class="basic-select">
+                <select id="select-notice" name="selectNotice">
+                  <option value="">제목순</option>
+                  <option value="">등록일자순</option>
+                </select>
+              </div>
+              <div class="student-search join-group search-adjust">
+                <input type="text" id="browse-notice" name="browseNotice" placeholder="검색어를 입력하세요">
+              </div>
+            </div>
+            <div class="all-num">전체 <span>7</span>건</div>
+          </div>
+          <div class="notice-tframe">
+            <table class="basic-table notice-table">
+              <colgroup>
+                <col width="15%">
+                <col width="75%">
+                <col width="15%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>일자</th>
+                  <th>이름</th>
+                  <th>학교</th>
+                </tr>
+              </thead>
+              <tbody id="">
+                <tr>
+                  <td>
+                    <span class="vital">공지</span>
+                  </td>
+                  <td>
+                    <a href="notice-inner.html">호호서당 개인정보 처리방침 개정 안내</a></a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="vital">공지</span>
+                  </td>
+                  <td>
+                    <a href="#">주요 공지사항 안내</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="vital">공지</span>
+                  </td>
+                  <td>
+                    <a href="#">주요 공지사항 안내</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="vital">공지</span>
+                  </td>
+                  <td>
+                    <a href="#">주요 공지사항 안내</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>
+                    <a href="#">호호서당 이용약관 개정 안내</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>
+                    <a href="#">호호서당 주요 일정 및 행사 알림</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>
+                    <a href="#">공지사항을 알려드립니다.</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+                <tr>
+                  <td>1</td>
+                  <td>
+                    <a href="#">호호서당 사이트 개편 안내</a>
+                  </td>
+                  <td>
+                    2025-03-01
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="notice-nums">
+            <a href="#">
+              <i class="fa fa-angle-left"></i>
+            </a>
+            <a href="#">
+              <i class="fa fa-angle-double-left"></i>
+            </a>
+            <a href="#" class="num active">1</a>
+            <a href="#" class="num">2</a>
+            <a href="#" class="num">3</a>
+            <a href="#" class="num">4</a>
+            <a href="#" class="num">5</a>
+            <a href="#" class="num">6</a>
+            <a href="#" class="num">7</a>
+            <a href="#" class="num">8</a>
+            <a href="#" class="num">9</a>
+            <a href="#" class="num">10</a>
+            <a href="#" class="num next">
+              <i class="fa fa-angle-right"></i>
+            </a>
+            <a href="#" class="num last">
+              <i class="fa fa-angle-double-right"></i>
+            </a>
+          </div>
+        </div>
+      </section>
+  </div>
+</body>
+</html>

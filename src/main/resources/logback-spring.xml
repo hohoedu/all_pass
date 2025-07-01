@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- 1) 프로퍼티 읽어오기 (application.yml 의 logging.file.name 사용) -->
+    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="logs/app.log"/>
+
+    <!-- 2) 콘솔 출력 설정 -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 3) 파일 출력 + 롤링 설정 -->
+    <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 날짜별 파일 + 인덱스(사이즈 초과 시) -->
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 하루당 최대 10MB, 넘으면 app.YYYY-MM-DD.1.log.gz, 2… -->
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- 보관 기간: 30일치, 전체 용량 3GB 제한 -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <immediateFlush>true</immediateFlush>
+        </encoder>
+    </appender>
+
+    <!-- 4) 패키지별 Logger 설정 -->
+    <!-- com.hohoedu.all_pass 패키지는 DEBUG 레벨로, Console+File 모두 출력 -->
+    <logger name="com.hohoedu.all_pass" level="DEBUG" additivity="false">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="RollingFile"/>
+    </logger>
+    <!-- Spring 프레임워크 로그는 INFO 이상만 -->
+    <logger name="org.springframework" level="INFO"/>
+    <!-- Hibernate SQL 로깅만 별도 DEBUG -->
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+
+    <!-- 5) 전체(Root) Logger 설정 -->
+    <!-- 기본 INFO 레벨, Console+File 모두 바인딩 -->
+    <root level="INFO">
+        <appender-ref ref="Console"/>
+        <appender-ref ref="RollingFile"/>
+    </root>
+
+</configuration>

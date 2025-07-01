@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/custom.js"></script>
+    <script src="/js/loadHTML.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <title>Document</title>
+</head>
+<body>
+  <div class="main-container" style="height: auto;">
+    <!-- header -->
+    <div id="header-load"></div>
+    <div class="main-frame">
+      <!-- left nav bar -->
+      <aside id="sidebar-load"></aside>
+      <main class="main-info">
+        <div class="student-frame book-list-frame">
+          <!-- section:book-list -->
+          <section class="book-list">
+            <div class="book-list-width">
+              <div class="common-title">
+                <h2>독·클 도서 목록</h2>
+              </div>
+              <div class="list-search">
+                <div class="normal-select">
+                  <select id="classification" name="classifiCation">
+                    <option value="">분류</option>
+                    <option value="">연계</option>
+                    <option value="">수록</option>
+                  </select>
+                </div>
+                <div class="normal-select">
+                  <select id="genre-filter" name="genre">
+                    <option value="">장르</option>
+                    <option value="">전래</option>
+                    <option value="">창작</option>
+                  </select>
+                </div>
+                <div class="student-search">
+                  <input type="text" id="title-name" name="titleName" class="normal-input" placeholder="제목으로 검색">
+                </div>
+              </div>
+              <div class="book-inventory">
+                <h4>총 도서 수 <span class="book-num">508권</span></h4>
+                <div class="normal-select">
+                  <select id="book-matter" name="bookMatter">
+                    <option value="">문제있는 책만</option>
+                    <option value="">문제없는 책</option>
+                  </select>
+                </div>
+              </div>
+              <div class="normal-table-frame makeup-table">
+                <table class="normal-table makeup-table">
+                  <colgroup>
+                    <col style="width: 8%;">
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>분류</th>
+                      <th>제목</th>
+                      <th>출판사</th>
+                      <th>지은이</th>
+                      <th>장르</th>
+                      <th>문제유무</th>
+                    </tr>
+                  </thead>
+                  <tbody id="">
+                    <tr>
+                      <td>1</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>2</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>X</td>
+                    </tr>                
+                    <tr>
+                      <td>3</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>X</td>
+                    </tr>                
+                    <tr>
+                      <td>4</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>5</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>X</td>
+                    </tr>                
+                    <tr>
+                      <td>6</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>X</td>
+                    </tr>                
+                    <tr>
+                      <td>7</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>8</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>9</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>10</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>11</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>12</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                    <tr>
+                      <td>13</td>
+                      <td>연계</td>
+                      <td>그림자 극장</td>
+                      <td>북스토리아이</td>
+                      <td>버넷 포드</td>
+                      <td>전래</td>
+                      <td>O</td>
+                    </tr>                
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

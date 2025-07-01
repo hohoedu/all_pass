@@ -1,0 +1,68 @@
+.main-container
+  header
+    .header-main > img, p
+    .header-nav
+      .e-class > img, h4
+      .reading-clinic > img, h4
+      .main-out
+  
+
+section.class-status
+  h4
+  article.status-card
+    details.student-num
+      summary.student-info //flex
+        .student-desc
+          p,strong
+          p,span
+          .student-change, span
+        .student-icon        
+    details.absence-num
+      summary.absence-info //flex
+      .absence-desc
+        p,strong
+        p,span
+        .absence-change, span
+      .absence-icon  
+  article.status-card
+    details.edu-title
+      h2
+      img
+    details.edu-status
+      .payment
+        p
+        span
+      .unpaid
+        p
+        span
+  article.status-card
+    details.book-title
+      h2
+      img
+    details.book-status
+      .payment
+        p
+        span
+      .unpaid
+        p
+        span
+  aside.quick-menu
+    details
+      a.mini-menu * 3
+
+
+  section.info-summary
+    .info-title
+      h2
+      .new-regist
+      
+  section.info-desc
+
+
+  article.all-info
+    .all-left
+      .basic-info
+      .all-subject
+    .all-right
+      .attend-cal
+      .counsel-info
