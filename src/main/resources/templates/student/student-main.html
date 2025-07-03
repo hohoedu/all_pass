@@ -11,17 +11,15 @@
   <link rel="stylesheet" th:href="@{/css/media.css}">
   <script th:src="@{/js/custom.js}"></script>
   <!-- Html menu Load -->
-  <script th:src="@{/js/loadHTML.js}"></script>
+  <script th:src="@{/js/sidebar.js}"></script>
   <title>학생 정보</title>
 </head>
 
 <body>
   <div class="main-container">
-    <!-- header -->
-    <div id="header-load"></div>
     <div class="main-frame">
       <!-- left nav bar -->
-      <div id="sidebar-load"></div>
+      <div class="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
       <main class="main-info">
         <div class="student-frame">
           <!-- section:left -->
@@ -31,9 +29,7 @@
               <div>
                 <div class="grade-up common-btn">학년 내리기</div>
                 <div class="grade-down common-btn">학년 올리기</div>
-                <a th:href="@{/student/join}">
-                  <div class="new-regist common-btn">+ 신규 등록</div>
-                </a>
+                <div class="new-regist common-btn">+ 신규 등록</div>
               </div>
             </div>
             <div class="info-filters">
@@ -76,60 +72,58 @@
                 </div>
               </div>
             </div>
-            <div class="table-frame stu-info-t">
-              <table class="basic-table yh">
-                <colgroup>
-                  <col width="5%">
-                  <col width="5%">
-                  <col width="5%">
-                  <col width="5%">
-                  <col width="10%">
-                  <col width="10%">
-                  <col width="10%">
-                  <col width="10%">
-                  <col width="10%">
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th class="checkbox-group">
-                      <input type="checkbox" id="" name="">
-                    </th>
-                    <th>No</th>
-                    <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">상태</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">입회일</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강과목</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">연령/학년</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학교/유치원</th>
-                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">형제연결</th>
-                  </tr>
-                </thead>
-                <tbody id="student-tbody" class="stripe" th:if="${students}">
-                  <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentNo}" onclick="openModal(this)">
-                    <td class="checkbox-group">
-                      <input type="checkbox" th:id="${s.studentNo}" name="studentCheck">
-                    </td>
-                    <td th:text="${iterStat.count}">1</td>
-                    <td th:text="${s.studentName}">김호호</td>
-                    <td th:switch="${s.status}">
-                      <span th:case="1">재원중</span>
-                      <span th:case="2">입학취소</span>
-                      <span th:case="3">휴원</span>
-                      <span th:case="4">탈퇴</span>
-                      <span th:case="*">-</span>
-                    </td>
-                    <td th:text="${#dates.format(s.createdAt, 'yyyy.MM.dd')}">2025.06.27</td>
-                    <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass 
+            <div class="bt">
+              <div class="table-frame stu-info-t">
+                <table class="basic-table yh">
+                  <colgroup>
+                    <col width="5%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="15%">
+                    <col width="10%">
+                    <col width="15%">
+                    <col width="10%">
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">입회일</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">상태</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강과목</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학교/유치원</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">형제연결</th>
+                    </tr>
+                  </thead>
+                  <tbody id="student-tbody" class="stripe" th:if="${students}">
+                    <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentNo}" onclick="openModal(this)">
+                      <td class="checkbox-group">
+                        <input type="checkbox" th:id="${s.studentNo}" name="studentCheck">
+                      </td>
+                      <td th:text="${iterStat.count}">1</td>
+                      <td th:text="${s.studentName}">김호호</td>
+                      <td th:switch="${s.status}">
+                        <span th:case="1">재원중</span>
+                        <span th:case="2">입학취소</span>
+                        <span th:case="3">휴원</span>
+                        <span th:case="4">탈퇴</span>
+                        <span th:case="*">-</span>
+                      </td>
+                      <td th:text="${#dates.format(s.createdAt, 'yyyy.MM.dd')}">2025.06.27</td>
+                      <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass 
              : (s.hanClass != null ? s.hanClass 
              : (s.bookClass != null ? s.bookClass : ''))}">초등천재, 새움</td>
-                    <td th:text="${s.grade}">05</td>
-                    <td th:text="${s.school}">호호유치원</td>
-                    <td>
-                      <img th:if="${s.reason == null}" th:src="@{/image/link.png}" alt="링크" class="link">
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      <td th:text="${s.grade}">05</td>
+                      <td th:text="${s.school}">호호유치원</td>
+                      <td>
+                        <img th:if="${s.reason == null}" th:src="@{/image/link.png}" alt="링크" class="link">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
         </div>

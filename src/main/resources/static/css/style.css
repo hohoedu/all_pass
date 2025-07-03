@@ -17,11 +17,24 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  font-family: "Noto Sans KR", sans-serif;
+body,
+textarea {
+  font-family: 'Noto Sans KR', sans-serif;
   font-weight: normal;
-  background-color: #fff;
   color: #222;
+}
+
+body {
+  background-color: #fff;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+.main-container {
+  min-height: 100vh;
 }
 
 a {
@@ -84,16 +97,23 @@ select {
 table {
   word-break: break-word;
   white-space: normal;
+  border-collapse: collapse;
 }
 
 table td {
-  overflow: hidden;
   text-overflow: ellipsis;
+}
+
+table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
 }
 
 .basic-table th,
 .basic-table td {
-  height: 35px;
+  /* height: 35px; */
 }
 
 .light {
@@ -109,15 +129,33 @@ table td {
 }
 
 /* ############################# Common.css ############################# */
-/* print icon */
-.print::before {
-  content: "\e9bb";
-  font-family: xeicon;
-  color: #747477;
-  margin-right: 5px;
-  font-size: 18px;
+/* time custom */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  cursor: pointer;
 }
 
+input[type="time"] {
+  position: relative;
+  z-index: 1;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+/* print icon */
 .print {
   color: #747477;
   font-weight: 500;
@@ -128,6 +166,12 @@ table td {
 }
 
 .print-title {
+  display: flex;
+  align-items: first baseline;
+  justify-content: space-between;
+}
+
+.print-title-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -187,7 +231,7 @@ textarea::-webkit-scrollbar-thumb:hover,
 
 /* odd stripe hover */
 .stripe tr:nth-child(odd) {
-  background: #F7F9FF;
+  background: #f4f5f8;
 }
 
 /* table custom */
@@ -197,12 +241,13 @@ tbody tr {
 
 tbody tr td:first-child {
   color: #a8a8a8;
+  font-size: 16px;
 }
 
-.table-frame {
+/* table border */
+.bt {
   border-top: .5px solid #494470;
-  overflow: hidden;
-  overflow-y: auto;
+  border-bottom: .5px solid #494470;
 }
 
 .table-frame table {
@@ -270,6 +315,11 @@ input[type="text"]:focus {
   border: 1px solid #e2e2e2;
 }
 
+.basic-select.square select {
+  border-radius: 5px;
+  height: 30px;
+}
+
 .basic-select select {
   width: 100%;
 }
@@ -283,7 +333,7 @@ input[type="text"]:focus {
 .normal-time-input {
   appearance: none;
   background-size: 16px;
-  padding: 8px 10px;
+  padding: 3px 10px;
   height: 36px;
   width: 100%;
   font-size: 14px;
@@ -374,6 +424,10 @@ input[type="text"]:focus {
   border-radius: 20%;
 }
 
+.checkbox-group.round input[type="checkbox"] {
+  border-radius: 50%;
+}
+
 .radio-group input[type="radio"],
 .checkbox-group input[type="checkbox"] {
   -webkit-appearance: none;
@@ -398,10 +452,11 @@ input[type="text"]:focus {
 }
 
 .radio-group,
-.checkbox-group,
+/* .checkbox-group, */
 .normal-checkbox {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .radio-group input[type="radio"]:checked,
@@ -442,7 +497,6 @@ input[type="text"]:focus {
 table .checkbox-group,
 table .normal-checkbox {
   margin: 0;
-  display: block;
 }
 
 /* arrow custom */
@@ -513,7 +567,9 @@ table .normal-checkbox {
   border: none;
 }
 
-.explore {
+.explore,
+.record-save,
+.stas-btn {
   background: #4C3FBC;
 }
 
@@ -522,8 +578,13 @@ table .normal-checkbox {
   background: #AAAAAA;
 }
 
-.new-regist {
+.new-regist,
+.class-comment {
   background: #009844;
+}
+
+.class-guide {
+  background: #ee4d79;
 }
 
 /* ======================= login page ======================= */
@@ -577,13 +638,6 @@ input[type="password"]:focus,
   transition: box-shadow 0.3s ease;
 }
 
-.checkbox-group {
-  color: #525252;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-}
-
 .checkbox-group label {
   cursor: pointer;
 }
@@ -595,8 +649,8 @@ input[type="password"]:focus,
 .join-group input[type="checkbox"],
 input[type="checkbox"] {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   position: relative;
   margin-right: 5px;
@@ -921,6 +975,7 @@ input[type="checkbox"]:checked::after {
   display: flex;
   flex-direction: column;
   background: #fff;
+  height: 95vh;
 }
 
 .join-section {
@@ -1028,6 +1083,8 @@ textarea {
 
 .join-group .checkbox-group {
   margin-top: 5px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .join-frame {
@@ -1051,10 +1108,11 @@ textarea {
   color: #333;
 }
 
-.signature-container label {
+.signature-container h2 {
   display: block;
   margin-bottom: 10px;
   font-weight: bold;
+  font-size: 16px;
 }
 
 #signature-pad {
@@ -1111,29 +1169,28 @@ textarea {
 /* ======================= main page (sidebar)======================= */
 .main-frame {
   display: flex;
-  height: 100%;
-}
-
-#sidebar-load {
-  flex: 1;
-  width: 186px;
-  flex: 0 0 auto;
-  /* 고정 너비 */
-}
-
-.main-info {
-  flex: 10;
   background: #fff;
 }
 
 .sidebar {
-  height: 100%;
+  width: 186px;
+  flex: 0 0 auto;
+  /* 고정 너비 */
+  min-height: 100vh;
+  height: auto;
+}
+
+.main-info {
+  background: #fff;
+  padding-bottom: 20px;
+  margin-left: -120px;
+  width: 90%;
 }
 
 .sidebar-frame {
   display: flex;
   height: 100%;
-  background: #fff;
+  background: transparent;
 }
 
 .sidebar-left {
@@ -1154,7 +1211,7 @@ textarea {
   color: #fff;
   position: relative;
   width: 127px;
-  /* display: none; */
+  z-index: 10000;
 }
 
 .sidebar-right.collapsed {
@@ -1245,6 +1302,10 @@ textarea {
 }
 
 /* welcome section */
+.main-bg {
+  background: #f7f7f7;
+}
+
 .welcome-img {
   display: flex;
   align-items: center;
@@ -1286,20 +1347,33 @@ textarea {
 
 .class-status {
   display: grid;
-  grid-template-columns: repeat(2, 2fr);
-  gap: 20px;
-  padding: 10px;
-  width: 95%;
+  grid-template-columns: 5.5fr 4.5fr;
+  gap: 25px;
   align-items: stretch;
+}
+
+.class-status>article:not(.unpaid-card, .status-card) {
+  background: #fff;
+}
+
+.edu-card,
+.unpaid-card {
+  height: 500px;
+}
+
+.makeup-card,
+.status-card {
+  height: 360px;
 }
 
 .student-num,
 .absence-num,
 .edu-card,
-.book-card {
+.makeup-card,
+.payment-area {
   background: #fff;
   border-radius: 10px;
-  padding: 15px;
+  padding: 15px 25px;
   border: 1px solid #e3e3e3;
 }
 
@@ -1310,7 +1384,7 @@ textarea {
 }
 
 .student-num {
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 }
 
 .student-num,
@@ -1332,32 +1406,77 @@ textarea {
   justify-content: space-between;
 }
 
-.number {
+.pax {
   font-size: 45px;
   font-weight: bold;
-}
-
-.pax {
-  font-size: 20px;
+  padding: 15px 0;
 }
 
 .change {
   font-size: 10px;
 }
 
+.fz-24 {
+  font-size: 24px;
+}
+
 .status-card {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
+}
+
+.unpaid-lists {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.all-amounts {
+  font-size: 45px;
+  font-weight: 500;
+}
+
+.unpaid-amount {
+  color: #ee4372;
+}
+
+.unpaid.percent {
+  display: inline;
+  background: #ffcedb;
+  color: #a4294a;
+  font-size: 15px;
+  padding: 2px;
+  width: 115px;
+  text-align: center;
+  border-radius: 30px;
+}
+
+.all-amount {
+  color: #202020;
 }
 
 .payment-area {
-  display: flex;
-  justify-content: space-between;
-  align-items: last baseline;
+  height: 240px;
 }
 
 .payment-chart {
   flex: 1;
+}
+
+.unpaid-arrange {
+  display: flex;
+  justify-content: space-between;
+}
+
+.unpaid-stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 .bar-chart {
@@ -1424,7 +1543,7 @@ textarea {
 }
 
 .unpaid-list {
-  flex: 1;
+  flex: 3;
   margin-left: 30px;
 }
 
@@ -1478,6 +1597,7 @@ textarea {
 .subtitle {
   font-size: 16px;
   color: #434343;
+  font-weight: bold;
 }
 
 .class-button {
@@ -1513,7 +1633,7 @@ textarea {
   background: #F4F7FA;
   padding: 8px 10px;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 17px;
   margin-bottom: 5px;
 }
 
@@ -1535,20 +1655,42 @@ textarea {
 }
 
 .class-table-frame {
-  padding: 10px;
+  height: 420px;
+}
+
+.makeup-table-frame {
+  height: 260px;
+}
+
+.class-tbody,
+.unpaid-tbody {
+  border-radius: 5px;
+  background-color: #F4F7FA;
+  overflow-y: auto;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.unpaid-frame {
+  height: 160px;
+  overflow: hidden;
 }
 
 .class-status-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: center;
 }
 
-.class-status-table th {
+.class-status-table thead th {
   font-weight: 600;
-  font-size: 14px;
-  color: #777777;
+  font-size: 17px;
+  color: #8f8f8f;
   padding: 8px;
+  background: #ffffff !important;
+  z-index: 2;
+  padding-top: 10px;
 }
 
 .class-status-table thead th {
@@ -1559,9 +1701,48 @@ textarea {
 }
 
 .class-status-table td {
-  font-size: 14px;
   color: #333;
-  padding: 5px 8px;
+  padding: 8px 0;
+}
+
+.student-status-boxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.status-box {
+  border-radius: 12px;
+  padding: 5px 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.status-box .count {
+  font-size: 25px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.status-box.join {
+  background-color: #eefaed;
+  color: #56a250;
+}
+
+.status-box.leave {
+  background-color: #fdf4f7;
+  color: #c96084;
+}
+
+.status-box.transfer-out {
+  background-color: #fefaf1;
+  color: #d78716;
+}
+
+.status-box.transfer-in {
+  background-color: #f0f2fb;
+  color: #5666ae;
 }
 
 .list-back {
@@ -1569,17 +1750,13 @@ textarea {
   border-radius: 10px;
 }
 
-.class-status-table tbody {
-  background: #F4F7FA;
-}
-
 .class-action-btn {
   background: #D8E3EF;
   color: #929EAC;
   border: none;
-  border-radius: 6px;
-  padding: 3px 12px;
-  font-size: 13px;
+  border-radius: 5px;
+  padding: 5px 14px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: .3s ease;
@@ -1608,16 +1785,16 @@ textarea {
   border-bottom-right-radius: 10px;
 }
 
-/* ======================= student-main page ======================= */
-.student-frame,
-.thrid-frame {
-  height: 100%;
-  gap: 20px;
-  background: #fff;
+/* 새로쓰는 메인 */
+.main-sub {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
+
+/* ======================= student-main page ======================= */
 .student-frame>section {
-  height: 100%;
   background: #fff;
   padding: 20px 30px 0px 30px;
 }
@@ -1630,9 +1807,17 @@ textarea {
   max-height: 200px;
 }
 
-.info-table,
+.table-frame .info-table,
 .sibling-table,
-.move-frame {
+.move-frame,
+.lesson-frame,
+.remarks-tframe,
+.student-pick-frame,
+.class-table-frame,
+.makeup-table-frame,
+.stu-info-t,
+.move-t-frame,
+.move-list-frame {
   overflow: hidden;
   overflow-y: auto;
 }
@@ -1646,7 +1831,7 @@ textarea {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 .info-arrange {
@@ -1719,7 +1904,11 @@ textarea {
 }
 
 .stu-info-t {
-  max-height: 85vh;
+  max-height: 790px;
+}
+
+.stu-info-t tr {
+  cursor: pointer;
 }
 
 .svg-sort {
@@ -1733,6 +1922,36 @@ textarea {
   width: 20px;
   vertical-align: middle;
   cursor: pointer;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  background-color: #757575;
+  color: #fff;
+  text-align: center;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  /* 위치 지정 */
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  /* 애니메이션 */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
 
 .time-select {
@@ -2176,6 +2395,11 @@ textarea {
   border: 1px solid #d34040;
 }
 
+.select-btn.selected {
+  border: 1px solid #007bff;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
 .card-body {
   display: flex;
   align-items: center;
@@ -2331,7 +2555,17 @@ textarea {
   width: 100%;
   height: 100vh;
   display: none;
+  z-index: 100;
   /* display: block; */
+}
+
+.modal>div {
+  background: #fff;
+  border-radius: 5px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .counsel-modal {
@@ -2651,7 +2885,7 @@ textarea {
   width: 100%;
 }
 
-.time-table-list .month-adjust {
+.time-tabletime-table-list .month-adjust {
   margin: 0px 0px 20px 0px;
 }
 
@@ -2734,6 +2968,7 @@ textarea {
 
 .move-list-frame {
   width: 95%;
+  height: 95%;
 }
 
 .m-t-line {
@@ -2792,6 +3027,10 @@ textarea {
   flex: 3;
 }
 
+.input-row {
+  display: flex;
+}
+
 .inout-head {
   display: flex;
   justify-content: space-between;
@@ -2808,7 +3047,7 @@ textarea {
 }
 
 .move-t-frame {
-  max-height: 60vh;
+  max-height: 780px;
 }
 
 .blank-adjust {
@@ -2897,7 +3136,7 @@ textarea {
 }
 
 .stats-frame {
-  max-height: 80vh;
+  min-height: 550px;
 }
 
 .table-foot tfoot td {
@@ -2972,13 +3211,21 @@ textarea {
 }
 
 /* ======================= class-timetable page ======================= */
+.time-table tbody td {
+  height: 120px;
+}
+
+.time-table tbody td:last-child {
+  text-align: left;
+}
+
+.time-table td:nth-child(2) {
+  color: #adb2c1;
+  font-weight: bold;
+}
 
 .time-table-frame {
-  display: inline-block;
-  border: 2px solid #DFE6F7;
-  border-radius: 10px;
-  margin-top: 15px;
-  max-height: 70%;
+  max-height: 830px;
   overflow: hidden;
 }
 
@@ -3015,23 +3262,21 @@ textarea {
 
 .time-tab-menu {
   display: flex;
-  border: 2px solid #DFE6F7;
-  border-radius: 15px;
-  overflow: hidden;
+  gap: 30px;
 }
 
-.time-tab-menu button {
+.time-tab-btn {
   flex: 1;
   padding: 10px 0;
-  background: #fff;
-  border: #5A7CE2;
+  background: #f4f5f8;
   cursor: pointer;
   font-size: 16px;
   text-align: center;
   transition: background 0.3s;
   font-weight: bold;
-  color: #5A7CE2;
-  border-right: 2px solid #DFE6F7;
+  color: #b2b6c3;
+  border-radius: 5px;
+  width: 15%;
 }
 
 .time-tab-menu button:last-child {
@@ -3039,8 +3284,8 @@ textarea {
 }
 
 .time-tab-menu button.active {
-  background: #5A7CE2;
-  color: white;
+  background: #4c3fbc;
+  color: #fff;
 }
 
 .time-tab-content {
@@ -3049,35 +3294,6 @@ textarea {
 
 .time-tab-content.active {
   display: block;
-}
-
-.time-table {
-  width: 100%;
-  border-collapse: collapse;
-  border-style: hidden;
-  background-color: white;
-  color: #8C9BBD;
-  font-size: 14px;
-}
-
-.time-table tr {
-  border: #DFE6F7;
-}
-
-.time-table th,
-.time-table td {
-  border: 2px solid #DFE6F7;
-  padding: 10px;
-  text-align: center;
-}
-
-.time-table th {
-  background-color: #F7F9FF;
-  font-weight: bold;
-}
-
-.time-table tbody tr td:not(:nth-child(4)) {
-  background-color: #F7F9FF;
 }
 
 .time-chocie-table {
@@ -3090,14 +3306,6 @@ textarea {
 
 .time-chocie-frame {
   max-height: 70vh;
-}
-
-.time-chocie-frame label {
-  margin-right: 10px;
-}
-
-.time-chocie-frame label:last-child {
-  margin: 0px;
 }
 
 .time-chocie-frame>table {
@@ -3124,17 +3332,25 @@ textarea {
   background: #0F95BC;
 }
 
-.badge-name {
-  padding: 2px 6px;
+.student-badge {
+  margin: 1px 3px;
+  width: 90px;
+  height: 30px;
+  border: 1px solid #c4c6cc;
+  background: #fff;
   border-radius: 5px;
-  background: #EBEEF6;
-  color: #222;
-  font-weight: 500;
   display: inline-flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.badge-name {
+  color: #404040;
+  font-weight: 500;
   align-items: center;
 }
 
-.badge-name:after {
+.badge-close:after {
   content: "\e921";
   font-family: xeicon;
   font-weight: bold;
@@ -3144,12 +3360,6 @@ textarea {
 
 .badge-week {
   color: #17AAB2;
-}
-
-.student-badge {
-  display: inline-block;
-  margin-right: 10px;
-  margin: 2px 10px;
 }
 
 .manager-add {
@@ -3234,6 +3444,149 @@ input[type="time" i] {
   margin-top: 30px;
 }
 
+/* 시간표등록 새거 */
+.time-regist-frame {
+  height: 100%;
+  gap: 20px;
+  background: #fff;
+  padding: 20px 30px 0px 30px;
+}
+
+.reset-btn {
+  background: #9c9c9c;
+}
+
+.last-data {
+  background: #009844;
+}
+
+.student-pick-left {
+  flex: 2;
+  border: 1px solid #494470;
+  border-radius: 5px;
+  height: 850px;
+}
+
+.student-pick-frame {
+  height: 850px;
+  border-bottom: 1px solid #494470;
+}
+
+.student-content {
+  padding: 20px;
+  height: 100%;
+}
+
+.student-content h4 {
+  font-size: 20px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.student-pick-right {
+  flex: 4;
+  margin-left: 30px;
+}
+
+.month-header2 {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0 0 0;
+}
+
+.month-title2 {
+  font-size: 24px;
+  color: #686868;
+  display: flex;
+  font-weight: 500;
+}
+
+.add-inform {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-inform span {
+  color: #00b8b5;
+  font-weight: bold;
+}
+
+.add-btn {
+  background: #00b8b5;
+  color: #fff;
+  padding: 5px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* input 숨기기 */
+.tab-radio input[type="radio"] {
+  display: none;
+}
+
+/* 기본 라벨 스타일 */
+.tab-radio label {
+  padding: 8px 5px;
+  border: 1px solid #d5d5d5;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #9b9ba8;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 3px;
+}
+
+/* 선택된 라디오 옆의 라벨 */
+.tab-radio input[type="radio"]:checked+label {
+  background: #4c3fbc;
+  color: #fff;
+  border-color: transparent;
+  font-weight: 500;
+}
+
+.stu-chocie-frame {
+  height: 80%;
+  overflow-y: auto;
+
+}
+
+.stu-chocie-table td {
+  padding: 5px 0;
+}
+
+.time-boxes>div:first-child {
+  margin-bottom: 10px;
+}
+
+.time-boxes>div {
+  border-radius: 5px;
+}
+
+.mini-select {
+  display: flex;
+  gap: 5px;
+  justify-content: space-between;
+}
+
+.size-160 {
+  width: 160px;
+}
+
+.mini-select>.basic-select {
+  width: calc(50% - 2.5px);
+  /* gap이 5px이니까 절반에서 gap 절반씩 뺌 */
+}
+
+
 /* ======================= time-view page ======================= */
 .timeview-frame {
   height: auto;
@@ -3244,7 +3597,7 @@ input[type="time" i] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin: 16px;
 }
 
 .month-title {
@@ -3280,10 +3633,6 @@ input[type="time" i] {
   table-layout: fixed;
 }
 
-.timetable-lookup-table tbody tr td:first-child {
-  color: #404040;
-}
-
 .timetable-lookup-table th,
 .timetable-lookup-table td {
   border-right: 1px solid #949cb4;
@@ -3311,11 +3660,13 @@ input[type="time" i] {
   border-right: none;
 }
 
-.timetable-lookup-table tbody tr:nth-child(odd) td {
+.timetable-lookup-table tbody tr:nth-child(odd) td,
+.lesson-log-table tbody tr:nth-child(odd) td {
   background-color: #f9f9fa;
 }
 
-.timetable-lookup-table tbody tr:nth-child(even) td {
+.timetable-lookup-table tbody tr:nth-child(even),
+.lesson-log-table tbody tr:nth-child(even) td {
   background-color: #ffffff;
 }
 
@@ -3398,6 +3749,32 @@ input[type="time" i] {
   border-color: #eb8baf;
 }
 
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.red {
+  background-color: red;
+}
+
+.orange {
+  background-color: orange;
+}
+
+.blue-count {
+  color: #002AFF;
+  font-weight: 500;
+}
+
+.inner-grid:first-child {
+  display: inline-block;
+}
+
 /* 회원현황 */
 .member-status-table {
   width: 100%;
@@ -3471,196 +3848,350 @@ input[type="time" i] {
 }
 
 /* ======================= bfclass page ======================= */
-.class-info-section {
-  flex: 6;
-}
-
-.class-info-section {
+.class-header {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
 }
 
-.class-info-frame {
-  width: 90%;
-}
-
-.class-adjust {
+.class-btns {
   display: flex;
-  margin-top: 20px;
+  gap: 15px;
+  align-items: center;
 }
 
-.plan-filters {
+.class-log-left {
   flex: 1;
+  max-width: 173px;
 }
 
-.class-before-after {
+.class-log-right {
+  flex: 5;
+}
+
+/* class-log-left */
+.class-log-left {
+  background-color: #f4f3fa;
+  padding: 16px;
+  width: 160px;
+  border-radius: 8px;
+  height: 800px;
+}
+
+.class-log-left h4 {
+  font-size: 17px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.week-selector {
   display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.week-btn {
   flex: 1;
-  margin-left: 20px;
+  margin-right: 4px;
+  padding: 6px 0;
+  border: none;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #9b9ba8;
+  cursor: pointer;
+  height: 54px;
 }
 
-.class-info {
-  display: flex;
-  margin-top: 15px;
-}
-
-.class-content {
-  position: relative;
-  height: 70vh;
-}
-
-.ctab {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: none;
-}
-
-.ctab.active {
-  display: block;
-}
-
-.weeks-guide {
-  flex: 3;
-}
-
-.name-guide {
-  flex: 2;
-  margin-left: 20px;
-}
-
-.class-info-section {
-  flex: 6;
-}
-
-.before-send-section {
-  flex: 4;
-}
-
-.weeks-table {
-  height: 600px;
-}
-
-.weeks-table tr,
-.before-table tr {
-  line-height: 1.5rem;
-}
-
-.weeks-table label {
+.week-btn:last-child {
   margin-right: 0;
 }
 
-.weeks-table td:nth-child(1) {
-  background: #F7F9FF;
-  width: 20%;
-}
-
-.weeks-table .radio-group {
-  display: flex;
-  justify-content: center;
+.week-btn.active {
+  background-color: #009844;
+  color: white;
   font-weight: bold;
-  color: #A5B0D4;
-  font-size: 16px;
 }
 
-.weeks-table-frame {
-  min-height: 550px;
-}
-
-.weeks-table td:nth-child(2) {
-  text-align: left;
-  padding: 10px 20px;
-}
-
-.class-info-section .month-adjust {
-  margin: 0;
-}
-
-.name-frame {
-  min-height: 300px;
-}
-
-.modify-info {
-  margin-top: 20px;
-}
-
-.modify-info-frame {
-  background: #EEF0F7;
-  height: 180px;
-  border-radius: 10px;
-  font-size: 14px;
-  padding: 30px 20px;
-}
-
-.modify-info-frame>div {
-  margin-bottom: 15px;
-}
-
-.modify-info-frame>div:last-child {
-  margin-bottom: 0;
-}
-
-.class-info-btns {
+.class-btn {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  color: #9b9ba8;
+  cursor: pointer;
+  transition: background-color 0.2s;
   text-align: center;
-  margin-top: 30px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
 }
 
-.class-info-btns>div {
-  width: 160px;
-  height: 44px;
+.class-btn strong {
+  display: block;
+  margin-bottom: -20px;
+}
+
+.class-btn.active {
+  background-color: #7366e8;
+  color: white;
+}
+
+.class-btn.active strong {
+  color: white;
+}
+
+/* class-log-right */
+.lesson-log-table {
+  text-align: center;
+}
+
+.lesson-frame {
+  max-height: 800px;
+}
+
+.lesson-log-table tr th {
+  padding: 20px 0;
+}
+
+.stbox {
+  margin: auto;
+  padding: 3px 2px;
+  font-size: 14px;
+  border-radius: 4px;
+  display: block;
+  margin-bottom: 10px;
+  max-width: 100px;
+  height: 30px;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
+  position: relative;
+}
+
+.stbox input {
+  background: transparent;
+  opacity: 0;
+  width: 50px;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.status-badge.attend {
+  background-color: #1c99f1;
+  color: white;
+  text-align: center;
+}
+
+.time.in,
+.time-start {
+  background-color: #ecf5f3;
+  border: 1px solid #bde0d8;
+  color: #418478;
+}
+
+.time-start,
+.time-end {
+  width: 100px;
+  height: 30px;
+  display: flex;
+  justify-content: space-around;
   align-items: center;
-  border-radius: 20px;
-  font-weight: 400;
-  color: #fff;
+}
+
+.time.out,
+.time-end {
+  background-color: #f7edf1;
+  border: 1px solid #efdae4;
+  color: #c05881;
+}
+
+/* 결석, 지각 */
+.status-badge.late {
+  background-color: #edb407;
+  color: white;
+}
+
+.status-badge.absent {
+  background-color: #db6747;
+  color: white;
+}
+
+/* 타임 설정되지 않았을 때 */
+.time.not-set {
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  color: #939393;
+}
+
+/* 특이사항 */
+.tag-list li {
+  color: #dc5733;
+  font-size: 13px;
+  margin-bottom: 2px;
+  list-style: none;
+}
+
+.tag-list img {
+  margin-top: 10px;
   cursor: pointer;
 }
 
-.sms-btn {
-  background: #B4B6C1;
-  margin-right: 20px;
+.mobiscroll-time {
+  border: none;
+  background: transparent;
+  width: 60px;
+  text-align: right;
+  font-size: 14px;
+  color: inherit;
 }
 
-.app-btn {
-  background: #334DD7;
+.mobiscroll-time::placeholder {
+  color: #939393;
 }
 
-.name-highlight {
-  font-weight: 500;
-  color: #EE4E79;
+/* 상담기록 전환 버튼 */
+.counsel-type {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
-.before-frame {
-  min-height: 650px;
+.counsel-type button {
+  flex-grow: 1;
+  padding: 4px 8px;
+  border: 1px solid #c0c2c5;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #fff;
 }
 
-.before-table th,
-.before-table td {
+.counsel-type button.active {
+  background-color: #4c3fbc;
+  color: white;
+  border-color: transparent;
+}
+
+.counsel-box,
+.after-comment {
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid #bcbec1;
   padding: 10px;
 }
 
-.before-table th:nth-child(1) {
-  width: 20px;
+.counsel-box {
+  width: 220px;
+  height: 150px;
+  margin: 20px;
 }
 
-.before-table th:nth-child(2) {
-  width: 50px;
+.counsel-box textarea,
+.after-comment textarea {
+  background: #fff;
+  border: none;
 }
 
-.before-table th:nth-child(3) {
-  width: 30px;
+.counsel-box textarea {
+  height: 90px;
 }
 
-.before-table td:nth-child(2),
-.before-table td:nth-child(3) {
+.after-comment textarea {
+  height: 120px;
+}
+
+.after-comment {
+  width: 280px;
+  height: 150px;
+}
+
+.send-ornot {
+  vertical-align: middle;
+}
+
+/* 발송여부 */
+.send-ornot img {
+  width: 25px;
+  display: block;
+  margin: auto;
+}
+
+.send-ornot img:first-child {
+  margin-bottom: 15px;
+}
+
+/* 특이사항 modal */
+.remark-sub {
+  color: #9b9ba8;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.remarks-tframe {
+  max-height: 75%;
+}
+
+.remarks-frame {
+  padding: 20px;
+  height: 100%;
+}
+
+.remarks-frame .table-frame {
+  width: 80%;
+  margin: auto;
+}
+
+.remarks-table tr {
+  border-bottom: 1px dashed #dcdcdc;
+}
+
+.remarks-table td:first-child {
+  background: #f7f7f7;
+}
+
+.remarks-table td:last-child {
   text-align: left;
+  padding: 15px 30px;
 }
+
+/* 수업 안내 발송 modal */
+.guidance {
+  width: 1000px;
+  height: 65%;
+}
+
+.guide-frame,
+.inform-frame {
+  width: 85%;
+  padding: 20px 0;
+  margin: auto;
+}
+
+/* 확인해주세요 modal */
+.information {
+  width: 750px;
+  height: 380px;
+}
+
+.inform-desc {
+  text-align: center;
+  padding: 60px 0;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.inform-desc span {
+  color: #e41515;
+  white-space: nowrap;
+}
+
+.gray {
+  background: #b1b1b1;
+}
+
+.inform-frame {
+  height: 100%;
+}
+
+.save-btn-frame button:first-child {
+  margin-right: 20px;
+}
+
 
 /* ======================= afclass page ======================= */
 .details-height {

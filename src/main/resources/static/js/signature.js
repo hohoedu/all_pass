@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 그리기 시작
   canvas.addEventListener('mousedown', (e) => {
-    e.preventDefault();
     isDrawing = true;
     ctx.beginPath();
     ctx.moveTo(e.offsetX, e.offsetY);
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 그리기 중
   canvas.addEventListener('mousemove', (e) => {
-    e.preventDefault();
     if (isDrawing) {
       ctx.lineTo(e.offsetX, e.offsetY);
       ctx.stroke();
@@ -27,29 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 그리기 종료
   canvas.addEventListener('mouseup', () => {
-    isDrawing = false;
-  });
-
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // 스크롤 방지
-    isDrawing = true;
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    ctx.beginPath();
-    ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-  });
-
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault(); // 스크롤 방지
-    if (isDrawing) {
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      ctx.stroke();
-    }
-  });
-
-  canvas.addEventListener('touchend', () => {
     isDrawing = false;
   });
 

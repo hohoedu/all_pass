@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.student._dto.StudentRespDTO;
+import com.hohoedu.all_pass.student._dto.StudentReqDTO.StatusHistoryDTO;
 import com.hohoedu.all_pass.student._dto.StudentReqDTO.StudentJoinDTO;
 import com.hohoedu.all_pass.student.model.Student;
 
@@ -16,4 +17,6 @@ public interface StudentRepository {
     public StudentRespDTO.StudentDTO findStudentByStudentId(@Param("studentId") Integer studentId);
 
     public void insert(StudentJoinDTO student);
+
+    public void statusInsert(StatusHistoryDTO historyDTO);
 }

@@ -1,18 +1,18 @@
 // Sidebar load
-const menu = document.querySelectorAll(".menu-link");
+// const menu = document.querySelectorAll(".menu-link");
 
-for (let i = 0; i < menu.length; i++) {
-  menu[i].addEventListener("click", function () {
-    menu.forEach(link => link.classList.remove("active"));
-    this.classList.add("active");
-  });
-}
+// for (let i = 0; i < menu.length; i++) {
+//   menu[i].addEventListener("click", function () {
+//     menu.forEach(link => link.classList.remove("active"));
+//     this.classList.add("active");
+//   });
+// }
 
 $(document).ready(function () {
   /* ====== conslut.html ====== */
   // modal
-  $('.counsel-button').click(function () {
-    $('.modal').fadeIn()
+  $('.counsel-button, #student-tbody tr').click(function () {
+    $('.student-modal').fadeIn()
   });
   $('.btn-close').click(function () {
     $('.modal').fadeOut();
@@ -115,13 +115,56 @@ $(document).ready(function () {
     $('.reason-input').addClass('active');
   })
 
+  // join
+  $('.new-regist').click(function () {
+    window.open(
+      'join',
+      'joinPopup',
+      'width=auto,height=auto,scrollbars=yes,resizable=yes'
+    );
+  });
+  // caleneder
+  // 날짜 선택 시 div 안에 반영
+  $('#birth-date').on('change', function () {
+    const val = this.value; // yyyy-mm-dd
+    if (val) {
+      const formatted = formatKoreanDate(val);
+      $('.birth-display').text(formatted);
+    }
+  });
+  const initVal = $('#birth-date').val();
+  if (initVal) {
+    $('.birth-display').text(formatKoreanDate(initVal));
+  }
+
 
   /* ====== student-inout.html ====== */
   $('.icon-btn').on('click', function () {
     $(this).siblings('input[type="date"]')[0].showPicker();
   });
+  // btn-inout modal
+  $('#btn-inout').click(function () {
+    $('.modal').fadeIn();
+  });
 
   /* ====== bfclass.html ====== */
+  // remarks modal
+  $('.remarks').click(function () {
+    $('.remarks-modal').fadeIn();
+  });
+  $('.class-guide').click(function () {
+    $('.class-guide-modal').fadeIn();
+  });
+  // 시간 선택 시 표시되는 텍스트 업데이트
+  $('.timepicker').on('input', function () {
+    const timeValue = $(this).val(); // ex: "14:30"
+    $(this).siblings('.display-time').text(timeValue || '--:--');
+  });
+
+  // class-guide modal
+  $('.class-guide').click(function () {
+    $('.calss-guide-modal').fadeIn();
+  });
   // class-timetable tab
   const tabButtons = document.querySelectorAll('.class-before-after a');
   const tabContents = document.querySelectorAll('.ctab');
@@ -135,10 +178,25 @@ $(document).ready(function () {
       document.getElementById(tabId).classList.add('active');
     });
   });
+  // 주차 버튼
+  $('.week-btn').click(function () {
+    $('.week-btn').removeClass('active');
+    $(this).addClass('active');
+  });
+  // 클래스 버튼
+  $('.class-btn').click(function () {
+    $('.class-btn').removeClass('active');
+    $(this).addClass('active');
+  });
+  // 컨설트 버튼
+  $('.counsel-type button').click(function () {
+    $('.counsel-type button').removeClass('active');
+    $(this).addClass('active');
+  });
 
   /* ====== class-timetable.html ====== */
   // class-timetable tab
-  const buttons = document.querySelectorAll('.time-tab-button');
+  const buttons = document.querySelectorAll('.time-tab-btn');
   const contents = document.querySelectorAll('.time-tab-content');
 
   buttons.forEach(button => {
@@ -189,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-
 function openModal(row) {
   const studentId = row.getAttribute("data-id");
   document.querySelector('.modal').style.display = 'block';
@@ -202,22 +259,40 @@ function openModal(row) {
     .then(data => {
       const s = data.response;
       console.log(s);
-      // 기본 정보 바인딩
-      document.querySelectorAll(".s_name").forEach(el => el.innerText = s.studentName || '');
-      document.querySelectorAll(".s_subjects").forEach(el => el.innerText =
-        [s.hanClass, s.bookClass].filter(Boolean).join(', ')
-      );
-      document.querySelectorAll(".s_phone").forEach(el => el.innerText = s.parentTel || '');
-      console.log(s.phone);
+      const setElementValue = (selector, value) => {
+        document.querySelectorAll(selector).forEach(el => {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.value = value;
+          } else {
+            el.innerText = value;
+          }
+        });
+      };
+
+      setElementValue(".s_student_no", s.studentNo || '');
+      setElementValue(".s_name", s.studentName || '');
+      setElementValue(".s_subjects", [s.hanClass, s.bookClass].filter(Boolean).join(', '));
+      setElementValue(".s_phone", s.parentTel || '');
+
       const latestDate = new Date(s.entryHanDate) > new Date(s.entryBookDate)
         ? s.entryHanDate : s.entryBookDate;
-      document.querySelectorAll(".s_entry").forEach(el => el.innerText = formatDate(latestDate));
-      document.querySelectorAll(".s_school").forEach(el => el.innerText = s.school || '');
-      document.querySelectorAll(".s_grade").forEach(el => el.innerText = s.grade || '');
-      document.querySelectorAll(".s_birth").forEach(el => el.innerText = formatDate(s.birth));
-      document.querySelectorAll(".s_address").forEach(el => el.innerText = s.address || '');
-      document.querySelectorAll(".s_address_detail").forEach(el => el.innerText = s.addressDetail || '');
+      setElementValue(".s_entry", formatDate(latestDate));
+      setElementValue(".s_school", s.school || '');
+      setElementValue(".s_grade", s.grade || '');
+      setElementValue(".s_birth", formatDate(s.birth));
+      setElementValue(".s_address", s.address || '');
+      setElementValue(".s_address_detail", s.addressDetail || '');
+
       updateStatusButton(s.status);
+      const genderButtons = document.querySelectorAll(".s_gender");
+      genderButtons.forEach(btn => btn.classList.remove("active"));
+      if (s.gender === 'TRUE') {
+        genderButtons[0].classList.add("active");
+      } else if (s.gender === 'FALSE') {
+        genderButtons[1].classList.add("active");
+      } else {
+        console.log(s.gender);
+      }
     })
     .catch(err => {
       console.error(err);
@@ -231,23 +306,81 @@ function formatDate(iso) {
 }
 
 function updateStatusButton(statusCode) {
-  document.querySelectorAll('.s_status').forEach(btn => {
-    btn.style.display = 'none';
+  const statusStr = String(statusCode);
+
+  document.querySelectorAll('.status-buttons').forEach(group => {
+    const mode = group.getAttribute('data-visibility');
+
+    group.querySelectorAll('.s_status').forEach(btn => {
+      const btnStatus = btn.getAttribute('data-status');
+
+      if (mode === 'only-current') {
+
+        btn.style.display = (btnStatus === statusStr) ? 'inline-block' : 'none';
+      } else if (mode === 'except-current') {
+
+        btn.style.display = (btnStatus === statusStr) ? 'none' : 'inline-block';
+      }
+    });
   });
-
-  // 상태코드에 따라 보여줄 클래스 지정
-  const statusClassMap = {
-    1: 'active',
-    2: 'cancel',
-    3: 'closed',
-    4: 'danger'
-  };
-
-  const className = statusClassMap[statusCode];
-  if (className) {
-    const btn = document.querySelector(`.btn-status.${className}.s_status`);
-    if (btn) {
-      btn.style.display = 'inline-block';
-    }
-  }
 }
+
+document.addEventListener("click", function (e) {
+  const btn = e.target.closest(".select-btn");
+  if (!btn) return;
+
+  document.querySelectorAll(".select-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+});
+
+$(document).on('click', '#status-change', function (e) {
+  e.preventDefault();
+
+  const studentNo = document.querySelector('.s_student_no').innerText;
+  const reason = $('#reason').val();
+  const selectedBtn = $('.select-btn.selected');
+  const statusNo = selectedBtn.data('status');
+
+  console.log('studentNo = ' + studentNo)
+  console.log('reason = ' + reason)
+  console.log('statusNo = ' + statusNo)
+
+  if (!selectedBtn.length) {
+    alert("상태를 선택해주세요.");
+    return;
+  }
+
+  if (!reason.trim()) {
+    alert("사유를 입력해주세요.");
+    return;
+  }
+
+  const formData = new URLSearchParams();
+  formData.append("studentNo", studentNo);
+  formData.append("statusNo", statusNo);
+  formData.append("reason", reason);
+
+  fetch("/student/status", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData.toString()
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("요청 실패");
+      return res.text();
+    })
+    .then(data => {
+      alert("상태가 성공적으로 변경되었습니다.");
+      $('.reason-input').removeClass('active');
+      const row = document.querySelector(`tr[data-id='${studentNo}']`);
+      if (row) {
+        openModal(row);
+      }
+    })
+    .catch(err => {
+      console.error("요청 오류:", err);
+      alert("오류가 발생했습니다.");
+    });
+});

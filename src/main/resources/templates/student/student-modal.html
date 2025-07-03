@@ -20,15 +20,11 @@
                                 <article class="student-card card-common">
                                     <header class="card-header">
                                         <h4 class="sub-themes">기본 정보</h4>
-                                        <div class="status-buttons">
-                                            <button class="btn-status active s_status"
-                                                style="display: none;">재원중</button> <!-- status = 1 -->
-                                            <button class="btn-status cancel s_status"
-                                                style="display: none;">입학취소</button> <!-- status = 2 -->
-                                            <button class="btn-status closed s_status"
-                                                style="display: none;">휴원</button> <!-- status = 3 -->
-                                            <button class="btn-status danger s_status"
-                                                style="display: none;">탈퇴</button> <!-- status = 4 -->
+                                        <div class="status-buttons" data-visibility="only-current">
+                                            <button class="btn-status active s_status" data-status="1">재원중</button>
+                                            <button class="btn-status cancel s_status" data-status="2">입학취소</button>
+                                            <button class="btn-status closed s_status" data-status="3">휴원</button>
+                                            <button class="btn-status danger s_status" data-status="4">탈퇴</button>
                                         </div>
                                     </header>
                                     <section class="card-body">
@@ -37,36 +33,36 @@
                                         </figure>
                                         <div class="student-top">
                                             <h5 class="student-name">
-                                                <strong class="s_name">김호호</strong>
+                                                <strong class="s_name" id="stu-name">김호호</strong>
                                             </h5>
-                                            <p class="student-subjects s_subjects">초등수재, 새움</p>
-                                            <p class="student-tel s_phone">010-1234-5678</p>
+                                            <p class="student-subjects s_subjects" id="stu-subjects">초등수재, 새움</p>
+                                            <p class="student-tel s_phone" id="stu-phone">010-1234-5678</p>
                                         </div>
                                     </section>
                                     <dl class="student-details">
                                         <div class="detail-row">
                                             <dt>입회일</dt>
-                                            <dd class="s_entry">입회일</dd>
+                                            <dd class="s_entry" id="stu-join">2025년 6월 4일</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>학교</dt>
-                                            <dd class="s_school">학교</dd>
+                                            <dd class="s_school" id="stu-school">호랑초등학교</dd>
                                         </div>
                                         <div class="detail-row">
-                                            <dt>연령/학년</dt>
-                                            <dd class="s_grade">학년</dd>
+                                            <dt>학년</dt>
+                                            <dd class="s_grade" id="stu-grade">1학년</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>생년월일</dt>
-                                            <dd class="s_birth">생년월일</dd>
+                                            <dd class="s_birth" id="stu-birth">2016년 3월 15일</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>주소</dt>
-                                            <dd class="s_address">주소</dd>
+                                            <dd class="s_address" id="stu-address">부산 해운대구 센텀중앙로97</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>상세주소</dt>
-                                            <dd class="s_address_detail">상세주소</dd>
+                                            <dd class="s_address_detail" id="stu-address-detail">센텀스카이비즈 A동 2810호</dd>
                                         </div>
                                     </dl>
                                 </article>
@@ -211,77 +207,103 @@
                     <div class="modal-scroll">
                         <div class="modal-inner">
                             <div class="btn-group">
-                                <div class="status-buttons">
-                                    <button class="btn-status active">재원중</button>
-                                    <button class="btn-status cancel">입학취소</button>
-                                    <button class="btn-status closed">휴원</button>
-                                    <button class="btn-status danger">탈퇴</button>
+                                <div class="status-buttons" data-visibility="except-current">
+                                    <button class="btn-status active s_status select-btn" data-status="1">재원중</button>
+                                    <button class="btn-status cancel s_status select-btn" data-status="2">입학취소</button>
+                                    <button class="btn-status closed s_status select-btn" data-status="3">휴원</button>
+                                    <button class="btn-status danger s_status select-btn" data-status="4">탈퇴</button>
                                 </div>
                             </div>
                             <div class="reason-input">
-                                <input type="text" id="reson" name="resonInput" placeholder="사유를 입력해주세요">
-                                <button class="change-btn">변경</button>
+                                <div class="s_student_no" style="display: none;"></div>
+                                <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
+                                <button class="change-btn" id="status-change">변경</button>
                             </div>
                             <table class="base-info-t">
                                 <div class="small-title">기본 정보</div>
                                 <tbody>
                                     <tr>
                                         <th>이름</th>
-                                        <td class="s_name">김호호</td>
+                                        <td>
+                                            <input type="text" name="studentName" class="s_name">
+                                        </td>
                                         <th>상태</th>
                                         <td>
-                                            <button class="btn-status active s_status"
-                                                style="display: none;">재원중</button>
+                                            <div class="status-buttons" data-visibility="only-current">
+                                                <button class="btn-status active s_status" data-status="1">재원중</button>
+                                                <button class="btn-status cancel s_status" data-status="2">입학취소</button>
+                                                <button class="btn-status closed s_status" data-status="3">휴원</button>
+                                                <button class="btn-status danger s_status" data-status="4">탈퇴</button>
+                                            </div>
                                         </td>
                                     </tr>
+
                                     <tr>
                                         <th>생년월일</th>
                                         <td class="icon-field">
-                                            <label class="birth-date"></label>
+                                            <div class="birth-display s_birth">00년 00월 00일</div> <!-- 날짜 표시 영역 -->
                                             <div>
-                                                <input type="date" class="hidden-date">
-                                                <button class="icon-btn">
+                                                <input type="date" class="hidden-date" id="birth-date">
+                                                <button type="button" class="icon-btn"
+                                                    onclick="document.getElementById('birth-date').showPicker()">
                                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                                 </button>
                                             </div>
                                         </td>
                                         <th>성별</th>
                                         <td>
-                                            <button class="btn-choose">남자</button>
-                                            <button class="btn-choose active">여자</button>
+                                            <button type="button" class="btn-choose s_gender"
+                                                data-value="남자">남자</button>
+                                            <button type="button" class="btn-choose s_gender"
+                                                data-value="여자">여자</button>
+                                            <input type="hidden" name="gender" value="여자">
                                         </td>
                                     </tr>
+
                                     <tr>
                                         <th>학교</th>
-                                        <td class="icon-field s_school">
-                                            호랑초등학교
-                                            <button class="icon-btn">
+                                        <td class="icon-field">
+                                            <input type="text" name="school" value="호랑초등학교" class="s_school">
+                                            <button type="button" class="icon-btn">
                                                 <img th:src="@{/image/search.png}" alt="검색 아이콘">
                                             </button>
                                         </td>
                                         <th>주소</th>
-                                        <td class="icon-field s_address">
-                                            부산 해운대구 센텀중앙로 97
-                                            <button class="icon-btn">
+                                        <td class="icon-field">
+                                            <input type="text" name="address" value="부산 해운대구 센텀중앙로 97"
+                                                class="s_address">
+                                            <button type="button" class="icon-btn">
                                                 <img th:src="@{/image/search.png}" alt="검색 아이콘">
                                             </button>
                                         </td>
                                     </tr>
+
                                     <tr>
                                         <th>학년</th>
-                                        <td colspan="3">1학년</td>
+                                        <td class="icon-field">
+                                            <input type="text" name="grade" value="1학년" class="s_grade">
+                                        </td>
+                                        <th>상세주소</th> 
+                                        <td class="icon-field">
+                                            <input type="text" name="address-detail" value="부산 해운대구 센텀중앙로 97"
+                                                class="s_address_detail" style="width: 100%;">
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th>부모님HP</th>
-                                        <td class="s_phone">010-1234-5678</td>
+                                        <td>
+                                            <input type="tel" name="parentPhone" value="010-1234-5678">
+                                        </td>
                                         <th>학생과의 관계</th>
                                         <td>
-                                            <button class="btn-choose">부</button>
-                                            <button class="btn-choose active">모</button>
-                                            <button class="btn-choose">기타</button>
+                                            <button type="button" class="btn-choose" data-value="부">부</button>
+                                            <button type="button" class="btn-choose active" data-value="모">모</button>
+                                            <button type="button" class="btn-choose" data-value="기타">기타</button>
+                                            <input type="hidden" name="relationship" value="모">
                                         </td>
                                     </tr>
                                 </tbody>
+
                             </table>
 
                             <h4 class="small-title">입회 정보</h4>
@@ -290,22 +312,24 @@
                                     <tr>
                                         <th>한자 입회</th>
                                         <td class="icon-field">
-                                            2025년 6월 4일
+                                            <div class="date-display">2025년 6월 4일</div> <!-- 표시용 -->
                                             <div>
-                                                <input type="date" class="hidden-date">
+                                                <input type="date" class="hidden-date date-input"
+                                                    data-target=".hanja-date">
                                                 <button class="icon-btn"
-                                                    onclick="document.getElementById('birth-date').showPicker()">
+                                                    onclick="this.previousElementSibling.showPicker()">
                                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                                 </button>
                                             </div>
                                         </td>
                                         <th>독서 입회</th>
                                         <td class="icon-field">
-                                            2025년 2월 20일
+                                            <div class="date-display">2025년 2월 20일</div> <!-- 표시용 -->
                                             <div>
-                                                <input type="date" class="hidden-date">
+                                                <input type="date" class="hidden-date date-input"
+                                                    data-target=".reading-date">
                                                 <button class="icon-btn"
-                                                    onclick="document.getElementById('birth-date').showPicker()">
+                                                    onclick="this.previousElementSibling.showPicker()">
                                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                                 </button>
                                             </div>
@@ -331,7 +355,7 @@
                                         <th>한자 단계</th>
                                         <td>
                                             <div class="select-wrap">
-                                                <select name="hanJa" id="hanja" class="styled-select">
+                                                <select name="hanjaLevel" id="hanja" class="styled-select">
                                                     <option value="han1">초등천재</option>
                                                     <option value="han2">초등박사</option>
                                                     <option value="han3">초등신동</option>
@@ -341,21 +365,27 @@
                                         <th>수강 상태</th>
                                         <td>
                                             <div>
-                                                <button class="btn-choose active">수강</button>
-                                                <button class="btn-choose">미수강</button>
+                                                <input type="radio" name="hanjaStatus" id="study-yes" value="수강"
+                                                    checked>
+                                                <label for="study-yes" class="btn-choose active">수강</label>
+                                                <input type="radio" name="hanjaStatus" id="study-no" value="미수강">
+                                                <label for="study-no" class="btn-choose">미수강</label>
                                             </div>
                                         </td>
                                     </tr>
                                     <tr>
                                         <th>담당 선생님</th>
-                                        <td><span>이하정</span></td>
+                                        <td>
+                                            <input type="text" name="teacherName" value="이하정">
+                                        </td>
                                         <th>시작일자</th>
                                         <td class="icon-field">
-                                            <span>2025년 6월 4일</span>
+                                            <div class="date-display">2025년 6월 4일</div>
                                             <div>
-                                                <input type="date" class="hidden-date">
+                                                <input type="date" class="hidden-date date-input" name="startDate"
+                                                    value="2025-06-04" data-target=".date-display">
                                                 <button class="icon-btn"
-                                                    onclick="document.getElementById('birth-date').showPicker()">
+                                                    onclick="this.previousElementSibling.showPicker()">
                                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                                 </button>
                                             </div>
@@ -364,14 +394,15 @@
                                     <tr>
                                         <th>교육비</th>
                                         <td class="icon-field">
-                                            <span>100,000원</span>
+                                            <input type="number" name="tuition" value="100000"> 원
                                         </td>
                                         <th>교재비</th>
                                         <td>
-                                            <span>15,000원</span>
+                                            <input type="number" name="bookFee" value="15000"> 원
                                         </td>
                                     </tr>
                                 </tbody>
+
                             </table>
                             <!-- 수강과목(독서) -->
                             <div class="small-title">수강과목(독서)</div>

@@ -57,8 +57,15 @@ public class StudentController {
             @ModelAttribute StudentReqDTO.ParentJoinDTO parentDTO) {
 
         studentService.studentInsert(studentDTO, parentDTO);
-        
 
         return "redirect:/main";
     }
+
+    @ResponseBody
+    @PostMapping("/status")
+    public void statusUpdate(@ModelAttribute StudentReqDTO.StatusHistoryDTO historyDTO) {
+        studentService.statusInsert(historyDTO);
+
+    }
+
 }

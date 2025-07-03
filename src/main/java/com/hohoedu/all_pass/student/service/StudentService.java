@@ -73,4 +73,8 @@ public class StudentService {
                 return relationCodes;
         }
 
+        public void statusInsert(StudentReqDTO.StatusHistoryDTO historyDTO){
+                studentRepository.statusInsert(historyDTO);
+        }
+
 }

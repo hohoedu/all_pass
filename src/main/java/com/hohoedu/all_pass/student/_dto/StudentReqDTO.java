@@ -35,4 +35,12 @@ public class StudentReqDTO {
         private boolean parentPrivacyAgree;
         private Integer studentNo;
     }
+
+    @Data
+    public static class StatusHistoryDTO{
+        private Integer historyNo;
+        private String statusNo;
+        private String studentNo;
+        private String reason;
+    }
 }

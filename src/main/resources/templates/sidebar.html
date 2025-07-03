@@ -1,0 +1,78 @@
+<aside class="sidebar" th:fragment="sidebar">
+  <div class="sidebar-frame">
+    <div class="sidebar-left">
+      <div class="sidebar-item">
+        <a th:href="@{/}" class="home-back" data-target="dashboard">
+          <img th:src="@{/image/hoho-icon.png}" alt="">
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="/main" class="menu-toggle" data-target="dashboard">
+          <img th:src="@{/image/menu-icon.png}" alt=""><span>대시보드</span>
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="#" class="menu-toggle" data-target="student">
+          <img th:src="@{/image/menu-icon1.png}" alt=""><span>학생관리</span>
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="#" class="menu-toggle" data-target="class">
+          <img th:src="@{/image/menu-icon2.png}" alt=""><span>수업관리</span>
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="#" class="menu-toggle" data-target="consult">
+          <img th:src="@{/image/menu-icon3.png}" alt=""><span>상담관리</span>
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="#" class="menu-toggle" data-target="tuition">
+          <img th:src="@{/image/menu-icon4.png}" alt=""><span>학원비</span>
+        </a>
+      </div>
+      <div class="sidebar-item">
+        <a href="#" class="menu-toggle" data-target="operation">
+          <img th:src="@{/image/menu-icon5.png}" alt=""><span>운영관리</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="sidebar-right collapsed">
+      <div class="sub-frame">
+        <div class="submenu" data-menu="dashboard">
+          <p>왼쪽 메뉴를<br> 클릭해주세요</p>
+        </div>
+        <!-- 1 -->
+        <div class="submenu" data-menu="student">
+          <a th:href="@{/student/main}" class="menu-link">학생 정보</a>
+          <a th:href="@{/student/student-inout}" class="menu-link">전입/전출</a>
+          <a th:href="@{/student/student-out}" class="menu-link">학생현황 통계</a>
+        </div>
+        <!-- 2 -->
+        <div class="submenu" data-menu="class">
+          <a th:href="@{/class/titmetable}" class="menu-link">시간표 등록</a>
+          <a th:href="@{/class/timeview}" class="menu-link">시간표 조회</a>
+          <a th:href="@{/class/bfclass}" class="menu-link">수업 일지</a>
+          <a th:href="@{/classclass}" class="menu-link">보강 관리</a>
+          <a th:href="@{/class/afclass}" class="menu-link">월간평가</a>
+        </div>
+        <!-- 3 -->
+        <div class="submenu" data-menu="consult">
+          <a th:href="@{/consult/consult}" class="menu-link">상담문의 기록</a>
+        </div>
+        <div class="submenu" data-menu="tuition">
+          <a th:href="@{/payment/manage-deposit}" class="menu-link">교육비</a>
+          <a th:href="@{/payment/book-fee}" class="menu-link">교재비</a>
+        </div>
+        <div class="submenu" data-menu="operation">
+          <a th:href="@{/order}" class="menu-link">교재 주문</a>
+          <a th:href="@{/reorder}" class="menu-link">교재 추가/반품</a>
+          <a th:href="@{/manage-sms}" class="menu-link">단체 알림</a>
+          <a th:href="@{/manage-teacher}" class="menu-link">선생님 관리</a>
+          <a th:href="@{/manage-tuition}" class="menu-link">교육비 관리</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>

@@ -30,14 +30,10 @@
   textarea::placeholder {
     font-size: 11px;
   }
-  .main-info {
-    padding: 0px 0px 0px 20px;
-  }
   .title {
     font-size: 16px;
   }
   #sidebar-load {
-    flex: 1.7;
   }
   .radio-group input[type="radio"], 
   .checkbox-group input[type="checkbox"] {

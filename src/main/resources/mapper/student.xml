@@ -67,58 +67,77 @@
     </select>
 
     <select id="findStudentByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
-    SELECT
-        s.student_no AS studentNo,
-        s.student_name AS studentName,
-        s.school AS school,
-        grade.grade AS grade,
-        l.level AS level,
-        CASE 
-            WHEN s.gender = true THEN '남'
-            WHEN s.gender = false THEN '여'
-        END AS gender,
-        s.birth AS birth,
-        s.address AS address,
-        s.address_detail AS addressDetail,
-        c.center_name AS center,
-        s.entry_han_date AS entryHanDate,
-        s.entry_book_date AS entryBookDate,
-        sh.created_at AS statusModifiedAt,
-        sc.status AS status,
-        sh.reason AS reason,
-        s.created_at AS createdAt,
-    
-           MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
-           MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass,
+WITH latest_history AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY student_no
+               ORDER BY COALESCE(updated_at, created_at) DESC
+           ) AS rn
+    FROM STATUS_HISTORY
+)
+SELECT
+    s.student_no AS studentNo,
+    s.student_name AS studentName,
+    s.school AS school,
+    grade.grade AS grade,
+    l.level AS level,
+    s.gender AS gender,
+    s.birth AS birth,
+    s.address AS address,
+    s.address_detail AS addressDetail,
+    c.center_name AS center,
+    s.entry_han_date AS entryHanDate,
+    s.entry_book_date AS entryBookDate,
+    s.created_at AS createdAt,
 
-        CASE
-            WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL THEN NULL
-            ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
-        END AS parentTel
-    
-    FROM STUDENT_TB s
-    
-    LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
-    LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
-    LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
-    LEFT JOIN (
-        SELECT student_no, status_no, reason, created_at
-        FROM (
-            SELECT student_no, status_no, reason, created_at,
-                ROW_NUMBER() OVER (PARTITION BY student_no ORDER BY created_at DESC) AS rn
-            FROM STATUS_HISTORY
-        ) tmp
-        WHERE rn = 1
-    ) sh ON s.student_no = sh.student_no
-    LEFT JOIN STATUS_CODE sc ON sh.status_no = sc.status_no
-    LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
-    LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
-    LEFT JOIN PARENT p ON p.student_no = s.student_no
+    MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
+    MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass,
 
-    WHERE s.student_no = #{studentId}
-    
-    GROUP BY s.student_no
+    CASE
+        WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL THEN NULL
+        ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
+    END AS parentTel,
+
+    h.status_no as status,
+    h.reason
+
+FROM STUDENT_TB s
+
+LEFT JOIN latest_history h ON s.student_no = h.student_no AND h.rn = 1
+LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
+LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
+LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
+LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
+LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
+LEFT JOIN PARENT p ON p.student_no = s.student_no
+
+WHERE s.student_no = #{studentId}
+
+GROUP BY
+    s.student_no,
+    s.student_name,
+    s.school,
+    grade.grade,
+    l.level,
+    s.gender,
+    s.birth,
+    s.address,
+    s.address_detail,
+    c.center_name,
+    s.entry_han_date,
+    s.entry_book_date,
+    s.created_at,
+    h.status_no,
+    h.reason
 
     </select>
+
+     <insert id="statusInsert" parameterType="com.hohoedu.all_pass.student._dto.StudentReqDTO$StatusHistoryDTO" useGeneratedKeys="true"
+            keyProperty="historyNo" keyColumn="history_no">
+        INSERT INTO status_history
+        (student_no, status_no, reason, updated_at)
+        values (#{studentNo}, #{statusNo}, #{reason}, CURRENT_TIMESTAMP);
+        
+    </insert>
 
 </mapper>

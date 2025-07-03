@@ -50,5 +50,4 @@ INSERT INTO status_history (student_no, status_no, reason, created_at)
 VALUES (1, 1, NULL, now()),
        (2, 1, NULL, now()),
        (3, 3, '여행으로 인한 1개월 휴원', now()),
-       (3, 1, NULL, now()),
        (4, 1, NULL, now());
