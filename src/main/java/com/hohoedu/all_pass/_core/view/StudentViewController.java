@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.hohoedu.all_pass.parent.code.RelationCode;
+import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentInOutDTO;
 import com.hohoedu.all_pass.student.code.GradeCode;
 import com.hohoedu.all_pass.student.model.Student;
 import com.hohoedu.all_pass.student.service.StudentService;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.hohoedu.all_pass.user.model.User;
 
 
 @Controller
@@ -23,35 +24,44 @@ public class StudentViewController {
     private StudentService studentService;
 
     @GetMapping("/main")
-    public String getStudentMain(Model model) {
+    public String getStudentMainPage(Model model) {
         List<Student> students = studentService.findAllByMyBatis();
+        List<User> teachers = studentService.findTeacher();
         model.addAttribute("students", students);
+        model.addAttribute("teachers", teachers);
+
         return "student/student-main";
     }
 
     @GetMapping("/join")
-    public String getStudentJoin(Model model) {
+    public String getStudentJoinPage(Model model) {
 
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
         model.addAttribute("gradeCodes", gradeCodes);
         model.addAttribute("relationCodes", relationCodes);
+
         return "student/join";
     }
 
     @GetMapping("/student-inout")
-    public String getStudentInout() {
+    public String getStudentInoutPage(Model model) {
+        List<StudentInOutDTO> students = studentService.findAllInOut();
+        List<User> teachers = studentService.findTeacher();
+        model.addAttribute("students", students);
+        model.addAttribute("teachers", teachers);
         return "student/student-inout";
     }
 
     @GetMapping("/print-student-inout")
-    public String getMethodName() {
+    public String getStudentInoutPrintPage() {
         return "print/print-student-inout";
     }
-    
 
     @GetMapping("/student-out")
-    public String getStudentOut() {
+    public String getStudentOutPage(Model model) {
+        List<User> teachers = studentService.findTeacher();
+        model.addAttribute("teachers", teachers);
         return "student/student-out";
     }
 }

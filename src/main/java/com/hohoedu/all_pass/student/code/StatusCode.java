@@ -23,11 +23,14 @@ public class StatusCode {
 
     @Column(nullable = false, length = 20)
     private String status;
-    
+
+    @Column(nullable = false, length = 20)
+    private String code;
+
     @Builder
-    public StatusCode(Integer statusNo, String status) {
+    public StatusCode(Integer statusNo, String status, String code) {
         this.statusNo = statusNo;
         this.status = status;
+        this.code = code;
     }
-
 }

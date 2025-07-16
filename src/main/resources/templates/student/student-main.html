@@ -36,11 +36,11 @@
               <div class="info-arrange">
                 <div class="stu-left">
                   <div class="basic-select sl1">
-                    <select name="student" id="student-filter">
-                      <option value="student1">전체 학생</option>
-                      <option value="student2">김호일</option>
-                      <option value="student3">김호이</option>
-                      <option value="student3">김호삼</option>
+                    <select name="teacher" id="teacher-filter">
+                      <option value="all">전체</option>
+                      <th:block th:each="teacher : ${teachers}">
+                        <option th:value="${teacher.userNo}" th:text="${teacher.username}"></option>
+                      </th:block> 
                     </select>
                   </div>
                   <div class="basic-select sl2">
@@ -58,10 +58,9 @@
                     <div class="basic-select" style="flex: 1;">
                       <select name="stuName" id="stu-name">
                         <option value="all">이름</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
+                        <th:block th:each="student:${students}">
+                          <option value="${student.studentNo}" th:text="${student.studentName}"></option>
+                        </th:block>
                       </select>
                     </div>
                     <div class="search-box" style="flex: 2;">
@@ -99,11 +98,9 @@
                   </thead>
                   <tbody id="student-tbody" class="stripe" th:if="${students}">
                     <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentNo}" onclick="openModal(this)">
-                      <td class="checkbox-group">
-                        <input type="checkbox" th:id="${s.studentNo}" name="studentCheck">
-                      </td>
                       <td th:text="${iterStat.count}">1</td>
                       <td th:text="${s.studentName}">김호호</td>
+                      <td th:text="${#dates.format(s.createdAt, 'yyyy.MM.dd')}">2025.06.27</td>
                       <td th:switch="${s.status}">
                         <span th:case="1">재원중</span>
                         <span th:case="2">입학취소</span>
@@ -111,14 +108,15 @@
                         <span th:case="4">탈퇴</span>
                         <span th:case="*">-</span>
                       </td>
-                      <td th:text="${#dates.format(s.createdAt, 'yyyy.MM.dd')}">2025.06.27</td>
                       <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass 
              : (s.hanClass != null ? s.hanClass 
              : (s.bookClass != null ? s.bookClass : ''))}">초등천재, 새움</td>
                       <td th:text="${s.grade}">05</td>
                       <td th:text="${s.school}">호호유치원</td>
                       <td>
-                        <img th:if="${s.reason == null}" th:src="@{/image/link.png}" alt="링크" class="link">
+                        <img th:if="${s.isSibling == 'Y'}" th:src="@{/image/link.png}" alt="형제 링크" class="link">
+                        <!-- th:attr="title=${#strings.arrayJoin(#lists.map(s.siblingList, sib -> sib.siblingName + ' (' + sib.grade + ')'), ', ')}" -->
+
                       </td>
                     </tr>
                   </tbody>

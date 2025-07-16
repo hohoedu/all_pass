@@ -1,7 +1,7 @@
 <div class="modal" th:fragment="studentModal">
     <div class="stu-m-con">
         <div class="modal-header modal-head-m">
-            <h2><span class="s_name">김호호</span> 학생 상세정보</h2>
+            <div class="title"><span class="s_name">김호호</span> 학생 상세정보</div>
         </div>
         <div class="info-tab-inner">
             <div class="info-tab-btn">
@@ -33,10 +33,10 @@
                                         </figure>
                                         <div class="student-top">
                                             <h5 class="student-name">
-                                                <strong class="s_name" id="stu-name">김호호</strong>
+                                                <strong class="s_name" id="stu-name">이름</strong>
                                             </h5>
-                                            <p class="student-subjects s_subjects" id="stu-subjects">초등수재, 새움</p>
-                                            <p class="student-tel s_phone" id="stu-phone">010-1234-5678</p>
+                                            <p class="student-subjects s_subjects" id="stu-subjects">수강과목</p>
+                                            <p class="student-tel s_phone" id="stu-phone">전화번호</p>
                                         </div>
                                     </section>
                                     <dl class="student-details">
@@ -46,23 +46,23 @@
                                         </div>
                                         <div class="detail-row">
                                             <dt>학교</dt>
-                                            <dd class="s_school" id="stu-school">호랑초등학교</dd>
+                                            <dd class="s_school" id="stu-school">학교명</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>학년</dt>
-                                            <dd class="s_grade" id="stu-grade">1학년</dd>
+                                            <dd class="s_grade" id="stu-grade">연령/학년</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>생년월일</dt>
-                                            <dd class="s_birth" id="stu-birth">2016년 3월 15일</dd>
+                                            <dd class="s_birth" id="stu-birth">생년월일</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>주소</dt>
-                                            <dd class="s_address" id="stu-address">부산 해운대구 센텀중앙로97</dd>
+                                            <dd class="s_address" id="stu-address">주소</dd>
                                         </div>
                                         <div class="detail-row">
                                             <dt>상세주소</dt>
-                                            <dd class="s_address_detail" id="stu-address-detail">센텀스카이비즈 A동 2810호</dd>
+                                            <dd class="s_address_detail" id="stu-address-detail">상세주소</dd>
                                         </div>
                                     </dl>
                                 </article>
@@ -244,8 +244,7 @@
                                             <div class="birth-display s_birth">00년 00월 00일</div> <!-- 날짜 표시 영역 -->
                                             <div>
                                                 <input type="date" class="hidden-date" id="birth-date">
-                                                <button type="button" class="icon-btn"
-                                                    onclick="document.getElementById('birth-date').showPicker()">
+                                                <button type="button" class="icon-btn">
                                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                                 </button>
                                             </div>
@@ -270,9 +269,9 @@
                                         </td>
                                         <th>주소</th>
                                         <td class="icon-field">
-                                            <input type="text" name="address" value="부산 해운대구 센텀중앙로 97"
-                                                class="s_address">
-                                            <button type="button" class="icon-btn">
+                                            <input type="text" name="address" value="부산 해운대구 센텀중앙로 97" class="s_address"
+                                                style="width: 100%;">
+                                            <button type="button" class="icon-btn" onclick="openJusoPopup()">
                                                 <img th:src="@{/image/search.png}" alt="검색 아이콘">
                                             </button>
                                         </td>
@@ -280,10 +279,11 @@
 
                                     <tr>
                                         <th>학년</th>
+
                                         <td class="icon-field">
-                                            <input type="text" name="grade" value="1학년" class="s_grade">
+                                            <select name="gradeNo" class="grade-select s_grade"></select>
                                         </td>
-                                        <th>상세주소</th> 
+                                        <th>상세주소</th>
                                         <td class="icon-field">
                                             <input type="text" name="address-detail" value="부산 해운대구 센텀중앙로 97"
                                                 class="s_address_detail" style="width: 100%;">

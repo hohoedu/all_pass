@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.student._dto.StudentReqDTO;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO;
+import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentTransferDTO;
+import com.hohoedu.all_pass.student.code.GradeCode;
 import com.hohoedu.all_pass.student.model.Student;
 import com.hohoedu.all_pass.student.service.StudentService;
 
@@ -42,6 +44,14 @@ public class StudentController {
     }
 
     @ResponseBody
+    @GetMapping("/students")
+    public ResponseEntity<?> findStudents() {
+
+        List<Student> students = studentService.findAllByMyBatis();
+        return ResponseEntity.ok(ApiUtils.success(students));
+    }
+
+    @ResponseBody
     @GetMapping("/{studentId}")
     public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") Integer studentId) {
 
@@ -66,6 +76,46 @@ public class StudentController {
     public void statusUpdate(@ModelAttribute StudentReqDTO.StatusHistoryDTO historyDTO) {
         studentService.statusInsert(historyDTO);
 
+    }
+
+    @GetMapping("/gradeCodes")
+    public ResponseEntity<?> getGradeCode() {
+        List<GradeCode> gradeCodes = studentService.getGrade();
+        return ResponseEntity.ok(ApiUtils.success(gradeCodes));
+    }
+
+    @GetMapping("/inout/{studentId}")
+    public ResponseEntity<?> findInOutByStudentId(@PathVariable("studentId") Integer studentId) {
+
+        System.out.println("===========================");
+        System.out.println("컨트롤러 진입!");
+        System.out.println("student = " + studentId);
+        System.out.println("===========================");
+        List<StudentTransferDTO> transferDTO = studentService.findInOutByStudentId(studentId);
+        return ResponseEntity.ok(ApiUtils.success(transferDTO));
+    }
+
+    @PostMapping("/inout")
+    public String studentInOut(@ModelAttribute StudentReqDTO.StudentTransferDTO studentInOutDTO) {
+        System.out.println("출력!");
+
+        String inoutHan = studentInOutDTO.getInoutHan();
+        String inoutRead = studentInOutDTO.getInoutRead();
+        String teacher = studentInOutDTO.getTeacherNo();
+        List<String> student = studentInOutDTO.getStudentNo();
+        String moveAt = studentInOutDTO.getMoveAt();
+        String transferReason = studentInOutDTO.getTransferReason();
+
+        System.out.println("======================");
+        System.out.println("inoutHan = " + inoutHan);
+        System.out.println("inoutRead = " + inoutRead);
+        System.out.println("teacherNo = " + teacher);
+        System.out.println("studentNo = " + student);
+        System.out.println("moveAt = " + moveAt);
+        System.out.println("transferReason = " + transferReason);
+        System.out.println("======================");
+        studentService.transferStudent(studentInOutDTO);
+        return "redirect:/student/student-inout";
     }
 
 }

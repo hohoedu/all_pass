@@ -58,8 +58,9 @@
                 <div class="basic-select" style="box-sizing: border-box;">
                   <select name="teacher" id="teacher-select" style="width: 200px;">
                     <option value="all">선생님 전체</option>
-                    <option value="t1">김쌤</option>
-                    <option value="t2">이쌤</option>
+                    <th:block th:each="t: ${teachers}">
+                      <option th:value="${t.userNo}" th:text="${t.username}"></option>
+                    </th:block>
                   </select>
                 </div>
                 <div class="explore common-btn">검색</div>

@@ -15,50 +15,71 @@
     </insert>
 
     <select id="findAll" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentsListDTO">
-        SELECT
-            s.student_no AS studentNo,
-            s.student_name AS studentName,
-            s.school AS school,
-            grade.grade AS grade,
-            l.level AS level,
-            CASE 
-            WHEN s.gender = true then '남'
-            WHEN s.gender = false then '여'
-            END AS gender,
-            s.birth AS birth,
-            s.address AS address,
-            s.address_detail AS addressDetail,
-            c.center_name AS center,
-            s.entry_han_date AS entryHanDate,
-            s.entry_book_date AS entryBookDate,
-            sh.created_at AS statusModifiedAt,
-            sc.status AS status,
-            sh.reason AS reason,
-            s.created_at AS createdAt,
-        
-           MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
-           MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass
-        
-        FROM STUDENT_TB s
-        
-        LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
-        LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
-        LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
-        
-       LEFT JOIN (
-            SELECT student_no, status_no, reason, created_at
-            FROM (
-                SELECT student_no, status_no, reason, created_at, ROW_NUMBER() 
-                    OVER (PARTITION BY student_no ORDER BY created_at DESC) AS rn
-                FROM STATUS_HISTORY
-                ) tmp
-            WHERE rn = 1
-            ) sh ON s.student_no = sh.student_no
-        LEFT JOIN STATUS_CODE sc ON sh.status_no = sc.status_no
-        LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
-        LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
-        
-        GROUP BY s.student_no
+WITH latest_history AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY student_no
+               ORDER BY COALESCE(updated_at, created_at) DESC
+           ) AS rn
+    FROM STATUS_HISTORY
+)
+SELECT
+        s.student_id AS studentId,
+    s.student_no AS studentNo,
+    s.student_name AS studentName,
+    s.school AS school,
+    grade.grade AS grade,
+    l.level AS level,
+    s.gender AS gender,
+    s.birth AS birth,
+    s.address AS address,
+    s.address_detail AS addressDetail,
+    c.center_name AS center,
+    s.entry_han_date AS entryHanDate,
+    s.entry_book_date AS entryBookDate,
+    s.created_at AS createdAt,
+
+    MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
+    MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass,
+
+    CASE
+        WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL THEN NULL
+        ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
+    END AS parentTel,
+
+    h.status_no AS status,
+    h.reason,
+
+    -- 형제 여부
+    CASE 
+        WHEN COUNT(sb2.student_no) > 1 THEN 'Y' ELSE 'N' 
+    END AS isSibling
+
+FROM STUDENT_TB s
+
+LEFT JOIN sibling sb ON sb.student_no = s.student_no
+LEFT JOIN sibling sb2 ON sb.sibling_code = sb2.sibling_code
+
+LEFT JOIN latest_history h ON s.student_no = h.student_no AND h.rn = 1
+
+LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
+LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
+LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
+
+LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
+LEFT JOIN CLASS_INSTANCE ci ON ci.class_instance_no = stu_class.class_instance_no
+LEFT JOIN CLASS_CODE class ON class.class_no = ci.class_no
+
+-- 부모 정보
+LEFT JOIN PARENT p ON p.student_no = s.student_no
+
+GROUP BY 
+    s.student_no, s.student_name, s.school, grade.grade, l.level, s.gender, s.birth, 
+    s.address, s.address_detail, c.center_name, s.entry_han_date, s.entry_book_date, 
+    s.created_at, h.status_no, h.reason, 
+    p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last,
+    sb.sibling_code;
+
     </select>
 
     <select id="findAllCount" resultType="int">
@@ -76,6 +97,7 @@ WITH latest_history AS (
     FROM STATUS_HISTORY
 )
 SELECT
+    s.student_id AS studentId,
     s.student_no AS studentNo,
     s.student_name AS studentName,
     s.school AS school,
@@ -107,8 +129,11 @@ LEFT JOIN latest_history h ON s.student_no = h.student_no AND h.rn = 1
 LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
 LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
 LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
+
 LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
-LEFT JOIN CLASS_CODE class ON stu_class.class_code_no = class.class_code_no
+LEFT JOIN CLASS_INSTANCE ci ON ci.class_instance_no = stu_class.class_instance_no
+LEFT JOIN CLASS_CODE class ON class.class_no = ci.class_no
+
 LEFT JOIN PARENT p ON p.student_no = s.student_no
 
 WHERE s.student_no = #{studentId}
@@ -140,4 +165,59 @@ GROUP BY
         
     </insert>
 
+ <select id="findAllInOut" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentInOutDTO">
+    SELECT 
+    s.student_id AS studentId,
+        s.student_no as studentNo,
+	    s.student_name as studentName,
+	    g.grade as grade,
+	    MAX(CASE WHEN cc.class_type = '1' THEN cc.class_name END) AS hanClass,
+	    MAX(CASE WHEN cc.class_type = '2' THEN cc.class_name END) AS bookClass,
+	    MAX(CASE WHEN cc.class_type = '1' THEN u.username END) AS hanTeacher,
+	    MAX(CASE WHEN cc.class_type = '2' THEN u.username END) AS bookTeacher,
+	    s.created_at as createdAt,
+        sth.move_at as moveAt
+    FROM student_tb s
+    LEFT JOIN grade_code g ON s.grade_no = g.grade_no
+    LEFT JOIN student_class sc ON s.student_no = sc.student_no
+    LEFT JOIN class_instance ci ON sc.class_instance_no = ci.class_instance_no
+    LEFT JOIN class_code cc ON ci.class_no = cc.class_no
+    LEFT JOIN user_tb u ON u.user_no = ci.user_no
+    LEFT JOIN student_transfer_history sth ON sth.student_no = s.student_no
+    GROUP BY s.student_name
+    ORDER BY s.student_no
+</select>
+
+<select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentTransferDTO">
+    
+    SELECT 
+    s.student_id AS studentId,
+        sth.TRANSFER_NO as historyNo,
+        sth.MOVE_AT as moveAt,
+        s.STUDENT_NAME as studentName,
+        c.CLASS_NAME as className,
+        u1.USERNAME as fromTeacher,
+        u2.USERNAME as toTeacher,
+        sth.TRANSFER_REASON as transferReason,
+        sth.CREATED_AT as createdAt
+
+    FROM STUDENT_TRANSFER_HISTORY sth
+    JOIN class_code c 
+    ON sth.class_no = c.class_no
+    JOIN user_tb u1
+    ON sth.from_user_no = u1.user_no
+    JOIN user_tb u2
+    ON sth.to_user_no = u2.user_no
+    JOIN student_tb s
+    ON sth.student_no = s.student_no
+    JOIN grade_code g
+    ON s.grade_no = g.grade_no 
+
+        <where>
+            <if test="studentId != 0">
+                s.student_no = #{studentId}
+            </if>
+        </where>
+    </select>
+    
 </mapper>

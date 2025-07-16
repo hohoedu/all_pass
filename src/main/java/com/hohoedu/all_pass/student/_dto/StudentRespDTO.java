@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.student._dto;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import lombok.Data;
 
@@ -27,7 +28,14 @@ public class StudentRespDTO {
         private String hanClass;
         private String bookClass;
         private Timestamp createdAt;
+        private String isSibling;
+        private List<SiblingInfoDTO> siblingList;
 
+        @Data
+        public static class SiblingInfoDTO {
+            private String siblingName;
+            private String grade;
+        }
     }
 
     @Data
@@ -51,6 +59,33 @@ public class StudentRespDTO {
         private String bookClass;
         private Timestamp createdAt;
         private String parentTel;
+
+    }
+
+    @Data
+    public static class StudentInOutDTO {
+        private Integer studentNo;
+        private String studentId;
+        private String studentName;
+        private String hanClass;
+        private String bookClass;
+        private String grade;
+        private String moveAt;
+        private String transferReson;
+        private Timestamp createdAt;
+        private String hanTeacher;
+        private String bookTeacher;
+    }
+
+    @Data
+    public static class StudentTransferDTO {
+        private Integer historyNo;
+        private String moveAt;
+        private String studentName;
+        private String className;
+        private String fromTeacher;
+        private String toTeacher;
+        private String transferReason;
     }
 
 }

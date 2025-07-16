@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass.student._dto;
 
+import java.util.List;
+
 import lombok.Data;
 
 public class StudentReqDTO {
@@ -37,10 +39,32 @@ public class StudentReqDTO {
     }
 
     @Data
-    public static class StatusHistoryDTO{
+    public static class StatusHistoryDTO {
         private Integer historyNo;
         private String statusNo;
         private String studentNo;
         private String reason;
+    }
+
+    @Data
+    public static class StudentUpdateDTO {
+        private String studentName;
+        private String statusNo;
+        private String birth;
+        private String gender;
+        private String school;
+        private String address;
+        private String addressDetail;
+        private String grade;
+    }
+
+    @Data
+    public static class StudentTransferDTO {
+        private String inoutHan;
+        private String inoutRead;
+        private List<String> studentNo;
+        private String teacherNo;
+        private String moveAt;
+        private String transferReason;
     }
 }

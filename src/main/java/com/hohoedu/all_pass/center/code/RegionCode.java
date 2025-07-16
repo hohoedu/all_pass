@@ -23,11 +23,14 @@ public class RegionCode {
 
     @Column(nullable = false, length = 10)
     private String region;
+    @Column(nullable = false, length = 10)
+    private String code;
 
     @Builder
-    public RegionCode(Integer regionNo, String region) {
+    public RegionCode(Integer regionNo, String region, String code) {
         this.regionNo = regionNo;
         this.region = region;
+        this.code = code;
     }
 
 }

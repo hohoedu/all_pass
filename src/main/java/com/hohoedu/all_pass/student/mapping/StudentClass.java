@@ -1,6 +1,6 @@
 package com.hohoedu.all_pass.student.mapping;
 
-import com.hohoedu.all_pass.infrastructure.code.ClassCode;
+import com.hohoedu.all_pass.class_instance.model.ClassInstance;
 import com.hohoedu.all_pass.student.model.Student;
 
 import jakarta.persistence.Entity;
@@ -26,19 +26,19 @@ public class StudentClass {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer studentClassNo;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_no")
     private Student student;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "class_code_no")
-    private ClassCode classCode;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_instance_no")
+    private ClassInstance classInstance;
 
     @Builder
-    public StudentClass(Integer studentClassNo, Student student, ClassCode classCode) {
+    public StudentClass(Integer studentClassNo, Student student, ClassInstance classInstance) {
         this.studentClassNo = studentClassNo;
         this.student = student;
-        this.classCode = classCode;
+        this.classInstance = classInstance;
     }
 
 }

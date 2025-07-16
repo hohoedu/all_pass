@@ -116,3 +116,38 @@ document.addEventListener("DOMContentLoaded", function () {
     sidebarRight.classList.add("collapsed"); // 기억된 메뉴 없으면 기본은 닫힌 상태
   }
 })
+
+//================시간표 등록================//
+document.addEventListener('DOMContentLoaded', function () {
+  const link = document.getElementById('timetableLink');
+  if (!link) return;
+
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+
+    const url = `/class/timetable?year=${year}&month=${month}`;
+    window.location.href = url;
+  });
+});
+
+// //================시간표 조회================//
+document.addEventListener('DOMContentLoaded', function () {
+  const link = document.getElementById('tableViewLink');
+  if (!link) return;
+
+  link.addEventListener('click', function (e) {
+
+    e.preventDefault();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const user = 2;
+
+    const url = `/class/timeview?year=${year}&month=${month}&user=${user}`;
+    window.location.href = url;
+  });
+});

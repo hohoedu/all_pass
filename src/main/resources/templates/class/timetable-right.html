@@ -1,0 +1,106 @@
+<section class="student-pick-right" th:fragment="studentPickRight">
+    <div class="table-frame" style="border-top: none;">
+        <input type="hidden" id="timetableNo" th:value="${timetableNo}" />
+        <!-- 요일 버튼 -->
+        <div class="time-tab-menu">
+            <button class="time-tab-btn" th:each="day, dtStat : ${days}"
+                th:classappend="${dtStat.index == 0} ? ' active'" th:attr="data-tab=${day.id}"
+                th:text="${day.label}"></button>
+        </div>
+        <!-- 테이블 영역 -->
+        <div class="table-frame time-table-frame bt">
+            <div class="time-tab-content" th:each="day, dtStat : ${days}" th:id="${day.id}"
+                th:classappend="${dtStat.index == 0} ? ' active'">
+
+                <table class="basic-table time-table stripe">
+                    <colgroup>
+                        <col width="10%" />
+                        <col width="10%" />
+                        <col width="15%" />
+                        <col width="20%" />
+                        <col width="40%" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>교시</th>
+                            <th>시간</th>
+                            <th>과목</th>
+                            <th>학생</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeTableBody" class="time-table-body" th:with="dayMap=${tableMap.get(day.id)}">
+                        <tr class="time-row" th:each="i : ${#numbers.sequence(1,6)}"
+                            th:with="entry=${dayMap != null} ? ${dayMap[i + '']} : ${null}"
+                            th:attr="data-timetable-no=${entry != null} ? ${entry.timeTableNo} : ''">
+                            <td class="radio-group round">
+                                <input type="radio" th:attr="name=${'selectedPeriod_' + day.id}"
+                                    th:checked="${i == 1}" />
+                            </td>
+                            <td th:text="${i}">1</td>
+                            <td>
+                                <div class="time-boxes">
+                                    <div class="time-start">
+                                        시작
+                                        <input type="text" class="time_input"
+                                            th:value="${entry != null} ? ${entry.startTime} : ''" placeholder="00:00"
+                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$" inputmode="numeric" maxlength="5"
+                                            title="시간은 24시간 기준으로 입력하세요" />
+                                    </div>
+                                    <div class="time-end">
+                                        종료
+                                        <input type="text" class="time_input"
+                                            th:value="${entry != null} ? ${entry.endTime} : ''" placeholder="00:00"
+                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$" inputmode="numeric" maxlength="5"
+                                            title="시간은 24시간 기준으로 입력하세요" />
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="basic-select square size-160">
+                                    <select name="classNo">
+                                        <option value="">선택 안함</option>
+                                        <option th:each="cc : ${classCodes}" th:value="${cc.classNo}"
+                                            th:text="${cc.className}"
+                                            th:selected="${entry != null and cc.classNo == entry.classNo}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mini-select size-160">
+                                    <div class="basic-select square">
+                                        <select name="unitNo">
+                                            <option value="">선택 안함</option>
+                                            <option th:each="unit : ${unitCodes}" th:value="${unit.unitNo}"
+                                                th:text="${unit.unitCode}"
+                                                th:selected="${entry != null and unit.unitNo == entry.unitNo}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="basic-select square">
+                                        <select name="gradeNo">
+                                            <option value="">선택 안함</option>
+                                            <option th:each="grade : ${grades}" th:value="${grade.gradeNo}"
+                                                th:text="${grade.grade}"
+                                                th:selected="${entry != null and grade.gradeNo == entry.gradeNo}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <th:block th:if="${entry != null}">
+                                    <div th:each="stu : ${entry.students}" class="student-badge"
+                                        th:attr="data-name=${stu.studentName}">
+                                        <span class="badge-name" th:text="${stu.studentName}"></span>
+                                        <span id="assign_delete" class="badge-close"
+                                            th:attr="data-assign-no=${stu.timeTableAssignNo}" title="삭제"></span>
+                                    </div>
+                                </th:block>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

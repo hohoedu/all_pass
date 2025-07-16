@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
+
+    <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTable" useGeneratedKeys="true"
+            keyProperty="timeTableNo" keyColumn="time_table_no">
+        INSERT INTO time_table
+        (yy, mm, dayname, period_no, start_time, end_time, class_no, unit_no, grade_no, user_no, created_at)
+        values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime},  #{endTime}, #{classNo}, #{unitNo}, #{gradeNo}, #{userNo}, CURRENT_TIMESTAMP);
+    </insert>
+
+    <update id="updateClass" parameterType="map">
+        UPDATE time_table
+        SET
+            yy         = #{dto.yy},
+            mm         = #{dto.mm},
+            dayname    = #{dto.dayname},
+            period_no  = #{dto.periodNo},
+            start_time = #{dto.startTime},
+            end_time   = #{dto.endTime},
+            class_no   = #{dto.classNo},
+            unit_no    = #{dto.unitNo},
+            grade_no   = #{dto.gradeNo},
+            user_no    = #{dto.userNo},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE
+            time_table_no = #{timeTableNo}
+    </update>
+
+    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.mapping.TimeTableAssign" useGeneratedKeys="true"
+            keyProperty="timeTableAssignNo" keyColumn="time_table_assign_no">
+        INSERT INTO time_table_assign
+        (student_no, time_table_no, week)
+        values (#{studentNo}, #{timeTableNo}, #{weekNo});
+    </insert>
+
+    <select id="countByTimeTableNo" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM time_table_assign 
+        WHERE time_table_no = #{timeTableNo}
+    </select>
+
+    <delete id="deleteByAssignNo" parameterType="int">
+        DELETE FROM time_table_assign
+        WHERE time_table_assign_no = #{timeTableAssignNo}
+    </delete>
+
+    
+
+
+    <!-- <select id="findTimeTableByUserId" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
+    SELECT 
+        tt.time_table_no as timeTableNo,
+        tt.period_no as periodNo,
+        tt.start_time as startTime,
+        tt.end_time as endTime,
+        tt.yy as yy,
+        tt.mm as mm,
+        tt.dayname as dayname,
+        cc.class_no as classNo,
+        cc.class_name as subject,
+        uc.unit_no as unitNo,
+        uc.unit_code as unitCode,
+        g.grade_no as gradeNo,
+        g.grade as gradeCode
+    FROM TIME_TABLE tt
+    JOIN grade_code g
+    ON tt.grade_no = g.grade_no
+    JOIN class_code cc
+    ON tt.class_no = cc.class_no
+    JOIN unit_code uc
+    ON tt.unit_no = uc.unit_no
+    JOIN user_tb u
+    ON tt.user_no = u.user_no
+    WHERE tt.yy = #{year} and tt.mm = #{month} and u.user_no = #{userNo}
+    </select> -->
+
+    <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
+        SELECT
+            time_table_no   AS timeTableNo,
+            period_no       AS periodNo,
+            start_time      AS startTime,
+            end_time        AS endTime,
+            yy              AS yy,
+            mm              AS mm,
+            dayname         AS dayname,
+            tt.class_no     AS classNo,
+            tt.unit_no         AS unitNo,
+            grade_no        AS gradeNo,
+            cc.class_type   AS classType,
+            cc.class_name   AS className,
+            uc.unit_code    AS unitCode
+        FROM time_table tt
+        JOIN class_code cc
+        ON tt.class_no = cc.class_no
+        JOIN unit_code uc
+        ON tt.unit_no = uc.unit_no
+
+        WHERE yy = #{year} AND mm = #{month} AND user_no = #{userNo}
+        ORDER BY dayname, period_no
+    </select>
+
+    <select id="findStudentsByTimeTableNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO$StudentDTO">
+        SELECT
+            st.student_no               AS studentNo,
+            st.student_name             AS studentName,
+            tta.time_table_assign_no    AS time_table_assign_no
+        FROM time_table_assign tta
+        JOIN student_tb st
+        ON tta.student_no = st.student_no
+        WHERE tta.time_table_no = #{timeTableNo}
+        ORDER BY st.student_name
+    </select>
+
+    <!-- <select id="findTimeTableWithStudents" resultMap="TimeTableWithStudents">
+        SELECT
+            tt.time_table_no,
+            tt.period_no,
+            tt.start_time,
+            tt.end_time,
+            tt.yy,
+            tt.mm,
+            tt.dayname,
+            tt.class_no,
+            tt.unit_no,
+            tt.grade_no,
+            st.student_no,
+            st.student_name
+        FROM time_table tt
+        LEFT JOIN time_table_assign tta
+        ON tt.time_table_no = tta.time_table_no
+        LEFT JOIN student_tb st
+        ON tta.student_no = st.student_no
+        ORDER BY tt.dayname, tt.period_no, st.student_name
+    </select> -->
+
+    <select id="existsByYearAndMonthAndPeriodNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
+    SELECT 
+        tt.time_table_no as timeTableNo,
+        tt.period_no as periodNo,
+        tt.start_time as startTime,
+        tt.end_time as endTime,
+        tt.yy as yy,
+        tt.mm as mm,
+        tt.dayname as dayname,
+        cc.class_no as classNo,
+        cc.class_name as subject,
+        uc.unit_no as unitNo,
+        uc.unit_code as unitCode,
+        g.grade_no as gradeNo,
+        g.grade as gradeCode
+    FROM TIME_TABLE tt
+    JOIN grade_code g
+    ON tt.grade_no = g.grade_no
+    JOIN class_code cc
+    ON tt.class_no = cc.class_no
+    JOIN unit_code uc
+    ON tt.unit_no = uc.unit_no
+    JOIN user_tb u
+    ON tt.user_no = u.user_no
+    WHERE tt.yy = #{year} and tt.mm = #{month} and tt.period_no = #{periodNo} and tt.dayname = #{dayname}
+    </select>
+    
+</mapper>

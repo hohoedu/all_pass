@@ -23,23 +23,24 @@
   .quick-nav a {
     font-size: 16px;
   }
-  .form-row {
-    gap: 15px;
-  }
   ::placeholder,
   textarea::placeholder {
     font-size: 11px;
   }
   .title {
-    font-size: 16px;
+    font-size: 18px;
   }
   #sidebar-load {
   }
+  .radio-group {
+    gap: 1px;
+  }
   .radio-group input[type="radio"], 
   .checkbox-group input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    font-size: 14px;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    margin-right: 0;
   }
   label {
     font-size: 14px;
@@ -50,92 +51,174 @@
     font-size: 14px;
   }
   .radio-group input[type="radio"]:checked::after,
-.checkbox-group input[type="checkbox"]:checked::after {
-  font-size: 10px;
-}
+  .checkbox-group input[type="checkbox"]:checked::after {
+    font-size: 12px;
+  }
+  select, input, textarea, table thead th {
+    font-size: 14px;
+  }
+  #tab3 select, #tab3 select option, .consult-record select, .consult-record select option {
+    font-size: 14px;
+  }
+  .month-title2, .month-title {
+    font-size: 20px;
+  }
   /* ======================= student-main page ======================= */
-  .info-summary {
-    flex: 5;
+  .subtitle {
+    font-size: 18px;
   }
-  .info-desc {
-    flex: 6;
+  .all-amounts,
+  .pax  {
+    font-size: 40px;
   }
-  /* .student-frame > section {
-    padding: 30px;
-  } */
-  .info-tab-btn {
-    max-width: 100%;
+  .unpaid.percent {
+    width: 100px;
+    font-size: 13px;
   }
-  .info-tab-btn a {
-    padding: 8px;
+  .status-box {
     font-size: 15px;
   }
-  .tab {
+  .info-summary {
     width: 100%;
   }
-  .form-row label {
-    width: 60px;
-    font-size: 15px;
-  }
-  .dash {
-    padding: 4px;
-  }
-  .student-form .phone-group input {
-    padding: 4px;
-  }
-  #tab2 .save-btn {
-    margin-bottom: 10px;
-  }
   .stu-m-con {
-    width: 80%;
-  }
-  .modal-scroll {
-    display: flex;
-    justify-content: center;
+    width: 1200px;
   }
   .all-info {
     width: 100%;
   }
-  .card-left {
-    width: 40%;
+  /* ======================= student-out page ======================= */
+  .chart-box {
+    max-width: 700px;
   }
-  .student-card {
+  /* ======================= class-titetable page ======================= */
+  .stu-chocie-frame {
     width: 100%;
   }
-  .card-right {
-    width: 60%;
-    margin-right: 10px;
+  .svg-sort {
+    width: 15px;
   }
-  .calendar-container {
-    width: 100%;
+  .student-pick-right {
+    margin-left: 0;
   }
-  .modal-inner {
-    padding: 0 30px 0 0;
+  .tab-radio label {
+    padding: 5px 3px;
+    font-size: 13px;
   }
-  
+  .time-regist-frame {
+    padding: 0;
+  }
+  .size-160 {
+    width: 130px;
+  }
+  .student-badge {
+    margin: 0px 1px;
+    width: 80px;
+    height: 29px;
+  }
+  .time-start, .time-end {
+    width: 90px;
+  }
+  .time-table th:first-child, .time-table td:first-child {
+    width: 5%;
+  }
+  .time-table th:nth-child(2), .time-table td:nth-child(2) {
+    width: 5%;
+  }
+
   /* ======================= student-inout page ======================= */
-  .info-arrange {
+  .save-btn {
+    padding: 10px 40px;
+    line-height: 1.2rem;
+    font-size: 16px;
   }
-  .move-summary {
-    flex: 4;
-  }
-  .mover-desc {
-    flex: 5;
-  }
-  .move-reason-frame, .move-list-frame {
+  .main-info {
     width: 100%;
-  }.content-table th {
-    padding: 0px;
   }
-  
   /* ======================= student-out page ======================= */
   .student-num-frame {
     gap: 10px;
+  }
+  .payment-area {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
   
   /* ======================= class-titmetable page ======================= */
   .time-frame {
     width: 100%;
+  }
+  .time-tab-btn {
+    padding: 6px 0;
+  }
+  .timeview {
+    width: 100%;
+  }
+  .timeview > .second-frame {
+    gap: 30px;
+  }
+  .member {
+    padding: 0 0 0 30px;
+  }
+  .time-table-index {
+    flex: 3;
+  }
+
+
+
+  /* ======================= bf-class page ======================= */
+  .bf-main .second-frame {
+  gap: 15px;
+  }
+  .bf-main {
+    width: 100%;
+  }
+  .stbox {
+    max-width: 70px;
+    font-size: 13px;
+    height: 27px;
+  }
+  .cal-adjust {
+    width: 155px;
+    font-size: 12px;
+    margin-bottom: 0px;
+    height: 30px;
+  }
+  .icon-btn  {
+    margin-left: 0px;
+  }
+  .lesson-log-table th:nth-child(4) {
+    width: 15%;
+  }
+  .lesson-log-table th:nth-child(5) {
+    width: 25%;
+  }
+  .lesson-log-table th:nth-child(7) {
+    width: 40%;
+  }
+  .lesson-log-table th:nth-child(8) {
+    width: 40%;
+  }
+  .counsel-box {
+    margin: 10px 5px;
+  }
+  .counsel-type button {
+    flex-grow: 1;
+    padding: 2px 4px;
+    font-size: 14px;
+  }
+  .counsel-box {
+    width: 215px;
+  }
+  .after-comment {
+    width: 240px;
+  }
+  .class-log-left {
+    max-width: 150px;
+  }
+  .week-btn {
+    font-size: 14px;
   }
   /* ======================= time-view page ======================= */
   .timeview-frame {
@@ -159,6 +242,88 @@
     line-height: 2rem;
   }
   
+  /* ======================= supplement page ======================= */
+  .sup-frame .icon-field {
+    width: 130px;
+  }
+  .last-modify {
+    font-size: 12px;
+    margin-top: -8px;
+  }
+  .supplement {
+    width: 100%;
+  }
+  .supplement .second-frame {
+    gap: 15px;
+  }
+  .sup-frame .basic-table td {
+    height: 75px;
+  }
+  /* ======================= monthly-test page ======================= */
+  .test-table td:nth-child(1),
+  .test-table th:nth-child(1) {
+    width: 5px;
+  }
+  .test-table td:nth-child(2),
+  .test-table th:nth-child(2) {
+    width: 5%;
+  }
+  .test-table td:nth-child(3),
+  .test-table th:nth-child(3) {
+    width: 5%;
+  }
+  .test-table td:nth-child(4),
+  .test-table th:nth-child(4) {
+  }
+  .test-table td:nth-child(5),
+  .test-table th:nth-child(5) {}
+  .test-table td:nth-child(6),
+  .test-table th:nth-child(6) {}
+  .test-table td:nth-child(7),
+  .test-table th:nth-child(7) {
+    width: 5%;
+  }
+  .test-table td:nth-child(8),
+  .test-table th:nth-child(8) {
+    width: 5%;
+  }
+  .btn-number  {
+    width: 40px;
+    height: 28px;
+  }
+  .number-grid,
+  .action-buttons {
+    gap: 4px;
+  }
+  .btn-reset, .btn-result {
+    width: 85px;
+    height: 28px;
+  }
+  .after-comment {
+    width: 205px;
+    height: 140px;
+  }
+  .counsel-box, .after-comment, .memo-etc {
+    padding: 5px;
+  }
+  /* <!-- section: 월간평가 modal --> */
+  .mf .pre-divide {
+    margin-top: 40px;
+  }
+  .overall-top {
+    margin-bottom: 40px;
+  }
+  .pre-table th, .pre-table td {
+    height: 50px;
+  }
+  .overall-top p, .overall-bottom p {
+    width: 100%;
+  }
+  .overall-top, .overall-bottom {
+    height: 240px;
+  }
+
+
   /* ======================= afclass page ======================= */
   .class-log-section {
     flex: 4;
