@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.consult.repository.ConsultRepository">
+
+    <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO" useGeneratedKeys="true"
+            keyProperty="consultNo" keyColumn="consult_no">
+    
+     INSERT INTO consult (student_name, consult_date, school, grade_no, phone, inflow_route_no, content, created_at)
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeNo}, #{phone}, #{inflowRouteNo}, #{content}, CURRENT_TIMESTAMP);
+    </insert>
+
+    <select id="findAll" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
+        SELECT 
+            c.consult_no AS consultNo,
+            c.student_name AS studentName,
+            c.consult_date AS consultDate,
+            c.school AS school,
+            c.phone AS phone,
+            c.content AS content,
+            g.grade AS grade,
+            i.inflow_route AS inflowRoute
+        FROM CONSULT c
+        JOIN grade_code g
+        ON c.grade_no = g.grade_no
+        JOIN inflow_route i
+        ON c.inflow_route_no = i.inflow_route_no
+    </select>
+
+</mapper>

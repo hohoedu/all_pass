@@ -4,13 +4,14 @@
 
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
+
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTable" useGeneratedKeys="true"
             keyProperty="timeTableNo" keyColumn="time_table_no">
         INSERT INTO time_table
-        (yy, mm, dayname, period_no, start_time, end_time, class_no, unit_no, grade_no, user_no, created_at)
-        values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime},  #{endTime}, #{classNo}, #{unitNo}, #{gradeNo}, #{userNo}, CURRENT_TIMESTAMP);
+        (yy, mm, dayname, period_no, start_time, end_time, class_no, unit_no, grade_no, user_no, created_at, time_table_code)
+        values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime},  #{endTime}, #{classNo}, #{unitNo}, #{gradeNo}, #{userNo}, CURRENT_TIMESTAMP, #{timeTableCode});
     </insert>
-
+ 
     <update id="updateClass" parameterType="map">
         UPDATE time_table
         SET
@@ -29,17 +30,23 @@
             time_table_no = #{timeTableNo}
     </update>
 
-    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.mapping.TimeTableAssign" useGeneratedKeys="true"
+    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" useGeneratedKeys="true"
             keyProperty="timeTableAssignNo" keyColumn="time_table_assign_no">
         INSERT INTO time_table_assign
-        (student_no, time_table_no, week)
-        values (#{studentNo}, #{timeTableNo}, #{weekNo});
+        (student_no, time_table_code, week)
+        values (#{studentNo}, #{timeTableCode}, #{weekNo});
     </insert>
 
-    <select id="countByTimeTableNo" parameterType="int" resultType="int">
-        SELECT COUNT(*) 
-        FROM time_table_assign 
-        WHERE time_table_no = #{timeTableNo}
+    <insert id="insertMonthlyScore" useGeneratedKeys="true" keyProperty="dto.monthlyScoreNo" keyColumn="monthly_score_no">
+        INSERT INTO erp_monthly_score
+        (question1, question2, question3, question4, question5, question6, question7, question8, student_id, yy, mm, time_table_key, created_at)
+        VALUES (0, 0, 0, 0, 0, 0, 0, 0, #{dto.studentId}, #{yy}, #{mm}, #{dto.timeTableKey}, CURRENT_TIMESTAMP);
+    </insert>
+
+    <select id="countByTimeTableKey" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_time_table_assign
+        WHERE time_table_key = #{timeTableKey}
     </select>
 
     <delete id="deleteByAssignNo" parameterType="int">
@@ -47,39 +54,10 @@
         WHERE time_table_assign_no = #{timeTableAssignNo}
     </delete>
 
-    
-
-
-    <!-- <select id="findTimeTableByUserId" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
-    SELECT 
-        tt.time_table_no as timeTableNo,
-        tt.period_no as periodNo,
-        tt.start_time as startTime,
-        tt.end_time as endTime,
-        tt.yy as yy,
-        tt.mm as mm,
-        tt.dayname as dayname,
-        cc.class_no as classNo,
-        cc.class_name as subject,
-        uc.unit_no as unitNo,
-        uc.unit_code as unitCode,
-        g.grade_no as gradeNo,
-        g.grade as gradeCode
-    FROM TIME_TABLE tt
-    JOIN grade_code g
-    ON tt.grade_no = g.grade_no
-    JOIN class_code cc
-    ON tt.class_no = cc.class_no
-    JOIN unit_code uc
-    ON tt.unit_no = uc.unit_no
-    JOIN user_tb u
-    ON tt.user_no = u.user_no
-    WHERE tt.yy = #{year} and tt.mm = #{month} and u.user_no = #{userNo}
-    </select> -->
-
     <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
         SELECT
             time_table_no   AS timeTableNo,
+            time_table_code AS timeTableCode,
             period_no       AS periodNo,
             start_time      AS startTime,
             end_time        AS endTime,
@@ -87,7 +65,7 @@
             mm              AS mm,
             dayname         AS dayname,
             tt.class_no     AS classNo,
-            tt.unit_no         AS unitNo,
+            tt.unit_no      AS unitNo,
             grade_no        AS gradeNo,
             cc.class_type   AS classType,
             cc.class_name   AS className,
@@ -102,65 +80,221 @@
         ORDER BY dayname, period_no
     </select>
 
-    <select id="findStudentsByTimeTableNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO$StudentDTO">
+    <insert id="createTimeTableCode" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableCode" useGeneratedKeys="true"
+            keyProperty="timeTableCodeNo" keyColumn="time_table_code_no">
+        INSERT INTO time_table_code
+        (time_table_code, time_table_label, time_table_ym)
+        values (#{timeTableCode}, #{timeTableLabel}, #{timeTableYm}); 
+    </insert>
+
+    <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableLabelDTO">
+        SELECT
+        tc.time_table_key as timeTableKey,
+        tc.time_table_label as classLabel
+        FROM ERP_TIME_TABLE t
+        JOIN ERP_TIME_TABLE_CODE tc
+        ON t.time_table_key = tc.time_table_key
+        WHERE YY = #{yy}
+        AND MM = #{mm}
+        <if test="userCode != null and userCode != 'all'">
+            AND t.user_code = #{userCode}
+        </if>
+        ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
+    </select>
+
+    <select id="findStudentsByTimeTableCode" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT
             st.student_no               AS studentNo,
             st.student_name             AS studentName,
-            tta.time_table_assign_no    AS time_table_assign_no
+            tta.time_table_assign_no    AS time_table_assign_no,
+            tta.week                    AS week
         FROM time_table_assign tta
         JOIN student_tb st
         ON tta.student_no = st.student_no
-        WHERE tta.time_table_no = #{timeTableNo}
+        WHERE tta.time_table_code = #{timeTableCode}
         ORDER BY st.student_name
     </select>
 
-    <!-- <select id="findTimeTableWithStudents" resultMap="TimeTableWithStudents">
-        SELECT
-            tt.time_table_no,
-            tt.period_no,
-            tt.start_time,
-            tt.end_time,
-            tt.yy,
-            tt.mm,
-            tt.dayname,
-            tt.class_no,
-            tt.unit_no,
-            tt.grade_no,
-            st.student_no,
-            st.student_name
-        FROM time_table tt
-        LEFT JOIN time_table_assign tta
-        ON tt.time_table_no = tta.time_table_no
-        LEFT JOIN student_tb st
-        ON tta.student_no = st.student_no
-        ORDER BY tt.dayname, tt.period_no, st.student_name
-    </select> -->
-
     <select id="existsByYearAndMonthAndPeriodNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
-    SELECT 
-        tt.time_table_no as timeTableNo,
-        tt.period_no as periodNo,
-        tt.start_time as startTime,
-        tt.end_time as endTime,
-        tt.yy as yy,
-        tt.mm as mm,
-        tt.dayname as dayname,
-        cc.class_no as classNo,
-        cc.class_name as subject,
-        uc.unit_no as unitNo,
-        uc.unit_code as unitCode,
-        g.grade_no as gradeNo,
-        g.grade as gradeCode
-    FROM TIME_TABLE tt
-    JOIN grade_code g
-    ON tt.grade_no = g.grade_no
-    JOIN class_code cc
-    ON tt.class_no = cc.class_no
-    JOIN unit_code uc
-    ON tt.unit_no = uc.unit_no
-    JOIN user_tb u
-    ON tt.user_no = u.user_no
-    WHERE tt.yy = #{year} and tt.mm = #{month} and tt.period_no = #{periodNo} and tt.dayname = #{dayname}
+        SELECT tt.time_table_no  as timeTableNo,
+               tt.time_table_key as timeTableKey,
+               tt.period_no      as periodNo,
+               tt.start_time     as startTime,
+               tt.end_time       as endTime,
+               tt.yy             as yy,
+               tt.mm             as mm,
+               tt.dayname        as dayname,
+               cc.class_name     as subject,
+               uc.unit_name      as unitName,
+               g.grade_name      as gradeName
+        FROM ERP_TIME_TABLE tt
+                 JOIN erp_grade_code g ON tt.grade_key = g.grade_key
+                 JOIN erp_class_code cc ON tt.class_key = cc.class_key
+                 JOIN erp_unit_code uc ON tt.unit_key = uc.unit_key
+                 JOIN erp_user u ON tt.user_code = u.user_code
+        WHERE tt.yy = #{year}
+          and tt.mm = #{month}
+          and tt.period_no = #{periodNo}
+          and tt.dayname = #{dayname}
+    </select>
+
+    <select id="findUserByCenterCode" resultType="com.hohoedu.all_pass.user.User">
+        SELECT *
+        FROM erp_user
+        WHERE center_code = #{centerCode}
+    </select>
+
+    <!-- 날짜별 수업 조회 -->
+    <select id="findTimeTableByDate" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$InitRecordDTO">
+        SELECT t.time_table_key    as timeTableKey,
+               tc.time_table_label as classLabel
+        FROM erp_time_table t
+                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+        WHERE yy = #{yy}
+          AND mm = #{mm}
+          AND dayName = #{dayName}
+          AND user_code = #{userCode}
+        ORDER BY t.period_no ASC
+    </select>
+
+    <select id="findTimeTableByClassCode" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RecordStudentDTO">
+        SELECT
+            sa.student_id as studentId,
+            s.student_name as studentName,
+            sa.in_time as inTime,
+            sa.out_time as outTime,
+            ac.attendance_name as attendanceName,
+            r.remedial_date as remedialDate,
+            tc.time_table_ym as ym
+        FROM ERP_TIME_TABLE t
+                 JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
+                 JOIN ERP_TIME_TABLE_ASSIGN ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_student_attendance sa ON sa.student_id = ta.student_id
+                 JOIN erp_student s ON s.student_id = sa.student_id
+                 JOIN erp_attendance_code ac ON sa.attendance_key = ac.attendance_key
+                 LEFT JOIN erp_remedial r ON s.student_id = r.student_id
+        WHERE t.time_table_key = #{classCode}
+          AND sa.attendance_date = #{date}
+    </select>
+
+
+    <!-- 선생님별 보강 조회 -->
+    <select id="findRemedialByUserNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RemedialDTO">
+        SELECT *
+        FROM remedial r
+        JOIN student_tb s
+        ON r.student_no = s.student_no
+        JOIN user_tb u
+        ON r.user_no = u.user_no
+        WHERE r.user_no = '2' 
+          AND substring(r.absence_date, 1, 4)  = #{year}
+          AND substring(r.absence_date, 6, 2)  = #{month}
+    </select>
+
+    <!-- 보강 여부 수정 -->
+    <update id="updateRemedialAction">
+        UPDATE remedial
+        SET action = #{action}, updated_at = CURRENT_TIMESTAMP
+        WHERE remedial_no = #{remedialNo}
+    </update>
+
+    <!-- 보강 일자 수정 -->
+    <update id="updateRemedialDate">
+        UPDATE remedial
+        SET remedial_date = #{remedialDate}, updated_at = CURRENT_TIMESTAMP
+        WHERE remedial_no = #{remedialNo}
+    </update>
+
+    <!-- 출석 여부 확인 -->
+    <select id="countByStudentAndDate" resultType="int">
+        SELECT COUNT(*)
+        FROM student_attendance
+        WHERE student_no = #{studentNo}
+          AND attendance_date = #{attendanceDate}
     </select>
     
-</mapper>
+    <!-- 등원 insert -->
+    <insert id="insertStudentAttendance"
+            parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
+            useGeneratedKeys="true" keyProperty="studentAttendanceNo" keyColumn="student_attendance_no">
+        INSERT INTO student_attendance
+        (in_time, student_no, attendance_date, created_at, attendance_no, center_no)
+        VALUES (#{inTime}, #{student.studentNo}, #{attendanceDate}, CURRENT_TIMESTAMP, #{attendanceCode.attendanceCodeNo}, #{center.centerNo})
+    </insert>
+
+    <!--하원 update -->
+    <update id="updateStudentAttendance">
+        UPDATE student_attendance
+        SET out_time = #{outTime}, updated_at = CURRENT_TIMESTAMP
+        WHERE student_no = #{studentNo}
+          AND attendance_date = #{attendanceDate}
+          AND out_time IS NULL
+    </update>
+    
+    <!--  -->
+    <select id="findByStudentAndDate" resultType="com.hohoedu.all_pass.class_instance.model.StudentAttendance">
+        SELECT
+            student_attendance_no,
+            in_time,
+            out_time,
+            attendance_date,
+            student_no,
+            attendance_no
+        FROM student_attendance
+        WHERE student_no = #{studentNo}
+          AND attendance_date = #{attendanceDate}
+    </select>
+
+    <!-- 클래스 코드별 학생 및 본문 조회 -->
+    <resultMap id="MonthlyStudentMap" type="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$MonthlyStudentDTO">
+        <id property="studentId" column="student_id"/>
+        <result property="studentName" column="student_name"/>
+        <result property="timeTableKey" column="time_table_key"/>
+        <collection property="scores" ofType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
+            <result property="question1" column="question1"/>
+            <result property="question2" column="question2"/>
+            <result property="question3" column="question3"/>
+            <result property="question4" column="question4"/>
+            <result property="question5" column="question5"/>
+            <result property="question6" column="question6"/>
+            <result property="question7" column="question7"/>
+            <result property="question8" column="question8"/>
+        </collection>
+    </resultMap>
+    <select id="findStudentByClassCode" resultMap="MonthlyStudentMap">
+        SELECT s.student_id,
+               s.student_name,
+               t.time_table_key,
+               m.question1,
+               m.question2,
+               m.question3,
+               m.question4,
+               m.question5,
+               m.question6,
+               m.question7,
+               m.question8
+        FROM erp_student s
+                 JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                 JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
+                 LEFT JOIN erp_monthly_score m ON m.time_table_key = t.time_table_key AND m.student_id = ta.student_id
+        WHERE t.time_table_key = #{classCode}
+    </select>
+
+    <update id="updateMonthlyScore">
+        UPDATE erp_monthly_score
+        SET question1 = #{score.question1},
+            question2 = #{score.question2},
+            question3 = #{score.question3},
+            question4 = #{score.question4},
+            question5 = #{score.question5},
+            question6 = #{score.question6},
+            question7 = #{score.question7},
+            question8 = #{score.question8},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{classCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </update>
+
+</mapper> 

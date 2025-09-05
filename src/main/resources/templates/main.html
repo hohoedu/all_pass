@@ -19,38 +19,40 @@
     .main-frame,
     .sidebar-load,
     .main-info,
-    .time-regist-frame {
+    .student-frame,
+    .student-frame>section {
       background: #f7f7f7;
     }
   </style>
 </head>
 
 <body>
-
   <div class="main-container">
     <div class="main-frame">
       <!-- left nav bar -->
-      <div class="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
       <main class="main-info">
-        <div class="time-regist-frame">
+        <div class="student-frame">
           <!-- section:top -->
           <section class="class-info-section">
             <div class="class-desc">
-              <div class="class-header" style="margin-bottom: 20px;">
+              <div class="class-header">
                 <div class="main-sub">
                   <div class="common-title" style="margin-bottom:  0;">
                     <h2>6월 클래스 현황</h2>
                   </div>
                   <div class="basic-select">
                     <select name="student" id="student-select" style="width: 137px;">
-                      <option value="all">전체학생</option>
+                      <option value="all">전체</option>
                       <option value="s1">김호호</option>
                       <option value="s2">이호이</option>
                     </select>
                   </div>
                 </div>
                 <div class="class-btns">
-                  <div class="common-btn stas-btn">학생 현황 통계</div>
+                  <a class="common-btn stas-btn" th:href="@{/student/overview}">
+                    학생 현황 통계
+                  </a>
                 </div>
               </div>
             </div>
@@ -63,7 +65,8 @@
                   <a class="class-next" href="#"></a>
                 </div>
               </div>
-              <div class="table-frame class-table-frame" style="border-top: none;">
+              <div class="">
+                <!-- 고정 헤더 -->
                 <table class="class-status-table">
                   <thead>
                     <tr>
@@ -74,115 +77,122 @@
                       <th>바로가기</th>
                     </tr>
                   </thead>
-                  <tbody class="class-tbody">
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                  </tbody>
                 </table>
+                <!-- 스크롤 바디 -->
+                <div class="class-tbody-scroll table-frame">
+                  <table class="class-status-table class-tbody">
+                    <tbody>
+                      <!-- tr 목록 -->
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td><button class="class-action-btn">수업 관리</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
+
             </article>
             <article class="unpaid-card">
               <div class="unpaid-lists">
@@ -197,7 +207,7 @@
                     <div class="payment-chart">
                       <div class="unpaid-stats">
                         <div class="all-amounts">
-                          <span class="unpaid-amount">10</span>/<span class="all-amount">61</span>
+                          <span class="unpaid-amount">10</span><span class="all-amount">건</span>
                         </div>
                         <div class="unpaid percent">
                           미납률: <span> 6.1%</span>
@@ -247,7 +257,7 @@
                     <div class="payment-chart">
                       <div class="unpaid-stats">
                         <div class="all-amounts">
-                          <span class="unpaid-amount">10</span>/<span class="all-amount">61</span>
+                          <span class="unpaid-amount">10</span><span class="all-amount">건</span>
                         </div>
                         <div class="unpaid percent">
                           미납률: <span> 6.1%</span>
@@ -290,12 +300,13 @@
             </article>
             <article class="makeup-card">
               <div class="student-info">
-                <h2 class="subtitle">오늘 수업 목록</h2>
+                <h2 class="subtitle">오늘의 보강 목록</h2>
                 <div class="class-button">
                   <a class="class-next" href="#"></a>
                 </div>
               </div>
-              <div class="table-frame makeup-table-frame" style="border-top: none;">
+              <div class="">
+                <!-- 고정 헤더 -->
                 <table class="class-status-table">
                   <thead>
                     <tr>
@@ -306,115 +317,151 @@
                       <th>바로가기</th>
                     </tr>
                   </thead>
-                  <tbody class="class-tbody">
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>15:30</td>
-                      <td>초등천재</td>
-                      <td>3/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>16:30</td>
-                      <td>초등수재</td>
-                      <td>4/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>17:30</td>
-                      <td>신동</td>
-                      <td>7/8</td>
-                      <td>김유영</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>18:30</td>
-                      <td>초등박사</td>
-                      <td>5/8</td>
-                      <td>이한나</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                    <tr>
-                      <td>19:30</td>
-                      <td>한스쿨 II</td>
-                      <td>8/8</td>
-                      <td>서진수</td>
-                      <td><button class="class-action-btn">수업 관리</button></td>
-                    </tr>
-                  </tbody>
                 </table>
+                <!-- 스크롤 바디 -->
+                <div class="makeup-tbody-scroll table-frame">
+                  <table class="class-status-table class-tbody">
+                    <tbody class="class-tbody">
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>15:30</td>
+                        <td>초등천재</td>
+                        <td>3/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>16:30</td>
+                        <td>초등수재</td>
+                        <td>4/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>17:30</td>
+                        <td>신동</td>
+                        <td>7/8</td>
+                        <td>김유영</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>18:30</td>
+                        <td>초등박사</td>
+                        <td>5/8</td>
+                        <td>이한나</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>19:30</td>
+                        <td>한스쿨 II</td>
+                        <td>8/8</td>
+                        <td>서진수</td>
+                        <td class="checkbox-group">
+                          <input type="checkbox">
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
+
             </article>
             <article class="status-card">
               <div class="absence-num">

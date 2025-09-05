@@ -4,26 +4,37 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import com.hohoedu.all_pass._core.filter.JwtAuthorizationFilter;
 
 @Configuration
 public class FilterConfig {
 
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-                http
-                                .headers(headers -> headers.frameOptions().disable())
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers("/**")
-                                                .permitAll()
-                                                .anyRequest().authenticated())
-                                .csrf(csrf -> csrf.disable());
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/login", "/user/login", "/h2-console/**",
+//                                "/image/**", "/js/login.js", "/css/**",
+//                                "/test")
+//                        .permitAll()
+//                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendRedirect("/login");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendRedirect("/login");
+                        }))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                )
+                .csrf(csrf -> csrf.disable());
 
-                http.addFilterBefore(new JwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
-
-                return http.build();
-        }
+        return http.build();
+    }
 
 }

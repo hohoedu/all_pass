@@ -42,7 +42,7 @@ public class StudentReqDTO {
     public static class StatusHistoryDTO {
         private Integer historyNo;
         private String statusNo;
-        private String studentNo;
+        private Integer studentNo;
         private String reason;
     }
 
@@ -60,11 +60,13 @@ public class StudentReqDTO {
 
     @Data
     public static class StudentTransferDTO {
+        private Integer studentNo;
         private String inoutHan;
         private String inoutRead;
-        private List<String> studentNo;
-        private String teacherNo;
+        private List<Integer> studentNoList;
+        private String userCode;
         private String moveAt;
         private String transferReason;
     }
+
 }

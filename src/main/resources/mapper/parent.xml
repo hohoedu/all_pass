@@ -4,7 +4,7 @@
 
 <mapper namespace="com.hohoedu.all_pass.parent.repository.ParentRepository">
 
-    <insert id="insert" parameterType="com.hohoedu.all_pass.parent.model.Parent" useGeneratedKeys="true"
+    <insert id="insert" parameterType="com.hohoedu.all_pass.parent.Parent" useGeneratedKeys="true"
             keyProperty="parentNo" keyColumn="parent_no">
      INSERT INTO parent (parent_name, parent_tel_first, parent_tel_middle, parent_tel_last, relation_no, parent_privacy_agree, student_no)
         VALUES (#{parentName}, #{parentTelFirst}, #{parentTelMiddle}, #{parentTelLast}, #{relationNo}, #{parentPrivacyAgree}, #{studentNo});

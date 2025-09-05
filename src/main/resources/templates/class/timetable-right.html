@@ -7,18 +7,17 @@
                 th:classappend="${dtStat.index == 0} ? ' active'" th:attr="data-tab=${day.id}"
                 th:text="${day.label}"></button>
         </div>
-        <!-- 테이블 영역 -->
         <div class="table-frame time-table-frame bt">
             <div class="time-tab-content" th:each="day, dtStat : ${days}" th:id="${day.id}"
                 th:classappend="${dtStat.index == 0} ? ' active'">
 
                 <table class="basic-table time-table stripe">
                     <colgroup>
-                        <col width="10%" />
-                        <col width="10%" />
-                        <col width="15%" />
-                        <col width="20%" />
-                        <col width="40%" />
+                        <col width="8%">
+                        <col width="8%">
+                        <col width="15%">
+                        <col width="20%">
+                        <col width="50%">
                     </colgroup>
                     <thead>
                         <tr>
@@ -31,8 +30,9 @@
                     </thead>
                     <tbody id="timeTableBody" class="time-table-body" th:with="dayMap=${tableMap.get(day.id)}">
                         <tr class="time-row" th:each="i : ${#numbers.sequence(1,6)}"
-                            th:with="entry=${dayMap != null} ? ${dayMap[i + '']} : ${null}"
-                            th:attr="data-timetable-no=${entry != null} ? ${entry.timeTableNo} : ''">
+                            th:with="entry=${dayMap != null} ? ${dayMap[i + '']} : null"
+                            th:data-timetable-no="${entry != null} ? ${entry.timeTableNo} : ''"
+                            th:data-time-table-code="${entry != null} ? ${entry.timeTableCode} : ''">
                             <td class="radio-group round">
                                 <input type="radio" th:attr="name=${'selectedPeriod_' + day.id}"
                                     th:checked="${i == 1}" />
@@ -88,12 +88,22 @@
                                 </div>
                             </td>
                             <td>
+                                <!-- <div class="student-badge" data-name="김호이">
+                                    <span class="badge-name">김호이
+                                        <span class="count-num">(3)</span>
+                                    </span>
+                                    <span class="badge-close"></span>
+                                </div> -->
                                 <th:block th:if="${entry != null}">
                                     <div th:each="stu : ${entry.students}" class="student-badge"
                                         th:attr="data-name=${stu.studentName}">
                                         <span class="badge-name" th:text="${stu.studentName}"></span>
+                                        <span class="count-num" th:text="'('+ ${stu.week} +')'"
+                                            th:if="${stu.week <= 3}"></span>
                                         <span id="assign_delete" class="badge-close"
-                                            th:attr="data-assign-no=${stu.timeTableAssignNo}" title="삭제"></span>
+                                            th:data-assign-no=${stu.timeTableAssignNo}
+                                            th:data-time-table-code="${stu.timeTableAssignNo}" title="삭제">
+                                        </span>
                                     </div>
                                 </th:block>
                             </td>

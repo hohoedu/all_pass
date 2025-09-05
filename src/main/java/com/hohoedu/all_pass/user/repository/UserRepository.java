@@ -2,13 +2,24 @@ package com.hohoedu.all_pass.user.repository;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import com.hohoedu.all_pass.user.model.User;
+import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.user.User;
 
 @Mapper
 public interface UserRepository {
     public List<User> findAll();
 
     public void insert(User user);
+
+    public List<User> findUserByCenterCode(@Param("centerCode") String centerCode);
+
+    UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
+
+    UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);
+
+    public Center findCenterByCenterCode(@Param("centerCode") String centerCode);
 }

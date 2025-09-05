@@ -4,13 +4,22 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class MainViewController {
 
     @GetMapping({ "/", "/home" })
-    public String getIndexPage() {
+    public String getIndexPage(HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user == null) {
+        return "redirect:/login";
+    }
         return "index";
     }
 
@@ -24,24 +33,45 @@ public class MainViewController {
         return "main";
     }
 
+    // 주소 팝업창 열기
     @GetMapping("/juso")
-    public String jusoPopup(
-            @RequestParam(name = "inputYn", required = false) String inputYn,
-            @RequestParam(name = "roadFullAddr", required = false) String roadFullAddr,
-            @RequestParam(name = "roadAddrPart1", required = false) String roadAddrPart1,
-            @RequestParam(name = "addrDetail", required = false) String addrDetail,
-            Model model) {
-        System.out.println("GET으로 주소 돌아옴");
-        model.addAttribute("inputYn", inputYn);
-        model.addAttribute("roadFullAddr", roadFullAddr);
-        model.addAttribute("roadAddrPart1", roadAddrPart1);
-        model.addAttribute("addrDetail", addrDetail);
-        return "juso"; // juso.html
+    public String jusoPopup() {
+        return "juso";
     }
 
+    @GetMapping("/test")
+    public String getMethodName() {
+        return "test";
+    }
+
+    // 주소값 리턴
     @PostMapping("/juso")
-    public String preventPostError() {
-        return "redirect:/juso";
+    public String preventPostError(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+
+        redirectAttributes.addAttribute("roadFullAddr", request.getParameter("roadFullAddr"));
+        redirectAttributes.addAttribute("roadAddrPart1", request.getParameter("roadAddrPart1"));
+        redirectAttributes.addAttribute("roadAddrPart2", request.getParameter("roadAddrPart2"));
+        redirectAttributes.addAttribute("addrDetail", request.getParameter("addrDetail"));
+
+        return "redirect:/jusoCallBack";
+    }
+
+    // 주소값 콜백
+    @GetMapping("/jusoCallBack")
+    public String jusoCallback(
+            @RequestParam(name = "roadFullAddr", required = false) String roadFullAddr,
+            @RequestParam(name = "roadAddrPart1", required = false) String roadAddrPart1,
+            @RequestParam(name = "roadAddrPart2", required = false) String roadAddrPart2,
+            @RequestParam(name = "addrDetail", required = false) String addrDetail,
+            Model model) {
+
+        String roadAddrPart = roadAddrPart1 + " " + roadAddrPart2;
+
+        model.addAttribute("roadFullAddr", roadFullAddr);
+        model.addAttribute("roadAddrPart", roadAddrPart);
+        model.addAttribute("addrDetail", addrDetail);
+
+        return "juso-callback";
     }
 
 }

@@ -23,9 +23,10 @@
 
 <body>
   <div class="main-container">
+    <!-- header -->
     <div class="main-frame">
       <!-- left nav bar -->
-      <div class="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
       <main class="main-info">
         <div class="student-frame time-regist-frame">
           <!-- section:top -->
@@ -37,28 +38,25 @@
                 </div>
                 <div class="class-btns">
                   <div class="common-btn reset-btn">전체 초기화</div>
-                  <div class="common-btn last-data">전월 데이터 불러오기</div>
+                  <div class="common-btn last-data" id="load-last-time-table">전월 데이터 불러오기</div>
                   <div class="common-btn record-save" id="table_register">저장</div>
                 </div>
               </div>
-              <div class="month-header2">
+              <div class="month-header2" style="padding: 10px 0;">
                 <div class="month-title2">
                   <span class="current-month" id="currentMonth"></span>
-                  <input type="month" id="monthPickerInput" style="position:absolute; opacity:0; width:0; height:0;">
-                  <!-- 달력 버튼 -->
-                  <div style="position: relative;">
-
+                  <div class="calendar-wrapper">
+                    <input type="month" id="monthPickerInput" class="hidden-date" />
                     <button type="button" class="icon-btn calendar-open" id="openMonthPicker">
                       <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                     </button>
                   </div>
                 </div>
-
               </div>
             </div>
           </section>
           <!-- section:bottom -->
-          <div class="second-frame">
+          <div class="second-frame" style="padding: 0 15px;">
             <section class="student-pick-left">
               <div class="student-content">
                 <h4>학생 선택</h4>
@@ -68,7 +66,7 @@
                     추가
                   </button>
                 </div>
-                <div class="bt">
+                <div class="mt">
                   <div class="table-frame stu-chocie-frame">
                     <table class="basic-table stu-chocie-table stripe">
                       <thead>
@@ -86,16 +84,19 @@
                       <tbody id="" class="stripe">
                         <colgroup>
                           <col width="15%">
+                          <col width="30%">
                           <col width="15%">
-                          <col width="20%">
-                          <col width="50%">
+                          <col width="40%">
                         </colgroup>
-                        <!-- tr 1번째 줄 -->
                         <tr th:each="s, stat : ${students}" class="timetable-pending-list">
                           <td class="checkbox-group">
                             <input type="checkbox" th:value="${s.studentNo}">
                           </td>
-                          <td th:text="${s.studentName}">김호일</td>
+                          <td class="stu-badge">
+                            <span class="names" th:text="${s.studentName}"></span>
+                            <span class="badge-han">한</span>
+                            <span class="badge-book">독</span>
+                          </td>
                           <td th:text="${s.grade}">초1</td>
                           <td>
                             <div class="tab-radio">
@@ -114,19 +115,13 @@
                             </div>
                           </td>
                         </tr>
-
                       </tbody>
-
                     </table>
                   </div>
                 </div>
               </div>
             </section>
             <div th:replace="~{class/timetable-right :: studentPickRight} "></div>
-            <script>
-
-
-            </script>
           </div>
         </div>
       </main>

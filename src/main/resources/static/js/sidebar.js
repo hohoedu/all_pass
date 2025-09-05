@@ -151,3 +151,19 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.href = url;
   });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  const link = document.getElementById('remedial');
+  if (!link) return;
+
+  link.addEventListener('click', function (e) {
+
+    e.preventDefault();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+ 
+    const url = `/class/remedial?year=${year}&month=${month}`;
+    window.location.href = url;
+  });
+});

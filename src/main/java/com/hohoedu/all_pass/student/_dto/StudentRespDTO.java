@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.student._dto;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -24,6 +25,7 @@ public class StudentRespDTO {
         private String entryBookDate;
         private Timestamp statusModifiedAt;
         private String status;
+        private String statusName;
         private String reason;
         private String hanClass;
         private String bookClass;
@@ -54,6 +56,7 @@ public class StudentRespDTO {
         private String entryBookDate;
         private Timestamp statusModifiedAt;
         private String status;
+        private String statusName;
         private String reason;
         private String hanClass;
         private String bookClass;
@@ -63,18 +66,47 @@ public class StudentRespDTO {
     }
 
     @Data
-    public static class StudentInOutDTO {
+    public static class StudentFilterDTO {
         private Integer studentNo;
+        private String studentName;
+        private String school;
+        private String grade;
+        private String centerNo;
+        private String entryDate;
+        private String status;
+        private String hanClass;
+        private String bookClass;
+        private String isSibling;
+    }
+
+    @Data
+    public static class MainStudentDTO {
+        private String studentId;
+        private String studentName;
+        private String statusName;
+        private String entryDate;
+        private String gradeName;
+        private String school;
+        private String centerName;
+        private String hanClass;
+        private String bookClass;
+    }
+
+
+    @Data
+    public static class StudentInOutDTO {
         private String studentId;
         private String studentName;
         private String hanClass;
         private String bookClass;
-        private String grade;
+        private String gradeName;
         private String moveAt;
         private String transferReson;
-        private Timestamp createdAt;
+        private String entryDate;
         private String hanTeacher;
         private String bookTeacher;
+        private String hanClassType;
+        private String bookClassType;
     }
 
     @Data
@@ -86,6 +118,17 @@ public class StudentRespDTO {
         private String fromTeacher;
         private String toTeacher;
         private String transferReason;
+    }
+
+    @Data
+    public static class StudentSnapshotRespDTO {
+        private String snapshotYm; // 집계 년월
+        private int activeCount; // 재원 중
+        private int restCount; // 휴원
+        private int withdrawnCount; // 탈퇴
+        private int entryCount; // 입회
+        private int moveInCount; // 전입
+        private int moveOutCount; // 전출
     }
 
 }

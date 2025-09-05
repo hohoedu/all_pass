@@ -6,31 +6,31 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Getter
-@Table(name = "region_code")
+@Entity
+@Table(name = "erp_region_code", uniqueConstraints = @UniqueConstraint(name = "uq_region_key", columnNames = "region_key"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RegionCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer regionNo;
+    private Long id;
 
-    @Column(nullable = false, length = 10)
-    private String region;
-    @Column(nullable = false, length = 10)
-    private String code;
+    @Column(name = "region_key", nullable = false, length = 20)
+    private String regionKey;
+
+    @Column(name = "region_name", nullable = false, length = 50)
+    private String regionName;
 
     @Builder
-    public RegionCode(Integer regionNo, String region, String code) {
-        this.regionNo = regionNo;
-        this.region = region;
-        this.code = code;
+    public RegionCode(String regionKey, String regionName) {
+        this.regionKey = regionKey;
+        this.regionName = regionName;
     }
-
 }

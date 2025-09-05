@@ -139,16 +139,7 @@ $(document).ready(function () {
 
 
   /* ====== student-inout.html ====== */
-  $('.icon-btn').on('click', function () {
-    const input = $(this).siblings('input[type="date"], input[type="month"]')[0];
-    if (!input || input.type === 'month') return;
 
-    if (typeof input.showPicker === 'function') {
-      input.showPicker();
-    } else {
-      input.click();
-    }
-  });
   // btn-inout modal
   // $('#btn-inout').click(function () {
   //   $('.modal').fadeIn();
@@ -264,81 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function openModal(row) {
-  const studentId = row.getAttribute("data-id");
-  document.querySelector('.modal').style.display = 'block';
 
-  fetch(`/student/${studentId}`)
-    .then(res => {
-      if (!res.ok) throw new Error("서버 오류");
-      return res.json();
-    })
-    .then(data => {
-      const s = data.response;
-      console.log(s);
-      const setElementValue = (selector, value) => {
-        document.querySelectorAll(selector).forEach(el => {
-          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            el.value = value;
-          } else {
-            el.innerText = value;
-          }
-        });
-      };
-
-      setElementValue(".s_student_no", s.studentNo || '');
-      setElementValue(".s_name", s.studentName || '');
-      setElementValue(".s_subjects", [s.hanClass, s.bookClass].filter(Boolean).join(', '));
-      setElementValue(".s_phone", s.parentTel || '');
-
-      const latestDate = new Date(s.entryHanDate) > new Date(s.entryBookDate)
-        ? s.entryHanDate : s.entryBookDate;
-      setElementValue(".s_entry", formatDateKorean(latestDate));
-      setElementValue(".s_school", s.school || '');
-      setElementValue(".s_grade", s.grade || '');
-      setElementValue(".s_birth", formatDateKorean(s.birth));
-      setElementValue(".s_address", s.address || '');
-      setElementValue(".s_address_detail", s.addressDetail || '');
-
-      updateStatusButton(s.status);
-      const genderButtons = document.querySelectorAll(".s_gender");
-      genderButtons.forEach(btn => btn.classList.remove("active"));
-      if (s.gender === 'TRUE') {
-        genderButtons[0].classList.add("active");
-      } else if (s.gender === 'FALSE') {
-        genderButtons[1].classList.add("active");
-      } else {
-        console.log(s.gender);
-      }
-
-      fetch("/student/gradeCodes")
-        .then(res => res.json())
-        .then(codeData => {
-          const gradeSelect = document.querySelector('.grade-select');
-          gradeSelect.innerHTML = "";
-
-          if (codeData.success && Array.isArray(codeData.response)) {
-            codeData.response.forEach(grade => {
-              const option = document.createElement("option");
-              option.value = grade.gradeNo;
-              option.textContent = grade.grade;
-
-              if (grade.grade === s.grade) {
-                option.selected = true;
-              }
-
-              gradeSelect.appendChild(option);
-            });
-
-          } else {
-            console.error("학년 데이터 오류");
-          }
-        })
-    })
-    .catch(err => {
-      console.error(err);
-    });
-}
 
 function formatDateKorean(iso) {
   if (!iso) return '';
@@ -380,158 +297,35 @@ document.addEventListener("click", function (e) {
   btn.classList.add("selected");
 });
 
-
-document.addEventListener('click', function (e) {
-  const target = e.target.closest('#status-change');
-  if (!target) return;
-
-  e.preventDefault();
-
-  const studentNo = document.querySelector('.s_student_no').innerText;
-  const resonInput = document.getElementById('reason');
-  const reason = resonInput?.value;
-
-  const selectedBtn = document.querySelector('.select-btn.selected');
-  const statusNo = selectedBtn?.getAttribute('data-status');
-
-  if (!selectedBtn) {
-    alert("상태를 선택해주세요.");
-    return;
-  }
-  if (!reason) {
-    alert("사유를 입력해주세요.");
-    return;
-  }
-
-  const formData = new URLSearchParams();
-  formData.append("studentNo", studentNo);
-  formData.append("statusNo", statusNo);
-  formData.append("reason", reason);
-
-  fetch("/student/status", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: formData.toString()
-  })
-    .then(res => {
-      if (!res.ok) throw new Error("요청 실패!");
-      return res.text();
-    })
-    .then(data => {
-      alert("상태가 성공적으로 변경되었습니다.");
-      document.querySelector('.reason-input')?.classList.remove('active');
-      resonInput.value = '';
-      document.querySelectorAll('.select-btn').forEach(btn => btn.classList.remove('selected'));
-
-      fetch(`/student/${studentNo}`)
-        .then(res => res.json())
-        .then(updated => {
-          const s = updated.response;
-          const row = document.querySelector(`[data-id='${studentNo}']`);
-          if (!row) return;
-          openModal(row);
-          const tds = row.querySelectorAll("td");
-          if (tds.length < 8) return;
-          tds[1].textContent = s.studentName;
-          tds[2].textContent = formatDateDot(s.createdAt);
-          tds[3].innerHTML = getStatusText(s.status);
-          tds[4].textContent = [s.hanClass, s.bookClass].filter(Boolean).join(", ");
-          tds[5].textContent = s.grade;
-          tds[6].textContent = s.school;
-          tds[7].textHTML = s.reason == null
-            ? `<img src="image/link.png" class="link" alt="링크">`
-            : '';
-        });
-    }).catch(err => {
-      console.error("요청 오류:", err);
-      alert("오류가 발생했습니다.");
-    });
-
-  function getStatusText(status) {
-    switch (String(status)) {
-      case "1":
-      case 1:
-        return "재원중";
-      case "2":
-      case 2:
-        return "입학취소";
-      case "3":
-      case 3:
-        return "휴원";
-      case "4":
-      case 4:
-        return "탈퇴";
-      default:
-        return "-";
-    }
-  }
-});
-
 function openJusoPopup() {
   const width = 570;
   const height = 640;
   const left = (screen.width - width) / 2;
   const top = (screen.height - height) / 2;
-
+  console.log("[팝업열기] 주소 검색 팝업을 엽니다.");
   window.open('/juso', 'jusoPopup', `width=${width}, height=${height}, top=${top}, left=${left}`);
 }
 
+
+
 function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail) {
-  document.getElementById("roadAddrPart1").value = roadAddrPart1;
-  document.getElementById("addrDetail").focus();
+  console.log("[CallBack] 주소 검색 완료. 값 전달 받음");
+  console.log(" - roadFullAddr:", roadFullAddr);
+  console.log(" - roadAddrPart1:", roadAddrPart1);
+  console.log(" - addrDetail:", addrDetail);
+  const addrInput = document.getElementById('student-address');
+  if (addrInput) {
+    addrInput.value = roadAddrPart1;
+  }
+
+  const detailInput = document.getElementById('student-address-detail');
+  if (detailInput) {
+    detailInput.value = addrDetail || '';
+    detailInput.focus();
+  }
 }
 
-function clickInOutModal(row) {
-  const studentId = row.getAttribute("data-id") || "00";
-  console.log(studentId);
-  const studentName = row.getAttribute("data-name");
-  console.log(studentName);
-  document.querySelector('.modal').style.display = 'block';
-  const titleEl = document.querySelector('.inout-modal-title');
-  titleEl.innerHTML = studentId === '00' ? '전체 전입/전출 내역' : titleEl.innerHTML = studentName + ' 학생 전입/전출 내역'
 
-  fetch(`/student/inout/${studentId}`)
-    .then(res => {
-      if (!res.ok) throw new Error("서버 오류");
-      return res.json();
-    })
-    .then(data => {
-      const histories = data.response;
-      console.log(histories);
-
-      const tbody = document.querySelector(".inout-modal-body");
-      tbody.innerHTML = '';
-      if (!histories || histories.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="7" style="text-align:center;">전입/전출 내역이 없습니다.</td>`;
-        tbody.appendChild(tr);
-        return;
-      }
-
-      titleEl.innerHTML = studentId === '00'
-        ? '전체 전입/전출 내역'
-        : `${studentName} 학생 전입/전출 내역`;
-
-      histories.forEach((item, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${formatDateKorean(item.moveAt)}</td>
-          <td>${item.studentName}</td>
-          <td>${item.className}</td>
-          <td>${item.fromTeacher}</td>
-          <td>${item.toTeacher}</td>
-          <td>${item.transferReason}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err => {
-      console.error(err);
-    });
-}
 
 function showAlert(options) {
   return Swal.fire({
@@ -550,3 +344,7 @@ function showAlert(options) {
     }
   });
 }
+
+
+
+

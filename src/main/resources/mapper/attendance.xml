@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.attendance.AttendanceRepository">
+
+    <!-- TimeTable 매핑 (center 제거) -->
+    <resultMap id="timeTableResultMap" type="com.hohoedu.all_pass.class_instance.model.TimeTable">
+        <id property="timeTableNo" column="time_table_no"/>
+        <result property="yy" column="yy"/>
+        <result property="mm" column="mm"/>
+        <result property="dayname" column="dayname"/>
+        <result property="periodNo" column="period_no"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="timeTableCode" column="time_table_code"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+
+        <association property="user" javaType="com.hohoedu.all_pass.user.User">
+            <id property="userNo" column="user_no"/>
+        </association>
+
+        <!-- class_name만 매핑 -->
+        <association property="classCode" javaType="com.hohoedu.all_pass.class_instance.model.ClassCode">
+            <result property="className" column="class_name"/>
+        </association>
+    </resultMap>
+
+    <!-- 오늘 끝난 수업 조회 (center 제거, 조인 키: tt.class_no = cc.class_no) -->
+    <select id="findClassesToProcess" resultMap="timeTableResultMap">
+      <![CDATA[
+        SELECT
+            tt.time_table_no,
+            tt.yy,
+            tt.mm,
+            tt.dayname,
+            tt.period_no,
+            tt.start_time,
+            tt.end_time,
+            tt.time_table_code,
+            tt.created_at,
+            tt.updated_at,
+            tt.user_no,
+            cc.class_name
+        FROM time_table tt
+        JOIN class_code cc ON tt.class_no = cc.class_no
+        WHERE tt.yy      = #{yy}
+          AND tt.mm      = #{mm}
+          AND tt.dayname = #{dayname}
+          AND tt.end_time <= CAST(#{nowTimeHHmm} AS TIME)
+      ]]>
+    </select>
+    <!-- end_time이 VARCHAR('HH:mm')라면 위 CAST(...) 제거하고:
+         AND tt.end_time <= #{nowTimeHHmm}
+    -->
+
+    <!-- 결석 벌크 인서트: 아직 '학생+날짜' 출석 레코드가 없는 경우만 -->
+    <insert id="bulkInsertAbsentForClass">
+      <![CDATA[
+        INSERT INTO student_attendance
+          (student_no, attendance_date, in_time, attendance_no, created_at)
+        SELECT
+          s.student_no,
+          #{attendanceDate},
+          NULL,
+          3,                           -- 결석 코드
+          CURRENT_TIMESTAMP
+        FROM time_table_assign ta
+        JOIN student_tb  s ON s.student_no = ta.student_no
+        WHERE ta.time_table_code = #{timeTableCode}
+          AND NOT EXISTS (
+              SELECT 1
+              FROM student_attendance sa
+              WHERE sa.student_no      = s.student_no
+                AND sa.attendance_date = #{attendanceDate}
+          )
+      ]]>
+    </insert>
+
+    <insert id="bulkInsertRemedialForClass">
+      <![CDATA[
+        INSERT INTO remedial
+          (student_no, time_table_code, remedial_subject, absence_date, remedial_date, action, created_at, user_no)
+        SELECT
+          s.student_no,
+          tt.time_table_code,
+          cc.class_name,
+          #{absenceDate},
+          '9999-12-31',
+          0,
+          CURRENT_TIMESTAMP,
+          tt.user_no
+        FROM time_table_assign ta
+        JOIN student_tb  s ON s.student_no = ta.student_no
+        JOIN time_table  tt ON tt.time_table_code = ta.time_table_code
+        JOIN class_code  cc ON tt.class_no     = cc.class_no
+        WHERE tt.time_table_code = #{timeTableCode}
+          AND EXISTS (
+            SELECT 1
+            FROM student_attendance sa
+            WHERE sa.student_no      = s.student_no
+              AND sa.attendance_date = #{absenceDate}
+              AND sa.attendance_no   = 3          -- 결석인 경우만
+          )
+          AND NOT EXISTS (
+              SELECT 1
+              FROM remedial r
+              WHERE r.student_no    = s.student_no
+                AND r.time_table_no = tt.time_table_no
+                AND r.absence_date  = #{absenceDate}
+          )
+      ]]>
+    </insert>
+
+    <update id="updateLatenessForClass">
+      <![CDATA[
+        UPDATE sa
+          SET sa.attendance_no = 2,
+          sa.updated_at    = SYSDATETIME()
+        FROM student_attendance AS sa
+        WHERE sa.attendance_date = #{attendanceDate, jdbcType=DATE}
+          AND sa.in_time IS NOT NULL
+          AND sa.in_time > (
+            SELECT t.start_time
+            FROM time_table AS t
+            WHERE t.time_table_code = #{timeTableCode, jdbcType=VARCHAR}
+          )
+          AND sa.student_no IN (
+            SELECT s.student_no
+            FROM time_table_assign AS ta
+            JOIN student_tb AS s ON s.student_no = ta.student_no
+            WHERE ta.time_table_code = #{timeTableCode, jdbcType=VARCHAR}
+          )
+      ]]>
+    </update>
+
+</mapper>

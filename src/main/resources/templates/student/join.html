@@ -35,45 +35,37 @@
           </div>
           <div style="flex: 1;">
             <label for="gender">성별</label>
-            <select id="gender" name="gender" style="width: 100%;">
+            <select id="gender" name="gender" style="height: 40px;">
               <option value="true">남</option>
               <option value="false">여</option>
             </select>
           </div>
         </div>
-      </div>
-      <div class="join-group">
-        <label for="school-name">학교/유치원명</label>
-        <input type="text" id="school-name" name="school" placeholder="학교/유치원명을 입력해 주세요.">
-      </div>
-      <div class="join-group">
-        <label for="grade-filter">연령/학년</label>
-        <div class="join-select">
-
-          <!-- <select id="relation-filter" name="relationNo">
-              <option value="">선택</option>
-              <option th:each="relation : ${relationCodes}" th:value="${relation.relationNo}"
-                th:text="${relation.relation}">
-              </option>
-            </select> -->
-
-          <select id="grade-filter" name="gradeNo">
-            <option th:each="grade : ${gradeCodes}" th:value="${grade.gradeNo}" th:text="${grade.grade}">
-            </option>
-          </select>
+        <div class="join-group">
+          <label for="school-name">학교/유치원명</label>
+          <input type="text" id="school-name" name="school" placeholder="학교/유치원명을 입력해 주세요.">
         </div>
-      </div>
-      <div class="join-group">
-        <label for="address-input">주소</label>
-        <div class="icon-field">
-          <input type="text" name="address" value="부산 해운대구 센텀중앙로 97" class="s_address" style="width: 100%;">
-          <button type="button" class="icon-btn" onclick="openJusoPopup()">
-            <img th:src="@{/image/search.png}" alt="검색 아이콘">
-          </button>
+        <div class="join-group">
+          <label for="grade-filter">연령/학년</label>
+          <div class="join-select">
+            <select id="grade-filter" name="gradeNo">
+              <option th:each="grade : ${gradeCodes}" th:value="${grade.gradeNo}" th:text="${grade.grade}">
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="join-group">
+          <label for="address-input">주소</label>
+          <div class="icon-field">
+            <input type="text" name="address" value="부산 해운대구 센텀중앙로 97" class="s_address" style="width: 100%;">
+            <button type="button" class="icon-btn" onclick="openJusoPopup()">
+              <img th:src="@{/image/search.png}" alt="검색 아이콘">
+            </button>
+          </div>
         </div>
         <div class="join-group">
           <label for="address-input">상세 주소</label>
-          <input type="text" id="detail-address-input" name="addressDetail" placeholder="주소를 정확히 입력해 주세요.">
+          <input type="text" id="detail-address-input" name="addressDetail" placeholder="나머지 주소를 입력해주세요.">
         </div>
         <div class="join-group">
           <label for="privacy-consent">개인정보 수집 및 활용 동의(필수)</label>
@@ -86,7 +78,7 @@
             2. 개인정보 보유 및 이용기간
           </textarea>
           <div class="checkbox-group">
-            <input type="checkbox" id="privacy-agree" name="studentPrivacyAgree">
+            <input type="checkbox" id="privacy-agree" name="privacyAgree">
             <label for="privacy-agree" style="margin: 0;">개인정보 수집 및 활용에 동의합니다.</label>
           </div>
         </div>
@@ -133,15 +125,15 @@
           </div>
         </div>
         <div class="join-group signature-container">
-          <label>서명</label>
-          <canvas id="signature-pad" width="500" height="200"></canvas>
+          <h2>서명</h2>
+          <canvas id="signature-pad" width="100%" height="200" style="background: #FFFBEB;"></canvas>
           <input type="hidden" id="signature-data" name="signature">
           <div class="clear-container">
             <button type="button" id="clear-button">다시쓰기</button>
           </div>
         </div>
         <div class="submit-container">
-          <button type="submit" class="join-button" id="join">가입하기</button>
+          <button type="submit" class="join-button">가입하기</button>
         </div>
     </form>
   </div>

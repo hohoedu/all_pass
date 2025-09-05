@@ -1,0 +1,78 @@
+<div class="modal consult-modal" th:fragment="consultModal">
+  <div class="modal-scroll">
+    <div class="consult-record">
+      <div class="m-t-line" style="margin-bottom: 15px;">
+        <div class="title">상담기록 추가</div>
+        <a href="#" class="btn-close"></a>
+      </div>
+      <table class="base-info-t">
+        <colgroup>
+          <col style="width: 12%;">
+          <col style="width: 44%;">
+          <col style="width: 12%;">
+          <col style="width: 32%;">
+        </colgroup>
+        <tbody>
+          <tr>
+            <th>이름</th>
+            <td>
+              <input type="text" name="studentName" placeholder="이름을 입력해주세요.">
+            </td>
+            <th>일자</th>
+            <td class="icon-field day-picker" style="position: relative;">
+              <div class="day-display" style="padding-left: 5px;"></div>
+              <div>
+                <input type="date" name="consultDate" class="birth-input hidden-picker" style="opacity: 0; width: 0;" />
+                <button type="button" class="icon-btn birth-btn">
+                  <img th:src="@{/image/calendar.png}" alt="달력 아이콘" />
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>학교</th>
+            <td class="icon-field">
+              <input type="text" name="school" placeholder="학교명을 검색해주세요.">
+              <button type="button" class="icon-btn">
+                <img th:src="@{/image/search.png}" alt="검색 아이콘">
+              </button>
+            </td>
+            <th>학년</th>
+            <td>
+              <div class="select-wrap">
+                <select name="gradeNo" id="student" class="styled-select">
+                  <th:block th:each="g: ${grades}">
+                    <option th:value="${g.gradeNo}" th:text="${g.grade}"></option>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>연락처</th>
+            <td>
+              <input type="text" name="parentPhone" placeholder="숫자 8자리를 입력해주세요" maxlength="13">
+            </td>
+            <th>유입경로</th>
+            <td>
+              <div class="select-wrap">
+                <select name="inflowRouteNo" id="inflow" class="styled-select">
+                  <th:block th:each="r: ${routes}">
+                    <option th:value="${r.inflowRouteNo}" th:text="${r.inflowRoute}"></option>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr style="height: 220px;">
+            <th>메모사항</th>
+            <td colspan="3">
+              <textarea name="content" id="consult-memo" placeholder="내용을 입력해주세요"></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="save-btn-frame">
+        <button class="save-btn save-consult">저장</button>
+      </div>
+    </div>
+  </div>
+</div>

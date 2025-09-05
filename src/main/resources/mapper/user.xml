@@ -5,20 +5,57 @@
 <mapper
         namespace="com.hohoedu.all_pass.user.repository.UserRepository">
 
-    <insert id="insert" parameterType="com.hohoedu.all_pass.user.model.User" useGeneratedKeys="true"
+    <insert id="insert" parameterType="com.hohoedu.all_pass.user.User" useGeneratedKeys="true"
             keyProperty="userNo" keyColumn="user_no">
-        insert into user_tb(user_id, password, username, user_role_no, center_no, created_at)
+        insert into erp_user_tb(user_id, password, username, user_role_no, center_no, created_at)
         values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
     </insert>
 
-    <select id="findAll" resultType="com.hohoedu.all_pass.user.model.User">
+    <select id="findAll" resultType="com.hohoedu.all_pass.user.User">
         select *
         from user_tb
     </select>
 
     <select id="findAllCount" resultType="int">
         select count(*)
-        from user_tb
+        from erp_user
+    </select>
+
+    <select id="findUserByUserId" parameterType="String" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$LoginRespDTO">
+        SELECT u.user_code   as userCode,
+               u.user_id     as userId,
+               u.user_name   as userName,
+               u.role_key    as roleKey,
+               c.center_code  as centerCode,
+               c.center_name as centerName,
+               r.region_name     as regionName
+        FROM ERP_USER u
+                 JOIN ERP_CENTER c
+                      ON u.center_code = c.center_code
+                 JOIN ERP_REGION_CODE r
+                      ON c.region_key = r.region_key
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="findByLoginInfo" parameterType="String" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$UserAuthDTO">
+        SELECT u.user_code     as userCode,
+               u.user_id       as userId,
+               u.password_hash as passwordHash,
+               u.center_code   as centerCode
+        FROM ERP_USER u
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="findUserByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.user.User">
+        select *
+        from ERP_USER u
+        where center_code = #{centerCode}
+    </select>
+
+    <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.center.Center">
+        select *
+        from ERP_CENTER
+        where center_code = #{centerCode}
     </select>
 
 </mapper>

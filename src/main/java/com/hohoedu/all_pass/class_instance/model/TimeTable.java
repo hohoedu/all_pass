@@ -2,87 +2,87 @@ package com.hohoedu.all_pass.class_instance.model;
 
 import java.sql.Timestamp;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.hohoedu.all_pass.class_instance.code.ClassCode;
-import com.hohoedu.all_pass.class_instance.code.UnitCode;
-import com.hohoedu.all_pass.student.code.GradeCode;
-import com.hohoedu.all_pass.user.model.User;
+import com.hohoedu.all_pass.student.model.GradeCode;
+import com.hohoedu.all_pass.user.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "time_table")
 @Getter
+@Entity
+@Table(name = "erp_time_table", uniqueConstraints = {@UniqueConstraint(name = "uq_time_table_key", columnNames = "time_table_key")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TimeTable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer timeTableNo;
-    @Column
+    private Integer id;
+
+    @Column(name = "yy", nullable = false, length = 10)
     private String yy;
-    @Column
+
+    @Column(name = "mm", nullable = false, length = 10)
     private String mm;
-    @Column
+
+    @Column(name = "dayname", nullable = false, length = 10)
     private String dayname;
-    @Column
-    private String periodNo;
-    @Column
+
+    @Column(name = "period_no", nullable = false)
+    private Integer periodNo;
+
+    @Column(name = "start_time", nullable = false, length = 5)
     private String startTime;
-    @Column
+
+    @Column(name = "end_time", nullable = false, length = 5)
     private String endTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_no")
+    @Column(name = "time_table_key", nullable = false, length = 50)
+    private String timeTableKey;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "class_key", referencedColumnName = "class_key", nullable = false)
     private ClassCode classCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "unit_no")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "unit_key", referencedColumnName = "unit_key", nullable = false)
     private UnitCode unitCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grade_no")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "grade_key", referencedColumnName = "grade_key", nullable = false)
     private GradeCode grade;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no")
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code", nullable = false)
     private User user;
 
     @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Timestamp createdAt;
-    
-     @CreationTimestamp
+
+    @CreationTimestamp
+    @Column(name = "updated_at")
     private Timestamp updatedAt;
 
     @Builder
-    public TimeTable(Integer timeTableNo, String yy, String mm, String dayname, String periodNo, String startTime,
-            String endTime, ClassCode classCode, UnitCode unitCode, GradeCode grade, User user, Timestamp createdAt, Timestamp updatedAt) {
-        this.timeTableNo = timeTableNo;
+    public TimeTable(String yy, String mm, String dayname, Integer periodNo,
+                     String startTime, String endTime, String timeTableKey,
+                     ClassCode classCode, UnitCode unitCode, GradeCode grade, User user) {
         this.yy = yy;
         this.mm = mm;
         this.dayname = dayname;
         this.periodNo = periodNo;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.timeTableKey = timeTableKey;
         this.classCode = classCode;
         this.unitCode = unitCode;
         this.grade = grade;
         this.user = user;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
-
 }
