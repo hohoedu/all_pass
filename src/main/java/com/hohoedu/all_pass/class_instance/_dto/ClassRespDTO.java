@@ -19,29 +19,29 @@ public class ClassRespDTO {
 
     @Data
     public static class TimeTableDTO {
-        private Integer timeTableNo;
-        private String timeTableCode;
+        private String timeTableNo;
+        private String timeTableKey;
         private String periodNo;
         private String startTime;
         private String endTime;
         private String yy;
         private String mm;
         private String dayname;
-        private String classType;
         private String className;
-        private String unitCode;
-        private Integer classNo;
-        private Integer unitNo;
-        private Integer gradeNo;
+        private String unitName;
+        private String gradeName;
+        private String classKey;
+        private String unitKey;
+        private String gradeKey;
+        private String classType;
 
         private List<StudentDTO> students = new ArrayList<>();
 
         @Data
         public static class StudentDTO {
-            private Integer studentNo;
+            private String studentId;
             private String studentName;
-            private Integer timeTableAssignNo;
-            private Integer week;
+            private String week;
         }
     }
 

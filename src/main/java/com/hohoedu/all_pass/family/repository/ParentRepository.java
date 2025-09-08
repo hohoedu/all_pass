@@ -1,4 +1,4 @@
-package com.hohoedu.all_pass.parent.repository;
+package com.hohoedu.all_pass.family.repository;
 
 import org.apache.ibatis.annotations.Mapper;
 

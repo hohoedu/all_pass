@@ -108,18 +108,12 @@ public class ClassController {
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/by-date")
     public ResponseEntity<?> findRecordByDate(@RequestBody ClassRecordByDateDTO dto) {
-        System.out.println("=========================================");
-        System.out.println("날짜별 수업");
-        System.out.println("=========================================");
         List<InitRecordDTO> labels = classService.getTimeTableByDate(dto.getYy(), dto.getMm(), dto.getDay(), "DAE001cos");
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
     @PostMapping("/api/record/by-class")
     public ResponseEntity<?> findRecordByClass(@RequestBody ClassRecordByClassDTO dto) {
-        System.out.println("=========================================");
-        System.out.println("수업별 학생");
-        System.out.println("=========================================");
         List<RecordStudentDTO> students = classService.getTimeTableByClassCode(dto.getClassCode(), dto.getDate());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
@@ -196,9 +190,9 @@ public class ClassController {
 
     @PostMapping("/api/monthly/by-classCode")
     public ResponseEntity<?> findStudentByClassCode(@RequestBody ClassMonthlyByClassCodeDTO dto) {
-        System.out.println("============================================================");
+
         List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(dto.getClassCode());
-        System.out.println("============================================================");
+
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 

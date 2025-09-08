@@ -38,10 +38,10 @@ public class Remedial {
     private String remedialSubject;
 
     @Column(name = "absence_date", nullable = false)
-    private LocalDate absenceDate;
+    private String absenceDate;
 
     @Column(name = "remedial_date")
-    private LocalDate remedialDate;
+    private String remedialDate;
 
     @Column(name = "action", nullable = false)
     private boolean action;
@@ -55,7 +55,7 @@ public class Remedial {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -67,7 +67,7 @@ public class Remedial {
     private TimeTable timeTable;
 
     @Builder
-    public Remedial(String remedialSubject, LocalDate absenceDate, LocalDate remedialDate,
+    public Remedial(String remedialSubject, String absenceDate, String remedialDate,
                     boolean action, Student student, User user, TimeTable timeTable) {
         this.remedialSubject = remedialSubject;
         this.absenceDate = absenceDate;

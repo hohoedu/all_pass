@@ -90,14 +90,14 @@
                         </colgroup>
                         <tr th:each="s, stat : ${students}" class="timetable-pending-list">
                           <td class="checkbox-group">
-                            <input type="checkbox" th:value="${s.studentNo}">
+                            <input type="checkbox" th:value="${s.studentId}">
                           </td>
                           <td class="stu-badge">
                             <span class="names" th:text="${s.studentName}"></span>
                             <span class="badge-han">한</span>
                             <span class="badge-book">독</span>
                           </td>
-                          <td th:text="${s.grade}">초1</td>
+                          <td th:text="${s.gradeName}">초1</td>
                           <td>
                             <div class="tab-radio">
                               <input type="radio" th:id="${'1-week-' + stat.index}" th:name="${'weeks-' + stat.index}"

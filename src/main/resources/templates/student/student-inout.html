@@ -2,500 +2,529 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- jQuery CDN -->
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <!-- Custom Css / Js -->
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" th:href="@{/css/media.css}">
-  <script th:src="@{/js/custom.js}"></script>
-  <!-- Html menu Load -->
-  <script th:src="@{/js/sidebar.js}"></script>
-  <script th:src="@{/js/student.js}"></script>
-  <title>전입/전출</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <!-- Html menu Load -->
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/student.js}"></script>
+    <title>전입/전출</title>
 </head>
 
 <body>
-  <div class="main-container">
+<div class="main-container">
     <div class="main-frame">
-      <!-- left nav bar -->
-      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-      <main class="main-info">
-        <div class="line-second-frame">
-          <!-- section:left -->
-          <section class="move-summary">
-            <div class="inout-head">
-              <div class="common-title">
-                <h2>전입 / 전출</h2>
-              </div>
-              <div class="inout-btns">
-                <a class="print" th:href="@{/student/print-transfer}">
-                  인쇄
-                </a>
-                <div class="common-btn inout-btn" id="btn-inout" data-type="inout" onclick="openTransferModal(this)">
-                  전입/전출내역</div>
-              </div>
-            </div>
-            <div class="info-filters">
-              <div class="info-arrange">
-                <div class="stu-left">
-                  <div class="basic-select sl1">
-                    <select name="teacherNo" id="transfer-teacher-filter">
-                      <option value="all">전체</option>
-                      <th:block th:each="teacher : ${teachers}">
-                        <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
-                      </th:block>
-                    </select>
-                  </div>
-                  <div class="basic-select sl2">
-                    <select name="labelNo" id="transfer-subject-filter">
-                      <option value="all">전체</option>
-                      <th:block th:each="label : ${labels}">
-                        <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">
-                        </option>
-                      </th:block>
-                    </select>
-                  </div>
-                </div>
-                <div class="stu-right">
-                  <div class="sl3">
-                    <div class="basic-select" style="flex: 1;">
-                      <select name="stuName" id="stu-name">
-                        <option value="all">이름</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
-                        <option value="">김호호</option>
-                      </select>
+        <!-- left nav bar -->
+        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+        <main class="main-info">
+            <div class="line-second-frame">
+                <!-- section:left -->
+                <section class="move-summary">
+                    <div class="inout-head">
+                        <div class="common-title">
+                            <h2>전입 / 전출</h2>
+                        </div>
+                        <div class="inout-btns">
+                            <a class="print" th:href="@{/student/print-transfer}">
+                                인쇄
+                            </a>
+                            <div class="common-btn inout-btn" id="btn-inout" data-type="inout" onclick="openTransferModal(this)">
+                                전입/전출내역
+                            </div>
+                        </div>
                     </div>
-                    <div class="search-box" style="flex: 2;">
-                      <input type="text" id="search-name" name="searchName">
+                    <div class="info-filters">
+                        <div class="info-arrange">
+                            <div class="stu-left">
+                                <div class="basic-select sl1">
+                                    <select name="teacherNo" id="transfer-teacher-filter">
+                                        <option value="all">전체</option>
+                                        <th:block th:each="teacher : ${teachers}">
+                                            <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                                <div class="basic-select sl2">
+                                    <select name="labelNo" id="transfer-subject-filter">
+                                        <option value="all">전체</option>
+                                        <th:block th:each="label : ${labels}">
+                                            <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">
+                                            </option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="stu-right">
+                                <div class="sl3">
+                                    <div class="basic-select" style="flex: 1;">
+                                        <select name="stuName" id="stu-name">
+                                            <option value="all">이름</option>
+                                            <option value="">김호호</option>
+                                            <option value="">김호호</option>
+                                            <option value="">김호호</option>
+                                            <option value="">김호호</option>
+                                        </select>
+                                    </div>
+                                    <div class="search-box" style="flex: 2;">
+                                        <input type="text" id="search-name" name="searchName">
+                                    </div>
+                                </div>
+                                <div class="explore common-btn sl4">검색</div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                  <div class="explore common-btn sl4">검색</div>
-                </div>
-              </div>
-            </div>
-            <div class="mt">
-              <div class="table-frame move-t-frame">
-                <table class="basic-table yh">
-                  <colgroup>
-                    <col width="5%">
-                    <col width="5%">
-                    <col width="15%">
-                    <col width="10%">
-                    <col width="20%">
-                    <col width="15%">
-                    <col width="20%">
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th class="checkbox-group">
-                        <input type="checkbox" id="" name="">
-                      </th>
-                      <th>No</th>
-                      <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
-                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강과목</th>
-                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">전입일</th>
-                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
-                    </tr>
-                  </thead>
-                  <div class="table-body">
-                    <tbody id="student-tbody" class="stripe">
-                      <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentId}"
-                        th:data-name="${s.studentName}" onclick="openTransferModal(this)">
-                        <td class="checkbox-group">
-                          <input type="checkbox" class="row-checkbox" th:value="${s.studentId}"
-                            onclick="event.stopPropagation();" name="studentNoList" form="inout-form">
-                        </td>
-                        <td th:text="${iterStat.count}"></td>
-                        <td th:text="${s.studentName}"></td>
-                        <td th:text="${s.gradeName}"></td>
-                        <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass 
+                    <div class="mt">
+                        <div class="table-frame move-t-frame">
+                            <table class="basic-table yh">
+                                <colgroup>
+                                    <col width="5%">
+                                    <col width="5%">
+                                    <col width="15%">
+                                    <col width="10%">
+                                    <col width="20%">
+                                    <col width="15%">
+                                    <col width="20%">
+                                </colgroup>
+                                <thead id="transfer-sort-header">
+                                <tr>
+                                    <th class="checkbox-group"><input type="checkbox"></th>
+                                    <th>No</th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="transfer-sort-3" th:src="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">이름
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="transfer-sort-4" th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             class="svg-sort">학년
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="transfer-sort-5" th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             class="svg-sort">수강과목
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="transfer-sort-6" th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             class="svg-sort">전입일
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="transfer-sort-7" th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             class="svg-sort">담임
+                                    </th>
+                                </tr>
+                                </thead>
+                                <div class="table-body">
+                                    <tbody id="student-tbody" class="stripe">
+                                    <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentId}"
+                                        th:data-name="${s.studentName}" onclick="openTransferModal(this)">
+                                        <td class="checkbox-group">
+                                            <input type="checkbox" class="row-checkbox" th:value="${s.studentId}"
+                                                   onclick="event.stopPropagation();" name="studentNoList" form="inout-form">
+                                        </td>
+                                        <td th:text="${iterStat.count}"></td>
+                                        <td th:text="${s.studentName}"></td>
+                                        <td th:text="${s.gradeName}"></td>
+                                        <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass
                                   : (s.hanClass != null ? s.hanClass 
                                   : (s.bookClass != null ? s.bookClass : ''))}"></td>
-                        <td th:text="${s.entryDate ?: ''}"></td>
-                        <td th:text="${s.hanTeacher != null && s.bookTeacher != null ? s.hanTeacher + '(한자), ' + s.bookTeacher +'(독서)'
+                                        <td th:text="${s.entryDate ?: ''}"></td>
+                                        <td th:text="${s.hanTeacher != null && s.bookTeacher != null ? s.hanTeacher + '(한자), ' + s.bookTeacher +'(독서)'
                                   : (s.hanTeacher != null ? s.hanTeacher + '(한자)'
                                   : (s.bookTeacher != null ? s.bookTeacher + '(독서)' : ''))}"></td>
-                      </tr>
-                    </tbody>
-                  </div>
-                </table>
-              </div>
-            </div>
-          </section>
-          <!-- section:right -->
-          <section class="move-desc">
-            <div class="move-reason">
-              <div class="move-reason-frame">
-                <div class="common-title">
-                  <h2>전입 / 전출</h2>
-                </div>
-                <form th:action="@{/student/inout}" method="post" class="inout-form" id="inout-form">
-                  <div class="detail-sub">
-                    <h4>전출과목</h4>
-                  </div>
-                  <div class="input-row">
-                    <div class="checkbox-group2">
-                      <input type="checkbox" id="inout-han" name="inoutHan" value="1">한자수업
+                                    </tr>
+                                    </tbody>
+                                </div>
+                            </table>
+                        </div>
                     </div>
-                    <div class="checkbox-group2" style="margin-left: 10px;">
-                      <input type="checkbox" id="inout-read" name="inoutRead" value="2">독서수업
-                    </div>
-                  </div>
-                  <div class="form-line"></div>
-                  <div class="detail-sub">
-                    <h4>전출 일자</h4>
-                  </div>
-                  <div class="icon-field">
-                    <div class="display-date"></div>
-                    <div style="position: relative;">
-                      <input type="date" class="hidden-date datepicker" name="moveAt">
-                      <button type="button" class="icon-btn calendar-open">
-                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                      </button>
-                    </div>
-                  </div>
-                  <div class="form-line"></div>
-                  <div class="detail-sub">
-                    <h4>전입할 선생님</h4>
-                  </div>
-                  <div class="input-row">
-                    <div class="basic-select" style="width: 100%;">
-                      <select name="teacherNo" id="teacher-filter">
-                        <th:block th:each="teacher : ${teachers}">
-                          <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
-                        </th:block>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="form-line"></div>
-                  <div class="detail-sub">
-                    <h4>사유</h4>
-                  </div>
-                  <div class="input-row">
+                </section>
+                <!-- section:right -->
+                <section class="move-desc">
+                    <div class="move-reason">
+                        <div class="move-reason-frame">
+                            <div class="common-title">
+                                <h2>전입 / 전출</h2>
+                            </div>
+                            <form th:action="@{/student/inout}" method="post" class="inout-form" id="inout-form">
+                                <div class="detail-sub">
+                                    <h4>전출과목</h4>
+                                </div>
+                                <div class="input-row">
+                                    <div class="checkbox-group2">
+                                        <input type="checkbox" id="inout-han" name="inoutHan" value="1">한자수업
+                                    </div>
+                                    <div class="checkbox-group2" style="margin-left: 10px;">
+                                        <input type="checkbox" id="inout-read" name="inoutRead" value="2">독서수업
+                                    </div>
+                                </div>
+                                <div class="form-line"></div>
+                                <div class="detail-sub">
+                                    <h4>전출 일자</h4>
+                                </div>
+                                <div class="icon-field">
+                                    <div class="display-date"></div>
+                                    <div style="position: relative;">
+                                        <input type="date" class="hidden-date datepicker" name="moveAt">
+                                        <button type="button" class="icon-btn calendar-open">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-line"></div>
+                                <div class="detail-sub">
+                                    <h4>전입할 선생님</h4>
+                                </div>
+                                <div class="input-row">
+                                    <div class="basic-select" style="width: 100%;">
+                                        <select name="teacherNo" id="teacher-filter">
+                                            <th:block th:each="teacher : ${teachers}">
+                                                <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-line"></div>
+                                <div class="detail-sub">
+                                    <h4>사유</h4>
+                                </div>
+                                <div class="input-row">
                     <textarea id="consult-content" name="transferReason" rows="7"
-                      placeholder="전출 사유를 작성해 주세요."></textarea>
-                  </div>
-                  <button type="submit" class="save-btn">저장하기</button>
-                </form>
-              </div>
-            </div>
+                              placeholder="전출 사유를 작성해 주세요."></textarea>
+                                </div>
+                                <button type="submit" class="save-btn">저장하기</button>
+                            </form>
+                        </div>
+                    </div>
 
-            <!-- section: inout-modal -->
-            <div class="modal inout-modal" id="transfer-modal">
-              <div class="move-list">
-                <div class="move-list-frame">
-                  <div class="m-t-line">
-                    <div class="title">전체 전입/전출 내역</div>
-                    <a href="#" class="btn-close"></a>
-                  </div>
-                  <div class="modal-bflex">
-                    <div class="icon-field basic-input cal-adjust">
-                      <span>2024-07 ~ 2025-06</span>
-                      <button class="icon-btn" style="background: transparent;">
-                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                      </button>
+                    <!-- section: inout-modal -->
+                    <div class="modal inout-modal" id="transfer-modal">
+                        <div class="move-list">
+                            <div class="move-list-frame">
+                                <div class="m-t-line">
+                                    <div class="title">전체 전입/전출 내역</div>
+                                    <a href="#" class="btn-close"></a>
+                                </div>
+                                <div class="modal-bflex">
+                                    <div class="icon-field basic-input cal-adjust">
+                                        <span>2024-07 ~ 2025-06</span>
+                                        <button class="icon-btn" style="background: transparent;">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                    <div class="checked-btns">
+                                        <div class="common-btn checked-btn">선택한 내역 삭제</div>
+                                    </div>
+                                </div>
+                                <div class="mt">
+                                    <div class="table-frame move-frame">
+                                        <table class="basic-table content-table yh">
+                                            <colgroup>
+                                                <col width="10%">
+                                                <col width="10%">
+                                                <col width="15%">
+                                                <col width="10%">
+                                                <col width="15%">
+                                                <col width="15%">
+                                                <col width="15%">
+                                                <col width="20%">
+                                            </colgroup>
+                                            <thead>
+                                            <tr>
+                                                <th class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </th>
+                                                <th>No</th>
+                                                <th>일자</th>
+                                                <th>이름</th>
+                                                <th>수강과목</th>
+                                                <th>전출 선생님</th>
+                                                <th>전입 선생님</th>
+                                                <th>사유</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody class="stripe">
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2025-06-01</td>
+                                                <td>김호일</td>
+                                                <td>한스쿨</td>
+                                                <td>김하나</td>
+                                                <td>이성하</td>
+                                                <td>인원 미달로 합반</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="checked-btns">
-                      <div class="common-btn checked-btn">선택한 내역 삭제</div>
-                    </div>
-                  </div>
-                  <div class="mt">
-                    <div class="table-frame move-frame">
-                      <table class="basic-table content-table yh">
-                        <colgroup>
-                          <col width="10%">
-                          <col width="10%">
-                          <col width="15%">
-                          <col width="10%">
-                          <col width="15%">
-                          <col width="15%">
-                          <col width="15%">
-                          <col width="20%">
-                        </colgroup>
-                        <thead>
-                          <tr>
-                            <th class="checkbox-group">
-                              <input type="checkbox">
-                            </th>
-                            <th>No</th>
-                            <th>일자</th>
-                            <th>이름</th>
-                            <th>수강과목</th>
-                            <th>전출 선생님</th>
-                            <th>전입 선생님</th>
-                            <th>사유</th>
-                          </tr>
-                        </thead>
-                        <tbody class="stripe">
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                          <tr>
-                            <td class="checkbox-group">
-                              <input type="checkbox">
-                            </td>
-                            <td>1</td>
-                            <td>2025-06-01</td>
-                            <td>김호일</td>
-                            <td>한스쿨</td>
-                            <td>김하나</td>
-                            <td>이성하</td>
-                            <td>인원 미달로 합반</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                </section>
             </div>
-          </section>
-        </div>
-      </main>
+        </main>
     </div>
-  </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        initHeaderSort('transfer', '#student-tbody');
+    });
+</script>
 </body>
 
 </html>

@@ -40,9 +40,10 @@ public class ClassInstance {
     private User user;
 
     @Builder
-    public ClassInstance(Integer classInstanceNo, ClassCode classCode, User user) {
+    public ClassInstance(Integer classInstanceNo, ClassCode classCode, UnitCode unitCode, User user) {
         this.classInstanceNo = classInstanceNo;
         this.classCode = classCode;
+        this.unitCode = unitCode;
         this.user = user;
     }
 

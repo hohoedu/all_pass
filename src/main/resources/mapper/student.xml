@@ -15,71 +15,11 @@
                 #{gradeNo}, #{levelNo}, #{statusNo}, #{appId} #{studentPrivacyAgree});
     </insert>
 
-    <select id="findAll" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentsListDTO">
-        WITH latest_history AS (SELECT *,
-                                       ROW_NUMBER() OVER (
-                   PARTITION BY student_no
-                   ORDER BY updated_at DESC
-               ) AS rn
-                                FROM STATUS_HISTORY)
-        SELECT s.student_id                                                    AS studentId,
-               s.student_no                                                    AS studentNo,
-               s.student_name                                                  AS studentName,
-               s.school                                                        AS school,
-               grade.grade                                                     AS grade,
-               l.level                                                         AS level,
-               s.gender                                                        AS gender,
-               s.birth                                                         AS birth,
-               s.address                                                       AS address,
-               s.address_detail                                                AS addressDetail,
-               c.center_name                                                   AS center,
-               s.entry_han_date                                                AS entryHanDate,
-               s.entry_book_date                                               AS entryBookDate,
-
-               MAX(CASE WHEN class.class_type = '1' THEN class.class_name END) AS hanClass,
-               MAX(CASE WHEN class.class_type = '2' THEN class.class_name END) AS bookClass,
-
-               CASE
-                   WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL THEN NULL
-                   ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
-                   END                                                         AS parentTel,
-
-               h.status_no                                                     AS status,
-               h.reason,
-
-               -- 형제 여부
-               CASE
-                   WHEN COUNT(sb2.student_no) > 1 THEN 'Y'
-                   ELSE 'N'
-                   END                                                         AS isSibling
-
-        FROM STUDENT_TB s
-
-                 LEFT JOIN sibling sb ON sb.student_no = s.student_no
-                 LEFT JOIN sibling sb2 ON sb.sibling_code = sb2.sibling_code
-
-                 LEFT JOIN latest_history h ON s.student_no = h.student_no AND h.rn = 1
-
-                 LEFT JOIN GRADE_CODE grade ON s.grade_no = grade.grade_no
-                 LEFT JOIN LEVEL_CODE l ON s.level_no = l.level_no
-                 LEFT JOIN CENTER_TB c ON s.center_no = c.center_no
-
-                 LEFT JOIN STUDENT_CLASS stu_class ON s.student_no = stu_class.student_no
-                 LEFT JOIN CLASS_INSTANCE ci ON ci.class_instance_no = stu_class.class_instance_no
-                 LEFT JOIN CLASS_CODE class ON class.class_no = ci.class_no
-
-            -- 부모 정보
-                 LEFT JOIN PARENT p ON p.student_no = s.student_no
-
-        WHERE s.center_no = #{centerNo}
-
-        GROUP BY s.student_no, s.student_name, s.school, grade.grade, l.level, s.gender, s.birth,
-                 s.address, s.address_detail, c.center_name, s.entry_han_date, s.entry_book_date,
-                 s.created_at, h.status_no, h.reason,
-                 p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last,
-                 sb.sibling_code, s.student_id
-
-        ORDER BY s.student_name;
+    <select id="findstudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentsListDTO">
+        SELECT *
+        FROM ERP_STUDENT s
+                 JOIN erp_grade_code g ON s.grade_key = g.grade_key
+        WHERE s.center_code = #{centerCode}
     </select>
 
     <select id="findStudentByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
@@ -88,9 +28,8 @@
                PARTITION BY student_no
                ORDER BY updated_at DESC
            ) AS rn
-                                FROM STATUS_HISTORY)
+                                FROM ERP_STATUS_HISTORY)
         SELECT s.student_id                                                    AS studentId,
-               s.student_no                                                    AS studentNo,
                s.student_name                                                  AS studentName,
                s.school                                                        AS school,
                grade.grade                                                     AS grade,

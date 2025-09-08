@@ -11,11 +11,11 @@ public class StudentRespDTO {
 
     @Data
     public static class StudentsListDTO {
-        private Integer studentNo;
-        private String school;
+        private String studentId;
         private String studentName;
-        private String grade;
-        private String level;
+        private String school;
+        private String gradeName;
+        private String levelName;
         private String gender;
         private String birth;
         private String address;
@@ -23,7 +23,6 @@ public class StudentRespDTO {
         private String center;
         private String entryHanDate;
         private String entryBookDate;
-        private Timestamp statusModifiedAt;
         private String status;
         private String statusName;
         private String reason;

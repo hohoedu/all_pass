@@ -1,4 +1,3 @@
-
 // 모달 띄우기
 function openModal(row) {
     const studentId = row.getAttribute("data-id");
@@ -78,7 +77,77 @@ function openModal(row) {
 
 document.addEventListener('DOMContentLoaded', applyTfootStripe);
 
+// 사용: initHeaderSort('main', '#main-student-tbody');
+function initHeaderSort(prefix, tbodySelector) {
+    const h = document.getElementById(`${prefix}-sort-header`);
+    if (!h) return;
 
+    const sel = `img[id^="${prefix}-sort-"].svg-sort`;
+    const orderMap = {};
+    const colType = {2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text'};
+    const koCmp = new Intl.Collator('ko-KR', {numeric: true, sensitivity: 'base'});
+
+    h.addEventListener('click', e => {
+        const th = e.target.closest('th');
+        if (!th || !h.contains(th)) return;
+
+        const target = th.querySelector(sel);
+        if (!target) return;
+
+        // 아이콘 리셋 + 선택
+        h.querySelectorAll(sel).forEach(i => i.src = (i.dataset.normal || i.src).replace('sort_checked.svg', 'sort.svg'));
+        target.src = (target.dataset.checked || target.src).replace('sort.svg', 'sort_checked.svg');
+
+        // 정렬할 컬럼 번호 (id 예: main-sort-4)
+        const col = parseInt(target.id.replace(`${prefix}-sort-`, ''), 10);
+        if (!col || col === 1 || col === 8) return;
+
+        orderMap[col] = orderMap[col] === 'asc' ? 'desc' : 'asc';
+
+        sortTbody(tbodySelector, col, colType[col] || 'text', orderMap[col], koCmp);
+    });
+
+    function sortTbody(tbodySel, col, type, dir, collator) {
+        const tbody = document.querySelector(tbodySel);
+        if (!tbody) return;
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        const getVal = tr => {
+            const td = tr.querySelector(`td:nth-child(${col})`);
+            if (!td) return '';
+            const raw = (td.getAttribute('data-sort-value') ?? td.textContent ?? '').trim();
+            if (type === 'number') {
+                const n = Number(raw.replace(/[^\d.-]/g, ''));
+                return isNaN(n) ? Number.NEGATIVE_INFINITY : n;
+            }
+            if (type === 'date') {
+                const t = Date.parse(raw.replaceAll('.', '-').replaceAll('/', '-'));
+                return isNaN(t) ? -8640000000000000 : t;
+            }
+            return raw;
+        };
+
+        rows.sort((a, b) => {
+            const va = getVal(a), vb = getVal(b);
+            let cmp = 0;
+            if (type === 'number' || type === 'date') cmp = va < vb ? -1 : va > vb ? 1 : 0;
+            else cmp = collator.compare(String(va), String(vb));
+            return dir === 'asc' ? cmp : -cmp;
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+
+        Array.from(tbody.querySelectorAll('tr')).forEach((tr, i) => {
+            const noTd = tr.querySelector('td:nth-child(1)');
+            if (noTd) noTd.textContent = String(i + 1);
+        });
+    }
+}
+
+// 페이지에서 호출
+document.addEventListener('DOMContentLoaded', () => {
+    initHeaderSort('main', '#main-student-tbody');
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('inout-form');
@@ -178,9 +247,9 @@ document.addEventListener('click', function (e) {
                         : '';
                 });
         }).catch(err => {
-            console.error("요청 오류:", err);
-            alert("오류가 발생했습니다.");
-        });
+        console.error("요청 오류:", err);
+        alert("오류가 발생했습니다.");
+    });
 });
 
 
@@ -218,13 +287,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    fetchSnapshotData({ period: "1y" });
+    fetchSnapshotData({period: "1y"});
 
     document.querySelectorAll("input[name='period']").forEach((radio) => {
         radio.addEventListener("change", function () {
             const period = this.value;
             if (period === "custom") return;
-            fetchSnapshotData({ period });
+            fetchSnapshotData({period});
         });
     });
 
@@ -247,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (startMonth > endMonth) [startMonth, endMonth] = [endMonth, startMonth];
 
             selectedRange.textContent = `${startMonth} ~ ${endMonth}`;
-            fetchSnapshotData({ startYm: startMonth, endYm: endMonth });
+            fetchSnapshotData({startYm: startMonth, endYm: endMonth});
 
             startMonth = null;
             endMonth = null;
@@ -262,9 +331,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("시작월과 종료월을 모두 선택해주세요.");
                 return;
             }
-            fetchSnapshotData({ startYm: startMonth, endYm: endMonth });
+            fetchSnapshotData({startYm: startMonth, endYm: endMonth});
         } else {
-            fetchSnapshotData({ period });
+            fetchSnapshotData({period});
         }
     });
 });
@@ -335,7 +404,7 @@ function updateChartWithTableData(data) {
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false },
+                legend: {display: false},
                 tooltip: {
                     callbacks: {
                         label: function (context) {
@@ -347,8 +416,8 @@ function updateChartWithTableData(data) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 10 },
-                    grid: { display: false }
+                    ticks: {stepSize: 10},
+                    grid: {display: false}
                 }
             }
         }
@@ -368,6 +437,7 @@ function applyTfootStripe() {
         }
     }
 }
+
 // ============================학생관리 메인============================ //
 // 선생님 별 학생 필터링
 document.addEventListener("DOMContentLoaded", () => {
@@ -540,60 +610,60 @@ function openTransferModal(rowEl) {
     document.body.style.overflow = 'hidden';
 
     fetch(`/student/transfer/${encodeURIComponent(studentNo)}`)
-    .then(res => {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(data => {
-      const list = (data && (data.response ?? data.data ?? data)) || [];
-      loading.style.display = 'none';
-      if (!Array.isArray(list) || list.length === 0) {
-        emptyBox.style.display = 'block';
-        return;
-      }
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(data => {
+            const list = (data && (data.response ?? data.data ?? data)) || [];
+            loading.style.display = 'none';
+            if (!Array.isArray(list) || list.length === 0) {
+                emptyBox.style.display = 'block';
+                return;
+            }
 
-      // 안전 렌더링(textContent 사용)
-    //   list.forEach((item, idx) => {
-    //     // 서버 필드명 예시 가정: move_type, move_at, from_center, to_center, reason
-    //     // (다르면 아래 키만 바꿔주세요)
-    //     const moveType   = item.moveType ?? item.move_type ?? item.type ?? '';
-    //     const moveAt     = item.moveAt   ?? item.move_at   ?? item.movedAt ?? '';
-    //     const fromCenter = item.fromCenter ?? item.from_center ?? item.prevCenter ?? '';
-    //     const toCenter   = item.toCenter   ?? item.to_center   ?? item.nextCenter ?? '';
-    //     const reason     = item.reason ?? '';
+            // 안전 렌더링(textContent 사용)
+            //   list.forEach((item, idx) => {
+            //     // 서버 필드명 예시 가정: move_type, move_at, from_center, to_center, reason
+            //     // (다르면 아래 키만 바꿔주세요)
+            //     const moveType   = item.moveType ?? item.move_type ?? item.type ?? '';
+            //     const moveAt     = item.moveAt   ?? item.move_at   ?? item.movedAt ?? '';
+            //     const fromCenter = item.fromCenter ?? item.from_center ?? item.prevCenter ?? '';
+            //     const toCenter   = item.toCenter   ?? item.to_center   ?? item.nextCenter ?? '';
+            //     const reason     = item.reason ?? '';
 
-    //     const tr = document.createElement('tr');
+            //     const tr = document.createElement('tr');
 
-    //     const tdIdx = document.createElement('td');
-    //     tdIdx.textContent = String(idx + 1);
+            //     const tdIdx = document.createElement('td');
+            //     tdIdx.textContent = String(idx + 1);
 
-    //     const tdType = document.createElement('td');
-    //     tdType.textContent = moveType; // '전입' / '전출' 등
+            //     const tdType = document.createElement('td');
+            //     tdType.textContent = moveType; // '전입' / '전출' 등
 
-    //     const tdDate = document.createElement('td');
-    //     tdDate.textContent = fmtDate(moveAt);
+            //     const tdDate = document.createElement('td');
+            //     tdDate.textContent = fmtDate(moveAt);
 
-    //     const tdFrom = document.createElement('td');
-    //     tdFrom.textContent = fromCenter;
+            //     const tdFrom = document.createElement('td');
+            //     tdFrom.textContent = fromCenter;
 
-    //     const tdTo = document.createElement('td');
-    //     tdTo.textContent = toCenter;
+            //     const tdTo = document.createElement('td');
+            //     tdTo.textContent = toCenter;
 
-    //     const tdReason = document.createElement('td');
-    //     tdReason.textContent = reason;
+            //     const tdReason = document.createElement('td');
+            //     tdReason.textContent = reason;
 
-    //     tr.appendChild(tdIdx);
-    //     tr.appendChild(tdType);
-    //     tr.appendChild(tdDate);
-    //     tr.appendChild(tdFrom);
-    //     tr.appendChild(tdTo);
-    //     tr.appendChild(tdReason);
-    //     tbody.appendChild(tr);
-    //   });
-    })
-    .catch(err => {
-      loading.style.display = 'none';
-      errBox.style.display = 'block';
-      console.error('transfer fetch error:', err);
-    });
+            //     tr.appendChild(tdIdx);
+            //     tr.appendChild(tdType);
+            //     tr.appendChild(tdDate);
+            //     tr.appendChild(tdFrom);
+            //     tr.appendChild(tdTo);
+            //     tr.appendChild(tdReason);
+            //     tbody.appendChild(tr);
+            //   });
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            errBox.style.display = 'block';
+            console.error('transfer fetch error:', err);
+        });
 }

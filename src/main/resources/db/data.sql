@@ -148,11 +148,11 @@ VALUES ('PREP_NOBOOK', '수업도서 안 읽어옴', 'PREP'),
        ('UNDER_LOGIC', '사고력', 'UNDER');
 
 -- 출결 코드 테이블
-INSERT INTO attendance_code (attendance_code)
-VALUES ('수업 전'),
-       ('출석 완료'),
-       ('지각'),
-       ('결석');
+INSERT INTO erp_attendance_code (attendance_key, attendance_name)
+VALUES ('before', '수업 전'),
+       ('present', '출석 완료'),
+       ('late', '지각'),
+       ('absent', '결석');
 
 --------------------------------------------------------------------------------------------------------------------------------------------
 -- 센터 테이블
@@ -247,39 +247,13 @@ VALUES (1, 1, 2),
        (4, 1, 2),
        (11, 1, 2);
 
-INSERT INTO student_class (student_no, class_instance_no)
-VALUES (1, 1),
-       (1, 2),
-       (2, 3),
-       (2, 4),
-       (3, 5),
-       (3, 6),
-       (4, 7),
-       (4, 8),
-       (5, 9),
-       (5, 10),
-       (6, 11),
-       (6, 12),
-       (7, 13),
-       (7, 14),
-       (8, 14),
-       (8, 16),
-       (9, 5),
-       (9, 6),
-       (10, 1),
-       (10, 2),
-       (11, 3),
-       (11, 4),
-       (12, 5),
-       (12, 6);
-
-INSERT INTO student_transfer_history (student_no, from_user_no, to_user_no, class_type, transfer_reason, move_at, created_at)
-VALUES (1, 2, 3, 1, '인원 미달', '2025-07-06', now()),
-       (1, 3, 2, 1, '인원 미달', '2025-07-06', now()),
-       (1, 2, 3, 1, '인원 미달', '2025-07-06', now()),
-       (1, 3, 2, 1, '인원 미달', '2025-07-06', now()),
-       (1, 2, 3, 1, '인원 미달', '2025-07-06', now()),
-       (2, 2, 3, 1, '인원 미달', '2025-07-06', now());
+INSERT INTO erp_student_transfer_history (class_type, student_id, from_user_code, to_user_code, transfer_reason, class_key, move_at, created_at)
+VALUES (1, 'abc001', 'DAE001cos', 'DAE001mango', '인원 미달', 'C001', '2025-07-06', now()),
+       (1, 'abc002', 'DAE001cos', 'DAE001mango', '인원 미달', 'C001', '2025-07-06', now()),
+       (1, 'abc003', 'DAE001cos', 'DAE001mango', '인원 미달', 'C001', '2025-07-06', now()),
+       (1, 'abc004', 'DAE001cos', 'DAE001mango', '인원 미달', 'C001', '2025-07-06', now()),
+       (2, 'abc001', 'DAE001cos', 'DAE001mango', '인원 미달', 'C0010', '2025-07-06', now()),
+       (2, 'abc002', 'DAE001cos', 'DAE001mango', '인원 미달', 'C0010', '2025-07-06', now());
 
 
 INSERT INTO erp_status_history (student_id, status_key, user_id, reason, updated_At)
@@ -304,7 +278,7 @@ INSERT INTO sibling(sibling_code, student_no)
 VALUES ('20250001', 1),
        ('20250001', 2);
 
-INSERT INTO erp_time_table (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_no, grade_key, user_code, created_at, time_table_key)
+INSERT INTO erp_time_table (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at, time_table_key)
 VALUES ('2025', '09', 'mon', 1, '07:50', '08:50', 'C001', 'H01', '13', 'DAE001cos', NOW(), '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
        ('2025', '09', 'wed', 2, '13:50', '18:11', 'C009', 'H01', '13', 'DAE001cos', NOW(), '8349af2f-b797-4d02-9eaf-6e88f2cd7975'),
        ('2025', '09', 'fri', 5, '12:50', '14:00', 'C001', 'H02', '13', 'DAE001cos', NOW(), '8b955091-3f2c-430b-b7e1-565ffa2ee418'),
@@ -320,17 +294,17 @@ VALUES ('2025', '09', 'mon', 1, '07:50', '08:50', 'C001', 'H01', '13', 'DAE001co
        ('2025', '09', 'tue', 6, '17:00', '18:00', 'C0011', 'H02', '11', 'DAE001cos', NOW(), 'a43c5e45-0365-4184-b367-845d6a3ffd12'),
        ('2025', '09', 'sat', 6, '07:50', '08:50', 'C003', 'H03', '12', 'DAE001mango', NOW(), '211ffdb2-8c5a-4bdd-aeed-abcbe5651849');;
 
-INSERT INTO erp_time_table_assign (student_no, week, time_table_code)
-VALUES (1, '4', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
-       (2, '3', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
-       (3, '2', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
-       (4, '1', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
-       (1, '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
-       (2, '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
-       (3, '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
-       (4, '3', '55daf811-622d-4641-a686-dece5d2ef8c1'),
-       (12, '4', '8349af2f-b797-4d02-9eaf-6e88f2cd7975'),
-       (13, '4', '8349af2f-b797-4d02-9eaf-6e88f2cd7975');
+INSERT INTO erp_time_table_assign (student_id, week, time_table_key)
+VALUES ('abc001', '4', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
+       ('abc002', '3', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
+       ('abc003', '2', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
+       ('abc004', '1', '820cc0f0-001e-4919-9863-e7ffb30b57b8'),
+       ('abc001', '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
+       ('abc002', '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
+       ('abc003', '4', '55daf811-622d-4641-a686-dece5d2ef8c1'),
+       ('abc004', '3', '55daf811-622d-4641-a686-dece5d2ef8c1'),
+       ('abc012', '4', '8349af2f-b797-4d02-9eaf-6e88f2cd7975'),
+       ('abc013', '4', '8349af2f-b797-4d02-9eaf-6e88f2cd7975');
 
 INSERT INTO erp_time_table_code (time_table_key, time_table_label, time_table_ym)
 VALUES ('820cc0f0-001e-4919-9863-e7ffb30b57b8', '월 12:50 ~ 13:40 초등천재 1호', '202509'),
@@ -373,13 +347,13 @@ VALUES ('김호일', '2025-07-11', '호호부설유치원', 1, '010-1234-5678', 
        ('김호칠', '2025-07-17', '호호부설유치원', 7, '010-1234-5678', 3, '내용내용내용내용', now()),
        ('김호팔', '2025-07-18', '호호부설유치원', 8, '010-1234-5678', 4, '내용내용내용내용', now());
 
-INSERT INTO student_remark (ym, week, student_no, remark_code_no)
-VALUES ('202509', 2, 1, 1),
-       ('202509', 2, 1, 2),
-       ('202509', 2, 1, 5),
-       ('202509', 2, 2, 1),
-       ('202509', 2, 2, 4),
-       ('202509', 2, 2, 6);
+-- INSERT INTO student_remark (ym, week, student_no, remark_code_no)
+-- VALUES ('202509', 2, 1, 1),
+--        ('202509', 2, 1, 2),
+--        ('202509', 2, 1, 5),
+--        ('202509', 2, 2, 1),
+--        ('202509', 2, 2, 4),
+--        ('202509', 2, 2, 6);
 
 -- INSERT INTO remedial(remedial_subject, absence_date, remedial_date, student_no, user_no, action, updated_at, time_table_no)
 -- VALUES ('초등천재 2호', '2025-07-10', '2025-07-20', 1, 2, false, now(), 1),
@@ -388,19 +362,19 @@ VALUES ('202509', 2, 1, 1),
 --        ('초등수재 3호', '2025-08-10', '2025-08-15', 2, 2, true, now(), 1),
 --        ('초등박사 3호', '2025-08-10', '2025-08-15', 3, 2, false, now(), 1);
 
-INSERT INTO student_attendance (student_no, attendance_no, created_at, in_time, attendance_date, center_code)
-VALUES (1, 1, NOW(), '07:45', '2025-09-02', 'DAE001'),
-       (2, 2, NOW(), '08:01', '2025-09-02', 'DAE001');
+-- INSERT INTO student_attendance (student_no, attendance_no, created_at, in_time, attendance_date, center_code)
+-- VALUES (1, 1, NOW(), '07:45', '2025-09-02', 'DAE001'),
+--        (2, 2, NOW(), '08:01', '2025-09-02', 'DAE001');
 
-INSERT INTO monthly_score
-(question1, question2, question3, question4, question5, question6, question7, question8, student_no, yy, mm, time_table_code, created_at)
-VALUES (true, false, true, true, false, true, false, true, 1, '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
-       (false, false, true, false, true, false, true, true, 2, '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
-       (false, false, false, false, false, false, false, false, 3, '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
-       (false, false, false, false, false, false, false, false, 4, '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
-       (false, false, false, false, false, false, false, false, 1, '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
-       (false, false, false, false, false, false, false, false, 2, '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
-       (false, false, false, false, false, false, false, false, 3, '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
-       (false, false, false, false, false, false, false, false, 4, '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
-       (true, true, true, true, true, true, true, true, 12, '2025', '09', '8349af2f-b797-4d02-9eaf-6e88f2cd7975', NOW()),
-       (true, false, true, false, true, false, true, false, 13, '2025', '09', '8349af2f-b797-4d02-9eaf-6e88f2cd7975', NOW());
+INSERT INTO erp_monthly_score
+(question1, question2, question3, question4, question5, question6, question7, question8, student_id, yy, mm, time_table_key, created_at)
+VALUES (true, false, true, true, false, true, false, true, 'abc001', '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
+       (false, false, true, false, true, false, true, true, 'abc002', '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc003', '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc004', '2025', '09', '820cc0f0-001e-4919-9863-e7ffb30b57b8', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc001', '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc002', '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc003', '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
+       (false, false, false, false, false, false, false, false, 'abc004', '2025', '09', '55daf811-622d-4641-a686-dece5d2ef8c1', NOW()),
+       (true, true, true, true, true, true, true, true, 'abc012', '2025', '09', '8349af2f-b797-4d02-9eaf-6e88f2cd7975', NOW()),
+       (true, false, true, false, true, false, true, false, 'abc013', '2025', '09', '8349af2f-b797-4d02-9eaf-6e88f2cd7975', NOW());

@@ -18,40 +18,46 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Getter
-@Table(name = "counseling")
+@Table(name = "erp_counseling")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Counseling {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer counselingNo;
+    private Integer id;
 
-    @Column
+    @Column(name = "content", columnDefinition = "NVARCHAR(1000)", nullable = false)
     private String content;
 
+    @Column(name = "week", length = 10)
     private String week;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
     private Timestamp createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private Timestamp updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_no")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
 
     @Builder
-    public Counseling(Integer counselingNo, String content, User user, Student student) {
-        this.counselingNo = counselingNo;
+    public Counseling(String content, String week, User user, Student student) {
         this.content = content;
+        this.week = week;
         this.user = user;
         this.student = student;
     }
-
 }

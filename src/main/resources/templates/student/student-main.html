@@ -17,119 +17,165 @@
 </head>
 
 <body>
-    <div class="main-container">
-        <div class="main-frame">
-            <!-- left nav bar -->
-            <div id="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
-            <main class="main-info">
-                <div class="student-frame">
-                    <!-- section:left -->
-                    <section class="info-summary">
-                        <div class="common-title">
-                            <h2>학생 정보</h2>
-                            <div class="header-btns">
-                                <div class="grade-up common-btn">학년 내리기</div>
-                                <div class="grade-down common-btn">학년 올리기</div>
-                                <div class="new-regist common-btn">+ 신규 등록</div>
-                            </div>
+<div class="main-container">
+    <div class="main-frame">
+        <!-- left nav bar -->
+        <div id="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
+        <main class="main-info">
+            <div class="student-frame">
+                <!-- section:left -->
+                <section class="info-summary">
+                    <div class="common-title">
+                        <h2>학생 정보</h2>
+                        <div class="header-btns">
+                            <div class="grade-up common-btn">학년 내리기</div>
+                            <div class="grade-down common-btn">학년 올리기</div>
+                            <div class="new-regist common-btn">+ 신규 등록</div>
                         </div>
-                        <div class="info-filters">
-                            <div class="info-arrange">
-                                <div class="stu-left">
-                                    <div class="basic-select sl1">
-                                        <select name="teacherNo" id="main-teacher-filter">
-                                            <option value="all">전체</option>
-                                            <th:block th:each="teacher : ${teachers}">
-                                                <option th:value="${teacher.userCode}"
+                    </div>
+                    <div class="info-filters">
+                        <div class="info-arrange">
+                            <div class="stu-left">
+                                <div class="basic-select sl1">
+                                    <select name="teacherNo" id="main-teacher-filter">
+                                        <option value="all">전체</option>
+                                        <th:block th:each="teacher : ${teachers}">
+                                            <option th:value="${teacher.userCode}"
                                                     th:text="${teacher.userName + ' 선생님'}"></option>
-                                            </th:block>
-                                        </select>
-                                    </div>
-                                    <div class="basic-select sl2">
-                                        <select name="labelNo" id="main-subject-filter">
-                                            <option value="all">전체</option>
-                                            <th:block th:each="label : ${labels}">
-                                                <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">
-                                                </option>
-                                            </th:block>
-                                        </select>
-                                    </div>
+                                        </th:block>
+                                    </select>
                                 </div>
-                                <div class="stu-right">
-                                    <div class="sl3">
-                                        <div class="basic-select" style="flex: 1;">
-                                            <select name="stuName" id="stu-name">
-                                                <option value="all">이름</option>
-                                                <option value="">수강과목</option>
-                                                <option value="">학교/유치원</option>
-                                            </select>
-                                        </div>
-                                        <div class="search-box" style="flex: 2;">
-                                            <input type="text" id="search-name" name="searchName">
-                                        </div>
-                                    </div>
-                                    <div class="explore common-btn sl4">검색</div>
+                                <div class="basic-select sl2">
+                                    <select name="labelNo" id="main-subject-filter">
+                                        <option value="all">전체</option>
+                                        <th:block th:each="label : ${labels}">
+                                            <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">
+                                            </option>
+                                        </th:block>
+                                    </select>
                                 </div>
                             </div>
+                            <div class="stu-right">
+                                <div class="sl3">
+                                    <div class="basic-select" style="flex: 1;">
+                                        <select name="stuName" id="stu-name">
+                                            <option value="all">이름</option>
+                                            <option value="">수강과목</option>
+                                            <option value="">학교/유치원</option>
+                                        </select>
+                                    </div>
+                                    <div class="search-box" style="flex: 2;">
+                                        <input type="text" id="search-name" name="searchName">
+                                    </div>
+                                </div>
+                                <div class="explore common-btn sl4">검색</div>
+                            </div>
                         </div>
-                        <div class="mt">
-                            <div class="table-frame stu-info-t">
-                                <table class="basic-table yh">
-                                    <colgroup>
-                                        <col width="5%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                        <col width="15%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                        <col width="15%">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">상태</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">입회일</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강과목</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학교/유치원</th>
-                                            <th>형제연결</th>
-                                        </tr>
-                                    </thead>
+                    </div>
+                    <div class="mt">
+                        <div class="table-frame stu-info-t">
+                            <table class="basic-table yh">
+                                <colgroup>
+                                    <col width="5%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="15%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="15%">
+                                </colgroup>
+                                <thead id="main-sort-header">
+                                <tr>
+                                    <th style="cursor:default">No</th>
 
-                                    <tbody id="main-student-tbody" class="stripe" th:if="${students}">
-                                        <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentId}"
-                                            onclick="openModal(this)">
-                                            <td th:text="${iterStat.count}">1</td>
-                                            <td th:text="${s.studentName}">김호호</td>
-                                            <td th:text="${s.statusName}"></td>
-                                            <td th:text="${s.entryDate}"></td>
-                                            <td th:text="${(s.hanClass ?: '') 
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-2"
+                                             th:src="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">이름
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-3"
+                                             th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">상태
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-4"
+                                             th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">입회일
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-5"
+                                             th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">수강과목
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-6"
+                                             th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">학년
+                                    </th>
+
+                                    <th style="cursor:pointer">
+                                        <img id="main-sort-7"
+                                             th:src="@{/image/sort.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
+                                             alt="" class="svg-sort">학교/유치원
+                                    </th>
+
+                                    <th style="cursor:default">형제연결</th>
+                                </tr>
+                                </thead>
+
+                                <tbody id="main-student-tbody" class="stripe" th:if="${students}">
+                                <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentId}"
+                                    onclick="openModal(this)">
+                                    <td th:text="${iterStat.count}">1</td>
+                                    <td th:text="${s.studentName}">김호호</td>
+                                    <td th:text="${s.statusName}"></td>
+                                    <td th:text="${s.entryDate}"></td>
+                                    <td th:text="${(s.hanClass ?: '')
                                                 + (!#strings.isEmpty(s.hanClass) and !#strings.isEmpty(s.bookClass) ? ', ' : '') 
                                                 + (s.bookClass ?: '')}">
-                                            <td th:text="${s.gradeName}"></td>
-                                            <td th:text="${s.school}"></td>
-                                            <td>
-                                                <!-- TODO: 형제 정보 불러와서 여기에 툴팁 적용 -->
-                                                <div class="tooltip-container">
-                                                    <img th:src="@{/image/link.png}" alt="link icon" class="link">
-                                                    <div class="tooltip-text">형제: 김호일(초1)</div>
-                                                </div>
-                                                <!-- <img th:if="${s.isSibling == 'Y'}" th:src="@{/image/link.png}" alt="형제 링크" class="link"> -->
-                                                <!-- th:attr="title=${#strings.arrayJoin(#lists.map(s.siblingList, sib -> sib.siblingName + ' (' + sib.grade + ')'), ', ')}" -->
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                    <td th:text="${s.gradeName}"></td>
+                                    <td th:text="${s.school}"></td>
+                                    <td>
+                                        <!-- TODO: 형제 정보 불러와서 여기에 툴팁 적용 -->
+                                        <div class="tooltip-container">
+                                            <img th:src="@{/image/link.png}" alt="link icon" class="link">
+                                            <div class="tooltip-text">형제: 김호일(초1)</div>
+                                        </div>
+                                        <!-- <img th:if="${s.isSibling == 'Y'}" th:src="@{/image/link.png}" alt="형제 링크" class="link"> -->
+                                        <!-- th:attr="title=${#strings.arrayJoin(#lists.map(s.siblingList, sib -> sib.siblingName + ' (' + sib.grade + ')'), ', ')}" -->
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </section>
-                </div>
-            </main>
-        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
-    <div th:replace="~{student/student-modal :: studentModal}"></div>
+</div>
+<div th:replace="~{student/student-modal :: studentModal}"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => initHeaderSort('main', '#main-student-tbody'));
+</script>
 </body>
 
 </html>

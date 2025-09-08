@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableLabelDTO;
-import com.hohoedu.all_pass.parent.code.RelationCode;
+import com.hohoedu.all_pass.family.model.RelationCode;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO.MainStudentDTO;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentInOutDTO;

@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class GradeCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "grade_key", nullable = false, length = 20)
     private String gradeKey;

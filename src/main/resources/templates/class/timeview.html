@@ -48,7 +48,7 @@
                 <div class="basic-select">
                   <select name="teacher" id="teacher-select" style="width: 200px;">
                     <option value="all">선생님 전체</option>
-                    <option th:each="u : ${users}" th:value="${u.userNo}" th:text="${u.username}">
+                    <option th:each="u : ${users}" th:value="${u.userCode}" th:text="${u.userName}">
                     </option>
                   </select>
                 </div>
@@ -69,7 +69,7 @@
                       th:with="tt=${dayMap[periodNo.toString()]}">
                       <div th:class="timetable-lookup-box" th:classappend="${tt.classType eq '1'} ? ' pink' : ' blue'">
                         <div class="header" th:utext="${tt.startTime} + ' ~ ' + ${tt.endTime} + '<br>
-                            <strong>' + ${tt.className} + ' ' + ${tt.unitCode} + '</strong>'">
+                            <strong>' + ${tt.className} + ' ' + ${tt.unitName} + '</strong>'">
                         </div>
                         <div class="inner-grid">
                           <div th:each="stu : ${tt.students}" th:text="${stu.studentName}"

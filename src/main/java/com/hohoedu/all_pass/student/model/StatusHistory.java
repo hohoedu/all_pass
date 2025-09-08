@@ -29,7 +29,7 @@ public class StatusHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "reason", length = 200)
     private String reason;
@@ -39,7 +39,7 @@ public class StatusHistory {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -47,7 +47,7 @@ public class StatusHistory {
     private StatusCode statusCode;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code", nullable = false)
     private User user;
 
     @Builder

@@ -1,15 +1,15 @@
 <section class="student-pick-right" th:fragment="studentPickRight">
     <div class="table-frame" style="border-top: none;">
-        <input type="hidden" id="timetableNo" th:value="${timetableNo}" />
+        <input type="hidden" id="timetableNo" th:value="${timetableNo}"/>
         <!-- 요일 버튼 -->
         <div class="time-tab-menu">
             <button class="time-tab-btn" th:each="day, dtStat : ${days}"
-                th:classappend="${dtStat.index == 0} ? ' active'" th:attr="data-tab=${day.id}"
-                th:text="${day.label}"></button>
+                    th:classappend="${dtStat.index == 0} ? ' active'" th:attr="data-tab=${day.id}"
+                    th:text="${day.label}"></button>
         </div>
         <div class="table-frame time-table-frame bt">
             <div class="time-tab-content" th:each="day, dtStat : ${days}" th:id="${day.id}"
-                th:classappend="${dtStat.index == 0} ? ' active'">
+                 th:classappend="${dtStat.index == 0} ? ' active'">
 
                 <table class="basic-table time-table stripe">
                     <colgroup>
@@ -20,94 +20,111 @@
                         <col width="50%">
                     </colgroup>
                     <thead>
-                        <tr>
-                            <th></th>
-                            <th>교시</th>
-                            <th>시간</th>
-                            <th>과목</th>
-                            <th>학생</th>
-                        </tr>
+                    <tr>
+                        <th></th>
+                        <th>교시</th>
+                        <th>시간</th>
+                        <th>과목</th>
+                        <th>학생</th>
+                    </tr>
                     </thead>
                     <tbody id="timeTableBody" class="time-table-body" th:with="dayMap=${tableMap.get(day.id)}">
-                        <tr class="time-row" th:each="i : ${#numbers.sequence(1,6)}"
-                            th:with="entry=${dayMap != null} ? ${dayMap[i + '']} : null"
-                            th:data-timetable-no="${entry != null} ? ${entry.timeTableNo} : ''"
-                            th:data-time-table-code="${entry != null} ? ${entry.timeTableCode} : ''">
-                            <td class="radio-group round">
-                                <input type="radio" th:attr="name=${'selectedPeriod_' + day.id}"
-                                    th:checked="${i == 1}" />
-                            </td>
-                            <td th:text="${i}">1</td>
-                            <td>
-                                <div class="time-boxes">
-                                    <div class="time-start">
-                                        시작
-                                        <input type="text" class="time_input"
-                                            th:value="${entry != null} ? ${entry.startTime} : ''" placeholder="00:00"
-                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$" inputmode="numeric" maxlength="5"
-                                            title="시간은 24시간 기준으로 입력하세요" />
-                                    </div>
-                                    <div class="time-end">
-                                        종료
-                                        <input type="text" class="time_input"
-                                            th:value="${entry != null} ? ${entry.endTime} : ''" placeholder="00:00"
-                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$" inputmode="numeric" maxlength="5"
-                                            title="시간은 24시간 기준으로 입력하세요" />
-                                    </div>
+                    <tr class="time-row"
+                        th:each="i : ${#numbers.sequence(1,6)}"
+                        th:with="entry=${dayMap != null ? dayMap[i + ''] : null}"
+                        th:data-timetable-no="${entry != null ? entry.timeTableNo : ''}"
+                        th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}">
+                        <td class="radio-group round">
+                            <input type="radio"
+                                   th:attr="name=${'selectedPeriod_' + day.id}"
+                                   th:checked="${i == 1}"/>
+                        </td>
+
+                        <td th:text="${i}">1</td>
+
+                        <td>
+                            <div class="time-boxes">
+                                <div class="time-start">
+                                    시작
+                                    <input type="text" class="time_input"
+                                           th:value="${entry != null ? entry.startTime : ''}"
+                                           placeholder="00:00"
+                                           pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                                           inputmode="numeric" maxlength="5"
+                                           title="시간은 24시간 기준으로 입력하세요"/>
                                 </div>
-                            </td>
-                            <td>
-                                <div class="basic-select square size-160">
-                                    <select name="classNo">
-                                        <option value="">선택 안함</option>
-                                        <option th:each="cc : ${classCodes}" th:value="${cc.classNo}"
+                                <div class="time-end">
+                                    종료
+                                    <input type="text" class="time_input"
+                                           th:value="${entry != null ? entry.endTime : ''}"
+                                           placeholder="00:00"
+                                           pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                                           inputmode="numeric" maxlength="5"
+                                           title="시간은 24시간 기준으로 입력하세요"/>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <!-- class: value/selected 모두 Key로 통일 -->
+                            <div class="basic-select square size-160">
+                                <select name="classKey">
+                                    <option value="">선택 안함</option>
+                                    <option th:each="cc : ${classCodes}"
+                                            th:value="${cc.classKey}"
                                             th:text="${cc.className}"
-                                            th:selected="${entry != null and cc.classNo == entry.classNo}">
+                                            th:selected="${entry != null and cc.classKey == entry.classKey}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="mini-select size-160">
+                                <div class="basic-select square">
+                                    <select name="unitKey">
+                                        <option value="">선택 안함</option>
+                                        <option th:each="u : ${unitCodes}"
+                                                th:value="${u.unitKey}"
+                                                th:text="${u.unitName}"
+                                                th:selected="${entry != null and u.unitKey == entry.unitKey}">
                                         </option>
                                     </select>
                                 </div>
-                                <div class="mini-select size-160">
-                                    <div class="basic-select square">
-                                        <select name="unitNo">
-                                            <option value="">선택 안함</option>
-                                            <option th:each="unit : ${unitCodes}" th:value="${unit.unitNo}"
-                                                th:text="${unit.unitCode}"
-                                                th:selected="${entry != null and unit.unitNo == entry.unitNo}">
-                                            </option>
-                                        </select>
-                                    </div>
-                                    <div class="basic-select square">
-                                        <select name="gradeNo">
-                                            <option value="">선택 안함</option>
-                                            <option th:each="grade : ${grades}" th:value="${grade.gradeNo}"
-                                                th:text="${grade.grade}"
-                                                th:selected="${entry != null and grade.gradeNo == entry.gradeNo}">
-                                            </option>
-                                        </select>
-                                    </div>
+
+                                <div class="basic-select square">
+                                    <select name="gradeKey">
+                                        <option value="">선택 안함</option>
+                                        <option th:each="g : ${grades}"
+                                                th:value="${g.gradeKey}"
+                                                th:text="${g.gradeName}"
+                                                th:selected="${entry != null and g.gradeKey == entry.gradeKey}">
+                                        </option>
+                                    </select>
                                 </div>
-                            </td>
-                            <td>
-                                <!-- <div class="student-badge" data-name="김호이">
-                                    <span class="badge-name">김호이
-                                        <span class="count-num">(3)</span>
-                                    </span>
-                                    <span class="badge-close"></span>
-                                </div> -->
-                                <th:block th:if="${entry != null}">
-                                    <div th:each="stu : ${entry.students}" class="student-badge"
-                                        th:attr="data-name=${stu.studentName}">
-                                        <span class="badge-name" th:text="${stu.studentName}"></span>
-                                        <span class="count-num" th:text="'('+ ${stu.week} +')'"
-                                            th:if="${stu.week <= 3}"></span>
-                                        <span id="assign_delete" class="badge-close"
-                                            th:data-assign-no=${stu.timeTableAssignNo}
-                                            th:data-time-table-code="${stu.timeTableAssignNo}" title="삭제">
-                                        </span>
-                                    </div>
-                                </th:block>
-                            </td>
-                        </tr>
+                            </div>
+                        </td>
+
+                        <td>
+                            <th:block th:if="${entry != null}">
+                                <div th:each="stu : ${entry.students}"
+                                     class="student-badge"
+                                     th:attr="data-name=${stu.studentName}">
+                                    <span class="badge-name" th:text="${stu.studentName}"></span>
+
+                                    <!-- week 문자열 방어 -->
+                                    <span class="count-num"
+                                          th:if="${stu.week != null and (stu.week matches '^\\d+$') and T(java.lang.Integer).parseInt(stu.week) <= 3}"
+                                          th:text="'(' + ${stu.week} + ')'"></span>
+
+                                    <!-- 삭제 버튼 데이터: assignNo가 없으니 우선 studentId 사용(또는 DTO에 timeTableAssignNo 추가) -->
+                                    <span id="assign_delete"
+                                          class="badge-close"
+                                          th:data-student-id="${stu.studentId}"
+                                          th:data-time-table-code="${entry.timeTableKey}"
+                                          title="삭제"></span>
+                                </div>
+                            </th:block>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

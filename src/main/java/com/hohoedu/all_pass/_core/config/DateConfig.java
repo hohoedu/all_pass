@@ -21,6 +21,7 @@ public class DateConfig {
                 .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
                 .toLowerCase(Locale.ENGLISH);
         Map<String, String> map = new HashMap<>();
+        map.put("today", today.toString());
         map.put("currentYear", yy);
         map.put("currentMonth", mm);
         map.put("currentDayName", dayName);

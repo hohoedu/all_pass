@@ -126,24 +126,24 @@ public class ClassService {
 
     public List<TimeTableDTO> findTimeTableWithStudents(String year, String month) {
 
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(2, year, month);
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic("DAE001cos", year, month);
 
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableCode(tt.getTimeTableCode());
+                    .findStudentsByTimeTableKey(tt.getTimeTableKey());
 
             tt.setStudents(students);
         }
         return tables;
     }
 
-    public List<TimeTableDTO> findTableViewWithStudents(String year, String month, Integer userNo) {
+    public List<TimeTableDTO> findTableViewWithStudents(String year, String month, String userCode) {
 
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userNo, year, month);
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, year, month);
 
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableCode(tt.getTimeTableCode());
+                    .findStudentsByTimeTableKey(tt.getTimeTableKey());
 
             while (students.size() < 8) {
                 ClassRespDTO.TimeTableDTO.StudentDTO empty = new ClassRespDTO.TimeTableDTO.StudentDTO();
@@ -177,7 +177,7 @@ public class ClassService {
     }
 
     public List<TimeTableDTO> getLastTimeTable() {
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(2, "2025", "09");
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic("DAE001cos", "2025", "09");
         return tables;
     }
 

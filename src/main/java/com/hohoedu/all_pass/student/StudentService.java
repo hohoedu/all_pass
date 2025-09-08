@@ -1,17 +1,16 @@
 package com.hohoedu.all_pass.student;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
+import com.hohoedu.all_pass.family.FamilyService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.repository.ClassCodeJpaRepository;
 import com.hohoedu.all_pass.parent.ParentService;
-import com.hohoedu.all_pass.parent.code.RelationCode;
+import com.hohoedu.all_pass.family.model.RelationCode;
 import com.hohoedu.all_pass.student._dto.StudentReqDTO;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentInOutDTO;
@@ -25,7 +24,7 @@ import com.hohoedu.all_pass.student.repository.StudentJpaRepository;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.repository.UserRepository;
-import com.hohoedu.all_pass.parent.repository.RelationJpaRepository;
+import com.hohoedu.all_pass.family.repository.RelationJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,21 +40,16 @@ public class StudentService {
     private final UserRepository userRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
 
-    private final ParentService parentService;
+    private final FamilyService familyService;
 
-    public List<Student> findAllByJpa() {
-        List<Student> student = studentJpaRepository.findAll();
-        return student;
-    }
+    public List<Student> findStudentByCenterCode(String centerCode) {
 
-    public List<Student> findAll(String centerNo) {
-        List<Student> student = studentRepository.findAll(centerNo);
+        List<Student> student = studentRepository.findstudentByCenterCode(centerCode);
 
         return student;
     }
 
     public List<MainStudentDTO> getStudentsByClassCode(String timeTableCode) {
-
         List<MainStudentDTO> rows = studentRepository.selectStudentByClassCode(timeTableCode);
         return rows;
     }
@@ -78,7 +72,7 @@ public class StudentService {
         studentDTO.setStudentId("DAE001250730A1B2");
         studentRepository.insert(studentDTO);
         parentDTO.setStudentNo(studentDTO.getStudentNo());
-        parentService.parentInsert(parentDTO);
+        familyService.parentInsert(parentDTO);
     }
 
     public List<GradeCode> findGrade() {
@@ -132,9 +126,6 @@ public class StudentService {
 
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);
-        System.out.println("========================");
-        System.out.println(responseDTO);
-        System.out.println("========================");
         return responseDTO;
 
     }

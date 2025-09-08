@@ -38,12 +38,6 @@ public class StudentController {
     final private StudentService studentService;
     final private ClassService classService;
 
-    @GetMapping("/students")
-    public ResponseEntity<?> findStudents() {
-        List<Student> students = studentService.findAll("DAE001");
-        return ResponseEntity.ok(ApiUtils.success(students));
-    }
-
     @GetMapping("/api/label")
     public ResponseEntity<?> getLabels(@RequestParam("teacherCode") String teacherCode) {
 
@@ -119,9 +113,6 @@ public class StudentController {
             @RequestParam(value = "startYm", required = false) String startYm,
             @RequestParam(value = "endYm", required = false) String endYm,
             @RequestParam(value = "userNo", required = false) Integer userNo) {
-        System.out.println("======================================");
-        System.out.println(userNo);
-        System.out.println("======================================");
 
         if (startYm != null && endYm != null) {
             return studentService.getSnapshot(startYm, endYm, userNo);

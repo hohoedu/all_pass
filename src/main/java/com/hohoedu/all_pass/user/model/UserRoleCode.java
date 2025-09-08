@@ -20,7 +20,7 @@ public class UserRoleCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "role_key", nullable = false, length = 30)
     private String roleKey;

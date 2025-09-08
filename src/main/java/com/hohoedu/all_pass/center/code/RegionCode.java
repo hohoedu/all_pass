@@ -20,7 +20,7 @@ public class RegionCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "region_key", nullable = false, length = 20)
     private String regionKey;

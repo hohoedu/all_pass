@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.student;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,15 +12,6 @@ import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.model.LevelCode;
 import com.hohoedu.all_pass.student.model.StatusCode;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "erp_student")
+@Table(name = "erp_student", uniqueConstraints = @UniqueConstraint(name = "uk_student_id", columnNames = "student_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Student {
 
@@ -42,7 +34,7 @@ public class Student {
     private String studentName;
 
     @Column(nullable = false)
-    private LocalDate birth;
+    private String birth;
 
     @Column(nullable = false)
     private Boolean gender;
@@ -89,7 +81,7 @@ public class Student {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Student(Integer id, String studentId, String studentName, LocalDate birth, Boolean gender, String school,
+    public Student(Integer id, String studentId, String studentName, String birth, Boolean gender, String school,
                    String address, String addressDetail, LocalDate entryHanDate, LocalDate entryBookDate, String appId,
                    Boolean studentPrivacyAgree, GradeCode gradeCode, LevelCode levelCode, StatusCode statusCode, Center center,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {

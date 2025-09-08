@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class StatusCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "status_key", nullable = false, length = 20)
     private String statusKey;

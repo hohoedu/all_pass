@@ -20,7 +20,7 @@ public class RemarkCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "remark_category_key", nullable = false, length = 20)
     private String remarkCategoryKey;
