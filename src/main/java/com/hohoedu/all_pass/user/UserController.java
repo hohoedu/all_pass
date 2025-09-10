@@ -28,27 +28,11 @@ public class UserController {
     private final UserService userService;
     private final HttpSession session;
 
-    @ResponseBody
-    @PostMapping("/join")
-    public void joinUser() {
-        User user = User.builder()
-                .userCode("love")
-                .passwordHash("4321")
-                .userName("러브")
-                .role(UserRoleCode.builder().roleKey("ULS001love").build())
-                .center(Center.builder().centerCode("ULS001").build())
-                .build();
-
-        userService.insert(user);
-
-    }
-
     @PostMapping("/login")
     public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO, RedirectAttributes redirectAttributes) {
 
         try {
             LoginRespDTO dto = userService.login(loginDTO);
-
             session.setAttribute("user", dto);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -66,6 +50,21 @@ public class UserController {
             return "redirect:/login";
 
         }
+    }
+
+    @ResponseBody
+    @PostMapping("/join")
+    public void joinUser() {
+        User user = User.builder()
+                .userCode("love")
+                .passwordHash("4321")
+                .userName("러브")
+                .role(UserRoleCode.builder().roleKey("ULS001love").build())
+                .center(Center.builder().centerCode("ULS001").build())
+                .build();
+
+        userService.insert(user);
+
     }
 
     @GetMapping("/logout")

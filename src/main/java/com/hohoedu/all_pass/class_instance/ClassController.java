@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -47,16 +48,17 @@ public class ClassController {
     @PostMapping("/register")
     public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
         try {
-            String userCode = (String) session.getAttribute("user");
+
 
             for (ClassReqDTO.ClassRegisterDTO req : reqDTO) {
-                classService.registerClass(req, userCode);
+                classService.registerClass(req);
             }
 
             return ResponseEntity.ok(ApiUtils.success("200"));
 
         } catch (Exception e) {
-
+            System.out.println("================오류============");
+            System.out.println("================"+e.getMessage()+"============");
             return ResponseEntity.ok(ApiUtils.error("시간표 등록 실패", HttpStatus.INTERNAL_SERVER_ERROR));
 
         }
@@ -83,8 +85,12 @@ public class ClassController {
     }
 
     @PostMapping("/delete_student")
-    public ResponseEntity<?> timeTableDeleteStudent(@RequestParam("timeTableAssignNo") Integer assignNo) {
-        classService.deleteStudent(assignNo);
+    public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
+        String timeTableKey = request.get("timeTableKey");
+        String studentId = request.get("studentId");
+        System.out.println(timeTableKey);
+        System.out.println(studentId);
+        classService.deleteStudent(timeTableKey,studentId);
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 

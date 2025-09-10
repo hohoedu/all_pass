@@ -13,6 +13,7 @@
         values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime}, #{endTime}, #{classKey}, #{unitKey}, #{gradeKey}, #{userCode}, CURRENT_TIMESTAMP, #{timeTableKey});
     </insert>
 
+    <!--시간표 수정-->
     <update id="updateClass" parameterType="map">
         UPDATE erp_time_table
         SET yy         = #{dto.yy},
@@ -29,17 +30,16 @@
         WHERE time_table_key = #{timeTableKey}
     </update>
 
-    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" useGeneratedKeys="true"
-            keyProperty="timeTableAssignNo" keyColumn="time_table_assign_no">
+    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table_assign
             (student_id, time_table_key, week)
         values (#{studentId}, #{timeTableKey}, #{weekNo});
     </insert>
 
-    <insert id="insertMonthlyScore" useGeneratedKeys="true" keyProperty="dto.monthlyScoreNo" keyColumn="monthly_score_no">
+    <insert id="insertMonthlyScore" parameterType="com.hohoedu.all_pass.class_instance.model.MonthlyScore" keyProperty="id" keyColumn="id">
         INSERT INTO erp_monthly_score
         (question1, question2, question3, question4, question5, question6, question7, question8, student_id, yy, mm, time_table_key, created_at)
-        VALUES (0, 0, 0, 0, 0, 0, 0, 0, #{dto.studentId}, #{yy}, #{mm}, #{dto.timeTableKey}, CURRENT_TIMESTAMP);
+        VALUES (0, 0, 0, 0, 0, 0, 0, 0, #{studentId}, #{yy}, #{mm}, #{timeTableKey}, CURRENT_TIMESTAMP);
     </insert>
 
     <select id="countByTimeTableKey" parameterType="String" resultType="int">
@@ -48,10 +48,11 @@
         WHERE time_table_key = #{timeTableKey}
     </select>
 
-    <delete id="deleteByAssignNo" parameterType="int">
+    <delete id="deleteByKeyAndStudentId" parameterType="String">
         DELETE
-        FROM time_table_assign
-        WHERE time_table_assign_no = #{timeTableAssignNo}
+        FROM erp_time_table_assign
+        WHERE time_table_key = #{timeTableKey}
+          AND student_id = #{studentId}
     </delete>
 
     <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
@@ -68,6 +69,7 @@
                cc.class_type  AS classType,
                cc.class_name  AS className,
                uc.unit_name   AS unitName,
+               G.grade_key    AS gradeKey,
                g.grade_name   AS gradeName
         FROM erp_time_table tt
                  JOIN erp_class_code cc ON tt.class_key = cc.class_key

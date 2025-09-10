@@ -25,10 +25,10 @@ VALUES ('SEO', '서울'),
        ('GWD', '강원'),
        ('JJD', '제주');
 
-INSERT INTO relation_code(relation)
-VALUES ('부'),
-       ('모'),
-       ('기타');
+INSERT INTO erp_relation_code(relation_key, relation_name)
+VALUES ('father','부'),
+       ('mother','모'),
+       ('other','기타');
 
 
 -- 학년 코드 테이블
@@ -256,27 +256,14 @@ VALUES (1, 'abc001', 'DAE001cos', 'DAE001mango', '인원 미달', 'C001', '2025-
        (2, 'abc002', 'DAE001cos', 'DAE001mango', '인원 미달', 'C0010', '2025-07-06', now());
 
 
-INSERT INTO erp_status_history (student_id, status_key, user_id, reason, updated_At)
-VALUES (1, 'ACTIVE', 2, NULL, NOW()),
-       (2, 'ACTIVE', 2, NULL, NOW()),
-       (3, 'PAUSED', 2, '여행으로 인한 1개월 휴원', NOW()),
-       (4, 'ACTIVE', 2, NULL, NOW()),
-       (5, 'ACTIVE', 2, NULL, NOW()),
-       (6, 'ACTIVE', 2, NULL, NOW()),
-       (7, 'ACTIVE', 2, NULL, NOW()),
-       (8, 'ACTIVE', 2, NULL, NOW()),
-       (9, 'ACTIVE', 2, NULL, NOW()),
-       (10, 'ACTIVE', 2, NULL, NOW()),
-       (11, 'ACTIVE', 2, NULL, NOW()),
-       (12, 'ACTIVE', 2, NULL, NOW()),
-       (13, 'ACTIVE', 2, NULL, NOW()),
-       (14, 'ACTIVE', 2, NULL, NOW()),
-       (15, 'ACTIVE', 2, NULL, NOW()),
-       (16, 'ACTIVE', 2, NULL, NOW());
+INSERT INTO erp_status_history (student_id, status_key, user_code, reason, updated_At)
+VALUES ('abc001', 'ACTIVE', 'DAE001cos', NULL, NOW()),
+       ('abc002', 'ACTIVE', 'DAE001cos', NULL, NOW()),
+       ('abc003', 'PAUSED', 'DAE001cos', '여행으로 인한 1개월 휴원', NOW());
 
-INSERT INTO sibling(sibling_code, student_no)
-VALUES ('20250001', 1),
-       ('20250001', 2);
+-- INSERT INTO sibling(sibling_code, student_no)
+-- VALUES ('20250001', 1),
+--        ('20250001', 2);
 
 INSERT INTO erp_time_table (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at, time_table_key)
 VALUES ('2025', '09', 'mon', 1, '07:50', '08:50', 'C001', 'H01', '13', 'DAE001cos', NOW(), '820cc0f0-001e-4919-9863-e7ffb30b57b8'),

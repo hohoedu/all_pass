@@ -42,9 +42,10 @@ public interface ClassRepository {
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
     public void insertMonthlyScore(
-            @Param("dto") ClassReqDTO.AddStudentDTO dto,
+            @Param("studentId") String studentId,
             @Param("yy") String yy,
-            @Param("mm") String mm);
+            @Param("mm") String mm,
+            @Param("timeTableKey") String timeTableKey);
 
     public List<TimeTableDTO> findTimeTableBasic(
             @Param("userCode") String userCode,
@@ -55,7 +56,8 @@ public interface ClassRepository {
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
-    public void deleteByAssignNo(@Param("timeTableAssignNo") Integer timeTableAssignNo);
+    public int deleteByKeyAndStudentId(@Param("timeTableKey") String timeTableKey,
+                                        @Param("studentId") String studentId);
 
     public List<TimeTable> findTimeTable(
             @Param("yy") String yy,

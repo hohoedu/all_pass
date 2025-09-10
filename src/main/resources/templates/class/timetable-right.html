@@ -1,6 +1,6 @@
 <section class="student-pick-right" th:fragment="studentPickRight">
     <div class="table-frame" style="border-top: none;">
-        <input type="hidden" id="timetableNo" th:value="${timetableNo}"/>
+        <input type="hidden" id="timeTableKey" th:value="${timetableKey}"/>
         <!-- 요일 버튼 -->
         <div class="time-tab-menu">
             <button class="time-tab-btn" th:each="day, dtStat : ${days}"
@@ -32,7 +32,7 @@
                     <tr class="time-row"
                         th:each="i : ${#numbers.sequence(1,6)}"
                         th:with="entry=${dayMap != null ? dayMap[i + ''] : null}"
-                        th:data-timetable-no="${entry != null ? entry.timeTableKey : ''}"
+                        th:data-time-table-key="${entry != null ? entry.timeTableKey : ''}"
                         th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}">
                         <td class="radio-group round">
                             <input type="radio"
@@ -119,7 +119,7 @@
                                     <span id="assign_delete"
                                           class="badge-close"
                                           th:data-student-id="${stu.studentId}"
-                                          th:data-time-table-code="${entry.timeTableKey}"
+                                          th:data-time-table-key="${entry.timeTableKey}"
                                           title="삭제"></span>
                                 </div>
                             </th:block>

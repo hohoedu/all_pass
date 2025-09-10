@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const tab of allTabs) {
             const dayname = tab.id;
             const daynameNo = dayIndexMap[dayname];
-
+            const userCode = 'DAE001cos';
             const rows = tab.querySelectorAll('tr.time-row');
             for (const row of rows) {
                 const periodNo = row.querySelector('td:nth-child(2)').innerText.trim();
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 payloadList.push({
                     yy, mm, dayname, daynameNo, periodNo,
-                    startTime, endTime, classKey, unitKey, gradeKey
+                    startTime, endTime, classKey, unitKey, gradeKey, userCode
                 });
             }
         }
@@ -228,10 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const timeTableNo = selRow.dataset.timetableNo;
-        const timeTableCode = selRow.dataset.timeTableCode;
-        console.log('timeTableCode = ' + timeTableCode);
-        if (!timeTableNo) {
+
+        const timeTableKey = selRow.dataset.timeTableKey;
+        console.log('timeTableKey = ' + timeTableKey);
+        if (!timeTableKey) {
             showAlert({icon: "warning", text: "수업 정보를 찾을 수 없습니다."});
             return;
         }
@@ -246,9 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const assignments = studentRows.map(tr => {
-            const studentNo = tr.querySelector('input[type="checkbox"]').value;
+            const studentId = tr.querySelector('input[type="checkbox"]').value;
             const weekNo = tr.querySelector('input[name^="weeks-"]:checked').value;
-            return {timeTableNo, studentNo, weekNo, timeTableCode};
+            return {timeTableKey, studentId, weekNo};
         });
 
         console.log(assignments);
@@ -310,8 +310,10 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#assign_delete').forEach(btn => {
         btn.addEventListener('click', () => {
-            const assignNo = btn.dataset.assignNo;
-            if (!assignNo) return;
+
+            const studentId = btn.dataset.studentId;
+            const timeTableKey = btn.dataset.timeTableKey;
+
             showAlert({
                 icon: 'warning',
                 title: '정말로 제외하시겠습니까?',
@@ -323,15 +325,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then(result => {
                 if (!result.isConfirmed) return;
 
-                const params = new URLSearchParams();
-                params.append('timeTableAssignNo', assignNo);
 
+
+                const requestBody = {
+                    timeTableKey: timeTableKey,
+                    studentId: studentId
+                };
                 fetch('/class/delete_student', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                        'Content-Type': 'application/json;charset=UTF-8'
                     },
-                    body: params.toString()
+                    body: JSON.stringify(requestBody)
                 })
                     .then(res => {
                         if (!res.ok) throw new Error('삭제 요청 실패: ' + res.status);

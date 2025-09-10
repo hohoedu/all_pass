@@ -25,6 +25,7 @@ public class ClassReqDTO {
 
     @Data
     public static class AddStudentDTO {
+        private Integer id;
         private String weekNo;
         private String studentId;
         private String timeTableKey;

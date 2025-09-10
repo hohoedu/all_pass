@@ -73,8 +73,7 @@ public class ClassService {
         return labels;
     }
 
-    public String registerClass(ClassReqDTO.ClassRegisterDTO classReqDTO, String userCode) {
-        System.out.println("그럼 여기는");
+    public String registerClass(ClassReqDTO.ClassRegisterDTO classReqDTO) {
 
         TimeTableDTO timeTable = classRepository.existsByYearAndMonthAndPeriodNo(
                 classReqDTO.getPeriodNo(),
@@ -94,23 +93,17 @@ public class ClassService {
                     .timeTableLabel(label)
                     .timeTableYm(ym)
                     .build();
-            System.out.println("여기까지는 되고 ");
+
             classRepository.createTimeTableKey(entity);
-            System.out.println("여기가 안되네");
-            System.out.println("set 전" + classReqDTO.getTimeTableKey());
-            classReqDTO.setUserCode(userCode);
+
             classReqDTO.setTimeTableKey(timeTableKey);
-            System.out.println("userCode = " + classReqDTO.getUserCode());
-            System.out.println("set 후" + classReqDTO.getTimeTableKey());
+
+
             classRepository.registerClass(classReqDTO);
 
             return "success-register";
         } else {
-            System.out.println("==================================================");
-            System.out.println("==================================================");
-            System.out.println("==================================================");
-            System.out.println("==================================================");
-            System.out.println("==================================================");
+
             int result = classRepository.updateClass(classReqDTO, timeTable.getTimeTableKey(), classReqDTO.getUserCode());
             if (result <= 0) {
                 System.out.println("실패");
@@ -175,15 +168,15 @@ public class ClassService {
             return false;
         }
         classRepository.addStudent(dto);
-        classRepository.insertMonthlyScore(dto, yy, mm);
+        classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
         return true;
     }
 
-    public void deleteStudent(Integer assignNo) {
+    public void deleteStudent(String timeTableKey, String studentId) {
         // assignJpaRepository.findById(assignNo).orElseThrow(() -> new
         // Exception404("학생을 찾을 수 없습니다."));
 
-        classRepository.deleteByAssignNo(assignNo);
+        classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
         // classRepository.deleteMonthlyScore(assignNo);
     }
 

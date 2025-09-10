@@ -33,7 +33,7 @@ public class TimeTable {
     private String dayname;
 
     @Column(name = "period_no", nullable = false)
-    private Integer periodNo;
+    private String periodNo;
 
     @Column(name = "start_time", nullable = false, length = 5)
     private String startTime;
@@ -70,7 +70,7 @@ public class TimeTable {
     private Timestamp updatedAt;
 
     @Builder
-    public TimeTable(String yy, String mm, String dayname, Integer periodNo,
+    public TimeTable(String yy, String mm, String dayname, String periodNo,
                      String startTime, String endTime, String timeTableKey,
                      ClassCode classCode, UnitCode unitCode, GradeCode grade, User user) {
         this.yy = yy;
