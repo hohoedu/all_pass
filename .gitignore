@@ -362,5 +362,7 @@ application-*.yml
 application.properties
 application-*.properties
 
+firebase-service-account.json
+
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,linux,intellij+all,visualstudiocode,eclipse,gradle,java,maven

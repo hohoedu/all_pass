@@ -19,7 +19,7 @@ public class ClassRespDTO {
 
     @Data
     public static class TimeTableDTO {
-        private String timeTableNo;
+        private String timeTableId;
         private String timeTableKey;
         private String periodNo;
         private String startTime;
@@ -47,7 +47,7 @@ public class ClassRespDTO {
 
     @Data
     public static class RemedialDTO {
-        private Integer remedialNo;
+        private String remedialKey;
         private String studentName;
         private String userName;
         private String remedialSubject;
@@ -61,6 +61,8 @@ public class ClassRespDTO {
     public static class InitRecordDTO {
         private String timeTableKey;
         private String classLabel;
+        private String classKey;
+        private String unitKey;
     }
 
     @Data
@@ -74,6 +76,14 @@ public class ClassRespDTO {
         private String ym;
     }
 
+    @Data
+    public static class BeforeClassRespDTO {
+        private String beforeClassKey;
+        private String content;
+        private String timeTableKey;
+        private String timeTableLabel;
+        private String userName;
+    }
 
     @Data
     public static class MonthlyStudentDTO {

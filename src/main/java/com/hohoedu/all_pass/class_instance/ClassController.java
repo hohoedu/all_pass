@@ -4,18 +4,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.BeforeClassDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyByClassCodeDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyByMonthDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyScoreDTO;
@@ -24,6 +22,7 @@ import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRecordByDateDTO
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.StudentAttendanceDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDateDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.BeforeClassRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
@@ -36,12 +35,7 @@ import com.hohoedu.all_pass.student.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
-@Controller
+@RestController
 @RequestMapping("/class")
 @RequiredArgsConstructor
 public class ClassController {
@@ -51,11 +45,12 @@ public class ClassController {
     private final StudentService studentService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO) {
+    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
         try {
+            String userCode = (String) session.getAttribute("user");
 
             for (ClassReqDTO.ClassRegisterDTO req : reqDTO) {
-                classService.registerClass(req);
+                classService.registerClass(req, userCode);
             }
 
             return ResponseEntity.ok(ApiUtils.success("200"));
@@ -108,23 +103,32 @@ public class ClassController {
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/by-date")
     public ResponseEntity<?> findRecordByDate(@RequestBody ClassRecordByDateDTO dto) {
-        List<InitRecordDTO> labels = classService.getTimeTableByDate(dto.getYy(), dto.getMm(), dto.getDay(), "DAE001cos");
+        List<InitRecordDTO> labels = classService.getTimeTableByDate(dto.getYy(), dto.getMm(), dto.getDay(),
+                "DAE001cos");
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
     @PostMapping("/api/record/by-class")
     public ResponseEntity<?> findRecordByClass(@RequestBody ClassRecordByClassDTO dto) {
-        List<RecordStudentDTO> students = classService.getTimeTableByClassCode(dto.getClassCode(), dto.getDate());
+        List<RecordStudentDTO> students = classService.getTimeTableByKey(dto.getTimeTableKey(), dto.getDate());
         return ResponseEntity.ok(ApiUtils.success(students));
+    }
+
+    @PostMapping("/api/record/before-class")
+    public ResponseEntity<?> findRecordBeforeClass(@RequestBody BeforeClassDTO dto) {
+        BeforeClassRespDTO response = classService.getBeforeClassContent(dto.getClassKey(), dto.getUnitKey(),
+                dto.getWeek(),
+                dto.getTimeTableKey());
+        return ResponseEntity.ok(ApiUtils.success(response));
     }
 
     // ================ 보강 관리 컨트롤러 =====================//
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
-            @RequestParam(value = "year") String year,
-            @RequestParam(value = "month") String month,
-            Model model) {
-        classService.updateRemedialAction(dto);
+                                            @RequestParam(value = "year") String year,
+                                            @RequestParam(value = "month") String month) {
+        int response = classService.updateRemedialAction(dto);
+        System.out.println(response);
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month);
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)

@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.class_instance.model;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import com.hohoedu.all_pass.student.Student;

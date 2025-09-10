@@ -9,19 +9,18 @@ public class ClassReqDTO {
 
     @Data
     public static class ClassRegisterDTO {
-        private Integer timeTableNo;
+        private Integer id;
         private String yy;
         private String mm;
         private String dayname;
-        private Integer daynameNo;
         private String periodNo;
         private String startTime;
         private String endTime;
-        private Integer classNo;
-        private Integer unitNo;
-        private String gradeNo;
-        private String userNo;
-        private String timeTableCode;
+        private String classKey;
+        private String unitKey;
+        private String gradeKey;
+        private String userCode;
+        private String timeTableKey;
     }
 
     @Data
@@ -47,19 +46,27 @@ public class ClassReqDTO {
 
     @Data
     public static class ClassRecordByClassDTO {
-        private String classCode;
+        private String timeTableKey;
         private String date;
     }
 
     @Data
+    public static class BeforeClassDTO {
+        private String classKey;
+        private String unitKey;
+        private String week;
+        private String timeTableKey;
+    }
+
+    @Data
     public static class UpdateRemedialDTO {
-        private Integer remedialNo;
+        private String remedialKey;
         private boolean isAction;
     }
 
     @Data
     public static class UpdateRemedialDateDTO {
-        private Integer remedialNo;
+        private String remedialKey;
         private String remedialDate;
     }
 

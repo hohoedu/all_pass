@@ -32,7 +32,7 @@
                     <tr class="time-row"
                         th:each="i : ${#numbers.sequence(1,6)}"
                         th:with="entry=${dayMap != null ? dayMap[i + ''] : null}"
-                        th:data-timetable-no="${entry != null ? entry.timeTableNo : ''}"
+                        th:data-timetable-no="${entry != null ? entry.timeTableKey : ''}"
                         th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}">
                         <td class="radio-group round">
                             <input type="radio"

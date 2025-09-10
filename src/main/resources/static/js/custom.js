@@ -150,9 +150,6 @@ $(document).ready(function () {
     $('.remarks').click(function () {
         $('.remarks-modal').fadeIn();
     });
-    $('.class-guide').click(function () {
-        $('.class-guide-modal').fadeIn();
-    });
     // 시간 선택 시 표시되는 텍스트 업데이트
     $('.timepicker').on('input', function () {
         const timeValue = $(this).val(); // ex: "14:30"
@@ -169,10 +166,6 @@ $(document).ready(function () {
         $(this).val(today).trigger('change');
     });
 
-    // class-guide modal
-    $('.class-guide').click(function () {
-        $('.calss-guide-modal').fadeIn();
-    });
     // class-timetable tab
     const tabButtons = document.querySelectorAll('.class-before-after a');
     const tabContents = document.querySelectorAll('.ctab');
@@ -340,4 +333,105 @@ function showAlert(options) {
             cancelButton: 'rounded-alert-button'
         }
     });
+}
+
+
+// 정렬 함수
+function addHeadSort(headId, tbodyId, opts = {}) {
+    const head  = document.getElementById(headId);
+    const tbody = document.getElementById(tbodyId);
+    if (!head || !tbody) return;
+
+    const icons = head.querySelectorAll('.svg-sort');
+
+    const setIconByDirection = (imgEl, direction) => {
+        const toFile =
+            direction === 'asc'  ? 'sort_checked_up.svg' :
+                direction === 'desc' ? 'sort_checked_down.svg' : 'sort.svg';
+
+        const current = imgEl.getAttribute('src') || '';
+        imgEl.setAttribute(
+            'src',
+            current.replace(/(sort_checked_up\.svg|sort_checked_down\.svg|sort_checked\.svg|sort\.svg)$/i, toFile)
+        );
+    };
+
+    const updateIcons = (clickedIcon, direction) => {
+        icons.forEach(i => setIconByDirection(i, i === clickedIcon ? direction : 'default'));
+    };
+
+    // 셀 값 파싱(날짜/숫자/문자)
+    const parseCell = (text) => {
+        const v = (text || '').trim();
+
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+            const d = new Date(v);
+            if (!isNaN(d)) return { type: 'date', value: d.getTime() };
+        }
+
+        const n = Number(v.replace(/[^0-9.-]/g, ''));
+        if (!Number.isNaN(n) && v.match(/[0-9]/)) return { type: 'number', value: n };
+
+        return { type: 'string', value: v };
+    };
+
+    const compareBy = (aRow, bRow, colIndex, asc) => {
+        const A = aRow.children[colIndex] ? aRow.children[colIndex].innerText : '';
+        const B = bRow.children[colIndex] ? bRow.children[colIndex].innerText : '';
+        const a = parseCell(A);
+        const b = parseCell(B);
+
+        if (a.type === 'empty' && b.type !== 'empty') return 1;
+        if (b.type === 'empty' && a.type !== 'empty') return -1;
+        if (a.type === 'empty' && b.type === 'empty') return 0;
+
+        if (a.type === b.type) {
+            if (a.value < b.value) return asc ? -1 : 1;
+            if (a.value > b.value) return asc ? 1 : -1;
+            return 0;
+        }
+
+        const rank = { date: 3, number: 2, string: 1, empty: 0 };
+        if (rank[a.type] !== rank[b.type]) {
+            return asc ? (rank[a.type] - rank[b.type]) : (rank[b.type] - rank[a.type]);
+        }
+        return 0;
+    };
+
+    const sortByColumn = (icon, colIndex, direction) => {
+
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((r1, r2) => compareBy(r1, r2, colIndex, direction === 'asc'));
+        rows.forEach(r => tbody.appendChild(r));
+
+        icons.forEach(i => i.classList.remove('asc', 'desc'));
+        icon.classList.add(direction);
+        updateIcons(icon, direction);
+    };
+
+    icons.forEach((icon) => {
+        icon.style.cursor = 'pointer';
+        icon.addEventListener('click', (e) => {
+            const th = e.target.closest('th');
+            if (!th) return;
+
+            const colIndex = th.cellIndex;
+
+            const nextDirection = icon.classList.contains('desc') ? 'asc' : 'desc';
+            sortByColumn(icon, colIndex, nextDirection);
+        });
+    });
+
+    if (typeof opts.initialIndex === 'number') {
+        const ths = head.querySelectorAll('th');
+        const targetTh = ths[opts.initialIndex];
+        if (targetTh) {
+            const icon = targetTh.querySelector('.svg-sort');
+            if (icon) {
+                const dir = (opts.initialDir === 'asc' || opts.initialDir === 'desc') ? opts.initialDir : 'desc';
+                sortByColumn(icon, opts.initialIndex, dir);
+            }
+        }
+    }
 }

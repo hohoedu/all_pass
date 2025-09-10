@@ -1,3 +1,9 @@
+// 정렬
+document.addEventListener('DOMContentLoaded', function () {
+    addHeadSort('remedialLeftHead', 'student-tbody-left');
+    addHeadSort('remedialRightHead', 'student-tbody-right');
+});
+
 // URL에서 날짜 가져오기
 document.addEventListener('DOMContentLoaded', function () {
     const openMonthPicker = document.getElementById('openMonthPicker');
@@ -141,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const allTabs = document.querySelectorAll('.time-tab-content');
         const payloadList = [];
-        const userNo = 2;
         const dayIndexMap = {mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6};
         for (const tab of allTabs) {
             const dayname = tab.id;
@@ -152,17 +157,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const periodNo = row.querySelector('td:nth-child(2)').innerText.trim();
                 const startTime = row.querySelector('.time-start input').value;
                 const endTime = row.querySelector('.time-end input').value;
-                const classNo = row.querySelector('select[name="classNo"]').value;
-                const unitNo = row.querySelector('select[name="unitNo"]').value;
-                const gradeNo = row.querySelector('select[name="gradeNo"]').value;
+                const classKey = row.querySelector('select[name="classKey"]').value;
+                const unitKey = row.querySelector('select[name="unitKey"]').value;
+                const gradeKey = row.querySelector('select[name="gradeKey"]').value;
 
-                if (!startTime || !endTime || !classNo || !unitNo || !gradeNo) {
+                if (!startTime || !endTime || !classKey || !unitKey || !gradeKey) {
                     continue;
                 }
 
                 payloadList.push({
                     yy, mm, dayname, daynameNo, periodNo,
-                    startTime, endTime, classNo, unitNo, gradeNo, userNo
+                    startTime, endTime, classKey, unitKey, gradeKey
                 });
             }
         }
@@ -363,13 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // 수업 선택 시 데이터 변경
 function loadClassData(element) {
     console.log('수업 선택');
-    const classCode = element.dataset.classCode || element.getAttribute('data-class-code');
+    const timeTableKey = element.dataset.classCode || element.getAttribute('data-class-code');
 
     const dateInput = document.getElementById("record_calendar");
     const selectedDate = dateInput?.value || "";
 
     const requestBody = {
-        classCode: classCode,
+        timeTableKey: timeTableKey,
         date: selectedDate
     };
 
@@ -637,7 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('change', sync);
 });
 
-
 // 수업 리스트 변경 함수
 function renderRecordClassList(list) {
     const ul = document.querySelector('.class-list');
@@ -665,27 +669,97 @@ function renderRecordClassList(list) {
     });
 }
 
+// 수업 안내 발송 모달
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.class-guide')) {
+        const activeClass = document.querySelector('.class-list .class-btn.active');
+        const activeWeek = document.querySelector('.week-selector .week-btn.active');
 
+        if (!activeClass) {
+            console.warn('[GUIDE MODAL] 활성화된 클래스가 없습니다.');
+            return;
+        }
+
+        const selectedNames = Array.from(document.querySelectorAll('#record_tbody tr'))
+            .filter(tr => tr.querySelector('input[type="checkbox"]:checked'))
+            .map(tr => tr.querySelector('.studentName')?.textContent.trim() || '');
+
+        const unitKey = activeClass.dataset.classUnitkey;    // data-class-unitKey
+        const classKey = activeClass.dataset.classClasskey;  // data-class-classKey
+        const timeTableKey = activeClass.dataset.classCode;  // data-class-code
+        const week = activeWeek?.dataset.week;    // data-week
+        console.log('[GUIDE MODAL] unitKey:', unitKey, 'classKey:', classKey, 'week:', week, 'timeTableKey:', timeTableKey);
+
+        const requestBody = ({});
+
+        fetch(`/class/api/record/before-class`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({unitKey: unitKey, classKey: classKey, timeTableKey: timeTableKey, week: week})
+            }
+        )
+            .then(res => {
+                if (!res.ok) throw new Error('서버 오류');
+                return res.json();
+            })
+            .then(json => {
+                const body = json?.response ?? json;
+                bindRecordModal(body, selectedNames); // 🔹 바인딩 함수 호출
+                document.querySelector('.class-guide-modal').style.display = 'block';
+            })
+            .catch(err => {
+                console.error('[GUIDE MODAL] fetch error:', err);
+                bindRecordModal({}, selectedNames); // 실패 시 빈 데이터라도 반영
+                document.querySelector('.class-guide-modal').style.display = 'block';
+            });
+
+        document.querySelector('.class-guide-modal').style.display = 'block';
+    }
+});
+
+function bindRecordModal(data, selectedNames) {
+    const timeTableLabel = data.timeTableLabel || '-';
+    const userName = data.userName || '';
+    const content = data.content || '-';
+
+    const dateEl = document.getElementById('record-date');
+    const teacherEl = document.getElementById('record-teacher');
+    const studentsEl = document.getElementById('record-students');
+    const contentEl = document.getElementById('record-content');
+
+    if (dateEl) dateEl.textContent = timeTableLabel;
+    if (teacherEl) teacherEl.textContent = userName ? `${userName} 선생님` : '-';
+    if (studentsEl) studentsEl.textContent = selectedNames.length ? selectedNames.join(', ') : '선택된 학생이 없습니다';
+    if (contentEl) contentEl.textContent = content;
+}
+
+// =================================== //
+// ==                               == //
+// ==          보강 관리            == //
+// ==                               == //
+// =================================== //
+
+// 보강 여부 수정
 document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener("change", (e) => {
         if (e.target.matches(".checkbox-group input[type=checkbox]")) {
             const row = e.target.closest("tr");
-            const remedialId = row.dataset.id;
+            const remedialKey = row.dataset.id;
             const action = e.target.checked;
             const m = document.getElementById('currentMonth')?.textContent.trim().match(/(\d{4})\D+(\d{1,2})/);
             const year = m?.[1], month = m ? m[2].padStart(2, '0') : null;
-
             fetch(`/class/remedial/update?year=${year}&month=${month}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    remedialNo: remedialId,
+                    remedialKey: remedialKey,
                     action: action
                 })
             })
                 .then((res) => res.json())
                 .then((data) => {
                     if (data.success) {
+                        console.log(data.response);
                         renderTables(data.response);
                     } else {
                         alert("저장 실패");
@@ -705,7 +779,7 @@ function renderTables(data) {
     $left.empty();
     data.leftRemedials.forEach((item, idx) => {
         const html = `
-          <tr data-id="${item.remedialNo}">
+          <tr data-id="${item.remedialKey}">
             <td>${idx + 1}</td>
             <td>${item.studentName}</td>
             <td>${item.absenceDate}</td>
@@ -726,7 +800,6 @@ function renderTables(data) {
           </tr>
         `;
         $left.append(html);
-
         // 추가된 행에 이벤트 바인딩
         const newRow = $left.find("tr").last()[0];
         bindDatePickerEvents(newRow);
@@ -736,12 +809,12 @@ function renderTables(data) {
     $right.empty();
     data.rightRemedials.forEach((item, idx) => {
         $right.append(`
-          <tr data-id="${item.remedialNo}">
+          <tr data-id="${item.remedialKey}">
             <td>${idx + 1}</td>
             <td>${item.studentName}</td>
             <td>${item.absenceDate}</td>
             <td>${item.remedialSubject}</td>
-            <td class="cal-content">${item.remedialDate || ""}</td>
+            <td class="cal-content">${item.remedialDate === '9999-12-31' ? "날짜를 선택하세요" : item.remedialDate}</td>
             <td>${item.userName}</td>
             <td class="checkbox-group">
               <input type="checkbox" checked />
@@ -750,6 +823,11 @@ function renderTables(data) {
         `);
     });
 }
+
+// 보강 날짜 변경
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("tr[data-id]").forEach(bindDatePickerEvents);
+});
 
 function bindDatePickerEvents(row) {
     const calendarBtn = row.querySelector(".calendar-btn");
@@ -769,7 +847,7 @@ function bindDatePickerEvents(row) {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
-                        remedialNo: selectedSpan.closest("tr").dataset.id,
+                        remedialKey: selectedSpan.closest("tr").dataset.id,
                         remedialDate: dateInput.value
                     })
                 })
@@ -785,17 +863,20 @@ function bindDatePickerEvents(row) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("tr[data-id]").forEach(bindDatePickerEvents);
-});
 
+// =================================== //
+// ==                               == //
+// ==        월간평가(초등)         == //
+// ==                               == //
+// =================================== //
 
-// =========================== 월간평가(초등) =========================== //
 // 월 변경 시 데이터 변경
 document.addEventListener("DOMContentLoaded", () => {
     const monthInput = document.getElementById("monthly_calendar");
     const monthDisplay = document.getElementById("monthly_current");
     const calendarBtn = document.querySelector(".calendar-open");
+
+    if (!monthInput) return;
 
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -857,6 +938,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // 선생님 변경 시 데이터 변경
 document.addEventListener("DOMContentLoaded", () => {
     const teacherSelect = document.getElementById("monthly-teacher-select");
+    if (!teacherSelect) return;
 
     teacherSelect.addEventListener("change", () => {
         const teacherNo = teacherSelect.value;
@@ -1046,6 +1128,7 @@ ${stu.studentName} 학생은 어휘의 정의를 정확히 이해하고, 유사 
 
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("monthly_student_tbody");
+    if (!tbody) return;
 
     tbody.addEventListener("click", (e) => {
         const target = e.target;
@@ -1079,6 +1162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("monthly_student_tbody");
+    if (!tbody) return;
 
     tbody.addEventListener("click", (e) => {
         const target = e.target;
@@ -1135,6 +1219,9 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", function () {
     const preSearchBtns = document.querySelectorAll(".pre-search img");
     const modal = document.querySelector(".pre-modal");
+    if (preSearchBtns.length === 0 || !modal) {
+        return;
+    }
     const closeBtn = modal.querySelector(".btn-close");
 
     // 열기 (모든 버튼에 대해 이벤트 등록)

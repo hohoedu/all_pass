@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRegisterDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.BeforeClassRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
@@ -25,7 +26,7 @@ public interface ClassRepository {
 
     public void registerClass(ClassRegisterDTO classRegister);
 
-    public void createTimeTableCode(TimeTableCode entity);
+    public void createTimeTableKey(TimeTableCode entity);
 
     public TimeTableDTO existsByYearAndMonthAndPeriodNo(
             @Param("periodNo") String periodNo,
@@ -33,9 +34,10 @@ public interface ClassRepository {
             @Param("month") String month,
             @Param("dayname") String dayname);
 
-    public void updateClass(
+    public int updateClass(
             @Param("dto") ClassReqDTO.ClassRegisterDTO dto,
-            @Param("timeTableNo") String timeTableNo);
+            @Param("timeTableKey") String timeTableKey,
+            @Param("userCode") String userCode);
 
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
@@ -77,20 +79,20 @@ public interface ClassRepository {
             @Param("dayName") String dayName,
             @Param("userCode") String userCode);
 
-    public List<RecordStudentDTO> findTimeTableByClassCode(
-            @Param("classCode") String classCode,
+    public List<RecordStudentDTO> findTimeTableByKey(
+            @Param("timeTableKey") String timeTableKey,
             @Param("date") String date);
 
     public List<RemedialDTO> findRemedialByUserNo(
             @Param("year") String year,
             @Param("month") String month);
 
-    public void updateRemedialAction(
-            @Param("remedialNo") Integer remedialNo,
+    public int updateRemedialAction(
+            @Param("remedialKey") String remedialKey,
             @Param("action") boolean action);
 
     public void updateRemedialDate(
-            @Param("remedialNo") Integer remedialNo,
+            @Param("remedialKey") String remedialKey,
             @Param("remedialDate") String remedialDate);
 
     // 출석 여부 체크
@@ -117,6 +119,12 @@ public interface ClassRepository {
             @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    public BeforeClassRespDTO findBeforeClass(
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("week") String week,
+            @Param("timeTableKey") String timeTableKey);
 
     public List<MonthlyStudentDTO> findStudentByClassCode(
             @Param("classCode") String classCode);

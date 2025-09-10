@@ -7,7 +7,7 @@
 
     <insert id="insert" parameterType="com.hohoedu.all_pass.user.User" useGeneratedKeys="true"
             keyProperty="userNo" keyColumn="user_no">
-        insert into erp_user_tb(user_id, password, username, user_role_no, center_no, created_at)
+        insert into erp_user(user_id, password, username, user_role_no, center_no, created_at)
         values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
     </insert>
 

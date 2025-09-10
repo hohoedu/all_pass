@@ -3,28 +3,30 @@ package com.hohoedu.all_pass.attendance;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
 
 import com.hohoedu.all_pass.class_instance.model.TimeTable;
+import org.springframework.data.repository.query.Param;
 
 @Mapper
 public interface AttendanceRepository {
 
-    // 오늘 '끝난 수업' 조회 (end_time <= nowHH:mm)
+    // 종료된 수업 조회
     List<TimeTable> findClassesToProcess(
-        @Param("yy") String yy,
-        @Param("mm") String mm,
-        @Param("dayname") String dayname,
-        @Param("nowTimeHHmm") String nowTimeHHmm
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("dayname") String dayname,
+            @Param("nowTimeHHmm") String nowTimeHHmm
     );
 
-    // 멱등 벌크 처리
-    int bulkInsertAbsentForClass(@Param("timeTableCode") String timeTableCode,
+    // 출결 없으면 결석 insert
+    int bulkInsertAbsentForClass(@Param("timeTableKey") String timeTableKey,
                                  @Param("attendanceDate") String attendanceDate);
 
-    int bulkInsertRemedialForClass(@Param("timeTableCode") String timeTableCode,
-                                   @Param("absenceDate") String absenceDate);
-
-    int updateLatenessForClass(@Param("timeTableCode") String timeTableCode,
+    // 보강 존재 여부 조회
+    int updateLatenessForClass(@Param("timeTableKey") String timeTableKey,
                                @Param("attendanceDate") String attendanceDate);
+
+    // 보강 등록
+    int bulkInsertRemedialForClass(@Param("timeTableKey") String timeTableKey,
+                                   @Param("absenceDate") String absenceDate);
 }

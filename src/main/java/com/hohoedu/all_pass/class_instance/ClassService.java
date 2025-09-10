@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.hohoedu.all_pass.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -19,6 +18,7 @@ import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.StudentAttendanceDTO
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.BeforeClassRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
@@ -36,8 +36,6 @@ import com.hohoedu.all_pass.class_instance.repository.UnitCodeJpaRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
-import com.hohoedu.all_pass.user.User;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -47,7 +45,6 @@ import lombok.RequiredArgsConstructor;
 public class ClassService {
 
     private final ClassRepository classRepository;
-    private final UserRepository userRepository;
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
@@ -76,7 +73,9 @@ public class ClassService {
         return labels;
     }
 
-    public String registerClass(ClassReqDTO.ClassRegisterDTO classReqDTO) {
+    public String registerClass(ClassReqDTO.ClassRegisterDTO classReqDTO, String userCode) {
+        System.out.println("그럼 여기는");
+
         TimeTableDTO timeTable = classRepository.existsByYearAndMonthAndPeriodNo(
                 classReqDTO.getPeriodNo(),
                 classReqDTO.getYy(),
@@ -95,25 +94,37 @@ public class ClassService {
                     .timeTableLabel(label)
                     .timeTableYm(ym)
                     .build();
-            classRepository.createTimeTableCode(entity);
-            System.out.println("set 전" + classReqDTO.getTimeTableCode());
-            classReqDTO.setTimeTableCode(timeTableKey);
-            System.out.println("set 후" + classReqDTO.getTimeTableCode());
+            System.out.println("여기까지는 되고 ");
+            classRepository.createTimeTableKey(entity);
+            System.out.println("여기가 안되네");
+            System.out.println("set 전" + classReqDTO.getTimeTableKey());
+            classReqDTO.setUserCode(userCode);
+            classReqDTO.setTimeTableKey(timeTableKey);
+            System.out.println("userCode = " + classReqDTO.getUserCode());
+            System.out.println("set 후" + classReqDTO.getTimeTableKey());
             classRepository.registerClass(classReqDTO);
 
             return "success-register";
         } else {
-
-            classRepository.updateClass(classReqDTO, timeTable.getTimeTableNo());
+            System.out.println("==================================================");
+            System.out.println("==================================================");
+            System.out.println("==================================================");
+            System.out.println("==================================================");
+            System.out.println("==================================================");
+            int result = classRepository.updateClass(classReqDTO, timeTable.getTimeTableKey(), classReqDTO.getUserCode());
+            if (result <= 0) {
+                System.out.println("실패");
+                return "fail-update";
+            }
+            System.out.println("실패");
             return "success-update";
 
         }
-
     }
 
     private String createTimeTableLabel(ClassReqDTO.ClassRegisterDTO dto) {
-        UnitCode unitCode = unitCodeJpaRepository.findById(dto.getUnitNo()).orElseThrow();
-        ClassCode classCode = classCodeJpaRepository.findById(dto.getClassNo()).orElseThrow();
+        UnitCode unitCode = unitCodeJpaRepository.findByUnitKey(dto.getUnitKey()).orElseThrow();
+        ClassCode classCode = classCodeJpaRepository.findByClassKey(dto.getClassKey()).orElseThrow();
         String dayName = Constants.DAY_NAME_MAP.getOrDefault(dto.getDayname(), dto.getDayname());
 
         return String.format("%s %s ~ %s %s %s",
@@ -195,9 +206,15 @@ public class ClassService {
         return response;
     }
 
-    public List<RecordStudentDTO> getTimeTableByClassCode(String classCode, String date) {
-        List<RecordStudentDTO> response = classRepository.findTimeTableByClassCode(classCode, date);
+    public List<RecordStudentDTO> getTimeTableByKey(String timeTableKey, String date) {
+        List<RecordStudentDTO> response = classRepository.findTimeTableByKey(timeTableKey, date);
         return response;
+    }
+
+    public BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
+                                                    String timeTableKey) {
+        BeforeClassRespDTO dto = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
+        return dto;
     }
 
     // ================ 보강 관리 서비스 =====================//
@@ -208,12 +225,13 @@ public class ClassService {
         return remedials;
     }
 
-    public void updateRemedialAction(UpdateRemedialDTO dto) {
-        classRepository.updateRemedialAction(dto.getRemedialNo(), dto.isAction());
+    public int updateRemedialAction(UpdateRemedialDTO dto) {
+        int result = classRepository.updateRemedialAction(dto.getRemedialKey(), dto.isAction());
+        return result;
     }
 
     public void updateRemedialDate(UpdateRemedialDateDTO dto) {
-        classRepository.updateRemedialDate(dto.getRemedialNo(), dto.getRemedialDate());
+        classRepository.updateRemedialDate(dto.getRemedialKey(), dto.getRemedialDate());
     }
 
     public boolean insertStudentAttendance(StudentAttendanceDTO dto, Student student) {

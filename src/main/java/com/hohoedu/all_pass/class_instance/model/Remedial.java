@@ -1,24 +1,14 @@
 package com.hohoedu.all_pass.class_instance.model;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,13 +16,16 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Entity
-@Table(name = "erp_remedial")
+@Table(name = "erp_remedial", uniqueConstraints = {@UniqueConstraint(name = "uq_remedial_key", columnNames = "remedial_key")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Remedial {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "remedial_key", nullable = false, length = 50)
+    private String remedialKey;
 
     @Column(name = "remedial_subject", nullable = false, length = 100)
     private String remedialSubject;
@@ -67,8 +60,9 @@ public class Remedial {
     private TimeTable timeTable;
 
     @Builder
-    public Remedial(String remedialSubject, String absenceDate, String remedialDate,
+    public Remedial(String remedialKey, String remedialSubject, String absenceDate, String remedialDate,
                     boolean action, Student student, User user, TimeTable timeTable) {
+        this.remedialKey = remedialKey;
         this.remedialSubject = remedialSubject;
         this.absenceDate = absenceDate;
         this.remedialDate = remedialDate;

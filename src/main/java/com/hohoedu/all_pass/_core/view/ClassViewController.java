@@ -110,7 +110,6 @@ public class ClassViewController {
     // 수업 일지 페이지
     @GetMapping("/record")
     public String getClassRecordPage(Model model) {
-
         // user Session에서 centerCode 받아오기
         List<User> users = userService.findByCenterNo("DAE001");
 
@@ -121,10 +120,16 @@ public class ClassViewController {
 
         List<InitRecordDTO> labels = classService.getTimeTableByDate(yy, mm, dayName, "DAE001cos");
         if (!labels.isEmpty()) {
-            String classCode = labels.get(0).getTimeTableKey();
-            List<RecordStudentDTO> students = classService.getTimeTableByClassCode(classCode, today);
+            String timeTableKey = labels.get(0).getTimeTableKey();
+            List<RecordStudentDTO> students = classService.getTimeTableByKey(timeTableKey, today);
+            System.out.println("=======================================================================");
+            System.out.println("=");
+            System.out.println("=  students = " + students);
+            System.out.println("=");
+            System.out.println("=======================================================================");
             model.addAttribute("students", students);
         }
+
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
 
