@@ -39,6 +39,9 @@ public class Remedial {
     @Column(name = "action", nullable = false)
     private boolean action;
 
+    @Column(name = "week", nullable = false)
+    private String week;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -61,12 +64,13 @@ public class Remedial {
 
     @Builder
     public Remedial(String remedialKey, String remedialSubject, String absenceDate, String remedialDate,
-                    boolean action, Student student, User user, TimeTable timeTable) {
+                    boolean action, String week, Student student, User user, TimeTable timeTable) {
         this.remedialKey = remedialKey;
         this.remedialSubject = remedialSubject;
         this.absenceDate = absenceDate;
         this.remedialDate = remedialDate;
         this.action = action;
+        this.week = week;
         this.student = student;
         this.user = user;
         this.timeTable = timeTable;

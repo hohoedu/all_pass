@@ -163,12 +163,17 @@ public class ClassService {
     public boolean addStudent(AddStudentDTO dto) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
+
+        dto.setCenterCode("DAE001");
+
         int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
         if (count >= 8) {
             return false;
         }
         classRepository.addStudent(dto);
         classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
+        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), dto.getCenterCode());
+
         return true;
     }
 
@@ -194,13 +199,13 @@ public class ClassService {
     }
 
     // ================ 수업 일지 서비스 =====================//
-    public List<InitRecordDTO> getTimeTableByDate(String yy, String mm, String dayName, String userCode) {
-        List<InitRecordDTO> response = classRepository.findTimeTableByDate(yy, mm, dayName, userCode);
+    public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String yy, String mm, String dayName, String userCode) {
+        List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode);
         return response;
     }
 
-    public List<RecordStudentDTO> getTimeTableByKey(String timeTableKey, String date) {
-        List<RecordStudentDTO> response = classRepository.findTimeTableByKey(timeTableKey, date);
+    public List<RecordStudentDTO> getTimeTableByKey(String timeTableKey, String week) {
+        List<RecordStudentDTO> response = classRepository.findRecordStudentByKey(timeTableKey, week);
         return response;
     }
 
@@ -236,7 +241,6 @@ public class ClassService {
 
         StudentAttendance sa = StudentAttendance.builder()
                 .inTime(dto.getHhmm())
-                .attendanceDate(dto.getYmd())
                 .student(Student.builder().id(student.getId()).build())
                 .attendanceCode(AttendanceCode.builder().attendanceKey("").build())
                 .center(Center.builder().centerCode(dto.getCenterCode()).build())

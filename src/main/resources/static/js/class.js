@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!result.isConfirmed) return;
 
 
-
                 const requestBody = {
                     timeTableKey: timeTableKey,
                     studentId: studentId
@@ -370,43 +369,288 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ===========================수업일지===========================//
-// 수업 선택 시 데이터 변경
-function loadClassData(element) {
-    console.log('수업 선택');
-    const timeTableKey = element.dataset.classCode || element.getAttribute('data-class-code');
 
-    const dateInput = document.getElementById("record_calendar");
-    const selectedDate = dateInput?.value || "";
+const DAY_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const DAY_KR = ['일', '월', '화', '수', '목', '금', '토'];
+const toYmd = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const toK = (d) =>
+    `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${DAY_KR[d.getDay()]})`;
+const state = {
+    teacherId: null,   // 'all' 또는 userCode
+    date: null,        // 'YYYY-MM-DD'
+    classCode: null,   // timeTableKey
+    week: null,        // 'ju_1'..'ju_4'
+};
 
-    const requestBody = {
-        timeTableKey: timeTableKey,
-        date: selectedDate
+function buildByDateBody(dateStr, teacherId) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return {
+        yy: String(d.getFullYear()),
+        mm: String(d.getMonth() + 1).toString().padStart(2, '0'),
+        day: DAY_EN[d.getDay()],
+        date: toYmd(d),
+        userCode: (teacherId && teacherId !== 'all') ? teacherId : 'all',
     };
-
-    fetch(`/class/api/record/by-class`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestBody)
-    })
-        .then(res => {
-            if (!res.ok) throw new Error("서버 응답 오류");
-            return res.json();
-        })
-        .then(data => {
-            const list = Array.isArray(data?.response) ? data.response : [];
-            renderStudentsFromResponse(list, '#record_tbody');
-        })
-        .catch(err => console.error('[loadClassData] 실패:', err));
 }
 
-// 주차 선택 시 데이터 변경
+function buildByClassBody(classCode, week) {
+    return {
+        timeTableKey: classCode ?? null,
+        week: week ?? null,
+    };
+}
 
-// 선생님 선택 시 데이터 변경
+/* ---------- 콘솔 출력 헬퍼 ---------- */
+function logRequestBody(title, body) {
+    try {
+        console.groupCollapsed(`%c${title}`, 'color:#1976d2;font-weight:bold;');
+        console.log('requestBody:', body);
+    } finally {
+        console.groupEnd();
+    }
+}
 
-// 화면 다시 그리기
-function renderStudentsFromResponse(list, tbodySel = '#record_tbody') {
+function getActiveTimeTableKey() {
+    const el = document.querySelector('.class-list .class-btn.active');
+    return el?.dataset.classCode || el?.dataset.classId || null;
+}
+
+// window.loadClassData = function (el) {
+//     const code = el?.dataset?.classCode || el?.dataset?.classId || null;
+//     state.classCode = code; // 상태도 유지(선택사항이지만 권장)
+//
+//     const requestBody = buildByClassBody(code, state.week);
+//     logRequestBody('수업 변경 → by-class requestBody', requestBody);
+//     loadStudentList(code); // ← 키 전달
+// };
+
+function abortInFlight() {
+    let inFlightController = null;
+
+    if (inFlightController) inFlightController.abort();
+    inFlightController = new AbortController();
+    return inFlightController.signal;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const teacherSel = document.getElementById('teacher-select');
+    const dateInput = document.getElementById('record_calendar');
+    const dateLabel = document.getElementById('record_current');
+    const calBtn = document.querySelector('.month-title .calendar-open');
+    const weekWrap = document.querySelector('.week-selector');
+    const classList = document.querySelector('.class-list');
+
+    let initDate = null;
+    const m = dateLabel?.textContent.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+    if (m) initDate = new Date(+m[1], +m[2] - 1, +m[3]);
+    if (!initDate || isNaN(initDate)) initDate = new Date();
+    state.date = toYmd(initDate);
+    if (dateInput && !dateInput.value) dateInput.value = state.date;
+    if (dateLabel && !dateLabel.textContent.trim()) dateLabel.textContent = toK(initDate);
+
+    if (teacherSel && teacherSel.value) state.teacherId = teacherSel.value;
+
+    const initActiveClass = classList?.querySelector('.class-btn.active');
+    if (initActiveClass) {
+        state.classCode = initActiveClass.dataset.classCode || initActiveClass.dataset.classId || null;
+    }
+
+    const initActiveWeek = weekWrap?.querySelector('.week-btn.active');
+    if (initActiveWeek) state.week = initActiveWeek.dataset.week || null;
+
+    /* -------- 이벤트: 선생님 변경 -------- */
+    if (teacherSel) {
+        teacherSel.addEventListener('change', () => {
+            state.teacherId = teacherSel.value || null;
+            // 선생님 변경 → by-date 요청 바디를 콘솔에 출력
+            const requestBody = buildByDateBody(state.date, state.teacherId);
+
+            loadOverviewFromState();
+
+            logRequestBody('선생님 변경 → by-date requestBody', requestBody);
+        });
+    }
+
+    /* -------- 이벤트: 날짜 변경 -------- */
+    if (calBtn && dateInput) {
+        calBtn.addEventListener('click', () => {
+            if (typeof dateInput.showPicker === 'function') {
+                try {
+                    dateInput.showPicker();
+                } catch {
+                    dateInput.focus();
+                    dateInput.click();
+                }
+            } else {
+                dateInput.focus();
+                dateInput.click();
+            }
+        });
+    }
+
+    if (dateInput) {
+        dateInput.addEventListener('change', () => {
+            if (!dateInput.value) return;
+
+            state.date = dateInput.value;
+
+            const d = new Date(state.date + 'T00:00:00');
+            if (!Number.isNaN(d.getTime())) dateLabel.textContent = toK(d);
+            const requestBody = buildByDateBody(state.date, state.teacherId);
+
+            loadOverviewFromState();
+
+            logRequestBody('날짜 변경 → by-date requestBody', requestBody);
+        });
+    }
+
+    /* -------- 이벤트: 수업 변경 -------- */
+    // HTML에 inline onclick="loadClassData(this)"가 있으므로, 덮어씁니다(네트워크X, 로그만).
+    window.loadClassData = function (el) {
+        const code = el?.dataset?.classCode || el?.dataset?.classId || null;
+        state.classCode = code;
+
+        const requestBody = buildByClassBody(state.classCode, state.week, state.date);
+
+        loadStudentList();
+
+        logRequestBody('수업 변경 → by-class requestBody', requestBody);
+    };
+
+    // (보강) 혹시 위임 방식으로 클릭되는 경우도 지원
+    if (classList) {
+        classList.addEventListener('click', (e) => {
+            const li = e.target.closest('.class-btn');
+            if (!li) return;
+            window.loadClassData(li); // 동일 로직
+        });
+    }
+
+    /* -------- 이벤트: 주차 변경 -------- */
+    if (weekWrap) {
+        weekWrap.querySelectorAll('.week-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                state.week = btn.dataset.week || null;
+
+                const activeKey = getActiveTimeTableKey(); // ← DOM에서 읽기
+                if (!activeKey) {
+                    renderRecordStudentList([]);
+                    logRequestBody('주차 변경 → but no active class', { week: state.week });
+                    return;
+                }
+
+                const requestBody = buildByClassBody(activeKey, state.week);
+                logRequestBody('주차 변경 → by-class requestBody', requestBody);
+                loadStudentList(activeKey); // ← 키 전달
+            });
+        });
+    }
+});
+
+async function loadOverviewFromState() {
+    const signal = abortInFlight();
+
+    try {
+        const body1 = buildByDateBody(state.date, state.teacherId);
+        const res1 = await fetch('/class/api/record/label', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body1),
+            signal
+        });
+        if (!res1.ok) throw new Error('서버 응답 오류(라벨)');
+        const data1 = await res1.json();
+
+        const list1 = Array.isArray(data1?.response) ? data1.response : [];
+        renderRecordClassList(list1);
+
+        if (list1.length === 0) {
+            // ---- 상태/뷰 초기화 ----
+            state.classCode = null;
+            renderRecordStudentList([]);
+            return;
+        }
+
+        // 첫 수업 기준으로 학생 목록
+        const firstKey = list1[0].timeTableKey;
+        state.classCode = String(firstKey); // 상태도 갱신
+
+        const body2 = buildByClassBody(firstKey, state.week);
+        const res2 = await fetch('/class/api/record/student', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body2),
+            signal
+        });
+        if (!res2.ok) throw new Error('서버 응답 오류(학생)');
+        const data2 = await res2.json();
+
+        const list2 = Array.isArray(data2?.response) ? data2.response : [];
+        renderRecordStudentList(list2);
+    } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.error('[loadOverviewFromState] 실패:', e);
+        renderRecordStudentList([]);
+    }
+}
+
+async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
+    const signal = abortInFlight();
+
+    try {
+        if (!timeTableKey) {
+            renderRecordStudentList([]);
+            return;
+        }
+        const body = buildByClassBody(timeTableKey, state.week);
+        const res = await fetch('/class/api/record/student', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+            signal
+        });
+        if (!res.ok) throw new Error('서버 응답 오류(학생)');
+        const data = await res.json();
+        const list = Array.isArray(data?.response) ? data.response : [];
+        renderRecordStudentList(list);
+    } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.error('[loadStudentList] 실패:', e);
+        renderRecordStudentList([]);
+    }
+}
+
+function renderRecordClassList(list) {
+    const ul = document.querySelector('.class-list');
+    if (!ul) return;
+
+    ul.innerHTML = '';
+
+    list.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'class-btn' + (idx === 0 ? ' active' : '');
+        li.dataset.classCode = item.timeTableKey;
+
+        li.onclick = function () {
+            ul.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
+            this.classList.add('active');
+            loadClassData(this);
+        };
+
+        const span = document.createElement('span');
+        span.textContent = item.classLabel;
+        li.appendChild(span);
+        ul.appendChild(li);
+    });
+
+    // 첫 항목이 있다면 state.classCode 동기화
+    if (list.length > 0) {
+        state.classCode = String(list[0].timeTableKey);
+    }
+}
+
+function renderRecordStudentList(list, tbodySel = '#record_tbody') {
     const tbody = typeof tbodySel === 'string' ? document.querySelector(tbodySel) : tbodySel;
     if (!tbody) {
         console.error('[renderStudents] tbody를 찾을 수 없습니다:', tbodySel);
@@ -417,18 +661,15 @@ function renderStudentsFromResponse(list, tbodySel = '#record_tbody') {
     const frag = document.createDocumentFragment();
 
     items.forEach((s, idx) => {
+        console.log(s.attendanceName);
         const tr = document.createElement('tr');
         tr.dataset.studentId = s.studentNo ?? '';
-
-        // 1) 체크박스
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
-        // 2) 번호
         tr.innerHTML += `<td>${idx + 1}</td>`;
-        // 3) 이름
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
 
         // 4) 출결
-        const attendance = s.attendance ?? '결석';
+        const attendance = s.attendanceName ?? '결석';
         let statusClass;
         switch (attendance) {
             case '출석 완료':
@@ -521,7 +762,6 @@ function renderStudentsFromResponse(list, tbodySel = '#record_tbody') {
         frag.appendChild(tr);
     });
 
-    // 학생이 없을 때
     if (items.length === 0) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
@@ -534,145 +774,8 @@ function renderStudentsFromResponse(list, tbodySel = '#record_tbody') {
         tbody.replaceChildren(frag);
     }
 
-    bindTimepickers(tbody);
 }
 
-
-function bindTimepickers(scope = document) {
-    scope.querySelectorAll('.timepicker').forEach(input => {
-
-        if (input.dataset.bound === '1') return;
-        input.dataset.bound = '1';
-
-        input.addEventListener('input', () => {
-            const wrap = input.closest('.time');
-            const display = wrap?.querySelector('.display-time');
-            if (display) display.textContent = input.value || '--:--';
-        });
-    });
-}
-
-// 날짜 선택 시 데이터 변경
-document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('record_calendar');
-    const label = document.getElementById('record_current');
-    const btn = document.querySelector('.month-title .calendar-open');
-    if (!input || !label || !btn) return;
-
-    const DAY = ['일', '월', '화', '수', '목', '금', '토'];
-    const ENDAY = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-    const toK = d => `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${DAY[d.getDay()]})`;
-    const toYmd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-    const init = label.textContent.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-    const initDate = init ? new Date(+init[1], +init[2] - 1, +init[3]) : new Date();
-    if (!input.value) input.value = toYmd(initDate);
-    if (!init) label.textContent = toK(initDate);
-
-    const sync = () => {
-        if (!input.value) return;
-        const d = new Date(input.value + 'T00:00:00');
-        if (isNaN(d)) return;
-
-        label.textContent = toK(d);
-
-        const yy = String(d.getFullYear());
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dayName = ENDAY[d.getDay()];
-        const selectedDate = toYmd(d);
-
-        const requestBody = {
-            yy: yy,
-            mm: mm,
-            day: dayName,
-            date: selectedDate
-        };
-
-        fetch(`/class/api/record/by-date`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(requestBody)
-        })
-            .then(async (res) => {
-                if (res.status === 401) {
-                    await res.json().catch(() => ({}));
-                    alert('세션이 만료되었습니다.', location.href = '/login');
-                    throw new Error('UNAUTHORIZED');
-                }
-                if (!res.ok) throw new Error("서버 응답 오류");
-                return res.json();
-            })
-            .then(data => {
-                const list = Array.isArray(data?.response) ? data.response : [];
-                renderRecordClassList(list);
-                if (list.length > 0) {
-                    const body = {
-                        classCode: list[0].classCode,
-                        date: selectedDate
-                    }
-                    fetch(`/class/api/record/by-class`, {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(body)
-                    })
-                        .then(r => {
-                            if (!r.ok) throw new Error("서버 응답 오류 (by-class)");
-                            return r.json();
-                        })
-                        .then(data2 => {
-                            console.log('by-class 결과:', data2);
-                            renderStudentsFromResponse(data2.response);
-                        })
-                        .catch(err => console.error('[by-class 실패]', err));
-
-                }
-            })
-            .catch(err => console.error('[sync] 실패:', err));
-    };
-
-    btn.addEventListener('click', () => {
-        if (typeof input.showPicker === 'function') {
-            try {
-                input.showPicker();
-            } catch {
-                input.focus();
-                input.click();
-            }
-        } else {
-            input.focus();
-            input.click();
-        }
-    });
-
-    input.addEventListener('change', sync);
-});
-
-// 수업 리스트 변경 함수
-function renderRecordClassList(list) {
-    const ul = document.querySelector('.class-list');
-    if (!ul) return;
-
-    ul.innerHTML = '';
-
-    list.forEach((item, idx) => {
-        const li = document.createElement('li');
-        li.className = 'class-btn' + (idx === 0 ? ' active' : '');
-        li.dataset.classId = item.classNo;
-        li.dataset.classCode = item.classCode;
-
-        li.onclick = function () {
-            ul.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
-            this.classList.add('active');
-            loadClassData(this);
-        };
-
-        const span = document.createElement('span');
-        span.textContent = item.classLabel;
-
-        li.appendChild(span);
-        ul.appendChild(li);
-    });
-}
 
 // 수업 안내 발송 모달
 document.addEventListener('click', function (e) {
@@ -722,6 +825,7 @@ document.addEventListener('click', function (e) {
     }
 });
 
+// 모달 데이터 갈아끼우기
 function bindRecordModal(data, selectedNames) {
     const timeTableLabel = data.timeTableLabel || '-';
     const userName = data.userName || '';
@@ -932,7 +1036,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         .then(res => res.json())
                         .then(data => {
                             console.log("상세 응답:", data);
-                            renderStudentList(data.response);
+                            renderMonthlyStudentList(data.response);
                         })
                         .catch(err => console.error(err));
                 })
@@ -980,7 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .then(res => res.json())
                     .then(data => {
                         console.log("상세 응답:", data);
-                        renderStudentList(data.response);
+                        renderMonthlyStudentList(data.response);
                     })
                     .catch(err => console.error(err));
 
@@ -1017,7 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(res => res.json())
             .then(data => {
                 console.log("응답 데이터:", data);
-                renderStudentList(data.response);
+                renderMonthlyStudentList(data.response);
             })
             .catch(err => console.error("에러:", err));
     });
@@ -1064,7 +1168,7 @@ function renderMonthlyClassList(classes) {
 }
 
 // 본문 변경
-function renderStudentList(students) {
+function renderMonthlyStudentList(students) {
     const tbody = document.querySelector("#monthly_student_tbody");
     tbody.innerHTML = ""; // 기존 행 초기화
 

@@ -73,10 +73,7 @@
                             <li th:each="s, iterStat : ${labels}"
                                 th:class="'class-btn' + (${iterStat.index} == 0 ? ' active' : '')"
                                 th:data-class-id="${s.timeTableKey}" th:data-class-code="${s.timeTableKey}"
-                                th:data-class-unitKey="${s.unitKey}" th:data-class-classKey="${s.classKey}"
-                                onclick="loadClassData(this)">
-                                <!-- <span"></span><br th:remove="tag" /> -->
-
+                                th:data-class-unitKey="${s.unitKey}" th:data-class-classKey="${s.classKey}">
                                 <span th:text="${s.classLabel}"></span>
                             </li>
                         </ul>

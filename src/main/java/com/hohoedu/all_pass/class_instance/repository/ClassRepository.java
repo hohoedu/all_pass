@@ -3,18 +3,9 @@ package com.hohoedu.all_pass.class_instance.repository;
 import java.util.List;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRegisterDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.BeforeClassRespDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RemedialDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableLabelDTO;
 
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.model.TimeTable;
@@ -24,11 +15,11 @@ import com.hohoedu.all_pass.user.User;
 @Mapper
 public interface ClassRepository {
 
-    public void registerClass(ClassRegisterDTO classRegister);
+    public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
 
     public void createTimeTableKey(TimeTableCode entity);
 
-    public TimeTableDTO existsByYearAndMonthAndPeriodNo(
+    public ClassRespDTO.TimeTableDTO existsByYearAndMonthAndPeriodNo(
             @Param("periodNo") String periodNo,
             @Param("year") String year,
             @Param("month") String month,
@@ -41,23 +32,30 @@ public interface ClassRepository {
 
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
+    public void createAttendance(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("centerCode") String centerCode
+    );
+
     public void insertMonthlyScore(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("timeTableKey") String timeTableKey);
 
-    public List<TimeTableDTO> findTimeTableBasic(
+    public List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
             @Param("userCode") String userCode,
             @Param("year") String year,
             @Param("month") String month);
 
-    public List<TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
+    public List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
-    public int deleteByKeyAndStudentId(@Param("timeTableKey") String timeTableKey,
-                                        @Param("studentId") String studentId);
+    public int deleteByKeyAndStudentId(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("studentId") String studentId);
 
     public List<TimeTable> findTimeTable(
             @Param("yy") String yy,
@@ -69,23 +67,21 @@ public interface ClassRepository {
     // 센터별 선생님 조회
     public List<User> findUserByCenterNo(@Param("centerNo") String centerNo);
 
-    public List<InitRecordDTO> findTimeTableByUserNo(
+    public List<ClassRespDTO.InitRecordDTO> findTimeTableByUserNo(
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("userNo") String userNo);
 
     // 날짜별 선생님별 수업 조회
-    public List<InitRecordDTO> findTimeTableByDate(
+    public List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("dayName") String dayName,
             @Param("userCode") String userCode);
 
-    public List<RecordStudentDTO> findTimeTableByKey(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("date") String date);
+    public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(@Param("timeTableKey") String timeTableKey, @Param("week") String week);
 
-    public List<RemedialDTO> findRemedialByUserNo(
+    public List<ClassRespDTO.RemedialDTO> findRemedialByUserNo(
             @Param("year") String year,
             @Param("month") String month);
 
@@ -117,18 +113,18 @@ public interface ClassRepository {
             @Param("outTime") String outTime);
 
     // 선생님별 클래스 코드 조회
-    public List<TimeTableLabelDTO> findClassLabelByUserCode(
+    public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
             @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    public BeforeClassRespDTO findBeforeClass(
+    public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("week") String week,
             @Param("timeTableKey") String timeTableKey);
 
-    public List<MonthlyStudentDTO> findStudentByClassCode(
+    public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
             @Param("classCode") String classCode);
 
     int updateMonthlyScore(
@@ -136,5 +132,5 @@ public interface ClassRepository {
             @Param("classCode") String classCode,
             @Param("yy") String yy,
             @Param("mm") String mm,
-            @Param("score") MonthlyScoreDTO score);
+            @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
 }

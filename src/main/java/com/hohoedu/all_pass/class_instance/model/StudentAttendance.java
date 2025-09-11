@@ -38,9 +38,6 @@ public class StudentAttendance {
     @Column(name = "out_time", length = 10)
     private String outTime;
 
-    @Column(name = "attendance_date", nullable = false, length = 10)
-    private String attendanceDate;
-
     @Column(name = "week", length = 10)
     private String week;
 
@@ -57,6 +54,10 @@ public class StudentAttendance {
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "time_table_key", referencedColumnName = "time_table_key", nullable = false)
+    private TimeTable timeTable;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "attendance_key", referencedColumnName = "attendance_key", nullable = false)
     private AttendanceCode attendanceCode;
 
@@ -65,15 +66,15 @@ public class StudentAttendance {
     private Center center;
 
     @Builder
-    public StudentAttendance(Integer id, String inTime, String outTime, String attendanceDate, String week, Timestamp createdAt, Timestamp updatedAt, Student student, AttendanceCode attendanceCode, Center center) {
+    public StudentAttendance(Integer id, String inTime, String outTime, String week, Timestamp createdAt, Timestamp updatedAt, Student student, TimeTable timeTable, AttendanceCode attendanceCode, Center center) {
         this.id = id;
         this.inTime = inTime;
         this.outTime = outTime;
-        this.attendanceDate = attendanceDate;
         this.week = week;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.student = student;
+        this.timeTable = timeTable;
         this.attendanceCode = attendanceCode;
         this.center = center;
     }

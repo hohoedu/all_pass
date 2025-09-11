@@ -66,14 +66,27 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class RecordLabelDTO {
+        private String timeTableKey;
+        private String classLabel;
+        private String classKey;
+        private String unitKey;
+    }
+
+
+    @Data
     public static class RecordStudentDTO {
         private String studentId;
         private String studentName;
+        private String timeTableKey;
+        private String ym;
+        private String week;
         private String inTime;
         private String outTime;
         private String attendanceName;
+        private String absenceDate;
         private String remedialDate;
-        private String ym;
+        private String updatedAt;
     }
 
     @Data

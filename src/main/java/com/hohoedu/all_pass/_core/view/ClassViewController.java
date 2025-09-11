@@ -1,16 +1,12 @@
 package com.hohoedu.all_pass._core.view;
 
-import java.time.LocalDate;
-import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
-import lombok.Data;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,10 +47,7 @@ public class ClassViewController {
 
     // 시간표 등록
     @GetMapping("/timetable")
-    public String getClassTimetable(
-            @RequestParam("year") String year,
-            @RequestParam("month") String month,
-            Model model) {
+    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model) {
 
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
@@ -81,10 +74,7 @@ public class ClassViewController {
 
     // 시간표 조회
     @GetMapping("/timeview")
-    public String getClassTimeView(
-            @RequestParam("year") String year,
-            @RequestParam("month") String month,
-            Model model) {
+    public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model) {
         List<User> users = userService.findByCenterNo("DAE001");
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
@@ -110,23 +100,21 @@ public class ClassViewController {
     // 수업 일지 페이지
     @GetMapping("/record")
     public String getClassRecordPage(Model model) {
-        // user Session에서 centerCode 받아오기
-        List<User> users = userService.findByCenterNo("DAE001");
-
         String today = dateConfig.currentYearMonth().get("today");
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
 
-        List<InitRecordDTO> labels = classService.getTimeTableByDate(yy, mm, dayName, "DAE001cos");
+        // user Session에서 centerCode 받아오기
+        List<User> users = userService.findByCenterNo("DAE001");
+
+        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, "DAE001cos");
+
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();
-            List<RecordStudentDTO> students = classService.getTimeTableByKey(timeTableKey, today);
-            System.out.println("=======================================================================");
-            System.out.println("=");
-            System.out.println("=  students = " + students);
-            System.out.println("=");
-            System.out.println("=======================================================================");
+
+            List<RecordStudentDTO> students = classService.getTimeTableByKey(timeTableKey, "ju_1");
+
             model.addAttribute("students", students);
         }
 

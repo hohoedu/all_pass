@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
-import com.hohoedu.all_pass.user._dto.UserRespDTO;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -18,14 +18,13 @@ import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.BeforeClassDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyByClassCodeDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyByMonthDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassMonthlyScoreDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRecordByClassDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRecordByDateDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.ClassRecordReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.StudentAttendanceDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.BeforeClassRespDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
+import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordLabelDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableDTO;
@@ -58,7 +57,7 @@ public class ClassController {
 
         } catch (Exception e) {
             System.out.println("================오류============");
-            System.out.println("================"+e.getMessage()+"============");
+            System.out.println("================" + e.getMessage() + "============");
             return ResponseEntity.ok(ApiUtils.error("시간표 등록 실패", HttpStatus.INTERNAL_SERVER_ERROR));
 
         }
@@ -79,8 +78,11 @@ public class ClassController {
                         .ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
             }
         } catch (DataIntegrityViolationException ex) {
+            System.out.println("====================================================================");
+            System.out.println("==          " + ex.getMessage());
+            System.out.println("====================================================================");
             return ResponseEntity
-                    .ok(ApiUtils.error("이미 추가된 학생입니다.", HttpStatus.OK));
+                    .ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }
 
@@ -90,7 +92,7 @@ public class ClassController {
         String studentId = request.get("studentId");
         System.out.println(timeTableKey);
         System.out.println(studentId);
-        classService.deleteStudent(timeTableKey,studentId);
+        classService.deleteStudent(timeTableKey, studentId);
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
@@ -107,16 +109,18 @@ public class ClassController {
     }
 
     // ================ 수업 일지 컨트롤러 =====================//
-    @PostMapping("/api/record/by-date")
-    public ResponseEntity<?> findRecordByDate(@RequestBody ClassRecordByDateDTO dto) {
-        List<InitRecordDTO> labels = classService.getTimeTableByDate(dto.getYy(), dto.getMm(), dto.getDay(),
-                "DAE001cos");
+    @PostMapping("/api/record/label")
+    public ResponseEntity<?> findRecordLabel(@RequestBody ClassRecordReqDTO dto) {
+        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), dto.getUserCode());
+        System.out.println("=================================================");
+        System.out.println("==          " + labels);
+        System.out.println("=================================================");
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
-    @PostMapping("/api/record/by-class")
-    public ResponseEntity<?> findRecordByClass(@RequestBody ClassRecordByClassDTO dto) {
-        List<RecordStudentDTO> students = classService.getTimeTableByKey(dto.getTimeTableKey(), dto.getDate());
+    @PostMapping("/api/record/student")
+    public ResponseEntity<?> findRecordByClass(@RequestBody ClassRecordReqDTO dto) {
+        List<RecordStudentDTO> students = classService.getTimeTableByKey(dto.getTimeTableKey(), dto.getWeek());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 

@@ -29,6 +29,7 @@ public class ClassReqDTO {
         private String weekNo;
         private String studentId;
         private String timeTableKey;
+        private String centerCode;
     }
 
     @Data
@@ -46,9 +47,14 @@ public class ClassReqDTO {
     }
 
     @Data
-    public static class ClassRecordByClassDTO {
-        private String timeTableKey;
+    public static class ClassRecordReqDTO {
+        private String userCode;
+        private String yy;
+        private String mm;
+        private String day;
         private String date;
+        private String week;
+        private String timeTableKey;
     }
 
     @Data

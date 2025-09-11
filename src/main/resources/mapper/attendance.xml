@@ -71,14 +71,15 @@
     <insert id="bulkInsertRemedialForClass">
       <![CDATA[
         INSERT INTO erp_remedial
-        (student_id, time_table_key, remedial_subject, absence_date, remedial_date, action, created_at, user_code, remedial_key)
+        (student_id, time_table_key, remedial_subject, absence_date, remedial_date, action, week, created_at, user_code, remedial_key)
         SELECT s.student_id,
                tt.time_table_key,
                cc.class_name,
                #{absenceDate},
                '9999-12-31',
                0,
-               CURRENT_TIMESTAMP,
+               #{week},
+               SYSDATETIME(),
                tt.user_code,
                CONCAT(REPLACE(CONVERT(char (10), #{absenceDate}, 23), '-', ''), tt.user_code, s.student_id)
         FROM erp_time_table_assign ta
