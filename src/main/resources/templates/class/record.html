@@ -72,8 +72,8 @@
                         <ul class="class-list">
                             <li th:each="s, iterStat : ${labels}"
                                 th:class="'class-btn' + (${iterStat.index} == 0 ? ' active' : '')"
-                                th:data-class-id="${s.timeTableKey}" th:data-class-code="${s.timeTableKey}"
-                                th:data-class-unitKey="${s.unitKey}" th:data-class-classKey="${s.classKey}">
+                                th:data-class-id="${s.timeTableKey}" th:data-time-table-key="${s.timeTableKey}"
+                                th:data-unit-key="${s.unitKey}" th:data-class-key="${s.classKey}">
                                 <span th:text="${s.classLabel}"></span>
                             </li>
                         </ul>
@@ -189,6 +189,11 @@
                                         <td class="send-ornot">
                                             <img th:src="@{/image/send3.png}" alt="">
                                             <img th:src="@{/image/send2.png}" alt="">
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(students)}">
+                                        <td colspan="10" style="text-align: center; padding: 20px;">
+                                            등록된 학생이 없습니다.
                                         </td>
                                     </tr>
                                     </tbody>

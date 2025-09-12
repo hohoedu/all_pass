@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.class_instance.model;
 
 import java.time.LocalDateTime;
 
+import com.hohoedu.all_pass.class_instance.TimeTable;
 import com.hohoedu.all_pass.student.Student;
 
 import jakarta.persistence.*;

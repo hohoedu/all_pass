@@ -1,11 +1,6 @@
 package com.hohoedu.all_pass.consult.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,21 +8,23 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "progress_code")
+@Table(name = "erp_progress_code", uniqueConstraints = @UniqueConstraint(name = "uq_progress_key", columnNames = "progress_key"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProgressCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer progressNo;
+    private Integer id;
 
-    @Column(nullable = false, length = 10)
-    private String progress;
+    @Column(name = "progress_key", nullable = false, length = 20)
+    private String progressKey;
+
+    @Column(name = "progress_name", nullable = false, length = 20)
+    private String progressName;
 
     @Builder
-    public ProgressCode(Integer progressNo, String progress) {
-        this.progressNo = progressNo;
-        this.progress = progress;
+    public ProgressCode(String progressKey, String progressName) {
+        this.progressKey = progressKey;
+        this.progressName = progressName;
     }
-
 }

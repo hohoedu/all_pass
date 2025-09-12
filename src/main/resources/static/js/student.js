@@ -447,7 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (teacherFilter) {
         teacherFilter.addEventListener("change", function () {
             const teacherNo = this.value;
-
+            console.log(teacherNo);
             fetch(`/student/api/label?teacherNo=${encodeURIComponent(teacherNo)}`)
                 .then(res => {
                     return res.json();
@@ -468,8 +468,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 })
                 .then(data => {
-                    console.log('data = ', data.response);
-                    console.log('tbody = ', tbody);
                     renderStudents(tbody, data.response);
                 });
         });
@@ -477,10 +475,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (subjectFilter) {
         subjectFilter.addEventListener("change", function () {
-            const classCode = this.value;
-            console.log("subject 변경:", classCode);
+            const timeTableKey = this.value;
+            console.log("subject 변경:", timeTableKey);
 
-            fetch(`/student/api/students?classCode=${encodeURIComponent(classCode)}`)
+            fetch(`/student/api/students?timeTableKey=${encodeURIComponent(timeTableKey)}`)
                 .then(res => {
                     return res.json();
                 })

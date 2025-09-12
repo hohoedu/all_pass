@@ -5,6 +5,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,24 +43,38 @@ public class StudentController {
     final private ClassService classService;
 
     @GetMapping("/api/label")
-    public ResponseEntity<?> getLabels(@RequestParam("teacherCode") String teacherCode) {
+    public ResponseEntity<?> getLabels(@RequestParam("teacherNo") String teacherNo) {
 
-        System.out.println("teacherNo = " + teacherCode);
-        List<TimeTableLabelDTO> labels = classService.getClassLabel(teacherCode);
+        System.out.println("teacherNo = " + teacherNo);
+        List<TimeTableLabelDTO> labels = classService.getClassLabel(teacherNo);
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
     @GetMapping(value = "/api/students", params = "teacherNo")
-    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam String userCode) {
-        List<StudentRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(userCode);
+    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam ("teacherNo") String teacherNo, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<StudentRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(teacherNo, user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
-    @GetMapping(value = "/api/students", params = "classCode")
-    public ResponseEntity<?> getStudentsByClassCode(@RequestParam String classCode) {
-        List<MainStudentDTO> students = studentService.getStudentsByClassCode(classCode);
-        // List<StudentFilterDTO> students =
-        // studentService.getStudentsByClassCode(classCode);
+    @GetMapping(value = "/api/students", params = "timeTableKey")
+    public ResponseEntity<?> getStudentsByClassCode(@RequestParam ("timeTableKey")String timeTableKey, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<MainStudentDTO> students = studentService.getStudentsByKey(timeTableKey, user.getUserCode());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 

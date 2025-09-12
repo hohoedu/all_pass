@@ -22,9 +22,13 @@ public interface StudentRepository {
 
     public StudentDTO findStudentByStudentId(@Param("studentId") Integer studentId);
 
-    public List<MainStudentDTO> selectStudentByUserCode(@Param("userCode") String userCode);
+    public List<MainStudentDTO> selectStudentByUserCode(
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
 
-    public List<MainStudentDTO> selectStudentByClassCode(@Param("timeTableCode") String timeTableCode);
+    public List<MainStudentDTO> selectStudentByKey(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("userCode") String userCode);
 
     public void insert(StudentJoinDTO student);
 

@@ -1,22 +1,15 @@
 package com.hohoedu.all_pass.consult;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.hohoedu.all_pass.consult.model.InflowRoute;
 import com.hohoedu.all_pass.consult.model.ProgressCode;
 import com.hohoedu.all_pass.student.model.GradeCode;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,17 +17,20 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "consult")
+@Table(name = "erp_consult", uniqueConstraints = @UniqueConstraint(name = "uq_consult_key", columnNames = "consult_key"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Consult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer consultNo;
+    private Integer id;
 
-    @Column(nullable = false, length = 10)
+    @Column(name = "consult_key", nullable = false, length = 20)
+    private String consultKey;
+
+    @Column(name = "student_name", nullable = false, length = 20)
     private String studentName;
 
-    @Column(nullable = false, length = 10)
+    @Column(name = "consult_date", nullable = false, length = 20)
     private String consultDate;
 
     @Column(nullable = false, length = 20)
@@ -47,26 +43,27 @@ public class Consult {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grade_no")
+    @JoinColumn(name = "grade_key", referencedColumnName = "grade_key", nullable = false)
     private GradeCode gradeCode; // 코드
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "progress_no")
+    @JoinColumn(name = "progress_key", referencedColumnName = "progress_key", nullable = false)
     private ProgressCode progressCode; // 코드
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inflow_route_no")
+    @JoinColumn(name = "inflow_route_key", referencedColumnName = "inflow_route_key", nullable = false)
     private InflowRoute inflowRoute; // 코드
 
     @CreationTimestamp
-    private Timestamp createdAt;
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder
-    public Consult(Integer consultNo, String studentName, String consultDate, String school, String phone,
-            String content, GradeCode gradeCode, ProgressCode progressCode, InflowRoute inflowRoute,
-            Timestamp createdAt) {
-        this.consultNo = consultNo;
+
+    public Consult(Integer id, String studentName, String consultKey, String consultDate, String school, String phone, String content, GradeCode gradeCode, ProgressCode progressCode, InflowRoute inflowRoute, LocalDateTime createdAt) {
+        this.id = id;
         this.studentName = studentName;
+        this.consultKey = consultKey;
         this.consultDate = consultDate;
         this.school = school;
         this.phone = phone;
@@ -76,5 +73,4 @@ public class Consult {
         this.inflowRoute = inflowRoute;
         this.createdAt = createdAt;
     }
-
 }

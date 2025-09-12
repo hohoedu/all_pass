@@ -1,11 +1,6 @@
 package com.hohoedu.all_pass.consult.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,20 +8,23 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "inflow_route")
+@Table(name = "erp_inflow_route", uniqueConstraints = @UniqueConstraint(name = "uq_inflow_route_key", columnNames = "inflow_route_key"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InflowRoute {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer inflowRouteNo;
+    private Integer id;
 
-    @Column(nullable = false, length = 20)
-    private String inflowRoute;
+    @Column(name = "inflow_route_key", nullable = false, length = 20)
+    private String inflowRouteKey;
+
+    @Column(name = "inflow_route_name", nullable = false, length = 20)
+    private String inflowRouteName;
 
     @Builder
-    public InflowRoute(Integer inflowRouteNo, String inflowRoute) {
-        this.inflowRouteNo = inflowRouteNo;
-        this.inflowRoute = inflowRoute;
+    public InflowRoute(String inflowRouteKey, String inflowRouteName) {
+        this.inflowRouteKey = inflowRouteKey;
+        this.inflowRouteName = inflowRouteName;
     }
-
 }

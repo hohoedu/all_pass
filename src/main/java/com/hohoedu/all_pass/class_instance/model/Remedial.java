@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.class_instance.model;
 
 import java.time.LocalDateTime;
 
+import com.hohoedu.all_pass.class_instance.TimeTable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import org.hibernate.annotations.CreationTimestamp;

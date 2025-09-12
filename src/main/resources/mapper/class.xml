@@ -6,7 +6,7 @@
 
 
     <!--시간표 등록-->
-    <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTable" useGeneratedKeys="true"
+    <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table
         (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at, time_table_key)
@@ -159,7 +159,7 @@
         WHERE center_code = #{centerCode}
     </select>
 
-    <!-- 날짜별 수업 조회 -->
+    <!-- 수업 일지 리스트 불러오기 -->
     <select id="findTimeTableByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RecordLabelDTO">
         SELECT t.time_table_key    as timeTableKey,
                tc.time_table_label as classLabel,
@@ -176,7 +176,7 @@
         ORDER BY t.period_no ASC
     </select>
 
-    <!--  수업 일지 정보 불러오기  -->
+    <!--  수업 일지 학생 불러오기  -->
     <select id="findRecordStudentByKey" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RecordStudentDTO">
         SELECT s.student_id       AS studentId,
                s.student_name     AS studentName,

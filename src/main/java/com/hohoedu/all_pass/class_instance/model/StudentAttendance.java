@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.class_instance.model;
 
 import java.sql.Timestamp;
 
+import com.hohoedu.all_pass.class_instance.TimeTable;
 import lombok.AccessLevel;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;

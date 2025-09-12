@@ -376,12 +376,8 @@ const toYmd = (d) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const toK = (d) =>
     `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${DAY_KR[d.getDay()]})`;
-const state = {
-    teacherId: null,   // 'all' 또는 userCode
-    date: null,        // 'YYYY-MM-DD'
-    classCode: null,   // timeTableKey
-    week: null,        // 'ju_1'..'ju_4'
-};
+
+const state = {teacherId: null, date: null, timeTableKey: null, week: null};
 
 function buildByDateBody(dateStr, teacherId) {
     const d = new Date(dateStr + 'T00:00:00');
@@ -394,36 +390,17 @@ function buildByDateBody(dateStr, teacherId) {
     };
 }
 
-function buildByClassBody(classCode, week) {
+function buildByClassBody(timeTableKey, week) {
     return {
-        timeTableKey: classCode ?? null,
+        timeTableKey: timeTableKey ?? null,
         week: week ?? null,
     };
 }
 
-/* ---------- 콘솔 출력 헬퍼 ---------- */
-function logRequestBody(title, body) {
-    try {
-        console.groupCollapsed(`%c${title}`, 'color:#1976d2;font-weight:bold;');
-        console.log('requestBody:', body);
-    } finally {
-        console.groupEnd();
-    }
-}
-
 function getActiveTimeTableKey() {
     const el = document.querySelector('.class-list .class-btn.active');
-    return el?.dataset.classCode || el?.dataset.classId || null;
+    return el?.dataset.timeTableKey || el?.dataset.classId || null;
 }
-
-// window.loadClassData = function (el) {
-//     const code = el?.dataset?.classCode || el?.dataset?.classId || null;
-//     state.classCode = code; // 상태도 유지(선택사항이지만 권장)
-//
-//     const requestBody = buildByClassBody(code, state.week);
-//     logRequestBody('수업 변경 → by-class requestBody', requestBody);
-//     loadStudentList(code); // ← 키 전달
-// };
 
 function abortInFlight() {
     let inFlightController = null;
@@ -433,6 +410,7 @@ function abortInFlight() {
     return inFlightController.signal;
 }
 
+// 이벤트 감지
 document.addEventListener('DOMContentLoaded', () => {
     const teacherSel = document.getElementById('teacher-select');
     const dateInput = document.getElementById('record_calendar');
@@ -453,26 +431,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initActiveClass = classList?.querySelector('.class-btn.active');
     if (initActiveClass) {
-        state.classCode = initActiveClass.dataset.classCode || initActiveClass.dataset.classId || null;
+        state.timeTableKey = initActiveClass.dataset.timeTableKey || initActiveClass.dataset.classId || null;
     }
 
     const initActiveWeek = weekWrap?.querySelector('.week-btn.active');
     if (initActiveWeek) state.week = initActiveWeek.dataset.week || null;
 
-    /* -------- 이벤트: 선생님 변경 -------- */
     if (teacherSel) {
         teacherSel.addEventListener('change', () => {
             state.teacherId = teacherSel.value || null;
-            // 선생님 변경 → by-date 요청 바디를 콘솔에 출력
-            const requestBody = buildByDateBody(state.date, state.teacherId);
 
             loadOverviewFromState();
 
-            logRequestBody('선생님 변경 → by-date requestBody', requestBody);
         });
     }
 
-    /* -------- 이벤트: 날짜 변경 -------- */
     if (calBtn && dateInput) {
         calBtn.addEventListener('click', () => {
             if (typeof dateInput.showPicker === 'function') {
@@ -497,28 +470,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const d = new Date(state.date + 'T00:00:00');
             if (!Number.isNaN(d.getTime())) dateLabel.textContent = toK(d);
-            const requestBody = buildByDateBody(state.date, state.teacherId);
 
             loadOverviewFromState();
 
-            logRequestBody('날짜 변경 → by-date requestBody', requestBody);
         });
     }
 
-    /* -------- 이벤트: 수업 변경 -------- */
-    // HTML에 inline onclick="loadClassData(this)"가 있으므로, 덮어씁니다(네트워크X, 로그만).
     window.loadClassData = function (el) {
-        const code = el?.dataset?.classCode || el?.dataset?.classId || null;
-        state.classCode = code;
-
-        const requestBody = buildByClassBody(state.classCode, state.week, state.date);
+        const code = el?.dataset?.timeTableKey || el?.dataset?.classId || null;
+        state.timeTableKey = code;
 
         loadStudentList();
 
-        logRequestBody('수업 변경 → by-class requestBody', requestBody);
     };
 
-    // (보강) 혹시 위임 방식으로 클릭되는 경우도 지원
     if (classList) {
         classList.addEventListener('click', (e) => {
             const li = e.target.closest('.class-btn');
@@ -527,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* -------- 이벤트: 주차 변경 -------- */
+
     if (weekWrap) {
         weekWrap.querySelectorAll('.week-btn').forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -536,18 +501,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const activeKey = getActiveTimeTableKey(); // ← DOM에서 읽기
                 if (!activeKey) {
                     renderRecordStudentList([]);
-                    logRequestBody('주차 변경 → but no active class', { week: state.week });
                     return;
                 }
-
-                const requestBody = buildByClassBody(activeKey, state.week);
-                logRequestBody('주차 변경 → by-class requestBody', requestBody);
                 loadStudentList(activeKey); // ← 키 전달
             });
         });
     }
 });
 
+// 수업 리스트 조회 후 학생 리스트 조회
 async function loadOverviewFromState() {
     const signal = abortInFlight();
 
@@ -566,15 +528,13 @@ async function loadOverviewFromState() {
         renderRecordClassList(list1);
 
         if (list1.length === 0) {
-            // ---- 상태/뷰 초기화 ----
-            state.classCode = null;
+            state.timeTableKey = null;
             renderRecordStudentList([]);
             return;
         }
 
-        // 첫 수업 기준으로 학생 목록
         const firstKey = list1[0].timeTableKey;
-        state.classCode = String(firstKey); // 상태도 갱신
+        state.timeTableKey = String(firstKey);
 
         const body2 = buildByClassBody(firstKey, state.week);
         const res2 = await fetch('/class/api/record/student', {
@@ -595,6 +555,7 @@ async function loadOverviewFromState() {
     }
 }
 
+// 학생 리스트 조회
 async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
     const signal = abortInFlight();
 
@@ -621,6 +582,7 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
     }
 }
 
+// 수업리스트 랜더링
 function renderRecordClassList(list) {
     const ul = document.querySelector('.class-list');
     if (!ul) return;
@@ -630,8 +592,11 @@ function renderRecordClassList(list) {
     list.forEach((item, idx) => {
         const li = document.createElement('li');
         li.className = 'class-btn' + (idx === 0 ? ' active' : '');
-        li.dataset.classCode = item.timeTableKey;
-
+        li.dataset.timeTableKey = item.timeTableKey;
+        li.dataset.unitKey = item.unitKey;
+        li.dataset.classKey = item.classKey;
+        console.log('unitKey = ' + item.unitKey);
+        console.log('classKey = ' + item.classKey);
         li.onclick = function () {
             ul.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
             this.classList.add('active');
@@ -644,12 +609,12 @@ function renderRecordClassList(list) {
         ul.appendChild(li);
     });
 
-    // 첫 항목이 있다면 state.classCode 동기화
     if (list.length > 0) {
-        state.classCode = String(list[0].timeTableKey);
+        state.timeTableKey = String(list[0].timeTableKey);
     }
 }
 
+// 학생리스트 랜더링
 function renderRecordStudentList(list, tbodySel = '#record_tbody') {
     const tbody = typeof tbodySel === 'string' ? document.querySelector(tbodySel) : tbodySel;
     if (!tbody) {
@@ -668,7 +633,6 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
 
-        // 4) 출결
         const attendance = s.attendanceName ?? '결석';
         let statusClass;
         switch (attendance) {
@@ -684,7 +648,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
             default:
                 statusClass = 'absent';
         }
-
+        // 출석
         tr.innerHTML += `
             <td>
                 <span class="status-badge ${statusClass} stbox">${attendance}</span>
@@ -704,7 +668,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
                 </div>
             </td>`;
 
-        // 5) 보강일자
+        // 보강일자
         tr.innerHTML += `
           <td>
             ${!s.remedialDate || s.remedialDate === '9999-12-31'
@@ -719,7 +683,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
         }
           </td>`;
 
-        // 6) 특이사항
+        // 특이사항
         tr.innerHTML += `
           <td>
             <ul class="tag-list">
@@ -729,7 +693,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
             </ul>
           </td>`;
 
-        // 7) 상담기록
+        // 상담기록
         tr.innerHTML += `
           <td class="cell-middle">
             <div class="counsel-box">
@@ -742,7 +706,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
             </div>
           </td>`;
 
-        // 8) 수업 후 코멘트
+        // 수업 후 코멘트
         tr.innerHTML += `
           <td>
             <div class="cell-middle">
@@ -752,7 +716,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
             </div>
           </td>`;
 
-        // 9) 발송여부
+        // 발송여부
         tr.innerHTML += `
           <td class="send-ornot">
             <img src="/image/send3.png" alt="">
@@ -762,12 +726,14 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
         frag.appendChild(tr);
     });
 
+    // 학생이 없을 때
     if (items.length === 0) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 9;
+        td.colSpan = 10; // 9 → 10
         td.style.textAlign = 'center';
-        td.textContent = '학생이 없습니다';
+        td.style.padding = '20px';
+        td.textContent = '등록된 학생이 없습니다.';
         tr.appendChild(td);
         tbody.replaceChildren(tr);
     } else {
@@ -792,9 +758,9 @@ document.addEventListener('click', function (e) {
             .filter(tr => tr.querySelector('input[type="checkbox"]:checked'))
             .map(tr => tr.querySelector('.studentName')?.textContent.trim() || '');
 
-        const unitKey = activeClass.dataset.classUnitkey;    // data-class-unitKey
-        const classKey = activeClass.dataset.classClasskey;  // data-class-classKey
-        const timeTableKey = activeClass.dataset.classCode;  // data-class-code
+        const unitKey = activeClass.dataset.unitKey;    // data-class-unitKey
+        const classKey = activeClass.dataset.classKey;  // data-class-classKey
+        const timeTableKey = activeClass.dataset.timeTableKey;  // data-class-code
         const week = activeWeek?.dataset.week;    // data-week
         console.log('[GUIDE MODAL] unitKey:', unitKey, 'classKey:', classKey, 'week:', week, 'timeTableKey:', timeTableKey);
 

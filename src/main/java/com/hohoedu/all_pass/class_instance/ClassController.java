@@ -6,8 +6,10 @@ import java.util.Map;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
 
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,9 +80,7 @@ public class ClassController {
                         .ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
             }
         } catch (DataIntegrityViolationException ex) {
-            System.out.println("====================================================================");
-            System.out.println("==          " + ex.getMessage());
-            System.out.println("====================================================================");
+
             return ResponseEntity
                     .ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
@@ -97,8 +97,15 @@ public class ClassController {
     }
 
     @GetMapping("/api/load_time_table")
-    public ResponseEntity<?> loadTimeTable() {
-        List<TimeTableDTO> tables = classService.getLastTimeTable();
+    public ResponseEntity<?> loadTimeTable(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<TimeTableDTO> tables = classService.getLastTimeTable(user.getUserCode());
         return ResponseEntity.ok(ApiUtils.success(tables));
     }
 

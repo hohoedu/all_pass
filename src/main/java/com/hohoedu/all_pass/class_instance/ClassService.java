@@ -128,9 +128,9 @@ public class ClassService {
                 unitCode.getUnitName());
     }
 
-    public List<TimeTableDTO> findTimeTableWithStudents(String year, String month) {
+    public List<TimeTableDTO> findTimeTableWithStudents(String userCode, String year, String month) {
 
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic("DAE001cos", year, month);
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, year, month);
 
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
@@ -185,8 +185,8 @@ public class ClassService {
         // classRepository.deleteMonthlyScore(assignNo);
     }
 
-    public List<TimeTableDTO> getLastTimeTable() {
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic("DAE001cos", "2025", "09");
+    public List<TimeTableDTO> getLastTimeTable(String userCode) {
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, "2025", "09");
         return tables;
     }
 

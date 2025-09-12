@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.hohoedu.all_pass.class_instance.model.TimeTable;
+import com.hohoedu.all_pass.class_instance.TimeTable;
 import org.springframework.data.repository.query.Param;
 
 @Mapper

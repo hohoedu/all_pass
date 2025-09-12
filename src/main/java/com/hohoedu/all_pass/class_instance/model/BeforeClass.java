@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(name = "erp_before_class", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_before_class_key", columnNames = "before_class_key") })
+        @UniqueConstraint(name = "uq_before_class_key", columnNames = "before_class_key")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BeforeClass {
 
@@ -29,16 +29,16 @@ public class BeforeClass {
     @Column(name = "before_class_key")
     private String beforeClassKey;
 
-    @Column(name = "ju_1")
+    @Column(name = "ju_1", columnDefinition = "nvarchar(300)")
     private String ju1;
 
-    @Column(name = "ju_2")
+    @Column(name = "ju_2", columnDefinition = "nvarchar(300)")
     private String ju2;
 
-    @Column(name = "ju_3")
+    @Column(name = "ju_3", columnDefinition = "nvarchar(300)")
     private String ju3;
 
-    @Column(name = "ju_4")
+    @Column(name = "ju_4", columnDefinition = "nvarchar(300)")
     private String ju4;
 
     @Column(name = "class_type")
@@ -54,7 +54,7 @@ public class BeforeClass {
 
     @Builder
     public BeforeClass(Integer id, String beforeClassKey, String ju1, String ju2, String ju3, String ju4,
-            String classType, ClassCode classCode, UnitCode unitCode) {
+                       String classType, ClassCode classCode, UnitCode unitCode) {
         this.id = id;
         this.beforeClassKey = beforeClassKey;
         this.ju1 = ju1;

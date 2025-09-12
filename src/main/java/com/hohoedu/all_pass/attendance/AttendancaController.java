@@ -1,21 +1,13 @@
 package com.hohoedu.all_pass.attendance;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
-import java.util.List;
-import java.util.Locale;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
-import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ProcessedClassDTO;
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
-import com.hohoedu.all_pass.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import com.hohoedu.all_pass.class_instance.model.TimeTable;
 
 import lombok.RequiredArgsConstructor;
 

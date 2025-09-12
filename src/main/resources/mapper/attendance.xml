@@ -4,7 +4,7 @@
 
 <mapper namespace="com.hohoedu.all_pass.attendance.AttendanceRepository">
 
-    <resultMap id="timeTableResultMap" type="com.hohoedu.all_pass.class_instance.model.TimeTable">
+    <resultMap id="timeTableResultMap" type="com.hohoedu.all_pass.class_instance.TimeTable">
         <id property="id" column="id"/>
         <result property="yy" column="yy"/>
         <result property="mm" column="mm"/>

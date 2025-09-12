@@ -1,18 +1,15 @@
 package com.hohoedu.all_pass.attendance;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ProcessedClassDTO;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import com.hohoedu.all_pass.class_instance.model.TimeTable;
+import com.hohoedu.all_pass.class_instance.TimeTable;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service

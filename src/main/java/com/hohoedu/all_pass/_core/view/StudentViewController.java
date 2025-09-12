@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -44,17 +45,14 @@ public class StudentViewController {
     @GetMapping("/main")
     public String getStudentMainPage(HttpSession session, Model model) {
 
-        // UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-        // session.getAttribute("user");
-        // if (user == null) {
-        // return "redirect:/login";
-        // }
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        List<MainStudentDTO> students = studentService.getStudentsByUserCode("all");
-        // List<Student> students = studentService.findAll(user.getCenterNo());
-        List<User> teachers = studentService.findTeacher("DAE001");
-        // List<User> teachers = studentService.findTeacher(user.getCenterNo());
-
+        List<MainStudentDTO> students = studentService.getStudentsByUserCode("all", user.getCenterCode());
+        List<User> teachers = studentService.findTeacher(user.getCenterCode());
         List<TimeTableLabelDTO> labels = classService.getClassLabel("all");
 
         model.addAttribute("labels", labels);

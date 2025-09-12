@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,19 +48,25 @@ public class ClassViewController {
 
     // 시간표 등록
     @GetMapping("/timetable")
-    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model) {
+    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
 
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
         List<UnitCode> unitCodes = classService.findUnitCode();
-        List<Student> students = studentService.findStudentByCenterCode("DAE001");
+        List<Student> students = studentService.findStudentByCenterCode(user.getCenterCode());
         model.addAttribute("classCodes", classCodes);
         model.addAttribute("unitCodes", unitCodes);
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
         model.addAttribute("students", students);
 
-        List<TimeTableDTO> tables = classService.findTimeTableWithStudents(year, month);
+        List<TimeTableDTO> tables = classService.findTimeTableWithStudents(user.getUserCode(), year, month);
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
                 .collect(Collectors.groupingBy(
@@ -74,12 +81,18 @@ public class ClassViewController {
 
     // 시간표 조회
     @GetMapping("/timeview")
-    public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model) {
-        List<User> users = userService.findByCenterNo("DAE001");
+    public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        List<User> users = userService.findByCenterNo(user.getCenterCode());
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
-        List<TimeTableDTO> tables = classService.findTableViewWithStudents(year, month, "DAE001cos");
+        List<TimeTableDTO> tables = classService.findTableViewWithStudents(year, month, user.getUserCode());
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
                 .collect(Collectors.groupingBy(
@@ -99,16 +112,18 @@ public class ClassViewController {
 
     // 수업 일지 페이지
     @GetMapping("/record")
-    public String getClassRecordPage(Model model) {
+    public String getClassRecordPage(Model model, HttpSession session) {
         String today = dateConfig.currentYearMonth().get("today");
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        List<User> users = userService.findByCenterNo(user.getCenterCode());
 
-        // user Session에서 centerCode 받아오기
-        List<User> users = userService.findByCenterNo("DAE001");
-
-        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, "DAE001cos");
+        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode());
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();

@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
-import com.hohoedu.all_pass.class_instance.model.TimeTable;
+import com.hohoedu.all_pass.class_instance.TimeTable;
 import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
 import com.hohoedu.all_pass.user.User;
 

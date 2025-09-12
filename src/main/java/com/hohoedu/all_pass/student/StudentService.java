@@ -49,14 +49,14 @@ public class StudentService {
         return student;
     }
 
-    public List<MainStudentDTO> getStudentsByClassCode(String timeTableCode) {
-        List<MainStudentDTO> rows = studentRepository.selectStudentByClassCode(timeTableCode);
+    public List<MainStudentDTO> getStudentsByKey(String timeTableKey, String userCode) {
+        List<MainStudentDTO> rows = studentRepository.selectStudentByKey(timeTableKey, userCode);
         return rows;
     }
 
-    public List<MainStudentDTO> getStudentsByUserCode(String userCode) {
+    public List<MainStudentDTO> getStudentsByUserCode(String userCode, String centerCode) {
         System.out.println(userCode);
-        List<MainStudentDTO> rows = studentRepository.selectStudentByUserCode(userCode);
+        List<MainStudentDTO> rows = studentRepository.selectStudentByUserCode(userCode, centerCode);
         return rows;
     }
 

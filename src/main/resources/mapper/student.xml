@@ -141,6 +141,7 @@
         JOIN ERP_center c ON c.center_code = s.center_code
 
         WHERE 1 = 1
+        AND s.center_code = #{centerCode}
         <if test="userCode != null and userCode != 'all'">
             AND EXISTS (
             SELECT 1
@@ -155,7 +156,7 @@
     </select>
 
     <!-- 메인화면 수업별 학생 조회 -->
-    <select id="selectStudentByClassCode" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$MainStudentDTO">
+    <select id="selectStudentByKey" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$MainStudentDTO">
         SELECT
         s.id AS id,
         s.student_id AS studentId,
@@ -201,9 +202,10 @@
         JOIN ERP_status_code sc ON sc.status_key = s.status_key
         JOIN ERP_grade_code g ON g.grade_key = s.grade_key
         JOIN ERP_center c ON c.center_code = s.center_code
+        JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
         <where>
-            <if test="timeTableCode != null and timeTableCode != 'all'">
-                t.time_table_code = #{timeTableCode}
+            <if test="timeTableKey != null and timeTableKey != 'all'">
+                ta.time_table_key = #{timeTableKey}
             </if>
         </where>
         ORDER BY s.id
