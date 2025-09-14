@@ -4,7 +4,10 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 public class StudentRespDTO {
@@ -120,14 +123,16 @@ public class StudentRespDTO {
     }
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class StudentSnapshotRespDTO {
-        private String snapshotYm; // 집계 년월
-        private int activeCount; // 재원 중
-        private int restCount; // 휴원
+        private String snapshotYm;  // 집계 년월
+        private String centerCode;
+        private int totalCount;     // 총원
+        private int activeCount;    // 재원
+        private int restCount;      // 휴원
         private int withdrawnCount; // 탈퇴
-        private int entryCount; // 입회
-        private int moveInCount; // 전입
-        private int moveOutCount; // 전출
+        private int waitCount;      // 대기
     }
 
 }

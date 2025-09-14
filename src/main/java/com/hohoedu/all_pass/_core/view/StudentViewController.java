@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
-import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -63,9 +64,16 @@ public class StudentViewController {
     }
 
     @GetMapping("/transfer")
-    public String getStudentInoutPage(Model model) {
-        List<StudentInOutDTO> students = studentService.findAllInOut();
-        List<User> teachers = studentService.findTeacher("DAE001");
+    public String getStudentInoutPage(Model model, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode());
+        List<User> teachers = studentService.findTeacher(user.getCenterCode());
         List<TimeTableLabelDTO> labels = classService.getClassLabel("all");
 
         model.addAttribute("labels", labels);
@@ -79,27 +87,40 @@ public class StudentViewController {
         return "print/print-student-transfer";
     }
 
+
+
+    @GetMapping("/overview")
+    public String getStudentOverview(HttpSession session, Model model) {
+        var user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        final String centerCode = user.getCenterCode();
+
+        // 최근 12개월(포함) 범위
+        YearMonth nowYm = YearMonth.now();
+        YearMonth startYm = nowYm.minusMonths(11);
+        String currentYm = nowYm.toString().replace("-", "");   // yyyyMM
+        String yearAgoYm = startYm.toString().replace("-", ""); // yyyyMM
+
+        // 월별 스냅샷 업서트
+        for (YearMonth ym = startYm; !ym.isAfter(nowYm); ym = ym.plusMonths(1)) {
+            studentService.upsertSnapshot(centerCode, ym.toString().replace("-", ""));
+        }
+
+        // 범위 조회
+        List<StudentSnapshotRespDTO> snapshot = studentService.getSnapshotRange(centerCode, yearAgoYm, currentYm);
+
+        model.addAttribute("snapshot", snapshot);
+        model.addAttribute("centerCode", centerCode);
+        model.addAttribute("currentYm", currentYm);
+        model.addAttribute("startYm", yearAgoYm);
+
+        return "/student/student-overview";
+    }
+
     @GetMapping("/print-overview")
     public String getStudentOverviewPrintPage() {
         return "print/print-student-overview";
-    }
-
-    @GetMapping("/overview")
-    public String getStudentOutPage(HttpSession session, Model model) {
-        String currentYm = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-        String yearAgoYm = LocalDate.now().minusYears(1).plusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM"));
-
-        studentService.saveSnapshot(currentYm);
-        Object user = session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login"; // 로그인 페이지로 이동
-        }
-        List<StudentSnapshotRespDTO> snapshot = studentService.getSnapshot(yearAgoYm, currentYm, 1);
-        List<User> teachers = studentService.findTeacher("1");
-
-        model.addAttribute("snapshot", snapshot);
-        model.addAttribute("teachers", teachers);
-        return "student/student-overview";
     }
 
 }

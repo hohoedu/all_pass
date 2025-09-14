@@ -22,7 +22,7 @@
         WHERE s.center_code = #{centerCode}
     </select>
 
-    <select id="findStudentByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
+    <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
         WITH latest_history AS (SELECT *,
                                        ROW_NUMBER() OVER (
                PARTITION BY student_no
@@ -279,6 +279,7 @@
 							  AND  b.class_type = '2'
 							FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
 		) a
+        WHERE s.center_code = #{centerCode}
         ORDER  BY s.id;
     </select>
 

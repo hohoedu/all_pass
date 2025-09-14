@@ -106,24 +106,22 @@
                             <col width="15%">
                           </colgroup>
                           <tbody id="student-tbody" class="stripe">
-                            <tr th:each="snap : ${snapshot}">
-                              <td th:text="${snap.snapshotYm}"></td>
-                              <td th:text="${snap.activeCount}"></td>
-                              <td th:text="${snap.entryCount}"></td>
-                              <td th:text="${snap.moveInCount}"></td>
-                              <td th:text="${snap.restCount}"></td>
-                              <td th:text="${snap.moveOutCount}"></td>
-                              <td th:text="${snap.withdrawnCount}"></td>
-                            </tr>
-                            <tr th:each="snap : ${snapshot}">
-                              <td th:text="${snap.snapshotYm}"></td>
-                              <td th:text="${snap.activeCount}"></td>
-                              <td th:text="${snap.entryCount}"></td>
-                              <td th:text="${snap.moveInCount}"></td>
-                              <td th:text="${snap.restCount}"></td>
-                              <td th:text="${snap.moveOutCount}"></td>
-                              <td th:text="${snap.withdrawnCount}"></td>
-                            </tr>
+                          <tr th:each="snap : ${snapshot}">
+                            <td th:text="${snap.snapshotYm}"></td>
+                            <td th:text="${snap.totalCount}"></td>
+                            <td th:text="${snap.activeCount}"></td>
+                            <td th:text="${snap.restCount}"></td>
+                            <td th:text="${snap.withdrawnCount}"></td>
+                            <td th:text="${snap.waitCount}"></td>
+                          </tr>
+                          <tr th:each="snap : ${snapshot}">
+                            <td th:text="${snap.snapshotYm}"></td>
+                            <td th:text="${snap.totalCount}"></td>
+                            <td th:text="${snap.activeCount}"></td>
+                            <td th:text="${snap.restCount}"></td>
+                            <td th:text="${snap.withdrawnCount}"></td>
+                            <td th:text="${snap.waitCount}"></td>
+                          </tr>
                           </tbody>
                         </table>
                       </div>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.student.repository.SnapshotRepository">
+    <select id="aggregateAtMonthEnd" resultType="map">
+        WITH hist AS (SELECT s.student_id,
+                             sc.status_key,
+                             sh.updated_at,
+                             ROW_NUMBER() OVER (PARTITION BY s.student_id ORDER BY sh.updated_at DESC) AS rn
+                      FROM erp_status_history sh
+                               JOIN erp_student s
+                                    ON s.student_id = sh.student_id
+                               JOIN erp_status_code sc
+                                    ON sc.status_key = sh.status_key
+                      WHERE s.center_code = #{centerCode}
+                        AND sh.updated_at &lt;= #{monthEnd}),
+             latest AS (SELECT student_id, status_key
+                        FROM hist
+                        WHERE rn = 1)
+        SELECT COALESCE(COUNT(*), 0)                                                   AS total_count,
+               COALESCE(SUM(CASE WHEN status_key = 'ACTIVE' THEN 1 ELSE 0 END), 0)    AS active_count,
+               COALESCE(SUM(CASE WHEN status_key = 'REST' THEN 1 ELSE 0 END), 0)      AS rest_count,
+               COALESCE(SUM(CASE WHEN status_key = 'WITHDRAWN' THEN 1 ELSE 0 END), 0) AS withdrawn_count,
+               COALESCE(SUM(CASE WHEN status_key = 'WAIT' THEN 1 ELSE 0 END), 0)      AS wait_count
+        FROM latest;
+    </select>
+</mapper>

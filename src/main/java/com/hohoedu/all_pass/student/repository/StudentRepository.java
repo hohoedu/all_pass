@@ -1,6 +1,8 @@
 package com.hohoedu.all_pass.student.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,7 +22,7 @@ public interface StudentRepository {
 
     public List<Student> findstudentByCenterCode(@Param("centerCode") String centerCode);
 
-    public StudentDTO findStudentByStudentId(@Param("studentId") Integer studentId);
+    public StudentDTO findStudentByStudentId(@Param("studentId") String studentId);
 
     public List<MainStudentDTO> selectStudentByUserCode(
             @Param("userCode") String userCode,
@@ -36,7 +38,7 @@ public interface StudentRepository {
 
     public int studentStatusUpdate(StatusHistoryDTO historyDTO);
 
-    public List<StudentInOutDTO> selectTransferStudents();
+    public List<StudentInOutDTO> selectTransferStudents(@Param("centerCode") String centerCode);
 
     public List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);
 

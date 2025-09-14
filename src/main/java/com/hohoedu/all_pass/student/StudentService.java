@@ -1,9 +1,18 @@
 package com.hohoedu.all_pass.student;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.family.FamilyService;
+import com.hohoedu.all_pass.student.model.StudentSnapshot;
+import com.hohoedu.all_pass.student.model.StudentSnapshotId;
+import com.hohoedu.all_pass.student.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +28,6 @@ import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentTransferDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.model.StudentTransferHistory;
-import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
-import com.hohoedu.all_pass.student.repository.StudentJpaRepository;
-import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.repository.UserRepository;
 import com.hohoedu.all_pass.family.repository.RelationJpaRepository;
@@ -36,9 +42,11 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final GradeJpaRepository gradeJpaRepository;
     private final RelationJpaRepository relationJpaRepository;
-    private final StudentJpaRepository studentJpaRepository;
     private final UserRepository userRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
+    private final SnapshotRepository snapshotRepository;
+    private final SnapshotJpaRepository snapshotJpaRepository;
+    private final CenterRepository centerRepository;
 
     private final FamilyService familyService;
 
@@ -60,7 +68,7 @@ public class StudentService {
         return rows;
     }
 
-    public StudentRespDTO.StudentDTO findStudentByStudentId(Integer studentId) {
+    public StudentRespDTO.StudentDTO findStudentByStudentId(String studentId) {
 
         StudentRespDTO.StudentDTO student = studentRepository.findStudentByStudentId(studentId);
 
@@ -92,8 +100,8 @@ public class StudentService {
         return classCodes;
     }
 
-    public List<StudentInOutDTO> findAllInOut() {
-        List<StudentInOutDTO> students = studentRepository.selectTransferStudents();
+    public List<StudentInOutDTO> findAllInOut(String centerCode) {
+        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode);
         return students;
     }
 
@@ -167,6 +175,66 @@ public class StudentService {
         }
 
     }
+
+    // ================================================================================================================
+    private LocalDateTime endOfMonthDateTime(String ym) {
+        int y = Integer.parseInt(ym.substring(0,4));
+        int m = Integer.parseInt(ym.substring(4,6));
+        LocalDate end = YearMonth.of(y, m).atEndOfMonth();
+        return end.atTime(23, 59, 59);
+    }
+
+    /** (A) 특정 월 실시간 집계 후 스냅샷 저장/갱신 */
+    @Transactional
+    public void upsertSnapshot(String centerCode, String ym) {
+        LocalDateTime monthEnd = endOfMonthDateTime(ym);
+        Map<String, Object> r = snapshotRepository.aggregateAtMonthEnd(centerCode, monthEnd);
+
+        int total     = toInt(r.get("total_count"));
+        int active    = toInt(r.get("active_count"));
+        int rest      = toInt(r.get("rest_count"));
+        int withdrawn = toInt(r.get("withdrawn_count"));
+        int wait      = toInt(r.get("wait_count"));
+
+        Center center = centerRepository.findByCenterCode(centerCode)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 센터: " + centerCode));
+
+        StudentSnapshotId id = new StudentSnapshotId(ym, centerCode);
+        StudentSnapshot entity = StudentSnapshot.builder()
+                .id(id)
+                .center(center)
+                .totalCount(total)
+                .activeCount(active)
+                .restCount(rest)
+                .withdrawnCount(withdrawn)
+                .waitCount(wait)
+                .build();
+
+        snapshotJpaRepository.save(entity);
+    }
+
+    /** (B) 구간 스냅샷 조회 (포함) */
+    @Transactional(readOnly = true)
+    public List<StudentSnapshotRespDTO> getSnapshotRange(String centerCode, String fromYm, String toYm) {
+        return snapshotJpaRepository
+                .findByIdCenterCodeAndIdSnapshotYmBetweenOrderByIdSnapshotYm(centerCode, fromYm, toYm)
+                .stream()
+                .map(s -> new StudentSnapshotRespDTO(
+                        s.getSnapshotYm(),
+                        s.getCenterCode(),
+                        s.getTotalCount(),
+                        s.getActiveCount(),
+                        s.getRestCount(),
+                        s.getWithdrawnCount(),
+                        s.getWaitCount()
+                ))
+                .toList();
+    }
+
+    private int toInt(Object v) {
+        return v == null ? 0 : ((Number) v).intValue();
+    }
+
 
     public void saveSnapshot(String ym) {
         studentRepository.insertSnapshotIfNotExists(ym);
