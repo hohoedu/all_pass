@@ -51,8 +51,13 @@ public class Student {
     private LocalDate entryHanDate;
     private LocalDate entryBookDate;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "app_id", nullable = false, length = 20)
     private String appId;
+    @Column(name = "app_password", length = 100)
+    private String appPassword;
+
+    @Column(name = "app_token", length = 100)
+    private String appToken;
 
     @Column(nullable = false)
     private Boolean studentPrivacyAgree = Boolean.FALSE;
@@ -83,7 +88,7 @@ public class Student {
     @Builder
     public Student(Integer id, String studentId, String studentName, String birth, Boolean gender, String school,
                    String address, String addressDetail, LocalDate entryHanDate, LocalDate entryBookDate, String appId,
-                   Boolean studentPrivacyAgree, GradeCode gradeCode, LevelCode levelCode, StatusCode statusCode, Center center,
+                   String appPassword, String appToken, Boolean studentPrivacyAgree, GradeCode gradeCode, LevelCode levelCode, StatusCode statusCode, Center center,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.studentId = studentId;
@@ -96,6 +101,8 @@ public class Student {
         this.entryHanDate = entryHanDate;
         this.entryBookDate = entryBookDate;
         this.appId = appId;
+        this.appPassword = appPassword;
+        this.appToken = appToken;
         this.studentPrivacyAgree = studentPrivacyAgree;
         this.gradeCode = gradeCode;
         this.levelCode = levelCode;

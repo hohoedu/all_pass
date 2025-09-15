@@ -72,7 +72,7 @@
           AND student_id = #{studentId}
     </delete>
 
-    <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
+    <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
         SELECT tt.id          AS timeTableNo,
                time_table_key AS timeTableKey,
                period_no      AS periodNo,
@@ -105,7 +105,7 @@
         values (#{timeTableKey}, #{timeTableLabel}, #{timeTableYm});
     </insert>
 
-    <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableLabelDTO">
+    <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT
         tc.time_table_key as timeTableKey,
         tc.time_table_label as classLabel
@@ -120,7 +120,7 @@
         ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
     </select>
 
-    <select id="findStudentsByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO$StudentDTO">
+    <select id="findStudentsByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT st.student_id   AS studentId,
                st.student_name AS studentName,
                tta.week        AS week
@@ -130,7 +130,7 @@
         ORDER BY st.student_name
     </select>
 
-    <select id="existsByYearAndMonthAndPeriodNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$TimeTableDTO">
+    <select id="existsByYearAndMonthAndPeriodNo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
         SELECT tt.id             as timeTableId,
                tt.time_table_key as timeTableKey,
                tt.period_no      as periodNo,
@@ -151,6 +151,7 @@
           and tt.mm = #{month}
           and tt.period_no = #{periodNo}
           and tt.dayname = #{dayname}
+        and tt.user_code = #{userCode}
     </select>
 
     <select id="findUserByCenterCode" resultType="com.hohoedu.all_pass.user.User">
@@ -160,7 +161,7 @@
     </select>
 
     <!-- 수업 일지 리스트 불러오기 -->
-    <select id="findTimeTableByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RecordLabelDTO">
+    <select id="findTimeTableByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordLabelDTO">
         SELECT t.time_table_key    as timeTableKey,
                tc.time_table_label as classLabel,
                t.class_key         as classKey,
@@ -177,7 +178,7 @@
     </select>
 
     <!--  수업 일지 학생 불러오기  -->
-    <select id="findRecordStudentByKey" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RecordStudentDTO">
+    <select id="findRecordStudentByKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordStudentDTO">
         SELECT s.student_id       AS studentId,
                s.student_name     AS studentName,
                t.time_table_key   AS timeTableKey,
@@ -201,7 +202,7 @@
     </select>
 
     <!--  수업 전 안내 내용  -->
-    <select id="findBeforeClass" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$BeforeClassRespDTO">
+    <select id="findBeforeClass" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
         SELECT CASE #{week}
                    WHEN 'ju_1' THEN bc.ju_1
                    WHEN 'ju_2' THEN bc.ju_2
@@ -224,7 +225,7 @@
 
 
     <!-- 선생님별 보강 조회 -->
-    <select id="findRemedialByUserNo" resultType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$RemedialDTO">
+    <select id="findRemedialByUserNo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemedialDTO">
         SELECT *
         FROM erp_remedial r
                  JOIN erp_student s ON r.student_id = s.student_id
@@ -288,11 +289,11 @@
     </select>
 
     <!-- 클래스 코드별 학생 및 본문 조회 -->
-    <resultMap id="MonthlyStudentMap" type="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$MonthlyStudentDTO">
+    <resultMap id="MonthlyStudentMap" type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO">
         <id property="studentId" column="student_id"/>
         <result property="studentName" column="student_name"/>
         <result property="timeTableKey" column="time_table_key"/>
-        <collection property="scores" ofType="com.hohoedu.all_pass.class_instance._dto.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
+        <collection property="scores" ofType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
             <result property="question1" column="question1"/>
             <result property="question2" column="question2"/>
             <result property="question3" column="question3"/>
@@ -339,4 +340,36 @@
           AND mm = #{mm}
     </update>
 
+    
+    <select id="findClassInfoByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClassInfoRespDTO">
+        SELECT CASE c.class_type
+                   WHEN '1' THEN 'S'
+                   WHEN '2' THEN 'I'
+                   ELSE c.class_type
+                   END
+                                                                         AS gubun,
+               CASE t.dayname
+                   WHEN 'mon' THEN '월'
+                   WHEN 'tue' THEN '화'
+                   WHEN 'wed' THEN '수'
+                   WHEN 'thu' THEN '목'
+                   WHEN 'fri' THEN '금'
+                   WHEN 'sat' THEN '토'
+                   WHEN 'sun' THEN '일'
+                   ELSE t.dayname
+                   END
+                                                                         AS dayname,
+               REPLACE(CONVERT(VARCHAR (5), t.start_time, 108), ':', '') AS stime,
+               REPLACE(CONVERT(VARCHAR (5), t.end_time, 108), ':', '')   AS etime,
+               t.mm,
+               c.class_name + ' ' + u.unit_name                          AS note
+        FROM ERP_TIME_TABLE t
+                 JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+                 JOIN erp_class_code c ON t.class_key = c.class_key
+                 JOIN erp_unit_code u ON t.unit_key = u.unit_key
+        WHERE ta.student_id = #{studentId}
+          AND t.yy = #{yy}
+          AND t.mm = #{mm}
+    </select>
 </mapper> 

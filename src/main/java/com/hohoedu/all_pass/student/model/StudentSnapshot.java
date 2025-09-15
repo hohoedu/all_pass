@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "student_snapshot", uniqueConstraints = @UniqueConstraint(name = "uk_snapshot_ym_center", columnNames = {"snapshot_ym","center_code"}),
+@Table(name = "erp_student_snapshot", uniqueConstraints = @UniqueConstraint(name = "uk_snapshot_ym_center", columnNames = {"snapshot_ym","center_code"}),
         indexes = {@Index(name="ix_snapshot_ym", columnList="snapshot_ym"), @Index(name="ix_snapshot_center", columnList="center_code")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudentSnapshot {

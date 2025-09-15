@@ -15,14 +15,14 @@
                 #{gradeNo}, #{levelNo}, #{statusNo}, #{appId} #{studentPrivacyAgree});
     </insert>
 
-    <select id="findstudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentsListDTO">
+    <select id="findstudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
         SELECT *
         FROM ERP_STUDENT s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
         WHERE s.center_code = #{centerCode}
     </select>
 
-    <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentDTO">
+    <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
         WITH latest_history AS (SELECT *,
                                        ROW_NUMBER() OVER (
                PARTITION BY student_no
@@ -94,7 +94,7 @@
     </select>
 
     <!-- 메인화면 선생님별 학생 조회 -->
-    <select id="selectStudentByUserCode" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$MainStudentDTO">
+    <select id="selectStudentByUserCode" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
         SELECT
         s.student_id AS studentId,
         s.student_name AS studentName,
@@ -156,7 +156,7 @@
     </select>
 
     <!-- 메인화면 수업별 학생 조회 -->
-    <select id="selectStudentByKey" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$MainStudentDTO">
+    <select id="selectStudentByKey" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
         SELECT
         s.id AS id,
         s.student_id AS studentId,
@@ -212,7 +212,7 @@
     </select>
 
     <!-- 학생 상태 기록 -->
-    <insert id="statusHistoryInsert" parameterType="com.hohoedu.all_pass.student._dto.StudentReqDTO$StatusHistoryDTO" useGeneratedKeys="true"
+    <insert id="statusHistoryInsert" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO" useGeneratedKeys="true"
             keyProperty="historyNo" keyColumn="history_no">
         INSERT INTO status_history
             (student_no, status_no, reason, updated_at)
@@ -220,14 +220,14 @@
     </insert>
 
     <!-- 학생 상태 변경 -->
-    <update id="studentStatusUpdate" parameterType="com.hohoedu.all_pass.student._dto.StudentReqDTO$StatusHistoryDTO">
+    <update id="studentStatusUpdate" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO">
         UPDATE student_tb
         SET status_no = #{statusNo}
         WHERE student_no = #{studentNo};
     </update>
 
     <!-- 전입/전출 화면 학생 조회 -->
-    <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentInOutDTO">
+    <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">
         WITH base
                  AS (SELECT ta.student_id,
                             cc.class_type,
@@ -284,7 +284,7 @@
     </select>
 
 
-    <select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentTransferDTO">
+    <select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentTransferDTO">
         SELECT
         s.student_id AS studentId,
         sth.TRANSFER_NO as historyNo,
@@ -356,7 +356,7 @@
                  JOIN status_code sc ON s.status_no = sc.status_no;
     </insert>
 
-    <select id="findAllStudentOverview" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentSnapshotRespDTO">
+    <select id="findAllStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotRespDTO">
         SELECT s.snapshot_ym AS snapshotYm,
                s.active_count,
                s.rest_count,
@@ -378,7 +378,7 @@
         ORDER BY s.snapshot_ym
     </select>
 
-    <select id="findStudentOverview" resultType="com.hohoedu.all_pass.student._dto.StudentRespDTO$StudentSnapshotRespDTO">
+    <select id="findStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotRespDTO">
         SELECT s.snapshot_ym AS snapshotYm,
                s.active_count,
                s.rest_count,
@@ -406,6 +406,20 @@
         SELECT *
         FROM student_tb
         WHERE app_id = #{appId}
+    </select>
+
+    <select id="appLogin" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppLoginViewDTO">
+        SELECT s.student_id   as studentId,
+               s.student_name as studentName,
+               s.app_password as password,
+               c.center_code  as centerCode,
+               c.center_name  as centerName,
+               s.grade_key    as gradeKey,
+               s.app_id       as appId,
+               s.app_password as appPassword
+        FROM ERP_STUDENT s
+                 JOIN erp_center c ON s.center_code = c.center_code
+        WHERE s.app_id = #{appId}
     </select>
 
 </mapper>

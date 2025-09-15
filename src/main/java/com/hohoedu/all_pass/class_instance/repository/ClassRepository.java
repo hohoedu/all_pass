@@ -2,8 +2,9 @@ package com.hohoedu.all_pass.class_instance.repository;
 
 import java.util.List;
 
-import com.hohoedu.all_pass.class_instance._dto.ClassReqDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,7 +24,8 @@ public interface ClassRepository {
             @Param("periodNo") String periodNo,
             @Param("year") String year,
             @Param("month") String month,
-            @Param("dayname") String dayname);
+            @Param("dayname") String dayname,
+            @Param("userCode") String userCode);
 
     public int updateClass(
             @Param("dto") ClassReqDTO.ClassRegisterDTO dto,
@@ -133,4 +135,9 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
+
+    public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 }

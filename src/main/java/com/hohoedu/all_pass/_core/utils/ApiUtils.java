@@ -28,6 +28,6 @@ public class ApiUtils {
     public static class ApiError {
         private final String message;
         private final int status;
-
     }
+
 }

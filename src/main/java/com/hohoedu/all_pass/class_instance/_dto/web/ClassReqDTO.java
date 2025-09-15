@@ -1,4 +1,4 @@
-package com.hohoedu.all_pass.class_instance._dto;
+package com.hohoedu.all_pass.class_instance._dto.web;
 
 import java.util.List;
 

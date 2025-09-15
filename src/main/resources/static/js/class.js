@@ -148,10 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const allTabs = document.querySelectorAll('.time-tab-content');
         const payloadList = [];
         const dayIndexMap = {mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6};
+        const user = sessionStorage.getItem("user");
+        console.log(user);
         for (const tab of allTabs) {
             const dayname = tab.id;
             const daynameNo = dayIndexMap[dayname];
-            const userCode = 'DAE001cos';
+            const userCode = "PUS002love"
             const rows = tab.querySelectorAll('tr.time-row');
             for (const row of rows) {
                 const periodNo = row.querySelector('td:nth-child(2)').innerText.trim();

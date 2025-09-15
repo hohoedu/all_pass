@@ -1,10 +1,10 @@
-package com.hohoedu.all_pass.student._dto;
+package com.hohoedu.all_pass.student._dto.web;
 
 import java.util.List;
 
 import lombok.Data;
 
-public class StudentReqDTO {
+public class StudentWebReqDTO {
 
     @Data
     public static class StudentJoinDTO {

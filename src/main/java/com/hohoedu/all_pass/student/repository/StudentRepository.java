@@ -1,21 +1,21 @@
 package com.hohoedu.all_pass.student.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
+import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.student.Student;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentInOutDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.MainStudentDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentSnapshotRespDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentTransferDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDTO;
 import com.hohoedu.all_pass.student.model.StudentTransferHistory;
-import com.hohoedu.all_pass.student._dto.StudentReqDTO.StatusHistoryDTO;
-import com.hohoedu.all_pass.student._dto.StudentReqDTO.StudentJoinDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StatusHistoryDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StudentJoinDTO;
+import org.springframework.security.core.parameters.P;
 
 @Mapper
 public interface StudentRepository {
@@ -63,5 +63,8 @@ public interface StudentRepository {
             @Param("userNo") int userNo);
 
     public Student findByAppId(@Param("appId") String appId);
+
+    public StudentAppRespDTO.AppLoginViewDTO appLogin(
+            @Param("appId") String appId);
 
 }

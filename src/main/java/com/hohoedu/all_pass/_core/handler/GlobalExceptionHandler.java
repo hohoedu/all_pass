@@ -1,16 +1,12 @@
 package com.hohoedu.all_pass._core.handler;
 
+import com.hohoedu.all_pass._core.handler.exception.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
-import com.hohoedu.all_pass._core.handler.exception.Exception400;
-import com.hohoedu.all_pass._core.handler.exception.Exception401;
-import com.hohoedu.all_pass._core.handler.exception.Exception403;
-import com.hohoedu.all_pass._core.handler.exception.Exception404;
-import com.hohoedu.all_pass._core.handler.exception.Exception405;
-import com.hohoedu.all_pass._core.handler.exception.Exception500;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class GlobalExceptionHandler {
@@ -54,4 +50,14 @@ public class GlobalExceptionHandler {
         sb.append("</script>");
         return sb.toString();
     }
+
+    @ExceptionHandler(AppRestfulException.class)
+    public ResponseEntity<?> handleAppException(AppRestfulException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("message", ex.getMessage());
+        body.put("status", ex.getStatus().value());
+        return ResponseEntity.status(ex.getStatus()).body(body);
+    }
+
 }

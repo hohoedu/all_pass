@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
@@ -18,14 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableLabelDTO;
-import com.hohoedu.all_pass.student._dto.StudentReqDTO;
-import com.hohoedu.all_pass.student._dto.StudentReqDTO.StatusHistoryDTO;
-import com.hohoedu.all_pass.student._dto.StudentReqDTO.StudentJoinDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.MainStudentDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentSnapshotRespDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentTransferDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StatusHistoryDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StudentJoinDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +41,7 @@ public class StudentController {
 
     final private StudentService studentService;
     final private ClassService classService;
+
 
     @GetMapping("/api/label")
     public ResponseEntity<?> getLabels(@RequestParam("teacherNo") String teacherNo) {
@@ -60,7 +61,7 @@ public class StudentController {
                     .build();
         }
 
-        List<StudentRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(teacherNo, user.getCenterCode());
+        List<StudentWebRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(teacherNo, user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
@@ -91,7 +92,7 @@ public class StudentController {
     // TODO: 리다이렉트 변경 필요
     @PostMapping("/join")
     public String studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
-                              @ModelAttribute StudentReqDTO.ParentJoinDTO parentDTO) {
+                              @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
 
         studentService.studentInsert(studentDTO, parentDTO);
 
@@ -118,7 +119,7 @@ public class StudentController {
     }
 
     @PostMapping("/inout")
-    public String studentInOut(@ModelAttribute StudentReqDTO.StudentTransferDTO studentInOutDTO) {
+    public String studentInOut(@ModelAttribute StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
         studentInOutDTO.getStudentNoList();
         studentService.transferStudent(studentInOutDTO);
         studentService.insertTransferHistory(studentInOutDTO);

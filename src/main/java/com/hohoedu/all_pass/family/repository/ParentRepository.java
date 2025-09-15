@@ -2,7 +2,7 @@ package com.hohoedu.all_pass.family.repository;
 
 import org.apache.ibatis.annotations.Mapper;
 
-import com.hohoedu.all_pass.student._dto.StudentReqDTO.ParentJoinDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.ParentJoinDTO;
 
 @Mapper
 public interface ParentRepository {

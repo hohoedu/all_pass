@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,12 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.class_instance.ClassService;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.InitRecordDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.MonthlyStudentDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RecordStudentDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.RemedialDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableDTO;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableLabelDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.MonthlyStudentDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordStudentDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.student.Student;

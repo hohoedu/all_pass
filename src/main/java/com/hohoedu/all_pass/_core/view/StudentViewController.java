@@ -1,8 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
 import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -14,12 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.hohoedu.all_pass.class_instance.ClassService;
-import com.hohoedu.all_pass.class_instance._dto.ClassRespDTO.TimeTableLabelDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
 import com.hohoedu.all_pass.family.model.RelationCode;
 import com.hohoedu.all_pass.student.StudentService;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.MainStudentDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentInOutDTO;
-import com.hohoedu.all_pass.student._dto.StudentRespDTO.StudentSnapshotRespDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
 

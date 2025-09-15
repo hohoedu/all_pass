@@ -1,16 +1,14 @@
-package com.hohoedu.all_pass.student._dto;
+package com.hohoedu.all_pass.student._dto.web;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-public class StudentRespDTO {
+public class StudentWebRespDTO {
 
     @Data
     public static class StudentsListDTO {
