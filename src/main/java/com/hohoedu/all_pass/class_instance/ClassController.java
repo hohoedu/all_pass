@@ -21,7 +21,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByCl
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByMonthDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassRecordReqDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.StudentAttendanceDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.BeforeClassRespDTO;
@@ -167,27 +166,6 @@ public class ClassController {
         return ResponseEntity.ok(null);
     }
 
-    @PostMapping("/attendance")
-    public ResponseEntity<?> studentAttendance(@RequestBody StudentAttendanceDTO dto) {
-
-        Student studentInfo = studentService.findByAppId(dto.getAppId());
-
-        if ("come".equals(dto.getAttendType())) {
-            boolean inserted = classService.insertStudentAttendance(dto, studentInfo);
-            if (inserted) {
-                return ResponseEntity.ok("등원 완료");
-            } else {
-                return ResponseEntity.badRequest().body("이미 오늘 출석 기록이 있습니다.");
-            }
-        } else {
-            boolean updated = classService.updateStudentAttendance(dto, studentInfo);
-            if (updated) {
-                return ResponseEntity.ok("하원 완료");
-            } else {
-                return ResponseEntity.badRequest().body("출석 기록이 없어 하원 처리 불가");
-            }
-        }
-    }
 
     // 월간 평가 (초등)
     @PostMapping("/api/monthly/by-month")

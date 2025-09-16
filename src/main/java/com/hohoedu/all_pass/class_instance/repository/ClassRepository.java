@@ -95,24 +95,7 @@ public interface ClassRepository {
             @Param("remedialKey") String remedialKey,
             @Param("remedialDate") String remedialDate);
 
-    // 출석 여부 체크
-    public Integer countByStudentAndDate(
-            @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate);
 
-    // 출석 insert
-    public void insertStudentAttendance(StudentAttendance studentAttendance);
-
-    // 하원 여부 체크
-    public StudentAttendance findByStudentAndDate(
-            @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate);
-
-    // 하원 update
-    public int updateStudentAttendance(
-            @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate,
-            @Param("outTime") String outTime);
 
     // 선생님별 클래스 코드 조회
     public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(

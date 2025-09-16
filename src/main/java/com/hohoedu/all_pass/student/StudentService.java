@@ -11,7 +11,10 @@ import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
+import com.hohoedu.all_pass.class_instance.model.AttendanceCode;
+import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.family.FamilyService;
+import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.StudentSnapshot;
@@ -177,6 +180,43 @@ public class StudentService {
 
         }
 
+    }
+
+    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
+        StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
+        return respDTO;
+    }
+
+    public boolean insertStudentAttendance(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+
+        Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
+        if (count != null && count > 0) {
+            return false;
+        }
+
+        StudentAttendance sa = StudentAttendance.builder()
+                .inTime(dto.getHhmm())
+                .student(Student.builder().id(student.getId()).build())
+                .attendanceCode(AttendanceCode.builder().attendanceKey("").build())
+                .center(Center.builder().centerCode(dto.getCenterCode()).build())
+                .build();
+
+        studentRepository.insertStudentAttendance(sa);
+        return true;
+    }
+
+    public boolean updateStudentAttendance(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+        StudentAttendance sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
+        if (sa == null) {
+            System.out.println("등원 기록 없음");
+            return false;
+        }
+        if (sa.getOutTime() != null) {
+            System.out.println("이미 처리 됨");
+            return false;
+        }
+        int updated = studentRepository.updateStudentAttendance(student.getStudentId(), dto.getYmd(), dto.getHhmm());
+        return updated > 0;
     }
 
     // ================================================================================================================

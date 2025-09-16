@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
+import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
+import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -52,7 +55,7 @@ public class StudentController {
     }
 
     @GetMapping(value = "/api/students", params = "teacherNo")
-    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam ("teacherNo") String teacherNo, HttpSession session) {
+    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam("teacherNo") String teacherNo, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -66,7 +69,7 @@ public class StudentController {
     }
 
     @GetMapping(value = "/api/students", params = "timeTableKey")
-    public ResponseEntity<?> getStudentsByClassCode(@RequestParam ("timeTableKey")String timeTableKey, HttpSession session) {
+    public ResponseEntity<?> getStudentsByClassCode(@RequestParam("timeTableKey") String timeTableKey, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -124,6 +127,39 @@ public class StudentController {
         studentService.transferStudent(studentInOutDTO);
         studentService.insertTransferHistory(studentInOutDTO);
         return "redirect:/student/transfer";
+    }
+
+    @PostMapping("/app_token")
+    public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
+        System.out.println("===============================");
+        System.out.println(attendanceTokenDTO.getAppId());
+        System.out.println("===============================");
+        StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());
+        return ResponseEntity.ok(ApiUtils.success(respDTO));
+    }
+
+
+    @PostMapping("/attendance")
+    public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
+
+
+        Student studentInfo = studentService.findByAppId(dto.getAppId());
+
+        if ("come".equals(dto.getAttendType())) {
+            boolean inserted = studentService.insertStudentAttendance(dto, studentInfo);
+            if (inserted) {
+                return ResponseEntity.ok("등원 완료");
+            } else {
+                return ResponseEntity.badRequest().body("이미 오늘 출석 기록이 있습니다.");
+            }
+        } else {
+            boolean updated = studentService.updateStudentAttendance(dto, studentInfo);
+            if (updated) {
+                return ResponseEntity.ok("하원 완료");
+            } else {
+                return ResponseEntity.badRequest().body("출석 기록이 없어 하원 처리 불가");
+            }
+        }
     }
 
     @GetMapping("/overview/data")

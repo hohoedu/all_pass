@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student.repository;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -50,6 +51,27 @@ public interface StudentRepository {
     public void insertTransferHistory(StudentTransferHistory dto);
 
     public boolean existsByYm(String ym);
+
+    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(@Param("appId") String appId);
+
+    // 출석 여부 체크
+    public Integer countByStudentAndDate(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate);
+
+    // 출석 insert
+    public void insertStudentAttendance(StudentAttendance studentAttendance);
+
+    // 하원 여부 체크
+    public StudentAttendance findByStudentAndDate(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate);
+
+    // 하원 update
+    public int updateStudentAttendance(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate,
+            @Param("outTime") String outTime);
 
     public void insertSnapshotIfNotExists(String ym);
 

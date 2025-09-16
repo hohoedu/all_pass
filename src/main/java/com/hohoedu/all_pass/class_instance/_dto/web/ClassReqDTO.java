@@ -77,14 +77,6 @@ public class ClassReqDTO {
         private String remedialDate;
     }
 
-    @Data
-    public static class StudentAttendanceDTO {
-        private String centerCode;
-        private String appId;
-        private String ymd;
-        private String hhmm;
-        private String attendType;
-    }
 
     @Data
     public static class ClassMonthlyByMonthDTO {

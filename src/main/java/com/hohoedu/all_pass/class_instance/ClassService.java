@@ -15,7 +15,6 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.AddStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.StudentAttendanceDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -234,37 +233,9 @@ public class ClassService {
         classRepository.updateRemedialDate(dto.getRemedialKey(), dto.getRemedialDate());
     }
 
-    public boolean insertStudentAttendance(StudentAttendanceDTO dto, Student student) {
 
-        Integer count = classRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
-        if (count != null && count > 0) {
-            return false;
-        }
 
-        StudentAttendance sa = StudentAttendance.builder()
-                .inTime(dto.getHhmm())
-                .student(Student.builder().id(student.getId()).build())
-                .attendanceCode(AttendanceCode.builder().attendanceKey("").build())
-                .center(Center.builder().centerCode(dto.getCenterCode()).build())
-                .build();
 
-        classRepository.insertStudentAttendance(sa);
-        return true;
-    }
-
-    public boolean updateStudentAttendance(StudentAttendanceDTO dto, Student student) {
-        StudentAttendance sa = classRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
-        if (sa == null) {
-            System.out.println("등원 기록 없음");
-            return false;
-        }
-        if (sa.getOutTime() != null) {
-            System.out.println("이미 처리 됨");
-            return false;
-        }
-        int updated = classRepository.updateStudentAttendance(student.getStudentId(), dto.getYmd(), dto.getHhmm());
-        return updated > 0;
-    }
 
     // ================ 월간 평가 서비스 =====================//
     public List<TimeTableLabelDTO> getLabelsByYM(String yy, String mm) {

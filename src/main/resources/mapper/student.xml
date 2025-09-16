@@ -404,7 +404,16 @@
 
     <select id="findByAppId">
         SELECT *
-        FROM student_tb
+        FROM erp_student
+        WHERE app_id = #{appId}
+    </select>
+
+    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+        SELECT center_code  as centerCode,
+               student_id   as stuid,
+               student_name as name,
+               app_token    as token
+        FROM erp_student
         WHERE app_id = #{appId}
     </select>
 

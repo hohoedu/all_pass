@@ -51,4 +51,12 @@ public class StudentAppRespDTO {
         private String appId;       // 앱 아이디
         private String appPassword; // 앱 패스워드
     }
+
+    @Data
+    public static class AppTokenRespDTO {
+        private String centerCode;
+        private String stuId;
+        private String name;
+        private String token;
+    }
 }
