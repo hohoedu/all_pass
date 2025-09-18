@@ -21,6 +21,7 @@ public class ClassReqDTO {
         private String gradeKey;
         private String userCode;
         private String timeTableKey;
+        private String centerCode;
     }
 
     @Data
@@ -53,12 +54,22 @@ public class ClassReqDTO {
         private String mm;
         private String day;
         private String date;
+        private String classKey;
+        private String unitKey;
         private String week;
         private String timeTableKey;
     }
 
     @Data
     public static class BeforeClassDTO {
+        private String classKey;
+        private String unitKey;
+        private String week;
+        private String timeTableKey;
+    }
+
+    @Data
+    public static class AfterClassDTO {
         private String classKey;
         private String unitKey;
         private String week;

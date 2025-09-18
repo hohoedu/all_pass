@@ -32,6 +32,10 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("userCode") String userCode);
 
+    public int updateLabel(
+            @Param("label") String label,
+            @Param("timeTableKey") String timeTableKey);
+
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
     public void createAttendance(
@@ -79,9 +83,12 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("dayName") String dayName,
-            @Param("userCode") String userCode);
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
 
-    public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(@Param("timeTableKey") String timeTableKey, @Param("week") String week);
+    public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week);
 
     public List<ClassRespDTO.RemedialDTO> findRemedialByUserNo(
             @Param("year") String year,
@@ -96,7 +103,6 @@ public interface ClassRepository {
             @Param("remedialDate") String remedialDate);
 
 
-
     // 선생님별 클래스 코드 조회
     public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
             @Param("userCode") String userCode,
@@ -104,6 +110,12 @@ public interface ClassRepository {
             @Param("mm") String mm);
 
     public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("week") String week,
+            @Param("timeTableKey") String timeTableKey);
+
+    public ClassRespDTO.AfterClassRespDTO findAfterClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("week") String week,

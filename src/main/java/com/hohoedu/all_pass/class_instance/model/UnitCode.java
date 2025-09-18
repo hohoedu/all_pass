@@ -22,10 +22,13 @@ public class UnitCode {
     @Column(name = "unit_name", nullable = false, length = 50)
     private String unitName;
 
+    @Column(name = "unit_type", nullable = false, length = 20)
+    private String unitType;
+
     @Builder
-    public UnitCode(Integer id, String unitKey, String unitName) {
-        this.id = id;
+    public UnitCode( String unitKey, String unitName, String unitType) {
         this.unitKey = unitKey;
         this.unitName = unitName;
+        this.unitType = unitType;
     }
 }

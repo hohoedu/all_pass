@@ -47,8 +47,12 @@ public class StudentAttendance {
     private Timestamp createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Timestamp updatedAt;
+    @Column(name = "check_in_updated_at")
+    private Timestamp checkInUpdatedAt;
+
+    @UpdateTimestamp
+    @Column(name = "check_out_updated_at")
+    private Timestamp checkOutUpdatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
@@ -67,13 +71,14 @@ public class StudentAttendance {
     private Center center;
 
     @Builder
-    public StudentAttendance(Integer id, String inTime, String outTime, String week, Timestamp createdAt, Timestamp updatedAt, Student student, TimeTable timeTable, AttendanceCode attendanceCode, Center center) {
+    public StudentAttendance(Integer id, String inTime, String outTime, String week, Timestamp createdAt, Timestamp checkInUpdatedAt, Timestamp checkOutUpdatedAt, Student student, TimeTable timeTable, AttendanceCode attendanceCode, Center center) {
         this.id = id;
         this.inTime = inTime;
         this.outTime = outTime;
         this.week = week;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.checkInUpdatedAt = checkInUpdatedAt;
+        this.checkOutUpdatedAt = checkOutUpdatedAt;
         this.student = student;
         this.timeTable = timeTable;
         this.attendanceCode = attendanceCode;

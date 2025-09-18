@@ -52,7 +52,8 @@ public interface StudentRepository {
 
     public boolean existsByYm(String ym);
 
-    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(@Param("appId") String appId);
+    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(
+            @Param("appId") String appId);
 
     // 출석 여부 체크
     public Integer countByStudentAndDate(
@@ -60,9 +61,12 @@ public interface StudentRepository {
             @Param("attendanceDate") String attendanceDate);
 
     // 출석 insert
-    public void insertStudentAttendance(StudentAttendance studentAttendance);
+    public void checkinStudentAttendance(
+            @Param("studentId") String studentId,
+            @Param("inTime") String inTime);
 
     // 하원 여부 체크
+    //TODO: 수정 필요
     public StudentAttendance findByStudentAndDate(
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
@@ -84,7 +88,7 @@ public interface StudentRepository {
             @Param("endYm") String endYm,
             @Param("userNo") int userNo);
 
-    public Student findByAppId(@Param("appId") String appId);
+    public Student findByStudentId(@Param("studentId") String studentId);
 
     public StudentAppRespDTO.AppLoginViewDTO appLogin(
             @Param("appId") String appId);

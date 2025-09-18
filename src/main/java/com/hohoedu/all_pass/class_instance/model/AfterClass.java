@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "erp_after_class", uniqueConstraints = {@UniqueConstraint(name = "uq_after_class_key", columnNames = "after_class_key")})
+@Table(name = "erp_after_class")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AfterClass {
     @Id
@@ -21,8 +21,10 @@ public class AfterClass {
     @Column(name = "week", nullable = false, length = 20)
     private String week;
 
+    @Column(name = "word", columnDefinition = "nvarchar(300)")
     private String word;
 
+    @Column(name = "content", columnDefinition = "nvarchar(300)")
     private String content;
 
     @Column(name = "class_type")

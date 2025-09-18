@@ -181,8 +181,11 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                                                            <textarea class="comment-text"
-                                                                      placeholder="내용을 입력해주세요."></textarea>
+                                                   <textarea class="comment-text record-content" placeholder="내용을 입력해주세요."
+                                                             th:text="${content != null && content.content != null
+                                                             ? #strings.replace(#strings.replace(#strings.replace(content.content, '<br />', '\n'),'<br/>','\n'),'<br>','\n')
+                                                             : ''}">
+                                                   </textarea>
                                                 </div>
                                             </div>
                                         </td>

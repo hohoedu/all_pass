@@ -233,14 +233,14 @@
                             cc.class_type,
                             cc.class_name,
                             u.user_name
-                     FROM   erp_time_table_assign ta
-                                JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
-                                JOIN erp_class_code cc ON cc.class_key = t.class_key
-                                JOIN erp_user u ON u.user_code = t.user_code
-                     GROUP  BY ta.student_id,
-                               cc.class_type,
-                               cc.class_name,
-                               u.user_name)
+                     FROM erp_time_table_assign ta
+                              JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
+                              JOIN erp_class_code cc ON cc.class_key = t.class_key
+                              JOIN erp_user u ON u.user_code = t.user_code
+                     GROUP BY ta.student_id,
+                              cc.class_type,
+                              cc.class_name,
+                              u.user_name)
         SELECT s.student_id,
                s.student_name,
                g.grade_name,
@@ -249,11 +249,10 @@
                a.hanteacher,
                a.bookteacher,
                (SELECT Max(sth.move_at)
-                FROM   erp_student_transfer_history sth
-                WHERE  sth.student_id = s.student_id) AS moveAt
-        FROM   erp_student s
-                   JOIN erp_grade_code g ON s.grade_key = g.grade_key
-            OUTER apply (
+                FROM erp_student_transfer_history sth
+                WHERE sth.student_id = s.student_id) AS moveAt
+        FROM erp_student s
+                 JOIN erp_grade_code g ON s.grade_key = g.grade_key OUTER apply (
 	          SELECT hanClass = Stuff((
 			                SELECT ',' + b.class_name
 					 		FROM   base b
@@ -280,7 +279,7 @@
 							FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
 		) a
         WHERE s.center_code = #{centerCode}
-        ORDER  BY s.id;
+        ORDER BY s.id;
     </select>
 
 
@@ -331,6 +330,60 @@
         VALUES (#{student.studentNo}, #{fromUser.userNo}, #{toUser.userNo}, #{classType}, #{transferReason}, #{classNo}, #{moveAt}, CURRENT_TIMESTAMP);
     </insert>
 
+    <!-- 출석 관련 -->
+    <select id="findByStudentId">
+        SELECT *
+        FROM erp_student
+        WHERE student_id = #{studentId}
+    </select>
+
+    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+        SELECT center_code  as centerCode,
+               student_id   as stuid,
+               student_name as name,
+               app_token    as token
+        FROM erp_student
+        WHERE app_id = #{appId}
+    </select>
+
+    <!-- 출석 여부 확인 -->
+    <select id="countByStudentAndDate" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_student_attendance
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!-- 등원 update -->
+    <update id="checkinStudentAttendance">
+        UPDATE erp_student_attendance
+        SET in_time    = #{inTime},
+            check_in_updated_at = SYSDATETIME()
+        WHERE student_no = #{studentNo}
+          AND in_time IS NULL
+    </update>
+
+    <!-- 하원 여부 확인 -->
+    <select id="findByStudentAndDate" resultType="com.hohoedu.all_pass.class_instance.model.StudentAttendance">
+        SELECT student_attendance_no,
+               in_time,
+               out_time,
+               attendance_date,
+               student_no,
+               attendance_no
+        FROM erp_student_attendance
+        WHERE student_id = #{studentId}
+    </select>
+    <!--하원 update -->
+    <update id="checkoutStudentAttendance">
+        UPDATE erp_student_attendance
+        SET out_time   = #{outTime},
+            check_out_updated_at = SYSDATETIME()
+        WHERE student_no = #{studentNo}
+          AND out_time IS NULL
+    </update>
+
+
+    <!-- 통계 관련-->
     <select id="existsByYm" resultType="boolean">
         SELECT COUNT(1) > 0
         FROM student_monthly_snapshot
@@ -400,21 +453,6 @@
         FROM student_monthly_snapshot s
         WHERE s.snapshot_ym BETWEEN #{startYm} AND #{endYm}
         ORDER BY s.snapshot_ym
-    </select>
-
-    <select id="findByAppId">
-        SELECT *
-        FROM erp_student
-        WHERE app_id = #{appId}
-    </select>
-
-    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
-        SELECT center_code  as centerCode,
-               student_id   as stuid,
-               student_name as name,
-               app_token    as token
-        FROM erp_student
-        WHERE app_id = #{appId}
     </select>
 
     <select id="appLogin" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppLoginViewDTO">

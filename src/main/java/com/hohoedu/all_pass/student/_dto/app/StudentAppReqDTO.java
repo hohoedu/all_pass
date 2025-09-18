@@ -14,7 +14,7 @@ public class StudentAppReqDTO {
     @Data
     public static class StudentAttendanceDTO {
         private String centerCode;
-        private String appId;
+        private String studentId;
         private String ymd;
         private String hhmm;
         private String attendType;

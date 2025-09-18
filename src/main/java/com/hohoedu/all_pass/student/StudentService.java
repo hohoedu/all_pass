@@ -187,25 +187,18 @@ public class StudentService {
         return respDTO;
     }
 
-    public boolean insertStudentAttendance(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+    public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
             return false;
         }
 
-        StudentAttendance sa = StudentAttendance.builder()
-                .inTime(dto.getHhmm())
-                .student(Student.builder().id(student.getId()).build())
-                .attendanceCode(AttendanceCode.builder().attendanceKey("").build())
-                .center(Center.builder().centerCode(dto.getCenterCode()).build())
-                .build();
-
-        studentRepository.insertStudentAttendance(sa);
+        studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm());
         return true;
     }
 
-    public boolean updateStudentAttendance(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+    public boolean checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
         StudentAttendance sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (sa == null) {
             System.out.println("등원 기록 없음");
@@ -297,8 +290,8 @@ public class StudentService {
         return studentOverview;
     }
 
-    public Student findByAppId(String appId) {
-        Student student = studentRepository.findByAppId(appId);
+    public Student findByStudentId(String studentId) {
+        Student student = studentRepository.findByStudentId(studentId);
         return student;
     }
 

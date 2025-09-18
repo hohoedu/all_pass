@@ -18,7 +18,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScor
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.BeforeClassRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.MonthlyStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
@@ -80,7 +79,6 @@ public class ClassService {
                 classReqDTO.getMm(),
                 classReqDTO.getDayname(),
                 classReqDTO.getUserCode());
-        System.out.println(classReqDTO.getUserCode());
 
         boolean isEmpty = timeTable == null;
 
@@ -104,13 +102,16 @@ public class ClassService {
 
             return "success-register";
         } else {
-
+            String label = createTimeTableLabel(classReqDTO);
+            System.out.println(label);
             int result = classRepository.updateClass(classReqDTO, timeTable.getTimeTableKey(), classReqDTO.getUserCode());
+            classRepository.updateLabel(label, timeTable.getTimeTableKey());
+            System.out.println("result : " + result);
             if (result <= 0) {
                 System.out.println("실패");
                 return "fail-update";
             }
-            System.out.println("실패");
+            System.out.println("성공");
             return "success-update";
 
         }
@@ -200,20 +201,24 @@ public class ClassService {
     }
 
     // ================ 수업 일지 서비스 =====================//
-    public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String yy, String mm, String dayName, String userCode) {
-        List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode);
+    public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String yy, String mm, String dayName, String userCode, String centerCode) {
+        List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode, centerCode);
         return response;
     }
 
-    public List<RecordStudentDTO> getTimeTableByKey(String timeTableKey, String week) {
-        List<RecordStudentDTO> response = classRepository.findRecordStudentByKey(timeTableKey, week);
+    public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String timeTableKey, String week, String classKey, String unitKey) {
+        List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
+        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(classKey, unitKey, week, timeTableKey);
+
+        ClassRespDTO.RecordBundleDTO response = new ClassRespDTO.RecordBundleDTO(students, afterClassContent);
+
         return response;
     }
 
-    public BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
-                                                    String timeTableKey) {
-        BeforeClassRespDTO dto = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
-        return dto;
+    public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
+                                                                 String timeTableKey) {
+        ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
+        return response;
     }
 
     // ================ 보강 관리 서비스 =====================//
@@ -232,9 +237,6 @@ public class ClassService {
     public void updateRemedialDate(UpdateRemedialDateDTO dto) {
         classRepository.updateRemedialDate(dto.getRemedialKey(), dto.getRemedialDate());
     }
-
-
-
 
 
     // ================ 월간 평가 서비스 =====================//

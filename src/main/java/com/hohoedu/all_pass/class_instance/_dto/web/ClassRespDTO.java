@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 public class ClassRespDTO {
@@ -75,11 +76,19 @@ public class ClassRespDTO {
 
 
     @Data
+    @AllArgsConstructor
+    public static class RecordBundleDTO {
+        private List<RecordStudentDTO> students;
+        private AfterClassRespDTO afterClass;
+    }
+    @Data
     public static class RecordStudentDTO {
         private String studentId;
         private String studentName;
         private String timeTableKey;
         private String ym;
+        private String classKey;
+        private String unitKey;
         private String week;
         private String inTime;
         private String outTime;
@@ -92,6 +101,15 @@ public class ClassRespDTO {
     @Data
     public static class BeforeClassRespDTO {
         private String beforeClassKey;
+        private String content;
+        private String timeTableKey;
+        private String timeTableLabel;
+        private String userName;
+    }
+
+    @Data
+    public static class AfterClassRespDTO {
+        private String afterClassKey;
         private String content;
         private String timeTableKey;
         private String timeTableLabel;

@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.class_instance;
 
 import java.sql.Timestamp;
 
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import jakarta.persistence.*;
@@ -58,6 +59,10 @@ public class TimeTable {
     @JoinColumn(name = "grade_key", referencedColumnName = "grade_key", nullable = false)
     private GradeCode grade;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
+    private Center center;
+
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_code", referencedColumnName = "user_code", nullable = false)
@@ -74,7 +79,7 @@ public class TimeTable {
     @Builder
     public TimeTable(String yy, String mm, String dayname, String periodNo,
                      String startTime, String endTime, String timeTableKey,
-                     ClassCode classCode, UnitCode unitCode, GradeCode grade, User user) {
+                     ClassCode classCode, UnitCode unitCode, GradeCode grade, Center center, User user) {
         this.yy = yy;
         this.mm = mm;
         this.dayname = dayname;
@@ -85,6 +90,7 @@ public class TimeTable {
         this.classCode = classCode;
         this.unitCode = unitCode;
         this.grade = grade;
+        this.center = center;
         this.user = user;
     }
 }

@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
     }
+
     if (btn) {
         btn.addEventListener('click', addStudents);
     }
@@ -392,10 +393,12 @@ function buildByDateBody(dateStr, teacherId) {
     };
 }
 
-function buildByClassBody(timeTableKey, week) {
+function buildByClassBody(timeTableKey, week, classKey, unitKey) {
     return {
         timeTableKey: timeTableKey ?? null,
         week: week ?? null,
+        classKey: classKey ?? null,
+        unitKey: unitKey ?? null,
     };
 }
 
@@ -434,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const initActiveClass = classList?.querySelector('.class-btn.active');
     if (initActiveClass) {
         state.timeTableKey = initActiveClass.dataset.timeTableKey || initActiveClass.dataset.classId || null;
+        state.classKey = initActiveClass.dataset.classKey || null;
+        state.unitKey = initActiveClass.dataset.unitKey || null;
     }
 
     const initActiveWeek = weekWrap?.querySelector('.week-btn.active');
@@ -479,11 +484,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.loadClassData = function (el) {
-        const code = el?.dataset?.timeTableKey || el?.dataset?.classId || null;
-        state.timeTableKey = code;
-
+        state.timeTableKey = el?.dataset?.timeTableKey || el?.dataset?.classId || null;
+        state.classKey = el?.dataset?.classKey || null;
+        state.unitKey = el?.dataset?.unitKey || null;
         loadStudentList();
-
     };
 
     if (classList) {
@@ -535,10 +539,15 @@ async function loadOverviewFromState() {
             return;
         }
 
-        const firstKey = list1[0].timeTableKey;
-        state.timeTableKey = String(firstKey);
+        const firstTimeTableKey = list1[0].timeTableKey;
+        const firstClassKey = list1[0].classKey;
+        const firstUnitKey = list1[0].unitKey;
 
-        const body2 = buildByClassBody(firstKey, state.week);
+        state.timeTableKey = String(firstTimeTableKey);
+        state.classKey = String(firstClassKey)
+        state.unitKey = String(firstUnitKey)
+
+        const body2 = buildByClassBody(firstTimeTableKey, state.week, firstClassKey, firstUnitKey);
         const res2 = await fetch('/class/api/record/student', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -547,9 +556,10 @@ async function loadOverviewFromState() {
         });
         if (!res2.ok) throw new Error('서버 응답 오류(학생)');
         const data2 = await res2.json();
-
-        const list2 = Array.isArray(data2?.response) ? data2.response : [];
-        renderRecordStudentList(list2);
+        const list2 = Array.isArray(data2?.response?.students) ? data2.response.students : [];
+        const content = data2.response.afterClass
+        console.log(content);
+        renderRecordStudentList(list2, content);
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error('[loadOverviewFromState] 실패:', e);
@@ -566,7 +576,7 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
             renderRecordStudentList([]);
             return;
         }
-        const body = buildByClassBody(timeTableKey, state.week);
+        const body = buildByClassBody(timeTableKey, state.week, state.classKey, state.unitKey);
         const res = await fetch('/class/api/record/student', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -575,8 +585,11 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
         });
         if (!res.ok) throw new Error('서버 응답 오류(학생)');
         const data = await res.json();
-        const list = Array.isArray(data?.response) ? data.response : [];
-        renderRecordStudentList(list);
+        console.log(data.response);
+        const list = Array.isArray(data?.response?.students) ? data.response.students : [];
+        const content = data.response.afterClass;
+
+        renderRecordStudentList(list, content);
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error('[loadStudentList] 실패:', e);
@@ -597,8 +610,6 @@ function renderRecordClassList(list) {
         li.dataset.timeTableKey = item.timeTableKey;
         li.dataset.unitKey = item.unitKey;
         li.dataset.classKey = item.classKey;
-        console.log('unitKey = ' + item.unitKey);
-        console.log('classKey = ' + item.classKey);
         li.onclick = function () {
             ul.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
             this.classList.add('active');
@@ -617,7 +628,7 @@ function renderRecordClassList(list) {
 }
 
 // 학생리스트 랜더링
-function renderRecordStudentList(list, tbodySel = '#record_tbody') {
+function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
     const tbody = typeof tbodySel === 'string' ? document.querySelector(tbodySel) : tbodySel;
     if (!tbody) {
         console.error('[renderStudents] tbody를 찾을 수 없습니다:', tbodySel);
@@ -628,7 +639,6 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
     const frag = document.createDocumentFragment();
 
     items.forEach((s, idx) => {
-        console.log(s.attendanceName);
         const tr = document.createElement('tr');
         tr.dataset.studentId = s.studentNo ?? '';
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
@@ -713,7 +723,7 @@ function renderRecordStudentList(list, tbodySel = '#record_tbody') {
           <td>
             <div class="cell-middle">
               <div class="after-comment">
-                <textarea class="comment-text" placeholder="내용을 입력해주세요."></textarea>
+                <textarea class="comment-text record-content" placeholder="내용을 입력해주세요.">${content ? content.content.replace(/<br\s*\/?>/gi, "\n") : ""}</textarea>
               </div>
             </div>
           </td>`;
@@ -809,6 +819,15 @@ function bindRecordModal(data, selectedNames) {
     if (studentsEl) studentsEl.textContent = selectedNames.length ? selectedNames.join(', ') : '선택된 학생이 없습니다';
     if (contentEl) contentEl.textContent = content;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("textarea.record-content").forEach(el => {
+        if (el.value) {
+            // 문자열 안의 "\n" → 실제 줄바꿈
+            el.value = el.value.replace(/\\n/g, "\n");
+        }
+    });
+});
 
 // =================================== //
 // ==                               == //

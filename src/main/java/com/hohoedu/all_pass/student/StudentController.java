@@ -143,21 +143,23 @@ public class StudentController {
     public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
 
 
-        Student studentInfo = studentService.findByAppId(dto.getAppId());
-
-        if ("come".equals(dto.getAttendType())) {
-            boolean inserted = studentService.insertStudentAttendance(dto, studentInfo);
-            if (inserted) {
+        Student studentInfo = studentService.findByStudentId(dto.getStudentId());
+        System.out.println("=================");
+        System.out.println(dto.getAttendType());
+        System.out.println("=================");
+        if ("1".equals(dto.getAttendType())) {   // 등원
+            boolean checkedIn = studentService.checkinStudent(dto, studentInfo);
+            if (checkedIn) {
                 return ResponseEntity.ok("등원 완료");
             } else {
-                return ResponseEntity.badRequest().body("이미 오늘 출석 기록이 있습니다.");
+                return ResponseEntity.badRequest().body("이미 오늘 등원 기록이 있습니다.");
             }
-        } else {
-            boolean updated = studentService.updateStudentAttendance(dto, studentInfo);
-            if (updated) {
+        } else {   // 하원
+            boolean checkedOut = studentService.checkoutStudent(dto, studentInfo);
+            if (checkedOut) {
                 return ResponseEntity.ok("하원 완료");
             } else {
-                return ResponseEntity.badRequest().body("출석 기록이 없어 하원 처리 불가");
+                return ResponseEntity.badRequest().body("출석 기록이 없거나 이미 하원 처리된 상태입니다.");
             }
         }
     }

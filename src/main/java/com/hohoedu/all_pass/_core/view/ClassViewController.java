@@ -122,14 +122,15 @@ public class ClassViewController {
         }
         List<User> users = userService.findByCenterNo(user.getCenterCode());
 
-        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode());
+        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();
-
-            List<RecordStudentDTO> students = classService.getTimeTableByKey(timeTableKey, "ju_1");
-
-            model.addAttribute("students", students);
+            String classKey = labels.get(0).getClassKey();
+            String unitKey = labels.get(0).getUnitKey();
+            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(timeTableKey, "ju_1", classKey, unitKey);
+            model.addAttribute("students", bundle.getStudents());
+            model.addAttribute("content", bundle.getAfterClass());
         }
 
         model.addAttribute("users", users);
