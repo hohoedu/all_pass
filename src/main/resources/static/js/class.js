@@ -56,6 +56,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+// 수업 변경 시 진도 변경
+document.addEventListener("DOMContentLoaded", () => {
+    const rawJson = document.getElementById("classUnits").value;
+    const classUnits = JSON.parse(rawJson);
+
+    document.querySelectorAll("tr.time-row").forEach(row => {
+        const classSelect = row.querySelector(".class-select");
+        const unitSelect = row.querySelector(".unit-select");
+
+        if (!classSelect || !unitSelect) return;
+
+        const initialClassKey = classSelect.value;
+        const initialUnitKey = unitSelect.getAttribute("data-selected");
+
+        // ✅ 최초 로딩 시
+        fillUnitSelect(unitSelect, classUnits, initialClassKey, initialUnitKey);
+
+        // ✅ 변경 이벤트 시
+        classSelect.addEventListener("change", function () {
+            const classKey = this.value;
+            fillUnitSelect(unitSelect, classUnits, classKey, null);
+        });
+    });
+
+    function fillUnitSelect(unitSelect, classUnits, classKey, selectedUnitKey) {
+        unitSelect.options.length = 0; // 초기화
+        unitSelect.add(new Option("선택 안함", ""));
+
+        if (!classKey || !classUnits[classKey]) return;
+
+        // ✅ unitType === "peo"만 ㄱㄴㄷ순 정렬
+        let units = [...classUnits[classKey]];
+        if (units.length > 0 && units[0].unitType === "peo") {
+            units.sort((a, b) => a.unitName.localeCompare(b.unitName, "ko"));
+        }
+
+        units.forEach(u => {
+            const opt = new Option(u.unitName, u.unitKey);
+            if (selectedUnitKey && selectedUnitKey === u.unitKey) {
+                opt.selected = true; // DB 값 유지
+            }
+            unitSelect.add(opt);
+        });
+    }
+});
+
+
 // 왼쪽 수업이름 파싱
 document.addEventListener('DOMContentLoaded', () => {
     const span = document.getElementById('current-selected-class');
@@ -148,12 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const allTabs = document.querySelectorAll('.time-tab-content');
         const payloadList = [];
         const dayIndexMap = {mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6};
-        const user = sessionStorage.getItem("user");
-        console.log(user);
+
         for (const tab of allTabs) {
             const dayname = tab.id;
             const daynameNo = dayIndexMap[dayname];
-            const userCode = "PUS002love"
+            const userCode = document.getElementById("tableUserCode").value;
             const rows = tab.querySelectorAll('tr.time-row');
             for (const row of rows) {
                 const periodNo = row.querySelector('td:nth-child(2)').innerText.trim();

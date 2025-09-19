@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.stereotype.Controller;
@@ -47,7 +49,7 @@ public class ClassViewController {
 
     // 시간표 등록
     @GetMapping("/timetable")
-    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) {
+    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) throws JsonProcessingException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -58,9 +60,16 @@ public class ClassViewController {
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
         List<UnitCode> unitCodes = classService.findUnitCode();
+        Map<String, List<UnitCode>> classUnitMap = classService.findClassUnits();
+        ObjectMapper mapper = new ObjectMapper();
+        String classUnits = mapper.writeValueAsString(classUnitMap);
+
         List<Student> students = studentService.findStudentByCenterCode(user.getCenterCode());
+//        List<Student> students = studentService.findStudentByCenterCode("DAE001");
+        model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);
         model.addAttribute("unitCodes", unitCodes);
+        model.addAttribute("classUnits", classUnits);
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
         model.addAttribute("students", students);

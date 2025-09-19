@@ -9,8 +9,8 @@
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table
-        (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at, time_table_key)
-        values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime}, #{endTime}, #{classKey}, #{unitKey}, #{gradeKey}, #{userCode}, SYSDATETIME(), #{timeTableKey});
+        (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at, time_table_key, center_code)
+        values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime}, #{endTime}, #{classKey}, #{unitKey}, #{gradeKey}, #{userCode}, SYSDATETIME(), #{timeTableKey}, #{centerCode});
     </insert>
 
     <!--시간표 수정-->
@@ -77,6 +77,17 @@
         FROM erp_time_table_assign
         WHERE time_table_key = #{timeTableKey}
           AND student_id = #{studentId}
+
+        DELETE
+        FROM erp_student_attendance
+        WHERE time_table_key = #{timeTableKey}
+          AND student_id = #{studentId}
+
+        DELETE
+        FROM erp_monthly_score
+        WHERE time_table_key = #{timeTableKey}
+          AND student_id = #{studentId}
+
     </delete>
 
     <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
@@ -208,6 +219,7 @@
                  JOIN ERP_ATTENDANCE_CODE ac ON sa.attendance_key = ac.attendance_key
                  LEFT JOIN ERP_REMEDIAL r ON s.student_id = r.student_id AND t.time_table_key = r.time_table_key
         WHERE t.time_table_key = #{timeTableKey}
+          AND sa.time_table_key = #{timeTableKey}
           AND sa.week = #{week}
     </select>
 

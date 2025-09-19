@@ -25,16 +25,11 @@ public class ClassCode {
     @Column(name = "class_type", nullable = false, length = 1)
     private String classType;
 
-    @Column(name = "unit_type", nullable = false, length = 20)
-    private String unitType;
-
-
     @Builder
-    public ClassCode(String classKey, String className, String classType, String unitType) {
+    public ClassCode(String classKey, String className, String classType){
         this.classKey = classKey;
         this.className = className;
         this.classType = classType;
-        this.unitType = unitType;
     }
 }
 

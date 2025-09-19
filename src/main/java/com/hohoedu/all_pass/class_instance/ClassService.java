@@ -2,11 +2,15 @@ package com.hohoedu.all_pass.class_instance;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
+import com.hohoedu.all_pass.class_instance.model.*;
+import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -23,11 +27,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordStudentDT
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
-import com.hohoedu.all_pass.class_instance.model.AttendanceCode;
-import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
-import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
-import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.class_instance.repository.ClassCodeJpaRepository;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.class_instance.repository.UnitCodeJpaRepository;
@@ -47,6 +46,7 @@ public class ClassService {
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
     private final DateConfig dateConfig;
+    private final ClassUnitMapJpaRepository classUnitMapJpaRepository;
     // private final TimeTableAssignJpaRepository assignJpaRepository;
 
     public List<ClassCode> findClassCode() {
@@ -57,6 +57,21 @@ public class ClassService {
     public List<UnitCode> findUnitCode() {
         List<UnitCode> unitCodes = unitCodeJpaRepository.findAll();
         return unitCodes;
+    }
+
+    public Map<String, List<UnitCode>> findClassUnits() {
+        Map<String, List<UnitCode>> result = new HashMap<>();
+
+        List<ClassCode> classCodes = classCodeJpaRepository.findAll();
+        for (ClassCode classCode : classCodes) {
+            List<UnitCode> units = classUnitMapJpaRepository.findByClassCode_ClassKey(classCode.getClassKey())
+                    .stream()
+                    .map(ClassUnitMap::getUnitCode)
+                    .collect(Collectors.toList());
+            result.put(classCode.getClassKey(), units);
+        }
+
+        return result;
     }
 
     public List<GradeCode> findGrade() {

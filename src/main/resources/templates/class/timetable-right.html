@@ -66,9 +66,10 @@
                         </td>
 
                         <td>
+                            <input type="hidden" id="tableUserCode" th:value="${userCode}"/>
                             <!-- class: value/selected 모두 Key로 통일 -->
                             <div class="basic-select square size-160">
-                                <select name="classKey">
+                                <select name="classKey" class="class-select">
                                     <option value="">선택 안함</option>
                                     <option th:each="cc : ${classCodes}"
                                             th:value="${cc.classKey}"
@@ -80,16 +81,13 @@
 
                             <div class="mini-select size-160">
                                 <div class="basic-select square">
-                                    <select name="unitKey">
+                                    <select name="unitKey" class="unit-select"
+                                            th:attr="data-selected=${entry != null ? entry.unitKey : ''}">
                                         <option value="">선택 안함</option>
-                                        <option th:each="u : ${unitCodes}"
-                                                th:value="${u.unitKey}"
-                                                th:text="${u.unitName}"
-                                                th:selected="${entry != null and u.unitKey == entry.unitKey}">
-                                        </option>
+
                                     </select>
                                 </div>
-
+                                <input type="hidden" id="classUnits" th:value="${classUnits}"/>
                                 <div class="basic-select square">
                                     <select name="gradeKey">
                                         <option value="">선택 안함</option>
@@ -130,4 +128,8 @@
             </div>
         </div>
     </div>
+
+    <script>
+
+    </script>
 </section>

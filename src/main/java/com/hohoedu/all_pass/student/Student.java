@@ -56,7 +56,7 @@ public class Student {
     @Column(name = "app_password", length = 100)
     private String appPassword;
 
-    @Column(name = "app_token", length = 100)
+    @Column(name = "app_token", length = 255)
     private String appToken;
 
     @Column(nullable = false)
@@ -86,11 +86,10 @@ public class Student {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Student(Integer id, String studentId, String studentName, String birth, Boolean gender, String school,
+    public Student(String studentId, String studentName, String birth, Boolean gender, String school,
                    String address, String addressDetail, LocalDate entryHanDate, LocalDate entryBookDate, String appId,
                    String appPassword, String appToken, Boolean studentPrivacyAgree, GradeCode gradeCode, LevelCode levelCode, StatusCode statusCode, Center center,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
         this.studentId = studentId;
         this.studentName = studentName;
         this.birth = birth;
