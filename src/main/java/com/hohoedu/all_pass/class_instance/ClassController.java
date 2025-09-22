@@ -151,6 +151,20 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
+    @PostMapping("/api/attendance/insert")
+    public ResponseEntity<?> addStudentAttendance(@RequestBody List<ClassReqDTO.createAttendanceDTO> dtos) {
+        for (ClassReqDTO.createAttendanceDTO dto : dtos) {
+            classService.createAttendance(
+                    dto.getStudentId(),
+                    dto.getTimeTableKey(),
+                    dto.getCenterCode(),
+                    dto.getWeek(),
+                    dto.getAttendanceDate()
+            );
+        }
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
     // ================ 보강 관리 컨트롤러 =====================//
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,

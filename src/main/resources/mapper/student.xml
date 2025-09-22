@@ -337,14 +337,14 @@
         WHERE student_id = #{studentId}
     </select>
 
-    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
-        SELECT center_code  as centerCode,
-               student_id   as stuid,
-               student_name as name,
-               app_token    as token
-        FROM erp_student
-        WHERE app_id = #{appId}
-    </select>
+    <!--    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">-->
+    <!--        SELECT center_code  as centerCode,-->
+    <!--               student_id   as stuid,-->
+    <!--               student_name as name,-->
+    <!--               app_token    as token-->
+    <!--        FROM erp_student-->
+    <!--        WHERE app_id = #{appId}-->
+    <!--    </select>-->
 
     <!-- 출석 여부 확인 -->
     <select id="countByStudentAndDate" resultType="int">
@@ -356,9 +356,9 @@
     <!-- 등원 update -->
     <update id="checkinStudentAttendance">
         UPDATE erp_student_attendance
-        SET in_time    = #{inTime},
+        SET in_time             = #{inTime},
             check_in_updated_at = SYSDATETIME()
-        WHERE student_no = #{studentNo}
+        WHERE student_id = #{studentNo}
           AND in_time IS NULL
     </update>
 
@@ -376,9 +376,9 @@
     <!--하원 update -->
     <update id="checkoutStudentAttendance">
         UPDATE erp_student_attendance
-        SET out_time   = #{outTime},
+        SET out_time             = #{outTime},
             check_out_updated_at = SYSDATETIME()
-        WHERE student_no = #{studentNo}
+        WHERE student_id = #{studentId}
           AND out_time IS NULL
     </update>
 
@@ -468,5 +468,11 @@
                  JOIN erp_center c ON s.center_code = c.center_code
         WHERE s.app_id = #{appId}
     </select>
+
+    <update id="updateAppTokenByStudentId">
+        UPDATE erp_student
+        SET app_token = #{appToken}
+        WHERE student_id = #{studentId}
+    </update>
 
 </mapper>

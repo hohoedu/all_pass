@@ -38,12 +38,6 @@ public interface ClassRepository {
 
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
-    public void createAttendance(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("centerCode") String centerCode
-    );
-
     public void insertMonthlyScore(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
@@ -114,6 +108,13 @@ public interface ClassRepository {
             @Param("unitKey") String unitKey,
             @Param("week") String week,
             @Param("timeTableKey") String timeTableKey);
+
+    public void createAttendance(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("centerCode") String centerCode,
+            @Param("week") String week,
+            @Param("attendanceDate") String attendanceDate);
 
     public ClassRespDTO.AfterClassRespDTO findAfterClass(
             @Param("classKey") String classKey,

@@ -189,8 +189,6 @@ public class ClassService {
         }
         classRepository.addStudent(dto);
         classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
-        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), dto.getCenterCode());
-
         return true;
     }
 
@@ -234,6 +232,10 @@ public class ClassService {
                                                                  String timeTableKey) {
         ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
         return response;
+    }
+
+    public void createAttendance(String studentId, String timeTableKey, String centerCode, String week, String attendanceDate) {
+        classRepository.createAttendance(studentId, timeTableKey, centerCode, week, attendanceDate);
     }
 
     // ================ 보강 관리 서비스 =====================//

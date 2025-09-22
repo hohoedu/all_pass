@@ -3,6 +3,7 @@ package com.hohoedu.all_pass._core;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
+import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
@@ -34,9 +35,9 @@ public class AppController {
 
     @PostMapping("/token")
     public ResponseEntity<?> AppTokenSave(@RequestBody StudentAppReqDTO.AppTokenReqDTO reqDTO) {
-        System.out.println("======================================");
-        System.out.println("token " + reqDTO.getToken());
-        System.out.println("======================================");
+
+        studentService.updateAppToken(reqDTO);
+
         return ResponseEntity.ok(AppApiUtils.successOne(null));
     }
 
@@ -55,5 +56,17 @@ public class AppController {
         System.out.println("응답 직전");
         System.out.println("==============================");
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
+    }
+
+    @PostMapping("/attendance_main")
+    public ResponseEntity<?> AppAttendanceMain() {
+        System.out.println("hello!! attendance main");
+        return ResponseEntity.ok(AppApiUtils.successOne(null));
+    }
+
+    @PostMapping("/book_list")
+    public ResponseEntity<?> AppBookList() {
+        System.out.println("hello!! book list");
+        return ResponseEntity.ok(AppApiUtils.successList(null));
     }
 }

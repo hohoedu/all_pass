@@ -182,20 +182,16 @@ public class StudentService {
 
     }
 
-    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
-        StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
-        return respDTO;
-    }
-
     public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
-            return false;
+            studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm());
+            return true;
         }
 
-        studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm());
-        return true;
+
+        return false;
     }
 
     public boolean checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
@@ -294,6 +290,26 @@ public class StudentService {
         Student student = studentRepository.findByStudentId(studentId);
         return student;
     }
+
+    // 학생 앱 토큰 등록
+    public void updateAppToken(StudentAppReqDTO.AppTokenReqDTO dto) {
+        Student student = studentRepository.findByStudentId(dto.getId());
+
+        if (student == null) {
+            return;
+        }
+
+        if (student.getAppToken() == null || !student.getAppToken().equals(dto.getToken())) {
+            int updateResult = studentRepository.updateAppTokenByStudentId(dto.getId(), dto.getToken());
+            if (updateResult > 0) {
+                System.out.println("토큰 등록 완료");
+            } else {
+                System.out.println("이미 등록된 토큰");
+            }
+        }
+
+    }
+
 
     // ================================== app ================================== //
 

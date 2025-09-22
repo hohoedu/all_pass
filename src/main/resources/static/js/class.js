@@ -687,7 +687,9 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
 
     items.forEach((s, idx) => {
         const tr = document.createElement('tr');
-        tr.dataset.studentId = s.studentNo ?? '';
+        tr.dataset.studentId = s.studentId ?? '';
+        tr.dataset.appToken = s.appToken ?? '';
+        tr.dataset.centerCode = s.centerCode ?? '';
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
@@ -802,7 +804,7 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
 }
 
 
-// 수업 안내 발송 모달
+// 수업 안내 발송 모달 오픈
 document.addEventListener('click', function (e) {
     if (e.target.closest('.class-guide')) {
         const activeClass = document.querySelector('.class-list .class-btn.active');
@@ -870,11 +872,108 @@ function bindRecordModal(data, selectedNames) {
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("textarea.record-content").forEach(el => {
         if (el.value) {
-            // 문자열 안의 "\n" → 실제 줄바꿈
             el.value = el.value.replace(/\\n/g, "\n");
         }
     });
 });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sendbtn = document.getElementById("send-before-record");
+
+    if (!sendbtn) {
+        return;
+    }
+
+    sendbtn.addEventListener("click", () => {
+
+        const checkedRows = Array.from(document.querySelectorAll("#record_tbody tr"))
+            .filter(row => {
+                const checkbox = row.querySelector("input[type=checkbox]");
+                return checkbox && checkbox.checked;
+            });
+
+        if (checkedRows.length === 0) {
+            alert("학생을 선택해주세요.");
+            return;
+        }
+
+        // 선택된 학생 중 토큰만 추출
+        const tokens = checkedRows
+            .map(row => row.getAttribute("data-app-token"))
+            .filter(token => token);
+
+        const requestBody = {
+            tokens: tokens,
+            title: "test",
+            body: "test"
+        };
+
+        console.log('tokens = ', tokens);
+
+        fetch("/api/push/send", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("서버 오류: " + response.status);
+                }
+                return response.json();
+            })
+            .then(async data => {
+                console.log("성공:", data);
+                alert("수업 전 안내가 발송되었습니다.");
+                await insertStudentAttendance();
+            })
+            .catch(error => {
+                console.error("실패:", error);
+                alert("발송을 실패했습니다. " + error.message);
+            });
+    });
+});
+
+// 알림 발송 후 출결 칼럼 생성
+async function insertStudentAttendance() {
+    const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))
+        .filter(row => row.querySelector("input[type=checkbox]")?.checked)
+        .map(row => ({
+            studentId: row.dataset.studentId,
+            timeTableKey: state.timeTableKey,
+            centerCode: row.dataset.centerCode,
+            week: state.week,
+            attendanceDate: new Date().toISOString().slice(0, 10) // yyyy-MM-dd
+        }));
+
+    if (selectedStudents.length === 0) {
+        console.warn("선택된 학생이 없습니다.");
+        return;
+    }
+
+    console.log('selectedStudents = ', selectedStudents);
+
+    try {
+        const res = await fetch("/class/api/attendance/insert", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(selectedStudents)
+        });
+
+        if (!res.ok) {
+            throw new Error("출결 저장 실패 (status " + res.status + ")");
+        }
+
+        const data = await res.json();
+        console.log("출결 insert 성공:", data);
+        
+    } catch (err) {
+        console.error("출결 insert 에러:", err);
+
+    }
+}
 
 // =================================== //
 // ==                               == //

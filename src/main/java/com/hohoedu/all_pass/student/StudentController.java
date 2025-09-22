@@ -129,25 +129,12 @@ public class StudentController {
         return "redirect:/student/transfer";
     }
 
-    @PostMapping("/app_token")
-    public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
-        System.out.println("===============================");
-        System.out.println(attendanceTokenDTO.getAppId());
-        System.out.println("===============================");
-        StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());
-        return ResponseEntity.ok(ApiUtils.success(respDTO));
-    }
-
-
     @PostMapping("/attendance")
     public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
 
-
         Student studentInfo = studentService.findByStudentId(dto.getStudentId());
-        System.out.println("=================");
-        System.out.println(dto.getAttendType());
-        System.out.println("=================");
         if ("1".equals(dto.getAttendType())) {   // 등원
+            System.out.println("1과 같다");
             boolean checkedIn = studentService.checkinStudent(dto, studentInfo);
             if (checkedIn) {
                 return ResponseEntity.ok("등원 완료");

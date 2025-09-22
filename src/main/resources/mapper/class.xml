@@ -32,7 +32,7 @@
 
     <!--시간표 라벨 수정-->
     <update id="updateLabel">
-        UPDATE  erp_time_table_code
+        UPDATE erp_time_table_code
         SET time_table_label = #{label}
         WHERE time_table_key = #{timeTableKey}
     </update>
@@ -45,19 +45,17 @@
 
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-            (student_id, attendance_key, time_table_key, center_code, week, created_at)
+            (student_id, attendance_key, time_table_key, center_code, week, attendance_date, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
                #{centerCode}     AS center_code,
-               w.week            AS week,
-               CURRENT_TIMESTAMP AS created_at
-        FROM (VALUES ('ju_1'), ('ju_2'), ('ju_3'), ('ju_4')) AS w(week)
-        WHERE NOT EXISTS (SELECT 1
-                          FROM erp_student_attendance sa
-                          WHERE sa.student_id = #{studentId}
-                            AND sa.time_table_key = #{timeTableKey}
-                            AND sa.week = w.week)
+               #{week}           AS week,
+               #{attendanceDate} AS attendanceDate,
+               SYSDATETIME()     AS created_at WHERE NOT EXISTS (
+        SELECT 1
+        FROM erp_student_attendance sa
+        WHERE sa.student_id = #{studentId} AND sa.time_table_key = #{timeTableKey} AND sa.week = #{week} )
     </insert>
 
     <insert id="insertMonthlyScore" parameterType="com.hohoedu.all_pass.class_instance.model.MonthlyScore" keyProperty="id" keyColumn="id">
@@ -169,7 +167,7 @@
           and tt.mm = #{month}
           and tt.period_no = #{periodNo}
           and tt.dayname = #{dayname}
-        and tt.user_code = #{userCode}
+          and tt.user_code = #{userCode}
     </select>
 
     <select id="findUserByCenterCode" resultType="com.hohoedu.all_pass.user.User">
@@ -180,16 +178,16 @@
 
     <!-- 수업 일지 리스트 불러오기 -->
     <select id="findTimeTableByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordLabelDTO">
-        SELECT t.time_table_key    as timeTableKey,
-               tc.time_table_label as classLabel,
-               t.class_key         as classKey,
-               t.unit_key          as unitKey
+        SELECT t.time_table_key as timeTableKey,
+        tc.time_table_label as classLabel,
+        t.class_key as classKey,
+        t.unit_key as unitKey
         FROM erp_time_table t
-                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+        JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
         WHERE yy = #{yy}
-          AND mm = #{mm}
-          AND dayName = #{dayName}
-          AND center_code = #{centerCode}
+        AND mm = #{mm}
+        AND dayName = #{dayName}
+        AND center_code = #{centerCode}
         <if test="userCode != null and userCode != 'all'">
             AND user_code = #{userCode}
         </if>
@@ -200,6 +198,7 @@
     <select id="findRecordStudentByKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordStudentDTO">
         SELECT s.student_id       AS studentId,
                s.student_name     AS studentName,
+               s.app_token        AS appToken,
                t.time_table_key   AS timeTableKey,
                tc.time_table_ym   AS ym,
                t.class_key        AS classKey,
@@ -210,17 +209,19 @@
                ac.attendance_name AS attendanceName,
                r.absence_date     AS absenceDate,
                r.remedial_date    AS remedialDate,
-               r.updated_at       AS updatedAt
+               r.updated_at       AS updatedAt,
+               s.center_code      AS centerCode
+
         FROM ERP_TIME_TABLE t
                  JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
                  JOIN ERP_TIME_TABLE_ASSIGN ta ON t.time_table_key = ta.time_table_key
                  JOIN ERP_STUDENT s ON ta.student_id = s.student_id
-                 JOIN ERP_STUDENT_ATTENDANCE sa ON s.student_id = sa.student_id
-                 JOIN ERP_ATTENDANCE_CODE ac ON sa.attendance_key = ac.attendance_key
+                 LEFT JOIN ERP_STUDENT_ATTENDANCE sa ON s.student_id = sa.student_id
+                 LEFT JOIN ERP_ATTENDANCE_CODE ac ON sa.attendance_key = ac.attendance_key
                  LEFT JOIN ERP_REMEDIAL r ON s.student_id = r.student_id AND t.time_table_key = r.time_table_key
         WHERE t.time_table_key = #{timeTableKey}
-          AND sa.time_table_key = #{timeTableKey}
           AND sa.week = #{week}
+
     </select>
 
     <!--  수업 전 안내 내용  -->
@@ -341,7 +342,7 @@
           AND mm = #{mm}
     </update>
 
-    
+
     <select id="findClassInfoByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClassInfoRespDTO">
         SELECT CASE c.class_type
                    WHEN '1' THEN 'S'

@@ -42,7 +42,7 @@
               <div class="select-wrap">
                 <select name="gradeNo" id="student" class="styled-select">
                   <th:block th:each="g: ${grades}">
-                    <option th:value="${g.gradeNo}" th:text="${g.grade}"></option>
+                    <option th:value="${g.gradeKey}" th:text="${g.gradeName}"></option>
                 </select>
               </div>
             </td>
@@ -57,7 +57,7 @@
               <div class="select-wrap">
                 <select name="inflowRouteNo" id="inflow" class="styled-select">
                   <th:block th:each="r: ${routes}">
-                    <option th:value="${r.inflowRouteNo}" th:text="${r.inflowRoute}"></option>
+                    <option th:value="${r.inflowRouteKey}" th:text="${r.inflowRouteName}"></option>
                 </select>
               </div>
             </td>

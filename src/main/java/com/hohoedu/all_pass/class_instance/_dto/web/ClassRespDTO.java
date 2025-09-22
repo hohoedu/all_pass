@@ -81,10 +81,12 @@ public class ClassRespDTO {
         private List<RecordStudentDTO> students;
         private AfterClassRespDTO afterClass;
     }
+
     @Data
     public static class RecordStudentDTO {
         private String studentId;
         private String studentName;
+        private String appToken;
         private String timeTableKey;
         private String ym;
         private String classKey;
@@ -95,6 +97,7 @@ public class ClassRespDTO {
         private String attendanceName;
         private String absenceDate;
         private String remedialDate;
+        private String centerCode;
         private String updatedAt;
     }
 

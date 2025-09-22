@@ -7,25 +7,22 @@
     <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO" useGeneratedKeys="true"
             keyProperty="consultNo" keyColumn="consult_no">
     
-     INSERT INTO consult (student_name, consult_date, school, grade_no, phone, inflow_route_no, content, created_at)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeNo}, #{phone}, #{inflowRouteNo}, #{content}, CURRENT_TIMESTAMP);
+     INSERT INTO erp_consult (student_name, consult_date, school, grade_no, phone, inflow_route_no, content, created_at)
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeNo}, #{phone}, #{inflowRouteNo}, #{content}, SYSDATETIME());
     </insert>
 
     <select id="findAll" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
-        SELECT 
-            c.consult_no AS consultNo,
-            c.student_name AS studentName,
-            c.consult_date AS consultDate,
-            c.school AS school,
-            c.phone AS phone,
-            c.content AS content,
-            g.grade AS grade,
-            i.inflow_route AS inflowRoute
-        FROM CONSULT c
-        JOIN grade_code g
-        ON c.grade_no = g.grade_no
-        JOIN inflow_route i
-        ON c.inflow_route_no = i.inflow_route_no
+        SELECT c.consult_key  AS consultKey,
+               c.student_name AS studentName,
+               c.consult_date AS consultDate,
+               c.school       AS school,
+               c.phone        AS phone,
+               c.content      AS content,
+               g.grade_name   AS gradeName,
+               i.inflow_route_name AS inflowRouteName
+        FROM ERP_CONSULT c
+                 JOIN erp_grade_code g ON c.grade_key = g.grade_key
+                 JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
     </select>
 
 </mapper>

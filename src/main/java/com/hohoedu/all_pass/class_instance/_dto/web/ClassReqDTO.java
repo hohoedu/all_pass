@@ -59,6 +59,17 @@ public class ClassReqDTO {
         private String week;
         private String timeTableKey;
     }
+    @Data
+    public static class createAttendanceDTO {
+        private String studentId;
+        private String classKey;
+        private String unitKey;
+        private String week;
+        private String timeTableKey;
+        private String centerCode;
+        private String attendanceDate;
+    }
+
 
     @Data
     public static class BeforeClassDTO {

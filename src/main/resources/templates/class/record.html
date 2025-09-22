@@ -107,7 +107,8 @@
                                     </tr>
                                     </thead>
                                     <tbody id="record_tbody">
-                                    <tr th:each="s, stat : ${students}" th:data-student-id="${s.studentId}">
+                                    <tr th:each="s, stat : ${students}" th:data-student-id="${s.studentId}" th:data-app-token="${s.appToken}"
+                                        th:data-center-code="${s.centerCode}">
                                         <td class="checkbox-group">
                                             <input type="checkbox"/>
                                         </td>
@@ -313,7 +314,7 @@
                 </div>
             </div>
             <div class="save-btn-frame" style="margin-top: 40px;">
-                <button type="submit" class="save-btn">발송</button>
+                <button type="submit" class="save-btn" id="send-before-record">발송</button>
             </div>
         </div>
     </div>
