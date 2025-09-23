@@ -61,19 +61,20 @@ public interface StudentRepository {
     // 출석 insert
     public void checkinStudentAttendance(
             @Param("studentId") String studentId,
-            @Param("inTime") String inTime);
+            @Param("inTime") String inTime,
+            @Param("attendanceDate") String attendanceDate);
 
     // 하원 여부 체크
     //TODO: 수정 필요
-    public StudentAttendance findByStudentAndDate(
+    public List<StudentAttendance> findByStudentAndDate(
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
 
     // 하원 update
-    public int updateStudentAttendance(
+    public void checkoutStudentAttendance(
             @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate,
-            @Param("outTime") String outTime);
+            @Param("outTime") String outTime,
+            @Param("attendanceDate") String attendanceDate);
 
     public void insertSnapshotIfNotExists(String ym);
 
@@ -93,6 +94,8 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("appToken") String appToken);
 
+    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(
+            @Param("appId") String appId);
 
     public StudentAppRespDTO.AppLoginViewDTO appLogin(
             @Param("appId") String appId);

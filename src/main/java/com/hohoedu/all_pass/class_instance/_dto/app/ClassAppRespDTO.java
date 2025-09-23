@@ -16,5 +16,20 @@ public class ClassAppRespDTO {
 
     }
 
+    @Data
+    public static class BookListRespDTO {
+
+    }
+
+    @Data
+    public static class BeforeClassRespDTO {
+        private String gubun;
+        private String note;        // classLabel
+        private String dayname;
+        private String ymd;         // classDate
+        private String studytime;   // classTime;
+        private String prequest;    // content;
+    }
+
 
 }

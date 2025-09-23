@@ -13,7 +13,7 @@ public class FcmController {
     private final FcmService fcmService;
 
     @PostMapping("/send")
-    public ResponseEntity<?> send(@RequestBody FcmDTO fcmDTO) {
+    public ResponseEntity<?> send(@RequestBody FcmDTO.BeforeFcmDTO fcmDTO) {
         if (fcmDTO.getTokens() == null || fcmDTO.getTokens().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }
@@ -21,6 +21,15 @@ public class FcmController {
         for (String token : fcmDTO.getTokens()) {
             fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
         }
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/attendance")
+    public ResponseEntity<?> attendance(@RequestBody FcmDTO.AttendanceFcmDTO fcmDTO) {
+        if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
+            throw new IllegalArgumentException("토큰이 없습니다.");
+        }
+        fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
     }
 }

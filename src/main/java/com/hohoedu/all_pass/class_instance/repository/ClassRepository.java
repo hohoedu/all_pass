@@ -112,9 +112,13 @@ public interface ClassRepository {
     public void createAttendance(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
-            @Param("centerCode") String centerCode,
-            @Param("week") String week,
-            @Param("attendanceDate") String attendanceDate);
+            @Param("centerCode") String centerCode);
+
+    void updateAttendance(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("attendanceDate") String attendanceDate,
+            @Param("week") String week);
 
     public ClassRespDTO.AfterClassRespDTO findAfterClass(
             @Param("classKey") String classKey,
@@ -136,4 +140,14 @@ public interface ClassRepository {
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    List<ClassAppRespDTO.BeforeClassRespDTO> findBeforeClassByStudentId(
+            @Param("studentId") String studentId,
+            @Param("count") int count);
+
+    public ClassRespDTO.BeforeClassRawDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
+
+    public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
+
+
 }

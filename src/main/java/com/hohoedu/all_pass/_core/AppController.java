@@ -43,30 +43,39 @@ public class AppController {
 
     @PostMapping("/class_info")
     public ResponseEntity<?> AppClassInfo(@RequestBody ClassAppReqDTO.ClassInfoReqDTO reqDTO) {
-        System.out.println("======================================");
-        System.out.println("==      id =" + reqDTO.getId());
-        System.out.println("======================================");
-        System.out.println("==      yyyy" + reqDTO.getYyyy());
-        System.out.println("======================================");
-        System.out.println("==      mm =" + reqDTO.getMm());
-        System.out.println("======================================");
 
         List<ClassAppRespDTO.ClassInfoRespDTO> respDTOs = classService.getClassInfo(reqDTO.getId(), reqDTO.getYyyy(), reqDTO.getMm());
-        System.out.println("==============================");
-        System.out.println("응답 직전");
-        System.out.println("==============================");
+
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
     @PostMapping("/attendance_main")
     public ResponseEntity<?> AppAttendanceMain() {
+
         System.out.println("hello!! attendance main");
+
+        return ResponseEntity.ok(AppApiUtils.successOne(null));
+    }
+
+    @PostMapping("/course_book_main")
+    public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListReqDTO reqDTO) {
+
+        System.out.println("hello!! book_main");
+
         return ResponseEntity.ok(AppApiUtils.successOne(null));
     }
 
     @PostMapping("/book_list")
-    public ResponseEntity<?> AppBookList() {
+    public ResponseEntity<?> AppBookList(@RequestBody ClassAppReqDTO.ClinicBookReqDTO reqDTO) {
         System.out.println("hello!! book list");
         return ResponseEntity.ok(AppApiUtils.successList(null));
+    }
+
+    @PostMapping("/before_class_notice")
+    public ResponseEntity<?> AppBeforeNotice(@RequestBody ClassAppReqDTO.BeforeClassReqDTO reqDTO) {
+
+        List<ClassAppRespDTO.BeforeClassRespDTO> respDTOs = classService.getBeforeClass(reqDTO.getId(), reqDTO.getCount());
+
+        return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 }

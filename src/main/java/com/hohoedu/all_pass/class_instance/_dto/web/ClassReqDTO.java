@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.class_instance._dto.web;
 import java.util.List;
 
 import lombok.Data;
+import lombok.Setter;
 
 @Data
 public class ClassReqDTO {
@@ -59,6 +60,7 @@ public class ClassReqDTO {
         private String week;
         private String timeTableKey;
     }
+
     @Data
     public static class createAttendanceDTO {
         private String studentId;
@@ -130,6 +132,20 @@ public class ClassReqDTO {
             private boolean question7;
             private boolean question8;
         }
+    }
+
+    @Data
+    public static class BeforeClassNoticeDTO {
+        private String studentId;
+        private String userCode;
+        private String timeTableKey;
+        private String classDate;
+        private String week;
+        private String dayname;
+        private String classTime;
+        private String content;
+        private String classType;
+        private String classLabel;
     }
 
 }

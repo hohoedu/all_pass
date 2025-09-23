@@ -98,6 +98,8 @@ public class ClassRespDTO {
         private String absenceDate;
         private String remedialDate;
         private String centerCode;
+        private String isBeforeSend;
+        private String isAfterSend;
         private String updatedAt;
     }
 
@@ -143,6 +145,16 @@ public class ClassRespDTO {
                         question5, question6, question7, question8);
             }
         }
+    }
+
+    @Data
+    public static class BeforeClassRawDTO {
+        private String classType;
+        private String dayname;
+        private String startTime;
+        private String className;
+        private String unitName;
+        private String userName;
     }
 
 }

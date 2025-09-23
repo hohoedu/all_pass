@@ -10,4 +10,20 @@ public class ClassAppReqDTO {
         private String yyyy;
         private String mm;
     }
+
+    @Data
+    public static class BookListReqDTO {
+        private String bookCode;
+    }
+
+    @Data
+    public static class ClinicBookReqDTO {
+
+    }
+
+    @Data
+    public static class BeforeClassReqDTO {
+        private String id;
+        private int count;
+    }
 }

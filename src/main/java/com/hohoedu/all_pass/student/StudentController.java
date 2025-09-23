@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 
+import com.google.protobuf.Api;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -129,25 +130,32 @@ public class StudentController {
         return "redirect:/student/transfer";
     }
 
+    @PostMapping("/app_token")
+    public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
+        System.out.println("===============================");
+        System.out.println(attendanceTokenDTO.getAppId());
+        System.out.println("===============================");
+        StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());
+        return ResponseEntity.ok(ApiUtils.success(respDTO));
+    }
+
     @PostMapping("/attendance")
     public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
 
         Student studentInfo = studentService.findByStudentId(dto.getStudentId());
         if ("1".equals(dto.getAttendType())) {   // 등원
-            System.out.println("1과 같다");
             boolean checkedIn = studentService.checkinStudent(dto, studentInfo);
+            System.out.println("checkedIn = " + checkedIn);
             if (checkedIn) {
-                return ResponseEntity.ok("등원 완료");
+                return ResponseEntity.ok(ApiUtils.success("0000"));
             } else {
-                return ResponseEntity.badRequest().body("이미 오늘 등원 기록이 있습니다.");
+                return ResponseEntity.ok(ApiUtils.success("7777"));
             }
         } else {   // 하원
-            boolean checkedOut = studentService.checkoutStudent(dto, studentInfo);
-            if (checkedOut) {
-                return ResponseEntity.ok("하원 완료");
-            } else {
-                return ResponseEntity.badRequest().body("출석 기록이 없거나 이미 하원 처리된 상태입니다.");
-            }
+            int checkedOut = studentService.checkoutStudent(dto, studentInfo);
+
+            return ResponseEntity.ok(ApiUtils.success("0000"));
+
         }
     }
 
@@ -176,6 +184,8 @@ public class StudentController {
                 break;
         }
 
+
         return studentService.getSnapshot(startYm, nowYm, userNo);
     }
+
 }

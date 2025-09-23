@@ -48,6 +48,8 @@ public class ClassController {
     private final ClassService classService;
     private final StudentService studentService;
 
+
+    // 시간표 등록
     @PostMapping("/register")
     public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
         try {
@@ -72,6 +74,7 @@ public class ClassController {
         }
     }
 
+    // 학생 수업 등록
     @PostMapping("/add_student")
     @ResponseBody
     public ResponseEntity<?> timeTableAssginStudent(@RequestBody ClassReqDTO.AddStudentList reqDTO) {
@@ -151,19 +154,31 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
+    // 알림 발송 이후 내용 저장
+    @PostMapping("/api/before-class/insert")
+    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        classService.insertBeforeClassNoticeList(dtoList, user.getUserCode());
+
+        return ResponseEntity.ok("ok");
+    }
+
+    //알림발송 이후 출결 업데이트
     @PostMapping("/api/attendance/insert")
-    public ResponseEntity<?> addStudentAttendance(@RequestBody List<ClassReqDTO.createAttendanceDTO> dtos) {
+    public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.createAttendanceDTO> dtos) {
         for (ClassReqDTO.createAttendanceDTO dto : dtos) {
-            classService.createAttendance(
+            classService.updateAttendance(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
-                    dto.getCenterCode(),
-                    dto.getWeek(),
-                    dto.getAttendanceDate()
+                    dto.getAttendanceDate(),
+                    dto.getWeek()
             );
         }
         return ResponseEntity.ok(ApiUtils.success(true));
     }
+
 
     // ================ 보강 관리 컨트롤러 =====================//
     @PostMapping("/remedial/update")
@@ -171,7 +186,6 @@ public class ClassController {
                                             @RequestParam(value = "year") String year,
                                             @RequestParam(value = "month") String month) {
         int response = classService.updateRemedialAction(dto);
-        System.out.println(response);
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month);
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)

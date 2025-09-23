@@ -778,11 +778,14 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
           </td>`;
 
         // 발송여부
+        const beforeSendSrc = s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png';
+        const afterSendSrc = s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png';
+
         tr.innerHTML += `
-          <td class="send-ornot">
-            <img src="/image/send3.png" alt="">
-            <img src="/image/send2.png" alt="">
-          </td>`;
+        <td class="send-ornot">
+          <img src="${beforeSendSrc}" alt="">
+          <img src="${afterSendSrc}" alt="">
+        </td>`;
 
         frag.appendChild(tr);
     });
@@ -927,7 +930,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(async data => {
                 console.log("성공:", data);
                 alert("수업 전 안내가 발송되었습니다.");
+                await insertBeforeClassNotice(checkedRows);
+
                 await insertStudentAttendance();
+
             })
             .catch(error => {
                 console.error("실패:", error);
@@ -935,6 +941,37 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 });
+
+// 알림 발송 후 내용 저장
+async function insertBeforeClassNotice(checkedRows) {
+    const modalContent = document.getElementById("record-content")?.textContent || "";
+    const notices = checkedRows.map(row => {
+        return {
+            studentId: row.getAttribute("data-student-id"),
+            timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
+            week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+            classDate: document.getElementById("record_calendar").value,
+            content: modalContent,
+        }
+    });
+
+    try {
+        const response = fetch("/class/api/before-class/insert", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(notices)
+        });
+
+        if (!response.ok) {
+            throw new Error("서버 오류: " + response.status);
+        }
+
+        console.log("발송 로그 저장 성공");
+
+    } catch (error) {
+        console.error("발송 로그 저장 실패:", error);
+    }
+}
 
 // 알림 발송 후 출결 칼럼 생성
 async function insertStudentAttendance() {
@@ -968,7 +1005,7 @@ async function insertStudentAttendance() {
 
         const data = await res.json();
         console.log("출결 insert 성공:", data);
-        
+
     } catch (err) {
         console.error("출결 insert 에러:", err);
 

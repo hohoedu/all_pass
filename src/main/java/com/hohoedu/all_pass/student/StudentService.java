@@ -182,30 +182,35 @@ public class StudentService {
 
     }
 
+    public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
+        StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
+        return respDTO;
+    }
+
     public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
-            studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm());
-            return true;
+            return false;
         }
+        studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
 
-
-        return false;
+        return true;
     }
 
-    public boolean checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
-        StudentAttendance sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
+    public int checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+        List<StudentAttendance> sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (sa == null) {
             System.out.println("등원 기록 없음");
-            return false;
+            return 8888;
         }
-        if (sa.getOutTime() != null) {
+        if (sa.get(0).getOutTime() != null) {
             System.out.println("이미 처리 됨");
-            return false;
+            return 6666;
         }
-        int updated = studentRepository.updateStudentAttendance(student.getStudentId(), dto.getYmd(), dto.getHhmm());
-        return updated > 0;
+        System.out.println("이제 업데이트");
+        studentRepository.checkoutStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
+        return 0000;
     }
 
     // ================================================================================================================
@@ -333,6 +338,7 @@ public class StudentService {
                 .cid(row.getCenterCode())
                 .cname(row.getCenterName())
                 .hak(row.getGradeKey())
+                .ihak(row.getGradeKey())
                 .appid(row.getAppId())
                 .build();
 

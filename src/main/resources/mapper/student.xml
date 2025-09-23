@@ -337,20 +337,21 @@
         WHERE student_id = #{studentId}
     </select>
 
-    <!--    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">-->
-    <!--        SELECT center_code  as centerCode,-->
-    <!--               student_id   as stuid,-->
-    <!--               student_name as name,-->
-    <!--               app_token    as token-->
-    <!--        FROM erp_student-->
-    <!--        WHERE app_id = #{appId}-->
-    <!--    </select>-->
+        <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+            SELECT center_code  as centerCode,
+                   student_id   as stuid,
+                   student_name as name,
+                   app_token    as token
+            FROM erp_student
+            WHERE app_id = #{appId}
+        </select>
 
     <!-- 출석 여부 확인 -->
     <select id="countByStudentAndDate" resultType="int">
-        SELECT COUNT(*)
+        SELECT COUNT(in_time)
         FROM erp_student_attendance
         WHERE student_id = #{studentId}
+        and attendance_date = #{attendanceDate}
     </select>
 
     <!-- 등원 update -->
@@ -358,27 +359,30 @@
         UPDATE erp_student_attendance
         SET in_time             = #{inTime},
             check_in_updated_at = SYSDATETIME()
-        WHERE student_id = #{studentNo}
+        WHERE student_id = #{studentId}
+          AND attendance_date = #{attendanceDate}
           AND in_time IS NULL
     </update>
 
     <!-- 하원 여부 확인 -->
     <select id="findByStudentAndDate" resultType="com.hohoedu.all_pass.class_instance.model.StudentAttendance">
-        SELECT student_attendance_no,
-               in_time,
+        SELECT in_time,
                out_time,
                attendance_date,
-               student_no,
-               attendance_no
+               student_id,
+               attendance_key
         FROM erp_student_attendance
         WHERE student_id = #{studentId}
+          AND attendance_date = #{attendanceDate}
     </select>
+
     <!--하원 update -->
     <update id="checkoutStudentAttendance">
         UPDATE erp_student_attendance
         SET out_time             = #{outTime},
             check_out_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
+          AND attendance_date = #{attendanceDate}
           AND out_time IS NULL
     </update>
 

@@ -190,9 +190,13 @@
                                                 </div>
                                             </div>
                                         </td>
+
                                         <td class="send-ornot">
-                                            <img th:src="@{/image/send3.png}" alt="">
-                                            <img th:src="@{/image/send2.png}" alt="">
+                                            <img th:if="${s.appToken == null or s.appToken == ''}" src="/image/no-smartphones.png" alt="">
+                                            <span th:if="${s.appToken != null and s.appToken != ''}">
+                                                <img th:src="${s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png'}" alt="">
+                                                <img th:src="${s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png'}" alt="">
+                                            </span>
                                         </td>
                                     </tr>
                                     <tr th:if="${#lists.isEmpty(students)}">

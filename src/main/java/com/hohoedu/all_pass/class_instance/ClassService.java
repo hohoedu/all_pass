@@ -177,6 +177,7 @@ public class ClassService {
         return tables;
     }
 
+    // 학생 수업 등록
     public boolean addStudent(AddStudentDTO dto) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
@@ -189,6 +190,7 @@ public class ClassService {
         }
         classRepository.addStudent(dto);
         classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
+        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), dto.getCenterCode());
         return true;
     }
 
@@ -228,14 +230,44 @@ public class ClassService {
         return response;
     }
 
-    public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
-                                                                 String timeTableKey) {
+    public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
         ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
         return response;
     }
 
-    public void createAttendance(String studentId, String timeTableKey, String centerCode, String week, String attendanceDate) {
-        classRepository.createAttendance(studentId, timeTableKey, centerCode, week, attendanceDate);
+    public void insertBeforeClassNoticeList(List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, String userCode) {
+
+        for (ClassReqDTO.BeforeClassNoticeDTO dto : dtoList) {
+
+
+            ClassReqDTO.BeforeClassNoticeDTO insertDTO = new ClassReqDTO.BeforeClassNoticeDTO();
+            ClassRespDTO.BeforeClassRawDTO rawDTO = classRepository.findClassByTimeTableKey(dto.getTimeTableKey());
+            Map<String, String> weekMap = Map.of("ju_1", "1주", "ju_2", "2주", "ju_3", "3주", "ju_4", "4주");
+            String weekLabel = weekMap.getOrDefault(dto.getWeek(), dto.getWeek());
+            Map<String, String> typeMap = Map.of("1", "S", "2", "I");
+            String typeLabel = typeMap.getOrDefault(rawDTO.getClassType(), rawDTO.getClassType());
+            String classLabel = String.format("%s %s %s | %s 선생님", rawDTO.getClassName(), rawDTO.getUnitName(), weekLabel, rawDTO.getUserName());
+
+            insertDTO.setStudentId(dto.getStudentId());
+            insertDTO.setUserCode(userCode);
+            insertDTO.setTimeTableKey(dto.getTimeTableKey());
+            insertDTO.setClassDate(dto.getClassDate());
+            insertDTO.setWeek(weekLabel);
+            insertDTO.setClassType(typeLabel);
+            insertDTO.setDayname(rawDTO.getDayname());
+            insertDTO.setClassTime(rawDTO.getStartTime());
+            insertDTO.setContent(dto.getContent());
+            insertDTO.setClassLabel(classLabel);
+
+            classRepository.insertBeforeClassNotice(insertDTO);
+
+        }
+    }
+
+
+    // 알림 발송 이후 출결 업데이트
+    public void updateAttendance(String studentId, String timeTableKey, String attendanceDate, String week) {
+        classRepository.updateAttendance(studentId, timeTableKey, attendanceDate, week);
     }
 
     // ================ 보강 관리 서비스 =====================//
@@ -349,5 +381,12 @@ public class ClassService {
 
         return respDTOs;
 
+    }
+
+    public List<ClassAppRespDTO.BeforeClassRespDTO> getBeforeClass(String studentId, int count) {
+
+        List<ClassAppRespDTO.BeforeClassRespDTO> respDTOS = classRepository.findBeforeClassByStudentId(studentId, count);
+
+        return respDTOS;
     }
 }
