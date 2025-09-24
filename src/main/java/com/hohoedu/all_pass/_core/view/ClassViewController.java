@@ -50,7 +50,7 @@ public class ClassViewController {
     // 시간표 등록
     @GetMapping("/timetable")
     public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) throws JsonProcessingException {
-
+        // 세션 확인
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -64,8 +64,8 @@ public class ClassViewController {
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
 
-        List<Student> students = studentService.findStudentByCenterCode(user.getCenterCode());
-//        List<Student> students = studentService.findStudentByCenterCode("DAE001");
+        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode());
+
         model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);
         model.addAttribute("unitCodes", unitCodes);

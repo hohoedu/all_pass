@@ -56,9 +56,9 @@ public class StudentService {
 
     private final FamilyService familyService;
 
-    public List<Student> findStudentByCenterCode(String centerCode) {
+    public List<Student> findStudentByCenterCode(String year, String month,String centerCode) {
 
-        List<Student> student = studentRepository.findstudentByCenterCode(centerCode);
+        List<Student> student = studentRepository.findstudentByCenterCode(year, month, centerCode);
 
         return student;
     }

@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.firebase;
 
+import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,16 @@ public class FcmController {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }
         fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/after")
+    public ResponseEntity<?> afterClass(@RequestBody FcmDTO.AfterFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        }
+
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
     }
 }

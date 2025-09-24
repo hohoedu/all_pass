@@ -118,7 +118,7 @@ $(document).ready(function () {
     // join
     $('.new-regist').click(function () {
         window.open(
-            'join',
+            '/join',
             'joinPopup',
             'width=auto,height=auto,scrollbars=yes,resizable=yes'
         );

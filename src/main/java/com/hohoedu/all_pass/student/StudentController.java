@@ -83,15 +83,15 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
-//    @GetMapping("/{studentId}")
-//    public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
-//
-//        System.out.println("컨트롤러의 studentId = " + studentId);
-//
-//        StudentRespDTO.StudentDTO student = studentService.findStudentByStudentId(studentId);
-//
-//        return ResponseEntity.ok(ApiUtils.success(student));
-//    }
+    @GetMapping("/{studentId}")
+    public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
+
+        System.out.println("컨트롤러의 studentId = " + studentId);
+
+        StudentWebRespDTO.StudentDTO student = studentService.findStudentByStudentId(studentId);
+
+        return ResponseEntity.ok(ApiUtils.success(student));
+    }
 
     // TODO: 리다이렉트 변경 필요
     @PostMapping("/join")

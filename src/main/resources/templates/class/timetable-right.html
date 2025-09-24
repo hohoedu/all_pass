@@ -4,12 +4,11 @@
         <!-- 요일 버튼 -->
         <div class="time-tab-menu">
             <button class="time-tab-btn" th:each="day, dtStat : ${days}"
-                    th:classappend="${dtStat.index == 0} ? ' active'" th:attr="data-tab=${day.id}"
+                    th:attr="data-tab=${day.id}"
                     th:text="${day.label}"></button>
         </div>
         <div class="table-frame time-table-frame bt">
-            <div class="time-tab-content" th:each="day, dtStat : ${days}" th:id="${day.id}"
-                 th:classappend="${dtStat.index == 0} ? ' active'">
+            <div class="time-tab-content" th:each="day, dtStat : ${days}" th:id="${day.id}">
 
                 <table class="basic-table time-table stripe">
                     <colgroup>
@@ -113,7 +112,6 @@
                                           th:if="${stu.week != null and (stu.week matches '^\\d+$') and T(java.lang.Integer).parseInt(stu.week) <= 3}"
                                           th:text="'(' + ${stu.week} + ')'"></span>
 
-                                    <!-- 삭제 버튼 데이터: assignNo가 없으니 우선 studentId 사용(또는 DTO에 timeTableAssignNo 추가) -->
                                     <span id="assign_delete"
                                           class="badge-close"
                                           th:data-student-id="${stu.studentId}"
@@ -130,6 +128,33 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const today = new Date();
+            const day = today.getDay(); // 0=일, 1=월, ..., 6=토
 
+            // day.id랑 매칭 규칙을 정해주세요. 예: "mon", "tue", "wed" ...
+            const dayMap = {
+                0: "sun",
+                1: "mon",
+                2: "tue",
+                3: "wed",
+                4: "thu",
+                5: "fri",
+                6: "sat"
+            };
+
+            const targetId = dayMap[day] || "mon"; // 주말이면 월요일 fallback
+
+            // 모든 버튼/콘텐츠에서 active 제거
+            document.querySelectorAll(".time-tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".time-tab-content").forEach(ct => ct.classList.remove("active"));
+
+            // 해당 요일 버튼/콘텐츠에 active 추가
+            const targetBtn = document.querySelector(`.time-tab-btn[data-tab="${targetId}"]`);
+            const targetContent = document.getElementById(targetId);
+
+            if (targetBtn) targetBtn.classList.add("active");
+            if (targetContent) targetContent.classList.add("active");
+        });
     </script>
 </section>

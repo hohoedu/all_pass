@@ -63,13 +63,21 @@
     <update id="updateAttendance">
         UPDATE erp_student_attendance
         SET attendance_date = #{attendanceDate},
-            is_send         = '1'
+            is_before_send         = '1'
         WHERE student_id = #{studentId}
           AND time_table_key = #{timeTableKey}
           AND week = #{week}
-          AND is_send IS NULL
+          AND is_before_send IS NULL
     </update>
 
+    <update id="updateAfterSend">
+        UPDATE erp_student_attendance
+        SET is_after_send = '1'
+        where student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND week = #{week}
+          AND is_after_send IS NULL
+    </update>
 
     <insert id="insertMonthlyScore" parameterType="com.hohoedu.all_pass.class_instance.model.MonthlyScore" keyProperty="id" keyColumn="id">
         INSERT INTO erp_monthly_score
@@ -220,8 +228,8 @@
                sa.in_time         AS inTime,
                sa.out_time        AS outTime,
                ac.attendance_name AS attendanceName,
-               sa.is_before_send         AS isBeforeSend,
-               sa.is_after_send         AS isAfterSend,
+               sa.is_before_send  AS isBeforeSend,
+               sa.is_after_send   AS isAfterSend,
                r.absence_date     AS absenceDate,
                r.remedial_date    AS remedialDate,
                r.updated_at       AS updatedAt,
@@ -322,6 +330,7 @@
             <result property="question8" column="question8"/>
         </collection>
     </resultMap>
+
     <select id="findStudentByClassCode" resultMap="MonthlyStudentMap">
         SELECT s.student_id,
                s.student_name,
@@ -410,6 +419,7 @@
     </select>
 
 
+    <!-- 수업 전 안내 발송 후 내용 저장 -->
     <insert id="insertBeforeClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$BeforeClassNoticeDTO">
         INSERT INTO erp_before_class_notice(student_id, time_table_key, week, dayname, class_time, class_date, class_type, class_label, content, user_code, created_at)

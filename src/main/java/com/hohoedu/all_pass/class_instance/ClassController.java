@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.api.Http;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 
@@ -26,15 +25,12 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassRecordReqDT
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.BeforeClassRespDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.AfterClassRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.MonthlyStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordLabelDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
 import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
-import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student.StudentService;
 
 import lombok.RequiredArgsConstructor;
@@ -148,7 +144,9 @@ public class ClassController {
 
     @PostMapping("/api/record/before-class")
     public ResponseEntity<?> findRecordBeforeClass(@RequestBody ClassReqDTO.BeforeClassDTO dto) {
-        BeforeClassRespDTO response = classService.getBeforeClassContent(dto.getClassKey(), dto.getUnitKey(),
+        BeforeClassRespDTO response = classService.getBeforeClassContent(
+                dto.getClassKey(),
+                dto.getUnitKey(),
                 dto.getWeek(),
                 dto.getTimeTableKey());
         return ResponseEntity.ok(ApiUtils.success(response));
@@ -167,12 +165,25 @@ public class ClassController {
 
     //알림발송 이후 출결 업데이트
     @PostMapping("/api/attendance/insert")
-    public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.createAttendanceDTO> dtos) {
-        for (ClassReqDTO.createAttendanceDTO dto : dtos) {
+    public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.updateAttendanceDTO> dtos) {
+        for (ClassReqDTO.updateAttendanceDTO dto : dtos) {
             classService.updateAttendance(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
                     dto.getAttendanceDate(),
+                    dto.getWeek()
+            );
+        }
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
+    // 수업 후 알림 발송 저장
+    @PostMapping("/api/afterSend/update")
+    public ResponseEntity<?> updateAfterSend(@RequestBody List<ClassReqDTO.updateAttendanceDTO> dtos) {
+        for (ClassReqDTO.updateAttendanceDTO dto : dtos) {
+            classService.updateAfterSend(
+                    dto.getStudentId(),
+                    dto.getTimeTableKey(),
                     dto.getWeek()
             );
         }

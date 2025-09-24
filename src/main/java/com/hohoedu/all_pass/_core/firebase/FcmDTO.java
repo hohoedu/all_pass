@@ -14,6 +14,12 @@ public class FcmDTO {
         private String title;
         private String body;
     }
+    @Data
+    public static class AfterFcmDTO {
+        private List<String> tokens;
+        private String title;
+        private String body;
+    }
 
     @Data
     public static class AttendanceFcmDTO{

@@ -21,7 +21,10 @@ import org.springframework.security.core.parameters.P;
 @Mapper
 public interface StudentRepository {
 
-    public List<Student> findstudentByCenterCode(@Param("centerCode") String centerCode);
+    public List<Student> findstudentByCenterCode(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode);
 
     public StudentDTO findStudentByStudentId(@Param("studentId") String studentId);
 

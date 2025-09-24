@@ -619,45 +619,6 @@ function openTransferModal(rowEl) {
                 emptyBox.style.display = 'block';
                 return;
             }
-
-            // 안전 렌더링(textContent 사용)
-            //   list.forEach((item, idx) => {
-            //     // 서버 필드명 예시 가정: move_type, move_at, from_center, to_center, reason
-            //     // (다르면 아래 키만 바꿔주세요)
-            //     const moveType   = item.moveType ?? item.move_type ?? item.type ?? '';
-            //     const moveAt     = item.moveAt   ?? item.move_at   ?? item.movedAt ?? '';
-            //     const fromCenter = item.fromCenter ?? item.from_center ?? item.prevCenter ?? '';
-            //     const toCenter   = item.toCenter   ?? item.to_center   ?? item.nextCenter ?? '';
-            //     const reason     = item.reason ?? '';
-
-            //     const tr = document.createElement('tr');
-
-            //     const tdIdx = document.createElement('td');
-            //     tdIdx.textContent = String(idx + 1);
-
-            //     const tdType = document.createElement('td');
-            //     tdType.textContent = moveType; // '전입' / '전출' 등
-
-            //     const tdDate = document.createElement('td');
-            //     tdDate.textContent = fmtDate(moveAt);
-
-            //     const tdFrom = document.createElement('td');
-            //     tdFrom.textContent = fromCenter;
-
-            //     const tdTo = document.createElement('td');
-            //     tdTo.textContent = toCenter;
-
-            //     const tdReason = document.createElement('td');
-            //     tdReason.textContent = reason;
-
-            //     tr.appendChild(tdIdx);
-            //     tr.appendChild(tdType);
-            //     tr.appendChild(tdDate);
-            //     tr.appendChild(tdFrom);
-            //     tr.appendChild(tdTo);
-            //     tr.appendChild(tdReason);
-            //     tbody.appendChild(tr);
-            //   });
         })
         .catch(err => {
             loading.style.display = 'none';

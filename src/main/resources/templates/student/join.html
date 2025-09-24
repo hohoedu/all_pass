@@ -48,8 +48,8 @@
         <div class="join-group">
           <label for="grade-filter">연령/학년</label>
           <div class="join-select">
-            <select id="grade-filter" name="gradeNo">
-              <option th:each="grade : ${gradeCodes}" th:value="${grade.gradeNo}" th:text="${grade.grade}">
+            <select id="grade-filter" name="gradeKey">
+              <option th:each="grade : ${gradeCodes}" th:value="${grade.gradeKey}" th:text="${grade.gradeName}">
               </option>
             </select>
           </div>
@@ -107,8 +107,8 @@
             <div class="join-select">
               <select id="relation-filter" name="relationNo">
                 <option value="">선택</option>
-                <option th:each="relation : ${relationCodes}" th:value="${relation.relationNo}"
-                  th:text="${relation.relation}">
+                <option th:each="relation : ${relationCodes}" th:value="${relation.relationKey}"
+                  th:text="${relation.relationName}">
                 </option>
               </select>
             </div>

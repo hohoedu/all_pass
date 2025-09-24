@@ -31,6 +31,7 @@ public class StudentWebRespDTO {
         private String bookClass;
         private Timestamp createdAt;
         private String isSibling;
+        private String classType;
         private List<SiblingInfoDTO> siblingList;
 
         @Data

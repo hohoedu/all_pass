@@ -23,7 +23,6 @@ public class StudentWebReqDTO {
         private Integer statusNo;
         private Integer gradeNo;
         private Integer levelNo;
-
     }
 
     @Data
@@ -40,9 +39,8 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StatusHistoryDTO {
-        private Integer historyNo;
-        private String statusNo;
-        private Integer studentNo;
+        private String statusKey;
+        private Integer studentId;
         private String reason;
     }
 

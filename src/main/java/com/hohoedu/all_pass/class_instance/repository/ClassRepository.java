@@ -120,6 +120,11 @@ public interface ClassRepository {
             @Param("attendanceDate") String attendanceDate,
             @Param("week") String week);
 
+    void updateAfterSend(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week);
+
     public ClassRespDTO.AfterClassRespDTO findAfterClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,

@@ -270,6 +270,10 @@ public class ClassService {
         classRepository.updateAttendance(studentId, timeTableKey, attendanceDate, week);
     }
 
+    public void updateAfterSend(String studentId, String timeTableKey, String week) {
+        classRepository.updateAfterSend(studentId, timeTableKey, week);
+    }
+
     // ================ 보강 관리 서비스 =====================//
     public List<RemedialDTO> findRemedialByUserNo(String year, String month) {
         System.out.println(year);

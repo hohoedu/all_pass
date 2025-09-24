@@ -803,7 +803,6 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
     } else {
         tbody.replaceChildren(frag);
     }
-
 }
 
 
@@ -842,12 +841,12 @@ document.addEventListener('click', function (e) {
             })
             .then(json => {
                 const body = json?.response ?? json;
-                bindRecordModal(body, selectedNames); // 🔹 바인딩 함수 호출
+                bindRecordModal(body, selectedNames);
                 document.querySelector('.class-guide-modal').style.display = 'block';
             })
             .catch(err => {
                 console.error('[GUIDE MODAL] fetch error:', err);
-                bindRecordModal({}, selectedNames); // 실패 시 빈 데이터라도 반영
+                bindRecordModal({}, selectedNames);
                 document.querySelector('.class-guide-modal').style.display = 'block';
             });
 
@@ -942,7 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// 알림 발송 후 내용 저장
+// 수업 전 알림 발송 후 내용 저장
 async function insertBeforeClassNotice(checkedRows) {
     const modalContent = document.getElementById("record-content")?.textContent || "";
     const notices = checkedRows.map(row => {
@@ -973,7 +972,7 @@ async function insertBeforeClassNotice(checkedRows) {
     }
 }
 
-// 알림 발송 후 출결 칼럼 생성
+// 수업 전 알림 발송 후 출결 칼럼 생성
 async function insertStudentAttendance() {
     const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))
         .filter(row => row.querySelector("input[type=checkbox]")?.checked)
@@ -1011,6 +1010,106 @@ async function insertStudentAttendance() {
 
     }
 }
+
+// 수업 후 코멘트 전송
+document.addEventListener("DOMContentLoaded", () => {
+    const sendBtn = document.querySelector(".class-comment");
+
+    if (!sendBtn) return;
+
+    sendBtn.addEventListener("click", () => {
+        // 체크된 행만 가져오기
+        const checkedRows = Array.from(document.querySelectorAll("#record_tbody tr"))
+            .filter(row => {
+                const checkbox = row.querySelector("input[type=checkbox]");
+                return checkbox && checkbox.checked;
+            });
+
+        if (checkedRows.length === 0) {
+            alert("학생을 선택해주세요.");
+            return;
+        }
+
+        // 체크된 학생들의 appToken 수집
+        const tokens = checkedRows
+            .map(row => row.getAttribute("data-app-token"))
+            .filter(token => token && token.trim() !== "");
+
+        if (tokens.length === 0) {
+            alert("선택된 학생 중 발송 가능한 앱 토큰이 없습니다.");
+            return;
+        }
+
+        // 요청 바디
+        const requestBody = {
+            tokens: tokens,
+            title: "수업 후 코멘트",
+            body: "오늘 수업 후 코멘트가 등록되었습니다."
+        };
+
+        console.log("after-class tokens = ", tokens);
+
+        // 서버로 전송
+        fetch("/api/push/after", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("서버 오류: " + response.status);
+                }
+                return response.json();
+            })
+            .then(async data =>  {
+                console.log("성공:", data);
+                alert("수업 후 코멘트 발송이 완료되었습니다.");
+               await updateAfterSend();
+            })
+            .catch(error => {
+                console.error("실패:", error);
+                alert("발송 실패: " + error.message);
+            });
+    });
+});
+
+async function updateAfterSend() {
+    const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))
+        .filter(row => row.querySelector("input[type=checkbox]")?.checked)
+        .map(row => ({
+            studentId: row.dataset.studentId,
+            timeTableKey: state.timeTableKey,
+            centerCode: row.dataset.centerCode,
+            week: state.week,
+        }));
+
+    if (selectedStudents.length === 0) {
+        console.warn("선택된 학생이 없습니다.");
+        return;
+    }
+
+    try {
+        const res = await fetch("/class/api/afterSend/update", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(selectedStudents)
+        });
+
+        if (!res.ok) {
+            throw new Error("발송내역 저장 실패 (status " + res.status + ")");
+        }
+
+        const data = await res.json();
+        console.log("발송 내역 업데이트 성공:", data);
+
+    } catch (err) {
+        console.error("발송 내역 업데이트 에러:", err);
+
+    }
+}
+
 
 // =================================== //
 // ==                               == //

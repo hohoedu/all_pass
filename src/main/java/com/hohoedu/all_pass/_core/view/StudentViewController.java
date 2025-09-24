@@ -29,6 +29,7 @@ public class StudentViewController {
     private final StudentService studentService;
     private final ClassService classService;
 
+    // 학생 등록
     @GetMapping("/join")
     public String getStudentJoinPage(Model model) {
 
@@ -41,6 +42,7 @@ public class StudentViewController {
         return "student/join";
     }
 
+    // 학생 정보 메인
     @GetMapping("/main")
     public String getStudentMainPage(HttpSession session, Model model) {
 
@@ -61,6 +63,7 @@ public class StudentViewController {
         return "student/student-main";
     }
 
+    // 전입 전출
     @GetMapping("/transfer")
     public String getStudentInoutPage(Model model, HttpSession session) {
 
@@ -80,13 +83,13 @@ public class StudentViewController {
         return "student/student-inout";
     }
 
+    // 전입 전출 현황 출력화면
     @GetMapping("/print-transfer")
     public String getStudentTransferPrintPage() {
         return "print/print-student-transfer";
     }
 
-
-
+    // 학생 통계 화면
     @GetMapping("/overview")
     public String getStudentOverview(HttpSession session, Model model) {
         var user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -116,6 +119,7 @@ public class StudentViewController {
         return "/student/student-overview";
     }
 
+    // 학생 통계 출력 화면
     @GetMapping("/print-overview")
     public String getStudentOverviewPrintPage() {
         return "print/print-student-overview";
