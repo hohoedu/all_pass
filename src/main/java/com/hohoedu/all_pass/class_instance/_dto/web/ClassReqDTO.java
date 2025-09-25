@@ -147,4 +147,20 @@ public class ClassReqDTO {
         private String classLabel;
     }
 
+    @Data
+    public static class AfterClassNoticeDTO{
+        private String studentId;
+        private String userCode;
+        private String timeTableKey;
+        private String afterClassKey;
+        private String year;
+        private String month;
+        private String week;
+        private String dayname;
+        private String content;
+        private String classType;
+        private String classLabel;
+        private String icon;
+    }
+
 }

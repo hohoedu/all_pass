@@ -148,8 +148,10 @@ public class ClassRespDTO {
     }
 
     @Data
-    public static class BeforeClassRawDTO {
+    public static class RawClassDTO {
         private String classType;
+        private String yy;
+        private String mm;
         private String dayname;
         private String startTime;
         private String className;

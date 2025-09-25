@@ -690,6 +690,7 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
         tr.dataset.studentId = s.studentId ?? '';
         tr.dataset.appToken = s.appToken ?? '';
         tr.dataset.centerCode = s.centerCode ?? '';
+        tr.dataset.afterClassKey = s.afterClassKey ?? '';
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
@@ -943,21 +944,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 수업 전 알림 발송 후 내용 저장
 async function insertBeforeClassNotice(checkedRows) {
-    const modalContent = document.getElementById("record-content")?.textContent || "";
-    const notices = checkedRows.map(row => {
-        return {
-            studentId: row.getAttribute("data-student-id"),
-            timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
-            week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
-            classDate: document.getElementById("record_calendar").value,
-            content: modalContent,
-        }
-    });
+    const modalContent = document.querySelector("#record-content")?.textContent.trim() || "";
+
+    const rows = Array.from(checkedRows || []);
+
+    const notices = rows.map(row => ({
+        studentId: row.getAttribute("data-student-id"),
+        timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
+        week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+        classDate: document.getElementById("record_calendar")?.value || "",
+        content: modalContent,
+    }));
+    console.log(notices);
 
     try {
-        const response = fetch("/class/api/before-class/insert", {
+        const response = await fetch("/class/api/before-notice/insert", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(notices)
         });
 
@@ -966,12 +969,10 @@ async function insertBeforeClassNotice(checkedRows) {
         }
 
         console.log("발송 로그 저장 성공");
-
     } catch (error) {
         console.error("발송 로그 저장 실패:", error);
     }
 }
-
 // 수업 전 알림 발송 후 출결 칼럼 생성
 async function insertStudentAttendance() {
     const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))
@@ -1063,10 +1064,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 return response.json();
             })
-            .then(async data =>  {
+            .then(async data => {
                 console.log("성공:", data);
                 alert("수업 후 코멘트 발송이 완료되었습니다.");
-               await updateAfterSend();
+                await insertAfterClassNotice(checkedRows);
+                await updateAfterSend();
             })
             .catch(error => {
                 console.error("실패:", error);
@@ -1074,6 +1076,36 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 });
+
+// 수업 후 문자 전송 후 로그 저장
+async function insertAfterClassNotice(checkedRows) {
+    const notices = checkedRows.map(row => {
+        return {
+            studentId: row.getAttribute("data-student-id"),
+            timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
+            afterClassKey: row.dataset.afterClassKey || "",
+            week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+            content: document.querySelector(".record-content").value,
+        }
+    });
+
+    try {
+        const response = fetch("/class/api/after-notice/insert", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(notices)
+        });
+
+        if (!response.ok) {
+            throw new Error("서버 오류: " + response.status);
+        }
+
+        console.log("발송 로그 저장 성공");
+
+    } catch (error) {
+        console.error("발송 로그 저장 실패:", error);
+    }
+}
 
 async function updateAfterSend() {
     const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))

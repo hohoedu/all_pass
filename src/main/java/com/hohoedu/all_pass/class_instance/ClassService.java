@@ -2,10 +2,7 @@ package com.hohoedu.all_pass.class_instance;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -241,7 +238,7 @@ public class ClassService {
 
 
             ClassReqDTO.BeforeClassNoticeDTO insertDTO = new ClassReqDTO.BeforeClassNoticeDTO();
-            ClassRespDTO.BeforeClassRawDTO rawDTO = classRepository.findClassByTimeTableKey(dto.getTimeTableKey());
+            ClassRespDTO.RawClassDTO rawDTO = classRepository.findClassByTimeTableKey(dto.getTimeTableKey());
             Map<String, String> weekMap = Map.of("ju_1", "1주", "ju_2", "2주", "ju_3", "3주", "ju_4", "4주");
             String weekLabel = weekMap.getOrDefault(dto.getWeek(), dto.getWeek());
             Map<String, String> typeMap = Map.of("1", "S", "2", "I");
@@ -268,6 +265,58 @@ public class ClassService {
     // 알림 발송 이후 출결 업데이트
     public void updateAttendance(String studentId, String timeTableKey, String attendanceDate, String week) {
         classRepository.updateAttendance(studentId, timeTableKey, attendanceDate, week);
+    }
+
+    public void insertAfterClassNoticeList(List<ClassReqDTO.AfterClassNoticeDTO> dtoList, String userCode) {
+        for (ClassReqDTO.AfterClassNoticeDTO dto : dtoList) {
+
+            ClassReqDTO.AfterClassNoticeDTO insertDTO = new ClassReqDTO.AfterClassNoticeDTO();
+
+            ClassRespDTO.RawClassDTO rawDTO = classRepository.findClassByTimeTableKey(dto.getTimeTableKey());
+
+            Map<String, String> weekMap = Map.of("ju_1", "1주", "ju_2", "2주", "ju_3", "3주", "ju_4", "4주");
+            String weekLabel = weekMap.getOrDefault(dto.getWeek(), dto.getWeek());
+            String rawWeek = dto.getWeek().substring(dto.getWeek().length() - 1);
+            Map<String, String> typeMap = Map.of("1", "S", "2", "I");
+            String typeLabel = typeMap.getOrDefault(rawDTO.getClassType(), rawDTO.getClassType());
+            String classLabel = String.format("%s %s %s ", rawDTO.getClassName(), rawDTO.getUnitName(), weekLabel);
+            LocalDateTime now = LocalDateTime.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 E요일 HH:mm", Locale.KOREAN);
+
+            String time = now.format(formatter);
+
+            insertDTO.setStudentId(dto.getStudentId());
+            insertDTO.setUserCode(userCode);
+            insertDTO.setTimeTableKey(dto.getTimeTableKey());
+            insertDTO.setAfterClassKey(dto.getAfterClassKey());
+            insertDTO.setYear(rawDTO.getYy());
+            insertDTO.setMonth(rawDTO.getMm());
+            insertDTO.setWeek(rawWeek);
+            insertDTO.setDayname(time);
+            insertDTO.setContent(dto.getContent());
+            insertDTO.setClassType(typeLabel);
+            insertDTO.setClassLabel(classLabel);
+
+            System.out.println("------------------------------------------------------");
+            System.out.println("데이터를 가공했음");
+            System.out.println("getStudentId = "+ insertDTO.getStudentId());
+            System.out.println("getUserCode = "+ insertDTO.getUserCode());
+            System.out.println("getTimeTableKey = " + insertDTO.getTimeTableKey());
+            System.out.println("getAfterClassKey = " + insertDTO.getAfterClassKey());
+            System.out.println("getYear = " + insertDTO.getYear());
+            System.out.println("getMonth = " + insertDTO.getMonth());
+            System.out.println("getWeek = " + insertDTO.getWeek());
+            System.out.println("getDayname = " + insertDTO.getDayname());
+            System.out.println("getDayname = " + insertDTO.getContent());
+            System.out.println("getClassType = " + insertDTO.getClassType());
+            System.out.println("getClassLabel = " + insertDTO.getClassLabel());
+            System.out.println("getIcon = " + insertDTO.getIcon());
+            System.out.println("------------------------------------------------------");
+            classRepository.insertAfterClassNotice(insertDTO);
+
+        }
+
     }
 
     public void updateAfterSend(String studentId, String timeTableKey, String week) {

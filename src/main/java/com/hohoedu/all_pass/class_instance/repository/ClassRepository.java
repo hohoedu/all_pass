@@ -150,9 +150,10 @@ public interface ClassRepository {
             @Param("studentId") String studentId,
             @Param("count") int count);
 
-    public ClassRespDTO.BeforeClassRawDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
+    public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
+    public void insertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
 
 
 }

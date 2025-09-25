@@ -403,18 +403,20 @@
     </select>
 
 
-    <select id="findClassByTimeTableKey">
-        SELECT
-            cc.class_type AS classType,
-            cc.class_name AS className,
-            uc.unit_name AS unitName,
-            t.dayname AS dayname,
-            t.start_time AS startTime,
-            u.user_name AS userName
+    <select id="findClassByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RawClassDTO">
+        SELECT cc.class_type AS classType,
+               t.yy          AS yy,
+               t.mm          AS mm,
+               cc.class_name AS className,
+               uc.unit_name  AS unitName,
+               t.dayname     AS dayname,
+               t.start_time  AS startTime,
+               u.user_name   AS userName
         FROM erp_time_table t
-                 JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 JOIN erp_class_code cc
+                      ON t.class_key = cc.class_key
                  JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
-                JOIN erp_user u ON t.user_code = u.user_code
+                 JOIN erp_user u ON t.user_code = u.user_code
         WHERE t.time_table_key = #{timeTableKey}
     </select>
 
@@ -426,6 +428,11 @@
         VALUES (#{studentId}, #{timeTableKey}, #{week}, #{dayname}, #{classTime}, #{classDate}, #{classType}, #{classLabel}, #{content}, #{userCode}, SYSDATETIME())
     </insert>
 
+    <insert id="insertAfterClassNotice"
+            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
+        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year,month,  class_type, class_label, content, created_at)
+        VALUES (#{studentId}, #{userCode},#{timeTableKey},#{afterClassKey}, #{week}, #{dayname},#{year},#{month}, #{classType}, #{classLabel}, #{content},  SYSDATETIME())
+    </insert>
 
     <select id="findBeforeClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">
         SELECT TOP(#{count})

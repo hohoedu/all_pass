@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,8 +54,10 @@ public class UserService {
             throw new CustomRestfulException("존재하지 않는 아이디입니다.", HttpStatus.FORBIDDEN);
         }
 
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
         // 아이디 비밀번호 체크
-        if (!authDTO.getPasswordHash().equals(loginDTO.getUserPassword())) {
+        if (!passwordEncoder.matches(loginDTO.getUserPassword(), authDTO.getPasswordHash())) {
             throw new CustomRestfulException("비밀번호가 일치하지 않습니다.", HttpStatus.FORBIDDEN);
         }
 

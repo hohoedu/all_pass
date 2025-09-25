@@ -153,7 +153,7 @@ public class ClassController {
     }
 
     // 알림 발송 이후 내용 저장
-    @PostMapping("/api/before-class/insert")
+    @PostMapping("/api/before-notice/insert")
     public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -174,6 +174,32 @@ public class ClassController {
                     dto.getWeek()
             );
         }
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
+    @PostMapping("/api/after-notice/insert")
+    public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        System.out.println("------------------------------------------------------");
+        System.out.println("데이터를 받았음");
+        System.out.println("getStudentId = " + dtoList.get(0).getStudentId());
+        System.out.println("getUserCode = " + dtoList.get(0).getUserCode());
+        System.out.println("getTimeTableKey = " + dtoList.get(0).getTimeTableKey());
+        System.out.println("getAfterClassKey = " + dtoList.get(0).getAfterClassKey());
+        System.out.println("getYear = " + dtoList.get(0).getYear());
+        System.out.println("getMonth = " + dtoList.get(0).getMonth());
+        System.out.println("getWeek = " + dtoList.get(0).getWeek());
+        System.out.println("getDayname = " + dtoList.get(0).getDayname());
+        System.out.println("getDayname = " + dtoList.get(0).getContent());
+        System.out.println("getClassType = " + dtoList.get(0).getClassType());
+        System.out.println("getClassLabel = " + dtoList.get(0).getClassLabel());
+        System.out.println("getIcon = " + dtoList.get(0).getIcon());
+        System.out.println("------------------------------------------------------");
+
+        classService.insertAfterClassNoticeList(dtoList, user.getUserCode());
+
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 

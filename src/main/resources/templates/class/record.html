@@ -108,7 +108,7 @@
                                     </thead>
                                     <tbody id="record_tbody">
                                     <tr th:each="s, stat : ${students}" th:data-student-id="${s.studentId}" th:data-app-token="${s.appToken}"
-                                        th:data-center-code="${s.centerCode}">
+                                        th:data-center-code="${s.centerCode}" th:data-after-class-key="${content.afterClassKey}">
                                         <td class="checkbox-group">
                                             <input type="checkbox"/>
                                         </td>
@@ -182,14 +182,22 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                                                   <textarea class="comment-text record-content" placeholder="내용을 입력해주세요."
-                                                             th:text="${content != null && content.content != null
-                                                             ? #strings.replace(#strings.replace(#strings.replace(content.content, '<br />', '\n'),'<br/>','\n'),'<br>','\n')
-                                                             : ''}">
-                                                   </textarea>
+                                                    <div class="comment-wrapper">
+                                                        <!-- textarea 영역 -->
+                                                        <textarea class="comment-text record-content" placeholder="내용을 입력해주세요."
+                                                                  th:text="${content != null && content.content != null
+                                                                  ? #strings.replace(#strings.replace(#strings.replace(content.content, '<br />', '\n'),'<br/>','\n'),'<br>','\n')
+                                                                  : ''}">
+                                                        </textarea>
+                                                        <!-- 이미지 영역 -->
+                                                        <div th:if="${s.appToken == null or s.appToken == ''}" class="comment-image">
+                                                            <img th:src="@{/image/send1.png}">
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
+
 
                                         <td class="send-ornot">
                                             <img th:if="${s.appToken == null or s.appToken == ''}" src="/image/no-smartphones.png" alt="">
