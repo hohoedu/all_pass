@@ -182,22 +182,6 @@ public class ClassController {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
-        System.out.println("------------------------------------------------------");
-        System.out.println("데이터를 받았음");
-        System.out.println("getStudentId = " + dtoList.get(0).getStudentId());
-        System.out.println("getUserCode = " + dtoList.get(0).getUserCode());
-        System.out.println("getTimeTableKey = " + dtoList.get(0).getTimeTableKey());
-        System.out.println("getAfterClassKey = " + dtoList.get(0).getAfterClassKey());
-        System.out.println("getYear = " + dtoList.get(0).getYear());
-        System.out.println("getMonth = " + dtoList.get(0).getMonth());
-        System.out.println("getWeek = " + dtoList.get(0).getWeek());
-        System.out.println("getDayname = " + dtoList.get(0).getDayname());
-        System.out.println("getDayname = " + dtoList.get(0).getContent());
-        System.out.println("getClassType = " + dtoList.get(0).getClassType());
-        System.out.println("getClassLabel = " + dtoList.get(0).getClassLabel());
-        System.out.println("getIcon = " + dtoList.get(0).getIcon());
-        System.out.println("------------------------------------------------------");
-
         classService.insertAfterClassNoticeList(dtoList, user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(true));
@@ -246,25 +230,28 @@ public class ClassController {
 
 
     // 월간 평가 (초등)
+    // 월별 테이블 라벨 가져오기
     @PostMapping("/api/monthly/by-month")
-    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassMonthlyByMonthDTO dto) {
+    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassMonthlyByMonthDTO dto, HttpSession session) {
 
-        List<TimeTableLabelDTO> label = classService.getLabelsByUserNoAndYM("2", dto.getYy(), dto.getMm());
+        List<TimeTableLabelDTO> label = classService.getLabelsByUserCodeAndYM("all", dto.getYy(), dto.getMm());
 
         return ResponseEntity.ok(ApiUtils.success(label));
     }
 
-    @GetMapping("/api/monthly/{teacherNo}")
-    public ResponseEntity<?> findTimeTableLabel(@PathVariable("teacherNo") String userNo) {
+    // 선생님 코드로 데이터 가져오기
+    @GetMapping("/api/monthly/{teacherCode}")
+    public ResponseEntity<?> findTimeTableLabel(@PathVariable("teacherCode") String userCode) {
 
         List<TimeTableLabelDTO> label = classService.getMonthlyClassList(
-                userNo,
+                userCode,
                 dateConfig.currentYearMonth().get("currentYear"),
                 dateConfig.currentYearMonth().get("currentMonth"));
 
         return ResponseEntity.ok(ApiUtils.success(label));
     }
 
+    // 클래스 코드로 데이터 가져오기
     @PostMapping("/api/monthly/by-classCode")
     public ResponseEntity<?> findStudentByClassCode(@RequestBody ClassMonthlyByClassCodeDTO dto) {
 

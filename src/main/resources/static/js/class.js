@@ -960,7 +960,7 @@ async function insertBeforeClassNotice(checkedRows) {
     try {
         const response = await fetch("/class/api/before-notice/insert", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(notices)
         });
 
@@ -973,6 +973,7 @@ async function insertBeforeClassNotice(checkedRows) {
         console.error("발송 로그 저장 실패:", error);
     }
 }
+
 // 수업 전 알림 발송 후 출결 칼럼 생성
 async function insertStudentAttendance() {
     const selectedStudents = Array.from(document.querySelectorAll("#record_tbody tr"))
@@ -1351,14 +1352,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!teacherSelect) return;
 
     teacherSelect.addEventListener("change", () => {
-        const teacherNo = teacherSelect.value;
+        const teacherCode = teacherSelect.value;
 
-        if (teacherNo === "all") {
-            console.log("전체 선택");
-            return;
-        }
         // GET + 쿼리스트링 방식
-        fetch(`/class/api/monthly/${teacherNo}`, {
+        fetch(`/class/api/monthly/${teacherCode}`, {
             method: "GET",
             headers: {
                 "Accept": "application/json"

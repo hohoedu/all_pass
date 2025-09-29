@@ -364,7 +364,7 @@ public class ClassService {
                 .toList();
     }
 
-    public List<TimeTableLabelDTO> getLabelsByUserNoAndYM(String userCode, String yy, String mm) {
+    public List<TimeTableLabelDTO> getLabelsByUserCodeAndYM(String userCode, String yy, String mm) {
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm);
 
         return labels.stream()

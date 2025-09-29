@@ -1,5 +1,7 @@
-package com.hohoedu.all_pass.class_instance.model;
+package com.hohoedu.all_pass.class_instance.model.base_data;
 
+import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

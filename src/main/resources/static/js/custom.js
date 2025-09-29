@@ -184,6 +184,11 @@ $(document).ready(function () {
         $('.week-btn').removeClass('active');
         $(this).addClass('active');
     });
+    //
+    $('.day-btn').click(function () {
+        $('.day-btn').removeClass('active');
+        $(this).addClass('active');
+    });
     // 클래스 버튼
     $('.class-btn').click(function () {
         $('.class-btn').removeClass('active');
@@ -338,7 +343,7 @@ function showAlert(options) {
 
 // 정렬 함수
 function addHeadSort(headId, tbodyId, opts = {}) {
-    const head  = document.getElementById(headId);
+    const head = document.getElementById(headId);
     const tbody = document.getElementById(tbodyId);
     if (!head || !tbody) return;
 
@@ -346,7 +351,7 @@ function addHeadSort(headId, tbodyId, opts = {}) {
 
     const setIconByDirection = (imgEl, direction) => {
         const toFile =
-            direction === 'asc'  ? 'sort_checked_up.svg' :
+            direction === 'asc' ? 'sort_checked_up.svg' :
                 direction === 'desc' ? 'sort_checked_down.svg' : 'sort.svg';
 
         const current = imgEl.getAttribute('src') || '';
@@ -367,13 +372,13 @@ function addHeadSort(headId, tbodyId, opts = {}) {
 
         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
             const d = new Date(v);
-            if (!isNaN(d)) return { type: 'date', value: d.getTime() };
+            if (!isNaN(d)) return {type: 'date', value: d.getTime()};
         }
 
         const n = Number(v.replace(/[^0-9.-]/g, ''));
-        if (!Number.isNaN(n) && v.match(/[0-9]/)) return { type: 'number', value: n };
+        if (!Number.isNaN(n) && v.match(/[0-9]/)) return {type: 'number', value: n};
 
-        return { type: 'string', value: v };
+        return {type: 'string', value: v};
     };
 
     const compareBy = (aRow, bRow, colIndex, asc) => {
@@ -392,7 +397,7 @@ function addHeadSort(headId, tbodyId, opts = {}) {
             return 0;
         }
 
-        const rank = { date: 3, number: 2, string: 1, empty: 0 };
+        const rank = {date: 3, number: 2, string: 1, empty: 0};
         if (rank[a.type] !== rank[b.type]) {
             return asc ? (rank[a.type] - rank[b.type]) : (rank[b.type] - rank[a.type]);
         }

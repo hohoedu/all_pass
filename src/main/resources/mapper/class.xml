@@ -145,12 +145,13 @@
     <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT
         tc.time_table_key as timeTableKey,
-        tc.time_table_label as classLabel
+        tc.time_table_label as classLabel,
+        t.class_key as classKey
         FROM ERP_TIME_TABLE t
-        JOIN ERP_TIME_TABLE_CODE tc
-        ON t.time_table_key = tc.time_table_key
+        JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
         WHERE YY = #{yy}
         AND MM = #{mm}
+        AND LEN(t.class_key) > 1
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
         </if>

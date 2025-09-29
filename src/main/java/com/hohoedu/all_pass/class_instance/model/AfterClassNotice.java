@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.class_instance.model;
 
 import com.hohoedu.all_pass.class_instance.TimeTable;
+import com.hohoedu.all_pass.class_instance.model.base_data.AfterClass;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
@@ -8,7 +9,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.threeten.bp.LocalDateTime;
 
 import java.sql.Timestamp;
 

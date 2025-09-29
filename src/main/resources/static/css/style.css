@@ -4681,6 +4681,35 @@ input[type="time" i] {
     font-weight: bold;
 }
 
+.day-selector {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.day-btn {
+    flex: 1;
+    margin-right: 4px;
+    padding: 6px 0;
+    border: none;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #9b9ba8;
+    cursor: pointer;
+    height: 27px;
+}
+
+.day-btn:last-child {
+    margin-right: 0;
+}
+
+.day-btn.active {
+    background-color: #009844;
+    color: white;
+    font-weight: bold;
+}
+
+
 .class-btn {
     padding: 10px;
     margin-bottom: 10px;

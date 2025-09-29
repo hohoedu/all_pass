@@ -114,7 +114,24 @@ public class ClassViewController {
     }
 
     @GetMapping("/print-timeview")
-    public String getPrintTimeView() {
+    public String getPrintTimeView(Model model, HttpSession session) {
+
+//        List<User> users = userService.findByCenterNo(user.getCenterCode());
+        List<User> users = userService.findByCenterNo("DAE001");
+
+        model.addAttribute("users", users);
+        model.addAttribute("days", DAYS);
+
+        List<TimeTableDTO> tables = classService.findTableViewWithStudents("2025", "09", "DAE001cos");
+
+        Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
+                .collect(Collectors.groupingBy(
+                        TimeTableDTO::getDayname,
+                        Collectors.toMap(
+                                TimeTableDTO::getPeriodNo,
+                                Function.identity())));
+        DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
+        model.addAttribute("tableMap", tableMap);
         return "print/print-timeview";
     }
 
