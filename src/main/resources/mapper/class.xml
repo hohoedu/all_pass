@@ -158,6 +158,23 @@
         ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
     </select>
 
+    <select id="findClassLabelByUserCodeAndDayname" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
+        SELECT
+        tc.time_table_key as timeTableKey,
+        tc.time_table_label as classLabel,
+        t.class_key as classKey
+        FROM ERP_TIME_TABLE t
+        JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
+        WHERE YY = #{yy}
+        AND MM = #{mm}
+        AND LEN(t.class_key) > 1
+        AND dayname = #{dayname}
+        <if test="userCode != null and userCode != 'all'">
+            AND t.user_code = #{userCode}
+        </if>
+        ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
+    </select>
+
     <select id="findStudentsByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT st.student_id   AS studentId,
                st.student_name AS studentName,
@@ -282,7 +299,7 @@
                  JOIN erp_time_table t ON ac.class_key = t.class_key AND ac.unit_key = t.unit_key
                  JOIN erp_user u ON t.user_code = u.user_code
                  JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
-        WHERE t.unit_key = #{unitKey}
+        WHERE ac.unit_key = #{unitKey}
           AND t.class_key = #{classKey}
           AND ac.week = #{week}
           AND t.time_table_key = #{timeTableKey}
@@ -348,7 +365,7 @@
                  JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
                  JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
                  LEFT JOIN erp_monthly_score m ON m.time_table_key = t.time_table_key AND m.student_id = ta.student_id
-        WHERE t.time_table_key = #{classCode}
+        WHERE t.time_table_key = #{timeTableKey}
     </select>
 
     <update id="updateMonthlyScore">
@@ -374,8 +391,7 @@
                    WHEN '1' THEN 'S'
                    WHEN '2' THEN 'I'
                    ELSE c.class_type
-                   END
-                                                                         AS gubun,
+                   END                                                   AS gubun,
                CASE t.dayname
                    WHEN 'mon' THEN '월'
                    WHEN 'tue' THEN '화'
@@ -384,9 +400,7 @@
                    WHEN 'fri' THEN '금'
                    WHEN 'sat' THEN '토'
                    WHEN 'sun' THEN '일'
-                   ELSE t.dayname
-                   END
-                                                                         AS dayname,
+                   ELSE t.dayname END                                    AS dayname,
                REPLACE(CONVERT(VARCHAR (5), t.start_time, 108), ':', '') AS stime,
                REPLACE(CONVERT(VARCHAR (5), t.end_time, 108), ':', '')   AS etime,
                t.mm,

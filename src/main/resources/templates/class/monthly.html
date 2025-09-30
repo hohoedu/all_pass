@@ -65,7 +65,7 @@
                     <section class="class-log-left">
                         <h4 style="margin-bottom: 20px;">클래스 선택</h4>
                         <div class="day-selector">
-                            <button class="day-btn active" data-week="mon">월</button>
+                            <button class="day-btn" data-week="mon">월</button>
                             <button class="day-btn" data-week="tue">화</button>
                             <button class="day-btn" data-week="wed">수</button>
                         </div>
@@ -74,7 +74,7 @@
                             <button class="day-btn" data-week="fri">금</button>
                             <button class="day-btn" data-week="sat">토</button>
                         </div>
-                        <ul class="table-frame class-list" id="class-list">
+                        <ul class="class-list" id="monthly-class-list">
                             <li th:each="label, stat : ${labels}" th:class="'class-btn' + (${stat.index} == 0 ? ' active' : '')"
                                 th:data-class-id="${label.timeTableKey}" th:data-time="${label.classLabel}">
                                 <span th:text="${label.classTime}"></span><br>

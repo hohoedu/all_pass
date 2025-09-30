@@ -11,17 +11,13 @@ import org.checkerframework.checker.units.qual.C;
 
 @Entity
 @Getter
-@Table(name = "erp_monthly_comment", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_monthly_comment_key", columnNames = "monthly_comment_key")})
+@Table(name = "erp_monthly_comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MonthlyComment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "monthly_comment_key")
-    private String monthlyCommentKey;
 
     @Column(name = "yy")
     private String yy;
@@ -41,8 +37,7 @@ public class MonthlyComment {
     private UnitCode unitCode;
 
     @Builder
-    public MonthlyComment(String monthlyCommentKey, String yy, String topComment, String bottomComment, ClassCode classCode, UnitCode unitCode) {
-        this.monthlyCommentKey = monthlyCommentKey;
+    public MonthlyComment( String yy, String topComment, String bottomComment, ClassCode classCode, UnitCode unitCode) {
         this.yy = yy;
         this.topComment = topComment;
         this.bottomComment = bottomComment;

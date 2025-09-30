@@ -44,18 +44,14 @@ public class ClassService {
     private final GradeJpaRepository gradeJpaRepository;
     private final DateConfig dateConfig;
     private final ClassUnitMapJpaRepository classUnitMapJpaRepository;
-    // private final TimeTableAssignJpaRepository assignJpaRepository;
 
+    // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
         List<ClassCode> classCodes = classCodeJpaRepository.findAll();
         return classCodes;
     }
 
-    public List<UnitCode> findUnitCode() {
-        List<UnitCode> unitCodes = unitCodeJpaRepository.findAll();
-        return unitCodes;
-    }
-
+    // 수업 코드 - 유닛 매핑 테이블 조회 서비스 (시간표 등록)
     public Map<String, List<UnitCode>> findClassUnits() {
         Map<String, List<UnitCode>> result = new HashMap<>();
 
@@ -71,11 +67,13 @@ public class ClassService {
         return result;
     }
 
+    // 학년 및 연령 테이블 조회 서비스 (시간표 등록)
     public List<GradeCode> findGrade() {
         List<GradeCode> grades = gradeJpaRepository.findAll();
         return grades;
     }
 
+    // 클래스 라벨 테이블 조회 (학생 정보 메인, 전입 전출 메인)
     public List<TimeTableLabelDTO> getClassLabel(String userCode) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
@@ -83,6 +81,7 @@ public class ClassService {
         return labels;
     }
 
+    // 수업 등록
     public String registerClass(ClassReqDTO.ClassRegisterDTO classReqDTO) {
 
         TimeTableDTO timeTable = classRepository.existsByYearAndMonthAndPeriodNo(
@@ -204,8 +203,6 @@ public class ClassService {
         return tables;
     }
 
-    ;
-
     public List<TimeTableCode> findTimeTableCodeByUserNo(Integer userNo) {
         List<TimeTableCode> codes = classRepository.findTimeTableCodeByUserNo(userNo);
         return codes;
@@ -297,22 +294,6 @@ public class ClassService {
             insertDTO.setContent(dto.getContent());
             insertDTO.setClassType(typeLabel);
             insertDTO.setClassLabel(classLabel);
-
-            System.out.println("------------------------------------------------------");
-            System.out.println("데이터를 가공했음");
-            System.out.println("getStudentId = "+ insertDTO.getStudentId());
-            System.out.println("getUserCode = "+ insertDTO.getUserCode());
-            System.out.println("getTimeTableKey = " + insertDTO.getTimeTableKey());
-            System.out.println("getAfterClassKey = " + insertDTO.getAfterClassKey());
-            System.out.println("getYear = " + insertDTO.getYear());
-            System.out.println("getMonth = " + insertDTO.getMonth());
-            System.out.println("getWeek = " + insertDTO.getWeek());
-            System.out.println("getDayname = " + insertDTO.getDayname());
-            System.out.println("getDayname = " + insertDTO.getContent());
-            System.out.println("getClassType = " + insertDTO.getClassType());
-            System.out.println("getClassLabel = " + insertDTO.getClassLabel());
-            System.out.println("getIcon = " + insertDTO.getIcon());
-            System.out.println("------------------------------------------------------");
             classRepository.insertAfterClassNotice(insertDTO);
 
         }
@@ -342,8 +323,9 @@ public class ClassService {
 
 
     // ================ 월간 평가 서비스 =====================//
-    public List<TimeTableLabelDTO> getLabelsByYM(String yy, String mm) {
-        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode("all", yy, mm);
+    public List<TimeTableLabelDTO> getLabelsByYM(String yy, String mm, String dayname) {
+
+        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname("all", yy, mm, dayname);
 
         return labels.stream()
                 .map(dto -> {
@@ -351,7 +333,7 @@ public class ClassService {
                     String classTime = label;
                     String classSubject = "";
                     if (label != null) {
-                        int idx = label.indexOf(" ", label.indexOf("~") + 2); // "~" 뒤 첫 번째 공백
+                        int idx = label.indexOf(" ", label.indexOf("~") + 2);
                         if (idx > -1) {
                             classTime = label.substring(0, idx).trim();
                             classSubject = label.substring(idx + 1).trim();
@@ -364,30 +346,9 @@ public class ClassService {
                 .toList();
     }
 
-    public List<TimeTableLabelDTO> getLabelsByUserCodeAndYM(String userCode, String yy, String mm) {
-        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm);
+    public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname) {
 
-        return labels.stream()
-                .map(dto -> {
-                    String label = dto.getClassLabel();
-                    String classTime = label;
-                    String classSubject = "";
-                    if (label != null) {
-                        int idx = label.indexOf(" ", label.indexOf("~") + 2); // "~" 뒤 첫 번째 공백
-                        if (idx > -1) {
-                            classTime = label.substring(0, idx).trim();
-                            classSubject = label.substring(idx + 1).trim();
-                        }
-                    }
-                    dto.setClassTime(classTime);
-                    dto.setClassSubject(classSubject);
-                    return dto;
-                })
-                .toList();
-    }
-
-    public List<TimeTableLabelDTO> getMonthlyClassList(String userNo, String yy, String mm) {
-        return classRepository.findClassLabelByUserCode(userNo, yy, mm)
+        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname)
                 .stream()
                 .map(c -> {
                     String label = c.getClassLabel();
@@ -405,10 +366,12 @@ public class ClassService {
                     return c;
                 })
                 .collect(Collectors.toList());
+
+        return labels;
     }
 
-    public List<MonthlyStudentDTO> getMonthlyClassDetail(String classCode) {
-        List<MonthlyStudentDTO> students = classRepository.findStudentByClassCode(classCode);
+    public List<MonthlyStudentDTO> getMonthlyClassDetail(String timeTableKey) {
+        List<MonthlyStudentDTO> students = classRepository.findStudentByClassCode(timeTableKey);
         return students;
     }
 

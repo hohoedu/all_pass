@@ -4696,7 +4696,6 @@ input[type="time" i] {
     background-color: #fff;
     color: #9b9ba8;
     cursor: pointer;
-    height: 27px;
 }
 
 .day-btn:last-child {

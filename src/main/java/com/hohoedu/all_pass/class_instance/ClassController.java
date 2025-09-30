@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByClassCodeDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByMonthDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassRecordReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
@@ -230,32 +229,20 @@ public class ClassController {
 
 
     // 월간 평가 (초등)
-    // 월별 테이블 라벨 가져오기
-    @PostMapping("/api/monthly/by-month")
-    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassMonthlyByMonthDTO dto, HttpSession session) {
+    // 월별 / 선생님 별 테이블 라벨 가져오기
+    @PostMapping("/api/monthly/classes")
+    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassReqDTO.ClassMonthlyDTO dto) {
 
-        List<TimeTableLabelDTO> label = classService.getLabelsByUserCodeAndYM("all", dto.getYy(), dto.getMm());
-
-        return ResponseEntity.ok(ApiUtils.success(label));
-    }
-
-    // 선생님 코드로 데이터 가져오기
-    @GetMapping("/api/monthly/{teacherCode}")
-    public ResponseEntity<?> findTimeTableLabel(@PathVariable("teacherCode") String userCode) {
-
-        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(
-                userCode,
-                dateConfig.currentYearMonth().get("currentYear"),
-                dateConfig.currentYearMonth().get("currentMonth"));
+        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(), dto.getDayname());
 
         return ResponseEntity.ok(ApiUtils.success(label));
     }
 
     // 클래스 코드로 데이터 가져오기
-    @PostMapping("/api/monthly/by-classCode")
+    @PostMapping("/api/monthly/timeTableKey")
     public ResponseEntity<?> findStudentByClassCode(@RequestBody ClassMonthlyByClassCodeDTO dto) {
 
-        List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(dto.getClassCode());
+        List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(dto.getTimeTableKey());
 
         return ResponseEntity.ok(ApiUtils.success(students));
     }

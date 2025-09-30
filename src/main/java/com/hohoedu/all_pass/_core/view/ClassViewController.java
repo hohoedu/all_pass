@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.stereotype.Controller;
@@ -59,7 +60,6 @@ public class ClassViewController {
 
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
-        List<UnitCode> unitCodes = classService.findUnitCode();
         Map<String, List<UnitCode>> classUnitMap = classService.findClassUnits();
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
@@ -68,7 +68,6 @@ public class ClassViewController {
 
         model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);
-        model.addAttribute("unitCodes", unitCodes);
         model.addAttribute("classUnits", classUnits);
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
@@ -142,10 +141,12 @@ public class ClassViewController {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+
         List<User> users = userService.findByCenterNo(user.getCenterCode());
 
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
@@ -155,8 +156,15 @@ public class ClassViewController {
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(timeTableKey, "ju_1", classKey, unitKey);
+
             model.addAttribute("students", bundle.getStudents());
-            model.addAttribute("content", bundle.getAfterClass());
+
+            if (bundle.getAfterClass() != null) {
+                model.addAttribute("content", bundle.getAfterClass());
+            } else {
+
+                model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
+            }
         }
 
         model.addAttribute("users", users);
@@ -167,9 +175,7 @@ public class ClassViewController {
 
     // 보강 페이지
     @GetMapping("/remedial")
-    public String getClassRemedialPage(Model model,
-                                       @RequestParam("year") String year,
-                                       @RequestParam("month") String month) {
+    public String getClassRemedialPage(Model model, @RequestParam("year") String year, @RequestParam("month") String month) {
 
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month);
         List<RemedialDTO> rightRemedials = remedials.stream()
@@ -188,20 +194,23 @@ public class ClassViewController {
     // 월간평가 (초등)
     @GetMapping("/monthly")
     public String getClassMonthlyPage(HttpSession session, Model model) {
-        // UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-        // session.getAttribute("user");
 
-        // if (user == null) {
-        // return "login";
-        // }
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+
+        if (user == null) {
+            return "login";
+        }
 
         // 센터별 선생님 목록
-        List<User> users = userService.findByCenterNo("DAE001");
+        List<User> users = userService.findByCenterNo(user.getCenterCode());
 
         // 클래스 리스트 가져오기
-        List<TimeTableLabelDTO> labels = classService.getLabelsByYM(
+        List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
+                "all",
                 dateConfig.currentYearMonth().get("currentYear"),
-                dateConfig.currentYearMonth().get("currentMonth"));
+                dateConfig.currentYearMonth().get("currentMonth"),
+                dateConfig.currentYearMonth().get("currentDayName"));
 
         // 첫번째 수업에 대한 학생 목록 가져오기
         if (!labels.isEmpty()) {

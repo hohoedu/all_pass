@@ -10,17 +10,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "erp_monthly_feedback", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_monthly_feedback_key", columnNames = "monthly_feedback_key")})
+@Table(name = "erp_monthly_feedback")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MonthlyFeedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "monthly_feedback_key", nullable = false)
-    private String monthlyFeedbackKey;
 
     @Column(name = "yy")
     private String yy;
@@ -49,8 +45,7 @@ public class MonthlyFeedback {
     private UnitCode unitCode;
 
     @Builder
-    public MonthlyFeedback(String monthlyFeedbackKey, String yy, String number, String difficultly, String competency, String correctMent, String wrongMent, ClassCode classCode, UnitCode unitCode) {
-        this.monthlyFeedbackKey = monthlyFeedbackKey;
+    public MonthlyFeedback(String yy, String number, String difficultly, String competency, String correctMent, String wrongMent, ClassCode classCode, UnitCode unitCode) {
         this.yy = yy;
         this.number = number;
         this.difficultly = difficultly;

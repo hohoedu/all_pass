@@ -69,7 +69,7 @@
                             <button class="week-btn" data-week="ju_3">3주</button>
                             <button class="week-btn" data-week="ju_4">4주</button>
                         </div>
-                        <ul class="class-list">
+                        <ul class="class-list" id="record-class-list">
                             <li th:each="s, iterStat : ${labels}"
                                 th:class="'class-btn' + (${iterStat.index} == 0 ? ' active' : '')"
                                 th:data-class-id="${s.timeTableKey}" th:data-time-table-key="${s.timeTableKey}"

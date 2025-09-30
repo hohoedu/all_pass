@@ -102,14 +102,16 @@ public class ClassReqDTO {
 
 
     @Data
-    public static class ClassMonthlyByMonthDTO {
+    public static class ClassMonthlyDTO {
         private String yy;
         private String mm;
+        private String dayname;
+        private String userCode;
     }
 
     @Data
     public static class ClassMonthlyByClassCodeDTO {
-        private String classCode;
+        private String timeTableKey;
     }
 
     @Data

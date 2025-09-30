@@ -103,6 +103,12 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCodeAndDayname(
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("dayname") String dayname);
+
     public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
@@ -132,7 +138,7 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey);
 
     public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
-            @Param("classCode") String classCode);
+            @Param("timeTableKey") String timeTableKey);
 
     int updateMonthlyScore(
             @Param("studentId") String studentId,
@@ -153,6 +159,7 @@ public interface ClassRepository {
     public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
+
     public void insertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
 
 

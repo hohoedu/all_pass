@@ -184,10 +184,23 @@ $(document).ready(function () {
         $('.week-btn').removeClass('active');
         $(this).addClass('active');
     });
-    //
-    $('.day-btn').click(function () {
-        $('.day-btn').removeClass('active');
-        $(this).addClass('active');
+    // 요일 버튼
+    $(document).ready(function () {
+        var today = new Date().getDay(); // 0=일 ~ 6=토
+
+        // 요일 맵핑
+        var weekMap = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        // 일요일이면 월요일로 강제 세팅
+        var targetDay = (today === 0) ? "mon" : weekMap[today];
+
+        // 해당 버튼에 active 추가
+        $('.day-btn[data-week="' + targetDay + '"]').addClass('active');
+
+        // 클릭 이벤트 처리
+        $('.day-btn').click(function () {
+            $('.day-btn').removeClass('active');
+            $(this).addClass('active');
+        });
     });
     // 클래스 버튼
     $('.class-btn').click(function () {

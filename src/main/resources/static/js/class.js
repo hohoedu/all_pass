@@ -450,7 +450,7 @@ function buildByClassBody(timeTableKey, week, classKey, unitKey) {
 }
 
 function getActiveTimeTableKey() {
-    const el = document.querySelector('.class-list .class-btn.active');
+    const el = document.querySelector('#record-class-list .class-btn.active');
     return el?.dataset.timeTableKey || el?.dataset.classId || null;
 }
 
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateLabel = document.getElementById('record_current');
     const calBtn = document.querySelector('.month-title .calendar-open');
     const weekWrap = document.querySelector('.week-selector');
-    const classList = document.querySelector('.class-list');
+    const classList = document.querySelector('#record-class-list');
 
     let initDate = null;
     const m = dateLabel?.textContent.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderRecordStudentList([]);
                     return;
                 }
-                loadStudentList(activeKey); // ← 키 전달
+                loadStudentList(activeKey);
             });
         });
     }
@@ -646,7 +646,7 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
 
 // 수업리스트 랜더링
 function renderRecordClassList(list) {
-    const ul = document.querySelector('.class-list');
+    const ul = document.querySelector('#record-class-list');
     if (!ul) return;
 
     ul.innerHTML = '';
@@ -810,7 +810,7 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
 // 수업 안내 발송 모달 오픈
 document.addEventListener('click', function (e) {
     if (e.target.closest('.class-guide')) {
-        const activeClass = document.querySelector('.class-list .class-btn.active');
+        const activeClass = document.querySelector('#record-class-list .class-btn.active');
         const activeWeek = document.querySelector('.week-selector .week-btn.active');
 
         if (!activeClass) {
@@ -1281,119 +1281,98 @@ function bindDatePickerEvents(row) {
 // ==                               == //
 // =================================== //
 
-// 월 변경 시 데이터 변경
 document.addEventListener("DOMContentLoaded", () => {
     const monthInput = document.getElementById("monthly_calendar");
     const monthDisplay = document.getElementById("monthly_current");
+    const teacherSelect = document.getElementById("monthly-teacher-select");
     const calendarBtn = document.querySelector(".calendar-open");
+    const dayBtns = document.querySelectorAll(".day-btn");
 
-    if (!monthInput) return;
+    if (!monthInput || !teacherSelect) return;
 
+    // 오늘 날짜 기본값 세팅
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     monthInput.value = `${yyyy}-${mm}`;
     monthDisplay.textContent = `${yyyy}년 ${mm}월`;
 
-    calendarBtn.addEventListener("click", () => {
-        monthInput.showPicker?.();
-        monthInput.click();
-    });
+    // 현재 선택된 요일 가져오기
+    function getCurrentDayName() {
+        const activeBtn = document.querySelector(".day-btn.active");
+        return activeBtn ? activeBtn.dataset.week : "mon"; // 기본값 월요일
+    }
 
-    monthInput.addEventListener("change", () => {
-        if (monthInput.value) {
-            const [year, month] = monthInput.value.split("-");
-            monthDisplay.textContent = `${year}년 ${month}월`;
+    // 공통 데이터 로딩 함수
+    function loadMonthlyData() {
+        const [yy, mm] = monthInput.value.split("-");
+        const userCode = teacherSelect.value;
+        const dayname = getCurrentDayName();
 
-            const requestBody = {
-                yy: year,
-                mm: month
-            };
+        const requestBody = { yy, mm, userCode, dayname };
 
-            fetch("/class/api/monthly/by-month", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(requestBody)
-            })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("서버 응답:", data);
-                    renderMonthlyClassList(data.response);
-
-                    let classCode = "";
-
-                    if (data.response && data.response.length > 0) {
-                        classCode = data.response[0].classCode ?? "";
-                    }
-
-                    fetch("/class/api/monthly/by-classCode", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({classCode: classCode})
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-                            console.log("상세 응답:", data);
-                            renderMonthlyStudentList(data.response);
-                        })
-                        .catch(err => console.error(err));
-                })
-        }
-    });
-});
-
-// 선생님 변경 시 데이터 변경
-document.addEventListener("DOMContentLoaded", () => {
-    const teacherSelect = document.getElementById("monthly-teacher-select");
-    if (!teacherSelect) return;
-
-    teacherSelect.addEventListener("change", () => {
-        const teacherCode = teacherSelect.value;
-
-        // GET + 쿼리스트링 방식
-        fetch(`/class/api/monthly/${teacherCode}`, {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
+        fetch("/class/api/monthly/classes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody)
         })
             .then(res => res.json())
             .then(data => {
                 console.log("서버 응답:", data);
                 renderMonthlyClassList(data.response);
 
-                let classCode = "";
-
                 if (data.response && data.response.length > 0) {
-                    classCode = data.response[0].classCode ?? "";
+                    const timeTableKey = data.response[0].timeTableKey ?? "";
+                    if (timeTableKey) {
+                        fetch("/class/api/monthly/timeTableKey", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ timeTableKey })
+                        })
+                            .then(res => res.json())
+                            .then(data => renderMonthlyStudentList(data.response))
+                            .catch(err => console.error(err));
+                    }
                 }
-
-                fetch("/class/api/monthly/by-classCode", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({classCode: classCode})
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("상세 응답:", data);
-                        renderMonthlyStudentList(data.response);
-                    })
-                    .catch(err => console.error(err));
-
             })
             .catch(err => console.error("조회 에러:", err));
+    }
+
+    // 달력
+    calendarBtn.addEventListener("click", () => {
+        monthInput.showPicker?.();
+        monthInput.click();
+    });
+
+    // 월 변경
+    monthInput.addEventListener("change", () => {
+        if (monthInput.value) {
+            const [year, month] = monthInput.value.split("-");
+            monthDisplay.textContent = `${year}년 ${month}월`;
+            loadMonthlyData();
+        }
+    });
+
+    // 선생님 변경
+    teacherSelect.addEventListener("change", () => {
+        loadMonthlyData();
+    });
+
+    // 요일 버튼 변경
+    dayBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+
+            dayBtns.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            loadMonthlyData();
+        });
     });
 });
 
 // 수업 시간표 변경 시 데이터 변경
 document.addEventListener("DOMContentLoaded", () => {
-    const classList = document.getElementById("class-list");
+    const classList = document.getElementById("monthly-class-list");
     if (!classList) {
         return;
     }
@@ -1401,14 +1380,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const target = e.target.closest("li");
         if (!target) return;
 
-        document.querySelectorAll("#class-list li").forEach(li => li.classList.remove("active"));
+        document.querySelectorAll("#monthly-class-list li").forEach(li => li.classList.remove("active"));
         target.classList.add("active");
 
-        const classCode = target.dataset.classId;
+        const timeTableKey = target.dataset.classId;
 
         // fetch 요청
-        const requestBody = {classCode: classCode};
-        fetch("/class/api/monthly/by-classCode", {
+        const requestBody = {timeTableKey: timeTableKey};
+        fetch("/class/api/monthly/timeTableKey", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -1428,7 +1407,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 수업 시간표 변경 함수
 function renderMonthlyClassList(classes) {
-    const classList = document.querySelector(".class-list");
+    const classList = document.querySelector("#monthly-class-list");
     classList.innerHTML = "";
 
     classes.forEach((cls, idx) => {
@@ -1484,8 +1463,8 @@ function renderMonthlyStudentList(students) {
 
     students.forEach((stu, idx) => {
         const tr = document.createElement("tr");
-        tr.dataset.studentId = stu.studentNo ?? "";
-        tr.dataset.classCode = stu.classCode ?? "";
+        tr.dataset.studentId = stu.studentId ?? "";
+        tr.dataset.timeTableKey = stu.timeTableKey ?? "";
 
 
         const scores = (stu.scores && stu.scores.length > 0) ? stu.scores[0] : {};
@@ -1540,11 +1519,9 @@ document.addEventListener("DOMContentLoaded", () => {
     tbody.addEventListener("click", (e) => {
         const target = e.target;
 
-        // 번호 버튼 클릭 시
         if (target.classList.contains("btn-number")) {
             target.classList.toggle("active");
 
-            // ✅ value를 true/false로 변경
             if (target.classList.contains("active")) {
                 target.value = "true";
             } else {
@@ -1554,7 +1531,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(`${target.textContent} 상태:`, target.value);
         }
 
-        // 초기화 버튼 클릭 시
         if (target.classList.contains("btn-reset")) {
             const row = target.closest("tr");
             if (!row) return;
@@ -1584,7 +1560,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (monthValue) {
                 [yy, mm] = monthValue.split("-");
             } else {
-                // 기본값: 오늘 날짜
                 const today = new Date();
                 yy = today.getFullYear().toString();
                 mm = String(today.getMonth() + 1).padStart(2, "0");
