@@ -39,6 +39,12 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class DeleteTimeTableDTO{
+        private String timeTableKey;
+        private String year;
+        private String month;
+    }
+    @Data
     public static class ClassRecordByDateDTO {
         private String classCode;
         private String yy;

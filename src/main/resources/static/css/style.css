@@ -4085,6 +4085,15 @@ input:checked + .slider::before {
     margin-left: 4px;
 }
 
+.badge-init:after {
+    content: "\e921";
+    font-family: xeicon;
+    font-weight: bold;
+    color: #B1BAD8;
+    margin-left: 4px;
+    cursor: pointer;
+}
+
 .badge-week {
     color: #17AAB2;
 }

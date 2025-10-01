@@ -91,7 +91,7 @@ public class ClassController {
         }
     }
 
-    @PostMapping("/delete_student")
+    @PostMapping("/delete/student")
     public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
         String timeTableKey = request.get("timeTableKey");
         String studentId = request.get("studentId");
@@ -101,16 +101,17 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
-    @GetMapping("/api/load_time_table")
+    @PostMapping("/api/load_time_table")
     public ResponseEntity<?> loadTimeTable(HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+            return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
         List<TimeTableDTO> tables = classService.getLastTimeTable(user.getUserCode());
+
         return ResponseEntity.ok(ApiUtils.success(tables));
     }
 
@@ -118,6 +119,18 @@ public class ClassController {
     public ResponseEntity<?> findTimeTableCodeByUserNo(@PathVariable("userNo") Integer userNo) {
         List<TimeTableCode> codes = classService.findTimeTableCodeByUserNo(userNo);
         return ResponseEntity.ok(ApiUtils.success(codes));
+    }
+
+    @PostMapping("/api/delete/timetable/row")
+    public ResponseEntity<?> deleteRow(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto) {
+        classService.deleteTimeTableRow(dto.getTimeTableKey());
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
+    @PostMapping("/api/delete/timetable/all")
+    public ResponseEntity<?> deleteAll(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto) {
+        // classService.deleteTimeTableRow(dto.getTimeTableKey());
+        return ResponseEntity.ok(ApiUtils.success(true));
     }
 
     // ================ 수업 일지 컨트롤러 =====================//

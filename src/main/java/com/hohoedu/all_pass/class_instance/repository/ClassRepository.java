@@ -57,20 +57,16 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("studentId") String studentId);
 
+    int deleteTimeTableRow(
+            @Param("timeTableKey") String timeTableKey);
+
     public List<TimeTable> findTimeTable(
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("userNo") String userNo);
 
-    public List<TimeTableCode> findTimeTableCodeByUserNo(@Param("userNo") Integer userNo);
-
-    // 센터별 선생님 조회
-    public List<User> findUserByCenterNo(@Param("centerNo") String centerNo);
-
-    public List<ClassRespDTO.InitRecordDTO> findTimeTableByUserNo(
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("userNo") String userNo);
+    public List<TimeTableCode> findTimeTableCodeByUserNo(
+            @Param("userNo") Integer userNo);
 
     // 날짜별 선생님별 수업 조회
     public List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
@@ -79,6 +75,7 @@ public interface ClassRepository {
             @Param("dayName") String dayName,
             @Param("userCode") String userCode,
             @Param("centerCode") String centerCode);
+
 
     public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(
             @Param("timeTableKey") String timeTableKey,

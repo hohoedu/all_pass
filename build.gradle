@@ -7,12 +7,21 @@ plugins {
 
 group = 'com.hohoedu'
 version = '0.0.1-SNAPSHOT'
+apply plugin: 'war'
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
+
+bootJar {
+    enabled = false
+}
+bootWar {
+    enabled = true
+}
+
 
 configurations {
     compileOnly {
@@ -27,14 +36,16 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation('org.springframework.boot:spring-boot-starter-web') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    implementation 'com.mysql:mysql-connector-j:8.3.0'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
-
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     compileOnly 'org.projectlombok:lombok'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -43,13 +54,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
-    runtimeOnly 'com.mysql:mysql-connector-j:8.4.0'
-    
-    
+
     annotationProcessor 'org.projectlombok:lombok'
-    
-    providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-    
+
     testImplementation 'com.h2database:h2:2.2.224'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'

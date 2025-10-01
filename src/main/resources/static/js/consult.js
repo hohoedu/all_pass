@@ -1,3 +1,4 @@
+// 상담 기록 추가 모달 띄우기
 document.addEventListener('DOMContentLoaded', () => {
     const consultAddBtn = document.querySelector('.consult-add');
     const modal = document.querySelector('.consult-modal');
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
+// 상담 기록 추가
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.consult-modal .save-btn').forEach(button => {
         button.addEventListener('click', () => {
@@ -58,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 상담 기록 날짜 선택
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.querySelector('.consult-modal');
     const dateInput = modal.querySelector('input[name="consultDate"]');
@@ -80,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 상담기록 전화번호 포맷 변경
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.querySelector('.consult-modal');
     const phoneInput = modal.querySelector('input[name="parentPhone"]');
@@ -97,4 +100,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         phoneInput.value = formatted;
     });
+});
+
+// 상담기록 삭제
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('null');
 });

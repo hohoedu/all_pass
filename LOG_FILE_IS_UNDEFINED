@@ -1,16 +1,229 @@
-2025-09-30 15:40:30.145 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 237 class path changes (0 additions, 0 deletions, 237 modifications)
-2025-09-30 15:40:30.168 [Thread-5] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
-2025-09-30 15:40:30.173 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
-2025-09-30 15:40:30.179 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
-2025-09-30 15:40:30.182 [Thread-5] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
-2025-09-30 15:40:30.195 [Thread-5] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-09-30 15:40:30.200 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-2025-09-30 15:40:30.206 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-2025-09-30 17:33:55.759 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 237 class path changes (0 additions, 0 deletions, 237 modifications)
-2025-09-30 17:33:55.760 [Thread-7] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
-2025-09-30 17:33:55.760 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
-2025-09-30 17:33:55.761 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
-2025-09-30 17:33:55.761 [Thread-7] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
-2025-09-30 17:33:55.762 [Thread-7] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-09-30 17:33:55.762 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
-2025-09-30 17:33:55.763 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+2025-10-01 09:49:09.318 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 237 class path changes (0 additions, 0 deletions, 237 modifications)
+2025-10-01 09:49:09.326 [Thread-15] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-10-01 09:49:09.327 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2025-10-01 09:49:09.328 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-10-01 09:49:09.329 [Thread-15] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2025-10-01 09:49:09.330 [Thread-15] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-10-01 09:49:09.331 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown initiated...
+2025-10-01 09:49:09.332 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown completed.
+2025-10-01 11:29:47.568 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0
+2025-10-01 11:29:47.582 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select gc1_0.id,gc1_0.grade_key,gc1_0.grade_name from erp_grade_code gc1_0
+2025-10-01 11:29:47.597 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0
+2025-10-01 11:29:47.600 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.605 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.608 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.611 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.615 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.619 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.622 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.626 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.629 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.633 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.637 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.640 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.644 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.649 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.653 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.658 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.661 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.671 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.674 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.679 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.686 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.691 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.695 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.700 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.703 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.708 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.712 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.716 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.720 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.725 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.728 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.732 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.736 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.739 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.743 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.747 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.751 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.755 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.760 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.765 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.770 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.773 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.777 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.781 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.784 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.788 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.791 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.794 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.798 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.802 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.805 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.809 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.813 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.816 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.820 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.824 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.827 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.831 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.835 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.838 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.842 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.846 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.849 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.853 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.856 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.860 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.863 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.867 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.871 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.874 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.879 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.883 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.888 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.892 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.896 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.901 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.906 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.909 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.913 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.916 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.920 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.923 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.927 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.931 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.934 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.938 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.942 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.945 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.949 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.953 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.958 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.962 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.966 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.971 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.975 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.979 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.983 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.988 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:29:47.992 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:29:47.995 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:47.999 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:48.003 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:48.006 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:48.010 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:29:48.014 [http-nio-8080-exec-4] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.803 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0
+2025-10-01 11:32:23.819 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select gc1_0.id,gc1_0.grade_key,gc1_0.grade_name from erp_grade_code gc1_0
+2025-10-01 11:32:23.836 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0
+2025-10-01 11:32:23.841 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.847 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.850 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.854 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.857 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.861 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.864 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.868 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.872 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.876 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.879 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.883 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.889 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.893 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.899 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.904 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.910 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.915 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.921 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.926 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.931 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.935 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.942 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.946 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.951 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.955 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.961 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.964 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.969 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:23.973 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:23.976 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.979 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.983 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.987 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.991 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:23.996 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.001 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.007 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.013 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.019 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.024 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.027 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.032 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.035 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.039 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.042 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.046 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.049 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.053 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.057 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.060 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.064 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.068 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.072 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.076 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.079 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.083 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.087 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.091 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.094 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.098 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.102 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.106 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.110 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.113 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.117 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.121 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.125 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.129 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.132 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.136 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.143 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.148 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.155 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.159 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.166 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.171 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.175 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.179 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.183 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.186 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.190 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.194 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.198 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.202 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.206 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.210 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.214 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.219 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.226 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.231 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.237 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.242 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.249 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.254 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.261 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.266 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.275 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cum1_0.id,cum1_0.class_key,cum1_0.unit_key from erp_class_unit_map cum1_0 left join erp_class_code cc1_0 on cc1_0.class_key=cum1_0.class_key where cc1_0.class_key=?
+2025-10-01 11:32:24.279 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select cc1_0.id,cc1_0.class_key,cc1_0.class_name,cc1_0.class_type from erp_class_code cc1_0 where cc1_0.class_key=?
+2025-10-01 11:32:24.285 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.290 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.293 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.297 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.301 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:32:24.306 [http-nio-8080-exec-10] DEBUG org.hibernate.SQL - select uc1_0.id,uc1_0.unit_key,uc1_0.unit_name,uc1_0.unit_type from erp_unit_code uc1_0 where uc1_0.unit_key=?
+2025-10-01 11:35:18.524 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-10-01 11:35:18.528 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-10-01 11:35:18.530 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-10-01 11:35:18.533 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-10-01 11:35:18.534 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

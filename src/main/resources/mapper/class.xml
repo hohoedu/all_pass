@@ -110,8 +110,7 @@
     </delete>
 
     <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
-        SELECT tt.id          AS timeTableNo,
-               time_table_key AS timeTableKey,
+        SELECT time_table_key AS timeTableKey,
                period_no      AS periodNo,
                start_time     AS startTime,
                end_time       AS endTime,
@@ -141,6 +140,29 @@
             (time_table_key, time_table_label, time_table_ym)
         values (#{timeTableKey}, #{timeTableLabel}, #{timeTableYm});
     </insert>
+
+    <!--단일 수업 제거-->
+    <delete id="deleteTimeTableRow" parameterType="string">
+        DELETE
+        FROM erp_time_table_assign
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_monthly_score
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_student_attendance
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_time_table
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_time_table_code
+        WHERE time_table_key = #{timeTableKey}
+    </delete>
 
     <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT

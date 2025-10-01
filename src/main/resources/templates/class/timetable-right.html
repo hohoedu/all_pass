@@ -17,6 +17,7 @@
                         <col width="15%">
                         <col width="20%">
                         <col width="50%">
+                        <col width="5%">
                     </colgroup>
                     <thead>
                     <tr>
@@ -25,14 +26,18 @@
                         <th>시간</th>
                         <th>과목</th>
                         <th>학생</th>
+                        <th></th>
                     </tr>
                     </thead>
-                    <tbody id="timeTableBody" class="time-table-body" th:with="dayMap=${tableMap.get(day.id)}">
+                    <tbody th:attr="id='timeTableBody_' + ${day.id}"
+                           class="time-table-body"
+                           th:with="dayMap=${tableMap.get(day.id)}">
                     <tr class="time-row"
                         th:each="i : ${#numbers.sequence(1,6)}"
                         th:with="entry=${dayMap != null ? dayMap[i + ''] : null}"
                         th:data-time-table-key="${entry != null ? entry.timeTableKey : ''}"
-                        th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}">
+                        th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}"
+                        th:attr="data-day=${day.id}, data-period-no=${i}">
                         <td class="radio-group round">
                             <input type="radio"
                                    th:attr="name=${'selectedPeriod_' + day.id}"
@@ -45,7 +50,7 @@
                             <div class="time-boxes">
                                 <div class="time-start">
                                     시작
-                                    <input type="text" class="time_input"
+                                    <input type="text" class="time_input start-time"
                                            th:value="${entry != null ? entry.startTime : ''}"
                                            placeholder="00:00"
                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
@@ -54,7 +59,7 @@
                                 </div>
                                 <div class="time-end">
                                     종료
-                                    <input type="text" class="time_input"
+                                    <input type="text" class="time_input end-time"
                                            th:value="${entry != null ? entry.endTime : ''}"
                                            placeholder="00:00"
                                            pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
@@ -118,6 +123,11 @@
                                           th:data-time-table-key="${entry.timeTableKey}"
                                           title="삭제"></span>
                                 </div>
+                            </th:block>
+                        </td>
+                        <td>
+                            <th:block th:if="${entry != null and entry.timeTableKey != null}">
+                                <span class="badge-init" title="삭제"></span>
                             </th:block>
                         </td>
                     </tr>

@@ -32,6 +32,7 @@ import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.threeten.bp.LocalDate;
 
 @Service
 @Transactional
@@ -199,7 +200,13 @@ public class ClassService {
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode) {
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, "2025", "09");
+
+        LocalDate now = LocalDate.now();
+        LocalDate prevMonth = now.minusMonths(1);
+        String lastYear = String.valueOf(prevMonth.getYear());
+        String lastMonth = String.format("%02d", prevMonth.getMonthValue());
+
+        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, lastYear, lastMonth);
         return tables;
     }
 
@@ -207,6 +214,11 @@ public class ClassService {
         List<TimeTableCode> codes = classRepository.findTimeTableCodeByUserNo(userNo);
         return codes;
 
+    }
+
+    public int deleteTimeTableRow(String timeTableKey) {
+        int result = classRepository.deleteTimeTableRow(timeTableKey);
+        return result;
     }
 
     // ================ 수업 일지 서비스 =====================//

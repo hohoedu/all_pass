@@ -20,7 +20,6 @@ public class ClassRespDTO {
 
     @Data
     public static class TimeTableDTO {
-        private String timeTableId;
         private String timeTableKey;
         private String periodNo;
         private String startTime;

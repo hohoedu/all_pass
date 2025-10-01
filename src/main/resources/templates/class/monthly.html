@@ -151,6 +151,11 @@
                                             <img th:src="@{/image/pre-search.png}" alt="">
                                         </td>
                                     </tr>
+                                    <tr th:if="${#lists.isEmpty(students)}">
+                                        <td colspan="10" style="text-align: center; padding: 20px;">
+                                            등록된 학생이 없습니다.
+                                        </td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </div>

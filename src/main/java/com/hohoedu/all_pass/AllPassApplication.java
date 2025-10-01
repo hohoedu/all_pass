@@ -2,10 +2,18 @@ package com.hohoedu.all_pass;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.ErrorPageFilter;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-public class AllPassApplication {
+public class AllPassApplication extends SpringBootServletInitializer {
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(AllPassApplication.class);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(AllPassApplication.class, args);

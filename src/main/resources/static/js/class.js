@@ -56,6 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 수업별 진도 가져오기
+function getClassUnits() {
+    const rawJson = document.getElementById("classUnits").value;
+    try {
+        return JSON.parse(rawJson);
+    } catch (e) {
+        console.error("classUnits 파싱 실패", e);
+        return {};
+    }
+}
 
 // 수업 변경 시 진도 변경
 document.addEventListener("DOMContentLoaded", () => {
@@ -80,28 +90,30 @@ document.addEventListener("DOMContentLoaded", () => {
             fillUnitSelect(unitSelect, classUnits, classKey, null);
         });
     });
-
-    function fillUnitSelect(unitSelect, classUnits, classKey, selectedUnitKey) {
-        unitSelect.options.length = 0; // 초기화
-        unitSelect.add(new Option("선택 안함", ""));
-
-        if (!classKey || !classUnits[classKey]) return;
-
-        // ✅ unitType === "peo"만 ㄱㄴㄷ순 정렬
-        let units = [...classUnits[classKey]];
-        if (units.length > 0 && units[0].unitType === "peo") {
-            units.sort((a, b) => a.unitName.localeCompare(b.unitName, "ko"));
-        }
-
-        units.forEach(u => {
-            const opt = new Option(u.unitName, u.unitKey);
-            if (selectedUnitKey && selectedUnitKey === u.unitKey) {
-                opt.selected = true; // DB 값 유지
-            }
-            unitSelect.add(opt);
-        });
-    }
 });
+
+// 진도 데이터 갈아끼우기
+function fillUnitSelect(unitSelect, classUnits, classKey, selectedUnitKey) {
+    console.log("fillUnitSelect 실행", {classKey, selectedUnitKey, units: classUnits[classKey]});
+    unitSelect.options.length = 0; // 초기화
+    unitSelect.add(new Option("선택 안함", ""));
+
+    if (!classKey || !classUnits[classKey]) return;
+
+    // ✅ unitType === "peo"만 ㄱㄴㄷ순 정렬
+    let units = [...classUnits[classKey]];
+    if (units.length > 0 && units[0].unitType === "peo") {
+        units.sort((a, b) => a.unitName.localeCompare(b.unitName, "ko"));
+    }
+
+    units.forEach(u => {
+        const opt = new Option(u.unitName, u.unitKey);
+        if (selectedUnitKey && selectedUnitKey === u.unitKey) {
+            opt.selected = true; // DB 값 유지
+        }
+        unitSelect.add(opt);
+    });
+}
 
 
 // 왼쪽 수업이름 파싱
@@ -156,13 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
 
     btn.addEventListener('click', () => {
-        console.log('전월 데이터 불러오기!!');
-        fetch(`/class/api/load_time_table`)
-            .then(res => {
-                return res.json();
-            })
+        fetch(`/class/api/load_time_table`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+        })
+            .then(res => res.json()
+            )
             .then(data => {
-                console.log(data.response);
+                renderTimeTable(data.response);
             })
             .catch(err => {
                 console.log('오류 발생');
@@ -170,6 +186,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     })
 });
+
+// 전월 데이터로 갈아끼우기
+function renderTimeTable(tables) {
+    tables.forEach(entry => {
+        const row = document.querySelector(
+            `.time-row[data-day="${entry.dayname}"][data-period-no="${entry.periodNo}"]`
+        );
+        if (!row) return;
+
+        const startInput = row.querySelector(".start-time");
+        const endInput = row.querySelector(".end-time");
+        if (startInput) startInput.value = entry.startTime ?? "";
+        if (endInput) endInput.value = entry.endTime ?? "";
+
+        const classSelect = row.querySelector(".class-select");
+        const unitSelect = row.querySelector(".unit-select");
+
+        if (classSelect) {
+            classSelect.value = entry.classKey ?? "";
+        }
+
+        if (classSelect && unitSelect) {
+            const classKey = entry.classKey ?? "";
+            const classUnits = getClassUnits();
+
+            fillUnitSelect(unitSelect, classUnits, classKey, null);
+        }
+    });
+}
 
 // 시간표 등록 로직
 document.addEventListener('DOMContentLoaded', () => {
@@ -380,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     timeTableKey: timeTableKey,
                     studentId: studentId
                 };
-                fetch('/class/delete_student', {
+                fetch('/class/delete/student', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json;charset=UTF-8'
@@ -413,6 +458,71 @@ document.addEventListener('DOMContentLoaded', () => {
                             text: err.message
                         });
                     });
+            });
+        });
+    });
+});
+
+// 시간표 단일 row 삭제
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".badge-init").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const row = btn.closest(".time-row");
+            if (!row) return;
+            const timeTableKey = row.dataset.timeTableKey;
+            showAlert({
+                icon: 'warning',
+                title: '정말 이 교시의 데이터를\n초기화하시겠습니까?',
+                showCancelButton: true,
+                confirmButtonText: '삭제',
+                cancelButtonText: '취소',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => {
+
+                if (!result.isConfirmed) return;
+
+                const requestBody = {
+                    timeTableKey: timeTableKey
+                };
+                fetch('/class/api/delete/timetable/row', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestBody)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        }
+                    });
+
+                // 수업 삭제 후 랜더링
+                function deleteTimetableRow() {
+                    const startInput = row.querySelector(".start-time");
+                    const endInput = row.querySelector(".end-time");
+                    if (startInput) startInput.value = "";
+                    if (endInput) endInput.value = "";
+
+                    const classSelect = row.querySelector(".class-select");
+                    if (classSelect) classSelect.value = "";
+
+                    const unitSelect = row.querySelector(".unit-select");
+                    if (unitSelect) {
+                        unitSelect.value = "";
+                        unitSelect.innerHTML = '<option value="">선택 안함</option>';
+                    }
+
+                    const gradeSelect = row.querySelector("select[name='gradeKey']");
+                    if (gradeSelect) gradeSelect.value = "";
+
+                    const studentCells = row.querySelectorAll(".student-badge");
+                    studentCells.forEach(stu => stu.remove());
+
+                    row.dataset.timeTableKey = "";
+                    row.dataset.timeTableCode = "";
+                }
+
             });
         });
     });
@@ -1309,11 +1419,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const userCode = teacherSelect.value;
         const dayname = getCurrentDayName();
 
-        const requestBody = { yy, mm, userCode, dayname };
+        const requestBody = {yy, mm, userCode, dayname};
 
         fetch("/class/api/monthly/classes", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(requestBody)
         })
             .then(res => res.json())
@@ -1326,8 +1436,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (timeTableKey) {
                         fetch("/class/api/monthly/timeTableKey", {
                             method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ timeTableKey })
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({timeTableKey})
                         })
                             .then(res => res.json())
                             .then(data => renderMonthlyStudentList(data.response))
