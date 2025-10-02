@@ -8,12 +8,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-public class AllPassApplication extends SpringBootServletInitializer {
+public class AllPassApplication {
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(AllPassApplication.class);
-    }
 
     public static void main(String[] args) {
         SpringApplication.run(AllPassApplication.class, args);

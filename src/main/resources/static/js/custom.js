@@ -118,9 +118,17 @@ $(document).ready(function () {
     // join
     $('.new-regist').click(function () {
         window.open(
-            '/join',
+            '/student/join',
             'joinPopup',
             'width=auto,height=auto,scrollbars=yes,resizable=yes'
+        );
+    });
+    // 기관 검색
+    $('.search-school').click(function () {
+        window.open(
+            '/school',
+            'schoolPopup',
+            'width=750px,height=500px,scrollbars=yes,resizable=yes'
         );
     });
     // caleneder
@@ -322,12 +330,12 @@ function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail) {
     console.log(" - roadFullAddr:", roadFullAddr);
     console.log(" - roadAddrPart1:", roadAddrPart1);
     console.log(" - addrDetail:", addrDetail);
-    const addrInput = document.getElementById('student-address');
+    const addrInput = document.getElementById('address-input');
     if (addrInput) {
         addrInput.value = roadAddrPart1;
     }
 
-    const detailInput = document.getElementById('student-address-detail');
+    const detailInput = document.getElementById('address-detail-input');
     if (detailInput) {
         detailInput.value = addrDetail || '';
         detailInput.focus();

@@ -56,7 +56,7 @@ public class MainViewController {
         return "redirect:/jusoCallBack";
     }
 
-    // 주소값 콜백
+    // Callback
     @GetMapping("/jusoCallBack")
     public String jusoCallback(
             @RequestParam(name = "roadFullAddr", required = false) String roadFullAddr,
@@ -72,6 +72,11 @@ public class MainViewController {
         model.addAttribute("addrDetail", addrDetail);
 
         return "juso-callback";
+    }
+
+    @GetMapping("/school")
+    public String getSchool() {
+        return "school";
     }
 
 }
