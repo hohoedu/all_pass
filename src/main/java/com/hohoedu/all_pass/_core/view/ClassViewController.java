@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +92,6 @@ public class ClassViewController {
     // 시간표 조회
     @GetMapping("/timeview")
     public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) {
-
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -106,11 +106,59 @@ public class ClassViewController {
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
                 .collect(Collectors.groupingBy(
                         TimeTableDTO::getDayname,
-                        Collectors.toMap(
-                                TimeTableDTO::getPeriodNo,
-                                Function.identity())));
+                        Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())
+                ));
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
         model.addAttribute("tableMap", tableMap);
+
+        // ───────────────────────────────
+        // 🔹 현재 조회된 시간표 안의 학생들만 기준
+        Map<String, TimeTableDTO.StudentDTO> uniqueStudents = tables.stream()
+                .filter(t -> t.getStudents() != null)
+                .flatMap(t -> t.getStudents().stream())
+                .filter(s -> s.getStudentId() != null)
+                .collect(Collectors.toMap(
+                        TimeTableDTO.StudentDTO::getStudentId,
+                        Function.identity(),
+                        // 동일 학생이 여러 수업에 있을 경우 week 값이 더 작은 쪽으로 유지
+                        (s1, s2) -> {
+                            try {
+                                int w1 = s1.getWeek() != null && s1.getWeek().matches("\\d+") ? Integer.parseInt(s1.getWeek()) : 99;
+                                int w2 = s2.getWeek() != null && s2.getWeek().matches("\\d+") ? Integer.parseInt(s2.getWeek()) : 99;
+                                return w1 <= w2 ? s1 : s2;
+                            } catch (Exception e) {
+                                return s1;
+                            }
+                        }
+                ));
+
+// 고유 학생 목록
+        List<TimeTableDTO.StudentDTO> displayedStudents = new ArrayList<>(uniqueStudents.values());
+
+// 총원 계산
+        long total = displayedStudents.size();
+
+// 1–3주 학생 필터링
+        List<TimeTableDTO.StudentDTO> oneToThreeWeekStudents = displayedStudents.stream()
+                .filter(s -> s.getWeek() != null && s.getWeek().matches("\\d+"))
+                .filter(s -> {
+                    int week = Integer.parseInt(s.getWeek());
+                    return week >= 1 && week <= 3;
+                })
+                .collect(Collectors.toList());
+
+        long oneToThreeWeeks = oneToThreeWeekStudents.size();
+
+        String oneToThreeWeekNames = oneToThreeWeekStudents.stream()
+                .map(s -> s.getStudentName() + "(" + s.getWeek() + "주)")
+                .collect(Collectors.joining(", "));
+
+        Map<String, Object> memberStats = new HashMap<>();
+        memberStats.put("oneToThreeWeeks", oneToThreeWeeks);
+        memberStats.put("oneToThreeWeekNames", oneToThreeWeekNames);
+        memberStats.put("total", total);
+        model.addAttribute("memberStats", memberStats);
+
         return "class/timeview";
     }
 

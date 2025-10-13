@@ -38,27 +38,30 @@ function openModal(row) {
             updateStatusButton(s.status);
             const genderButtons = document.querySelectorAll(".s_gender");
             genderButtons.forEach(btn => btn.classList.remove("active"));
-            if (s.gender === 'TRUE') {
+            if (s.gender === true || s.gender === 1 || s.gender === "TRUE" || s.gender === "1") {
+                // 남자
                 genderButtons[0].classList.add("active");
-            } else if (s.gender === 'FALSE') {
+            } else if (s.gender === false || s.gender === 0 || s.gender === "FALSE" || s.gender === "0") {
+                // 여자
                 genderButtons[1].classList.add("active");
             } else {
-                console.log(s.gender);
+                console.warn("Unknown gender value:", s.gender);
             }
 
             fetch("/student/gradeCodes")
                 .then(res => res.json())
                 .then(codeData => {
+                    console.log('응답');
                     const gradeSelect = document.querySelector('.grade-select');
                     gradeSelect.innerHTML = "";
 
                     if (codeData.success && Array.isArray(codeData.response)) {
                         codeData.response.forEach(grade => {
                             const option = document.createElement("option");
-                            option.value = grade.gradeNo;
-                            option.textContent = grade.grade;
+                            option.value = grade.gradeKey;
+                            option.textContent = grade.gradeName;
 
-                            if (grade.grade === s.grade) {
+                            if (grade.gradeName === s.grade) {
                                 option.selected = true;
                             }
 
@@ -455,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => {
                     subjectFilter.innerHTML = `<option value="all">전체</option>`;
                     data.response.forEach(item => {
-                        subjectFilter.innerHTML += `<option value="${item.timeTableCode}">${item.classLabel}</option>`;
+                        subjectFilter.innerHTML += `<option value="${item.timeTableKey}">${item.classLabel}</option>`;
                     });
                 })
                 .catch(err => {
@@ -499,7 +502,7 @@ function renderStudents(tbody, students = []) {
 
     students.forEach((s, i) => {
         const tr = document.createElement("tr");
-        tr.setAttribute("data-id", s.studentNo);
+        tr.setAttribute("data-id", s.studentId);
         tr.setAttribute("onclick", "openModal(this)");
 
         tr.innerHTML = `
@@ -511,15 +514,16 @@ function renderStudents(tbody, students = []) {
       <td>${s.grade ?? ""}</td>
       <td>${s.school ?? ""}</td>
       <td>
-        <div class="tooltip-container">
-          <img src="/image/link.png" alt="link" class="link">
-          <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
-        </div>
+        <!-- 하단 주석 자리 -->
       </td>
     `;
 
         tbody.appendChild(tr);
     });
+    // <div class="tooltip-container">
+    //     <img src="/image/link.png" alt="link" class="link">
+    //         <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
+    // </div>
 }
 
 // ============================학생관리 전입/전출============================ //

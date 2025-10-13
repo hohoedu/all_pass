@@ -21,7 +21,7 @@ import org.springframework.security.core.parameters.P;
 @Mapper
 public interface StudentRepository {
 
-    public List<Student> findstudentByCenterCode(
+    public List<Student> findStudentByCenterCode(
             @Param("year") String year,
             @Param("month") String month,
             @Param("centerCode") String centerCode);
@@ -48,7 +48,7 @@ public interface StudentRepository {
 
     public void transfer(
             @Param("userCode") String userCode,
-            @Param("studentNo") Integer studentNo,
+            @Param("studentNo") String studentId,
             @Param("classType") String classType);
 
     public void insertTransferHistory(StudentTransferHistory dto);

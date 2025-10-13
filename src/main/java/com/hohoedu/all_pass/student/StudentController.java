@@ -124,7 +124,7 @@ public class StudentController {
 
     @PostMapping("/inout")
     public String studentInOut(@ModelAttribute StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
-        studentInOutDTO.getStudentNoList();
+        studentInOutDTO.getStudentIdList();
         studentService.transferStudent(studentInOutDTO);
         studentService.insertTransferHistory(studentInOutDTO);
         return "redirect:/student/transfer";

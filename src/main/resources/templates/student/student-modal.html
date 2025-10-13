@@ -231,10 +231,10 @@
                                         <th>상태</th>
                                         <td>
                                             <div class="status-buttons" data-visibility="only-current">
-                                                <button class="btn-status active s_status" data-status="1">재원중</button>
-                                                <button class="btn-status cancel s_status" data-status="2">입학취소</button>
-                                                <button class="btn-status closed s_status" data-status="3">휴원</button>
-                                                <button class="btn-status danger s_status" data-status="4">탈퇴</button>
+                                                <button class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                                                <button class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                                                <button class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                                                <button class="btn-status danger s_status" data-status="WITHDRAW">탈퇴</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -251,7 +251,6 @@
                                             </div>
                                         </td>
                                         <th>성별</th>
-                                        <!-- 수정 필요 -->
                                         <td class="choose-group">
                                             <button type="button" class="btn-choose s_gender"
                                                 data-value="남자">남자</button>
@@ -271,7 +270,7 @@
                                         </td>
                                         <th>주소</th>
                                         <td class="icon-field">
-                                            <input type="text" name="address" value="부산 해운대구 센텀중앙로 97" readonly
+                                            <input type="text" class="s_address" name="address" value="부산 해운대구 센텀중앙로 97" readonly
                                                 id="address-input" style="flex: 2;">
                                             <!-- <textarea name="address" id="student-address" rows="2" readonly></textarea> -->
 
@@ -298,9 +297,9 @@
                                         </td>
                                         <th>학생과의 관계</th>
                                         <td class="choose-group">
-                                            <button type="button" class="btn-choose" data-value="부">부</button>
-                                            <button type="button" class="btn-choose active" data-value="모">모</button>
-                                            <button type="button" class="btn-choose" data-value="기타">기타</button>
+                                            <button type="button" class="btn-choose" data-value="father">부</button>
+                                            <button type="button" class="btn-choose active" data-value="mother">모</button>
+                                            <button type="button" class="btn-choose" data-value="other">기타</button>
                                             <input type="hidden" name="relationship" value="모">
                                         </td>
                                     </tr>

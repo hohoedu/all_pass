@@ -275,11 +275,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-function formatDateKorean(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+function formatDateKorean(input) {
+    if (!input) return '';
+
+    // YYYY-MM-DD 형태라면 (ISO 포맷)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+        const d = new Date(input);
+        return `${d.getFullYear()}년 ${String(d.getMonth() + 1).padStart(2, '0')}월 ${String(d.getDate()).padStart(2, '0')}일`;
+    }
+
+    // YYYYMMDD 형태라면
+    if (/^\d{8}$/.test(input)) {
+        const year = input.substring(0, 4);
+        const month = input.substring(4, 6);
+        const day = input.substring(6, 8);
+        return `${year}년 ${month}월 ${day}일`;
+    }
+
+    // YYMMDD 형태라면
+    if (/^\d{6}$/.test(input)) {
+        const year = parseInt(input.substring(0, 2), 10);
+        const fullYear = year < 50 ? 2000 + year : 1900 + year;
+        const month = input.substring(2, 4);
+        const day = input.substring(4, 6);
+        return `${fullYear}년 ${month}월 ${day}일`;
+    }
+
+    return input;
 }
+
 
 function formatDateDot(iso) {
     if (!iso) return '';

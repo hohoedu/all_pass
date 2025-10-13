@@ -114,7 +114,7 @@
 
                                     <!-- week 문자열 방어 -->
                                     <span class="count-num"
-                                          th:if="${stu.week != null and (stu.week matches '^\\d+$') and T(java.lang.Integer).parseInt(stu.week) <= 3}"
+                                          th:if="${stu.week != null and T(java.lang.Integer).parseInt(stu.week) <= 3}"
                                           th:text="'(' + ${stu.week} + ')'"></span>
 
                                     <span id="assign_delete"

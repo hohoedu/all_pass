@@ -154,10 +154,10 @@
                                     <td th:text="${s.school}"></td>
                                     <td>
                                         <!-- TODO: 형제 정보 불러와서 여기에 툴팁 적용 -->
-                                        <div class="tooltip-container">
-                                            <img th:src="@{/image/link.png}" alt="link icon" class="link">
-                                            <div class="tooltip-text">형제: 김호일(초1)</div>
-                                        </div>
+<!--                                        <div class="tooltip-container">-->
+<!--                                            <img th:src="@{/image/link.png}" alt="link icon" class="link">-->
+<!--                                            <div class="tooltip-text">형제: 김호일(초1)</div>-->
+<!--                                        </div>-->
                                         <!-- <img th:if="${s.isSibling == 'Y'}" th:src="@{/image/link.png}" alt="형제 링크" class="link"> -->
                                         <!-- th:attr="title=${#strings.arrayJoin(#lists.map(s.siblingList, sib -> sib.siblingName + ' (' + sib.grade + ')'), ', ')}" -->
                                     </td>

@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 진도 데이터 갈아끼우기
 function fillUnitSelect(unitSelect, classUnits, classKey, selectedUnitKey) {
-    console.log("fillUnitSelect 실행", {classKey, selectedUnitKey, units: classUnits[classKey]});
     unitSelect.options.length = 0; // 초기화
     unitSelect.add(new Option("선택 안함", ""));
 

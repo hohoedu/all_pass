@@ -15,7 +15,7 @@
                 #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree});
     </insert>
 
-    <select id="findstudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
+    <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
         SELECT s.*,
                g.*,
                reg.registeredClassTypes as classType
@@ -48,7 +48,7 @@
                s.student_name    AS studentName,
                s.school,
                g.grade_name      AS grade,
-               l.level_name      AS level,
+--                l.level_name      AS level,
                s.gender,
                s.birth,
                s.address,
@@ -74,7 +74,7 @@
                  LEFT JOIN latest_history h
                            ON s.student_id = h.student_id AND h.rn = 1
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
-                 LEFT JOIN ERP_LEVEL_CODE l ON s.level_key = l.level_key
+--                  LEFT JOIN ERP_LEVEL_CODE l ON s.level_key = l.level_key
                  LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
                  LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
                  LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = h.status_key
@@ -108,6 +108,7 @@ OUTER APPLY (
         s.student_name AS studentName,
         sc.status_name AS statusName,
         CASE
+        WHEN s.entry_han_date IS NULL AND s.entry_book_date IS NULL THEN '미등록'
         WHEN s.entry_han_date IS NULL THEN s.entry_book_date
         WHEN s.entry_book_date IS NULL THEN s.entry_han_date
         WHEN s.entry_han_date &lt;= s.entry_book_date THEN s.entry_han_date
@@ -146,9 +147,9 @@ OUTER APPLY (
         ).value('.', 'nvarchar(max)'), 1, 2, '') AS bookClass
 
         FROM ERP_STUDENT s
-        JOIN ERP_status_code sc ON sc.status_key = s.status_key
-        JOIN ERP_grade_code g ON g.grade_key = s.grade_key
-        JOIN ERP_center c ON c.center_code = s.center_code
+        LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
+        LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
+        LEFT JOIN ERP_center c ON c.center_code = s.center_code
 
         WHERE 1 = 1
         AND s.center_code = #{centerCode}
@@ -209,10 +210,10 @@ OUTER APPLY (
         ).value('.', 'nvarchar(max)'), 1, 2, '') AS bookClass
 
         FROM ERP_STUDENT s
-        JOIN ERP_status_code sc ON sc.status_key = s.status_key
-        JOIN ERP_grade_code g ON g.grade_key = s.grade_key
-        JOIN ERP_center c ON c.center_code = s.center_code
-        JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
+        LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
+        LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
+        LEFT JOIN ERP_center c ON c.center_code = s.center_code
+        LEFT JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
         <where>
             <if test="timeTableKey != null and timeTableKey != 'all'">
                 ta.time_table_key = #{timeTableKey}

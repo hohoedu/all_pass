@@ -3,10 +3,13 @@ package com.hohoedu.all_pass.student;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass.center.Center;
@@ -53,12 +56,12 @@ public class StudentService {
     private final SnapshotRepository snapshotRepository;
     private final SnapshotJpaRepository snapshotJpaRepository;
     private final CenterRepository centerRepository;
-
+    private final DateConfig dateConfig;
     private final FamilyService familyService;
 
-    public List<Student> findStudentByCenterCode(String year, String month,String centerCode) {
+    public List<Student> findStudentByCenterCode(String year, String month, String centerCode) {
 
-        List<Student> student = studentRepository.findstudentByCenterCode(year, month, centerCode);
+        List<Student> student = studentRepository.findStudentByCenterCode(year, month, centerCode);
 
         return student;
     }
@@ -82,11 +85,15 @@ public class StudentService {
     }
 
     public void studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
+        String today = dateConfig.currentYearMonth().get("today");
+        String random = UUID.randomUUID().toString().replace("-", "");
+        String last5 = random.substring(random.length() - 5).toUpperCase();
+        String code = studentDTO.getCenterCode()+LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"))+last5;
+        studentDTO.setStudentId(code);
 
-        studentDTO.setStudentId("DAE001250730A1B2");
-
-        studentDTO.setAppId(parentDTO.getParentTelMiddle()+parentDTO.getParentTelLast()+0);
+        studentDTO.setAppId(parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast() + 0);
         studentDTO.setAppPassword(parentDTO.getParentTelLast());
+        studentDTO.setEntryHanDate(today);
 
         studentRepository.insert(studentDTO);
         parentDTO.setStudentId(studentDTO.getStudentId());
@@ -153,13 +160,13 @@ public class StudentService {
             if (reqDto.getInoutHan() != null) {
                 studentRepository.transfer(
                         reqDto.getUserCode(),
-                        reqDto.getStudentNoList().get(0),
+                        reqDto.getStudentIdList().get(0),
                         reqDto.getInoutHan());
             }
             if (reqDto.getInoutRead() != null) {
                 studentRepository.transfer(
                         reqDto.getUserCode(),
-                        reqDto.getStudentNoList().get(0),
+                        reqDto.getStudentIdList().get(0),
                         reqDto.getInoutRead());
             }
         } catch (Exception e) {
@@ -169,7 +176,7 @@ public class StudentService {
 
     public void insertTransferHistory(StudentWebReqDTO.StudentTransferDTO dto) {
         try {
-            for (Integer id : dto.getStudentNoList()) {
+            for (String studentId : dto.getStudentIdList()) {
                 StudentTransferHistory history = StudentTransferHistory.builder()
                         .student(Student.builder().studentId("hello").build())
                         .fromUser(User.builder().userCode("DAE001cos").build())

@@ -60,10 +60,10 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StudentTransferDTO {
-        private Integer studentNo;
+        private String studentId;
         private String inoutHan;
         private String inoutRead;
-        private List<Integer> studentNoList;
+        private List<String> studentIdList;
         private String userCode;
         private String moveAt;
         private String transferReason;
