@@ -5,24 +5,61 @@
 <mapper namespace="com.hohoedu.all_pass.consult.repository.ConsultRepository">
 
     <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO" useGeneratedKeys="true"
-            keyProperty="consultNo" keyColumn="consult_no">
-    
-     INSERT INTO erp_consult (student_name, consult_date, school, grade_no, phone, inflow_route_no, content, created_at)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeNo}, #{phone}, #{inflowRouteNo}, #{content}, SYSDATETIME());
+            keyProperty="id" keyColumn="id">
+
+     INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, content, created_at)
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, #{content}, SYSDATETIME());
     </insert>
 
     <select id="findAll" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
-        SELECT c.consult_key  AS consultKey,
-               c.student_name AS studentName,
-               c.consult_date AS consultDate,
-               c.school       AS school,
-               c.phone        AS phone,
-               c.content      AS content,
-               g.grade_name   AS gradeName,
-               i.inflow_route_name AS inflowRouteName
-        FROM ERP_CONSULT c
+        SELECT c.id                AS id,
+               c.student_name      AS studentName,
+               c.consult_date      AS consultDate,
+               c.school            AS school,
+               c.phone             AS phone,
+               c.content           AS content,
+               g.grade_name        AS gradeName,
+               i.inflow_route_name AS inflowRouteName,
+               c.progress_key      AS progressKey
+            FROM ERP_CONSULT c
                  JOIN erp_grade_code g ON c.grade_key = g.grade_key
                  JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
     </select>
 
+    <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
+        SELECT
+        c.id                AS id,
+        c.student_name      AS studentName,
+        c.consult_date      AS consultDate,
+        c.school            AS school,
+        c.phone             AS phone,
+        c.content           AS content,
+        g.grade_name        AS gradeName,
+        i.inflow_route_name AS inflowRouteName,
+        c.progress_key      AS progressKey
+        FROM ERP_CONSULT c
+        JOIN erp_grade_code g ON c.grade_key = g.grade_key
+        JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+        <where>
+            <if test="startYm != null and endYm != null">
+                AND c.consult_date BETWEEN CONCAT(#{startYm}, '-01')
+                AND EOMONTH(CONCAT(#{endYm}, '-01'))
+            </if>
+        </where>
+        ORDER BY c.consult_date DESC
+    </select>
+
+    <delete id="deleteByIds" parameterType="list">
+        DELETE FROM ERP_CONSULT
+        WHERE id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <update id="updateProgress">
+        UPDATE ERP_CONSULT
+        SET progress_key = #{progressKey}
+        WHERE id = #{id}
+    </update>
 </mapper>

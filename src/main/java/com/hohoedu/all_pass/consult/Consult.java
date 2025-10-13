@@ -17,15 +17,12 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "erp_consult", uniqueConstraints = @UniqueConstraint(name = "uq_consult_key", columnNames = "consult_key"))
+@Table(name = "erp_consult")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Consult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "consult_key", nullable = false, length = 20)
-    private String consultKey;
 
     @Column(name = "student_name", nullable = false, length = 20)
     private String studentName;
@@ -47,7 +44,7 @@ public class Consult {
     private GradeCode gradeCode; // 코드
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "progress_key", referencedColumnName = "progress_key", nullable = false)
+    @JoinColumn(name = "progress_key", referencedColumnName = "progress_key")
     private ProgressCode progressCode; // 코드
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,10 +57,9 @@ public class Consult {
 
     @Builder
 
-    public Consult(Integer id, String studentName, String consultKey, String consultDate, String school, String phone, String content, GradeCode gradeCode, ProgressCode progressCode, InflowRoute inflowRoute, LocalDateTime createdAt) {
+    public Consult(Integer id, String studentName, String consultDate, String school, String phone, String content, GradeCode gradeCode, ProgressCode progressCode, InflowRoute inflowRoute, LocalDateTime createdAt) {
         this.id = id;
         this.studentName = studentName;
-        this.consultKey = consultKey;
         this.consultDate = consultDate;
         this.school = school;
         this.phone = phone;

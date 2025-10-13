@@ -6,13 +6,13 @@ public class ConsultReqDTO {
 
     @Data
     public static class ConsultRegisterReqDTO {
-        private Integer consultNo;
+        private Integer id;
         private String studentName;
         private String consultDate;
         private String school;
         private String phone;
-        private Integer gradeNo;
-        private Integer inflowRouteNo;
+        private String gradeKey;
+        private String inflowRouteKey;
         private String content;
     }
     

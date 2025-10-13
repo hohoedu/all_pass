@@ -1,6 +1,8 @@
 package com.hohoedu.all_pass.consult;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -36,4 +38,19 @@ public class ConsultService {
         return consultRepository.findAll();
     }
 
+    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("startYm", startYm);
+        params.put("endYm", endYm);
+        return consultRepository.findByPeriod(params);
+    }
+
+    public void deleteByIds(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return;
+        consultRepository.deleteByIds(ids);
+    }
+
+    public void updateProgress(Integer id, String progressKey) {
+        consultRepository.updateProgress(id, progressKey);
+    }
 }

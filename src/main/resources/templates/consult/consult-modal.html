@@ -40,7 +40,7 @@
                 <th>학년</th>
                 <td>
                     <div class="select-wrap">
-                        <select name="gradeNo" id="student" class="styled-select">
+                        <select name="gradeKey" id="student" class="styled-select">
                             <th:block th:each="g: ${grades}">
                                 <option th:value="${g.gradeKey}" th:text="${g.gradeName}"></option>
                         </select>
@@ -55,7 +55,7 @@
                 <th>유입경로</th>
                 <td>
                     <div class="select-wrap">
-                        <select name="inflowRouteNo" id="inflow" class="styled-select">
+                        <select name="inflowRouteKey" id="inflow" class="styled-select">
                             <th:block th:each="r: ${routes}">
                                 <option th:value="${r.inflowRouteKey}" th:text="${r.inflowRouteName}"></option>
                         </select>
