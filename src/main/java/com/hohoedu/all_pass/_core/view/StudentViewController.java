@@ -31,11 +31,13 @@ public class StudentViewController {
 
     // 학생 등록
     @GetMapping("/join")
-    public String getStudentJoinPage(Model model) {
+    public String getStudentJoinPage(Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
 
+        model.addAttribute("centerCode", user.getCenterCode());
         model.addAttribute("gradeCodes", gradeCodes);
         model.addAttribute("relationCodes", relationCodes);
 

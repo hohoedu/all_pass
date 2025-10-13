@@ -23,6 +23,7 @@
         <p class="join-subtitle">아래의 정보를 입력해 주세요.</p>
     </div>
     <form class="join-form" method="post" th:action="@{/student/join}">
+        <input type="hidden" name="centerCode" th:value="${centerCode}">
         <div class="join-group">
             <label for="student-name">학생 이름</label>
             <input type="text" id="student-name" name="studentName" placeholder="학생 이름을 입력해 주세요.">
@@ -106,7 +107,7 @@
                 <div class="join-group">
                     <label for="relation-filter">법정대리인과의 관계</label>
                     <div class="join-select">
-                        <select id="relation-filter" name="relationNo">
+                        <select id="relation-filter" name="relationKey">
                             <option value="">선택</option>
                             <option th:each="relation : ${relationCodes}" th:value="${relation.relationKey}"
                                     th:text="${relation.relationName}">

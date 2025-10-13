@@ -84,8 +84,12 @@ public class StudentService {
     public void studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
 
         studentDTO.setStudentId("DAE001250730A1B2");
+
+        studentDTO.setAppId(parentDTO.getParentTelMiddle()+parentDTO.getParentTelLast()+0);
+        studentDTO.setAppPassword(parentDTO.getParentTelLast());
+
         studentRepository.insert(studentDTO);
-        parentDTO.setStudentNo(studentDTO.getStudentNo());
+        parentDTO.setStudentId(studentDTO.getStudentId());
         familyService.parentInsert(parentDTO);
     }
 

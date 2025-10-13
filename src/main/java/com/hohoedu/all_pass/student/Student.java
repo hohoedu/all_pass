@@ -48,8 +48,8 @@ public class Student {
     @Column(name = "address_detail", nullable = false, length = 100)
     private String addressDetail;
 
-    private LocalDate entryHanDate;
-    private LocalDate entryBookDate;
+    private String entryHanDate;
+    private String entryBookDate;
 
     @Column(name = "app_id", nullable = false, length = 20)
     private String appId;
@@ -66,12 +66,12 @@ public class Student {
     @JoinColumn(name = "grade_key", referencedColumnName = "grade_key", nullable = false)
     private GradeCode gradeCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "level_key", referencedColumnName = "level_key", nullable = false)
-    private LevelCode levelCode;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "level_key", referencedColumnName = "level_key", nullable = false)
+//    private LevelCode levelCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_key", referencedColumnName = "status_key", nullable = false)
+    @JoinColumn(name = "status_key", referencedColumnName = "status_key")
     private StatusCode statusCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -87,8 +87,8 @@ public class Student {
 
     @Builder
     public Student(String studentId, String studentName, String birth, Boolean gender, String school,
-                   String address, String addressDetail, LocalDate entryHanDate, LocalDate entryBookDate, String appId,
-                   String appPassword, String appToken, Boolean studentPrivacyAgree, GradeCode gradeCode, LevelCode levelCode, StatusCode statusCode, Center center,
+                   String address, String addressDetail, String entryHanDate, String entryBookDate, String appId,
+                   String appPassword, String appToken, Boolean studentPrivacyAgree, GradeCode gradeCode, StatusCode statusCode, Center center,
                    LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.studentId = studentId;
         this.studentName = studentName;
@@ -104,7 +104,6 @@ public class Student {
         this.appToken = appToken;
         this.studentPrivacyAgree = studentPrivacyAgree;
         this.gradeCode = gradeCode;
-        this.levelCode = levelCode;
         this.statusCode = statusCode;
         this.center = center;
         this.createdAt = createdAt;

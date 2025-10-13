@@ -7,12 +7,12 @@
 
     <!-- 회원가입 -->
     <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true"
-            keyProperty="studentNo" keyColumn="student_no">
-        INSERT INTO student_tb
-        (student_id, student_name, birth, school, address, address_detail, gender, entry_han_date, entry_book_date, created_at, grade_no, level_no, status_no, app_id,
+            keyProperty="id" keyColumn="id">
+        INSERT INTO erp_student
+        (student_id, student_name, birth,gender, school, address, address_detail, entry_han_date, entry_book_date, app_id, app_password, created_at, center_code, grade_key, status_key,
          student_privacy_agree)
-        values (#{studentId}, #{studentName}, #{birth}, #{school}, #{address}, #{addressDetail}, #{gender}, #{entryHanDate}, #{entryBookDate}, CURRENT_TIMESTAMP,
-                #{gradeNo}, #{levelNo}, #{statusNo}, #{appId} #{studentPrivacyAgree});
+        values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{entryHanDate}, #{entryBookDate}, #{appId}, #{appPassword}, SYSDATETIME(),
+                #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree});
     </insert>
 
     <select id="findstudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">

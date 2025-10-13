@@ -8,7 +8,7 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StudentJoinDTO {
-        private Integer studentNo;
+        private Integer id;
         private String studentId;
         private String studentName;
         private String birth;
@@ -19,22 +19,24 @@ public class StudentWebReqDTO {
         private String entryHanDate;
         private String entryBookDate;
         private boolean studentPrivacyAgree;
-        private String centerNo;
-        private Integer statusNo;
-        private Integer gradeNo;
-        private Integer levelNo;
+        private String appId;
+        private String appPassword;
+        private String centerCode;
+        private String statusKey;
+        private String gradeKey;
+        private String levelKey;
     }
 
     @Data
     public static class ParentJoinDTO {
-        private Integer parentNo;
+        private Integer id;
         private String parentName;
         private String parentTelFirst;
         private String parentTelMiddle;
         private String parentTelLast;
-        private Integer relationNo;
+        private String relationKey;
         private boolean parentPrivacyAgree;
-        private Integer studentNo;
+        private String studentId;
     }
 
     @Data
