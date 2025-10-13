@@ -193,7 +193,7 @@ document.addEventListener('click', function (e) {
         return;
     }
 
-    const studentNo = document.querySelector('.s_student_no').innerText;
+    const studentId = document.querySelector('.s_student_id').innerText;
     const resonInput = document.getElementById('reason');
     const reason = resonInput?.value;
 
@@ -202,11 +202,11 @@ document.addEventListener('click', function (e) {
         return;
     }
 
-    const statusNo = selectedBtn.getAttribute('data-status');
+    const statusKey = selectedBtn.getAttribute('data-status');
 
     const requestBody = {
-        studentNo: studentNo,
-        statusNo: statusNo,
+        studentNo: studentId,
+        statusNo: statusKey,
         reason: reason
     };
 

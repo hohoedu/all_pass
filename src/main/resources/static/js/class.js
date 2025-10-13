@@ -1194,7 +1194,7 @@ async function insertAfterClassNotice(checkedRows) {
         return {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
-            afterClassKey: row.dataset.afterClassKey || "",
+            afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
             content: document.querySelector(".record-content").value,
         }

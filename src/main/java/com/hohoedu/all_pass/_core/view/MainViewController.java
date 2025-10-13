@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class MainViewController {
 
-    @GetMapping({ "/", "/home" })
+    @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session) {
         Object user = session.getAttribute("user");
         if (user == null) {
-        return "redirect:/login";
-    }
+            return "redirect:/login";
+        }
         return "index";
     }
 
@@ -39,7 +39,7 @@ public class MainViewController {
         return "juso";
     }
 
-    @GetMapping("/test")
+    @PostMapping("/schedule/select")
     public String getMethodName() {
         return "test";
     }

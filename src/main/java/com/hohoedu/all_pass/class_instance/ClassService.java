@@ -56,14 +56,13 @@ public class ClassService {
     public Map<String, List<UnitCode>> findClassUnits() {
         Map<String, List<UnitCode>> result = new HashMap<>();
 
-        List<ClassCode> classCodes = classCodeJpaRepository.findAll();
-        for (ClassCode classCode : classCodes) {
-            List<UnitCode> units = classUnitMapJpaRepository.findByClassCode_ClassKey(classCode.getClassKey())
-                    .stream()
-                    .map(ClassUnitMap::getUnitCode)
-                    .collect(Collectors.toList());
-            result.put(classCode.getClassKey(), units);
-        }
+        List<ClassUnitMap> allMappings = classUnitMapJpaRepository.findAllWithUnitCode();
+
+        result = allMappings.stream()
+                .collect(Collectors.groupingBy(
+                        map -> map.getClassCode().getClassKey(),
+                        Collectors.mapping(ClassUnitMap::getUnitCode, Collectors.toList())
+                ));
 
         return result;
     }

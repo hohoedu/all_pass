@@ -51,19 +51,21 @@ public class ClassViewController {
     // 시간표 등록
     @GetMapping("/timetable")
     public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) throws JsonProcessingException {
+
         // 세션 확인
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-
-
+        System.out.println("==================findClassCode===================");
         List<ClassCode> classCodes = classService.findClassCode();
+        System.out.println("==================findGrade=======================");
         List<GradeCode> grades = classService.findGrade();
+        System.out.println("==================findClassUnits===================");
         Map<String, List<UnitCode>> classUnitMap = classService.findClassUnits();
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
-
+        System.out.println("==================findStudenetByCenterCode===================");
         List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode());
 
         model.addAttribute("userCode", user.getUserCode());
@@ -72,7 +74,7 @@ public class ClassViewController {
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
         model.addAttribute("students", students);
-
+        System.out.println("==================findTimeTavleWithStudents===================");
         List<TimeTableDTO> tables = classService.findTimeTableWithStudents(user.getUserCode(), year, month);
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()

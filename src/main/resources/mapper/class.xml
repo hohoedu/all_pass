@@ -467,8 +467,8 @@
 
     <insert id="insertAfterClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
-        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year,month,  class_type, class_label, content, created_at)
-        VALUES (#{studentId}, #{userCode},#{timeTableKey},#{afterClassKey}, #{week}, #{dayname},#{year},#{month}, #{classType}, #{classLabel}, #{content},  SYSDATETIME())
+        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year, month,  class_type, class_label, content, created_at)
+        VALUES (#{studentId}, #{userCode},#{timeTableKey},'EGH0060425', #{week}, #{dayname},#{year},#{month}, #{classType}, #{classLabel}, #{content},  SYSDATETIME())
     </insert>
 
     <select id="findBeforeClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">

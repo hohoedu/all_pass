@@ -14,17 +14,13 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_after_class_notice", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_after_notice_key", columnNames = "after_notice_key")})
+@Table(name = "erp_after_class_notice")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AfterClassNotice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "after_notice_key", nullable = false)
-    private String afterNoticeKey;
 
     @Column(name = "content", nullable = false, columnDefinition = "nvarchar(max)")
     private String content;
@@ -41,7 +37,7 @@ public class AfterClassNotice {
     @Column(name = "week")
     private String week;
 
-    @Column(name = "dayname", length = 10)
+    @Column(name = "dayname", length = 50)
     private String dayname;
 
     @Column(name = "class_label")
@@ -67,8 +63,7 @@ public class AfterClassNotice {
     private Timestamp createdAt;
 
     @Builder
-    public AfterClassNotice(String afterNoticeKey, String content, String classType, String year, String month, String week, String dayname, String classLabel, User user, Student student, AfterClass afterClass, TimeTable timeTable, Timestamp createdAt) {
-        this.afterNoticeKey = afterNoticeKey;
+    public AfterClassNotice(String content, String classType, String year, String month, String week, String dayname, String classLabel, User user, Student student, AfterClass afterClass, TimeTable timeTable, Timestamp createdAt) {
         this.content = content;
         this.classType = classType;
         this.year = year;

@@ -12,6 +12,11 @@ public class ClassAppReqDTO {
     }
 
     @Data
+    public static class LearningContentsReqDTO {
+        private String id;
+    }
+
+    @Data
     public static class BookListReqDTO {
         private String bookCode;
     }
