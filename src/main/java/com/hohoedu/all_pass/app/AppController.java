@@ -80,8 +80,8 @@ public class AppController {
 
     @PostMapping("/learning_contents")
     public ResponseEntity<?> AppLearningContents(@RequestBody ClassAppReqDTO.LearningContentsReqDTO reqDTO) {
-
-        return ResponseEntity.ok(AppApiUtils.successList(null));
+        List<ClassAppRespDTO.AfterClassRespDTO> respDTOs = classService.getAfterClass(reqDTO.getId(), reqDTO.getCount());
+        return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
     @PostMapping("/monthly_notice")

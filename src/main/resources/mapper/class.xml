@@ -473,8 +473,8 @@
 
     <select id="findBeforeClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">
         SELECT TOP(#{count})
-               class_type  AS gubun,
-               class_label AS note,
+                              class_type  AS gubun,
+                class_label AS note,
                CASE dayname
                    WHEN 'mon' THEN '월'
                    WHEN 'tue' THEN '화'
@@ -493,4 +493,15 @@
         ORDER BY created_at DESC, id DESC;
 
     </select>
+    <select id="findAfterClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassRespDTO">
+        SELECT class_type AS gubun,
+               class_label AS title,
+               dayname     AS dayname,
+               week        AS ju, [year] AS yyyy, [month] AS mm, content AS snote
+        FROM erp_after_class_notice
+        WHERE student_id = #{studentId}
+        ORDER BY created_at DESC, id DESC;
+
+    </select>
+
 </mapper> 

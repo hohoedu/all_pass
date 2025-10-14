@@ -14,6 +14,7 @@ public class ClassAppReqDTO {
     @Data
     public static class LearningContentsReqDTO {
         private String id;
+        private int count;
     }
 
     @Data

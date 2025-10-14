@@ -23,6 +23,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.StudentSnapshot;
 import com.hohoedu.all_pass.student.model.StudentSnapshotId;
 import com.hohoedu.all_pass.student.repository.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,7 +93,9 @@ public class StudentService {
         studentDTO.setStudentId(code);
 
         studentDTO.setAppId(parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast() + 0);
-        studentDTO.setAppPassword(parentDTO.getParentTelLast());
+        studentDTO.setAppPassword(
+                DigestUtils.sha256Hex(parentDTO.getParentTelLast())
+        );
         studentDTO.setEntryHanDate(today);
 
         studentRepository.insert(studentDTO);

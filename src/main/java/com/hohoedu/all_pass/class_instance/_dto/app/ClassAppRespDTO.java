@@ -31,5 +31,19 @@ public class ClassAppRespDTO {
         private String prequest;    // content;
     }
 
+    @Data
+    public static class AfterClassRespDTO {
+        private String gubun;
+        private String title;        // classLabel
+        private String dayname;
+        private String gbcd;         // classDate
+        private String mgubun;   // classTime;
+        private String ju;    // content;
+        private String yyyy;    // content;
+        private String mm;    // content;
+        private String icon;    // content;
+        private String snote;    // content;
+    }
+
 
 }

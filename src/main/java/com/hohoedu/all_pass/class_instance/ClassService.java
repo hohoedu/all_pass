@@ -290,7 +290,7 @@ public class ClassService {
             String classLabel = String.format("%s %s %s ", rawDTO.getClassName(), rawDTO.getUnitName(), weekLabel);
             LocalDateTime now = LocalDateTime.now();
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 E요일 HH:mm", Locale.KOREAN);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM월 dd일 E요일 HH:mm", Locale.KOREAN);
 
             String time = now.format(formatter);
 
@@ -413,6 +413,21 @@ public class ClassService {
     public List<ClassAppRespDTO.BeforeClassRespDTO> getBeforeClass(String studentId, int count) {
 
         List<ClassAppRespDTO.BeforeClassRespDTO> respDTOS = classRepository.findBeforeClassByStudentId(studentId, count);
+
+        return respDTOS;
+    }
+
+    public List<ClassAppRespDTO.AfterClassRespDTO> getAfterClass(String studentId, int count) {
+
+        List<ClassAppRespDTO.AfterClassRespDTO> respDTOS = classRepository.findAfterClassByStudentId(studentId, count);
+
+        respDTOS.forEach(dto -> {
+            if (dto.getSnote() != null) {
+                // <span> 태그 및 다른 HTML 태그 제거
+                String cleaned = dto.getSnote().replaceAll("<[^>]*>", "");
+                dto.setSnote(cleaned.trim());
+            }
+        });
 
         return respDTOS;
     }

@@ -56,6 +56,7 @@ public class UserService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+        String encode = passwordEncoder.encode(loginDTO.getUserPassword());
         // 아이디 비밀번호 체크
         if (!passwordEncoder.matches(loginDTO.getUserPassword(), authDTO.getPasswordHash())) {
             throw new CustomRestfulException("비밀번호가 일치하지 않습니다.", HttpStatus.FORBIDDEN);

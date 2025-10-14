@@ -7,8 +7,8 @@
     <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
 
-     INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, content, created_at)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, #{content}, SYSDATETIME());
+     INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, progress_key, content, created_at)
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, 'counseling', #{content}, SYSDATETIME());
     </insert>
 
     <select id="findAll" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
