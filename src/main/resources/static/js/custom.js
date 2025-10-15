@@ -23,7 +23,7 @@ $(document).ready(function () {
         }
     });
 
-    /* ====== manage-teacher.html ====== */
+    /* ====== teacher.html ====== */
     // delete modal
     $('.check-delete').click(function () {
         $('.delete-modal').fadeIn();
@@ -39,7 +39,7 @@ $(document).ready(function () {
         $('.book-result-modal').fadeIn();
     });
 
-    /* ====== manage-sms.html ====== */
+    /* ====== sms.html ====== */
     // word-modify modal
     $('#word-modify').click(function () {
         $('.sms-modal').fadeIn();

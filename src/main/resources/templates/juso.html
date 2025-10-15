@@ -8,34 +8,29 @@
 </head>
 
 <body onload="init();">
-    <form id="form" name="form" method="post" action="https://business.juso.go.kr/addrlink/addrMobileLinkUrl.do">
-        <input type="hidden" id="confmKey" name="confmKey" value="devU01TX0FVVEgyMDI1MDkyNTExMjIxNjExNjI2NDg=" />
-        <input type="hidden" id="returnUrl" name="returnUrl" value="http://ststallpass.cafe24.com/juso" />
-        <input type="hidden" id="resultType" name="resultType" value="4" />
-    </form>
+<form id="form" name="form" method="post" action="https://business.juso.go.kr/addrlink/addrMobileLinkUrl.do">
+    <input type="hidden" id="confmKey" name="confmKey" value="devU01TX0FVVEgyMDI1MDkyNTExMjIxNjExNjI2NDg="/>
+    <input type="hidden" id="returnUrl" name="returnUrl" value="http://ststallpass.cafe24.com/juso"/>
+    <input type="hidden" id="resultType" name="resultType" value="4"/>
+</form>
 
-    <script type="text/javascript">
-        function init() {
-            const roadAddrPart1 = "[[${roadAddrPart1}]]";
-            const roadFullAddr = "[[${roadFullAddr}]]";
-            const addrDetail = "[[${addrDetail}]]";
-
-            console.log("팝업 init 실행됨");
-            console.log("받은 roadAddrPart1:", roadAddrPart1);
-
-            if (!roadAddrPart1 || roadAddrPart1.trim() === "") {
-                console.log("주소가 없으니 검색 창으로 이동");
-                document.form.submit(); // 주소 검색 실행
-            } else {
-                console.log("주소가 있으니 부모창에 전달 후 창 닫기");
-                if (window.opener && !window.opener.closed) {
-                    window.opener.document.getElementById("roadFullAddr").value = roadFullAddr;
-                    window.opener.document.getElementById("addrDetail").focus();
-                }
-                window.close();
+<script type="text/javascript">
+    function init() {
+        const roadAddrPart1 = "[[${roadAddrPart1}]]";
+        const roadFullAddr = "[[${roadFullAddr}]]";
+        const addrDetail = "[[${addrDetail}]]";
+        
+        if (!roadAddrPart1 || roadAddrPart1.trim() === "") {
+            document.form.submit(); // 주소 검색 실행
+        } else {
+            if (window.opener && !window.opener.closed) {
+                window.opener.document.getElementById("roadFullAddr").value = roadFullAddr;
+                window.opener.document.getElementById("addrDetail").focus();
             }
+            window.close();
         }
-    </script>
+    }
+</script>
 </body>
 
 </html>

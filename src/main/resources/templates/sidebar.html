@@ -71,15 +71,16 @@
           <a th:href="@{/consult/main}" class="menu-link">상담문의 기록</a>
         </div>
         <div class="submenu" data-menu="tuition">
-          <a href="pay-edu.html" class="menu-link">수강료 청구</a>
-          <a href="pay-list.html" class="menu-link">월별 결제 내역</a>
+          <a th:href="@{/pay/pay-edu}" class="menu-link">수강료 청구</a>
+          <a th:href="@{/pay/pay-list}" class="menu-link">월별 결제 내역</a>
         </div>
         <div class="submenu" data-menu="operation">
-          <a href="order.html" class="menu-link">교재 주문</a>
-          <a href="reorder.html" class="menu-link">교재 추가/반품</a>
-          <a href="manage-sms.html" class="menu-link">앱 공지 관리</a>
+          <a th:href="@{/manage/order}" class="menu-link">교재 주문</a>
+          <a th:href="@{/manage/reorder}" class="menu-link">교재 추가/반품</a>
+          <a th:href="@{/manage/sms}" class="menu-link">앱 공지 관리</a>
           <a th:href="@{/manage/teacher}" class="menu-link">선생님 관리</a>
-          <a href="manage-tuition.html" class="menu-link">수강료 관리</a>
+          <a th:href="@{/manage/tuition}" class="menu-link">수강료 관리</a>
+<!--          <a th:href="@{/manage/notice}" class="menu-link">공지사항</a>-->
         </div>
       </div>
     </div>

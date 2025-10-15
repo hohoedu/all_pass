@@ -11,9 +11,34 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RequiredArgsConstructor
 public class ManageViewController {
 
-    @GetMapping("/teacher")
-    public String getManageTeacherPage() {
-        return "manage/manage-teacher";
+
+    @GetMapping("/order")
+    public String getManageOrderPage() {
+        return "manage/order";
     }
 
+    @GetMapping("/reorder")
+    public String getManageReorderPage() {
+        return "manage/reorder";
+    }
+
+    @GetMapping("sms")
+    public String getManageSmsPage() {
+        return "manage/sms";
+    }
+
+    @GetMapping("/teacher")
+    public String getManageTeacherPage() {
+        return "manage/teacher";
+    }
+
+    @GetMapping("tuition")
+    public String getManageTuitionPage() {
+        return "manage/tuition";
+    }
+
+    @GetMapping("notice")
+    public String getManageNoticePage() {
+        return "manage/notice";
+    }
 }
