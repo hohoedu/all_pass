@@ -15,16 +15,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "erp_status_history", uniqueConstraints = @UniqueConstraint(name = "uq_status_history_key", columnNames = "status_history_key"))
+@Table(name = "erp_status_history")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StatusHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "status_history_key", nullable = false, length = 36, updatable = false)
-    private String statusHistoryKey;
 
     @Column(name = "reason", length = 200)
     private String reason;
@@ -46,9 +43,8 @@ public class StatusHistory {
     private User user;
 
     @Builder
-    public StatusHistory(String reason, String statusHistoryKey, Student student, StatusCode statusCode, User user) {
+    public StatusHistory(String reason, Student student, StatusCode statusCode, User user) {
         this.reason = reason;
-        this.statusHistoryKey = statusHistoryKey;
         this.student = student;
         this.statusCode = statusCode;
         this.user = user;

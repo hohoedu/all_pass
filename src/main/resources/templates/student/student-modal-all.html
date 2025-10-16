@@ -1,0 +1,192 @@
+<div th:fragment="all" id="tab1" class="tab active">
+    <div class="modal-scroll">
+        <div class="all-info">
+            <div class="card-left">
+                <article class="student-card card-common">
+                    <header class="card-header">
+                        <h4 class="sub-themes">기본 정보</h4>
+                        <div class="status-buttons" data-visibility="current-status">
+                            <button class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                            <button class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                            <button class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                            <button class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
+                        </div>
+                    </header>
+                    <section class="card-body">
+                        <figure class="profile-img">
+                            <img th:src="@{/image/stu-img.png}" alt="학생 프로필 이미지">
+                        </figure>
+                        <div class="student-top">
+                            <h5 class="student-name">
+                                <strong class="s_name" id="stu-name"></strong>
+                            </h5>
+                            <p class="student-subjects s_subjects" id="stu-subjects"></p>
+                            <p class="student-tel s_phone" id="stu-phone"></p>
+                        </div>
+                    </section>
+                    <dl class="student-details">
+                        <div class="detail-row">
+                            <dt>입회일</dt>
+                            <dd class="s_entry" id="stu-join"></dd>
+                        </div>
+                        <div class="detail-row">
+                            <dt>학교</dt>
+                            <dd class="s_school" id="stu-school"></dd>
+                        </div>
+                        <div class="detail-row">
+                            <dt>학년</dt>
+                            <dd class="s_grade" id="stu-grade"></dd>
+                        </div>
+                        <div class="detail-row">
+                            <dt>생년월일</dt>
+                            <dd class="s_birth" id="stu-birth"></dd>
+                        </div>
+                        <div class="detail-row">
+                            <dt>주소</dt>
+                            <dd class="s_address" id="stu-address"></dd>
+                        </div>
+                        <div class="detail-row">
+                            <dt>상세주소</dt>
+                            <dd class="s_address_detail" id="stu-address-detail"></dd>
+                        </div>
+                    </dl>
+                </article>
+                <article class="card-common">
+                    <h4 class="sub-themes">수강과목 / 회비</h4>
+                    <div class="table-frame">
+                        <table class="basic-table">
+                            <colgroup>
+                                <col width="40%">
+                                <col width="60%">
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>과목</th>
+                                <th>회비</th>
+                            </tr>
+                            </thead>
+                            <tbody id="" class="stripe">
+                            <tr>
+                                <td>초등수재(수업료)</td>
+                                <td>110,000</td>
+                            </tr>
+                            <tr>
+                                <td>초등수재(교재비)</td>
+                                <td>30,000</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+            <div class="card-right">
+                <div class="card-common">
+                    <h4 class="sub-themes">출결</h4>
+                    <form action="" class="student-form">
+                        <div class="calendar-container">
+                            <table class="calendar-table">
+                                <thead>
+                                <tr>
+                                    <th>일</th>
+                                    <th>월</th>
+                                    <th>화</th>
+                                    <th>수</th>
+                                    <th>목</th>
+                                    <th>금</th>
+                                    <th>토</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>1</td>
+                                    <td>2<br><span class="event green">13:50-16:00</span></td>
+                                    <td>3</td>
+                                    <td>4</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>6</td>
+                                    <td>7</td>
+                                    <td>8</td>
+                                    <td>9<br><span class="event green">13:47-16:00</span></td>
+                                    <td>10</td>
+                                    <td>11</td>
+                                </tr>
+                                <tr>
+                                    <td>12</td>
+                                    <td>13</td>
+                                    <td>14</td>
+                                    <td>15</td>
+                                    <td>16</td>
+                                    <td>17</td>
+                                    <td>18<br><span class="event orange">16:50-20:00</span></td>
+                                </tr>
+                                <tr>
+                                    <td>19</td>
+                                    <td>20</td>
+                                    <td>21</td>
+                                    <td>22</td>
+                                    <td>23<br><span class="event green">13:50~</span></td>
+                                    <td>24</td>
+                                    <td>25</td>
+                                </tr>
+                                <tr>
+                                    <td>26</td>
+                                    <td>27</td>
+                                    <td>28</td>
+                                    <td>29</td>
+                                    <td>30</td>
+                                    <td>31</td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-common">
+                    <h4 class="sub-themes">상담내역</h4>
+                    <div class="table-frame">
+                        <table class="basic-table content-table">
+                            <colgroup>
+                                <col width="20%">
+                                <col width="80%">
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>일자</th>
+                                <th>내용</th>
+                            </tr>
+                            </thead>
+                            <tbody id="consult-tbody" class="stripe">
+                            <tr>
+                                <td>2015/01-28</td>
+                                <td>성적이 많이 올라서 학부모님과 월반 관련 상담을 진행함. 윗 학년 친구들과 수업이 가능할 듯하여 대기 후 매칭될
+                                    경우 한 학년을 올려서 수업을 진행.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2015/01-15</td>
+                                <td>잦은 결석으로 보강 일수가 늘어서 학부모님과 상담을 진행함. 주중에 시간을 내기 힘들어 토요일 반으로 변경을
+                                    요청하심. 반이 없어서 우선 대기를 걸어둠.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2015/01-3</td>
+                                <td>호호 유치원 출신. 한자는 장원 한자 수업을 꾸준히 해 왔고 수업도 책나무 같은 논술 수업을 꾸준히 받고 있다고
+                                    함. 수업 보강용 자료 요청하셔서 드릴 수
+                                    있도록 조치함.
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

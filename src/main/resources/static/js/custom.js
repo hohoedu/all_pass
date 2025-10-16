@@ -311,34 +311,6 @@ function formatDateDot(iso) {
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function updateStatusButton(statusCode) {
-    const statusStr = String(statusCode);
-
-    document.querySelectorAll('.status-buttons').forEach(group => {
-        const mode = group.getAttribute('data-visibility');
-
-        group.querySelectorAll('.s_status').forEach(btn => {
-            const btnStatus = btn.getAttribute('data-status');
-
-            if (mode === 'only-current') {
-
-                btn.style.display = (btnStatus === statusStr) ? 'inline-block' : 'none';
-            } else if (mode === 'except-current') {
-
-                btn.style.display = (btnStatus === statusStr) ? 'none' : 'inline-block';
-            }
-        });
-    });
-}
-
-document.addEventListener("click", function (e) {
-    const btn = e.target.closest(".select-btn");
-    if (!btn) return;
-
-    document.querySelectorAll(".select-btn").forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-});
-
 function openJusoPopup() {
     const width = 570;
     const height = 640;

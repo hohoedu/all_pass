@@ -104,9 +104,19 @@ public class StudentController {
     }
 
     @PostMapping("/status")
-    public ResponseEntity<?> statusUpdate(@RequestBody StatusHistoryDTO historyDTO) {
-        studentService.statusInsert(historyDTO);
-        return ResponseEntity.ok(ApiUtils.success("변경 완료"));
+    public ResponseEntity<?> statusUpdate(@RequestBody StatusHistoryDTO historyDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        StudentWebRespDTO.StudentStatusDTO response = studentService.statusInsert(historyDTO, user.getUserCode());
+        
+        return ResponseEntity.ok(ApiUtils.success(response));
     }
 
     @GetMapping("/gradeCodes")

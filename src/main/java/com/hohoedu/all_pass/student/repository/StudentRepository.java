@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -42,6 +44,7 @@ public interface StudentRepository {
 
     public int studentStatusUpdate(StatusHistoryDTO historyDTO);
 
+            StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
     public List<StudentInOutDTO> selectTransferStudents(@Param("centerCode") String centerCode);
 
     public List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);

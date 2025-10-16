@@ -2925,7 +2925,7 @@ input[name="bookFee"] {
 }
 
 .status-buttons button {
-    width: 65px;
+    width: 70px;
     height: 27px;
     font-size: 12px;
     border: none;
@@ -2954,6 +2954,35 @@ input[name="bookFee"] {
     background: #fff;
     color: #d34040;
     border: 1px solid #d34040;
+}
+
+.status-buttons[data-visibility="current-status"] .s_status {
+    pointer-events: none;
+    cursor: default;
+}
+
+.status-buttons .s_status.active.selected {
+    background: #84d3ff;
+    color: #116b99;
+    border: 2px solid #1e8ec4;
+}
+
+.status-buttons .s_status.cancel.selected {
+    background: #80e4a1;
+    color: #187738;
+    border: 2px solid #219645;
+}
+
+.status-buttons .s_status.closed.selected {
+    background: #f79aa8;
+    color: #9e1f34;
+    border: 2px solid #bd2f4a;
+}
+
+.status-buttons .s_status.danger.selected {
+    background: #ffeaea;
+    color: #b02d2d;
+    border: 2px solid #b02d2d;
 }
 
 .card-body {

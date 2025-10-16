@@ -43,7 +43,7 @@ public class StudentWebRespDTO {
 
     @Data
     public static class StudentDTO {
-        private Integer studentNo;
+        private String studentId;
         private String school;
         private String studentName;
         private String grade;
@@ -78,6 +78,13 @@ public class StudentWebRespDTO {
         private String hanClass;
         private String bookClass;
         private String isSibling;
+    }
+
+    @Data
+    public static class StudentStatusDTO {
+        private String studentId;
+        private String statusKey;
+        private String statusName;
     }
 
     @Data

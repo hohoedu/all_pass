@@ -41,9 +41,6 @@
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
-        WITH latest_history AS (SELECT *,
-                                       ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY updated_at DESC) AS rn
-                                FROM ERP_STATUS_HISTORY)
         SELECT s.student_id      AS studentId,
                s.student_name    AS studentName,
                s.school,
@@ -57,27 +54,22 @@
                s.entry_han_date  AS entryHanDate,
                s.entry_book_date AS entryBookDate,
                s.created_at      AS createdAt,
-
                han.class_name    AS hanClass,
                book.class_name   AS bookClass,
-
                CASE
                    WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL
                        THEN NULL
                    ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
                    END           AS parentTel,
 
-               h.status_key      AS status,
-               sc.status_name    AS statusName,
-               h.reason
+               s.status_key      AS status,
+               sc.status_name    AS statusName
         FROM ERP_STUDENT s
-                 LEFT JOIN latest_history h
-                           ON s.student_id = h.student_id AND h.rn = 1
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
 --                  LEFT JOIN ERP_LEVEL_CODE l ON s.level_key = l.level_key
                  LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
                  LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
-                 LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = h.status_key
+                 LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
 
 -- APPLY로 class_name 가져오기
             OUTER APPLY (
@@ -224,10 +216,10 @@ OUTER APPLY (
 
     <!-- 학생 상태 기록 -->
     <insert id="statusHistoryInsert" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO" useGeneratedKeys="true"
-            keyProperty="historyNo" keyColumn="history_no">
+            keyProperty="id" keyColumn="id">
         INSERT INTO erp_status_history
-            (student_id, status_key, reason, updated_at)
-        values (#{studentId}, #{statusKey}, #{reason}, SYSDATETIME());
+            (student_id, status_key, reason, user_code, updated_at)
+        values (#{studentId}, #{statusKey}, #{reason}, #{userCode}, SYSDATETIME());
     </insert>
 
     <!-- 학생 상태 변경 -->
@@ -236,6 +228,16 @@ OUTER APPLY (
         SET status_key = #{statusKey}
         WHERE student_id = #{studentId};
     </update>
+
+    <!--  변경된 학생 상태 조회  -->
+    <select id="findStatusByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentStatusDTO">
+        SELECT s.student_id   AS studentId,
+               s.status_key   AS statusKey,
+               sc.status_name AS statusName
+        FROM ERP_STUDENT s
+                 JOIN ERP_STATUS_CODE sc on s.status_key = sc.status_key
+        WHERE s.student_id = #{studentId}
+    </select>
 
     <!-- 전입/전출 화면 학생 조회 -->
     <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">

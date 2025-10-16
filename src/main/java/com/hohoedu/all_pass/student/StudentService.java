@@ -89,7 +89,7 @@ public class StudentService {
         String today = dateConfig.currentYearMonth().get("today");
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
-        String code = studentDTO.getCenterCode()+LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"))+last5;
+        String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
         studentDTO.setStudentId(code);
 
         studentDTO.setAppId(parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast() + 0);
@@ -131,7 +131,7 @@ public class StudentService {
         return users;
     }
 
-    public void statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO) {
+    public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO, String userCode) {
         int updateResult = studentRepository.studentStatusUpdate(historyDTO);
         System.out.println(updateResult);
         if (updateResult == 0) {
@@ -139,12 +139,19 @@ public class StudentService {
         } else {
             System.out.println("업데이트 성공");
         }
+
+        historyDTO.setUserCode(userCode);
+
         int insertResult = studentRepository.statusHistoryInsert(historyDTO);
         if (insertResult == 0) {
             System.out.println("인서트 실패");
         } else {
             System.out.println("인서트 성공");
         }
+
+        StudentWebRespDTO.StudentStatusDTO respDTO = studentRepository.findStatusByStudentId(historyDTO.getStudentId());
+
+        return respDTO;
     }
 
     public List<GradeCode> getGrade() {

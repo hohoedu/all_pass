@@ -41,9 +41,11 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StatusHistoryDTO {
+        private Integer id;
         private String statusKey;
         private String studentId;
         private String reason;
+        private String userCode;
     }
 
     @Data
