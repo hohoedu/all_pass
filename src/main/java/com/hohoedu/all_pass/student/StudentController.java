@@ -48,15 +48,16 @@ public class StudentController {
 
 
     @GetMapping("/api/label")
-    public ResponseEntity<?> getLabels(@RequestParam("teacherNo") String teacherNo) {
+    public ResponseEntity<?> getLabels(@RequestParam("userCode") String userCode) {
 
-        System.out.println("teacherNo = " + teacherNo);
-        List<TimeTableLabelDTO> labels = classService.getClassLabel(teacherNo);
+        System.out.println("userCode = " + userCode);
+        List<TimeTableLabelDTO> labels = classService.getClassLabel(userCode);
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
-    @GetMapping(value = "/api/students", params = "teacherNo")
-    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam("teacherNo") String teacherNo, HttpSession session) {
+    @GetMapping(value = "/api/students", params = "userCode")
+    public ResponseEntity<?> getStudentsByUSerCode(@RequestParam("userCode") String userCode, HttpSession session) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -65,7 +66,8 @@ public class StudentController {
                     .build();
         }
 
-        List<StudentWebRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(teacherNo, user.getCenterCode());
+        List<StudentWebRespDTO.MainStudentDTO> students = studentService.getStudentsByUserCode(userCode, user.getCenterCode());
+
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
@@ -115,7 +117,7 @@ public class StudentController {
         }
 
         StudentWebRespDTO.StudentStatusDTO response = studentService.statusInsert(historyDTO, user.getUserCode());
-        
+
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 

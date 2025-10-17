@@ -1,4 +1,4 @@
-<div class="modal student-modal" th:fragment="studentModal">
+<div class="modal student-modal" th:fragment="studentMainModal">
     <div class="stu-m-con">
         <div class="m-t-line" style="margin-bottom: 30px;">
             <div class="title">
@@ -17,11 +17,11 @@
             </div>
 
             <div class="info-tab-content">
-                <section th:replace="~{student/student-modal-all :: all}"></section>
-                <section th:replace="~{student/student-modal-basic :: basic}"></section>
-                <section th:replace="~{student/student-modal-payment :: payment}"></section>
-                <section th:replace="~{student/student-modal-attendance :: attendance}"></section>
-                <section th:replace="~{student/student-modal-consult :: consult}"></section>
+                <section th:replace="~{student/main_modal/student-modal-all :: all}"></section>
+                <section th:replace="~{student/main_modal/student-modal-basic :: basic}"></section>
+                <section th:replace="~{student/main_modal/student-modal-payment :: payment}"></section>
+                <section th:replace="~{student/main_modal/student-modal-attendance :: attendance}"></section>
+                <section th:replace="~{student/main_modal/student-modal-consult :: consult}"></section>
 
             </div>
         </div>
