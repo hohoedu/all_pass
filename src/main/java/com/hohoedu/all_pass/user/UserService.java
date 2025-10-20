@@ -31,7 +31,7 @@ public class UserService {
         return user;
     }
 
-    public List<User> findByCenterNo(String centerNo) {
+    public List<User> findByCenterCode(String centerNo) {
         List<User> user = userRepository.findUserByCenterCode(centerNo);
         return user;
     }

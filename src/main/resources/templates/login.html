@@ -20,7 +20,7 @@
         </div>
         <h2 class="logo-subtitle">ALL PASS SYSYEM</h2>
         <form method="post" th:action="@{/user/login}" id="login-form">
-            <input type="text" id="center-code" name="centerCode" placeholder="지점 코드">
+            <input type="text" id="center-code" name="centerCode" placeholder="지점 코드" oninput="this.value = this.value.toUpperCase()">
             <input type="text" id="user-id" name="userId" placeholder="아이디">
             <input type="password" name="userPassword" placeholder="비밀번호">
             <div class="checkbox-group join-frame">

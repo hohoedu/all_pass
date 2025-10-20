@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.springframework.stereotype.Controller;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.MonthlyStudentDTO;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
@@ -97,7 +95,7 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterNo(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
@@ -166,7 +164,7 @@ public class ClassViewController {
     public String getPrintTimeView(Model model, HttpSession session) {
 
 //        List<User> users = userService.findByCenterNo(user.getCenterCode());
-        List<User> users = userService.findByCenterNo("DAE001");
+        List<User> users = userService.findByCenterCode("DAE001");
 
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
@@ -197,7 +195,7 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterNo(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
 
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
 
@@ -253,7 +251,7 @@ public class ClassViewController {
         }
 
         // 센터별 선생님 목록
-        List<User> users = userService.findByCenterNo(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
