@@ -6281,9 +6281,20 @@ input[type="time" i] {
 
 .claim-select {
     width: 200px;
+    margin: 0 0 10px 0;
 }
 
 .claim-m-inner {
+    width: 90%;
+    margin: auto;
+}
+
+.m-tuition-filter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    flex-direction: row;
     width: 90%;
     margin: auto;
 }

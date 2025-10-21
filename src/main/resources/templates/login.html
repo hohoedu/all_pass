@@ -10,6 +10,8 @@
     <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <script th:src="@{/js/login.js}"></script>
 </head>
 
 <body>
@@ -34,18 +36,6 @@
 
 <div id="error-box" th:data-message="${errorMessage}" style="display: none;"></div>
 
-<script>
-    window.addEventListener("DOMContentLoaded", () => {
-        const errorBox = document.getElementById("error-box");
-        const message = errorBox?.dataset?.message;
-
-        if (message) {
-            alert(message);
-            console.log(message);
-        }
-
-    });
-</script>
 </body>
 
 </html>

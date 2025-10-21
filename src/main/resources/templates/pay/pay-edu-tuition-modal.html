@@ -1,0 +1,272 @@
+<div class="modal tuition-modal" th:fragment="eduTuitionModal">
+    <div class="personal-inner">
+        <div class="m-t-line" style="margin: 10px 20px 10px 0">
+            <div class="title">
+                수강료 상세내역
+            </div>
+            <a href="#" class="btn-close"></a>
+        </div>
+        <div class="m-tuition-filter">
+            <div class="basic-select claim-select">
+                <select name="student" id="student-filter">
+                    <option value="student1">전체 학생</option>
+                    <option value="student2">김호일</option>
+                    <option value="student3">김호이</option>
+                    <option value="student3">김호삼</option>
+                </select>
+            </div>
+        </div>
+        <div class="claim-m-inner">
+            <div class="modal-scroll bt">
+                <div class="table-frame personal-frame">
+                    <table class="basic-table yh">
+                        <colgroup>
+                            <col width="7%">
+                            <col width="7%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="15%">
+                        </colgroup>
+                        <thead>
+                        <tr class="mb">
+                            <th class="checkbox-group">
+                                <input type="checkbox">
+                            </th>
+                            <th>No</th>
+                            <th>수강년월</th>
+                            <th>이름</th>
+                            <th>수강과목</th>
+                            <th>담임</th>
+                            <th>담임원수강료</th>
+                            <th>결제일자</th>
+                            <th>결제금액</th>
+                            <th>상태</th>
+                        </tr>
+                        </thead>
+                        <tbody id="student-tbody" class="stripe">
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box standby">결제 대기</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box destroy">청구서 파기</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box cancellation">결제 취소</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box destroy">청구서 파기</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box cancellation">결제 취소</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="checkbox-group">
+                                <input type="checkbox">
+                            </td>
+                            <td>1</td>
+                            <td>2025-06</td>
+                            <td>김호일</td>
+                            <td>초등천재</td>
+                            <td>김하나</td>
+                            <td>220,000</td>
+                            <td>2025-06-11</td>
+                            <td class="payment">220,000</td>
+                            <td class="middle">
+                                <div class="state-box complete">결제 완료</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="invoice-btn-wrap">
+                <p class="invoice-label-text">선택한 청구서</p>
+                <button class="invoice-btn invoice-btn-red">결제 취소</button>
+                <button class="invoice-btn" disabled>청구서 파기</button>
+                <button class="invoice-btn" disabled>재발행</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,5 +1,8 @@
 package com.hohoedu.all_pass.user;
 
+import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -71,5 +74,14 @@ public class UserController {
     public String logout() {
         session.invalidate(); // 세션 완전 제거
         return "redirect:/login";
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<?> getUsers(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(users));
+
     }
 }

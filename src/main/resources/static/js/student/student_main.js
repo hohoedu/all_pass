@@ -9,6 +9,8 @@ function openModal(row) {
     loadStudentData(studentId)
         .then(renderStudentInfo)
         .then(loadGradeCodes)
+        .then(loadClassCodes)
+        .then(loadUsers)
         .catch(console.error);
 
     showModal();
@@ -116,6 +118,95 @@ async function loadGradeCodes(selectedGradeName) {
     }
 }
 
+async function loadUsers() {
+    try {
+        const res = await fetch("/user/users");
+        if (!res.ok) throw new Error('선생님 불러오기 실패');
+        const data = await res.json();
+
+        // 서버 응답 예: { success: true, response: [ { userCode: 'T001', userName: '김민준' }, ... ] }
+        if (!data.success || !Array.isArray(data.response)) {
+            console.error("선생님 데이터 오류");
+            return;
+        }
+
+        const users = data.response;
+
+        // 한자 담당 선생님 select
+        const hanTeacherSelect = document.querySelector('#han-teacher');
+        if (hanTeacherSelect) {
+            hanTeacherSelect.innerHTML = '<option value="">선생님을 선택해주세요.</option>';
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.userCode;
+                opt.textContent = `${u.userName} 선생님`;
+                hanTeacherSelect.appendChild(opt);
+            });
+        }
+
+        // (옵션) 독서 담당 select도 따로 있다면 추가
+        const bookTeacherSelect = document.querySelector('#book-teacher');
+        if (bookTeacherSelect) {
+            bookTeacherSelect.innerHTML = '<option value="">선생님을 선택해주세요.</option>';
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.userCode;
+                opt.textContent = `${u.userName} 선생님`;
+                bookTeacherSelect.appendChild(opt);
+            });
+        }
+
+    } catch (err) {
+        console.error("선생님 목록 로드 중 오류:", err);
+    }
+}
+
+async function loadClassCodes() {
+    try {
+        const res = await fetch("/class/classCodes");
+        if (!res.ok) throw new Error("수업 코드 불러오기 실패");
+        const data = await res.json();
+
+        if (!data.success || !Array.isArray(data.response)) {
+            console.error("수업 코드 데이터 오류");
+            return;
+        }
+
+        const codes = data.response;
+
+        // 한자 단계 select
+        const hanjaSelect = document.querySelector('#tab3 select[name="hanjaLevel"].styled-select');
+        if (hanjaSelect) {
+            hanjaSelect.innerHTML = '<option value="">한자 수업을 선택해 주세요</option>';
+            codes.forEach(code => {
+                if (code.classType === '1') { // 한자
+                    const opt = document.createElement("option");
+                    opt.value = code.classKey;
+                    opt.textContent = code.className;
+                    hanjaSelect.appendChild(opt);
+                }
+            });
+        }
+
+        // 독서 단계 select
+        const bookSelect = document.querySelectorAll('#tab3 select[name="hanjaLevel"].styled-select')[1];
+        if (bookSelect) {
+            bookSelect.innerHTML = '<option value="">독서 수업을 선택해주세요.</option>';
+            codes.forEach(code => {
+                if (code.classType === '2') { // 독서
+                    const opt = document.createElement("option");
+                    opt.value = code.classKey;
+                    opt.textContent = code.className;
+                    bookSelect.appendChild(opt);
+                }
+            });
+        }
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // ====== 학생 상태 변경 로직 ====== //
 document.addEventListener('DOMContentLoaded', function () {
     const exceptCurrentContainer = document.querySelector('.status-buttons[data-visibility="except-current"]');
@@ -136,8 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (reasonInputBox) {
             reasonInputBox.classList.add('active');
         }
-
-        console.log('🟦 선택된 상태:', btn.dataset.status);
     });
 
     // ✅ 상태 변경 버튼 클릭 시 서버로 전송
@@ -293,3 +382,53 @@ function renderStudents(tbody, students = []) {
     //         <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
     // </div>
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.querySelector('#student-tab-3-save-btn');
+    if (!btn) return;
+
+    btn.addEventListener("click", function () {
+        console.log('저장버튼이 눌러졌넹');
+    });
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".birth-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const parent = btn.closest(".day-picker");
+            const dateInput = parent.querySelector(".hidden-picker");
+            const display = parent.querySelector(".day-display");
+
+            if (!dateInput) return;
+
+            // 최신 브라우저 (Chrome, Safari, Edge 등)
+            if (typeof dateInput.showPicker === "function") {
+                dateInput.showPicker();
+            } else {
+                dateInput.focus();
+                dateInput.click();
+            }
+
+            // 날짜 선택 시 표시 포맷 업데이트
+            dateInput.addEventListener("change", () => {
+                const value = dateInput.value; // ex) "2025-08-15"
+                if (value) {
+                    const [y, m, d] = value.split("-");
+                    display.textContent = `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
+
+                    // DB 저장용 hidden input 자동 생성/업데이트
+                    let hidden = parent.querySelector("input[name='startDateHidden']");
+                    if (!hidden) {
+                        hidden = document.createElement("input");
+                        hidden.type = "hidden";
+                        hidden.name = "startDateHidden"; // DB에 전송할 필드명
+                        parent.appendChild(hidden);
+                    }
+                    hidden.value = value; // ex) 2025-08-15
+                } else {
+                    display.textContent = "날짜를 선택해주세요.";
+                }
+            });
+        });
+    });
+});

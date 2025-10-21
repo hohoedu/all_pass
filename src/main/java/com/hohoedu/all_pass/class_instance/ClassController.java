@@ -8,6 +8,8 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -43,6 +45,11 @@ public class ClassController {
     private final ClassService classService;
     private final StudentService studentService;
 
+    @GetMapping("/classCodes")
+    public ResponseEntity<?> createClass() {
+        List<ClassCode> classCode = classService.findClassCode();
+        return ResponseEntity.ok(ApiUtils.success(classCode));
+    }
 
     // 시간표 등록
     @PostMapping("/register")

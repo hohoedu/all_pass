@@ -24,7 +24,7 @@ public class ConsultViewController {
     private final ConsultService consultService;
 
     @GetMapping("/main")
-    public String getMethodName(Model model) {
+    public String getConsultMainPase(Model model) {
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
         List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult();
@@ -32,6 +32,17 @@ public class ConsultViewController {
         model.addAttribute("routes", routes);
         model.addAttribute("consults", consults);
         return "consult/consult";
+    }
+
+    @GetMapping("/test")
+    public String getConsultTestPage(Model model) {
+
+        return "consult/consult-test";
+    }
+    @GetMapping("/level")
+    public String getConsultLevelPage(Model model) {
+
+        return "consult/level-test_h";
     }
 
 }
