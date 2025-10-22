@@ -9,6 +9,7 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" th:href="@{/css/media.css}">
   <script th:src="@{/js/custom.js}"></script>
+  <script th:src="@{/js/pay/pay_list.js}"></script>
   <!-- Html menu Load -->
   <script th:src="@{/js/loadHTML.js}"></script>
 <title>월별 결제 내역</title>
@@ -28,7 +29,7 @@
                 <div class="issue-payment common-btn">현금영수증 발행</div>
                 <div class="cancel-cash common-btn">현금영수증 취소</div>
                 <div class="cancel-payment common-btn">결제 취소</div>
-                <div class="add-payment common-btn">+ 납부내역 추가</div>
+                <div class="add-payment common-btn" id="btn-add-payment">+ 납부내역 추가</div>
                 <div class="pay-save common-btn">검색</div>
               </div>
             </div>
@@ -38,7 +39,7 @@
                 <div style="position: relative;">
                   <input type="date" class="hidden-date" />
                   <button type="button" class="icon-btn calendar-open">
-                    <img src="image/calendar.png" alt="달력 아이콘">
+                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                   </button>
                 </div>
               </div>
@@ -78,13 +79,13 @@
                     <tr>
                       <th class="checkbox-group"><input type="checkbox"></th>
                       <th>No</th>
-                      <th><img src="image/sort.svg" alt="" class="svg-sort">결제일</th>
-                      <th><img src="image/sort_checked.svg" alt="" class="svg-sort">이름</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결제일</th>
+                      <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                       <th>청구 내역</th>
                       <th>결제금액</th>
-                      <th><img src="image/sort.svg" alt="" class="svg-sort">수납방법</th>
-                      <th><img src="image/sort.svg" alt="" class="svg-sort">잔여금액</th>
-                      <th><img src="image/sort.svg" alt="" class="svg-sort">현금영수증</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수납방법</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">잔여금액</th>
+                      <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">현금영수증</th>
                     </tr>
                   </thead>
                 </table>
@@ -199,7 +200,7 @@
                           </td>
                           <td>0</td>
                           <td>
-                            <img src="image/bill1.png" class="bill-icon" alt="영수증아이콘">
+                            <img th:src="@{/image/bill1.png}" class="bill-icon" alt="영수증아이콘">
                           </td>
                         </tr>
                         <tr>
@@ -236,7 +237,7 @@
                           </td>
                           <td>0</td>
                           <td>
-                            <img src="image/bill2.png" class="bill-icon" alt="영수증아이콘">
+                            <img th:src="@{/image/bill2.png}" class="bill-icon" alt="영수증아이콘">
                           </td>
                         </tr>
                         <tr>
@@ -273,7 +274,7 @@
                           </td>
                           <td>0</td>
                           <td>
-                            <img src="image/bill1.png" class="bill-icon" alt="영수증아이콘">
+                            <img th:src="@{/image/bill1.png}" class="bill-icon" alt="영수증아이콘">
                           </td>
                         </tr>
                         <tr>
@@ -310,7 +311,7 @@
                           </td>
                           <td>0</td>
                           <td>
-                            <img src="image/bill1.png" class="bill-icon" alt="영수증아이콘">
+                            <img th:src="@{/image/bill1.png}" class="bill-icon" alt="영수증아이콘">
                           </td>
                         </tr>
                       </tbody>
@@ -638,153 +639,7 @@
     </div>
   </div>
   <!-- section: modal(납부내역추가) -->
-  <div class="modal add-modal">
-    <div class="add-m-list">
-      <div class="add-m-frame">
-        <div class="m-t-line " style="margin: 10px 10px 0px 10px;">
-          <div>
-            <div class="title">납부내역 추가</div>
-          </div>
-          <a href="#" class="btn-close"></a>
-        </div>
-        <div class="second-frame" style="padding: 30px 40px;">
-          <div class="add-m-left table-frame">
-            <div class="student-content">
-              <h4>학생 선택</h4>
-              <div class="add-inform">
-                <input type="text" class="basic-input" style="max-width: 75%;">
-                <div class="common-btn stu-explore">검색</div>
-              </div>
-              <div class="mt">
-                <div class="table-frame pay-add-t">
-                  <table class="basic-table pay-add-t stripe yh">
-                    <thead>
-                      <tr>
-                        <th><img src="image/sort_checked.svg" alt="" class="svg-sort">이름</th>
-                        <th><img src="image/sort.svg" alt="" class="svg-sort">학년</th>
-                        <th><img src="image/sort.svg" alt="" class="svg-sort">담임</th>
-                      </tr>
-                    </thead>
-                    <tbody id="" class="stripe">
-                      <colgroup>
-                        <col width="30%">
-                        <col width="30%">
-                        <col width="30%">
-                      </colgroup>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                      <tr>
-                        <td>김호이</td>
-                        <td>초2</td>
-                        <td>김하늘</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="add-m-right table-frame ">
-            <!-- 학생명 -->
-            <table class="stu-m-tbl bt">
-              <colgroup>
-                <col style="width:20%">
-                <col style="width:30%">
-                <col style="width:20%">
-                <col style="width:30%">
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>학생명</td>
-                  <td>김호일</td>
-                  <td>결제일</td>
-                  <td>2025-07-11  13:58</td>
-                </tr>
-              </tbody>
-            </table>
-            <!-- 청구 종류 -->
-            <table class="member-status-table pay-edu-table bt mbs">
-              <colgroup>
-                <col width="20%">
-                <col width="80%">
-              </colgroup>
-              <tbody>
-                <tr>
-                  <td>청구 종류</td>
-                  <td>
-                    <div class="kind-charge">
-                      <div class="checkbox-group round mr">
-                        <input type="checkbox" name="eduFee" checked>교육비
-                      </div>
-                      <div class="checkbox-group round mr">
-                        <input type="checkbox" name="bookFee">교재비
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td>결제 방법 및 금액</td>
-                  <td>
-                    <div class="pay-input-group">
-                      <div class="pay-row">
-                        <span class="pay-label color-green">오프라인 카드</span>
-                        <input type="number" class="pay-input border-green">
-                      </div>
-                      <div class="pay-row">
-                        <span class="pay-label color-blue2">현금</span>
-                        <input type="number" class="pay-input border-blue">
-                      </div>
-                      <div class="pay-row">
-                        <span class="pay-label color-olive">계좌이체</span>
-                        <input type="number" class="pay-input border-olive">
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <a href="" class="charge-add"><img src="image/add.png" alt=""> 청구내역 추가</a>
-          </div>
-        </div>
-        </div>
-        <div class="save-btn-frame" style="padding: 20px;">
-          <div class="common-btn pay-issue">발행</div>
-        </div>
-      </div>
-    </div>
+  <div th:replace="~{pay/pay-list-add-payment-modal :: addPaymentModal}"></div>
   </div>
 </body>
 </html>

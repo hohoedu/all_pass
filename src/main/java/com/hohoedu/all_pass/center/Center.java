@@ -44,11 +44,14 @@ public class Center {
     @Column(name = "director_name", nullable = false, length = 50)
     private String directorName;
 
-    @Column(name = "tel", nullable = false, length = 30)
-    private String tel;
+    @Column(name = "center_tel", nullable = false, length = 30)
+    private String centerTel;
 
     @Column(name = "center_email", nullable = false, length = 100)
     private String centerEmail;
+
+    @Column(name = "center_address", nullable = false, length = 100)
+    private String centerAddress;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "region_key", referencedColumnName = "region_key", nullable = false)
@@ -56,13 +59,14 @@ public class Center {
 
     @Builder
     public Center(String centerCode, String centerName, LocalDate openedAt, String bizNo, String directorName,
-            String tel, String centerEmail, RegionCode region) {
+            String centerTel, String centerAddress, String centerEmail, RegionCode region) {
         this.centerCode = centerCode;
         this.centerName = centerName;
         this.openedAt = openedAt;
         this.bizNo = bizNo;
         this.directorName = directorName;
-        this.tel = tel;
+        this.centerTel = centerTel;
+        this.centerAddress = centerAddress;
         this.centerEmail = centerEmail;
         this.region = region;
     }

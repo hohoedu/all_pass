@@ -1,3 +1,69 @@
+
+document.addEventListener('DOMContentLoaded', () => {
+    const monthInput = document.querySelector('.hidden-picker');
+    const monthBtn = document.querySelector('.calendar-open');
+    const monthDisplay = document.querySelector('.day-display');
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    // 기본값: 현재 월 표시
+    monthInput.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+    monthDisplay.insertAdjacentText('afterbegin', `${currentYear}년 ${currentMonth}월`);
+
+    // 달력 아이콘 클릭 시 열기
+    monthBtn.addEventListener('click', () => {
+        monthInput.showPicker();
+    });
+
+    // 선택 후 표시 업데이트
+    monthInput.addEventListener('change', () => {
+        const date = new Date(monthInput.value);
+        if (isNaN(date)) return;
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
+    });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    /* =======================
+       2️⃣ 일 달력 (만료일용)
+    ======================= */
+    const expireInput = document.querySelector('.expire-input');
+    const expireBtn = document.querySelector('.expire-btn');
+    const expireDisplay = document.querySelector('.day-picker .day-display');
+
+    // 기본값: 오늘 + 5일
+    const plus5 = new Date();
+    plus5.setDate(now.getDate() + 5);
+
+    const y = plus5.getFullYear();
+    const m = plus5.getMonth() + 1;
+    const d = plus5.getDate();
+
+    expireInput.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    expireDisplay.textContent = `${y}년 ${m}월 ${d}일`;
+
+    const today = new Date();
+    const minY = today.getFullYear();
+    const minM = today.getMonth() + 1;
+    const minD = today.getDate();
+    expireInput.min = `${minY}-${String(minM).padStart(2, '0')}-${String(minD).padStart(2, '0')}`;
+
+    // 아이콘 클릭 시 달력 열기
+    expireBtn.addEventListener('click', () => {
+        expireInput.showPicker();
+    });
+
+    // 날짜 선택 시 표시 업데이트
+    expireInput.addEventListener('change', () => {
+        const date = new Date(expireInput.value);
+        if (isNaN(date)) return;
+        expireDisplay.textContent = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    });
+});
 document.addEventListener("DOMContentLoaded", () => {
 
     function openModal(modalType) {
@@ -22,13 +88,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.querySelectorAll('#student-tbody tr').forEach(row => {
-        row.addEventListener('click', () => {
+        row.addEventListener('mouseenter', () => {
+            row.style.cursor = 'pointer';
+        });
+        row.addEventListener('click', (e) => {
+            const targetCell = e.target.closest('td');
+            if (!targetCell) return;
+
+            const index = Array.from(row.children).indexOf(targetCell);
+            if (index === 0) return;
             openModal('personal');
         });
     });
 });
 
-const bill_id = "32088000282510211340";
+document.addEventListener("DOMContentLoaded", () => {
+    const eduFee = document.getElementById("eduFee");
+    const bookFee = document.getElementById("bookFee");
+    const priceDiv = document.querySelector(".price");
+    const priceInput = document.querySelector(".edu-input");
+
+    function updatePriceState() {
+        if (eduFee.checked) {
+            priceDiv.classList.add("disabled");
+            priceDiv.classList.remove("enabled");
+            priceInput.value = "";
+        } else {
+            priceDiv.classList.remove("disabled");
+            priceDiv.classList.add("enabled");
+        }
+    }
+
+    function formatNumber(value) {
+        const num = value.replace(/[^0-9]/g, "");
+        if (!num) return "";
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    priceInput.addEventListener("input", (e) => {
+        const cursorPos = e.target.selectionStart;
+        const formatted = formatNumber(e.target.value);
+        e.target.value = formatted;
+        e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+    });
+
+    eduFee.addEventListener("change", updatePriceState);
+    bookFee.addEventListener("change", updatePriceState);
+
+    updatePriceState();
+});
+
+
+const now = new Date();
+
+const yy = String(now.getFullYear()).slice(-2); // 뒤 두 자리
+const MM = String(now.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+const dd = String(now.getDate()).padStart(2, '0'); // 일
+const HH = String(now.getHours()).padStart(2, '0'); // 시
+const mm = String(now.getMinutes()).padStart(2, '0'); // 분
+
+const formatted = `${yy}${MM}${dd}${HH}${mm}`;
+const bill_id = "3208800028" + formatted;
 const phone = "01062954886";
 const price = "50000";
 sendHash = "";
@@ -80,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
             price: price,
             hash: sendHash,
             expire_dt: "2025-10-27",
-            callbackURL: "https://6d5da39844c8.ngrok-free.app/pay/callback"
+            callbackURL: "https://f57dded7b1fc.ngrok-free.app/pay/callback"
         }
         const requestBody = {
             apikey: "TEST-API-KEY-TALK",
@@ -104,6 +224,9 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(data => {
                 console.log("요청 바디:", JSON.stringify(requestBody));
                 console.log("응답 데이터:", data);
+                if (data.code === "0000") {
+                    alert('청구서가 발행되었습니다.')
+                }
                 if (data.code === "9800") {
                     alert('이미 발행된 청구서 입니다.')
                 }

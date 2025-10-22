@@ -1,0 +1,157 @@
+<div class="modal add-payment-modal" th:fragment="addPaymentModal">
+    <div class="add-m-list">
+        <div class="add-m-frame">
+            <div class="m-t-line " style="margin: 10px 10px 0px 10px;">
+                <div>
+                    <div class="title">납부내역 추가</div>
+                </div>
+                <a href="#" class="btn-close"></a>
+            </div>
+            <div class="second-frame" style="padding: 30px 40px;">
+                <div class="add-m-left table-frame">
+                    <div class="student-content">
+                        <h4>학생 선택</h4>
+                        <div class="add-inform">
+                            <input type="text" class="basic-input" style="max-width: 75%;">
+                            <div class="common-btn stu-explore">검색</div>
+                        </div>
+                        <div class="mt">
+                            <div class="table-frame pay-add-t">
+                                <table class="basic-table pay-add-t stripe yh">
+                                    <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                                        <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                        <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="" class="stripe">
+                                    <colgroup>
+                                        <col width="10">
+                                        <col width="30%">
+                                        <col width="30%">
+                                        <col width="30%">
+                                    </colgroup>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="add-m-right table-frame ">
+                    <!-- 학생명 -->
+                    <table class="stu-m-tbl bt">
+                        <colgroup>
+                            <col style="width:20%">
+                            <col style="width:30%">
+                            <col style="width:20%">
+                            <col style="width:30%">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>학생명</td>
+                            <td>김호일</td>
+                            <td>결제일</td>
+                            <td>2025-07-11  13:58</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <!-- 청구 종류 -->
+                    <table class="member-status-table pay-edu-table bt mbs">
+                        <colgroup>
+                            <col width="20%">
+                            <col width="80%">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>청구 종류</td>
+                            <td>
+                                <div class="kind-charge">
+                                    <div class="checkbox-group round mr">
+                                        <input type="checkbox" name="eduFee" checked>교육비
+                                    </div>
+                                    <div class="checkbox-group round mr">
+                                        <input type="checkbox" name="bookFee">교재비
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>결제 방법 및 금액</td>
+                            <td>
+                                <div class="pay-input-group">
+                                    <div class="pay-row">
+                                        <span class="pay-label color-green">오프라인 카드</span>
+                                        <input type="number" class="pay-input border-green">
+                                    </div>
+                                    <div class="pay-row">
+                                        <span class="pay-label color-blue2">현금</span>
+                                        <input type="number" class="pay-input border-blue">
+                                    </div>
+                                    <div class="pay-row">
+                                        <span class="pay-label color-olive">계좌이체</span>
+                                        <input type="number" class="pay-input border-olive">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <a href="" class="charge-add"><img th:src="@{/image/add.png}" alt=""> 청구내역 추가</a>
+                </div>
+            </div>
+        </div>
+        <div class="save-btn-frame" style="padding: 20px;">
+            <div class="common-btn pay-issue">발행</div>
+        </div>
+    </div>
+</div>

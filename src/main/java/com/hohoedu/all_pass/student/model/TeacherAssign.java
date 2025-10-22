@@ -24,7 +24,7 @@ public class TeacherAssign {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id")
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id")
     private Student student;
 
     @Column
@@ -40,20 +40,20 @@ public class TeacherAssign {
     private String entryBookDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assign_han_teacher")
+    @JoinColumn(name = "assign_han_teacher", referencedColumnName = "user_code")
     private User assignHanTeacher;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assign_han_class")
+    @JoinColumn(name = "assign_han_class", referencedColumnName = "class_key")
     private ClassCode assignHanClass;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assign_book_teacher")
+    @JoinColumn(name = "assign_book_teacher", referencedColumnName = "user_code")
     private User assignBookTeacher;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assign_book_class")
+    @JoinColumn(name = "assign_book_class", referencedColumnName = "class_key")
     private ClassCode assignBookClass;
 
 

@@ -6169,6 +6169,37 @@ input[type="time" i] {
     text-align-last: left;
 }
 
+.kind-charge .price.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.kind-charge .price.enabled {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+.price.with-won {
+    position: relative;
+    display: inline-block;
+}
+
+.price.with-won input {
+    padding-right: 35px;
+}
+
+.price.with-won::after {
+    content: "원";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #555;
+    pointer-events: none;
+}
+
 .btn-groups {
     display: flex;
     width: 100%;

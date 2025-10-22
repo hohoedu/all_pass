@@ -1,7 +1,9 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
+import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import java.util.List;
 public class PaymentViewController {
 
     private final UserService userService;
+    private final PaymentService paymentService;
+
 
     @GetMapping("/pay-edu")
     public String getPayEduPage(HttpSession session, Model model) {
@@ -27,7 +31,10 @@ public class PaymentViewController {
 //        }
 //        List<User> users = userService.findByCenterCode(user.getCenterCode());
         List<User> users = userService.findByCenterCode("DAE001");
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent();
+
         model.addAttribute("users", users);
+        model.addAttribute("students", students);
         return "pay/pay-edu";
     }
 
