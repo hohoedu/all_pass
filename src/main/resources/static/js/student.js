@@ -288,3 +288,36 @@ function applyTfootStripe() {
     }
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("joinForm");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault(); // 기본 form submit 막기
+
+        // form 데이터를 수집
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("서버 오류 발생");
+
+            const result = await response.json();
+
+            // 백엔드의 ApiUtils.success("ok") 응답 기준
+            if (result.success && result.response === "ok") {
+                alert("가입이 완료되었습니다.");
+                window.close(); // 창 닫기
+            } else {
+                alert("가입 중 오류가 발생했습니다. 다시 시도해 주세요.");
+            }
+
+        } catch (error) {
+            console.error("가입 요청 실패:", error);
+            alert("서버와의 통신에 실패했습니다.");
+        }
+    });
+});

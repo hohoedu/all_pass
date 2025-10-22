@@ -97,12 +97,12 @@ public class StudentController {
 
     // TODO: 리다이렉트 변경 필요
     @PostMapping("/join")
-    public String studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
+    public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
                               @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
 
         studentService.studentInsert(studentDTO, parentDTO);
 
-        return "redirect:/main";
+        return ResponseEntity.ok(ApiUtils.success("ok"));
     }
 
     @PostMapping("/status")
