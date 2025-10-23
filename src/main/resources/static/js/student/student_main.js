@@ -383,15 +383,112 @@ function renderStudents(tbody, students = []) {
     // </div>
 }
 
+
+// ==================== 수강정보 저장 ==================== //
 document.addEventListener("DOMContentLoaded", () => {
     const btn = document.querySelector('#student-tab-3-save-btn');
-    if (!btn) return;
 
-    btn.addEventListener("click", function () {
-        console.log('저장버튼이 눌러졌넹');
+    btn.addEventListener("click", async (e) => {
+
+        e.preventDefault();
+
+        console.log('💾 저장 버튼 클릭됨');
+
+        const data = {
+            studentId: currentStudentId,
+
+            // 한자 수강 정보
+            hanClassKey: document.querySelector('#hanja')?.value || '',
+            hanTeacherCode: document.querySelector('#han-teacher')?.value || '',
+            hanStatus: document.querySelector('#hanja').closest('table')
+                .querySelector('input[name="status"]')?.value || '',
+            hanEntryDate: document.querySelector('#hanja')
+                .closest('table')
+                .querySelector('.hidden-picker')?.value || '',
+            hanFee: parseInt(document.querySelector('#hanFee')?.value.replace(/,/g, '') || '0'),
+            hanMaterialFee: parseInt(document.querySelector('#hanMaterialFee')?.value.replace(/,/g, '') || '0'),
+
+            // 독서 수강 정보
+            bookClassKey: document.querySelector('#book')?.value || '',
+            bookTeacherCode: document.querySelector('#book-teacher')?.value || '',
+            bookStatus: document.querySelector('#book').closest('table')
+                .querySelector('input[name="status"]')?.value || '',
+            bookEntryDate: document.querySelector('#book')
+                .closest('table')
+                .querySelector('.hidden-picker')?.value || '',
+            bookFee: parseInt(document.querySelector('#bookFee')?.value.replace(/,/g, '') || '0'),
+            bookMaterialFee: parseInt(document.querySelector('#bookMaterialFee')?.value.replace(/,/g, '') || '0')
+        };
+
+        console.log("📦 전송 데이터:", data);
+            try {
+                const response = await fetch("/student/class/insert", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error(`서버 오류 (${response.status})`);
+
+                const result = await response.json();
+                if (result.success) {
+                    alert("수강정보가 저장되었습니다.");
+                } else {
+                    alert("저장 중 오류가 발생했습니다.");
+                }
+            } catch (err) {
+                console.error("❌ 저장 실패:", err);
+                alert("서버 통신 중 오류가 발생했습니다.");
+            }
     });
-})
+});
 
+// ====== 수강료 가져오기 ====== //
+document.addEventListener("DOMContentLoaded", () => {
+    const selectHan = document.getElementById("hanja");
+    const selectBook = document.getElementById("book");
+    const hanTuitionInput = document.getElementById("hanFee");
+    const bookTuitionInput = document.getElementById("bookFee");
+
+    // ✅ 공통 함수
+    async function fetchAndSetFee(classKey, targetInput) {
+        if (!classKey) return;
+
+        try {
+            const response = await fetch(`/pay/fee/${classKey}`, {
+                method: "GET",
+                headers: {"Accept": "application/json"}
+            });
+
+            if (!response.ok) throw new Error(`서버 응답 오류 (${response.status})`);
+
+            const result = await response.json();
+            const rawFee = result.response;
+
+            if (rawFee) {
+                targetInput.value = Number(rawFee).toLocaleString('ko-KR') + '원';
+            } else {
+                targetInput.value = '';
+            }
+
+        } catch (error) {
+            console.error(`❌ fetch 실패 (${classKey}):`, error);
+        }
+    }
+
+    // ✅ 이벤트 리스너
+    selectHan.addEventListener("change", async () => {
+        await fetchAndSetFee(selectHan.value, hanTuitionInput);
+    });
+
+    selectBook.addEventListener("change", async () => {
+        await fetchAndSetFee(selectBook.value, bookTuitionInput);
+    });
+});
+
+// ====== 상세정보 날짜 바꾸기 ====== //
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".birth-btn").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -401,30 +498,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!dateInput) return;
 
-            // 최신 브라우저 (Chrome, Safari, Edge 등)
             if (typeof dateInput.showPicker === "function") {
                 dateInput.showPicker();
             } else {
                 dateInput.focus();
                 dateInput.click();
             }
-
-            // 날짜 선택 시 표시 포맷 업데이트
             dateInput.addEventListener("change", () => {
                 const value = dateInput.value; // ex) "2025-08-15"
                 if (value) {
                     const [y, m, d] = value.split("-");
                     display.textContent = `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;
 
-                    // DB 저장용 hidden input 자동 생성/업데이트
                     let hidden = parent.querySelector("input[name='startDateHidden']");
                     if (!hidden) {
                         hidden = document.createElement("input");
                         hidden.type = "hidden";
-                        hidden.name = "startDateHidden"; // DB에 전송할 필드명
+                        hidden.name = "startDateHidden";
                         parent.appendChild(hidden);
                     }
-                    hidden.value = value; // ex) 2025-08-15
+                    hidden.value = value;
                 } else {
                     display.textContent = "날짜를 선택해주세요.";
                 }

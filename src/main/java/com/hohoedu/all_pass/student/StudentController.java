@@ -98,7 +98,7 @@ public class StudentController {
     // TODO: 리다이렉트 변경 필요
     @PostMapping("/join")
     public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
-                              @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
+                                         @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
 
         studentService.studentInsert(studentDTO, parentDTO);
 
@@ -119,6 +119,14 @@ public class StudentController {
         StudentWebRespDTO.StudentStatusDTO response = studentService.statusInsert(historyDTO, user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/class/insert")
+    public ResponseEntity<?> insertStudentClass(@RequestBody StudentWebReqDTO.StudentClassSaveReqDTO saveReqDTO, HttpSession session) {
+
+            studentService.insertStudentClass(saveReqDTO);
+
+        return ResponseEntity.ok(ApiUtils.success("hello"));
     }
 
     @GetMapping("/gradeCodes")

@@ -31,7 +31,7 @@ public class PaymentViewController {
 //        }
 //        List<User> users = userService.findByCenterCode(user.getCenterCode());
         List<User> users = userService.findByCenterCode("DAE001");
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent();
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent("2025", "10", "all");
 
         model.addAttribute("users", users);
         model.addAttribute("students", students);

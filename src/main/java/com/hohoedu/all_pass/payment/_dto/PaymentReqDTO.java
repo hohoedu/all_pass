@@ -15,4 +15,13 @@ public class PaymentReqDTO {
         private String appr_price;
         private String appr_state;
     }
+
+    @Data
+    public static class StudentsByMonthDTO {
+
+        private String year;
+        private String month;
+        private String userCode;
+
+    }
 }

@@ -9,9 +9,9 @@
     <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student
-        (student_id, student_name, birth,gender, school, address, address_detail, entry_han_date, entry_book_date, app_id, app_password, created_at, center_code, grade_key, status_key,
+        (student_id, student_name, birth, gender, school, address, address_detail, app_id, app_password, created_at, center_code, grade_key, status_key,
          student_privacy_agree)
-        values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{entryHanDate}, #{entryBookDate}, #{appId}, #{appPassword}, SYSDATETIME(),
+        values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{appId}, #{appPassword}, SYSDATETIME(),
                 #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree});
     </insert>
 
@@ -29,41 +29,46 @@
         JOIN erp_class_code cc ON t.class_key = cc.class_key
         WHERE ta.student_id = s.student_id
           AND t.yy  = #{year}
-            AND t.mm  = #{month}
-            FOR XML PATH(''), TYPE
-            ).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS registeredClassTypes
+            AND t.mm = #{month}
+            FOR XML PATH ('')
+           , TYPE
+            ).value('.'
+           , 'NVARCHAR(MAX)')
+           , 1
+           , 1
+           , '') AS registeredClassTypes
             ) reg
         WHERE s.center_code = #{centerCode}
           AND (
             reg.registeredClassTypes IS NULL
-           OR reg.registeredClassTypes IN ('1','2')
+           OR reg.registeredClassTypes IN ('1'
+            , '2')
             )
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
-        SELECT s.student_id      AS studentId,
-               s.student_name    AS studentName,
+        SELECT s.student_id     AS studentId,
+               s.student_name   AS studentName,
                s.school,
-               g.grade_name      AS grade,
+               g.grade_name     AS grade,
 --                l.level_name      AS level,
                s.gender,
                s.birth,
                s.address,
-               s.address_detail  AS addressDetail,
-               c.center_name     AS center,
-               s.entry_han_date  AS entryHanDate,
-               s.entry_book_date AS entryBookDate,
-               s.created_at      AS createdAt,
-               han.class_name    AS hanClass,
-               book.class_name   AS bookClass,
+               s.address_detail AS addressDetail,
+               c.center_name    AS center,
+
+               s.created_at     AS createdAt,
+               han.class_name   AS hanClass,
+               book.class_name  AS bookClass,
                CASE
                    WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL
                        THEN NULL
                    ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
-                   END           AS parentTel,
+                   END          AS parentTel,
 
-               s.status_key      AS status,
-               sc.status_name    AS statusName
+               s.status_key     AS status,
+               sc.status_name   AS statusName
         FROM ERP_STUDENT s
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
 --                  LEFT JOIN ERP_LEVEL_CODE l ON s.level_key = l.level_key
@@ -99,13 +104,7 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        CASE
-        WHEN s.entry_han_date IS NULL AND s.entry_book_date IS NULL THEN '미등록'
-        WHEN s.entry_han_date IS NULL THEN s.entry_book_date
-        WHEN s.entry_book_date IS NULL THEN s.entry_han_date
-        WHEN s.entry_han_date &lt;= s.entry_book_date THEN s.entry_han_date
-        ELSE s.entry_book_date
-        END AS entryDate,
+        s.created_at AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -165,12 +164,7 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        CASE
-        WHEN s.entry_han_date IS NULL THEN s.entry_book_date
-        WHEN s.entry_book_date IS NULL THEN s.entry_han_date
-        WHEN s.entry_han_date &lt;= s.entry_book_date THEN s.entry_han_date
-        ELSE s.entry_book_date
-        END AS entryDate,
+        s.created_at AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -238,6 +232,14 @@ OUTER APPLY (
                  JOIN ERP_STATUS_CODE sc on s.status_key = sc.status_key
         WHERE s.student_id = #{studentId}
     </select>
+
+    <!-- 학생 수강정보 입력 -->
+    <insert id="insertStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
+        INSERT INTO erp_student_class
+        (student_id, han_class_key, han_user_code, han_status, entry_han_date, han_fee, han_material_fee, book_class_key, book_user_code, book_status, entry_book_date, book_fee,
+         book_material_fee, created_at)
+        VALUES( #{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate}, #{hanFee}, #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{hanMaterialFee}, #{bookFee}, #{bookMaterialFee}, SYSDATETIME() )
+    </insert>
 
     <!-- 전입/전출 화면 학생 조회 -->
     <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">

@@ -22,8 +22,6 @@ public class StudentWebRespDTO {
         private String address;
         private String addressDetail;
         private String center;
-        private String entryHanDate;
-        private String entryBookDate;
         private String status;
         private String statusName;
         private String reason;
@@ -53,8 +51,6 @@ public class StudentWebRespDTO {
         private String address;
         private String addressDetail;
         private String center;
-        private String entryHanDate;
-        private String entryBookDate;
         private Timestamp statusModifiedAt;
         private String status;
         private String statusName;
@@ -73,7 +69,6 @@ public class StudentWebRespDTO {
         private String school;
         private String grade;
         private String centerNo;
-        private String entryDate;
         private String status;
         private String hanClass;
         private String bookClass;
@@ -92,7 +87,6 @@ public class StudentWebRespDTO {
         private String studentId;
         private String studentName;
         private String statusName;
-        private String entryDate;
         private String gradeName;
         private String school;
         private String centerName;
@@ -110,7 +104,6 @@ public class StudentWebRespDTO {
         private String gradeName;
         private String moveAt;
         private String transferReson;
-        private String entryDate;
         private String hanTeacher;
         private String bookTeacher;
         private String hanClassType;

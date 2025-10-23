@@ -12,7 +12,7 @@
                                 <option value="" class="s_subjects"></option>
                                 <th:block th:each="code : ${classCodes}">
                                     <option th:if="${code.classType == '1'}"
-                                            th:value="${code.classNo}" th:text="${code.className}">
+                                            th:value="${code.classKey}" th:text="${code.className}">
                                     </option>
                                 </th:block>
                             </select>
@@ -52,11 +52,11 @@
                 <tr>
                     <th class="tuition-fee">교육비</th>
                     <td>
-                        <input type="number" name="tuition" class="no-spin">
+                        <input type="text" name="hanFee" class="no-spin" id="hanFee">
                     </td>
-                    <th class="book-fee">교재비</th>
+                    <th>교재비</th>
                     <td>
-                        <input type="number" name="bookFee" class="no-spin book-fee">
+                        <input type="text" name="hanMaterialFee" class="no-spin book-fee" id="hanMaterialFee">
                     </td>
                 </tr>
                 </tbody>
@@ -70,7 +70,7 @@
                     <th>독서 단계</th>
                     <td>
                         <div class="select-wrap">
-                            <select name="hanjaLevel" id="read" class="styled-select">
+                            <select name="hanjaLevel" id="book" class="styled-select">
                                 <th:block th:each="code : ${classCodes}">
                                     <option th:if="${code.classType == '2'}"
                                             th:value="${code.classKey}" th:text="${code.className}">
@@ -112,11 +112,11 @@
                 <tr>
                     <th class="tuition-fee">교육비</th>
                     <td>
-                        <input type="number" name="tuition" class="no-spin">
+                        <input type="text" name="bookFee" class="no-spin" id="bookFee">
                     </td>
                     <th>교재비</th>
-                    <td class="book-fee">
-                        <input type="number" name="bookFee" class="no-spin">
+                    <td>
+                        <input type="text" name="bookMaterialFee" class="no-spin book-fee" id="bookMaterialFee">
                     </td>
                 </tr>
                 </tbody>

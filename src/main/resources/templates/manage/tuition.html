@@ -10,7 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <script th:src="@{/js/custom.js}"></script>
     <!-- Html menu Load -->
-    <script th:src="@{/js/loadHTML.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
     <title>교육비 관리</title>
 </head>
 <body>
@@ -24,18 +24,20 @@
                 <section class="book-order">
                     <div class="common-title" style="margin-bottom: 10px;">
                         <h2>과목별 수강료 설정</h2>
-                        <button class="common-btn commission">수강료 책정 범위: 70,000원 ~ 110,000원 사이</button>
+                        <div class="common-btn commission-save">저장하기</div>
                     </div>
                     <div class="lump-sum">
                         <div class="radio-group">
                             <input type="radio" name="feeMethod" id="fee-submit" checked>
-                            <label for="fee-submit">수수료 일괄 적용</label>
+                            <div>
+                                <label for="fee-submit">수강료 일괄 적용</label>
+                                <input type="text" class="basic-input edu-input no-spin" id="fee-input">
+                            </div>
                         </div>
-                        <input type="number" class="basic-input edu-input">
-                    </div>
-                    <div class="radio-group">
-                        <input type="radio" name="feeMethod" id="fee-each">
-                        <label for="fee-each">수수료 개별 적용</label>
+                        <div class="radio-group">
+                            <input type="radio" name="feeMethod" id="fee-each">
+                            <label for="fee-each">수강료 개별 적용</label>
+                        </div>
                     </div>
                     <div class="table-frame tuition-frame">
                         <table class="member-status-table tution-table bt">
@@ -133,40 +135,61 @@
                 <div class="divider"></div>
                 <!-- section:right -->
                 <section class="pre-order">
-                    <div class="common-title">
-                        <h2>수강료 할인 설정</h2>
-                    </div>
-                    <div class="discount-row">
-                        <label for="discount-name">할인명</label>
-                        <input type="number" class="basic-input ma" id="discount-name" name="discountName">
-                        <label>할인금액</label>
-                        <input type="number" class="basic-input" id="">
-                        <div class="basic-select">
-                            <select name="disKind" id="dis-kind">
-                                <option value="">원</option>
-                                <option value="">%</option>
-                            </select>
-                        </div>
-                        <div class="trash-icon" style="visibility: hidden;"></div>
-                    </div>
-                    <div class="discount-row">
-                        <label for="discount-name">할인명</label>
-                        <input type="number" class="basic-input ma" id="" name="">
-                        <label>할인금액</label>
-                        <input type="number" class="basic-input" id="">
-                        <div class="basic-select">
-                            <select name="" id="">
-                                <option value="">원</option>
-                                <option value="">%</option>
-                            </select>
-                        </div>
-                        <div class="trash-icon"></div>
-                    </div>
-                    <div class="discount-add">할인 종류 추가하기</div>
+                    <!--                    <div class="common-title">-->
+                    <!--                        <h2>수강료 할인 설정</h2>-->
+                    <!--                    </div>-->
+                    <!--                    <div class="discount-row">-->
+                    <!--                        <label for="discount-name">할인명</label>-->
+                    <!--                        <input type="number" class="basic-input ma" id="discount-name" name="discountName">-->
+                    <!--                        <label>할인금액</label>-->
+                    <!--                        <input type="number" class="basic-input" id="">-->
+                    <!--                        <div class="basic-select">-->
+                    <!--                            <select name="disKind" id="dis-kind">-->
+                    <!--                                <option value="">원</option>-->
+                    <!--                                <option value="">%</option>-->
+                    <!--                            </select>-->
+                    <!--                        </div>-->
+                    <!--                        <div class="trash-icon" style="visibility: hidden;"></div>-->
+                    <!--                    </div>-->
+                    <!--                    <div class="discount-row">-->
+                    <!--                        <label for="discount-name">할인명</label>-->
+                    <!--                        <input type="number" class="basic-input ma" id="" name="">-->
+                    <!--                        <label>할인금액</label>-->
+                    <!--                        <input type="number" class="basic-input" id="">-->
+                    <!--                        <div class="basic-select">-->
+                    <!--                            <select name="" id="">-->
+                    <!--                                <option value="">원</option>-->
+                    <!--                                <option value="">%</option>-->
+                    <!--                            </select>-->
+                    <!--                        </div>-->
+                    <!--                        <div class="trash-icon"></div>-->
+                    <!--                    </div>-->
+                    <!--                    <div class="discount-add">할인 종류 추가하기</div>-->
                 </section>
             </div>
         </main>
     </div>
 </div>
+<script>
+    const feeSubmit = document.getElementById('fee-submit');
+    const feeEach = document.getElementById('fee-each');
+    const feeInput = document.getElementById('fee-input');
+
+    function updateInputState() {
+        if (feeEach.checked) {
+            feeInput.disabled = true; // 비활성화
+            feeInput.classList.add('disabled');
+        } else {
+            feeInput.disabled = false;
+            feeInput.classList.remove('disabled');
+        }
+    }
+
+    feeSubmit.addEventListener('change', updateInputState);
+    feeEach.addEventListener('change', updateInputState);
+
+    // 초기 상태 반영
+    updateInputState();
+</script>
 </body>
 </html>

@@ -1,41 +1,118 @@
+/* global CryptoJS */
 
 document.addEventListener('DOMContentLoaded', () => {
     const monthInput = document.querySelector('.hidden-picker');
     const monthBtn = document.querySelector('.calendar-open');
     const monthDisplay = document.querySelector('.day-display');
+    const teacherSelect = document.getElementById('student-filter');
+    const tbody = document.getElementById('student-tbody');
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
+    initCurrentMonth();
 
-    // 기본값: 현재 월 표시
-    monthInput.value = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
-    monthDisplay.insertAdjacentText('afterbegin', `${currentYear}년 ${currentMonth}월`);
+    monthBtn.addEventListener('click', () => monthInput.showPicker());
+    monthInput.addEventListener('change', onMonthChange);
+    teacherSelect.addEventListener('change', onTeacherChange);
 
-    // 달력 아이콘 클릭 시 열기
-    monthBtn.addEventListener('click', () => {
-        monthInput.showPicker();
-    });
+    function initCurrentMonth() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
 
-    // 선택 후 표시 업데이트
-    monthInput.addEventListener('change', () => {
+        monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
+        monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
+
+    }
+
+    async function onMonthChange() {
         const date = new Date(monthInput.value);
         if (isNaN(date)) return;
+
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
+
         monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
-    });
+
+        const teacherCode = teacherSelect.value || null;
+        await fetchStudents(year, month, teacherCode);
+    }
+
+    async function onTeacherChange() {
+        const date = new Date(monthInput.value);
+        if (isNaN(date)) return;
+
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const teacherCode = teacherSelect.value || null;
+
+        await fetchStudents(year, month, teacherCode);
+    }
+
+    async function fetchStudents(year, month, teacherCode) {
+        const requestBody = {
+            year: year,
+            month: String(month).padStart(2, '0'),
+            userCode: teacherCode
+        };
+
+        try {
+            const response = await fetch("/pay/students", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) throw new Error("서버 오류 발생");
+
+            const result = await response.json();
+            console.log(JSON.stringify(result, null, 2));
+
+            const students = result.response || result;
+            renderStudentTable(students);
+
+        } catch (error) {
+            console.error("학생 목록 로드 실패:", error);
+            alert("서버와의 통신에 실패했습니다.");
+        }
+    }
+
+    function renderStudentTable(students) {
+        tbody.innerHTML = '';
+
+        if (!students || students.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="8" style="text-align:center;">해당 조건의 학생 데이터가 없습니다.</td></tr>
+            `;
+            return;
+        }
+
+        students.forEach((student, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="checkbox-group">
+                    <input type="checkbox" value="${student.studentId}">
+                </td>
+                <td>${index + 1}</td>
+                <td>${student.studentName}</td>
+                <td>${student.subject}</td>
+                <td class="cal-content">-</td>
+                <td class="charge">-</td>
+                <td><span class="unissued">-</span></td>
+                <td><div class="pay-box">-</div></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
 });
 
+// ========== 청구서 유효기간 세팅 ========== //
 document.addEventListener('DOMContentLoaded', () => {
-    /* =======================
-       2️⃣ 일 달력 (만료일용)
-    ======================= */
     const expireInput = document.querySelector('.expire-input');
     const expireBtn = document.querySelector('.expire-btn');
     const expireDisplay = document.querySelector('.day-picker .day-display');
 
-    // 기본값: 오늘 + 5일
     const plus5 = new Date();
     plus5.setDate(now.getDate() + 5);
 
@@ -52,19 +129,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const minD = today.getDate();
     expireInput.min = `${minY}-${String(minM).padStart(2, '0')}-${String(minD).padStart(2, '0')}`;
 
-    // 아이콘 클릭 시 달력 열기
     expireBtn.addEventListener('click', () => {
         expireInput.showPicker();
     });
 
-    // 날짜 선택 시 표시 업데이트
     expireInput.addEventListener('change', () => {
         const date = new Date(expireInput.value);
         if (isNaN(date)) return;
         expireDisplay.textContent = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
     });
 });
-document.addEventListener("DOMContentLoaded", () => {
+
+// ========== 모달 열기 ========== //
+document.addEventListener('DOMContentLoaded', () => {
 
     function openModal(modalType) {
         console.log('modalType=' + modalType);
@@ -102,7 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-document.addEventListener("DOMContentLoaded", () => {
+// ========== 금액 직접 입력하기 ========== //
+document.addEventListener('DOMContentLoaded', () => {
     const eduFee = document.getElementById("eduFee");
     const bookFee = document.getElementById("bookFee");
     const priceDiv = document.querySelector(".price");
@@ -139,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+// 이 부분은 청구서 발행 전에 수정되어야 함 지금은 임의 값으로 세팅해둠
 const now = new Date();
 
 const yy = String(now.getFullYear()).slice(-2); // 뒤 두 자리
@@ -154,31 +233,22 @@ const price = "50000";
 sendHash = "";
 cancelHash = "";
 
-async function generateSendHash(billId, phone, price) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(`${billId},${phone},${price}`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const sendHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return sendHash;
+function generateSendHash(billId, phone, price) {
+    const input = `${billId},${phone},${price}`;
+    return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
 }
 
-async function generateCancelHash(billId, price) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(`${billId},${price}`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const cancelHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return cancelHash;
+function generateCancelHash(billId, price) {
+    const input = `${billId},${price}`;
+    return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
 }
 
-(async () => {
-    sendHash = await generateSendHash(bill_id, phone, price);
-    cancelHash = await generateCancelHash(bill_id, price);
+sendHash = generateSendHash(bill_id, phone, price);
+cancelHash = generateCancelHash(bill_id, price);
 
-    console.log("✅ sendHash:", sendHash);
-    console.log("✅ cancelHash:", cancelHash);
-})();
+console.log("✅ sendHash:", sendHash);
+console.log("✅ cancelHash:", cancelHash);
+
 // ========== 우측 버튼 클릭 ========== //
 document.addEventListener("DOMContentLoaded", () => {
     const payIssue = document.querySelector('#pay-issue');
@@ -188,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!payIssue) return;
 
 
-    // 결제선생 테스트
+    // 청구서 발행 버튼
     payIssue.addEventListener('click', () => {
         const bill = {
             // bill_id: "DAE00125102112540000",
@@ -209,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
             bill: bill
         };
 
-        fetch("http://stg.paymint.co.kr:10200/if/bill/send", {
+        fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -226,9 +296,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("응답 데이터:", data);
                 if (data.code === "0000") {
                     alert('청구서가 발행되었습니다.')
-                }
-                if (data.code === "9800") {
+                } else if (data.code === "9800") {
                     alert('이미 발행된 청구서 입니다.')
+                } else if (data.code === "9999") {
+                    alert(data.msg);
                 }
             })
             .catch(err => {
@@ -236,6 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
+    // 결제 취소 버튼
     payCancel.addEventListener('click', () => {
         console.log('취소 버튼');
 
@@ -249,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
             hash: cancelHash
         };
 
-        fetch("http://stg.paymint.co.kr:10200/if/bill/cancel", {
+        fetch("https://stg.paymint.co.kr/partner/if/bill/cancel", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -267,17 +339,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log(data.code);
                 if (data.code === "0000") {
                     alert('결제가 취소되었습니다.');
-                    return;
-                }
-                if (data.code === "9980") {
+                } else if (data.code === "9980") {
                     alert('청구서를 찾을 수 없습니다.');
-
+                } else if (data.code === "9999") {
+                    alert(data.msg);
                 }
             })
             .catch(err => {
                 console.error("오류 발생:", err);
             });
     });
+
+    // 청구서 파기 버튼
     payDestroy.addEventListener('click', () => {
         console.log('파기 버튼');
 
@@ -290,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
             hash: cancelHash
         };
 
-        fetch("http://stg.paymint.co.kr:10200/if/bill/cancel", {
+        fetch("https://stg.paymint.co.kr/partner/if/bill/destroy", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -307,21 +380,60 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("응답 데이터:", data);
                 console.log(data.code);
                 if (data.code === "0000") {
-                    alert('결제가 취소되었습니다.');
-                    return;
-                }
-                if (data.code === "9980") {
+                    alert('청구서가 파기되었습니다.');
+
+                } else if (data.code === "9980") {
                     alert('청구서를 찾을 수 없습니다.');
 
+                } else if (data.code === "9999") {
+                    alert(data.msg);
                 }
             })
             .catch(err => {
                 console.error("오류 발생:", err);
             });
     });
+
+    // 청구서 재발행 버튼
     payReissue.addEventListener('click', () => {
         console.log('재발행 버튼 ');
-    });
 
+        const requestBody = {
+            apikey: "TEST-API-KEY-TALK",
+            member: "TEST-MEMBER-FOR-API",
+            merchant: "TEST-MERCHANT-FOR-API",
+            bill_id: bill_id
+        };
+
+        fetch("https://stg.paymint.co.kr/partner/if/bill/resend", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(res => {
+                console.log("응답 상태:", res.status);
+                return res.json(); // JSON 파싱
+            })
+            .then(data => {
+                console.log("요청 바디:", JSON.stringify(requestBody));
+                console.log("응답 데이터:", data);
+                console.log(data.code);
+                if (data.code === "0000") {
+                    alert('청구서가 발행되었습니다.')
+                }
+                if (data.code === "9800") {
+                    alert('이미 발행된 청구서 입니다.')
+                }
+                if (data.code === "9980") {
+                    alert('청구서를 찾을 수 없습니다.');
+                }
+            })
+            .catch(err => {
+                console.error("오류 발생:", err);
+            });
+    });
 
 });

@@ -15,10 +15,16 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent() {
+    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode) {
 
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents();
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode);
 
         return students;
+    }
+
+    public Integer findFeeByClassKey(String classKey, String centerCode) {
+        Integer fee = paymentRepository.findFeeByClassKey(classKey, centerCode);
+        return fee;
+
     }
 }

@@ -20,8 +20,7 @@ import com.hohoedu.all_pass.family.FamilyService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
-import com.hohoedu.all_pass.student.model.StudentSnapshot;
-import com.hohoedu.all_pass.student.model.StudentSnapshotId;
+import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
@@ -36,8 +35,6 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDTO;
-import com.hohoedu.all_pass.student.model.GradeCode;
-import com.hohoedu.all_pass.student.model.StudentTransferHistory;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.repository.UserRepository;
 import com.hohoedu.all_pass.family.repository.RelationJpaRepository;
@@ -158,6 +155,31 @@ public class StudentService {
         List<GradeCode> gradeCodes = gradeJpaRepository.findAll();
         return gradeCodes;
     }
+
+    public void insertStudentClass(StudentWebReqDTO.StudentClassSaveReqDTO req) {
+
+
+        // === 한자 수강정보 저장 ===
+        if ("수강".equals(req.getHanStatus())) {
+            StudentClass studentClass = StudentClass.builder()
+                    .student(Student.builder().studentId(req.getStudentId()).build())
+                    .hanClassCode(ClassCode.builder().classKey(req.getHanClassKey()).build())
+                    .hanUser(User.builder().userCode(req.getHanTeacherCode()).build())
+                    .hanStatus(req.getHanStatus())
+                    .entryHanDate(req.getHanEntryDate())
+                    .hanFee(req.getHanFee())
+                    .hanMaterialFee(req.getHanMaterialFee())
+                    .bookClassCode(ClassCode.builder().classKey(req.getBookClassKey()).build())
+                    .bookUser(User.builder().userCode(req.getBookTeacherCode()).build())
+                    .bookStatus(req.getBookStatus())
+                    .entryBookDate(req.getBookEntryDate())
+                    .bookFee(req.getBookFee())
+                    .bookMaterialFee(req.getBookMaterialFee())
+                    .build();
+            studentRepository.insertStudentClass(studentClass);
+        }
+    }
+
 
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);

@@ -563,6 +563,16 @@ table .checkbox-group {
     transition: .3s ease;
 }
 
+.commission-div {
+    padding: 5px 18px;
+    border-radius: 20px;
+    color: #fff;
+    display: inline-flex;
+    margin-left: auto;
+    border: none;
+    transition: .3s ease;
+}
+
 .cancel-cash {
     background: #f05a21;
 }
@@ -578,6 +588,7 @@ table .checkbox-group {
 
 .explore,
 .record-save,
+.commission-save,
 .stas-btn,
 .join-link,
 .pay-save,
@@ -2755,10 +2766,6 @@ textarea {
 
 #tab3 table td {
     text-align-last: left;
-}
-
-input[name="bookFee"] {
-    color: #C4C4C4;
 }
 
 /* calendar */
@@ -6180,6 +6187,7 @@ input[type="time" i] {
     pointer-events: auto;
     transition: opacity 0.3s ease;
 }
+
 .price.with-won {
     position: relative;
     display: inline-block;
@@ -6445,11 +6453,18 @@ td.middle {
 .lump-sum {
     display: flex;
     margin-top: 10px;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .lump-sum input[type="number"] {
-    width: 30%;
+    width: 50%;
     margin-left: 10px;
+}
+
+#fee-input.disabled {
+    opacity: 0.5;
+    background-color: #f5f5f5;
 }
 
 .book-order,

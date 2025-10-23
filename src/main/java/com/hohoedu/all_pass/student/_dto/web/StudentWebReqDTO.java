@@ -61,6 +61,27 @@ public class StudentWebReqDTO {
     }
 
     @Data
+    public static class StudentClassSaveReqDTO {
+        private String studentId;
+
+        // 한자 수강 정보
+        private String hanClassKey;
+        private String hanTeacherCode;
+        private String hanStatus;
+        private String hanEntryDate;
+        private Integer hanFee;
+        private Integer hanMaterialFee;
+
+        // 독서 수강 정보
+        private String bookClassKey;
+        private String bookTeacherCode;
+        private String bookStatus;
+        private String bookEntryDate;
+        private Integer bookFee;
+        private Integer bookMaterialFee;
+    }
+
+    @Data
     public static class StudentTransferDTO {
         private String studentId;
         private String inoutHan;
