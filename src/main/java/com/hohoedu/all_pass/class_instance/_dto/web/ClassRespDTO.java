@@ -46,6 +46,14 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class ClassInfoDTO {
+        private String classType;
+        private String classKey;
+        private String centerCode;
+        private String userCode;
+    }
+
+    @Data
     public static class RemedialDTO {
         private String remedialKey;
         private String studentName;

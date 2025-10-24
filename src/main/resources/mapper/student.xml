@@ -16,11 +16,14 @@
     </insert>
 
     <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
-        SELECT s.*,
+        SELECT sc.han_user_code,
+               sc.book_user_code,
+               s.*,
                g.*,
                reg.registeredClassTypes as classType
         FROM erp_student s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 LEFT JOIN erp_student_class sc ON s.student_id = sc.student_id
             OUTER APPLY (
     SELECT STUFF((
         SELECT ',' + cc.class_type
@@ -36,14 +39,18 @@
            , 'NVARCHAR(MAX)')
            , 1
            , 1
-           , '') AS registeredClassTypes
-            ) reg
+           , '') AS registeredClassTypes) reg
         WHERE s.center_code = #{centerCode}
           AND (
             reg.registeredClassTypes IS NULL
            OR reg.registeredClassTypes IN ('1'
             , '2')
             )
+          AND (sc.han_user_code = #{userCode}
+           OR sc.book_user_code = #{userCode}
+           OR sc.han_user_code is null
+           OR sc.book_user_code is null)
+          AND s.status_key = 'ACTIVE'
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
@@ -57,28 +64,46 @@
                s.address,
                s.address_detail AS addressDetail,
                c.center_name    AS center,
-
+               CASE
+                   WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
+                       CASE
+                           WHEN stuc.entry_han_date &lt;= stuc.entry_book_date
+                               THEN stuc.entry_han_date
+                           ELSE stuc.entry_book_Date
+                           END
+                   WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
+                   WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
+                   ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
+                   END          AS entryDate,
                s.created_at     AS createdAt,
                han.class_name   AS hanClass,
+               han.class_key    AS hanClassKey,
                book.class_name  AS bookClass,
+               book.class_key   AS bookClassKey,
+stuc.han_fee AS hanFee,
+stuc.book_fee AS bookFee,
+stuc.han_material_fee AS hanMaterialFee,
+stuc.book_material_fee AS bookMaterialFee,
+stuc.han_user_code AS hanUserCode,
+stuc.book_user_code AS bookUserCode,
+
                CASE
                    WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL
                        THEN NULL
                    ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
                    END          AS parentTel,
-
                s.status_key     AS status,
                sc.status_name   AS statusName
         FROM ERP_STUDENT s
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
---                  LEFT JOIN ERP_LEVEL_CODE l ON s.level_key = l.level_key
+                 LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id
                  LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
                  LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
                  LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
 
 -- APPLY로 class_name 가져오기
             OUTER APPLY (
-    SELECT TOP 1 cc.class_name
+    SELECT TOP 1 cc.class_name, cc.class_key
     FROM erp_time_table_assign ta
     JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
     JOIN erp_class_code cc ON t.class_key = cc.class_key
@@ -86,7 +111,7 @@
 ) han
 
 OUTER APPLY (
-    SELECT TOP 1 cc.class_name
+    SELECT TOP 1 cc.class_name, cc.class_key
     FROM erp_time_table_assign ta
     JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
     JOIN erp_class_code cc ON t.class_key = cc.class_key
@@ -104,7 +129,16 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        s.created_at AS entryDate,
+        CASE
+        WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
+        CASE
+        WHEN stuc.entry_han_date &lt;= stuc.entry_book_date THEN stuc.entry_han_date
+        ELSE stuc.entry_book_Date
+        END
+        WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
+        WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
+        ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
+        END AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -140,6 +174,7 @@ OUTER APPLY (
         FROM ERP_STUDENT s
         LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
         LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
+        LEFT JOIN ERP_student_class stuc ON s.student_id = stuc.student_id
         LEFT JOIN ERP_center c ON c.center_code = s.center_code
 
         WHERE 1 = 1
@@ -164,7 +199,17 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        s.created_at AS entryDate,
+        CASE
+        WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
+        CASE
+        WHEN stuc.entry_han_date &lt;= stuc.entry_book_date
+        THEN stuc.entry_han_date
+        ELSE stuc.entry_book_Date
+        END
+        WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
+        WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
+        ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
+        END          AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -199,6 +244,7 @@ OUTER APPLY (
         LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
         LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
         LEFT JOIN ERP_center c ON c.center_code = s.center_code
+        LEFT JOIN ERP_student_class stuc ON s.student_id = stuc.student_id
         LEFT JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
         <where>
             <if test="timeTableKey != null and timeTableKey != 'all'">
@@ -233,12 +279,37 @@ OUTER APPLY (
         WHERE s.student_id = #{studentId}
     </select>
 
+    <select id="findStudentClassByStudentId" parameterType="string" resultType="com.hohoedu.all_pass.student.model.StudentClass">
+        SELECT *
+        FROM erp_student_class
+        WHERE student_id = #{studentId}
+    </select>
+
+    <update id="updateStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
+        UPDATE erp_student_class
+        <set>
+            <if test="hanClassCode != null">han_class_key = #{hanClassCode.classKey},</if>
+            <if test="hanUser != null">han_user_code = #{hanUser.userCode},</if>
+            <if test="hanFee != null">han_fee = #{hanFee},</if>
+            <if test="hanMaterialFee != null">han_material_fee = #{hanMaterialFee},</if>
+
+            <if test="bookClassCode != null">book_class_key = #{bookClassCode.classKey},</if>
+            <if test="bookUser != null">book_user_code = #{bookUser.userCode},</if>
+            <if test="bookFee != null">book_fee = #{bookFee},</if>
+            <if test="bookMaterialFee != null">book_material_fee = #{bookMaterialFee},</if>
+
+            updated_at = SYSDATETIME()
+        </set>
+        WHERE student_id = #{student.studentId}
+    </update>
+
     <!-- 학생 수강정보 입력 -->
     <insert id="insertStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
         INSERT INTO erp_student_class
-        (student_id, han_class_key, han_user_code, han_status, entry_han_date, han_fee, han_material_fee, book_class_key, book_user_code, book_status, entry_book_date, book_fee,
-         book_material_fee, created_at)
-        VALUES( #{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate}, #{hanFee}, #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{hanMaterialFee}, #{bookFee}, #{bookMaterialFee}, SYSDATETIME() )
+        (student_id, han_class_key, han_user_code, han_status, entry_han_date, han_fee, han_material_fee,
+         book_class_key, book_user_code, book_status, entry_book_date, book_fee, book_material_fee, created_at)
+        VALUES (#{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate}, #{hanFee}, #{hanMaterialFee},
+                #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{bookFee}, #{bookMaterialFee}, SYSDATETIME())
     </insert>
 
     <!-- 전입/전출 화면 학생 조회 -->

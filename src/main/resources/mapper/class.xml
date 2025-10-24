@@ -43,6 +43,13 @@
         values (#{studentId}, #{timeTableKey}, #{weekNo});
     </insert>
 
+    <select id="findclassInfoByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
+        SELECT c.class_type, c.class_key, t.center_code, t.user_code
+        FROM erp_time_table t
+                 JOIN erp_class_code c ON t.class_key = c.class_key
+        where time_table_key = #{timeTableKey}
+    </select>
+
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
             (student_id, attendance_key, time_table_key, center_code, week, created_at)
@@ -63,7 +70,7 @@
     <update id="updateAttendance">
         UPDATE erp_student_attendance
         SET attendance_date = #{attendanceDate},
-            is_before_send         = '1'
+            is_before_send  = '1'
         WHERE student_id = #{studentId}
           AND time_table_key = #{timeTableKey}
           AND week = #{week}
@@ -461,14 +468,13 @@
 
     <insert id="insertAfterClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
-        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year, month,  class_type, class_label, content, created_at)
-        VALUES (#{studentId}, #{userCode},#{timeTableKey},'EGH0060425', #{week}, #{dayname},#{year},#{month}, #{classType}, #{classLabel}, #{content},  SYSDATETIME())
+        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year, month, class_type, class_label, content, created_at)
+        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, 'EGH0060425', #{week}, #{dayname}, #{year}, #{month}, #{classType}, #{classLabel}, #{content}, SYSDATETIME())
     </insert>
 
     <select id="findBeforeClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">
         SELECT TOP(#{count})
-                              class_type  AS gubun,
-                class_label AS note,
+                             class_type AS gubun, class_label AS note,
                CASE dayname
                    WHEN 'mon' THEN '월'
                    WHEN 'tue' THEN '화'
@@ -478,17 +484,17 @@
                    WHEN 'sat' THEN '토'
                    WHEN 'sun' THEN '일'
                    ELSE dayname
-                   END     AS dayname,
-               class_date  AS ymd,
-               class_time  AS studytime,
-               content     AS prequest
+                   END    AS dayname,
+               class_date AS ymd,
+               class_time AS studytime,
+               content    AS prequest
         FROM erp_before_class_notice
         WHERE student_id = #{studentId}
         ORDER BY created_at DESC, id DESC;
 
     </select>
     <select id="findAfterClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassRespDTO">
-        SELECT class_type AS gubun,
+        SELECT class_type  AS gubun,
                class_label AS title,
                dayname     AS dayname,
                week        AS ju, [year] AS yyyy, [month] AS mm, content AS snote

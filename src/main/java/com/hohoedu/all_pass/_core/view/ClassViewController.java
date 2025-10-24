@@ -65,7 +65,7 @@ public class ClassViewController {
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
         System.out.println("==================findStudenetByCenterCode===================");
-        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode());
+        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
 
         model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);

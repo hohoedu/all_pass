@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
+import com.hohoedu.all_pass.student.StudentService;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -45,6 +46,7 @@ public class ClassService {
     private final GradeJpaRepository gradeJpaRepository;
     private final DateConfig dateConfig;
     private final ClassUnitMapJpaRepository classUnitMapJpaRepository;
+    private final StudentService studentService;
 
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
@@ -174,11 +176,10 @@ public class ClassService {
     }
 
     // 학생 수업 등록
-    public boolean addStudent(AddStudentDTO dto) {
+    public boolean addStudent(AddStudentDTO dto, String centerCode) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
 
-        dto.setCenterCode("DAE001");
 
         int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
         if (count >= 8) {
@@ -186,7 +187,10 @@ public class ClassService {
         }
         classRepository.addStudent(dto);
         classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
-        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), dto.getCenterCode());
+        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
+        ClassRespDTO.ClassInfoDTO classInfo = classRepository.findclassInfoByTimeTableKey(dto.getTimeTableKey());
+        studentService.insertStudentClass(classInfo, dto.getStudentId());
+
         return true;
     }
 

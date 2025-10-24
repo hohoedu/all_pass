@@ -14,14 +14,17 @@ import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.AttendanceCode;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.family.FamilyService;
+import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -41,6 +44,7 @@ import com.hohoedu.all_pass.family.repository.RelationJpaRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -56,10 +60,11 @@ public class StudentService {
     private final CenterRepository centerRepository;
     private final DateConfig dateConfig;
     private final FamilyService familyService;
+    private final PaymentRepository paymentRepository;
 
-    public List<Student> findStudentByCenterCode(String year, String month, String centerCode) {
+    public List<Student> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
-        List<Student> student = studentRepository.findStudentByCenterCode(year, month, centerCode);
+        List<Student> student = studentRepository.findStudentByCenterCode(year, month, centerCode, userCode);
 
         return student;
     }
@@ -156,30 +161,49 @@ public class StudentService {
         return gradeCodes;
     }
 
-    public void insertStudentClass(StudentWebReqDTO.StudentClassSaveReqDTO req) {
+    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId) {
+        System.out.println("=================");
+        System.out.println("=" + dto.getCenterCode());
+        System.out.println("=" + dto.getUserCode());
+        System.out.println("=" + dto.getClassKey());
+        System.out.println("=" + dto.getClassType());
+        System.out.println("=" + studentId);
+        System.out.println("=================");
 
+        Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
+        Integer materialFee = 20000;
 
-        // === 한자 수강정보 저장 ===
-        if ("수강".equals(req.getHanStatus())) {
-            StudentClass studentClass = StudentClass.builder()
-                    .student(Student.builder().studentId(req.getStudentId()).build())
-                    .hanClassCode(ClassCode.builder().classKey(req.getHanClassKey()).build())
-                    .hanUser(User.builder().userCode(req.getHanTeacherCode()).build())
-                    .hanStatus(req.getHanStatus())
-                    .entryHanDate(req.getHanEntryDate())
-                    .hanFee(req.getHanFee())
-                    .hanMaterialFee(req.getHanMaterialFee())
-                    .bookClassCode(ClassCode.builder().classKey(req.getBookClassKey()).build())
-                    .bookUser(User.builder().userCode(req.getBookTeacherCode()).build())
-                    .bookStatus(req.getBookStatus())
-                    .entryBookDate(req.getBookEntryDate())
-                    .bookFee(req.getBookFee())
-                    .bookMaterialFee(req.getBookMaterialFee())
+        StudentClass studentClass = StudentClass.builder()
+                .student(Student.builder().studentId(studentId).build())
+                .build();
+
+        if ("1".equals(dto.getClassType())) {
+            studentClass = StudentClass.builder()
+                    .student(Student.builder().studentId(studentId).build())
+                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
+                    .hanFee(fee)
+                    .hanMaterialFee(materialFee)
                     .build();
-            studentRepository.insertStudentClass(studentClass);
+        } else {
+            studentClass = StudentClass.builder()
+                    .student(Student.builder().studentId(studentId).build())
+                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
+                    .bookFee(fee)
+                    .bookMaterialFee(materialFee)
+                    .build();
         }
-    }
 
+        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId);
+        
+        if (existing != null)
+            studentRepository.updateStudentClass(studentClass);
+        else
+            studentRepository.insertStudentClass(studentClass);
+
+        return "ok";
+    }
 
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);

@@ -79,22 +79,27 @@ public class ClassController {
     // 학생 수업 등록
     @PostMapping("/add_student")
     @ResponseBody
-    public ResponseEntity<?> timeTableAssginStudent(@RequestBody ClassReqDTO.AddStudentList reqDTO) {
+    public ResponseEntity<?> timeTableAssginStudent(HttpSession session, @RequestBody ClassReqDTO.AddStudentList reqDTO) {
 
         try {
+
+            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                        .header(HttpHeaders.LOCATION, "/login")
+                        .build();
+            }
             boolean isSuccess = reqDTO.getAssignments().stream()
-                    .allMatch(dto -> classService.addStudent(dto));
+                    .allMatch(dto -> classService.addStudent(dto, user.getCenterCode()));
+
             if (isSuccess) {
-                return ResponseEntity
-                        .ok(ApiUtils.success(true));
+                return ResponseEntity.ok(ApiUtils.success(true));
             } else {
-                return ResponseEntity
-                        .ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
+                return ResponseEntity.ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
             }
         } catch (DataIntegrityViolationException ex) {
-
-            return ResponseEntity
-                    .ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
+            System.out.println("============================ "+ ex.getMessage()+"============================");
+            return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }
 

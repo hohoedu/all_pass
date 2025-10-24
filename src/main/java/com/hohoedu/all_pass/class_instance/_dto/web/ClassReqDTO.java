@@ -30,7 +30,7 @@ public class ClassReqDTO {
         private String weekNo;
         private String studentId;
         private String timeTableKey;
-        private String centerCode;
+
     }
 
     @Data

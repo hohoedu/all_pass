@@ -58,19 +58,19 @@ public class StudentClass {
     private Timestamp updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "han_user_code", nullable = false, referencedColumnName = "user_code")
+    @JoinColumn(name = "han_user_code", referencedColumnName = "user_code")
     private User hanUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_user_code", nullable = false, referencedColumnName = "user_code")
+    @JoinColumn(name = "book_user_code", referencedColumnName = "user_code")
     private User bookUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "han_class_key", nullable = false, referencedColumnName = "class_key")
+    @JoinColumn(name = "han_class_key", referencedColumnName = "class_key")
     private ClassCode hanClassCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_class_key", nullable = false, referencedColumnName = "class_key")
+    @JoinColumn(name = "book_class_key", referencedColumnName = "class_key")
     private ClassCode bookClassCode;
 
     @Builder

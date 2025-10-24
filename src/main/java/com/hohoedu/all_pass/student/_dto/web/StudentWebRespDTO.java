@@ -45,7 +45,6 @@ public class StudentWebRespDTO {
         private String school;
         private String studentName;
         private String grade;
-        private String level;
         private String gender;
         private String birth;
         private String address;
@@ -55,10 +54,19 @@ public class StudentWebRespDTO {
         private String status;
         private String statusName;
         private String reason;
+        private String entryDate;
         private String hanClass;
+        private String hanClassKey;
         private String bookClass;
+        private String bookClassKey;
         private Timestamp createdAt;
         private String parentTel;
+        private Integer hanFee;
+        private Integer bookFee;
+        private Integer hanMaterialFee;
+        private Integer bookMaterialFee;
+        private String hanUserCode;
+        private String bookUserCode;
 
     }
 
@@ -90,6 +98,7 @@ public class StudentWebRespDTO {
         private String gradeName;
         private String school;
         private String centerName;
+        private String entryDate;
         private String hanClass;
         private String bookClass;
     }

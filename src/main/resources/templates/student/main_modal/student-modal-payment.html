@@ -7,22 +7,22 @@
                 <tr>
                     <th>한자 단계</th>
                     <td>
-                        <div class="select-wrap">
-                            <select name="hanjaLevel" id="hanja" class="styled-select">
-                                <option value="" class="s_subjects"></option>
-                                <th:block th:each="code : ${classCodes}">
-                                    <option th:if="${code.classType == '1'}"
-                                            th:value="${code.classKey}" th:text="${code.className}">
-                                    </option>
-                                </th:block>
-                            </select>
-                        </div>
+
+                        <!--                            <select name="hanjaLevel" id="hanja" class="styled-select s_han_class">-->
+                        <!--                                <th:block th:each="code : ${classCodes}">-->
+                        <!--                                    <option th:if="${code.classType == '1'}"-->
+                        <!--                                            th:value="${code.classKey}" th:text="${code.className}">-->
+                        <!--                                    </option>-->
+                        <!--                                </th:block>-->
+                        <!--                            </select>-->
+                        <input type="text" class="styled-input s_han_class" readonly>
+
                     </td>
                     <th>수강 상태</th>
-                    <td class="choose-group">
-                        <button type="button" class="btn-choose" data-value="수강">수강</button>
-                        <button type="button" class="btn-choose active" data-value="미수강">미수강</button>
-                        <input type="hidden" name="status" value="수강"/>
+                    <td class="choose-group" data-type="han">
+                        <button type="button" class="btn-choose" data-value="active">수강</button>
+                        <button type="button" class="btn-choose active" data-value="inactive">미수강</button>
+                        <input type="hidden" name="hanStatus" value="inactive"/>
                     </td>
                 </tr>
                 <tr>
@@ -35,6 +35,7 @@
                                     <option th:value="${u.userCode}" th:text="${u.userName} + 선생님"></option>
                                 </th:block>
                             </select>
+
                         </div>
                     </td>
 
@@ -43,20 +44,17 @@
                         <div class="day-display">날짜를 선택해주세요.</div> <!-- 표시 영역 -->
                         <div>
                             <input type="date" class="birth-input hidden-picker"/>
-                            <button type="button" class="icon-btn birth-btn">
-                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘"/>
-                            </button>
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <th class="tuition-fee">교육비</th>
                     <td>
-                        <input type="text" name="hanFee" class="no-spin" id="hanFee">
+                        <input type="text" name="hanFee" class="no-spin p_han_fee" id="hanFee">
                     </td>
                     <th>교재비</th>
                     <td>
-                        <input type="text" name="hanMaterialFee" class="no-spin book-fee" id="hanMaterialFee">
+                        <input type="text" name="hanMaterialFee" class="no-spin book-fee p_han_material_fee" id="hanMaterialFee" readonly>
                     </td>
                 </tr>
                 </tbody>
@@ -69,21 +67,22 @@
                 <tr>
                     <th>독서 단계</th>
                     <td>
-                        <div class="select-wrap">
-                            <select name="hanjaLevel" id="book" class="styled-select">
-                                <th:block th:each="code : ${classCodes}">
-                                    <option th:if="${code.classType == '2'}"
-                                            th:value="${code.classKey}" th:text="${code.className}">
-                                    </option>
-                                </th:block>
-                            </select>
-                        </div>
+
+                        <!--                            <select name="hanjaLevel" id="book" class="styled-select s_book_class">-->
+                        <!--                                <th:block th:each="code : ${classCodes}">-->
+                        <!--                                    <option th:if="${code.classType == '2'}"-->
+                        <!--                                            th:value="${code.classKey}" th:text="${code.className}">-->
+                        <!--                                    </option>-->
+                        <!--                                </th:block>-->
+                        <!--                            </select>-->
+                        <input type="text" class="styled-input s_book_class" readonly>
+
                     </td>
                     <th>수강 상태</th>
-                    <td class="choose-group">
-                        <button type="button" class="btn-choose active" data-value="수강">수강</button>
-                        <button type="button" class="btn-choose" data-value="미수강">미수강</button>
-                        <input type="hidden" name="status" value="수강"/>
+                    <td class="choose-group" data-type="book">
+                        <button type="button" class="btn-choose" data-value="active">수강</button>
+                        <button type="button" class="btn-choose active" data-value="inactive">미수강</button>
+                        <input type="hidden" name="bookStatus" value="inactive"/>
                     </td>
                 </tr>
                 <tr>
@@ -103,30 +102,27 @@
                         <div class="day-display">날짜를 선택해주세요.</div>
                         <div>
                             <input type="date" class="birth-input hidden-picker"/>
-                            <button type="button" class="icon-btn birth-btn">
-                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘"/>
-                            </button>
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <th class="tuition-fee">교육비</th>
                     <td>
-                        <input type="text" name="bookFee" class="no-spin" id="bookFee">
+                        <input type="text" name="bookFee" class="no-spin p_book_fee" id="bookFee">
                     </td>
                     <th>교재비</th>
                     <td>
-                        <input type="text" name="bookMaterialFee" class="no-spin book-fee" id="bookMaterialFee">
+                        <input type="text" name="bookMaterialFee" class="no-spin book-fee p_book_material_fee" id="bookMaterialFee" readonly>
                     </td>
                 </tr>
                 </tbody>
             </table>
             <div class="dues-sum">
-                <p>회비 합계&nbsp;&nbsp;<span> 230,000</span>&nbsp;원</p>
+                <p>회비 합계&nbsp;&nbsp;<span> 0</span>&nbsp;원</p>
             </div>
-            <div class="save-btn-frame">
-                <button class="save-btn" id="student-tab-3-save-btn">저장</button>
-            </div>
+            <!--            <div class="save-btn-frame">-->
+            <!--                <button class="save-btn" id="student-tab-3-save-btn">저장</button>-->
+            <!--            </div>-->
         </div>
     </div>
 </div>

@@ -27,7 +27,8 @@ public interface StudentRepository {
     public List<Student> findStudentByCenterCode(
             @Param("year") String year,
             @Param("month") String month,
-            @Param("centerCode") String centerCode);
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode);
 
     public StudentDTO findStudentByStudentId(@Param("studentId") String studentId);
 
@@ -45,7 +46,11 @@ public interface StudentRepository {
 
     public int studentStatusUpdate(StatusHistoryDTO historyDTO);
 
-    public void insertStudentClass(StudentClass studentClass);
+    public StudentClass findStudentClassByStudentId(String studentId);
+
+    int updateStudentClass(StudentClass studentClass);
+
+    public int insertStudentClass(StudentClass studentClass);
 
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 

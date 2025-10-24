@@ -38,6 +38,7 @@ public interface ClassRepository {
 
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
+    ClassRespDTO.ClassInfoDTO findclassInfoByTimeTableKey(String timeTableKey);
     public void insertMonthlyScore(
             @Param("studentId") String studentId,
             @Param("yy") String yy,

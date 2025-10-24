@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.student;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 
 import com.google.protobuf.Api;
@@ -121,12 +122,25 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-    @PostMapping("/class/insert")
-    public ResponseEntity<?> insertStudentClass(@RequestBody StudentWebReqDTO.StudentClassSaveReqDTO saveReqDTO, HttpSession session) {
+//    @PostMapping("/class/insert")
+//    public ResponseEntity<?> insertStudentClass(@RequestBody StudentWebReqDTO.StudentClassSaveReqDTO saveReqDTO, HttpSession session) {
+//
+//            studentService.insertStudentClass(saveReqDTO);
+//
+//        return ResponseEntity.ok(ApiUtils.success("hello"));
+//    }
 
-            studentService.insertStudentClass(saveReqDTO);
+    @PostMapping("/updateEnrollmentStatus")
+    public ResponseEntity<String> updateEnrollmentStatus(@RequestBody Map<String, String> body) {
+        String type = body.get("type");
+        String status = body.get("status");
 
-        return ResponseEntity.ok(ApiUtils.success("hello"));
+        System.out.println("✅ 수강 상태 변경 요청 도착");
+        System.out.println("Type: " + type);
+        System.out.println("Status: " + status);
+
+
+        return ResponseEntity.ok("ok");
     }
 
     @GetMapping("/gradeCodes")
