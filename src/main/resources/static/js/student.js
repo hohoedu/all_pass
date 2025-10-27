@@ -1,73 +1,7 @@
-
-
 document.addEventListener('DOMContentLoaded', applyTfootStripe);
 
 // 사용: initHeaderSort('main', '#main-student-tbody');
-function initHeaderSort(prefix, tbodySelector) {
-    const h = document.getElementById(`${prefix}-sort-header`);
-    if (!h) return;
 
-    const sel = `img[id^="${prefix}-sort-"].svg-sort`;
-    const orderMap = {};
-    const colType = {2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text'};
-    const koCmp = new Intl.Collator('ko-KR', {numeric: true, sensitivity: 'base'});
-
-    h.addEventListener('click', e => {
-        const th = e.target.closest('th');
-        if (!th || !h.contains(th)) return;
-
-        const target = th.querySelector(sel);
-        if (!target) return;
-
-        // 아이콘 리셋 + 선택
-        h.querySelectorAll(sel).forEach(i => i.src = (i.dataset.normal || i.src).replace('sort_checked.svg', 'sort.svg'));
-        target.src = (target.dataset.checked || target.src).replace('sort.svg', 'sort_checked.svg');
-
-        // 정렬할 컬럼 번호 (id 예: main-sort-4)
-        const col = parseInt(target.id.replace(`${prefix}-sort-`, ''), 10);
-        if (!col || col === 1 || col === 8) return;
-
-        orderMap[col] = orderMap[col] === 'asc' ? 'desc' : 'asc';
-
-        sortTbody(tbodySelector, col, colType[col] || 'text', orderMap[col], koCmp);
-    });
-
-    function sortTbody(tbodySel, col, type, dir, collator) {
-        const tbody = document.querySelector(tbodySel);
-        if (!tbody) return;
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        const getVal = tr => {
-            const td = tr.querySelector(`td:nth-child(${col})`);
-            if (!td) return '';
-            const raw = (td.getAttribute('data-sort-value') ?? td.textContent ?? '').trim();
-            if (type === 'number') {
-                const n = Number(raw.replace(/[^\d.-]/g, ''));
-                return isNaN(n) ? Number.NEGATIVE_INFINITY : n;
-            }
-            if (type === 'date') {
-                const t = Date.parse(raw.replaceAll('.', '-').replaceAll('/', '-'));
-                return isNaN(t) ? -8640000000000000 : t;
-            }
-            return raw;
-        };
-
-        rows.sort((a, b) => {
-            const va = getVal(a), vb = getVal(b);
-            let cmp = 0;
-            if (type === 'number' || type === 'date') cmp = va < vb ? -1 : va > vb ? 1 : 0;
-            else cmp = collator.compare(String(va), String(vb));
-            return dir === 'asc' ? cmp : -cmp;
-        });
-
-        rows.forEach(r => tbody.appendChild(r));
-
-        Array.from(tbody.querySelectorAll('tr')).forEach((tr, i) => {
-            const noTd = tr.querySelector('td:nth-child(1)');
-            if (noTd) noTd.textContent = String(i + 1);
-        });
-    }
-}
 
 // 페이지에서 호출
 document.addEventListener('DOMContentLoaded', () => {
@@ -147,13 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 📌 달력 버튼 클릭
     calendarBtn.addEventListener("click", () => {
         calendarInput.showPicker?.();
         calendarInput.click();
     });
 
-    // 📌 달력 월 선택 2회 → custom fetch
     calendarInput.addEventListener("change", () => {
         const selected = calendarInput.value;
 
@@ -307,10 +239,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const result = await response.json();
 
-            // 백엔드의 ApiUtils.success("ok") 응답 기준
             if (result.success && result.response === "ok") {
                 alert("가입이 완료되었습니다.");
-                window.close(); // 창 닫기
+                window.close();
             } else {
                 alert("가입 중 오류가 발생했습니다. 다시 시도해 주세요.");
             }

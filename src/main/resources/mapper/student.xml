@@ -54,16 +54,16 @@
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
-        SELECT s.student_id     AS studentId,
-               s.student_name   AS studentName,
+        SELECT s.student_id           AS studentId,
+               s.student_name         AS studentName,
                s.school,
-               g.grade_name     AS grade,
+               g.grade_name           AS grade,
 --                l.level_name      AS level,
                s.gender,
                s.birth,
                s.address,
-               s.address_detail AS addressDetail,
-               c.center_name    AS center,
+               s.address_detail       AS addressDetail,
+               c.center_name          AS center,
                CASE
                    WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
                        CASE
@@ -74,32 +74,35 @@
                    WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
                    WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
                    ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
-                   END          AS entryDate,
-               s.created_at     AS createdAt,
-               han.class_name   AS hanClass,
-               han.class_key    AS hanClassKey,
-               book.class_name  AS bookClass,
-               book.class_key   AS bookClassKey,
-stuc.han_fee AS hanFee,
-stuc.book_fee AS bookFee,
-stuc.han_material_fee AS hanMaterialFee,
-stuc.book_material_fee AS bookMaterialFee,
-stuc.han_user_code AS hanUserCode,
-stuc.book_user_code AS bookUserCode,
-
+                   END                AS entryDate,
+               s.created_at           AS createdAt,
+               han.class_name         AS hanClass,
+               han.class_key          AS hanClassKey,
+               book.class_name        AS bookClass,
+               book.class_key         AS bookClassKey,
+               stuc.han_fee           AS hanFee,
+               stuc.book_fee          AS bookFee,
+               stuc.han_material_fee  AS hanMaterialFee,
+               stuc.book_material_fee AS bookMaterialFee,
+               stuc.han_user_code     AS hanUserCode,
+               stuc.book_user_code    AS bookUserCode,
+               hu.user_name           AS hanTeacher,
+               bu.user_name           AS bookTeacher,
                CASE
                    WHEN p.parent_tel_first IS NULL OR p.parent_tel_middle IS NULL OR p.parent_tel_last IS NULL
                        THEN NULL
                    ELSE p.parent_tel_first + '-' + p.parent_tel_middle + '-' + p.parent_tel_last
-                   END          AS parentTel,
-               s.status_key     AS status,
-               sc.status_name   AS statusName
+                   END                AS parentTel,
+               s.status_key           AS status,
+               sc.status_name         AS statusName
         FROM ERP_STUDENT s
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
                  LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id
                  LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
                  LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
                  LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
+                 LEFT JOIN ERP_USER hu ON stuc.han_user_code = hu.user_code
+                 LEFT JOIN ERP_USER bu ON stuc.book_user_code = bu.user_code
 
 -- APPLY로 class_name 가져오기
             OUTER APPLY (
@@ -283,6 +286,8 @@ OUTER APPLY (
         SELECT *
         FROM erp_student_class
         WHERE student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
     </select>
 
     <update id="updateStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
@@ -307,65 +312,35 @@ OUTER APPLY (
     <insert id="insertStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
         INSERT INTO erp_student_class
         (student_id, han_class_key, han_user_code, han_status, entry_han_date, han_fee, han_material_fee,
-         book_class_key, book_user_code, book_status, entry_book_date, book_fee, book_material_fee, created_at)
+         book_class_key, book_user_code, book_status, entry_book_date, book_fee, book_material_fee, yy, mm, created_at)
         VALUES (#{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate}, #{hanFee}, #{hanMaterialFee},
-                #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{bookFee}, #{bookMaterialFee}, SYSDATETIME())
+                #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{bookFee}, #{bookMaterialFee}, #{yy}, #{mm}, SYSDATETIME())
     </insert>
 
-    <!-- 전입/전출 화면 학생 조회 -->
+    <!-- 전입/전출 화면 전체 학생 조회 -->
     <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">
-        WITH base
-                 AS (SELECT ta.student_id,
-                            cc.class_type,
-                            cc.class_name,
-                            u.user_name
-                     FROM erp_time_table_assign ta
-                              JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
-                              JOIN erp_class_code cc ON cc.class_key = t.class_key
-                              JOIN erp_user u ON u.user_code = t.user_code
-                     GROUP BY ta.student_id,
-                              cc.class_type,
-                              cc.class_name,
-                              u.user_name)
+
         SELECT s.student_id,
                s.student_name,
                g.grade_name,
-               a.hanclass,
-               a.bookclass,
-               a.hanteacher,
-               a.bookteacher,
-               (SELECT Max(sth.move_at)
+               hc.class_name                         AS hanClass,
+               bc.class_name                         AS bookClass,
+               hu.user_name                          AS hanTeacher,
+               bu.user_name                          AS bookTeacher,
+               (SELECT MAX(sth.move_at)
                 FROM erp_student_transfer_history sth
-                WHERE sth.student_id = s.student_id) AS moveAt
+                WHERE sth.student_id = s.student_id) AS moveAt,
+               s.created_at
         FROM erp_student s
-                 JOIN erp_grade_code g ON s.grade_key = g.grade_key OUTER apply (
-	          SELECT hanClass = Stuff((
-			                SELECT ',' + b.class_name
-					 		FROM   base b
-					 		WHERE  b.student_id = s.student_id
-					 		  AND  b.class_type = '1'
-					 		FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, ''),
-                     bookClass = Stuff((
-					        SELECT ',' + b.class_name
-							FROM   base b
-							WHERE  b.student_id = s.student_id
-                              AND  b.class_type = '2'
-							FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, ''),
-					hanTeacher = Stuff((
-							SELECT ',' + b.user_name
-							FROM   base b
-							WHERE  b.student_id = s.student_id
-							  AND  b.class_type = '1'
-							FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, ''),
-					bookTeacher = Stuff((
-							SELECT ',' + b.user_name
-							FROM   base b
-							WHERE  b.student_id = s.student_id
-							  AND  b.class_type = '2'
-							FOR xml path(''), type).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
-		) a
+                 JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 JOIN erp_student_class stuc ON s.student_id = stuc.student_id
+                 LEFT JOIN erp_class_code hc ON stuc.han_class_key = hc.class_key
+                 LEFT JOIN erp_class_code bc ON stuc.book_class_key = bc.class_key
+                 LEFT JOIN erp_user hu ON stuc.han_user_code = hu.user_code
+                 LEFT JOIN erp_user bu ON stuc.book_user_code = bu.user_code
         WHERE s.center_code = #{centerCode}
-        ORDER BY s.id;
+          AND stuc.yy = #{yy}
+          AND stuc.mm = #{mm}
     </select>
 
     <select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentTransferDTO">
@@ -399,16 +374,30 @@ OUTER APPLY (
         </where>
     </select>
 
-    <update id="transfer" parameterType="com.hohoedu.all_pass.student.Student">
-        UPDATE class_instance
-        SET user_no = #{userNo}
-        WHERE class_instance_no IN (SELECT ci.class_instance_no
-                                    FROM student_class sc
-                                             JOIN class_instance ci ON sc.class_instance_no = ci.class_instance_no
-                                             JOIN class_code cc ON ci.class_no = cc.class_no
-                                    WHERE sc.student_no = #{studentNo}
-                                      AND cc.class_type = #{classType})
-    </update>
+    <update id="updateTransfer">
+            <choose>
+                <!-- class_type이 1이면 한자 관련 컬럼 업데이트 -->
+                <when test="classType == 1">
+                    UPDATE erp_student_class
+                    SET han_user_code = #{userCode},
+                    han_fee = 0,
+                    han_material_fee = 0,
+                    han_class_key = NULL
+                    WHERE student_id = #{studentId}
+                </when>
+
+                <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
+                <when test="classType == 2">
+                    UPDATE erp_student_class
+                    SET book_user_code = #{userCode},
+                    book_fee = 0,
+                    book_material_fee = 0,
+                    book_class_key = NULL
+                    WHERE student_id = #{studentId}
+                </when>
+            </choose>
+        </update>
+
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
         INSERT INTO student_transfer_history (student_no, from_user_no, to_user_no, class_type, transfer_reason, move_at, class_no, created_at)

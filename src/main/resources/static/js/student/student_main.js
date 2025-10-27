@@ -40,8 +40,7 @@ function renderStudentInfo(s) {
             }
         });
     };
-    console.log('hanFee:', s.hanFee);
-    console.log('bookFee:', s.bookFee);
+
     setValue(".s_student_id", s.studentId || '');
     currentStudentId = s.studentId;
     setValue(".s_name", s.studentName || '');
@@ -54,8 +53,14 @@ function renderStudentInfo(s) {
     setValue(".s_birth", formatDateKorean(s.birth));
     setValue(".s_address", s.address || '');
     setValue(".s_address_detail", s.addressDetail || '');
+
+    // 수강과목 및 회비
+    setValue(".p_han_teacher", s.hanTeacher || '');
+    setValue(".p_book_teacher", s.bookTeacher || '');
     setValue(".p_han_fee", s.hanFee || '');
     setValue(".p_book_fee", s.bookFee || '');
+    setValue(".p_han_status", s.hanStatus || '');
+    setValue(".p_book_status", s.bookStatus || '');
     setValue(".p_han_material_fee", s.hanMaterialFee || '');
     setValue(".p_book_material_fee", s.bookMaterialFee || '');
 
@@ -498,23 +503,6 @@ function renderStudents(tbody, students = []) {
 //     });
 // });
 
-// ====== 수강 상태 변경 ====== //
-// document.addEventListener("DOMContentLoaded", () => {
-//     const chooseGroups = document.querySelectorAll(".choose-group");
-//     chooseGroups.forEach(group => {
-//         const buttons = group.querySelectorAll(".btn-choose");
-//         const hiddenInput = group.querySelector('input[type="hidden"]');
-//         buttons.forEach(button => {
-//             button.addEventListener("click", () => {
-//                 buttons.forEach(btn => btn.classList.remove("active"));
-//                 button.classList.add("active");
-//                 hiddenInput.value = button.dataset.value;
-//                 console.log(`✅ 상태 변경됨: ${button.textContent} (${hiddenInput.value})`);
-//             });
-//         });
-//     });
-// });
-
 document.addEventListener("DOMContentLoaded", () => {
     const chooseGroups = document.querySelectorAll(".choose-group");
 
@@ -571,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 dateInput.click();
             }
             dateInput.addEventListener("change", () => {
-                const value = dateInput.value; // ex) "2025-08-15"
+                const value = dateInput.value;
                 if (value) {
                     const [y, m, d] = value.split("-");
                     display.textContent = `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`;

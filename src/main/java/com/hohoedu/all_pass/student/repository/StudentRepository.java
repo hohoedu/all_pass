@@ -46,7 +46,10 @@ public interface StudentRepository {
 
     public int studentStatusUpdate(StatusHistoryDTO historyDTO);
 
-    public StudentClass findStudentClassByStudentId(String studentId);
+    public StudentClass findStudentClassByStudentId(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     int updateStudentClass(StudentClass studentClass);
 
@@ -54,14 +57,19 @@ public interface StudentRepository {
 
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 
-    public List<StudentInOutDTO> selectTransferStudents(@Param("centerCode") String centerCode);
+    public List<StudentInOutDTO> selectTransferStudents(
+            @Param("centerCode") String centerCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     public List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);
 
-    public void transfer(
+    public void updateTransfer(
+            @Param("studentId") String studentId,
             @Param("userCode") String userCode,
-            @Param("studentNo") String studentId,
-            @Param("classType") String classType);
+            @Param("classType") String classType,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     public void insertTransferHistory(StudentTransferHistory dto);
 

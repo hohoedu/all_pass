@@ -17,6 +17,7 @@ import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.AttendanceCode;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
+import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.family.FamilyService;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
@@ -51,6 +52,7 @@ import lombok.RequiredArgsConstructor;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final ClassRepository classRepository;
     private final GradeJpaRepository gradeJpaRepository;
     private final RelationJpaRepository relationJpaRepository;
     private final UserRepository userRepository;
@@ -123,7 +125,9 @@ public class StudentService {
     }
 
     public List<StudentInOutDTO> findAllInOut(String centerCode) {
-        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode);
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, yy, mm);
         return students;
     }
 
@@ -173,9 +177,10 @@ public class StudentService {
         Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
         Integer materialFee = 20000;
 
-        StudentClass studentClass = StudentClass.builder()
-                .student(Student.builder().studentId(studentId).build())
-                .build();
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+
+        StudentClass studentClass;
 
         if ("1".equals(dto.getClassType())) {
             studentClass = StudentClass.builder()
@@ -184,6 +189,8 @@ public class StudentService {
                     .hanUser(User.builder().userCode(dto.getUserCode()).build())
                     .hanFee(fee)
                     .hanMaterialFee(materialFee)
+                    .yy(yy)
+                    .mm(mm)
                     .build();
         } else {
             studentClass = StudentClass.builder()
@@ -192,11 +199,13 @@ public class StudentService {
                     .bookUser(User.builder().userCode(dto.getUserCode()).build())
                     .bookFee(fee)
                     .bookMaterialFee(materialFee)
+                    .yy(yy)
+                    .mm(mm)
                     .build();
         }
 
-        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId);
-        
+        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId, yy, mm);
+
         if (existing != null)
             studentRepository.updateStudentClass(studentClass);
         else
@@ -213,41 +222,63 @@ public class StudentService {
 
     public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto) {
         try {
-            if (reqDto.getInoutHan() != null) {
-                studentRepository.transfer(
-                        reqDto.getUserCode(),
-                        reqDto.getStudentIdList().get(0),
-                        reqDto.getInoutHan());
+            String year = dateConfig.currentYearMonth().get("currentYear");
+            String month = dateConfig.currentYearMonth().get("currentMonth");
+            System.out.println(year + "-" + month);
+            if (reqDto.getSelectedHan() != null) {
+                for (String studentId : reqDto.getStudents()) {
+
+                    // 시간표 삭제
+                    // 타임테이블 키 조회
+                    String timeTableKey = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), year, month);
+                    System.out.println("timeTableKey = " + timeTableKey);
+                    classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
+                    System.out.println("삭제됨 으아아아아아아아아아아아아아");
+                    // student_class 변경
+                    studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), year, month);
+
+                    // history 저장
+
+                }
             }
-            if (reqDto.getInoutRead() != null) {
-                studentRepository.transfer(
-                        reqDto.getUserCode(),
-                        reqDto.getStudentIdList().get(0),
-                        reqDto.getInoutRead());
+            if (reqDto.getSelectedBook() != null) {
+                for (String studentId : reqDto.getStudents()) {
+                    // 시간표 삭제
+                    // 타임테이블 키 조회
+                    String timeTableKey = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), year, month);
+                    System.out.println("timeTableKey = " + timeTableKey);
+                    classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
+                    // student_class 변경
+                    // history 저장
+
+                    studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), year, month);
+
+                }
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
     }
 
-    public void insertTransferHistory(StudentWebReqDTO.StudentTransferDTO dto) {
-        try {
-            for (String studentId : dto.getStudentIdList()) {
-                StudentTransferHistory history = StudentTransferHistory.builder()
-                        .student(Student.builder().studentId("hello").build())
-                        .fromUser(User.builder().userCode("DAE001cos").build())
-                        .toUser(User.builder().userCode(dto.getUserCode()).build())
-                        .classType(dto.getInoutHan())
-                        .transferReason(dto.getTransferReason())
-                        .moveAt(dto.getMoveAt())
-                        .build();
-                studentRepository.insertTransferHistory(history);
-            }
-        } catch (Exception e) {
-
-        }
-
-    }
+//    public void insertTransferHistory(StudentWebReqDTO.StudentTransferDTO dto) {
+//        try {
+//            for (String studentId : dto.getStudents()) {
+//                StudentTransferHistory history = StudentTransferHistory.builder()
+//                        .student(Student.builder().studentId("hello").build())
+//                        .fromUser(User.builder().userCode("DAE001cos").build())
+//                        .toUser(User.builder().userCode(dto.getUserCode()).build())
+//                        .classType(dto.getSelectedHan())
+//                        .transferReason(dto.getTransferReason())
+//                        .moveAt(dto.getMoveAt())
+//                        .build();
+//                studentRepository.insertTransferHistory(history);
+//            }
+//        } catch (Exception e) {
+//
+//        }
+//
+//    }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);

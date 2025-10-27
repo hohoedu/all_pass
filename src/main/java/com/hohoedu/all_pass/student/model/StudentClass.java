@@ -27,29 +27,35 @@ public class StudentClass {
     @JoinColumn(name = "student_id", nullable = false, referencedColumnName = "student_id")
     private Student student;
 
-    @Column
-    private String hanStatus;
-
-    @Column
-    private String bookStatus;
-
-    @Column
-    private String entryHanDate;
-
-    @Column
-    private String entryBookDate;
-
     @Column(name = "han_fee")
     private Integer hanFee;
 
     @Column(name = "han_material_fee")
     private Integer hanMaterialFee;
 
+    @Column
+    private String hanStatus;
+
+    @Column
+    private String entryHanDate;
+
     @Column(name = "book_fee")
     private Integer bookFee;
 
     @Column(name = "book_material_fee")
     private Integer bookMaterialFee;
+
+    @Column
+    private String bookStatus;
+
+    @Column
+    private String entryBookDate;
+
+    @Column(name = "yy", nullable = false, length = 4)
+    private String yy;
+
+    @Column(name = "mm", nullable = false, length = 2)
+    private String mm;
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -74,7 +80,7 @@ public class StudentClass {
     private ClassCode bookClassCode;
 
     @Builder
-    public StudentClass(Student student, String hanStatus, String bookStatus, String entryHanDate, String entryBookDate, Integer hanFee, Integer hanMaterialFee, Integer bookFee, Integer bookMaterialFee, Timestamp createdAt, Timestamp updatedAt, User hanUser, User bookUser, ClassCode hanClassCode, ClassCode bookClassCode) {
+    public StudentClass(Student student, String hanStatus, String bookStatus, String entryHanDate, String entryBookDate, Integer hanFee, Integer hanMaterialFee, Integer bookFee, Integer bookMaterialFee, String yy, String mm, Timestamp createdAt, Timestamp updatedAt, User hanUser, User bookUser, ClassCode hanClassCode, ClassCode bookClassCode) {
         this.student = student;
         this.hanStatus = hanStatus;
         this.bookStatus = bookStatus;
@@ -84,6 +90,8 @@ public class StudentClass {
         this.hanMaterialFee = hanMaterialFee;
         this.bookFee = bookFee;
         this.bookMaterialFee = bookMaterialFee;
+        this.yy = yy;
+        this.mm = mm;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.hanUser = hanUser;

@@ -39,6 +39,7 @@ public interface ClassRepository {
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
     ClassRespDTO.ClassInfoDTO findclassInfoByTimeTableKey(String timeTableKey);
+
     public void insertMonthlyScore(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
@@ -53,6 +54,12 @@ public interface ClassRepository {
     public List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
+
+    String findTimeTableKeyByStudentId(
+            @Param("studentId") String studentId,
+            @Param("classType") String classType,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     public int deleteByKeyAndStudentId(
             @Param("timeTableKey") String timeTableKey,

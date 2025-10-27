@@ -1,5 +1,9 @@
 // ============================학생관리 전입/전출============================ //
 
+document.addEventListener('DOMContentLoaded', () => {
+    initHeaderSort('transfer', '#student-tbody');
+});
+
 // ====== 선생님 별 필터링 ====== //
 document.addEventListener("DOMContentLoaded", () => {
     const teacherFilter = document.getElementById("transfer-teacher-filter");
@@ -7,8 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (teacherFilter)
         teacherFilter.addEventListener("change", function () {
-            const teacherNo = this.value;
-            fetch(`/student/api/label?teacherNo=${encodeURIComponent(teacherNo)}`)
+            const userCode = this.value;
+            fetch(`/student/api/label?userCode=${encodeURIComponent(userCode)}`)
                 .then(res => {
                     return res.json();
                 })
@@ -25,83 +29,94 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 // ====== 모달 오픈 ====== //
-function clickInOutModal(row) {
-    const studentId = row.getAttribute("data-id") || "00";
-    console.log(studentId);
-    const studentName = row.getAttribute("data-name");
-    console.log(studentName);
-    document.querySelector('.modal').style.display = 'block';
-    const titleEl = document.querySelector('.inout-modal-title');
-    titleEl.innerHTML = studentId === '00' ? '전체 전입/전출 내역' : titleEl.innerHTML = studentName + ' 학생 전입/전출 내역'
+function openTransferModal(row) {
+    const studentId = row.getAttribute("data-id");
+    // loadTransferHistory(studentId)
+    //     .then(renderTransferTable)
+    //     .catch(console.error);
 
-    fetch(`/student/inout/${studentId}`)
-        .then(res => {
-            if (!res.ok) throw new Error("서버 오류");
-            return res.json();
-        })
-        .then(data => {
-            const histories = data.response;
-            console.log(histories);
+    showTransferModal();
+}
 
-            const tbody = document.querySelector(".inout-modal-body");
-            tbody.innerHTML = '';
-            if (!histories || histories.length === 0) {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `<td colspan="7" style="text-align:center;">전입/전출 내역이 없습니다.</td>`;
-                tbody.appendChild(tr);
-                return;
-            }
+function showTransferModal() {
+    const modal = document.getElementById("transfer-modal");
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
 
-            titleEl.innerHTML = studentId === '00'
-                ? '전체 전입/전출 내역'
-                : `${studentName} 학생 전입/전출 내역`;
+    modal.querySelector(".btn-close").addEventListener("click", closeTransferModal);
+}
 
-            histories.forEach((item, index) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = tr.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${formatDateKorean(item.moveAt)}</td>
-          <td>${item.studentName}</td>
-          <td>${item.className}</td>
-          <td>${item.fromTeacher}</td>
-          <td>${item.toTeacher}</td>
-          <td>${item.transferReason}</td>
-        `;
-                tbody.appendChild(tr);
+
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("inout-form");
+    const submitBtn = form.querySelector(".save-btn");
+
+    submitBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const selectedStudents = Array.from(
+            document.querySelectorAll('.row-checkbox:checked')
+        ).map(cb => cb.value);
+
+        if (selectedStudents.length === 0) {
+            alert("학생을 최소 한 명 이상 선택하세요.");
+            return;
+        }
+
+        const selectedHan = document.getElementById("inout-han").checked
+            ? document.getElementById("inout-han").value
+            : null;
+
+        const selectedBook = document.getElementById("inout-book").checked
+            ? document.getElementById("inout-book").value
+            : null;
+
+        if (!selectedHan && !selectedBook) {
+            alert("전출 과목을 선택하세요.");
+            return;
+        }
+
+        // ✅ 3. 날짜, 선생님, 사유
+        const moveAt = form.querySelector('input[name="moveAt"]').value;
+        const teacherCode = form.querySelector('#teacher-filter').value;
+        const reason = form.querySelector('textarea[name="transferReason"]').value.trim();
+
+        if (!moveAt) {
+            alert("전입일을 선택하세요.");
+            return;
+        }
+
+        // ✅ 4. JSON 데이터 생성
+        const requestBody = {
+            students: selectedStudents,
+            selectedHan: selectedHan,
+            selectedBook: selectedBook,
+            userCode: teacherCode,
+            moveAt: moveAt,
+            transferReason: reason
+        };
+
+        try {
+            const response = await fetch("/student/inout", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(requestBody)
             });
-        })
-        .catch(err => {
-            console.error(err);
-        });
-}
 
-// ====== 모달 오픈 ====== //
-function openTransferModal(rowEl) {
-    const studentNo = rowEl?.dataset?.id;
-    const studentName = rowEl?.dataset?.name || '';
-    if (!studentNo) return;
+            if (!response.ok) throw new Error("서버 오류");
 
-    const modal = document.getElementById('transfer-modal');
-    if (!modal) return;
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-
-    fetch(`/student/transfer/${encodeURIComponent(studentNo)}`)
-        .then(res => {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-        })
-        .then(data => {
-            const list = (data && (data.response ?? data.data ?? data)) || [];
-            loading.style.display = 'none';
-            if (!Array.isArray(list) || list.length === 0) {
-                emptyBox.style.display = 'block';
-                return;
+            const result = await response.json();
+            if (result.success) {
+                alert("전입/전출 처리가 완료되었습니다.");
+                location.reload();
+            } else {
+                alert(result.message || "처리 중 오류가 발생했습니다.");
             }
-        })
-        .catch(err => {
-            loading.style.display = 'none';
-            errBox.style.display = 'block';
-            console.error('transfer fetch error:', err);
-        });
-}
+        } catch (err) {
+            console.error(err);
+            alert("서버 통신 중 문제가 발생했습니다.");
+        }
+    });
+});
+
+

@@ -83,13 +83,12 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StudentTransferDTO {
-        private String studentId;
-        private String inoutHan;
-        private String inoutRead;
-        private List<String> studentIdList;
+        private List<String> students;
+        private String selectedHan;
+        private String selectedBook;
         private String userCode;
         private String moveAt;
         private String transferReason;
-    }
 
+    }
 }

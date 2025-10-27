@@ -7,16 +7,7 @@
                 <tr>
                     <th>한자 단계</th>
                     <td>
-
-                        <!--                            <select name="hanjaLevel" id="hanja" class="styled-select s_han_class">-->
-                        <!--                                <th:block th:each="code : ${classCodes}">-->
-                        <!--                                    <option th:if="${code.classType == '1'}"-->
-                        <!--                                            th:value="${code.classKey}" th:text="${code.className}">-->
-                        <!--                                    </option>-->
-                        <!--                                </th:block>-->
-                        <!--                            </select>-->
                         <input type="text" class="styled-input s_han_class" readonly>
-
                     </td>
                     <th>수강 상태</th>
                     <td class="choose-group" data-type="han">
@@ -28,20 +19,12 @@
                 <tr>
                     <th>담당 선생님</th>
                     <td>
-                        <div class="select-wrap">
-                            <select name="hanjaTeacher" id="han-teacher" class="styled-select">
-                                <option value="" class="s_users"></option>
-                                <th:block th:each="u : ${users}">
-                                    <option th:value="${u.userCode}" th:text="${u.userName} + 선생님"></option>
-                                </th:block>
-                            </select>
-
-                        </div>
+                        <input type="text" class="styled-input p_han_teacher" readonly>
                     </td>
 
                     <th>시작일자</th>
                     <td class="icon-field day-picker" style="position: relative;">
-                        <div class="day-display">날짜를 선택해주세요.</div> <!-- 표시 영역 -->
+                        <div class="day-display">날짜를 선택해주세요.</div>
                         <div>
                             <input type="date" class="birth-input hidden-picker"/>
                         </div>
@@ -67,16 +50,7 @@
                 <tr>
                     <th>독서 단계</th>
                     <td>
-
-                        <!--                            <select name="hanjaLevel" id="book" class="styled-select s_book_class">-->
-                        <!--                                <th:block th:each="code : ${classCodes}">-->
-                        <!--                                    <option th:if="${code.classType == '2'}"-->
-                        <!--                                            th:value="${code.classKey}" th:text="${code.className}">-->
-                        <!--                                    </option>-->
-                        <!--                                </th:block>-->
-                        <!--                            </select>-->
                         <input type="text" class="styled-input s_book_class" readonly>
-
                     </td>
                     <th>수강 상태</th>
                     <td class="choose-group" data-type="book">
@@ -88,14 +62,7 @@
                 <tr>
                     <th>담당 선생님</th>
                     <td>
-                        <div class="select-wrap">
-                            <select name="bookTeacher" id="book-teacher" class="styled-select">
-                                <option value="" class="s_users"></option>
-                                <th:block th:each="u : ${users}">
-                                    <option th:value="${u.userCode}" th:text="${u.userName} + 선생님"></option>
-                                </th:block>
-                            </select>
-                        </div>
+                        <input type="text" class="styled-input p_book_teacher" readonly>
                     </td>
                     <th>시작일자</th>
                     <td class="icon-field day-picker" style="position: relative;">

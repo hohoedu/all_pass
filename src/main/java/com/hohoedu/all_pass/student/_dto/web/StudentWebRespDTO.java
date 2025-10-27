@@ -66,7 +66,9 @@ public class StudentWebRespDTO {
         private Integer hanMaterialFee;
         private Integer bookMaterialFee;
         private String hanUserCode;
+        private String hanTeacher;
         private String bookUserCode;
+        private String bookTeacher;
 
     }
 
@@ -115,6 +117,7 @@ public class StudentWebRespDTO {
         private String transferReson;
         private String hanTeacher;
         private String bookTeacher;
+        private String entryDate;
         private String hanClassType;
         private String bookClassType;
     }

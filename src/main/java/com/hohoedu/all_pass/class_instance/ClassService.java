@@ -195,11 +195,7 @@ public class ClassService {
     }
 
     public void deleteStudent(String timeTableKey, String studentId) {
-        // assignJpaRepository.findById(assignNo).orElseThrow(() -> new
-        // Exception404("학생을 찾을 수 없습니다."));
-
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
-        // classRepository.deleteMonthlyScore(assignNo);
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode) {

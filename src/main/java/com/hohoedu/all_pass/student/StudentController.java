@@ -16,11 +16,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
@@ -34,10 +30,6 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDT
 import com.hohoedu.all_pass.student.model.GradeCode;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/student")
@@ -157,11 +149,16 @@ public class StudentController {
     }
 
     @PostMapping("/inout")
-    public String studentInOut(@ModelAttribute StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
-        studentInOutDTO.getStudentIdList();
-        studentService.transferStudent(studentInOutDTO);
-        studentService.insertTransferHistory(studentInOutDTO);
-        return "redirect:/student/transfer";
+    @ResponseBody
+    public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
+        // 1. 권한 확인
+        // 2. 유효성 검사
+            // 3-1. studentId를 이용해서 시간표에서 제외
+            // 3-2. erp_student_class의 선생님 코드 업데이트
+            // 3-3. erp_student_transfer_history 인서트
+                studentService.transferStudent(studentInOutDTO);
+//        studentService.insertTransferHistory(studentInOutDTO);
+        return ResponseEntity.ok(ApiUtils.success("okay"));
     }
 
     @PostMapping("/app_token")

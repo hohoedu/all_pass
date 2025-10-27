@@ -107,8 +107,6 @@ public class ClassController {
     public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
         String timeTableKey = request.get("timeTableKey");
         String studentId = request.get("studentId");
-        System.out.println(timeTableKey);
-        System.out.println(studentId);
         classService.deleteStudent(timeTableKey, studentId);
         return ResponseEntity.ok(ApiUtils.success(true));
     }
