@@ -3380,6 +3380,10 @@ textarea#consult-memo {
     opacity: 0;
     z-index: 1;
 }
+.hidden-inout-date{
+    pointer-events: none;
+    opacity: 0;
+}
 
 .choose-group {
     display: flex;

@@ -33,7 +33,8 @@
                             <a class="print" th:href="@{/student/print-transfer}">
                                 인쇄
                             </a>
-                            <div class="common-btn inout-btn" id="btn-inout" data-type="inout" onclick="openTransferModal(this)">
+                            <div class="common-btn inout-btn" id="btn-inout" data-type="inout"
+                                 onclick="openTransferModal(this)">
                                 전입/전출내역
                             </div>
                         </div>
@@ -45,7 +46,8 @@
                                     <select name="teacherNo" id="transfer-teacher-filter">
                                         <option value="all">전체</option>
                                         <th:block th:each="teacher : ${teachers}">
-                                            <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
+                                            <option th:value="${teacher.userCode}"
+                                                    th:text="${teacher.userName + ' 선생님'}"></option>
                                         </th:block>
                                     </select>
                                 </div>
@@ -101,25 +103,29 @@
 
                                     <th style="cursor:pointer">
                                         <img id="transfer-sort-4" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
                                              class="svg-sort">학년
                                     </th>
 
                                     <th style="cursor:pointer">
                                         <img id="transfer-sort-5" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
                                              class="svg-sort">수강과목
                                     </th>
 
                                     <th style="cursor:pointer">
                                         <img id="transfer-sort-6" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
                                              class="svg-sort">전입일
                                     </th>
 
                                     <th style="cursor:pointer">
                                         <img id="transfer-sort-7" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}" data-sort-checked="@{/image/sort_checked.svg}"
+                                             data-sort-default="@{/image/sort.svg}"
+                                             data-sort-checked="@{/image/sort_checked.svg}"
                                              class="svg-sort">담임
                                     </th>
                                 </tr>
@@ -130,7 +136,8 @@
                                         th:data-name="${s.studentName}" onclick="openTransferModal(this)">
                                         <td class="checkbox-group">
                                             <input type="checkbox" class="row-checkbox" th:value="${s.studentId}"
-                                                   onclick="event.stopPropagation();" name="studentNoList" form="inout-form">
+                                                   onclick="event.stopPropagation();" name="studentNoList"
+                                                   form="inout-form">
                                         </td>
                                         <td th:text="${iterStat.count}"></td>
                                         <td th:text="${s.studentName}"></td>
@@ -138,7 +145,7 @@
                                         <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass
                                   : (s.hanClass != null ? s.hanClass 
                                   : (s.bookClass != null ? s.bookClass : ''))}"></td>
-                                        <td th:text="${s.entryDate != null? s.entryDate : '-'}"></td>
+                                        <td th:text="${s.moveAt != null? s.moveAt : '-'}"></td>
                                         <td th:text="${s.hanTeacher != null && s.bookTeacher != null ? s.hanTeacher + '(한자), ' + s.bookTeacher +'(독서)'
                                   : (s.hanTeacher != null ? s.hanTeacher + '(한자)'
                                   : (s.bookTeacher != null ? s.bookTeacher + '(독서)' : ''))}"></td>
@@ -175,7 +182,7 @@
                                 <div class="icon-field">
                                     <div class="display-date"></div>
                                     <div style="position: relative;">
-                                        <input type="date" class="hidden-date datepicker" name="moveAt">
+                                        <input type="date" class="hidden-inout-date datepicker" name="moveAt">
                                         <button type="button" class="icon-btn calendar-open">
                                             <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                         </button>
@@ -189,7 +196,8 @@
                                     <div class="basic-select" style="width: 100%;">
                                         <select name="teacherNo" id="teacher-filter">
                                             <th:block th:each="teacher : ${teachers}">
-                                                <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
+                                                <option th:value="${teacher.userCode}"
+                                                        th:text="${teacher.userName + ' 선생님'}"></option>
                                             </th:block>
                                         </select>
                                     </div>
@@ -206,8 +214,8 @@
                             </form>
                         </div>
                     </div>
-                    <div th:replace="~{student/inout-modal/student-inout-modal :: studentInoutModal}"></div>
                 </section>
+                <div th:replace="~{student/inout-modal/student-inout-modal :: studentInoutModal}"></div>
             </div>
         </main>
     </div>

@@ -46,7 +46,18 @@ function showTransferModal() {
     modal.querySelector(".btn-close").addEventListener("click", closeTransferModal);
 }
 
+// 전입 전출 날짜 선택
+document.addEventListener("DOMContentLoaded", () => {
+    const dateInput = document.querySelector(".hidden-inout-date");
+    const calendarBtn = document.querySelector(".calendar-open");
+    const displayDate = document.querySelector(".display-date");
 
+    calendarBtn.addEventListener("click", () => {
+        dateInput.showPicker();
+    });
+})
+
+// 전입 전출 저장
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("inout-form");
     const submitBtn = form.querySelector(".save-btn");
@@ -76,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ✅ 3. 날짜, 선생님, 사유
         const moveAt = form.querySelector('input[name="moveAt"]').value;
         const teacherCode = form.querySelector('#teacher-filter').value;
         const reason = form.querySelector('textarea[name="transferReason"]').value.trim();

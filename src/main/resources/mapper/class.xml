@@ -98,8 +98,10 @@
         WHERE time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findTimeTableKeyByStudentId" resultType="String">
-        SELECT ta.time_table_key
+    <select id="findTimeTableKeyByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
+        SELECT ta.time_table_key,
+                t.user_code,
+                t.class_key
         FROM erp_time_table_assign ta
                  JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
                  JOIN erp_class_code c ON t.class_key = c.class_key

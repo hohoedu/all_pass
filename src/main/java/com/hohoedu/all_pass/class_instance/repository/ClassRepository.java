@@ -5,6 +5,7 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -55,7 +56,7 @@ public interface ClassRepository {
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
-    String findTimeTableKeyByStudentId(
+    StudentWebRespDTO.TransferTimeTableInfoDTO findTimeTableKeyByStudentId(
             @Param("studentId") String studentId,
             @Param("classType") String classType,
             @Param("yy") String yy,

@@ -400,8 +400,8 @@ OUTER APPLY (
 
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
-        INSERT INTO student_transfer_history (student_no, from_user_no, to_user_no, class_type, transfer_reason, move_at, class_no, created_at)
-        VALUES (#{student.studentNo}, #{fromUser.userNo}, #{toUser.userNo}, #{classType}, #{transferReason}, #{classNo}, #{moveAt}, CURRENT_TIMESTAMP);
+        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, class_type, transfer_reason, class_key, move_at, created_at)
+        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{classType}, #{transferReason}, #{classCode.classKey}, #{moveAt}, SYSDATETIME());
     </insert>
 
     <!-- 출석 관련 -->

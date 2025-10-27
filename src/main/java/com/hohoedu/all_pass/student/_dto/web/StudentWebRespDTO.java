@@ -134,6 +134,13 @@ public class StudentWebRespDTO {
     }
 
     @Data
+    public static class TransferTimeTableInfoDTO {
+        private String userCode;
+        private String timeTableKey;
+        private String classKey;
+    }
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class StudentSnapshotRespDTO {

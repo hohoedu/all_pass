@@ -230,14 +230,21 @@ public class StudentService {
 
                     // 시간표 삭제
                     // 타임테이블 키 조회
-                    String timeTableKey = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), year, month);
-                    System.out.println("timeTableKey = " + timeTableKey);
-                    classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
-                    System.out.println("삭제됨 으아아아아아아아아아아아아아");
+                    StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), year, month);
+                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
                     // student_class 변경
                     studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), year, month);
-
-                    // history 저장
+                    // history 저장 (누가 변경했는지 없음
+                    StudentTransferHistory history = StudentTransferHistory.builder()
+                            .student(Student.builder().studentId(studentId).build())
+                            .fromUser(User.builder().userCode(dto.getUserCode()).build())
+                            .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+                            .classCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                            .classType(reqDto.getSelectedHan())
+                            .transferReason(reqDto.getTransferReason())
+                            .moveAt(reqDto.getMoveAt())
+                            .build();
+                    studentRepository.insertTransferHistory(history);
 
                 }
             }
@@ -245,13 +252,22 @@ public class StudentService {
                 for (String studentId : reqDto.getStudents()) {
                     // 시간표 삭제
                     // 타임테이블 키 조회
-                    String timeTableKey = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), year, month);
-                    System.out.println("timeTableKey = " + timeTableKey);
-                    classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
+                    StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), year, month);
+                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
                     // student_class 변경
-                    // history 저장
-
                     studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), year, month);
+                    // history 저장 (누가 변경했는지 없음)
+                    StudentTransferHistory history = StudentTransferHistory.builder()
+                            .student(Student.builder().studentId(studentId).build())
+                            .fromUser(User.builder().userCode(dto.getUserCode()).build())
+                            .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+                            .classCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                            .classType(reqDto.getSelectedBook())
+                            .transferReason(reqDto.getTransferReason())
+                            .moveAt(reqDto.getMoveAt())
+                            .build();
+
+                    studentRepository.insertTransferHistory(history);
 
                 }
             }
