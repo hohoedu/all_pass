@@ -116,7 +116,6 @@
                                     <span class="count-num"
                                           th:if="${stu.week != null and T(java.lang.Integer).parseInt(stu.week) <= 3}"
                                           th:text="'(' + ${stu.week} + ')'"></span>
-
                                     <span id="assign_delete"
                                           class="badge-close"
                                           th:data-student-id="${stu.studentId}"
@@ -126,9 +125,14 @@
                             </th:block>
                         </td>
                         <td>
-                            <th:block th:if="${entry != null and entry.timeTableKey != null}">
-                                <span class="badge-init" title="삭제"></span>
-                            </th:block>
+                            <div class="time_table_row">
+                                <th:block th:if="${entry != null and entry.timeTableKey != null}">
+                                    <img th:src="@{/image/trash.svg}" alt="삭제" class="badge-init" title="삭제">
+                                </th:block>
+                                <th:block th:if="${entry != null and entry.classKey == 'COM'}">
+                                    <img th:src="@{/image/pen.svg}" alt="일괄 등록" class="add-class" title="일괄 등록">
+                                </th:block>
+                            </div>
                         </td>
                     </tr>
                     </tbody>

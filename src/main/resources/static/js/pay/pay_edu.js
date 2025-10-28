@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('student-tbody');
 
     initCurrentMonth();
+    bindSelectAllCheckbox();
 
     monthBtn.addEventListener('click', () => monthInput.showPicker());
     monthInput.addEventListener('change', onMonthChange);
@@ -20,9 +21,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
         monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
-
     }
 
+    // 체크박스 전체 선택
+    function bindSelectAllCheckbox() {
+        const selectAll = document.querySelector('#pay-edu-select-all');
+        const checkboxes = document.querySelectorAll('#student-tbody .row-checkbox');
+
+        if (!selectAll) return;
+
+        // 전체 선택 클릭 시
+        selectAll.addEventListener('change', () => {
+            checkboxes.forEach(chk => (chk.checked = selectAll.checked));
+        });
+
+        // 개별 체크박스 상태 변경 시 헤더 체크박스 상태 갱신
+        checkboxes.forEach(chk => {
+            chk.addEventListener('change', () => {
+                const allChecked = [...checkboxes].every(c => c.checked);
+                selectAll.checked = allChecked;
+            });
+        });
+    }
+
+    // 월 변경
     async function onMonthChange() {
         const date = new Date(monthInput.value);
         if (isNaN(date)) return;
@@ -36,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchStudents(year, month, teacherCode);
     }
 
+    // 선생님 변경
     async function onTeacherChange() {
         const date = new Date(monthInput.value);
         if (isNaN(date)) return;
@@ -47,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchStudents(year, month, teacherCode);
     }
 
+    // 학생 조회
     async function fetchStudents(year, month, teacherCode) {
         const requestBody = {
             year: year,
@@ -67,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error("서버 오류 발생");
 
             const result = await response.json();
-            console.log(JSON.stringify(result, null, 2));
 
             const students = result.response || result;
+
             renderStudentTable(students);
 
         } catch (error) {
@@ -78,32 +102,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 랜더링
     function renderStudentTable(students) {
+        const tbody = document.querySelector('#student-tbody');
         tbody.innerHTML = '';
 
         if (!students || students.length === 0) {
             tbody.innerHTML = `
-                <tr><td colspan="8" style="text-align:center;">해당 조건의 학생 데이터가 없습니다.</td></tr>
+                <tr><td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>
             `;
             return;
         }
 
         students.forEach((student, index) => {
             const tr = document.createElement('tr');
+
+            tr.dataset.parentPhone = student.parentPhone || '';
+            tr.dataset.studentName = student.studentName || '';
+            tr.dataset.totalPrice = student.totalPrice || 0;
+            const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
             tr.innerHTML = `
-                <td class="checkbox-group">
-                    <input type="checkbox" value="${student.studentId}">
-                </td>
-                <td>${index + 1}</td>
-                <td>${student.studentName}</td>
-                <td>${student.subject}</td>
-                <td class="cal-content">-</td>
-                <td class="charge">-</td>
-                <td><span class="unissued">-</span></td>
-                <td><div class="pay-box">-</div></td>
-            `;
+            <td class="checkbox-group">
+                <input type="checkbox" class="row-checkbox" value="${student.studentId}">
+            </td>
+            <td>${index + 1}</td>
+            <td>${student.studentName}</td>
+            <td>${student.subject || '-'}</td>
+            <td class="cal-content">
+                ${student.hanTeacher ? `${student.hanTeacher}(한), ` : ''}${student.bookTeacher ? `${student.bookTeacher}(독)` : ''}
+            </td>
+            <td class="charge">${formattedPrice}</td>
+            <td><span class="unissued">-</span></td>
+            <td><div class="pay-box">-</div></td>
+        `;
+
             tbody.appendChild(tr);
         });
+        bindSelectAllCheckbox();
     }
 });
 
@@ -259,52 +294,92 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // 청구서 발행 버튼
-    payIssue.addEventListener('click', () => {
-        const bill = {
-            // bill_id: "DAE00125102112540000",
-            bill_id: bill_id,
-            product_nm: "청구사유",
-            message: "안내메시지",
-            member_nm: "박세환",
-            phone: phone,
-            price: price,
-            hash: sendHash,
-            expire_dt: "2025-10-27",
-            callbackURL: "https://f57dded7b1fc.ngrok-free.app/pay/callback"
+    payIssue.addEventListener('click', async () => {
+        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
+        if (checkedBoxes.length === 0) {
+            alert('학생을 선택하세요.');
+            return;
         }
-        const requestBody = {
-            apikey: "TEST-API-KEY-TALK",
-            member: "TEST-MEMBER-FOR-API",
-            merchant: "TEST-MERCHANT-FOR-API",
-            bill: bill
-        };
+        let successCount = 0;
+        let failCount = 0;
+        const totalCount = checkedBoxes.length;
+        const results = [];
 
-        fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        })
-            .then(res => {
-                console.log("응답 상태:", res.status);
-                return res.json(); // JSON 파싱
-            })
-            .then(data => {
-                console.log("요청 바디:", JSON.stringify(requestBody));
-                console.log("응답 데이터:", data);
+        for (const [index, box] of checkedBoxes.entries()) {
+            const row = box.closest('tr');
+            const studentName = row.dataset.studentName;
+            const phone = row.dataset.parentPhone;
+            const price = row.dataset.totalPrice;
+
+            // bill_id 생성
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const MM = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const HH = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const indexStr = String(index).padStart(2, '0');
+            const formatted = `${yy}${MM}${dd}${mm}`;
+            const bill_id = "3208800028" + formatted + indexStr;
+
+            const sendHash = generateSendHash(bill_id, phone, price);
+
+            const bill = {
+                bill_id,
+                product_nm: "학원비",
+                message: document.querySelector('input[name="message"]').value,
+                member_nm: studentName,
+                phone,
+                price,
+                hash: sendHash,
+                expire_dt: document.querySelector('.expire-input').value,
+                callbackURL: "https://2779e9e3277d.ngrok-free.app/pay/callback"
+            };
+
+            const requestBody = {
+                apikey: "TEST-API-KEY-TALK",
+                member: "TEST-MEMBER-FOR-API",
+                merchant: "TEST-MERCHANT-FOR-API",
+                bill
+            };
+            console.log(requestBody);
+            try {
+                const res = await fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await res.json();
+                console.log(`[${studentName}] 결과:`, data);
+
                 if (data.code === "0000") {
-                    alert('청구서가 발행되었습니다.')
-                } else if (data.code === "9800") {
-                    alert('이미 발행된 청구서 입니다.')
-                } else if (data.code === "9999") {
-                    alert(data.msg);
+                    successCount++;
+                    results.push(`✅ ${studentName} - 청구 성공`);
+                } else {
+                    failCount++;
+                    results.push(`❌ ${studentName} - ${data.msg || '실패'}`);
                 }
-            })
-            .catch(err => {
-                console.error("오류 발생:", err);
-            });
+            } catch (err) {
+                failCount++;
+                results.push(`❌ ${studentName} - 네트워크 오류`);
+                console.error(err);
+            }
+        }
+
+        // 루프 끝난 후 한 번에 요약 출력
+        const summary = `
+총 ${totalCount}건 중
+✅ 성공: ${successCount}건
+❌ 실패: ${failCount}건
+
+상세 결과:
+${results.join('\n')}
+`;
+        alert(summary);
     });
 
     // 결제 취소 버튼

@@ -3380,7 +3380,8 @@ textarea#consult-memo {
     opacity: 0;
     z-index: 1;
 }
-.hidden-inout-date{
+
+.hidden-inout-date {
     pointer-events: none;
     opacity: 0;
 }
@@ -4123,15 +4124,29 @@ input:checked + .slider::before {
     font-weight: bold;
     color: #B1BAD8;
     margin-left: 4px;
+    cursor: pointer;
 }
 
-.badge-init:after {
-    content: "\e921";
-    font-family: xeicon;
-    font-weight: bold;
-    color: #B1BAD8;
-    margin-left: 4px;
+.badge-init {
     cursor: pointer;
+    width: 30px;
+    height: 30px;
+}
+
+.add-class {
+    cursor: pointer;
+    height: 30px;
+    color: #ee4d79;
+}
+
+
+.time_table_row {
+    display: flex;
+    justify-content: space-evenly;
+    align-content: stretch;
+    flex-direction: column;
+    height: 100%;
+    align-items: flex-start;
 }
 
 .badge-week {

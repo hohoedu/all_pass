@@ -7,6 +7,14 @@
         SELECT
         s.student_id AS studentId,
         s.student_name AS studentName,
+        sc.han_fee AS hanFee,
+        sc.book_fee AS bookFee,
+        sc.han_material_fee AS hanMaterialFee,
+        sc.book_material_fee AS bookMaterialFee,
+        hu.user_name AS hanTeacher,
+        bu.user_name AS bookTeacher,
+        (sc.han_fee + sc.book_fee + sc.han_material_fee + sc.book_material_fee) AS totalPrice,
+        (p.parent_tel_first+p.parent_tel_middle+p.parent_tel_last) AS parentPhone,
         STUFF((
         SELECT ', ' + c.class_name
         FROM erp_time_table_assign ta
@@ -22,6 +30,10 @@
         FOR XML PATH('')
         ), 1, 2, '') AS subject
         FROM erp_student s
+        JOIN erp_student_class sc on s.student_id = sc.student_id
+        JOIN erp_user hu ON sc.han_user_code = hu.user_code
+        JOIN erp_user bu ON sc.book_user_code = bu.user_code
+        JOIN erp_parent p ON s.student_id = p.student_id
         WHERE EXISTS (
         SELECT 1
         FROM erp_time_table_assign ta

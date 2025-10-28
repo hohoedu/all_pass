@@ -89,7 +89,7 @@
                                 <thead>
                                 <tr>
                                     <th class="checkbox-group">
-                                        <input type="checkbox">
+                                        <input type="checkbox" id="pay-edu-select-all">
                                     </th>
                                     <th>No</th>
                                     <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
@@ -102,15 +102,18 @@
                                 </thead>
                                 <tbody id="student-tbody" class="stripe">
 
-                                <tr th:each="student, stat : ${students}">
+                                <tr th:each="student, stat : ${students}"
+                                    th:attr="data-parent-phone=${student.parentPhone},
+                                         data-student-name=${student.studentName},
+                                         data-total-price=${student.totalPrice}">
                                     <td class="checkbox-group">
-                                        <input type="checkbox" th:value="${student.studentId}">
+                                        <input type="checkbox" class="row-checkbox" th:value="${student.studentId}">
                                     </td>
                                     <td th:text="${stat.count}"></td>
                                     <td th:text="${student.studentName}"></td>
                                     <td th:text="${student.subject}"></td>
-                                    <td class="cal-content">-</td>
-                                    <td class="charge">-</td>
+                                    <td th:text="${student.hanTeacher+'(한), '+student.bookTeacher+'(독)'}"></td>
+                                    <td class="charge" th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
                                     <td><span class="unissued">-</span></td>
                                     <td>
                                         <div class="pay-box">-</div>
@@ -292,8 +295,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>안내메세지</input></td>
-                            <td><input type="text" placeholder="내용을 입력해주세요" style="width: 100%;"></td>
+                            <td>안내메세지</td>
+                            <td><input type="text" name="message" placeholder="내용을 입력해주세요" style="width: 100%;"></td>
                         </tr>
                         </tbody>
                     </table>

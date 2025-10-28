@@ -39,11 +39,21 @@ public class TimeTableAssign {
     @JoinColumn(name = "time_table_key", referencedColumnName = "time_table_key", nullable = false)
     private TimeTable timeTable;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "class_key", referencedColumnName = "class_key")
+    private ClassCode classCode;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "unit_key", referencedColumnName = "unit_key")
+    private UnitCode unitCode;
+
     @Builder
-    public TimeTableAssign(String week, Student student, TimeTable timeTable) {
+    public TimeTableAssign(String week, Student student, TimeTable timeTable, ClassCode classCode, UnitCode unitCode) {
         this.week = week;
         this.student = student;
         this.timeTable = timeTable;
+        this.classCode = classCode;
+        this.unitCode = unitCode;
     }
 
 

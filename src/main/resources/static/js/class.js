@@ -527,6 +527,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+document.addEventListener("DOMContentLoaded",()=>{
+    const btn = document.addEventListener(".add-class");
+    console.log('일괄 등록');
+
+});
 // ===========================수업일지===========================//
 
 const DAY_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
