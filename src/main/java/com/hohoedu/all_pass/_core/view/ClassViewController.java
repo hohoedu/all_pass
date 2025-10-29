@@ -56,24 +56,25 @@ public class ClassViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        System.out.println("==================findClassCode===================");
         List<ClassCode> classCodes = classService.findClassCode();
-        System.out.println("==================findGrade=======================");
         List<GradeCode> grades = classService.findGrade();
-        System.out.println("==================findClassUnits===================");
         Map<String, List<UnitCode>> classUnitMap = classService.findClassUnits();
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
-        System.out.println("==================findStudenetByCenterCode===================");
-        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
 
+        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
+        String classCodesJson = mapper.writeValueAsString(classCodes);
+
+        List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
+        String comclassInfosJson = mapper.writeValueAsString(comclassInfos);
+        model.addAttribute("comclassInfosJson", comclassInfosJson);
         model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);
+        model.addAttribute("classCodesJson", classCodesJson);
         model.addAttribute("classUnits", classUnits);
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
         model.addAttribute("students", students);
-        System.out.println("==================findTimeTavleWithStudents===================");
         List<TimeTableDTO> tables = classService.findTimeTableWithStudents(user.getUserCode(), year, month);
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()

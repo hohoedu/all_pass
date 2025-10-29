@@ -98,7 +98,6 @@ public class ClassController {
                 return ResponseEntity.ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
             }
         } catch (DataIntegrityViolationException ex) {
-            System.out.println("============================ "+ ex.getMessage()+"============================");
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }
@@ -141,6 +140,47 @@ public class ClassController {
     public ResponseEntity<?> deleteAll(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto) {
         // classService.deleteTimeTableRow(dto.getTimeTableKey());
         return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
+    @PostMapping("/comclass/students")
+    public ResponseEntity<?> getComClassStudent(@RequestBody Map<String, String> request, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<ClassRespDTO.ComClassStudentDTO> response = classService.findComClassStudentsByTimeTableKey(request.get("timeTableKey"), user.getUserCode());
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/comclass/updateAssign")
+    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        if (reqDTO.getStudentInfos() != null) {
+            System.out.println("학생 리스트 크기: " + reqDTO.getStudentInfos().size());
+            reqDTO.getStudentInfos().forEach(info -> {
+                System.out.println("----- 학생 정보 -----");
+                System.out.println("studentId : " + info.getStudentId());
+                System.out.println("classKey  : " + info.getClassKey());
+                System.out.println("unitKey   : " + info.getUnitKey());
+            });
+        } else {
+            System.out.println("❌ studentInfos가 null입니다.");
+        }
+        int response =  classService.updateTimeTableAssign(reqDTO, user.getUserCode());
+
+
+        return ResponseEntity.ok(ApiUtils.success(response+"건"));
+
     }
 
     // ================ 수업 일지 컨트롤러 =====================//

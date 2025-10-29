@@ -77,6 +77,22 @@ public interface ClassRepository {
     public List<TimeTableCode> findTimeTableCodeByUserNo(
             @Param("userNo") Integer userNo);
 
+    List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("userCode") String userCode
+    );
+
+    List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByUserCode(
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    int updateTimeTableAssign(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("studentId") String studentId,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey);
+
     // 날짜별 선생님별 수업 조회
     public List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
             @Param("yy") String yy,
@@ -84,7 +100,6 @@ public interface ClassRepository {
             @Param("dayName") String dayName,
             @Param("userCode") String userCode,
             @Param("centerCode") String centerCode);
-
 
     public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(
             @Param("timeTableKey") String timeTableKey,

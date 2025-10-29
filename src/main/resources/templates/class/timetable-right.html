@@ -38,6 +38,7 @@
                         th:data-time-table-key="${entry != null ? entry.timeTableKey : ''}"
                         th:data-time-table-code="${entry != null ? entry.timeTableKey : ''}"
                         th:attr="data-day=${day.id}, data-period-no=${i}">
+                        <input type="hidden" id="comclassInfos" th:value="${comclassInfosJson}">
                         <td class="radio-group round">
                             <input type="radio"
                                    th:attr="name=${'selectedPeriod_' + day.id}"
@@ -87,11 +88,12 @@
                                 <div class="basic-select square">
                                     <select name="unitKey" class="unit-select"
                                             th:attr="data-selected=${entry != null ? entry.unitKey : ''}">
-                                        <option value="">선택 안함</option>
+                                        <option value=''>선택 안함</option>
 
                                     </select>
                                 </div>
                                 <input type="hidden" id="classUnits" th:value="${classUnits}"/>
+                                <input type="hidden" id="classCodes" th:value="${classCodesJson}"/>
                                 <div class="basic-select square">
                                     <select name="gradeKey">
                                         <option value="">선택 안함</option>
@@ -108,8 +110,10 @@
                         <td>
                             <th:block th:if="${entry != null}">
                                 <div th:each="stu : ${entry.students}"
-                                     class="student-badge"
-                                     th:attr="data-name=${stu.studentName}">
+                                     class="student-badge comclass-badge-name"
+                                     th:attr="data-name=${stu.studentName},
+                                     data-student-id=${stu.studentId},
+                                     data-time-table-key=${entry.timeTableKey}">
                                     <span class="badge-name" th:text="${stu.studentName}"></span>
 
                                     <!-- week 문자열 방어 -->
@@ -138,26 +142,17 @@
                     </tbody>
                 </table>
             </div>
+
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            const dayMap = {0: "sun", 1: "mon", 2: "tue", 3: "wed", 4: "thu", 5: "fri", 6: "sat"};
+            const savedDay = localStorage.getItem("selectedDay");
             const today = new Date();
-            const day = today.getDay(); // 0=일, 1=월, ..., 6=토
-
-            // day.id랑 매칭 규칙을 정해주세요. 예: "mon", "tue", "wed" ...
-            const dayMap = {
-                0: "sun",
-                1: "mon",
-                2: "tue",
-                3: "wed",
-                4: "thu",
-                5: "fri",
-                6: "sat"
-            };
-
-            const targetId = dayMap[day] || "mon"; // 주말이면 월요일 fallback
+            const defaultDay = dayMap[today.getDay()] || "mon";
+            const targetId = savedDay || defaultDay;
 
             // 모든 버튼/콘텐츠에서 active 제거
             document.querySelectorAll(".time-tab-btn").forEach(btn => btn.classList.remove("active"));
@@ -169,6 +164,14 @@
 
             if (targetBtn) targetBtn.classList.add("active");
             if (targetContent) targetContent.classList.add("active");
+
+            // 클릭 시 localStorage에 저장
+            document.querySelectorAll(".time-tab-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    localStorage.setItem("selectedDay", btn.dataset.tab);
+                });
+            });
         });
     </script>
+
 </section>

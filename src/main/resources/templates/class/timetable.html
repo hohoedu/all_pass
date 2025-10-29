@@ -11,6 +11,7 @@
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <script th:src="@{/js/custom.js}"></script>
     <script th:src="@{/js/class.js}"></script>
+    <script th:src="@{/js/class/timetable.js}"></script>
     <!-- Html menu Load -->
     <script th:src="@{/js/sidebar.js}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -72,7 +73,6 @@
                                         <thead>
                                         <tr>
                                             <th>
-
                                             </th>
                                             <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                                             <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
@@ -126,6 +126,78 @@
                         </div>
                     </section>
                     <div th:replace="~{class/timetable-right :: studentPickRight} "></div>
+                    <!-- 📦 종합반 일괄 등록 모달 -->
+                    <div th:fragment="comclassModal"
+                         id="comclassModal"
+                         class="comclass-overlay"
+                         style="display:none;">
+                        <div class="comclass-window">
+                            <div class="comclass-header">
+                                <h3>종합반 일괄 등록</h3>
+                                <button type="button" class="comclass-close">&times;</button>
+                            </div>
+
+                            <div class="comclass-body">
+                                <table class="basic-table comclass stripe comclass-table">
+                                    <colgroup>
+                                        <col width="8%">
+                                        <col width="20%">
+                                        <col width="15%">
+                                        <col width="28%">
+                                        <col width="29%">
+                                    </colgroup>
+                                    <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>이름</th>
+                                        <th>학년</th>
+                                        <th>수업</th>
+                                        <th>진도</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <!-- 학생 데이터 렌더링 -->
+                                    <!--                    <tr th:each="stu, idx : ${students}">-->
+                                    <!--                        <td th:text="${idx.index + 1}">1</td>-->
+                                    <!--                        <td th:text="${stu.name}">홍길동</td>-->
+                                    <!--                        <td th:text="${stu.gradeName}">3학년</td>-->
+                                    <tr>
+                                        <td>1</td>
+                                        <td>홍길동</td>
+                                        <td>3학년</td>
+                                        <!-- 수업 선택 -->
+                                        <td>
+                                            <div class="basic-select square size-100">
+
+                                                <select name="classKey" class="comclass-select">
+                                                    <option th:value=NULL>선택</option>
+                                                    <option th:each="cc : ${classCodes}"
+                                                            th:value="${cc.classKey}"
+                                                            th:text="${cc.className}"
+                                                            th:selected="${entry != null and cc.classKey == entry.classKey}">
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </td>
+
+                                        <!-- 진도 선택 -->
+                                        <td>
+                                            <div class="basic-select square size-50">
+                                                <select name="unitKey" class="comclass-select"
+                                                        th:attr="data-selected=${entry != null ? entry.unitKey : ''}">
+                                                    <option value="">선택</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="comclass-footer">
+                                <button type="button" id="comclassSaveBtn" class="common-btn record-save">저장</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>

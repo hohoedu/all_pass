@@ -46,6 +46,19 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class ComClassStudentDTO {
+        private String studentId;
+        private String studentName;
+        private String timeTableKey;
+        private String gradeKey;
+        private String gradeName;
+        private String classKey;
+        private String unitKey;
+        private String className;
+        private String unitName;
+    }
+
+    @Data
     public static class ClassInfoDTO {
         private String classType;
         private String classKey;

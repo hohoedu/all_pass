@@ -69,7 +69,9 @@ function getClassUnits() {
 
 // 수업 변경 시 진도 변경
 document.addEventListener("DOMContentLoaded", () => {
-    const rawJson = document.getElementById("classUnits").value;
+    const rawJson = document.getElementById("classUnits")?.value;
+    if (!rawJson) return;
+
     const classUnits = JSON.parse(rawJson);
 
     document.querySelectorAll("tr.time-row").forEach(row => {
@@ -90,7 +92,29 @@ document.addEventListener("DOMContentLoaded", () => {
             fillUnitSelect(unitSelect, classUnits, classKey, null);
         });
     });
+    initClassUnitSelects(document.querySelectorAll("#comclassModal select.comclass-select[name='classKey']"), classUnits, "comclass-select", "comclass-select");
 });
+
+
+function initClassUnitSelects(classSelectNodes, classUnits, classClass, unitClass) {
+    classSelectNodes.forEach(classSelect => {
+        const parent = classSelect.closest("tr");
+        const unitSelect = parent.querySelector(`.${unitClass}[name='unitKey']`);
+        if (!unitSelect) return;
+
+        const initialClassKey = classSelect.value;
+        const initialUnitKey = unitSelect.getAttribute("data-selected");
+
+        // ✅ 최초 로딩 시
+        fillUnitSelect(unitSelect, classUnits, initialClassKey, initialUnitKey);
+
+        // ✅ 변경 이벤트 시
+        classSelect.addEventListener("change", function () {
+            const classKey = this.value;
+            fillUnitSelect(unitSelect, classUnits, classKey, null);
+        });
+    });
+}
 
 // 진도 데이터 갈아끼우기
 function fillUnitSelect(unitSelect, classUnits, classKey, selectedUnitKey) {
@@ -247,14 +271,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const userCode = document.getElementById("tableUserCode").value;
             const rows = tab.querySelectorAll('tr.time-row');
             for (const row of rows) {
-                const periodNo = row.querySelector('td:nth-child(2)').innerText.trim();
+                const periodNo = row.dataset.periodNo;
+                console.log(periodNo);
+                console.log('periodNo' + periodNo);
                 const startTime = row.querySelector('.time-start input').value;
                 const endTime = row.querySelector('.time-end input').value;
                 const classKey = row.querySelector('select[name="classKey"]').value;
                 const unitKey = row.querySelector('select[name="unitKey"]').value;
                 const gradeKey = row.querySelector('select[name="gradeKey"]').value;
 
-                if (!startTime || !endTime || !classKey || !unitKey || !gradeKey) {
+                const isComClass = classKey === "COM";
+                const hasRequired =
+                    startTime && endTime && classKey && gradeKey && (isComClass || unitKey);
+
+                if (!hasRequired) {
                     continue;
                 }
 
@@ -281,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(json => {
                 if (json.response === "200") {
-                    showAlert({icon: 'success', title: '시간표가 저장되었습니다.'})
-                        .then(() => window.location.reload());
+                    // showAlert({icon: 'success', title: '시간표가 저장되었습니다.'})
+                    //     .then(() => window.location.reload());
                 } else {
                     showAlert({icon: 'error', title: json.error?.message, text: '오류코드: ' + json.error?.status});
                 }
@@ -527,11 +557,192 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.addEventListener("DOMContentLoaded",()=>{
-    const btn = document.addEventListener(".add-class");
-    console.log('일괄 등록');
+function getHiddenJson(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    try {
+        return JSON.parse(el.value);
+    } catch (e) {
+        console.error(`❌ ${id} 파싱 실패`, e);
+        return null;
+    }
+}
 
+document.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("comclassModal");
+    const tbody = modal.querySelector(".comclass-table tbody");
+    const closeBtn = modal.querySelector(".comclass-close");
+
+    document.querySelectorAll(".add-class").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const row = e.target.closest("tr.time-row");
+            const timeTableKey = row?.dataset.timeTableKey;
+            if (!timeTableKey) {
+                alert("시간표를 조회할 수 없습니다.\n새로고침 후 시도해주세요.");
+                return;
+            }
+
+            try {
+                const res = await fetch("/class/comclass/students", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({timeTableKey}),
+                });
+
+                if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+                const data = await res.json();
+
+                modal.dataset.timeTableKey = timeTableKey;
+                renderComclassTable(data.response, tbody);
+                modal.style.display = "flex";
+
+                const classUnits = getHiddenJson("classUnits");
+                initClassUnitSelects(
+                    modal.querySelectorAll("select.comclass-select[name='classKey']"),
+                    classUnits,
+                    "comclass-select",
+                    "comclass-select"
+                );
+
+            } catch (err) {
+                console.error("❌ 종합반 학생 조회 실패:", err);
+                alert("학생 데이터를 불러오는 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.");
+            }
+        });
+    });
+
+    closeBtn.addEventListener("click", () => modal.style.display = "none");
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
 });
+
+function renderComclassTable(students, tbody) {
+    tbody.innerHTML = "";
+
+    const classCodes = getHiddenJson("classCodes");
+
+    students.forEach((stu, idx) => {
+        const tr = document.createElement("tr");
+        tr.dataset.studentId = stu.studentId;
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${stu.studentName}</td>
+            <td>${stu.gradeName}</td>
+            <td>
+                <div class="basic-select square size-100">
+                    <select name="classKey" class="comclass-select">
+                        <option value="">선택</option>
+                        ${classCodes.map(c =>
+            `<option value="${c.classKey}" ${stu.classKey === c.classKey ? "selected" : ""}>${c.className}</option>`
+        ).join("")}
+                    </select>
+                </div>
+            </td>
+            <td>
+                <div class="basic-select square size-50">
+                    <select name="unitKey" class="comclass-select" data-selected="${stu.unitKey || ""}">
+                        <option value="">선택</option>
+                    </select>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("comclassSaveBtn");
+    const modal = document.getElementById("comclassModal");
+
+    btn.addEventListener("click", async function () {
+        const rows = modal.querySelectorAll(".comclass-table tbody tr");
+        const updateList = [];
+
+        rows.forEach(tr => {
+            const studentId = tr.dataset.studentId;
+            const classKey = tr.querySelector("select[name='classKey']").value;
+            const unitKey = tr.querySelector("select[name='unitKey']").value;
+
+            updateList.push({
+                studentId: studentId || null,
+                classKey: classKey || null,
+                unitKey: unitKey || null
+            });
+        });
+
+        const timeTableKey = modal.dataset.timeTableKey;
+        if (!timeTableKey) {
+            alert("시간표 키를 찾을 수 없습니다. 다시 시도해주세요.");
+            return;
+        }
+
+        const payload = {
+            timeTableKey: timeTableKey,
+            studentInfos: updateList
+        };
+
+
+        try {
+            const res = await fetch("/class/comclass/updateAssign", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+            const result = await res.json();
+            alert("✅ " + result.response + " 저장되었습니다!");
+            console.log("응답:", result);
+
+            modal.style.display = "none";
+
+        } catch (err) {
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const jsonString = document.getElementById("comclassInfos").value;
+    const comclassInfos = JSON.parse(jsonString);
+
+    console.log(comclassInfos);
+    document.querySelectorAll(".badge-name").forEach(badge => {
+        badge.addEventListener("mouseenter", e => {
+            const parent = badge.closest(".student-badge");
+            const studentId = parent.dataset.studentId;
+            const timeTableKey = parent.dataset.timeTableKey;
+
+            // ✅ 두 조건 모두 일치해야 함
+            const match = comclassInfos.find(info =>
+                info.studentId === studentId && info.timeTableKey === timeTableKey
+            );
+
+            if (!match) return;
+            if (!match.className || !match.unitName) return;
+
+            // ✅ tooltip 생성
+            const tooltip = document.createElement("div");
+            tooltip.className = "comclass-tooltip";
+            tooltip.textContent = `${match.className} ${match.unitName}`;
+
+            // badge 바로 아래에 표시
+            const rect = badge.getBoundingClientRect();
+            tooltip.style.position = "absolute";
+            tooltip.style.top = `${rect.bottom + window.scrollY + 4}px`;
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+
+            document.body.appendChild(tooltip);
+
+            // ✅ mouseleave 시 제거
+            badge.addEventListener("mouseleave", () => {
+                tooltip.remove();
+            }, {once: true});
+        });
+    });
+});
+
 // ===========================수업일지===========================//
 
 const DAY_EN = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];

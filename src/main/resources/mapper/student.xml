@@ -150,7 +150,11 @@ OUTER APPLY (
         SELECT DISTINCT ', ' + cc2.class_name
         FROM erp_time_table_assign ta2
         JOIN erp_time_table t2 ON t2.time_table_key = ta2.time_table_key
-        JOIN erp_class_code cc2 ON cc2.class_key = t2.class_key
+        LEFT JOIN erp_class_code cc2 ON cc2.class_key =
+        CASE
+        WHEN t2.class_key = 'COM' THEN ta2.class_key
+        ELSE t2.class_key
+        END
         WHERE ta2.student_id = s.student_id
         AND cc2.class_type = 1
         AND t2.mm = FORMAT(GETDATE(),'MM')
@@ -212,20 +216,25 @@ OUTER APPLY (
         WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
         WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
         ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
-        END          AS entryDate,
+        END AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
 
         STUFF((
-        SELECT DISTINCT ', ' + cc.class_name
-        FROM erp_time_table_assign ta
-        JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
-        JOIN erp_class_code cc ON cc.class_key = t.class_key
-        WHERE ta.student_id = s.student_id
-        AND cc.class_type = 1
+        SELECT DISTINCT ', ' + cc2.class_name
+        FROM erp_time_table_assign ta2
+        JOIN erp_time_table t2 ON t2.time_table_key = ta2.time_table_key
+        LEFT JOIN erp_class_code cc2 ON cc2.class_key =
+        CASE
+        WHEN t2.class_key = 'COM' THEN ta2.class_key
+        ELSE t2.class_key
+        END
+        WHERE ta2.student_id = s.student_id
+        AND cc2.class_type = 1
+        AND t2.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
-            AND t.user_code = #{userCode}
+            AND t2.user_code = #{userCode}
         </if>
         FOR XML PATH(''), TYPE
         ).value('.', 'nvarchar(max)'), 1, 2, '') AS hanClass,

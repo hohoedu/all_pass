@@ -220,6 +220,44 @@ public class ClassService {
         return result;
     }
 
+
+    public List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(String timeTableKey, String userCode) {
+        List<ClassRespDTO.ComClassStudentDTO> students = classRepository.findComClassStudentsByTimeTableKey(timeTableKey, userCode);
+
+        return students;
+    }
+
+    public List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByUserCode(String userCode, String yy, String mm) {
+        List<ClassRespDTO.ComClassStudentDTO> students = classRepository.findComClassStudentsByUserCode(userCode, yy, mm);
+
+        return students;
+    }
+
+    public int updateTimeTableAssign(ClassReqDTO.AssignUpdateDTO dto, String userCode) {
+
+        String timeTableKey = dto.getTimeTableKey();
+        int result = 0;
+
+        for (ClassReqDTO.AssignUpdateDTO.StudentInfo info : dto.getStudentInfos()) {
+            System.out.println("🔁 UPDATE 실행: " + info.getStudentId());
+
+            int updated = classRepository.updateTimeTableAssign(
+                    timeTableKey,
+                    info.getStudentId(),
+                    info.getClassKey(),
+                    info.getUnitKey()
+            );
+
+
+            if (updated > 0) {
+                result += updated;
+            }
+        }
+
+        return result;
+    }
+
+
     // ================ 수업 일지 서비스 =====================//
     public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String yy, String mm, String dayName, String userCode, String centerCode) {
         List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode, centerCode);

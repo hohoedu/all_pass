@@ -39,11 +39,26 @@ public class ClassReqDTO {
     }
 
     @Data
-    public static class DeleteTimeTableDTO{
+    public static class DeleteTimeTableDTO {
         private String timeTableKey;
         private String year;
         private String month;
     }
+
+    @Data
+    public static class AssignUpdateDTO {
+        private String timeTableKey;
+        private List<StudentInfo> studentInfos;
+
+        @Data
+        public static class StudentInfo {
+            private String studentId;
+            private String classKey;
+            private String unitKey;
+        }
+
+    }
+
     @Data
     public static class ClassRecordByDateDTO {
         private String classCode;
@@ -156,7 +171,7 @@ public class ClassReqDTO {
     }
 
     @Data
-    public static class AfterClassNoticeDTO{
+    public static class AfterClassNoticeDTO {
         private String studentId;
         private String userCode;
         private String timeTableKey;
