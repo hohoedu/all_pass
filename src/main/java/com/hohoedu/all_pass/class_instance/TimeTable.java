@@ -51,12 +51,12 @@ public class TimeTable {
     @JoinColumn(name = "class_key", referencedColumnName = "class_key", nullable = false)
     private ClassCode classCode;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "unit_key", referencedColumnName = "unit_key", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unit_key", referencedColumnName = "unit_key")
     private UnitCode unitCode;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "grade_key", referencedColumnName = "grade_key", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "grade_key", referencedColumnName = "grade_key")
     private GradeCode grade;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

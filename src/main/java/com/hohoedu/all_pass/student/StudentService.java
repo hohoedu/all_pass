@@ -165,44 +165,35 @@ public class StudentService {
         return gradeCodes;
     }
 
-    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId) {
-        System.out.println("=================");
-        System.out.println("=" + dto.getCenterCode());
-        System.out.println("=" + dto.getUserCode());
-        System.out.println("=" + dto.getClassKey());
-        System.out.println("=" + dto.getClassType());
-        System.out.println("=" + studentId);
-        System.out.println("=================");
+    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
 
         Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
         Integer materialFee = 20000;
 
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        StudentClass.StudentClassBuilder builder = StudentClass.builder()
+                .student(Student.builder().studentId(studentId).build())
+                .yy(yy)
+                .mm(mm);
 
-        StudentClass studentClass;
+        if (!"COM".equals(dto.getClassKey())) {
+            if ("1".equals(dto.getClassType())) {
+                builder
+                        .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                        .hanUser(User.builder().userCode(dto.getUserCode()).build())
+                        .hanFee(fee)
+                        .hanMaterialFee(materialFee);
 
-        if ("1".equals(dto.getClassType())) {
-            studentClass = StudentClass.builder()
-                    .student(Student.builder().studentId(studentId).build())
-                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
-                    .hanFee(fee)
-                    .hanMaterialFee(materialFee)
-                    .yy(yy)
-                    .mm(mm)
-                    .build();
-        } else {
-            studentClass = StudentClass.builder()
-                    .student(Student.builder().studentId(studentId).build())
-                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
-                    .bookFee(fee)
-                    .bookMaterialFee(materialFee)
-                    .yy(yy)
-                    .mm(mm)
-                    .build();
+            } else if ("2".equals(dto.getClassType())) {
+                builder
+                        .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                        .bookUser(User.builder().userCode(dto.getUserCode()).build())
+                        .bookFee(fee)
+                        .bookMaterialFee(materialFee);
+            }
         }
+
+
+        StudentClass studentClass = builder.build();
 
         StudentClass existing = studentRepository.findStudentClassByStudentId(studentId, yy, mm);
 

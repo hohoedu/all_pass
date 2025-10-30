@@ -14,12 +14,19 @@
         hu.user_name AS hanTeacher,
         bu.user_name AS bookTeacher,
         (sc.han_fee + sc.book_fee + sc.han_material_fee + sc.book_material_fee) AS totalPrice,
+        (sc.han_fee + sc.book_fee) AS totalFee,
+        (sc.han_material_fee + sc.book_material_fee) AS totalMaterialFee,
         (p.parent_tel_first+p.parent_tel_middle+p.parent_tel_last) AS parentPhone,
+        pay.payment_status AS status,
         STUFF((
         SELECT ', ' + c.class_name
         FROM erp_time_table_assign ta
         JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-        JOIN erp_class_code c ON t.class_key = c.class_key
+        JOIN erp_class_code c ON c.class_key =
+        CASE WHEN t.class_key = 'COM'
+        THEN ta.class_key
+        ELSE t.class_key
+        END
         WHERE ta.student_id = s.student_id
         AND c.class_type IN (1, 2)
         AND t.yy = #{year}
@@ -34,6 +41,7 @@
         JOIN erp_user hu ON sc.han_user_code = hu.user_code
         JOIN erp_user bu ON sc.book_user_code = bu.user_code
         JOIN erp_parent p ON s.student_id = p.student_id
+        LEFT JOIN erp_payment pay ON s.student_id = pay.student_id
         WHERE EXISTS (
         SELECT 1
         FROM erp_time_table_assign ta
@@ -53,5 +61,12 @@
         WHERE class_key = #{classKey}
           AND center_code = #{centerCode}
     </select>
-    
+
+    <insert id="insertPayment">
+        INSERT INTO erp_payment (bill_id, amount, product_name, payment_status, message, request_date, expired_date, yy, mm, student_id, user_code, center_code, created_at)
+        VALUES (#{billId}, #{amount}, #{productName}, #{paymentStatus}, #{message}, #{requestDate}, #{expiredDate}, #{yy}, #{mm}, #{studentId}, #{userCode}, #{centerCode},
+                SYSDATETIME())
+    </insert>
+
+
 </mapper>

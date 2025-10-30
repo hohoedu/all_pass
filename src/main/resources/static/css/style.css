@@ -6217,6 +6217,11 @@ input[type="time" i] {
     color: #c73939;
 }
 
+.issued {
+    color: #2a9d8f;
+    font-weight: 600;
+}
+
 .pay-table tr:first-child {
     height: 36px;
 }

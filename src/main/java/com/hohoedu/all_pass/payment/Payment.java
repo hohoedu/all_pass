@@ -37,6 +37,12 @@ public class Payment {
     @Column
     private String message; // 안내 메시지
 
+    @Column
+    private String yy;
+
+    @Column
+    private String mm;
+
     @Column(name = "request_date")
     private String requestDate; // 청구 날짜 yy-mm-dd
 
@@ -65,12 +71,14 @@ public class Payment {
     private Timestamp createdAt;
 
     @Builder
-    public Payment(String billId, String productName, String amount, String paymentStatus, String message, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
+    public Payment(String billId, String productName, String amount, String paymentStatus, String message, String yy, String mm, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
         this.billId = billId;
         this.productName = productName;
         this.amount = amount;
         this.paymentStatus = paymentStatus;
         this.message = message;
+        this.yy = yy;
+        this.mm = mm;
         this.requestDate = requestDate;
         this.approvedDate = approvedDate;
         this.canceledDate = canceledDate;
@@ -80,4 +88,5 @@ public class Payment {
         this.center = center;
         this.createdAt = createdAt;
     }
+    
 }

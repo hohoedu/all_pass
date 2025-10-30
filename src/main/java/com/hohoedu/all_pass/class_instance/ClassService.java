@@ -8,7 +8,11 @@ import java.util.stream.Collectors;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
+import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.StudentService;
+import com.hohoedu.all_pass.student.model.StudentClass;
+import com.hohoedu.all_pass.student.repository.StudentRepository;
+import com.hohoedu.all_pass.user.User;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -47,6 +51,8 @@ public class ClassService {
     private final DateConfig dateConfig;
     private final ClassUnitMapJpaRepository classUnitMapJpaRepository;
     private final StudentService studentService;
+    private final StudentRepository studentRepository;
+    private final PaymentRepository paymentRepository;
 
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
@@ -92,12 +98,13 @@ public class ClassService {
                 classReqDTO.getMm(),
                 classReqDTO.getDayname(),
                 classReqDTO.getUserCode());
-
         boolean isEmpty = timeTable == null;
 
+        String label = createTimeTableLabel(classReqDTO);
+
         if (isEmpty) {
-            String label = createTimeTableLabel(classReqDTO);
             String timeTableKey = UUID.randomUUID().toString();
+            System.out.println("timeTableKey = " + timeTableKey);
             LocalDateTime dateTime = LocalDateTime.now();
             String ym = dateTime.format(DateTimeFormatter.ofPattern("yyyyMM"));
             TimeTableCode entity = TimeTableCode.builder()
@@ -109,38 +116,48 @@ public class ClassService {
             classRepository.createTimeTableKey(entity);
 
             classReqDTO.setTimeTableKey(timeTableKey);
-
-
+            System.out.println("유닛코드" + classReqDTO.getUnitKey());
             classRepository.registerClass(classReqDTO);
 
             return "success-register";
         } else {
-            String label = createTimeTableLabel(classReqDTO);
-            System.out.println(label);
+
             int result = classRepository.updateClass(classReqDTO, timeTable.getTimeTableKey(), classReqDTO.getUserCode());
+
             classRepository.updateLabel(label, timeTable.getTimeTableKey());
-            System.out.println("result : " + result);
+
             if (result <= 0) {
-                System.out.println("실패");
                 return "fail-update";
             }
-            System.out.println("성공");
-            return "success-update";
 
+            return "success-update";
         }
     }
 
     private String createTimeTableLabel(ClassReqDTO.ClassRegisterDTO dto) {
-        UnitCode unitCode = unitCodeJpaRepository.findByUnitKey(dto.getUnitKey()).orElseThrow();
         ClassCode classCode = classCodeJpaRepository.findByClassKey(dto.getClassKey()).orElseThrow();
         String dayName = Constants.DAY_NAME_MAP.getOrDefault(dto.getDayname(), dto.getDayname());
+        String label = "";
+        if ("COM".equals(dto.getClassKey())) {
+            label = String.format("%s %s ~ %s %s",
+                    dayName,
+                    dto.getStartTime(),
+                    dto.getEndTime(),
+                    classCode.getClassName());
 
-        return String.format("%s %s ~ %s %s %s",
-                dayName,
-                dto.getStartTime(),
-                dto.getEndTime(),
-                classCode.getClassName(),
-                unitCode.getUnitName());
+        } else {
+            UnitCode unitCode = unitCodeJpaRepository.findByUnitKey(dto.getUnitKey()).orElseThrow();
+            label = String.format("%s %s ~ %s %s %s",
+
+                    dayName,
+                    dto.getStartTime(),
+                    dto.getEndTime(),
+                    classCode.getClassName(),
+                    unitCode.getUnitName());
+        }
+
+        return label;
+
     }
 
     public List<TimeTableDTO> findTimeTableWithStudents(String userCode, String year, String month) {
@@ -177,20 +194,29 @@ public class ClassService {
 
     // 학생 수업 등록
     public boolean addStudent(AddStudentDTO dto, String centerCode) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        try {
+            String yy = dateConfig.currentYearMonth().get("currentYear");
+            String mm = dateConfig.currentYearMonth().get("currentMonth");
+            System.out.println("학생 등록 서비스");
 
+            int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
 
-        int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
-        if (count >= 8) {
-            return false;
+            if (count >= 8) {
+                return false;
+            }
+
+            classRepository.addStudent(dto);
+
+            classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
+
+            classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
+
+            ClassRespDTO.ClassInfoDTO classInfo = classRepository.findclassInfoByTimeTableKey(dto.getTimeTableKey());
+            studentService.insertStudentClass(classInfo, dto.getStudentId(), yy, mm);
+
+        } catch (Exception e) {
+            System.out.println("=====================" + e.getMessage() + "====================================");
         }
-        classRepository.addStudent(dto);
-        classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
-        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
-        ClassRespDTO.ClassInfoDTO classInfo = classRepository.findclassInfoByTimeTableKey(dto.getTimeTableKey());
-        studentService.insertStudentClass(classInfo, dto.getStudentId());
-
         return true;
     }
 
@@ -233,13 +259,12 @@ public class ClassService {
         return students;
     }
 
-    public int updateTimeTableAssign(ClassReqDTO.AssignUpdateDTO dto, String userCode) {
+    public int updateTimeTableAssign(ClassReqDTO.AssignUpdateDTO dto, String userCode, String centerCode) {
 
         String timeTableKey = dto.getTimeTableKey();
         int result = 0;
 
         for (ClassReqDTO.AssignUpdateDTO.StudentInfo info : dto.getStudentInfos()) {
-            System.out.println("🔁 UPDATE 실행: " + info.getStudentId());
 
             int updated = classRepository.updateTimeTableAssign(
                     timeTableKey,
@@ -247,6 +272,18 @@ public class ClassService {
                     info.getClassKey(),
                     info.getUnitKey()
             );
+            Integer hanMaterialFee = 20000;
+            Integer hanFee = paymentRepository.findFeeByClassKey(info.getClassKey(), centerCode);
+            StudentClass studentClass = StudentClass.builder()
+                    .student(Student.builder().studentId(info.getStudentId()).build())
+                    .hanClassCode(ClassCode.builder().classKey(info.getClassKey()).build())
+                    .hanUser(User.builder().userCode(userCode).build())
+                    .hanFee(hanFee)
+                    .hanMaterialFee(hanMaterialFee)
+                    .build();
+
+
+            studentRepository.updateStudentClass(studentClass);
 
 
             if (updated > 0) {

@@ -120,21 +120,27 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.parentPhone = student.parentPhone || '';
             tr.dataset.studentName = student.studentName || '';
             tr.dataset.totalPrice = student.totalPrice || 0;
+
             const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
+            const isIssued = student.status !== null && student.status !== undefined && student.status !== '';
+
+            const statusText = isIssued ? '발행' : '미발행';
+            const statusClass = isIssued ? 'issued' : 'unissued';
+
             tr.innerHTML = `
-            <td class="checkbox-group">
-                <input type="checkbox" class="row-checkbox" value="${student.studentId}">
-            </td>
-            <td>${index + 1}</td>
-            <td>${student.studentName}</td>
-            <td>${student.subject || '-'}</td>
-            <td class="cal-content">
-                ${student.hanTeacher ? `${student.hanTeacher}(한), ` : ''}${student.bookTeacher ? `${student.bookTeacher}(독)` : ''}
-            </td>
-            <td class="charge">${formattedPrice}</td>
-            <td><span class="unissued">-</span></td>
-            <td><div class="pay-box">-</div></td>
-        `;
+        <td class="checkbox-group">
+            <input type="checkbox" class="row-checkbox" value="${student.studentId}">
+        </td>
+        <td>${index + 1}</td>
+        <td>${student.studentName}</td>
+        <td>${student.subject || '-'}</td>
+        <td class="cal-content">
+            ${student.hanTeacher ? `${student.hanTeacher}(한), ` : ''}${student.bookTeacher ? `${student.bookTeacher}(독)` : ''}
+        </td>
+        <td class="charge">${formattedPrice}</td>
+        <td><span class="${statusClass}">${statusText}</span></td>
+        <td><div class="pay-box">-</div></td>
+    `;
 
             tbody.appendChild(tr);
         });
@@ -147,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const expireInput = document.querySelector('.expire-input');
     const expireBtn = document.querySelector('.expire-btn');
     const expireDisplay = document.querySelector('.day-picker .day-display');
-
+    const now = new Date();
     const plus5 = new Date();
     plus5.setDate(now.getDate() + 5);
 
@@ -251,23 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePriceState();
 });
 
-
-// 이 부분은 청구서 발행 전에 수정되어야 함 지금은 임의 값으로 세팅해둠
-const now = new Date();
-
-const yy = String(now.getFullYear()).slice(-2); // 뒤 두 자리
-const MM = String(now.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
-const dd = String(now.getDate()).padStart(2, '0'); // 일
-const HH = String(now.getHours()).padStart(2, '0'); // 시
-const mm = String(now.getMinutes()).padStart(2, '0'); // 분
-
-const formatted = `${yy}${MM}${dd}${HH}${mm}`;
-const bill_id = "3208800028" + formatted;
-const phone = "01062954886";
-const price = "50000";
-sendHash = "";
-cancelHash = "";
-
 function generateSendHash(billId, phone, price) {
     const input = `${billId},${phone},${price}`;
     return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
@@ -278,109 +267,152 @@ function generateCancelHash(billId, price) {
     return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
 }
 
-sendHash = generateSendHash(bill_id, phone, price);
-cancelHash = generateCancelHash(bill_id, price);
-
-console.log("✅ sendHash:", sendHash);
-console.log("✅ cancelHash:", cancelHash);
-
 // ========== 우측 버튼 클릭 ========== //
 document.addEventListener("DOMContentLoaded", () => {
     const payIssue = document.querySelector('#pay-issue');
     const payCancel = document.querySelector('#pay-cancel');
     const payDestroy = document.querySelector('#pay-destory');
     const payReissue = document.querySelector('#pay-reissue')
-    if (!payIssue) return;
 
 
     // 청구서 발행 버튼
     payIssue.addEventListener('click', async () => {
+        // 체크된 학생
         const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
+
         if (checkedBoxes.length === 0) {
             alert('학생을 선택하세요.');
             return;
         }
-        let successCount = 0;
-        let failCount = 0;
-        const totalCount = checkedBoxes.length;
-        const results = [];
 
+        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
+        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
+        if (!eduChecked && !bookChecked) {
+            alert('청구 종류를 선택하세요.');
+            return;
+        }
+        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
+        const [year, month] = selectedMonth.split("-");
+        const yy = year.slice(-2);
+        const mm = month.padStart(2, "0");
         for (const [index, box] of checkedBoxes.entries()) {
             const row = box.closest('tr');
+            const issuedCell = row.querySelector('.unissued, .issued');
+            if (issuedCell && issuedCell.classList.contains('issued')) {
+                alert(`⚠️ ${row.dataset.studentName} 학생의 ${mm}월 청구서는 이미 발행되었습니다.`);
+                continue;
+            }
+            const studentId = row.dataset.studentId;
             const studentName = row.dataset.studentName;
             const phone = row.dataset.parentPhone;
             const price = row.dataset.totalPrice;
+            const totalFee = row.dataset.totalFee;
+            const totalMaterialFee = row.dataset.totalMaterialFee;
+            const message = document.querySelector('input[name="message"]').value;
 
-            // bill_id 생성
             const now = new Date();
-            const yy = String(now.getFullYear()).slice(-2);
-            const MM = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const HH = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const indexStr = String(index).padStart(2, '0');
-            const formatted = `${yy}${MM}${dd}${mm}`;
-            const bill_id = "3208800028" + formatted + indexStr;
+            const baseDate = new Date(2025, 0, 1);
+            const diffDays = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
+            const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
-            const sendHash = generateSendHash(bill_id, phone, price);
+            const dayCode = diffDays.toString(36).padStart(3, "0");
+            const timeCode = secondsOfDay.toString(36).padStart(4, "0");
 
-            const bill = {
-                bill_id,
-                product_nm: "학원비",
-                message: document.querySelector('input[name="message"]').value,
-                member_nm: studentName,
-                phone,
-                price,
-                hash: sendHash,
-                expire_dt: document.querySelector('.expire-input').value,
-                callbackURL: "https://2779e9e3277d.ngrok-free.app/pay/callback"
-            };
+            const indexStr = String(index).padStart(2, "0");
 
-            const requestBody = {
-                apikey: "TEST-API-KEY-TALK",
-                member: "TEST-MEMBER-FOR-API",
-                merchant: "TEST-MERCHANT-FOR-API",
-                bill
-            };
-            console.log(requestBody);
-            try {
-                const res = await fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify(requestBody)
-                });
+            if (eduChecked && totalFee > 0) {
+                const billIdEdu = "3208800028" + dayCode + timeCode + indexStr + "1";
+                const sendHashEdu = generateSendHash(billIdEdu, phone, totalFee);
 
-                const data = await res.json();
-                console.log(`[${studentName}] 결과:`, data);
+                const billEdu = {
+                    bill_id: billIdEdu,
+                    product_nm: "교육비",
+                    message: message || `${studentName} 교육비 청구`,
+                    member_nm: studentName,
+                    phone: phone,
+                    price: totalFee,
+                    hash: sendHashEdu,
+                    expire_dt: document.querySelector('.expire-input').value,
+                    callbackURL: "https://f6d1288ac652.ngrok-free.app/pay/callback"
+                    // callbackURL: "https://hohocenter.co.kr/pay/callback"
 
-                if (data.code === "0000") {
-                    successCount++;
-                    results.push(`✅ ${studentName} - 청구 성공`);
-                } else {
-                    failCount++;
-                    results.push(`❌ ${studentName} - ${data.msg || '실패'}`);
+                };
+
+                await sendBill(billEdu, "EDU");
+            }
+
+            if (bookChecked && totalMaterialFee > 0) {
+                const billIdBook = "3208800028" + dayCode + timeCode + indexStr + "0";
+                const sendHashBook = generateSendHash(billIdBook, phone, totalMaterialFee);
+
+                const billBook = {
+                    bill_id: billIdBook,
+                    product_nm: "교재비",
+                    message: message || `${studentName} 교재비 청구`,
+                    member_nm: studentName,
+                    phone: phone,
+                    price: totalMaterialFee,
+                    hash: sendHashBook,
+                    expire_dt: document.querySelector('.expire-input').value,
+                    callbackURL: "https://f6d1288ac652.ngrok-free.app/pay/callback"
+                    // callbackURL: "https://hohocenter.co.kr/pay/callback"
+                };
+
+                await sendBill(billBook, "BOOK");
+            }
+
+            async function sendBill(bill, type) {
+                const requestBody = {
+                    apikey: "TEST-API-KEY-TALK",
+                    member: "TEST-MEMBER-FOR-API",
+                    merchant: "TEST-MERCHANT-FOR-API",
+                    bill
+                };
+                console.log(JSON.stringify(requestBody));
+                try {
+                    const res = await fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const data = await res.json();
+                    console.log(`📨 [${type}]`, bill.bill_id, data);
+
+                    if (data.code === "0000") {
+                        const saveBody = {
+                            billId: requestBody.bill.bill_id,
+                            productName: requestBody.bill.product_nm,
+                            message: requestBody.bill.message,
+                            studentName: requestBody.bill.studentName,
+                            studentId: studentId,
+                            amount: requestBody.bill.price,
+                            requestDate: now.toISOString().split("T")[0],
+                            expireDate: requestBody.bill.expire_dt,
+                            yy: yy,
+                            mm: mm
+                        };
+                        const res = await fetch("/pay/history/insert", {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json", "Accept": "application/json"},
+                            body: JSON.stringify(saveBody)
+                        });
+
+                        const data = await res.json();
+                        console.log(data);
+
+                        alert(`✅ ${bill.member_nm} ${type} 청구 성공`);
+                        window.location.reload();
+                    } else {
+                        alert(`❌ ${bill.member_nm} ${type} 청구 실패: ${data.msg || '서버 오류'}`);
+                    }
+                } catch (err) {
+                    console.error(`❌ ${type} 청구 중 오류:`, err);
                 }
-            } catch (err) {
-                failCount++;
-                results.push(`❌ ${studentName} - 네트워크 오류`);
-                console.error(err);
             }
         }
-
-        // 루프 끝난 후 한 번에 요약 출력
-        const summary = `
-총 ${totalCount}건 중
-✅ 성공: ${successCount}건
-❌ 실패: ${failCount}건
-
-상세 결과:
-${results.join('\n')}
-`;
-        alert(summary);
     });
+
 
     // 결제 취소 버튼
     payCancel.addEventListener('click', () => {

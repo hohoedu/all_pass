@@ -1,6 +1,8 @@
 package com.hohoedu.all_pass.payment;
 
+import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.PaymentHistory;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,5 +28,11 @@ public class PaymentService {
         Integer fee = paymentRepository.findFeeByClassKey(classKey, centerCode);
         return fee;
 
+    }
+
+    public void insertPayment(PaymentReqDTO.PayHistoryDTO payment) {
+
+
+        paymentRepository.insertPayment(payment);
     }
 }

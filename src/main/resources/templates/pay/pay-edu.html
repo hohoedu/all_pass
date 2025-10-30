@@ -104,8 +104,11 @@
 
                                 <tr th:each="student, stat : ${students}"
                                     th:attr="data-parent-phone=${student.parentPhone},
-                                         data-student-name=${student.studentName},
-                                         data-total-price=${student.totalPrice}">
+                                            data-student-id = ${student.studentId},
+                                            data-student-name=${student.studentName},
+                                            data-total-price=${student.totalPrice},
+                                            data-total-fee=${student.totalFee},
+                                            data-total-material-fee=${student.totalMaterialFee}">
                                     <td class="checkbox-group">
                                         <input type="checkbox" class="row-checkbox" th:value="${student.studentId}">
                                     </td>
@@ -114,7 +117,11 @@
                                     <td th:text="${student.subject}"></td>
                                     <td th:text="${student.hanTeacher+'(한), '+student.bookTeacher+'(독)'}"></td>
                                     <td class="charge" th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
-                                    <td><span class="unissued">-</span></td>
+                                    <td>
+                                        <span th:classappend="${student.status} != null ? 'issued' : 'unissued'"
+                                              th:text="${student.status} != null ? '발행' : '미발행'">
+                                        </span>
+                                    </td>
                                     <td>
                                         <div class="pay-box">-</div>
                                     </td>
@@ -245,7 +252,7 @@
                             <td>유효기간</td>
                             <td>
                                 <div class="icon-field day-picker" style="position: relative;">
-                                    <div class="day-display">2025년 10월 27일</div>
+                                    <div class="day-display"></div>
                                     <div>
                                         <input type="date" class="expire-input hidden-picker"/>
                                         <button type="button" class="icon-btn expire-btn">

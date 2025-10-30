@@ -61,11 +61,16 @@ public class ClassController {
                         .header(HttpHeaders.LOCATION, "/login")
                         .build();
             }
-
+            String msg = "";
             for (ClassReqDTO.ClassRegisterDTO req : reqDTO) {
+                if ("COM".equals(req.getClassKey())) {
+                    req.setUnitKey(null);
+                    req.setGradeKey(null);
+                }
                 req.setCenterCode(user.getCenterCode());
-                classService.registerClass(req);
+                msg = classService.registerClass(req);
             }
+            System.out.println(msg);
 
             return ResponseEntity.ok(ApiUtils.success("200"));
 
@@ -89,6 +94,7 @@ public class ClassController {
                         .header(HttpHeaders.LOCATION, "/login")
                         .build();
             }
+
             boolean isSuccess = reqDTO.getAssignments().stream()
                     .allMatch(dto -> classService.addStudent(dto, user.getCenterCode()));
 
@@ -165,21 +171,10 @@ public class ClassController {
                     .build();
         }
 
-        if (reqDTO.getStudentInfos() != null) {
-            System.out.println("학생 리스트 크기: " + reqDTO.getStudentInfos().size());
-            reqDTO.getStudentInfos().forEach(info -> {
-                System.out.println("----- 학생 정보 -----");
-                System.out.println("studentId : " + info.getStudentId());
-                System.out.println("classKey  : " + info.getClassKey());
-                System.out.println("unitKey   : " + info.getUnitKey());
-            });
-        } else {
-            System.out.println("❌ studentInfos가 null입니다.");
-        }
-        int response =  classService.updateTimeTableAssign(reqDTO, user.getUserCode());
+        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
 
 
-        return ResponseEntity.ok(ApiUtils.success(response+"건"));
+        return ResponseEntity.ok(ApiUtils.success(response + "건"));
 
     }
 

@@ -272,8 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const rows = tab.querySelectorAll('tr.time-row');
             for (const row of rows) {
                 const periodNo = row.dataset.periodNo;
-                console.log(periodNo);
-                console.log('periodNo' + periodNo);
                 const startTime = row.querySelector('.time-start input').value;
                 const endTime = row.querySelector('.time-end input').value;
                 const classKey = row.querySelector('select[name="classKey"]').value;
@@ -282,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const isComClass = classKey === "COM";
                 const hasRequired =
-                    startTime && endTime && classKey && gradeKey && (isComClass || unitKey);
+                    startTime && endTime && classKey && (isComClass || (unitKey && gradeKey));
 
                 if (!hasRequired) {
                     continue;
@@ -300,6 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        console.log(payloadList);
+
         fetch('/class/register', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -311,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(json => {
                 if (json.response === "200") {
-                    // showAlert({icon: 'success', title: '시간표가 저장되었습니다.'})
-                    //     .then(() => window.location.reload());
+                    showAlert({icon: 'success', title: '시간표가 저장되었습니다.'})
+                        .then(() => window.location.reload());
                 } else {
                     showAlert({icon: 'error', title: json.error?.message, text: '오류코드: ' + json.error?.status});
                 }
@@ -694,8 +694,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await res.json();
             alert("✅ " + result.response + " 저장되었습니다!");
             console.log("응답:", result);
-
-            modal.style.display = "none";
+            window.location.reload();
+            // modal.style.display = "none";
 
         } catch (err) {
             alert("저장 중 오류가 발생했습니다.");

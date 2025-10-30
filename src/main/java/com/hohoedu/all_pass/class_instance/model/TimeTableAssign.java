@@ -39,11 +39,11 @@ public class TimeTableAssign {
     @JoinColumn(name = "time_table_key", referencedColumnName = "time_table_key", nullable = false)
     private TimeTable timeTable;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_key", referencedColumnName = "class_key")
     private ClassCode classCode;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unit_key", referencedColumnName = "unit_key")
     private UnitCode unitCode;
 

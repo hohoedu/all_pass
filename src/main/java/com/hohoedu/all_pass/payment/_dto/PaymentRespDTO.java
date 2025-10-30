@@ -20,7 +20,10 @@ public class PaymentRespDTO {
         private Integer hanMaterialFee;
         private Integer bookFee;
         private Integer bookMaterialFee;
+        private String status;
         private String totalPrice;
+        private String totalFee;
+        private String totalMaterialFee;
         private String parentPhone;
 
     }

@@ -145,9 +145,9 @@
                G.grade_key    AS gradeKey,
                g.grade_name   AS gradeName
         FROM erp_time_table tt
-                 JOIN erp_class_code cc ON tt.class_key = cc.class_key
-                 JOIN erp_unit_code uc ON tt.unit_key = uc.unit_key
-                 JOIN erp_grade_code g ON tt.grade_key = g.grade_key
+                 LEFT JOIN erp_class_code cc ON tt.class_key = cc.class_key
+                 LEFT JOIN erp_unit_code uc ON tt.unit_key = uc.unit_key
+                 LEFT JOIN erp_grade_code g ON tt.grade_key = g.grade_key
         WHERE yy = #{year}
           AND mm = #{month}
           AND user_code = #{userCode}
@@ -240,10 +240,10 @@
                uc.unit_name      as unitName,
                g.grade_name      as gradeName
         FROM ERP_TIME_TABLE tt
-                 JOIN erp_grade_code g ON tt.grade_key = g.grade_key
-                 JOIN erp_class_code cc ON tt.class_key = cc.class_key
-                 JOIN erp_unit_code uc ON tt.unit_key = uc.unit_key
-                 JOIN erp_user u ON tt.user_code = u.user_code
+                 LEFT JOIN erp_grade_code g ON tt.grade_key = g.grade_key
+                 LEFT JOIN erp_class_code cc ON tt.class_key = cc.class_key
+                 LEFT JOIN erp_unit_code uc ON tt.unit_key = uc.unit_key
+                 LEFT JOIN erp_user u ON tt.user_code = u.user_code
         WHERE tt.yy = #{year}
           and tt.mm = #{month}
           and tt.period_no = #{periodNo}

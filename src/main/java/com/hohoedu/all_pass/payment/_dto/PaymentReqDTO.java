@@ -24,4 +24,21 @@ public class PaymentReqDTO {
         private String userCode;
 
     }
+
+    @Data
+    public static class PayHistoryDTO {
+        private String billId;
+        private String productName;
+        private String amount;
+        private String paymentStatus;
+        private String message;
+        private String requestDate;
+        private String expiredDate;
+        private String studentId;
+        private String userCode;
+        private String centerCode;
+        private String yy;
+        private String mm;
+    }
+
 }

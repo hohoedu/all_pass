@@ -241,6 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (result.success && result.response === "ok") {
                 alert("가입이 완료되었습니다.");
+                if (window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                }
+
+                // ✅ 팝업 닫기
                 window.close();
             } else {
                 alert("가입 중 오류가 발생했습니다. 다시 시도해 주세요.");

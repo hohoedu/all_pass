@@ -68,7 +68,7 @@
                                          th:with="tt=${dayMap[periodNo.toString()]}">
                                         <div th:class="timetable-lookup-box" th:classappend="${tt.classType eq '1'} ? ' pink' : ' blue'">
                                             <div class="header" th:utext="${tt.startTime} + ' ~ ' + ${tt.endTime} + '<br>
-                            <strong>' + ${tt.className} + ' ' + ${tt.unitName} + '</strong>'">
+                            <strong>' + ${tt.className} + ' ' +(${tt.unitName} ?: '') + '</strong>'">
                                             </div>
                                             <div class="inner-grid">
                                                 <div th:each="stu : ${tt.students}" th:text="${stu.studentName}"
