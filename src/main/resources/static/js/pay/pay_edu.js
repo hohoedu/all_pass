@@ -319,10 +319,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const timeCode = secondsOfDay.toString(36).padStart(4, "0");
 
             const indexStr = String(index).padStart(2, "0");
-
+            let statusType = '';
             if (eduChecked && totalFee > 0) {
                 const billIdEdu = "3208800028" + dayCode + timeCode + indexStr + "1";
                 const sendHashEdu = generateSendHash(billIdEdu, phone, totalFee);
+                statusType = 'edu';
 
                 const billEdu = {
                     bill_id: billIdEdu,
@@ -344,6 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (bookChecked && totalMaterialFee > 0) {
                 const billIdBook = "3208800028" + dayCode + timeCode + indexStr + "0";
                 const sendHashBook = generateSendHash(billIdBook, phone, totalMaterialFee);
+                statusType = 'material'
 
                 const billBook = {
                     bill_id: billIdBook,
@@ -354,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: totalMaterialFee,
                     hash: sendHashBook,
                     expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://f6d1288ac652.ngrok-free.app/pay/callback"
+                    callbackURL: "https://83714671971c.ngrok-free.app/pay/callback"
                     // callbackURL: "https://hohocenter.co.kr/pay/callback"
                 };
 
@@ -387,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             studentName: requestBody.bill.studentName,
                             studentId: studentId,
                             amount: requestBody.bill.price,
+                            statusType: statusType,
                             requestDate: now.toISOString().split("T")[0],
                             expireDate: requestBody.bill.expire_dt,
                             yy: yy,
@@ -401,8 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         const data = await res.json();
                         console.log(data);
 
-                        alert(`✅ ${bill.member_nm} ${type} 청구 성공`);
-                        window.location.reload();
                     } else {
                         alert(`❌ ${bill.member_nm} ${type} 청구 실패: ${data.msg || '서버 오류'}`);
                     }
@@ -411,6 +412,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
+
+        alert("✅ 모든 청구가 완료되었습니다.");
+        window.location.reload();
     });
 
 

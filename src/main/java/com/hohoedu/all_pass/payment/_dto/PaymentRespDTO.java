@@ -20,11 +20,20 @@ public class PaymentRespDTO {
         private Integer hanMaterialFee;
         private Integer bookFee;
         private Integer bookMaterialFee;
-        private String status;
+        private String eduStatus;
+        private String materialStatus;
         private String totalPrice;
         private String totalFee;
         private String totalMaterialFee;
         private String parentPhone;
 
+    }
+
+    @Data
+    public static class ClassFeeMapDTO {
+        private String classKey;
+        private String className;
+        private String fee;
+        private String classType;
     }
 }

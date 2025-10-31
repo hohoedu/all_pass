@@ -1,4 +1,4 @@
-package com.hohoedu.all_pass.payment.model;
+package com.hohoedu.all_pass.manage.model;
 
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
@@ -18,11 +18,11 @@ public class ClassFeeMap {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column (nullable = false, length = 20)
+    @Column(length = 20)
     private Integer fee;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn (name = "class_key", nullable = false, referencedColumnName = "class_key")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_key", nullable = false, referencedColumnName = "class_key")
     private ClassCode classCode;
 
     @ManyToOne

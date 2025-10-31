@@ -1,0 +1,16 @@
+.tuition-main-frame {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 위아래 간격 */
+    margin-top: 1%;
+    margin-right: 1%;
+}
+
+.tuition-table-frame {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+

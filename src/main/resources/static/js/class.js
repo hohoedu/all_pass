@@ -652,10 +652,11 @@ function renderComclassTable(students, tbody) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("comclassSaveBtn");
+    const btn = document.getElementById("comclass-save-btn");
     const modal = document.getElementById("comclassModal");
 
     btn.addEventListener("click", async function () {
+        console.log('저장 완료');
         const rows = modal.querySelectorAll(".comclass-table tbody tr");
         const updateList = [];
 
@@ -695,7 +696,6 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("✅ " + result.response + " 저장되었습니다!");
             console.log("응답:", result);
             window.location.reload();
-            // modal.style.display = "none";
 
         } catch (err) {
             alert("저장 중 오류가 발생했습니다.");

@@ -31,8 +31,11 @@ public class Payment {
     @Column
     private String amount; // 결제 가격
 
-    @Column(name = "payment_status")
-    private String paymentStatus; // 결제 상태
+    @Column(name = "edu_status")
+    private String eduStatus; // 교육
+
+    @Column(name = "material_status")
+    private String materialStatus; // 결제
 
     @Column
     private String message; // 안내 메시지
@@ -71,11 +74,12 @@ public class Payment {
     private Timestamp createdAt;
 
     @Builder
-    public Payment(String billId, String productName, String amount, String paymentStatus, String message, String yy, String mm, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
+    public Payment(String billId, String productName, String amount, String materialStatus, String eduStatus, String message, String yy, String mm, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
         this.billId = billId;
         this.productName = productName;
         this.amount = amount;
-        this.paymentStatus = paymentStatus;
+        this.materialStatus = materialStatus;
+        this.eduStatus = eduStatus;
         this.message = message;
         this.yy = yy;
         this.mm = mm;
@@ -88,5 +92,5 @@ public class Payment {
         this.center = center;
         this.createdAt = createdAt;
     }
-    
+
 }

@@ -115,11 +115,23 @@
                                     <td th:text="${stat.count}"></td>
                                     <td th:text="${student.studentName}"></td>
                                     <td th:text="${student.subject}"></td>
-                                    <td th:text="${student.hanTeacher+'(한), '+student.bookTeacher+'(독)'}"></td>
+                                    <td th:text="${#strings.defaultString(student.hanTeacher, '') != '' ? student.hanTeacher + '(한)' : ''}
+                                    + (${#strings.defaultString(student.hanTeacher, '') != '' && #strings.defaultString(student.bookTeacher, '') != '' ? ', ' : ''})
+                                    + (${#strings.defaultString(student.bookTeacher, '') != '' ? student.bookTeacher + '(독)' : ''})">
+                                    </td>
                                     <td class="charge" th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
                                     <td>
-                                        <span th:classappend="${student.status} != null ? 'issued' : 'unissued'"
-                                              th:text="${student.status} != null ? '발행' : '미발행'">
+                                        <span th:if="${student.eduStatus == null and student.materialStatus == null}"
+                                              class="unissued">미발행
+                                        </span>
+                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == null}"
+                                              class="edu-issued">발행(교육)
+                                        </span>
+                                        <span th:if="${student.eduStatus == null and student.materialStatus == 'issued'}"
+                                              class="material-issued">발행(교재)
+                                        </span>
+                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == 'issued'}"
+                                              class="issued">발행
                                         </span>
                                     </td>
                                     <td>

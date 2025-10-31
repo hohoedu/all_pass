@@ -13,11 +13,15 @@
         sc.book_material_fee AS bookMaterialFee,
         hu.user_name AS hanTeacher,
         bu.user_name AS bookTeacher,
-        (sc.han_fee + sc.book_fee + sc.han_material_fee + sc.book_material_fee) AS totalPrice,
-        (sc.han_fee + sc.book_fee) AS totalFee,
-        (sc.han_material_fee + sc.book_material_fee) AS totalMaterialFee,
-        (p.parent_tel_first+p.parent_tel_middle+p.parent_tel_last) AS parentPhone,
-        pay.payment_status AS status,
+        (ISNULL(sc.han_fee, 0) + ISNULL(sc.book_fee, 0) + ISNULL(sc.han_material_fee, 0) + ISNULL(sc.book_material_fee, 0))
+        AS totalPrice,
+        (ISNULL(sc.han_fee, 0) + ISNULL(sc.book_fee, 0))
+        AS totalFee,
+        (ISNULL(sc.han_material_fee, 0) + ISNULL(sc.book_material_fee, 0))
+        AS totalMaterialFee,
+        (p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last) AS parentPhone,
+        pay.edu_status AS eduStatus,
+        pay.material_status AS materialStatus,
         STUFF((
         SELECT ', ' + c.class_name
         FROM erp_time_table_assign ta
@@ -38,10 +42,14 @@
         ), 1, 2, '') AS subject
         FROM erp_student s
         JOIN erp_student_class sc on s.student_id = sc.student_id
-        JOIN erp_user hu ON sc.han_user_code = hu.user_code
-        JOIN erp_user bu ON sc.book_user_code = bu.user_code
         JOIN erp_parent p ON s.student_id = p.student_id
-        LEFT JOIN erp_payment pay ON s.student_id = pay.student_id
+        LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
+        LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
+        LEFT JOIN (select student_id,
+        MAX(CASE WHEN edu_status= 'issued' THEN 'issued' END) AS edu_status,
+        MAX(CASE WHEN material_status= 'issued' THEN 'issued' END) AS material_status
+        from erp_payment
+        group by student_id) pay ON s.student_id = pay.student_id
         WHERE EXISTS (
         SELECT 1
         FROM erp_time_table_assign ta
@@ -63,10 +71,27 @@
     </select>
 
     <insert id="insertPayment">
-        INSERT INTO erp_payment (bill_id, amount, product_name, payment_status, message, request_date, expired_date, yy, mm, student_id, user_code, center_code, created_at)
-        VALUES (#{billId}, #{amount}, #{productName}, #{paymentStatus}, #{message}, #{requestDate}, #{expiredDate}, #{yy}, #{mm}, #{studentId}, #{userCode}, #{centerCode},
+        INSERT INTO erp_payment (bill_id, amount, product_name, edu_status, material_status, message, request_date, expired_date, yy, mm, student_id, user_code, center_code,
+                                 created_at)
+        VALUES (#{billId}, #{amount}, #{productName}, #{eduStatus}, #{materialStatus}, #{message}, #{requestDate}, #{expiredDate}, #{yy}, #{mm}, #{studentId}, #{userCode},
+                #{centerCode},
                 SYSDATETIME())
     </insert>
 
+    <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.PaymentRespDTO$ClassFeeMapDTO">
+        SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
+        FROM erp_class_fee_map cf
+                 JOIN erp_class_code cc ON cf.class_key = cc.class_key
+        WHERE cf.center_code = #{centerCode}
+    </select>
+
+    <update id="updateClassFeeMap" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE erp_class_fee_map
+            SET fee = #{item.fee}
+            WHERE class_key = #{item.classKey}
+            AND center_code = #{item.centerCode}
+        </foreach>
+    </update>
 
 </mapper>

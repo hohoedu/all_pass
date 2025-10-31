@@ -2,7 +2,6 @@ package com.hohoedu.all_pass.payment;
 
 import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
-import com.hohoedu.all_pass.payment.model.PaymentHistory;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,12 @@ public class PaymentService {
 
     public void insertPayment(PaymentReqDTO.PayHistoryDTO payment) {
 
-
         paymentRepository.insertPayment(payment);
     }
+
+    public List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(String centerCode) {
+        List<PaymentRespDTO.ClassFeeMapDTO> classFeeMaps = paymentRepository.findClassFeeMapByCenterCode(centerCode);
+        return classFeeMaps;
+    }
+
 }

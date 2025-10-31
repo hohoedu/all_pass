@@ -1,6 +1,6 @@
 package com.hohoedu.all_pass.payment.repository;
 
-import com.hohoedu.all_pass.payment.Payment;
+import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -18,4 +18,12 @@ public interface PaymentRepository {
     Integer findFeeByClassKey(@Param("classKey") String classKey, @Param("centerCode") String centerCode);
 
     void insertPayment(PaymentReqDTO.PayHistoryDTO payment);
+
+    List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(
+            @Param("centerCode") String centerCode);
+
+    int updateClassFeeMap(
+            @Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList
+    );
+
 }

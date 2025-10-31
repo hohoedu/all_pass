@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
@@ -21,17 +22,19 @@ public class PaymentViewController {
 
     private final UserService userService;
     private final PaymentService paymentService;
-
+    private final DateConfig dateConfig;
 
     @GetMapping("/pay-edu")
     public String getPayEduPage(HttpSession session, Model model) {
-//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//        if (user == null) {
-//            return "redirect:/login";
-//        }
-//        List<User> users = userService.findByCenterCode(user.getCenterCode());
-        List<User> users = userService.findByCenterCode("DAE001");
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent("2025", "10", "all");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
+//        List<User> users = userService.findByCenterCode("DAE001");
+        String year = dateConfig.currentYearMonth().get("currentYear");
+        String month = dateConfig.currentYearMonth().get("currentMonth");
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all");
 
         model.addAttribute("users", users);
         model.addAttribute("students", students);

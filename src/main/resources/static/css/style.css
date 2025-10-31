@@ -6222,6 +6222,16 @@ input[type="time" i] {
     font-weight: 600;
 }
 
+.edu-issued {
+    color: #f4a261;
+    font-weight: 600;
+}
+
+.material-issued {
+    color: #457b9d;
+    font-weight: 600;
+}
+
 .pay-table tr:first-child {
     height: 36px;
 }

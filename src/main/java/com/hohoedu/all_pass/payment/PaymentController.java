@@ -86,7 +86,13 @@ public class PaymentController {
         System.out.println("centerCode" + user.getCenterCode());
         System.out.println("============================================");
 
-        paymentReqDTO.setPaymentStatus("issued");
+        if ("edu".equals(paymentReqDTO.getStatusType())) {
+            paymentReqDTO.setEduStatus("issued");
+        }
+        if ("material".equals(paymentReqDTO.getStatusType())) {
+            paymentReqDTO.setMaterialStatus("issued");
+        }
+
         paymentReqDTO.setUserCode(user.getUserCode());
         paymentReqDTO.setCenterCode(user.getCenterCode());
 
