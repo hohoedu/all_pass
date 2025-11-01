@@ -38,7 +38,8 @@ public interface StudentRepository {
 
     public List<MainStudentDTO> selectStudentByKey(
             @Param("timeTableKey") String timeTableKey,
-            @Param("userCode") String userCode);
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
 
     public void insert(StudentJoinDTO student);
 

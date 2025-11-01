@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.payment.repository;
 
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
+import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -26,4 +27,9 @@ public interface PaymentRepository {
             @Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList
     );
 
+    int insertPaymentCallback(PaymentReqDTO.PayCallbackDTO payCallbackDTO);
+
+    String findPaymentByBillId(@Param("billId") String billId);
+
+    int updatePayment(@Param("billId") String billId,@Param("approvedAt") String approvedAt);
 }

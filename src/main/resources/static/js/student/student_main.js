@@ -393,7 +393,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const timeTableKey = this.value;
             console.log("subject 변경:", timeTableKey);
 
-            fetch(`/student/api/students?timeTableKey=${encodeURIComponent(timeTableKey)}`)
+            const userCodeSelect = document.getElementById("userFilter"); // select#userFilter 등
+            const userCode = userCodeSelect ? userCodeSelect.value : "all";
+
+            fetch(`/student/api/students?timeTableKey=${encodeURIComponent(timeTableKey)}&userCode=${encodeURIComponent(userCode)}`)
                 .then(res => {
                     return res.json();
                 })

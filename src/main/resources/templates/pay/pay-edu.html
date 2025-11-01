@@ -124,19 +124,22 @@
                                         <span th:if="${student.eduStatus == null and student.materialStatus == null}"
                                               class="unissued">미발행
                                         </span>
-                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == null}"
+                                        <span th:if="${student.eduStatus != null and student.materialStatus == null}"
                                               class="edu-issued">발행(교육)
                                         </span>
-                                        <span th:if="${student.eduStatus == null and student.materialStatus == 'issued'}"
+                                        <span th:if="${student.eduStatus == null and student.materialStatus != null}"
                                               class="material-issued">발행(교재)
                                         </span>
-                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == 'issued'}"
+                                        <span th:if="${student.eduStatus != null and student.materialStatus != null}"
                                               class="issued">발행
                                         </span>
                                     </td>
                                     <td>
                                         <div class="pay-box">-</div>
                                     </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(students)}">
+                                    <td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td>
                                 </tr>
 
                                 <tr>

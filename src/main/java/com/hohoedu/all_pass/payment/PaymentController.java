@@ -22,17 +22,12 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/callback")
-    public String callback(@RequestBody String rawJson) {
+    public ResponseEntity<?> callback(@RequestBody PaymentReqDTO.PayCallbackDTO dto) {
         System.out.println("✅ 결제선생 콜백 도착");
-//        System.out.println(reqDTO.getBill_id());
-//        System.out.println(reqDTO.getApikey());
-//        System.out.println(reqDTO.getAppr_pay_type());
-//        System.out.println(reqDTO.getAppr_dt());
-//        System.out.println(reqDTO.getAppr_num());
-//        System.out.println(reqDTO.getAppr_price());
-//        System.out.println(reqDTO.getAppr_state());
-        System.out.println(rawJson);
-        return rawJson;
+
+        paymentService.insertPaymentCallback(dto);
+
+        return ResponseEntity.ok(ApiUtils.success("성공"));
     }
 
 

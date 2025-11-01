@@ -71,8 +71,8 @@ public class StudentService {
         return student;
     }
 
-    public List<MainStudentDTO> getStudentsByKey(String timeTableKey, String userCode) {
-        List<MainStudentDTO> rows = studentRepository.selectStudentByKey(timeTableKey, userCode);
+    public List<MainStudentDTO> getStudentsByKey(String timeTableKey, String userCode, String centerCode) {
+        List<MainStudentDTO> rows = studentRepository.selectStudentByKey(timeTableKey, userCode, centerCode);
         return rows;
     }
 

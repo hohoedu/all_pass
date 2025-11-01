@@ -118,29 +118,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
 
             tr.dataset.parentPhone = student.parentPhone || '';
+            tr.dataset.studentId = student.studentId || '';
             tr.dataset.studentName = student.studentName || '';
             tr.dataset.totalPrice = student.totalPrice || 0;
+            tr.dataset.totalFee = student.totalFee || 0;
+            tr.dataset.totalMaterialFee = student.totalMaterialFee || 0;
 
             const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
-            const isIssued = student.status !== null && student.status !== undefined && student.status !== '';
 
-            const statusText = isIssued ? '발행' : '미발행';
-            const statusClass = isIssued ? 'issued' : 'unissued';
+            const hanTeacherText = student.hanTeacher ? `${student.hanTeacher}(한)` : '';
+            const bookTeacherText = student.bookTeacher ? `${student.bookTeacher}(독)` : '';
+            const teacherSeparator = hanTeacherText && bookTeacherText ? ', ' : '';
+            const teacherText = `${hanTeacherText}${teacherSeparator}${bookTeacherText}`;
+
+            let statusHtml = '';
+            const eduIssued = student.eduStatus === 'issued';
+            const materialIssued = student.materialStatus === 'issued';
+
+            if (!eduIssued && !materialIssued) {
+                statusHtml = `<span class="unissued">미발행</span>`;
+            } else if (eduIssued && !materialIssued) {
+                statusHtml = `<span class="edu-issued">발행(교육)</span>`;
+            } else if (!eduIssued && materialIssued) {
+                statusHtml = `<span class="material-issued">발행(교재)</span>`;
+            } else {
+                statusHtml = `<span class="issued">발행</span>`;
+            }
 
             tr.innerHTML = `
-        <td class="checkbox-group">
-            <input type="checkbox" class="row-checkbox" value="${student.studentId}">
-        </td>
-        <td>${index + 1}</td>
-        <td>${student.studentName}</td>
-        <td>${student.subject || '-'}</td>
-        <td class="cal-content">
-            ${student.hanTeacher ? `${student.hanTeacher}(한), ` : ''}${student.bookTeacher ? `${student.bookTeacher}(독)` : ''}
-        </td>
-        <td class="charge">${formattedPrice}</td>
-        <td><span class="${statusClass}">${statusText}</span></td>
-        <td><div class="pay-box">-</div></td>
-    `;
+            <td class="checkbox-group">
+                <input type="checkbox" class="row-checkbox" value="${student.studentId}">
+            </td>
+            <td>${index + 1}</td>
+            <td>${student.studentName || '-'}</td>
+            <td>${student.subject || '-'}</td>
+            <td>${teacherText}</td>
+            <td class="charge">${formattedPrice}</td>
+            <td>${statusHtml}</td>
+            <td><div class="pay-box">-</div></td>
+        `;
 
             tbody.appendChild(tr);
         });
@@ -293,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [year, month] = selectedMonth.split("-");
-        const yy = year.slice(-2);
+        const yy = year;
         const mm = month.padStart(2, "0");
         for (const [index, box] of checkedBoxes.entries()) {
             const row = box.closest('tr');
@@ -356,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: totalMaterialFee,
                     hash: sendHashBook,
                     expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://83714671971c.ngrok-free.app/pay/callback"
+                    callbackURL: "https://2b08de231333.ngrok-free.app/pay/callback"
                     // callbackURL: "https://hohocenter.co.kr/pay/callback"
                 };
 

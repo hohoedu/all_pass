@@ -64,8 +64,8 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
-    @GetMapping(value = "/api/students", params = "timeTableKey")
-    public ResponseEntity<?> getStudentsByClassCode(@RequestParam("timeTableKey") String timeTableKey, HttpSession session) {
+    @GetMapping(value = "/api/students", params = {"timeTableKey", "userCode"})
+    public ResponseEntity<?> getStudentsByClassCode(@RequestParam("timeTableKey") String timeTableKey, @RequestParam("userCode") String userCode, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -74,7 +74,7 @@ public class StudentController {
                     .build();
         }
 
-        List<MainStudentDTO> students = studentService.getStudentsByKey(timeTableKey, user.getUserCode());
+        List<MainStudentDTO> students = studentService.getStudentsByKey(timeTableKey, userCode, user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
@@ -153,10 +153,10 @@ public class StudentController {
     public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
         // 1. 권한 확인
         // 2. 유효성 검사
-            // 3-1. studentId를 이용해서 시간표에서 제외
-            // 3-2. erp_student_class의 선생님 코드 업데이트
-            // 3-3. erp_student_transfer_history 인서트
-                studentService.transferStudent(studentInOutDTO);
+        // 3-1. studentId를 이용해서 시간표에서 제외
+        // 3-2. erp_student_class의 선생님 코드 업데이트
+        // 3-3. erp_student_transfer_history 인서트
+        studentService.transferStudent(studentInOutDTO);
 //        studentService.insertTransferHistory(studentInOutDTO);
         return ResponseEntity.ok(ApiUtils.success("okay"));
     }

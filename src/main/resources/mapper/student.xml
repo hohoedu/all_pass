@@ -46,6 +46,8 @@
            OR reg.registeredClassTypes IN ('1'
             , '2')
             )
+          AND sc.yy = #{year}
+          AND sc.mm = #{month}
           AND (sc.han_user_code = #{userCode}
            OR sc.book_user_code = #{userCode}
            OR sc.han_user_code is null
@@ -114,7 +116,7 @@
             WHEN t.class_key = 'COM' THEN ta.class_key
             ELSE t.class_key
         END
-    WHERE ta.student_id = s.student_id AND cc.class_type = '1' AND t.mm = FORMAT(GETDATE(),'MM')
+    WHERE ta.student_id = s.student_id AND cc.class_type = '1' AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
 ) han
 
 OUTER APPLY (
@@ -122,10 +124,12 @@ OUTER APPLY (
     FROM erp_time_table_assign ta
     JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
     JOIN erp_class_code cc ON t.class_key = cc.class_key
-    WHERE ta.student_id = s.student_id AND cc.class_type = '2'  AND t.mm = FORMAT(GETDATE(),'MM')
+    WHERE ta.student_id = s.student_id AND cc.class_type = '2'  AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
 ) book
 
-        WHERE s.student_id = #{studentId};
+        WHERE s.student_id = #{studentId}
+        AND stuc.yy = FORMAT(GETDATE(),'yyyy')
+        AND stuc.mm = FORMAT(GETDATE(),'MM');
 
 
     </select>
@@ -136,16 +140,7 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        CASE
-        WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
-        CASE
-        WHEN stuc.entry_han_date &lt;= stuc.entry_book_date THEN stuc.entry_han_date
-        ELSE stuc.entry_book_Date
-        END
-        WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
-        WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
-        ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
-        END AS entryDate,
+        FORMAT(s.created_at, 'yyyy-MM-dd') AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -161,7 +156,8 @@ OUTER APPLY (
         END
         WHERE ta2.student_id = s.student_id
         AND cc2.class_type = 1
-        AND t2.mm = FORMAT(GETDATE(),'MM')
+        AND t2.yy = FORMAT(GETDATE(),'yyyy')
+          AND t2.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
             AND t2.user_code = #{userCode}
         </if>
@@ -175,6 +171,7 @@ OUTER APPLY (
         JOIN erp_class_code cc2 ON cc2.class_key = t2.class_key
         WHERE ta2.student_id = s.student_id
         AND cc2.class_type = 2
+        AND t2.yy = FORMAT(GETDATE(),'yyyy')
         AND t2.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
             AND t2.user_code = #{userCode}
@@ -185,7 +182,6 @@ OUTER APPLY (
         FROM ERP_STUDENT s
         LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
         LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
-        LEFT JOIN ERP_student_class stuc ON s.student_id = stuc.student_id
         LEFT JOIN ERP_center c ON c.center_code = s.center_code
 
         WHERE 1 = 1
@@ -210,17 +206,8 @@ OUTER APPLY (
         s.student_id AS studentId,
         s.student_name AS studentName,
         sc.status_name AS statusName,
-        CASE
-        WHEN stuc.entry_han_date IS NOT NULL AND stuc.entry_book_date IS NOT NULL THEN
-        CASE
-        WHEN stuc.entry_han_date &lt;= stuc.entry_book_date
-        THEN stuc.entry_han_date
-        ELSE stuc.entry_book_Date
-        END
-        WHEN stuc.entry_han_date IS NOT NULL THEN stuc.entry_han_date
-        WHEN stuc.entry_book_date IS NOT NULL THEN stuc.entry_book_date
-        ELSE FORMAT(s.created_at, 'yyyy-MM-dd')
-        END AS entryDate,
+        FORMAT(s.created_at, 'yyyy-MM-dd')
+        AS entryDate,
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
@@ -236,6 +223,7 @@ OUTER APPLY (
         END
         WHERE ta2.student_id = s.student_id
         AND cc2.class_type = 1
+        AND t2.yy = FORMAT(GETDATE(),'yyyy')
         AND t2.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
             AND t2.user_code = #{userCode}
@@ -250,6 +238,8 @@ OUTER APPLY (
         JOIN erp_class_code cc ON cc.class_key = t.class_key
         WHERE ta.student_id = s.student_id
         AND cc.class_type = 2
+        AND t.yy = FORMAT(GETDATE(),'yyyy')
+        AND t.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
         </if>
@@ -260,13 +250,13 @@ OUTER APPLY (
         LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
         LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
         LEFT JOIN ERP_center c ON c.center_code = s.center_code
-        LEFT JOIN ERP_student_class stuc ON s.student_id = stuc.student_id
-        LEFT JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
-        <where>
-            <if test="timeTableKey != null and timeTableKey != 'all'">
-                ta.time_table_key = #{timeTableKey}
-            </if>
-        </where>
+        <if test="timeTableKey != null and timeTableKey != 'all'">
+            LEFT JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
+            LEFT JOIN ERP_time_table t ON ta.time_table_key = t.time_table_key
+            <where>
+                t.time_table_key = #{timeTableKey}
+            </where>
+        </if>
         ORDER BY s.id
     </select>
 
@@ -388,28 +378,28 @@ OUTER APPLY (
     </select>
 
     <update id="updateTransfer">
-            <choose>
-                <!-- class_type이 1이면 한자 관련 컬럼 업데이트 -->
-                <when test="classType == 1">
-                    UPDATE erp_student_class
-                    SET han_user_code = #{userCode},
-                    han_fee = 0,
-                    han_material_fee = 0,
-                    han_class_key = NULL
-                    WHERE student_id = #{studentId}
-                </when>
+        <choose>
+            <!-- class_type이 1이면 한자 관련 컬럼 업데이트 -->
+            <when test="classType == 1">
+                UPDATE erp_student_class
+                SET han_user_code = #{userCode},
+                han_fee = 0,
+                han_material_fee = 0,
+                han_class_key = NULL
+                WHERE student_id = #{studentId}
+            </when>
 
-                <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
-                <when test="classType == 2">
-                    UPDATE erp_student_class
-                    SET book_user_code = #{userCode},
-                    book_fee = 0,
-                    book_material_fee = 0,
-                    book_class_key = NULL
-                    WHERE student_id = #{studentId}
-                </when>
-            </choose>
-        </update>
+            <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
+            <when test="classType == 2">
+                UPDATE erp_student_class
+                SET book_user_code = #{userCode},
+                book_fee = 0,
+                book_material_fee = 0,
+                book_class_key = NULL
+                WHERE student_id = #{studentId}
+            </when>
+        </choose>
+    </update>
 
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">

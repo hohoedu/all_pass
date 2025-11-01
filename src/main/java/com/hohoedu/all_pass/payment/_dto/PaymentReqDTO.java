@@ -10,7 +10,9 @@ public class PaymentReqDTO {
         private String apikey;
         private String bill_id;
         private String appr_pay_type;
+        private String appr_card_type;
         private String appr_dt;
+        private String appr_issuer;
         private String appr_num;
         private String appr_price;
         private String appr_state;
