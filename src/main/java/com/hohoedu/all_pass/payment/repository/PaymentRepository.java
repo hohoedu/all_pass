@@ -31,5 +31,7 @@ public interface PaymentRepository {
 
     String findPaymentByBillId(@Param("billId") String billId);
 
-    int updatePayment(@Param("billId") String billId,@Param("approvedAt") String approvedAt);
+    int updatePayment(@Param("billId") String billId, @Param("approvedAt") String approvedAt);
+
+    List<PaymentRespDTO.PaymentDetailDTO> findPaymentByStudentId(@Param("studentId") String studentId);
 }

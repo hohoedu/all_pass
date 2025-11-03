@@ -13,6 +13,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pay")
@@ -96,5 +97,17 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/edu-personal")
+    public ResponseEntity<?> getPersonalModal(@RequestBody Map<String, String> studentId) {
+
+
+        System.out.println("모달 데이터 조회");
+        System.out.println("student_id = " + studentId.get("studentId"));
+        List<PaymentRespDTO.PaymentDetailDTO> response = paymentService.findPaymentByStudentId(studentId.get("studentId"));
+        System.out.println("==========================================");
+        System.out.println(response);
+        System.out.println("==========================================");
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
 
 }

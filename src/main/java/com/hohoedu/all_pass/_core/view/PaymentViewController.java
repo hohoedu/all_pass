@@ -31,7 +31,6 @@ public class PaymentViewController {
             return "redirect:/login";
         }
         List<User> users = userService.findByCenterCode(user.getCenterCode());
-//        List<User> users = userService.findByCenterCode("DAE001");
         String year = dateConfig.currentYearMonth().get("currentYear");
         String month = dateConfig.currentYearMonth().get("currentMonth");
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all");

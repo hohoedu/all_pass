@@ -201,40 +201,163 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 
     function openModal(modalType) {
-        console.log('modalType=' + modalType);
         document.querySelectorAll('.modal').forEach(modal => {
             modal.style.display = 'none';
         });
 
         const targetModal = document.querySelector(`.${modalType}-modal`);
-        console.log("targetModal" + targetModal);
         if (targetModal) {
             targetModal.style.display = 'block';
         }
     }
 
+    // 전체 조회
     const btnTuition = document.querySelector('#btn-tuition');
-    if (btnTuition) {
-        btnTuition.addEventListener('click', () => {
-            console.log('버튼 클릭!!')
-            openModal('tuition');
-        });
-    }
+    if (!btnTuition) return;
+    btnTuition.addEventListener('click', async () => {
 
+        const studentId = 'all';
+
+        try {
+            console.log('studentId = ' + studentId);
+
+            const response = await fetch('/pay/edu-personal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({studentId})
+            });
+
+            if (!response.ok) {
+                throw new Error('데이터 조회 실패');
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            fillModal(data.response, 'tuition');
+            openModal('tuition');
+
+        } catch (error) {
+            console.error('❌ 청구 데이터 조회 오류:', error);
+            alert('청구 내역을 불러오지 못했습니다.');
+        }
+    });
+
+
+    // 개별 조회
     document.querySelectorAll('#student-tbody tr').forEach(row => {
         row.addEventListener('mouseenter', () => {
             row.style.cursor = 'pointer';
         });
-        row.addEventListener('click', (e) => {
+
+        row.addEventListener('click', async (e) => {
             const targetCell = e.target.closest('td');
             if (!targetCell) return;
 
             const index = Array.from(row.children).indexOf(targetCell);
             if (index === 0) return;
-            openModal('personal');
+
+            const studentId = row.dataset.studentId;
+
+            try {
+                console.log(studentId);
+
+                const response = await fetch('/pay/edu-personal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({studentId})
+                });
+
+                if (!response.ok) {
+                    throw new Error('데이터 조회 실패');
+                }
+
+                const data = await response.json();
+                console.log(data);
+
+                fillModal(data.response, 'personal');
+                openModal('personal');
+
+            } catch (error) {
+                console.error('❌ 개인 청구 데이터 조회 오류:', error);
+                alert('청구 내역을 불러오지 못했습니다.');
+            }
         });
     });
+
+    function fillModal(data, type) {
+        console.log(type);
+        const tbody = document.getElementById(`${type}-tbody`);
+        console.log(tbody);
+        tbody.innerHTML = ''; // 초기화
+
+        data.forEach((item, index) => {
+            const approvedDate = item.approvedDate ? item.approvedDate : '-';
+            const amount = item.amount ? Number(item.amount).toLocaleString() : '0';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td class="checkbox-group">
+                <input type="checkbox" 
+                       data-student-id="${item.studentId}" 
+                       data-bill-id="${item.billId}">
+            </td>
+            <td>${index + 1}</td>
+            <td>${item.classDate || ''}</td>
+            <td>${item.studentName || ''}</td>
+            <td>${item.subject || ''}</td>
+            <td>${
+                [
+                    item.hanTeacher ? `${item.hanTeacher}(한)` : '',
+                    item.bookTeacher ? `${item.bookTeacher}(북)` : ''
+                ].filter(Boolean).join(', ')
+            }</td>
+            <td>${item.billType || ''}</td>
+            <td>${approvedDate.split(' ')[0]}</td>
+            <td class="payment">${amount}</td>
+            <td class="middle">
+                <div class="state-box ${getStatusClass(item.status)}">${getStatus(item.status) || ''}</div>
+            </td>
+        `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function getStatus(status) {
+        switch (status) {
+            case 'issued':
+                return '결제 대기';
+            case 'approved':
+                return '결제 완료';
+            case 'canceled':
+                return '결제 취소';
+            case 'destroyed':
+                return '청구서 파기';
+            default:
+                return '';
+        }
+    }
+
+    function getStatusClass(status) {
+        switch (status) {
+            case 'issued':
+                return 'standby';
+            case 'approved':
+                return 'complete';
+            case 'canceled':
+                return 'cancellation';
+            case 'destroyed':
+                return 'destroy';
+            default:
+                return '';
+        }
+    }
 });
+
 
 // ========== 금액 직접 입력하기 ========== //
 document.addEventListener('DOMContentLoaded', () => {

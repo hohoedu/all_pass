@@ -116,4 +116,42 @@
         WHERE bill_id = #{billId};
     </update>
 
+    <select id="findPaymentByStudentId" resultType="com.hohoedu.all_pass.payment._dto.PaymentRespDTO$PaymentDetailDTO">
+        SELECT s.student_id                                                               AS studentId,
+               (p.yy + '-' + p.mm)                                                        AS classDate,
+               s.student_name                                                             AS studentName,
+               STUFF((SELECT ', ' + sub.class_name
+                      FROM (SELECT DISTINCT cc2.class_name, cc2.class_type
+                            FROM erp_time_table_assign ta2
+                                     JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+                                     JOIN erp_class_code cc2 ON cc2.class_key =
+                                                                CASE
+                                                                    WHEN t2.class_key = 'COM' THEN ta2.class_key
+                                                                    ELSE t2.class_key
+                                                                    END
+                            WHERE ta2.student_id = p.student_id
+                              AND t2.yy = p.yy
+                              AND t2.mm = p.mm) AS sub
+                      ORDER BY sub.class_type
+                         FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS subject,
+               hu.user_name                                                               AS hanTeacher,
+               bu.user_name                                                               AS bookTeacher,
+               p.bill_id                                                                  AS billId,
+               p.product_name                                                             AS billType,
+               p.approved_date                                                            AS approvedDate,
+               p.amount                                                                   AS amount,
+               COALESCE(p.edu_status, p.material_status)                                  AS status
+        FROM erp_payment p
+                 JOIN erp_student s ON p.student_id = s.student_id
+                 JOIN erp_student_class sc ON s.student_id = sc.student_id AND p.yy = sc.yy AND p.mm = sc.mm
+                 LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
+                 LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
+        <where>
+            <if test="studentId != 'all'">
+                p.student_id = #{studentId}
+            </if>
+        </where>
+        ORDER BY p.created_at DESC;
+    </select>
+
 </mapper>

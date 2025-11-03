@@ -50,4 +50,8 @@ public class PaymentService {
         return null;
     }
 
+    public List<PaymentRespDTO.PaymentDetailDTO> findPaymentByStudentId(String studentId) {
+        return paymentRepository.findPaymentByStudentId(studentId);
+    }
+
 }
