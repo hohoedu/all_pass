@@ -367,11 +367,13 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlert({icon: 'warning', text: '추가할 학생을 선택해주세요.'});
             return;
         }
-
+        const [yy, mm] = document.getElementById('currentMonth')
+            .textContent.trim().match(/(\d{4})년\s*(\d{1,2})월/).slice(1, 3)
+            .map((v, i) => i === 1 ? v.padStart(2, '0') : v);
         const assignments = studentRows.map(tr => {
             const studentId = tr.querySelector('input[type="checkbox"]').value;
             const weekNo = tr.querySelector('input[name^="weeks-"]:checked').value;
-            return {timeTableKey, studentId, weekNo};
+            return {timeTableKey, studentId, weekNo, yy, mm};
         });
 
         console.log(assignments);

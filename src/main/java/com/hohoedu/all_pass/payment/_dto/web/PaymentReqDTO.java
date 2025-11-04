@@ -1,4 +1,4 @@
-package com.hohoedu.all_pass.payment._dto;
+package com.hohoedu.all_pass.payment._dto.web;
 
 import lombok.Data;
 
@@ -32,6 +32,8 @@ public class PaymentReqDTO {
         private String billId;
         private String productName;
         private String amount;
+        private String hanAmount;
+        private String bookAmount;
         private String statusType;
         private String eduStatus;
         private String materialStatus;

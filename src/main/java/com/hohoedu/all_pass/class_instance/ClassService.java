@@ -195,24 +195,23 @@ public class ClassService {
     // 학생 수업 등록
     public boolean addStudent(AddStudentDTO dto, String centerCode) {
         try {
-            String yy = dateConfig.currentYearMonth().get("currentYear");
-            String mm = dateConfig.currentYearMonth().get("currentMonth");
-            System.out.println("학생 등록 서비스");
+
 
             int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
 
             if (count >= 8) {
                 return false;
             }
-
+            System.out.println("============year========="+dto.getYy());
+            System.out.println("============month========"+dto.getMm());
             classRepository.addStudent(dto);
 
-            classRepository.insertMonthlyScore(dto.getStudentId(), yy, mm, dto.getTimeTableKey());
+            classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
 
             classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
 
             ClassRespDTO.ClassInfoDTO classInfo = classRepository.findclassInfoByTimeTableKey(dto.getTimeTableKey());
-            studentService.insertStudentClass(classInfo, dto.getStudentId(), yy, mm);
+            studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
 
         } catch (Exception e) {
             System.out.println("=====================" + e.getMessage() + "====================================");

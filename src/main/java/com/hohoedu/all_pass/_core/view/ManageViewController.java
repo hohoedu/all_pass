@@ -3,7 +3,7 @@ package com.hohoedu.all_pass._core.view;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.payment.PaymentService;
-import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;

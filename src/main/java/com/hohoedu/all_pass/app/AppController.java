@@ -3,6 +3,9 @@ package com.hohoedu.all_pass.app;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
+import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
+import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -23,6 +27,7 @@ public class AppController {
 
     private final StudentService studentService;
     private final ClassService classService;
+    private final PaymentService paymentService;
 
     @PostMapping("/login")
     public ResponseEntity<?> AppLogin(@RequestBody StudentAppReqDTO.LoginReqDTO reqDTO) {
@@ -97,5 +102,14 @@ public class AppController {
 
 
         return ResponseEntity.ok(AppApiUtils.successList(null));
+    }
+
+    @PostMapping("/payment_details")
+    public ResponseEntity<?> AppPaymentDetails(@RequestBody PaymentAppReqDTO.PaymentDetailsReqDTO reqDTO) {
+        System.out.println(reqDTO.getStudentId());
+        List<PaymentAppRespDTO.PaymentDetailRespDTO> dataList = paymentService.findPaymentDetailsBytudentId(reqDTO);
+
+
+        return ResponseEntity.ok(AppApiUtils.successList(dataList));
     }
 }

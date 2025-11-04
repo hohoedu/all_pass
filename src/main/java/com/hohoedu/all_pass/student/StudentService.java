@@ -444,6 +444,7 @@ public class StudentService {
                 .cname(row.getCenterName())
                 .hak(row.getGradeKey())
                 .ihak(row.getGradeKey())
+                .profileimg("1")
                 .appid(row.getAppId())
                 .build();
 

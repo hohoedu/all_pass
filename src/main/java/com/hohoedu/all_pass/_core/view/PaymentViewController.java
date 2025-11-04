@@ -1,7 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
-import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.payment.PaymentService;

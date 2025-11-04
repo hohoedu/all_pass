@@ -1,15 +1,14 @@
 package com.hohoedu.all_pass.payment;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
-import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
-import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -70,18 +69,6 @@ public class PaymentController {
                     .build();
         }
 
-        System.out.println("============================================");
-        System.out.println("billId" + paymentReqDTO.getBillId());
-        System.out.println("productName" + paymentReqDTO.getProductName());
-        System.out.println("amount" + paymentReqDTO.getAmount());
-        System.out.println("status" + "issued");
-        System.out.println("message" + paymentReqDTO.getMessage());
-        System.out.println("requestDate" + paymentReqDTO.getRequestDate());
-        System.out.println("studentId" + paymentReqDTO.getStudentId());
-        System.out.println("userCode" + user.getUserCode());
-        System.out.println("centerCode" + user.getCenterCode());
-        System.out.println("============================================");
-
         if ("edu".equals(paymentReqDTO.getStatusType())) {
             paymentReqDTO.setEduStatus("issued");
         }
@@ -109,5 +96,6 @@ public class PaymentController {
         System.out.println("==========================================");
         return ResponseEntity.ok(ApiUtils.success(response));
     }
+
 
 }

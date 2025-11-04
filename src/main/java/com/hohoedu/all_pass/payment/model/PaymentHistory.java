@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_payment_history")
+@Table(name = "erp_payment_history") // 결제 내역 테이블
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentHistory {
 

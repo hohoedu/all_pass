@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_payment_refund")
+@Table(name = "erp_payment_refund") // 결제 환불 테이블
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentRefund {
 

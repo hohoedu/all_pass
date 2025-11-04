@@ -106,7 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStudentTable(students) {
         const tbody = document.querySelector('#student-tbody');
         tbody.innerHTML = '';
+        tbody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr');
+            if (!row || !tbody.contains(row)) return;
 
+            if (e.target.classList.contains('row-checkbox')) {
+                return;
+            }
+
+            row.classList.toggle('selected');
+        });
         if (!students || students.length === 0) {
             tbody.innerHTML = `
                 <tr><td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>
@@ -219,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const studentId = 'all';
 
         try {
-            console.log('studentId = ' + studentId);
 
             const response = await fetch('/pay/edu-personal', {
                 method: 'POST',
@@ -234,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            console.log(data);
 
             fillModal(data.response, 'tuition');
             openModal('tuition');
@@ -247,37 +254,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // 개별 조회
-    document.querySelectorAll('#student-tbody tr').forEach(row => {
-        row.addEventListener('mouseenter', () => {
-            row.style.cursor = 'pointer';
-        });
+    const tbody = document.querySelector('#student-tbody');
+    if (tbody) {
+        tbody.addEventListener('mouseenter', e => {
+            const row = e.target.closest('tr');
+            if (row) row.style.cursor = 'pointer';
+        }, true);
 
-        row.addEventListener('click', async (e) => {
+        tbody.addEventListener('click', async (e) => {
+            const row = e.target.closest('tr');
+            if (!row || !tbody.contains(row)) return;
+
             const targetCell = e.target.closest('td');
             if (!targetCell) return;
 
             const index = Array.from(row.children).indexOf(targetCell);
-            if (index === 0) return;
+            if (index === 0) return; // 첫 번째 셀(체크박스) 클릭은 무시
 
             const studentId = row.dataset.studentId;
+            if (!studentId) return;
 
             try {
-                console.log(studentId);
 
                 const response = await fetch('/pay/edu-personal', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({studentId})
                 });
 
-                if (!response.ok) {
-                    throw new Error('데이터 조회 실패');
-                }
+                if (!response.ok) throw new Error('데이터 조회 실패');
 
                 const data = await response.json();
-                console.log(data);
 
                 fillModal(data.response, 'personal');
                 openModal('personal');
@@ -287,13 +294,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('청구 내역을 불러오지 못했습니다.');
             }
         });
-    });
+    }
 
     function fillModal(data, type) {
-        console.log(type);
         const tbody = document.getElementById(`${type}-tbody`);
-        console.log(tbody);
         tbody.innerHTML = ''; // 초기화
+
+        if (!data || data.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="10" style="text-align:center;">등록된 데이터가 없습니다.</td>
+            </tr>
+        `;
+            return;
+        }
 
         data.forEach((item, index) => {
             const approvedDate = item.approvedDate ? item.approvedDate : '-';
@@ -443,6 +457,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const studentId = row.dataset.studentId;
             const studentName = row.dataset.studentName;
+            const hanFee = row.dataset.hanFee;
+            const bookFee = row.dataset.bookFee;
+            const hanMaterial = row.dataset.hanMaterial;
+            const bookMaterial = row.dataset.bookMaterial;
             const phone = row.dataset.parentPhone;
             const price = row.dataset.totalPrice;
             const totalFee = row.dataset.totalFee;
@@ -473,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: totalFee,
                     hash: sendHashEdu,
                     expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://f6d1288ac652.ngrok-free.app/pay/callback"
+                    callbackURL: "https://c88aa08e31e1.ngrok-free.app/pay/callback"
                     // callbackURL: "https://hohocenter.co.kr/pay/callback"
 
                 };
@@ -495,7 +513,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     price: totalMaterialFee,
                     hash: sendHashBook,
                     expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://2b08de231333.ngrok-free.app/pay/callback"
+                    callbackURL: "https://c88aa08e31e1.ngrok-free.app/pay/callback"
                     // callbackURL: "https://hohocenter.co.kr/pay/callback"
                 };
 
@@ -503,13 +521,26 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             async function sendBill(bill, type) {
+
+                let hanAmount = '';
+                let bookAmount = '';
+
+                if (type === "EDU") {
+                    hanAmount = hanFee;             // 교육비 한자
+                    bookAmount = bookFee;           // 교육비 독서
+                } else if (type === "BOOK") {
+                    hanAmount = hanMaterial;        // 교재비 한자
+                    bookAmount = bookMaterial;      // 교재비 독서
+                }
+
+
                 const requestBody = {
                     apikey: "TEST-API-KEY-TALK",
                     member: "TEST-MEMBER-FOR-API",
                     merchant: "TEST-MERCHANT-FOR-API",
                     bill
                 };
-                console.log(JSON.stringify(requestBody));
+
                 try {
                     const res = await fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
                         method: "POST",
@@ -518,7 +549,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
 
                     const data = await res.json();
-                    console.log(`📨 [${type}]`, bill.bill_id, data);
 
                     if (data.code === "0000") {
                         const saveBody = {
@@ -528,6 +558,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             studentName: requestBody.bill.studentName,
                             studentId: studentId,
                             amount: requestBody.bill.price,
+                            hanAmount: hanAmount,
+                            bookAmount: bookAmount,
                             statusType: statusType,
                             requestDate: now.toISOString().split("T")[0],
                             expireDate: requestBody.bill.expire_dt,
@@ -541,7 +573,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
 
                         const data = await res.json();
-                        console.log(data);
 
                     } else {
                         alert(`❌ ${bill.member_nm} ${type} 청구 실패: ${data.msg || '서버 오류'}`);
@@ -559,8 +590,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 결제 취소 버튼
     payCancel.addEventListener('click', () => {
-        console.log('취소 버튼');
-
 
         const requestBody = {
             apikey: "TEST-API-KEY-TALK",
@@ -580,13 +609,9 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify(requestBody)
         })
             .then(res => {
-                console.log("응답 상태:", res.status);
                 return res.json(); // JSON 파싱
             })
             .then(data => {
-                console.log("요청 바디:", JSON.stringify(requestBody));
-                console.log("응답 데이터:", data);
-                console.log(data.code);
                 if (data.code === "0000") {
                     alert('결제가 취소되었습니다.');
                 } else if (data.code === "9980") {
@@ -602,7 +627,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 청구서 파기 버튼
     payDestroy.addEventListener('click', () => {
-        console.log('파기 버튼');
 
         const requestBody = {
             apikey: "TEST-API-KEY-TALK",
@@ -622,13 +646,9 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify(requestBody)
         })
             .then(res => {
-                console.log("응답 상태:", res.status);
                 return res.json(); // JSON 파싱
             })
             .then(data => {
-                console.log("요청 바디:", JSON.stringify(requestBody));
-                console.log("응답 데이터:", data);
-                console.log(data.code);
                 if (data.code === "0000") {
                     alert('청구서가 파기되었습니다.');
 
@@ -646,7 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 청구서 재발행 버튼
     payReissue.addEventListener('click', () => {
-        console.log('재발행 버튼 ');
 
         const requestBody = {
             apikey: "TEST-API-KEY-TALK",
@@ -664,13 +683,9 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify(requestBody)
         })
             .then(res => {
-                console.log("응답 상태:", res.status);
                 return res.json(); // JSON 파싱
             })
             .then(data => {
-                console.log("요청 바디:", JSON.stringify(requestBody));
-                console.log("응답 데이터:", data);
-                console.log(data.code);
                 if (data.code === "0000") {
                     alert('청구서가 발행되었습니다.')
                 }

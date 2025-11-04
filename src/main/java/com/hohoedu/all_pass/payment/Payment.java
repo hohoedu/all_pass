@@ -31,6 +31,12 @@ public class Payment {
     @Column
     private String amount; // 결제 가격
 
+    @Column(name = "han_amount")
+    private String hanAmount;
+
+    @Column(name = "book_amount")
+    private String bookAmount;
+
     @Column(name = "edu_status")
     private String eduStatus; // 교육
 
@@ -74,10 +80,12 @@ public class Payment {
     private Timestamp createdAt;
 
     @Builder
-    public Payment(String billId, String productName, String amount, String materialStatus, String eduStatus, String message, String yy, String mm, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
+    public Payment(String billId, String productName, String amount, String hanAmount, String bookAmount, String materialStatus, String eduStatus, String message, String yy, String mm, String requestDate, String approvedDate, String canceledDate, String expiredDate, Student student, User user, Center center, Timestamp createdAt) {
         this.billId = billId;
         this.productName = productName;
         this.amount = amount;
+        this.hanAmount = hanAmount;
+        this.bookAmount = bookAmount;
         this.materialStatus = materialStatus;
         this.eduStatus = eduStatus;
         this.message = message;

@@ -1,7 +1,9 @@
 package com.hohoedu.all_pass.payment;
 
-import com.hohoedu.all_pass.payment._dto.PaymentReqDTO;
-import com.hohoedu.all_pass.payment._dto.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
+import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -54,4 +56,7 @@ public class PaymentService {
         return paymentRepository.findPaymentByStudentId(studentId);
     }
 
+    public List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsBytudentId(PaymentAppReqDTO.PaymentDetailsReqDTO reqDTO) {
+        return paymentRepository.findPaymentDetailsByStudentId(reqDTO.getStudentId(), reqDTO.getCount());
+    }
 }

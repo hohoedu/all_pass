@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_payment_callback")
+@Table(name = "erp_payment_callback") // 결제 콜백 테이블
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentCallback {
 

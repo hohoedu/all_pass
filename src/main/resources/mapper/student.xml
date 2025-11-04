@@ -16,14 +16,12 @@
     </insert>
 
     <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
-        SELECT sc.han_user_code,
-               sc.book_user_code,
+        SELECT
                s.*,
                g.*,
                reg.registeredClassTypes as classType
         FROM erp_student s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
-                 LEFT JOIN erp_student_class sc ON s.student_id = sc.student_id
             OUTER APPLY (
     SELECT STUFF((
         SELECT ',' + cc.class_type
@@ -45,14 +43,7 @@
             reg.registeredClassTypes IS NULL
            OR reg.registeredClassTypes IN ('1'
             , '2')
-            )
-          AND sc.yy = #{year}
-          AND sc.mm = #{month}
-          AND (sc.han_user_code = #{userCode}
-           OR sc.book_user_code = #{userCode}
-           OR sc.han_user_code is null
-           OR sc.book_user_code is null)
-          AND s.status_key = 'ACTIVE'
+            );
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
@@ -99,37 +90,34 @@
                sc.status_name         AS statusName
         FROM ERP_STUDENT s
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
-                 LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id
-                 LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
-                 LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
-                 LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
-                 LEFT JOIN ERP_USER hu ON stuc.han_user_code = hu.user_code
-                 LEFT JOIN ERP_USER bu ON stuc.book_user_code = bu.user_code
+                 LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id AND stuc.yy = FORMAT(GETDATE(), 'yyyy') AND stuc.mm = FORMAT(GETDATE(),'MM')
+            LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
+            LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
+            LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
+            LEFT JOIN ERP_USER hu ON stuc.han_user_code = hu.user_code
+            LEFT JOIN ERP_USER bu ON stuc.book_user_code = bu.user_code
 
 -- APPLY로 class_name 가져오기
             OUTER APPLY (
-    SELECT TOP 1 cc.class_name, cc.class_key
-    FROM erp_time_table_assign ta
-    JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-    JOIN erp_class_code cc ON cc.class_key =
-        CASE
+            SELECT TOP 1 cc.class_name, cc.class_key
+            FROM erp_time_table_assign ta
+            JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+            JOIN erp_class_code cc ON cc.class_key =
+            CASE
             WHEN t.class_key = 'COM' THEN ta.class_key
             ELSE t.class_key
-        END
-    WHERE ta.student_id = s.student_id AND cc.class_type = '1' AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
-) han
+            END
+            WHERE ta.student_id = s.student_id AND cc.class_type = '1' AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
+            ) han
+            OUTER APPLY (
+            SELECT TOP 1 cc.class_name, cc.class_key
+            FROM erp_time_table_assign ta
+            JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+            JOIN erp_class_code cc ON t.class_key = cc.class_key
+            WHERE ta.student_id = s.student_id AND cc.class_type = '2' AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
+            ) book
 
-OUTER APPLY (
-    SELECT TOP 1 cc.class_name, cc.class_key
-    FROM erp_time_table_assign ta
-    JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-    JOIN erp_class_code cc ON t.class_key = cc.class_key
-    WHERE ta.student_id = s.student_id AND cc.class_type = '2'  AND t.yy = FORMAT(GETDATE(),'yyyy') AND t.mm = FORMAT(GETDATE(),'MM')
-) book
-
-        WHERE s.student_id = #{studentId}
-        AND stuc.yy = FORMAT(GETDATE(),'yyyy')
-        AND stuc.mm = FORMAT(GETDATE(),'MM');
+        WHERE s.student_id = #{studentId};
 
 
     </select>

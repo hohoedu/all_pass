@@ -25,17 +25,19 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class AddStudentList {
+        private List<AddStudentDTO> assignments;
+    }
+
+    @Data
     public static class AddStudentDTO {
         private Integer id;
         private String weekNo;
         private String studentId;
         private String timeTableKey;
+        private String yy;
+        private String mm;
 
-    }
-
-    @Data
-    public static class AddStudentList {
-        private List<AddStudentDTO> assignments;
     }
 
     @Data

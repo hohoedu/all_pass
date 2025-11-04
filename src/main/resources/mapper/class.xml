@@ -5,7 +5,7 @@
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
 
-    <!--시간표 등록-->
+    <!--시간표 추가-->
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table
@@ -13,7 +13,7 @@
         values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime}, #{endTime}, #{classKey}, #{unitKey}, #{gradeKey}, #{userCode}, SYSDATETIME(), #{timeTableKey}, #{centerCode});
     </insert>
 
-    <!--시간표 수정-->
+    <!--시간표 수정 -->
     <update id="updateClass" parameterType="map">
         UPDATE erp_time_table
         SET yy         = #{dto.yy},
@@ -30,13 +30,14 @@
         WHERE time_table_key = #{timeTableKey}
     </update>
 
-    <!--시간표 라벨 수정-->
+    <!--시간표 라벨 수정 -->
     <update id="updateLabel">
         UPDATE erp_time_table_code
         SET time_table_label = #{label}
         WHERE time_table_key = #{timeTableKey}
     </update>
 
+    <!-- 시간표 학생 추가 -->
     <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table_assign
             (student_id, time_table_key, week)

@@ -1,10 +1,6 @@
-package com.hohoedu.all_pass.payment._dto;
+package com.hohoedu.all_pass.payment._dto.web;
 
-import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import lombok.Data;
-
-import java.sql.Timestamp;
-import java.util.List;
 
 @Data
 public class PaymentRespDTO {
