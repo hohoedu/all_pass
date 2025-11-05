@@ -47,4 +47,13 @@ public class PaymentRespDTO {
         private String amount; // 결제 금액
         private String status;
     }
+
+    @Data
+    public static class PaymentBillIdDTO{
+        private String studentId;
+        private String studentName;
+        private String billId;
+        private String amount;
+        private String status;
+    }
 }

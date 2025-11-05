@@ -1,0 +1,131 @@
+package com.hohoedu.all_pass._core.utils;
+
+import com.popbill.api.CBIssueResponse;
+import com.popbill.api.CashbillService;
+import com.popbill.api.PopbillException;
+import com.popbill.api.cashbill.Cashbill;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+@RequestMapping(value = "CashbillService")
+public class CashbillServiceController {
+
+    @Autowired
+    private CashbillService cashbillService;
+
+    @RequestMapping(value = "registIssue", method = RequestMethod.GET)
+    public String registIssue(Model m) {
+
+        // 팝빌회원 사업자번호
+        String CorpNum = "1234567890";
+
+        // 현금영수증 정보
+        Cashbill cashbill = new Cashbill();
+
+        // 문서번호, 1~24자리 (숫자, 영문, '-', '_') 조합으로 사업자 별로 중복되지 않도록 구성
+        cashbill.setMgtKey("20250711-MVC001");
+
+        // 거래일시, 날짜(yyyyMMddHHmmss)
+        // 당일, 전일만 가능
+        cashbill.setTradeDT("20250711111111");
+
+        // 문서형태, 승인거래 기재
+        cashbill.setTradeType("승인거래");
+
+        // 거래구분, {소득공제용, 지출증빙용} 중 기재
+        cashbill.setTradeUsage("소득공제용");
+
+        // 거래유형, {일반, 도서공연, 대중교통} 중 기재
+        // 도서공연 : 도서, 공연, 박물관, 미술관, 수영장, 체력단련장, 신문구독료(종이신문), 영화관람료
+        // - 미입력시 기본값 "일반" 처리
+        cashbill.setTradeOpt("대중교통");
+
+        // 과세형태, {과세, 비과세} 중 기재
+        cashbill.setTaxationType("과세");
+
+        // 거래금액, 숫자만 가능, 봉사료 + 공급가액 + 부가세
+        cashbill.setTotalAmount("11000");
+
+        // 공급가액, 숫자만 가능
+        cashbill.setSupplyCost("10000");
+
+        // 부가세, 양수 또는 0 입력
+        cashbill.setTax("1000");
+
+        // 봉사료, 양수 또는 0 입력
+        cashbill.setServiceFee("0");
+
+        // 가맹점 사업자번호, '-'제외 10자리
+        cashbill.setFranchiseCorpNum("1234567890");
+
+        // 가맹점 종사업장 식별번호
+        cashbill.setFranchiseTaxRegID("");
+
+        // 가맹점 상호
+        cashbill.setFranchiseCorpName("가맹점 상호");
+
+        // 가맹점 대표자 성명
+        cashbill.setFranchiseCEOName("가맹점 대표자");
+
+        // 가맹점 주소
+        cashbill.setFranchiseAddr("가맹점 주소");
+
+        // 가맹점 전화번호
+        cashbill.setFranchiseTEL("07043042991");
+
+        // 식별번호, 거래구분에 따라 작성
+        // └ 소득공제용 - 주민등록/휴대폰/카드번호/자진발급용 번호(010-000-1234) 입력
+        // └ 지출증빙용 - 사업자번호/휴대폰/카드번호 입력
+        // └ 주민등록번호 13자리, 휴대폰번호 10~11자리, 카드번호 13~19자리, 사업자번호 10자리 입력 가능
+        cashbill.setIdentityNum("0101112222");
+
+        // 구매자(고객) 성명
+        cashbill.setCustomerName("고객명");
+
+        // 주문 상품명
+        cashbill.setItemName("상품명");
+
+        // 주문번호
+        cashbill.setOrderNumber("주문번호");
+
+        // 구매자(고객) 메일
+        // 팝빌 개발환경에서 테스트하는 경우에도 안내 메일이 전송되므로,
+        // 실제 거래처의 메일주소가 기재되지 않도록 주의
+        cashbill.setEmail("test@test.com");
+
+        // 구매자(고객) 휴대폰
+        // - {smssendYN} 의 값이 true 인 경우 아래 휴대폰번호로 안내 문자 전송
+        cashbill.setHp("");
+
+        // 구매자 알림문자 전송 여부
+        cashbill.setSmssendYN(false);
+
+        // 현금영수증 상태 이력을 관리하기 위한 메모
+        String Memo = "현금영수증 즉시발행 메모";
+
+        // 팝빌회원 아이디
+        String UserID = "testkorea";
+
+        // 현금영수증 발행 안내메일 제목, 미기재시 기본 양식으로 메일 전송
+        String EmailSubject = "";
+
+        try {
+
+            CBIssueResponse response = cashbillService.registIssue(CorpNum, cashbill, Memo,
+                    UserID, EmailSubject);
+
+            m.addAttribute("Response", response);
+        } catch (PopbillException e) {
+            // 예외 발생 시, e.getCode() 로 오류 코드를 확인하고, e.getMessage()로 오류 메시지를 확인합니다.
+            System.out.println("오류 코드" + e.getCode());
+            System.out.println("오류 메시지" + e.getMessage());
+        }
+
+        return "/response";
+    }
+
+}

@@ -60,7 +60,7 @@ public class PaymentController {
     }
 
     @PostMapping("/history/insert")
-    public ResponseEntity<?> updatePayment(@RequestBody PaymentReqDTO.PayHistoryDTO paymentReqDTO, HttpSession session) {
+    public ResponseEntity<?> updatePayment(@RequestBody PaymentReqDTO.PaymentDTO paymentReqDTO, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -69,17 +69,7 @@ public class PaymentController {
                     .build();
         }
 
-        if ("edu".equals(paymentReqDTO.getStatusType())) {
-            paymentReqDTO.setEduStatus("issued");
-        }
-        if ("material".equals(paymentReqDTO.getStatusType())) {
-            paymentReqDTO.setMaterialStatus("issued");
-        }
-
-        paymentReqDTO.setUserCode(user.getUserCode());
-        paymentReqDTO.setCenterCode(user.getCenterCode());
-
-        paymentService.insertPayment(paymentReqDTO);
+        paymentService.insertPayment(paymentReqDTO, user);
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }
@@ -87,13 +77,23 @@ public class PaymentController {
     @PostMapping("/edu-personal")
     public ResponseEntity<?> getPersonalModal(@RequestBody Map<String, String> studentId) {
 
-
-        System.out.println("모달 데이터 조회");
-        System.out.println("student_id = " + studentId.get("studentId"));
         List<PaymentRespDTO.PaymentDetailDTO> response = paymentService.findPaymentByStudentId(studentId.get("studentId"));
-        System.out.println("==========================================");
-        System.out.println(response);
-        System.out.println("==========================================");
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/bill-id")
+    public ResponseEntity<?> getBillId(@RequestBody PaymentReqDTO.BillIdSerchDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<PaymentRespDTO.PaymentBillIdDTO> response = paymentService.findPaymentBillIdByStudentId(reqDTO);
+
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 

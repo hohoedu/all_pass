@@ -1,6 +1,9 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
+import lombok.Builder;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class PaymentReqDTO {
@@ -28,8 +31,9 @@ public class PaymentReqDTO {
     }
 
     @Data
-    public static class PayHistoryDTO {
+    public static class PaymentDTO {
         private String billId;
+        private String studentName;
         private String productName;
         private String amount;
         private String hanAmount;
@@ -48,9 +52,35 @@ public class PaymentReqDTO {
     }
 
     @Data
+    @Builder
+    public static class PaymentHistoryDTO {
+        private String billId;
+        private String eventType;
+        private String eventSource;
+        private String amount;
+        private String description;
+        private String paymentKey;
+        private String studentId;
+        private String userCode;
+        private String centerCode;
+    }
+
+    @Data
     public static class ClassFeeMapDTO {
         private String fee;
         private String classKey;
+    }
+
+    @Data
+    public static class BillIdSerchDTO {
+        private List<Student> students;
+        private String yy;
+        private String mm;
+
+        @Data
+        public static class Student {
+            private String studentId;
+        }
     }
 
 }

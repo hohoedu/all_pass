@@ -1,0 +1,224 @@
+<div th:fragment="centerNoticeInsertModal">
+    <div class="modal notice-modal">
+        <div class="pre-view">
+            <div class="">
+                <div class="m-t-line" style="margin: 20px;">
+                    <div>
+                        <div class="pre-title">공지 등록하기</div>
+                    </div>
+                    <a href="#" class="btn-close"></a>
+                </div>
+                <div class="notice-modal-divide">
+                    <div class="sms-left">
+                        <div class="sms-frame">
+                            <table class="notice-regist-table pay-edu-table sms-table bt">
+                                <colgroup>
+                                    <col width="10%">
+                                    <col width="90%">
+                                </colgroup>
+                                <tbody>
+
+                                <tr>
+                                    <td>제목</td>
+                                    <td>
+                                        <input type="text" placeholder="제목을 입력해주세요." style="width:100%;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>부제목</td>
+                                    <td>
+                                        <input type="text" placeholder="부제목을 입력해주세요." style="width:100%;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>아이콘</td>
+                                    <td>
+
+                                        <div class="custom-select-wrap">
+                                            <div class="made-select" id="noticeSelect">
+                                                <div class="selected">
+                                                    <img th:src="@{/image/notice01.png}" alt=""> 공지 아이콘
+                                                    <span class="arrow"><i class="xi-angle-down"></i></span>
+                                                </div>
+                                                <ul class="select-options">
+                                                    <li data-value="icon1">
+                                                        <img th:src="@{/image/notice01.png}" alt=""> 공지 아이콘
+                                                    </li>
+                                                    <li data-value="icon2">
+                                                        <img th:src="@{/image/notice02.png}" alt=""> 알림 아이콘
+                                                    </li>
+                                                    <li data-value="icon3">
+                                                        <img th:src="@{/image/notice03.png}" alt=""> 긴급 아이콘
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                    </td>
+                                </tr>
+                                <tr class="app-textarea">
+                                    <td>내용</td>
+                                    <td>
+                                        <textarea id="content"  name="content"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>이미지</td>
+                                    <td>
+                                        <div class="image-row">
+                                            <div class="left-wrapper">
+                                                <input type="file" id="imageInput" accept="image/*" style="display: none"/>
+
+                                                <div class="image-name" id="imageNameWrapper" style="display: none;">
+                                                    <span id="fileName">image.png</span>
+                                                    <button class="retract-btn" id="removeBtn">
+                                                        <img th:src="@{/image/retract-icon.png}" alt="삭제">
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                            <button class="submit-btn" id="uploadBtn">등록하기</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="sms-right">
+                        <div class="student-wrapper">
+                            <div class="student-select">
+                                <h3 class="title">학생 선택</h3>
+                                <div class="filter-group" data-group="grade">
+                                    <span class="filter-label">학년별</span>
+                                    <button class="filter-btn" data-value="5세">5세</button>
+                                    <button class="filter-btn" data-value="6세">6세</button>
+                                    <button class="filter-btn" data-value="7세">7세</button>
+                                    <button class="filter-btn" data-value="초1">초1</button>
+                                    <button class="filter-btn" data-value="초2">초2</button>
+                                    <button class="filter-btn" data-value="초3">초3</button>
+                                    <button class="filter-btn" data-value="초4">초4</button>
+                                    <button class="filter-btn" data-value="초5">초5</button>
+                                </div>
+                                <div class="filter-group" data-group="subject">
+                                    <span class="filter-label">과목별</span>
+                                    <button class="filter-btn fbl" data-value="한자">한자</button>
+                                    <button class="filter-btn fbl" data-value="독서">독서</button>
+                                </div>
+                            </div>
+
+                            <div class="mt">
+                                <div class="table-frame choose-frame">
+                                    <table class="basic-table pay-table yh">
+                                        <colgroup>
+                                            <col width="15%">
+                                            <col width="25%">
+                                            <col width="25%">
+                                            <col width="25%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th class="checkbox-group">
+                                                <input type="checkbox">
+                                            </th>
+                                            <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="student-tbody" class="stripe">
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초1</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="save-btn-frame" style="margin-top: 30px;">
+                    <button class="common-btn regist-btn" id="save-notice">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

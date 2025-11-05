@@ -24,32 +24,38 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url "https://github.com/linkhub-sdk/Linkhub-maven/raw/master/releases" }
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // ✅ Spring Boot 기본 구성
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // ✅ Lombok (컴파일용 + 어노테이션 생성용)
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // ✅ MyBatis, JWT, Firebase, Popbill
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     implementation 'com.google.firebase:firebase-admin:9.2.0'
     implementation 'commons-codec:commons-codec:1.16.0'
+    implementation 'kr.co.linkhub:popbill-spring-boot-starter:1.17.0'
 
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
-    compileOnly 'org.projectlombok:lombok'
-
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
+    // ✅ 런타임
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
 
-    annotationProcessor 'org.projectlombok:lombok'
-
+    // ✅ Dev & Servlet
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+
 }
 
 tasks.named('test') {

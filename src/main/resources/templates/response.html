@@ -1,0 +1,17 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Popbill SDK Response</title>
+</head>
+
+<body>
+<fieldset>
+    <ul>
+        <li>code (응답코드) : <span th:text="${Response.code}"></span></li>
+        <li>message (응답메시지) : <span th:text="${Response.message}"></span></li>
+        <li>confirmNum (국세청승인번호) : <span th:text="${Response.confirmNum}"></span></li>
+        <li>tradeDate (거래일자) : <span th:text="${Response.tradeDate}"></span></li>
+    </ul>
+</fieldset>
+</body>
+</html>

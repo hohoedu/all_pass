@@ -80,6 +80,12 @@
                 #{studentId}, #{userCode}, #{centerCode}, SYSDATETIME())
     </insert>
 
+
+    <insert id="insertPaymentHistory">
+        INSERT INTO erp_payment_history (bill_id, event_type, event_source, amount, description, payment_key, student_id, user_code, center_code, created_at)
+        VALUES (#{billId}, #{eventType}, #{eventSource}, #{amount}, #{description}, #{paymentKey}, #{studentId}, #{userCode}, #{centerCode}, SYSDATETIME())
+    </insert>
+
     <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
         SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
         FROM erp_class_fee_map cf
@@ -96,17 +102,13 @@
         </foreach>
     </update>
 
+    <!--  결제 완료 후 콜백 저장  -->
     <insert id="insertPaymentCallback">
         INSERT INTO erp_payment_callback (bill_id, api_key, appr_pay_type, appr_card_type, appr_date, appr_issuer, appr_num, appr_price, appr_state, created)
         VALUES (#{bill_id}, #{apikey}, #{appr_pay_type}, #{appr_card_type}, #{appr_dt}, #{appr_issuer}, #{appr_num}, #{appr_price}, #{appr_state}, SYSDATETIME());
     </insert>
 
-    <select id="findPaymentByBillId" resultType="string">
-        SELECT COALESCE(edu_status, material_status) AS status
-        FROM ERP_PAYMENT
-        WHERE bill_id = #{billId}
-    </select>
-
+    <!--  결제 완료 후 상태 업데이트  -->
     <update id="updatePayment">
         UPDATE ERP_PAYMENT
         SET edu_status      = CASE WHEN edu_status IS NOT NULL THEN 'approved' ELSE edu_status END,
@@ -115,6 +117,7 @@
         WHERE bill_id = #{billId};
     </update>
 
+    <!--  학생별 상세 납부내역 조회  -->
     <select id="findPaymentByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentDetailDTO">
         SELECT s.student_id AS studentId,
         (p.yy + '-' + p.mm) AS classDate,
@@ -153,7 +156,26 @@
         ORDER BY p.created_at DESC;
     </select>
 
+    <!--  학생별 bill_id 조회  -->
+    <select id="findBillIdByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentBillIdDTO">
+        SELECT p.student_id AS studentId,
+                s.student_name AS studentName,
+        p.bill_id AS billId,
+        p.amount AS amount,
+        COALESCE(p.edu_status, p.material_status) AS status
+        FROM erp_payment p
+        JOIN erp_student s ON p.student_id = s.student_id
+        WHERE p.student_id IN
+        <foreach item="id" collection="studentId" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND COALESCE(p.edu_status, p.material_status) = 'approved'
+        AND p.yy = #{year}
+        AND p.mm = #{month}
+    </select>
 
+    <!--  // ======================================== APP ======================================== // -->
+    <!--  앱 납부내역 조회  -->
     <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
         SELECT TOP ${count} *
         FROM (select p.bill_id           AS billId,

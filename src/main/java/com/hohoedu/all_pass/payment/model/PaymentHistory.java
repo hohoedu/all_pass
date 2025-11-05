@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.payment.model;
 
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
@@ -22,23 +23,20 @@ public class PaymentHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // PK
 
-    @Column (name = "pat_status")
-    private String payStatus; // 결제 상태 (approved, cancelled 등)
+    @Column(name = "event_type")
+    private String eventType; // 결제 상태 (issued, approved, cancelled, refunded 등)
+
+    @Column(name = "event_source")
+    private String eventSource; // 직접입력, 콜백 데이터,
 
     @Column
     private String amount; // 결제 금액
 
-    @Column (name = "appr_num")
-    private String apprNum; // 승인번호 (카드 결제 시)
-
-    @Column (name = "appr_date")
-    private String apprDate; // 승인일시 yy-mm-dd hh:mm
-
     @Column
-    private String memo; // 비고
+    private String description; // 비고
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_code", referencedColumnName = "user_code") // 결제 처리자 FK
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code") // 처리자 FK
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,20 +51,23 @@ public class PaymentHistory {
     @JoinColumn(name = "bill_id", referencedColumnName = "bill_id") // 청구서 FK
     private Payment payment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code") // 청구서 FK
+    private Center center;
+
     @CreationTimestamp
     private Timestamp createdAt; // 생성일시
 
     @Builder
-    public PaymentHistory(String payStatus, String amount, String apprNum, String apprDate, String memo, User user, Student student, PaymentCode paymentCode, Payment payment, Timestamp createdAt) {
-        this.payStatus = payStatus;
+    public PaymentHistory(String eventType, String eventSource, String amount, String description, User user, Student student, PaymentCode paymentCode, Center center, Payment payment) {
+        this.eventType = eventType;
+        this.eventSource = eventSource;
         this.amount = amount;
-        this.apprNum = apprNum;
-        this.apprDate = apprDate;
-        this.memo = memo;
+        this.description = description;
         this.user = user;
         this.student = student;
         this.paymentCode = paymentCode;
+        this.center = center;
         this.payment = payment;
-        this.createdAt = createdAt;
     }
 }
