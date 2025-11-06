@@ -1,7 +1,13 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.notice.CenterNotice;
+import com.hohoedu.all_pass.notice.NoticeService;
+import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.user.UserService;
@@ -26,6 +32,7 @@ public class ManageViewController {
     private final UserService userService;
     private final ClassService classService;
     private final PaymentService paymentService;
+    private final NoticeService noticeService;
 
     @GetMapping("/order")
     public String getManageOrderPage() {
@@ -38,7 +45,25 @@ public class ManageViewController {
     }
 
     @GetMapping("sms")
-    public String getManageSmsPage() {
+    public String getManageSmsPage(HttpSession session, Model model) throws JsonProcessingException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+
+        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeService.findCenterNoticeByCenterCode(user);
+
+        model.addAttribute("noticeList", noticeList);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT); // 줄바꿈 + 들여쓰기 적용
+
+        if (!noticeList.isEmpty()) {
+            model.addAttribute("firstNotice", noticeList.get(0));
+        }
+
+        System.out.println(mapper.writeValueAsString(noticeList));
         return "manage/sms";
     }
 

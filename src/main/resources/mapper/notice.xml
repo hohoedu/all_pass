@@ -6,9 +6,46 @@
 
     <insert id="insertCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeSaveReqDTO">
         INSERT INTO erp_center_notice
-            (title, sub_title, content, image, icon, view_count, user_code, center_code, create_at)
-        VALUES (#{title}, #{subTitle}, #{content}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
+        (center_notice_key, title, sub_title, content, link_url, image, icon, view_count, user_code, center_code, created_at)
+        VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{linkUrl}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
     </insert>
+
+    <select id="findCenterNoticeByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$CenterNoticeDTO">
+        SELECT n.id                AS id,
+               n.center_notice_key AS centerNoticeKey,
+               n.title             AS title,
+               n.sub_title         AS subTitle,
+               n.content           AS rawContent,
+               n.created_at         AS createdAt,
+               n.icon              AS icon,
+               n.link_url          AS linkUrl,
+               n.view_count        AS viewCount,
+               u.user_name         AS userName
+        FROM erp_center_notice n
+                 JOIN erp_user u ON n.user_code = u.user_code
+        WHERE n.center_code = #{centerCode}
+        ORDER BY n.created_at DESC;
+
+    </select>
+
+    <select id="findCenterNoticeByNoticeId" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$CenterNoticeDetailDTO">
+        SELECT n.id                AS id,
+               n.center_notice_key AS centerNoticeKey,
+               n.title             AS title,
+               n.sub_title         AS subTitle,
+               n.content           AS rawContent,
+               n.created_at        AS createdAt,
+               n.icon              AS icon,
+               n.link_url          AS linkUrl,
+               n.view_count        AS viewCount,
+               u.user_name         AS userName
+        FROM erp_center_notice n
+                 JOIN erp_user u ON n.user_code = u.user_code
+        WHERE n.center_code = #{centerCode}
+          AND n.id = #{id}
+        ORDER BY n.created_at DESC;
+
+    </select>
 
 
 </mapper>

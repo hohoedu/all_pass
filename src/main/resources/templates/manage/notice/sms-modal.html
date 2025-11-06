@@ -17,7 +17,6 @@
                                     <col width="90%">
                                 </colgroup>
                                 <tbody>
-
                                 <tr>
                                     <td>제목</td>
                                     <td>
@@ -58,8 +57,19 @@
                                 </tr>
                                 <tr class="app-textarea">
                                     <td>내용</td>
+                                    <td style="padding:0;">
+                                        <textarea id="content" name="content"></textarea>
+                                    </td>
+                                </tr>
+                                <tr class="">
+                                    <td>링크</td>
                                     <td>
-                                        <textarea id="content"  name="content"></textarea>
+                                        <div id="linkRow" style="display: none;">
+                                            <input id="linkUrl" name="content" readonly>
+                                            <button class="save-url-btn" id="removeUrl">
+                                                <img th:src="@{/image/retract-icon.png}" alt="삭제">
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
@@ -68,15 +78,15 @@
                                         <div class="image-row">
                                             <div class="left-wrapper">
                                                 <input type="file" id="imageInput" accept="image/*" style="display: none"/>
-
                                                 <div class="image-name" id="imageNameWrapper" style="display: none;">
                                                     <span id="fileName">image.png</span>
-                                                    <button class="retract-btn" id="removeBtn">
+                                                    <button class="retract-btn" id="removeImage">
                                                         <img th:src="@{/image/retract-icon.png}" alt="삭제">
                                                     </button>
                                                 </div>
-
+                                                <input type="hidden" id="imagePath" name="imagePath">
                                             </div>
+
                                             <button class="submit-btn" id="uploadBtn">등록하기</button>
                                         </div>
                                     </td>
@@ -100,10 +110,19 @@
                                     <button class="filter-btn" data-value="초4">초4</button>
                                     <button class="filter-btn" data-value="초5">초5</button>
                                 </div>
-                                <div class="filter-group" data-group="subject">
-                                    <span class="filter-label">과목별</span>
-                                    <button class="filter-btn fbl" data-value="한자">한자</button>
-                                    <button class="filter-btn fbl" data-value="독서">독서</button>
+                                <div style="display: flex">
+                                    <div class="filter-group" data-group="subject">
+                                        <span class="filter-label">과목별</span>
+                                        <button class="filter-btn fbl" data-value="한자">한자</button>
+                                        <button class="filter-btn fbl" data-value="독서">독서</button>
+                                    </div>
+                                    <div class="filter-group" data-group="class">
+                                        <span class="filter-label" style="margin-left: 10px;">수업별</span>
+                                        <select id="classSelect" class="filter-select">
+                                            <option value="">과목을 선택하세요</option>
+                                            <!-- 모달 열릴 때 옵션이 동적으로 추가됨 -->
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -122,7 +141,7 @@
                                                 <input type="checkbox">
                                             </th>
                                             <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강 과목</th>
                                             <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
                                         </tr>
                                         </thead>
@@ -132,15 +151,7 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
-                                            <td>초1</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초1</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         <tr>
@@ -148,15 +159,7 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
-                                            <td>초1</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초1</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         <tr>
@@ -164,15 +167,7 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
-                                            <td>초1</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초1</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         <tr>
@@ -180,15 +175,7 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
-                                            <td>초1</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초1</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         <tr>
@@ -196,7 +183,7 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
-                                            <td>초1</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         <tr>
@@ -204,7 +191,39 @@
                                                 <input type="checkbox">
                                             </td>
                                             <td>김호일</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초등수재, 새움</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초등수재, 새움</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초등수재, 새움</td>
+                                            <td>초1</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group">
+                                                <input type="checkbox">
+                                            </td>
+                                            <td>김호일</td>
+                                            <td>초등수재, 새움</td>
                                             <td>초1</td>
                                         </tr>
                                         </tbody>
@@ -215,7 +234,7 @@
                     </div>
                 </div>
                 <div class="save-btn-frame" style="margin-top: 30px;">
-                    <button class="common-btn regist-btn" id="save-notice">저장</button>
+                    <button class="common-btn regist-btn" id="saveNotice">저장</button>
                 </div>
             </div>
         </div>

@@ -23,6 +23,9 @@ public class CenterNotice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "center_notice_key", nullable = false)
+    private String centerNoticeKey;
+
     @Column(nullable = false)
     private String title;
 
@@ -39,6 +42,9 @@ public class CenterNotice {
     @Column(name = "icon")
     private String icon;
 
+    @Column(name = "link_url")
+    private String linkUrl;
+
     @Column(name = "view_count")
     private Integer viewCount;
 
@@ -51,14 +57,16 @@ public class CenterNotice {
     private Center center;
 
     @CreationTimestamp
-    private Timestamp createAt;
+    private Timestamp createdAt;
 
     @Builder
-    public CenterNotice(String title, String subTitle, String content, String image, String icon, Integer viewCount, User user, Center center) {
+    public CenterNotice(String centerNoticeKey, String title, String subTitle, String content, String image, String linkUrl, String icon, Integer viewCount, User user, Center center) {
+        this.centerNoticeKey = centerNoticeKey;
         this.title = title;
         this.subTitle = subTitle;
         this.content = content;
         this.image = image;
+        this.linkUrl = linkUrl;
         this.icon = icon;
         this.viewCount = viewCount;
         this.user = user;

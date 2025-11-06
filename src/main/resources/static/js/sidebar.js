@@ -1,20 +1,6 @@
-// header.html load
-// fetch('header.html')
-//   .then(response => response.text())
-//   .then(data => {
-//     document.getElementById('header-load').innerHTML = data;
-//   })
-//   .catch(error => console.error('Error loading header:', error));
-
-// Sidebar load
+// Sidebar
 
 // 사이드바 패치
-
-
-// fetch('/sidebar.html')
-//   .then(response => response.text())
-//   .then(data => {
-//     document.getElementById('sidebar-load').innerHTML = data;
 
 // 무조건 처음에는 닫힌 상태로 시작, localStorage 초기화
 localStorage.removeItem("activeMenu");
