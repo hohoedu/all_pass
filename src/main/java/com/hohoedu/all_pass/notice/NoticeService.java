@@ -1,5 +1,8 @@
 package com.hohoedu.all_pass.notice;
 
+import com.google.type.DateTime;
+import com.hohoedu.all_pass.notice._dto.app.NoticeAppReqDTO;
+import com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
 import com.hohoedu.all_pass.notice.repository.NoticeRepository;
@@ -17,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 
 import static com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO.CenterNoticeDTO.sanitizeHtml;
 
@@ -54,5 +58,37 @@ public class NoticeService {
         NoticeRespDTO.CenterNoticeDetailDTO notice = noticeRepository.findCenterNoticeByNoticeId(user.getCenterCode(), id);
         notice.setCleanContent(sanitizeHtml(notice.getRawContent()));
         return notice;
+    }
+
+    // ============================== app ============================== //
+
+    public List<NoticeAppRespDTO.NoticeListRespDTO> findAppNoticeList(NoticeAppReqDTO.NoticeAppListReqDTO reqDTO) {
+        String studentId = reqDTO.getStudentId();
+        Integer count = reqDTO.getCount();
+        DateTimeFormatter oldFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        DateTimeFormatter newFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd a h:mm:ss", Locale.KOREAN);
+
+        List<NoticeAppRespDTO.NoticeListRespDTO> noticeList = noticeRepository.findAppNoticeList(studentId, count);
+
+        noticeList.stream().peek(n -> {
+            String sdate = n.getSdate();
+
+            if (sdate != null) {
+                LocalDateTime date = LocalDateTime.parse(sdate, oldFormatter);
+                n.setSdate(date.format(newFormatter)
+                );
+            }
+        }).toList();
+
+        return noticeList;
+    }
+
+    public NoticeAppRespDTO.NoticeDetailRespDTO findAppNoticeDetail(Integer id) {
+
+        NoticeAppRespDTO.NoticeDetailRespDTO noticeDetail = noticeRepository.findAppNoticeDetail(id);
+        System.out.println(noticeDetail);
+
+        return noticeDetail;
+
     }
 }

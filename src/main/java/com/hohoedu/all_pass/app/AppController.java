@@ -3,6 +3,9 @@ package com.hohoedu.all_pass.app;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
+import com.hohoedu.all_pass.notice.NoticeService;
+import com.hohoedu.all_pass.notice._dto.app.NoticeAppReqDTO;
+import com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/app")
@@ -28,6 +32,7 @@ public class AppController {
     private final StudentService studentService;
     private final ClassService classService;
     private final PaymentService paymentService;
+    private final NoticeService noticeService;
 
     @PostMapping("/login")
     public ResponseEntity<?> AppLogin(@RequestBody StudentAppReqDTO.LoginReqDTO reqDTO) {
@@ -64,14 +69,12 @@ public class AppController {
     @PostMapping("/course_book_main")
     public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListReqDTO reqDTO) {
 
-        System.out.println("hello!! book_main");
-
         return ResponseEntity.ok(AppApiUtils.successOne(null));
     }
 
     @PostMapping("/book_list")
     public ResponseEntity<?> AppBookList(@RequestBody ClassAppReqDTO.ClinicBookReqDTO reqDTO) {
-        System.out.println("hello!! book list");
+
         return ResponseEntity.ok(AppApiUtils.successList(null));
     }
 
@@ -111,5 +114,17 @@ public class AppController {
 
 
         return ResponseEntity.ok(AppApiUtils.successList(dataList));
+    }
+
+    @PostMapping("/notice_list")
+    public ResponseEntity<?> AppNoticeList(@RequestBody NoticeAppReqDTO.NoticeAppListReqDTO reqDTO) {
+        List<NoticeAppRespDTO.NoticeListRespDTO> noticeList = noticeService.findAppNoticeList(reqDTO);
+        return ResponseEntity.ok(AppApiUtils.successList(noticeList));
+    }
+
+    @PostMapping("notice_view")
+    public ResponseEntity<?> AppNoticeView(@RequestBody Map<String, Integer> idx) {
+        NoticeAppRespDTO.NoticeDetailRespDTO noticeDetail = noticeService.findAppNoticeDetail(idx.get("idx"));
+        return ResponseEntity.ok(AppApiUtils.successOne(noticeDetail));
     }
 }
