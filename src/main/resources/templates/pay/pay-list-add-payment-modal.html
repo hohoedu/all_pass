@@ -18,65 +18,75 @@
                         <div class="mt">
                             <div class="table-frame pay-add-t">
                                 <table class="basic-table pay-add-t stripe yh">
+                                    <colgroup>
+                                        <col width="30%">
+                                        <col width="30%">
+                                        <col width="40%">
+                                    </colgroup>
                                     <thead>
                                     <tr>
-                                        <th></th>
                                         <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
                                     </tr>
                                     </thead>
                                     <tbody id="" class="stripe">
-                                    <colgroup>
-                                        <col width="10">
-                                        <col width="30%">
-                                        <col width="30%">
-                                        <col width="30%">
-                                    </colgroup>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
                                     </tr>
                                     <tr>
-                                        <td>o</td>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
+                                        <td>김호이</td>
+                                        <td>초2</td>
+                                        <td>김하늘</td>
+                                    </tr>
+                                    <tr>
                                         <td>김호이</td>
                                         <td>초2</td>
                                         <td>김하늘</td>
@@ -101,33 +111,52 @@
                             <td>학생명</td>
                             <td>김호일</td>
                             <td>결제일</td>
-                            <td>2025-07-11  13:58</td>
+                            <td>2025-07-11 13:58</td>
                         </tr>
                         </tbody>
                     </table>
                     <!-- 청구 종류 -->
-                    <table class="member-status-table pay-edu-table bt mbs">
+                    <table class="manual-payment-table pay-edu-table">
                         <colgroup>
                             <col width="20%">
-                            <col width="80%">
+                            <col width="40%">
+                            <col width="40%">
                         </colgroup>
                         <tbody>
                         <tr>
-                            <td>청구 종류</td>
-                            <td>
-                                <div class="kind-charge">
-                                    <div class="checkbox-group round mr">
-                                        <input type="checkbox" name="eduFee" checked>교육비
-                                    </div>
-                                    <div class="checkbox-group round mr">
-                                        <input type="checkbox" name="bookFee">교재비
-                                    </div>
+                            <td class="label-cell">청구 종류</td>
+                            <td class="content-cell white-bg">
+                                <div class="checkbox-group round">
+                                    <input type="checkbox" name="eduFee" checked> 교육비
+                                </div>
+                            </td>
+                            <td class="content-cell white-bg">
+                                <div class="checkbox-group round">
+                                    <input type="checkbox" name="bookFee"> 교재비
                                 </div>
                             </td>
                         </tr>
+
                         <tr>
-                            <td>결제 방법 및 금액</td>
-                            <td>
+                            <td class="label-cell">결제 방법 및 금액</td>
+                            <td class="content-cell white-bg">
+                                <div class="pay-input-group">
+                                    <div class="pay-row">
+                                        <span class="pay-label color-green">오프라인 카드</span>
+                                        <input type="number" class="pay-input border-green">
+                                    </div>
+                                    <div class="pay-row">
+                                        <span class="pay-label color-blue2">현금</span>
+                                        <input type="number" class="pay-input border-blue">
+                                    </div>
+                                    <div class="pay-row">
+                                        <span class="pay-label color-olive">계좌이체</span>
+                                        <input type="number" class="pay-input border-olive">
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="content-cell white-bg">
                                 <div class="pay-input-group">
                                     <div class="pay-row">
                                         <span class="pay-label color-green">오프라인 카드</span>
@@ -146,12 +175,14 @@
                         </tr>
                         </tbody>
                     </table>
-                    <a href="" class="charge-add"><img th:src="@{/image/add.png}" alt=""> 청구내역 추가</a>
+                    <button type="button" class="charge-add">
+                        <img th:src="@{/image/add.png}" alt="버튼"> 선 결제 추가
+                    </button>
                 </div>
             </div>
         </div>
         <div class="save-btn-frame" style="padding: 20px;">
-            <div class="common-btn pay-issue">발행</div>
+            <div class="common-btn pay-issue" id="issue-btn">발행</div>
         </div>
     </div>
 </div>

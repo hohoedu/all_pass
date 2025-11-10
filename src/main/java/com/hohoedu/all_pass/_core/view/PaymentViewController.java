@@ -42,6 +42,10 @@ public class PaymentViewController {
 
     @GetMapping("/pay-list")
     public String getPayListPage(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
         return "pay/pay-list";
     }
 

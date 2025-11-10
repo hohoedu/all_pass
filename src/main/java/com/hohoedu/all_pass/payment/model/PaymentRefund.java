@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.payment.model;
 
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
@@ -14,50 +15,80 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_payment_refund") // 결제 환불 테이블
+@Table(name = "erp_payment_refund", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_refund_key", columnNames = "refund_key")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentRefund {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // PK
+    private Integer id;
 
-    @Column(name = "refund_amount")
-    private String refundAmount; // 환불 금액
+    @Column(name = "refund_key", length = 30, nullable = false, unique = true)
+    private String refundKey;
 
-    @Column(name = "refund_reason")
-    private String refundReason; // 환불 사유
+    @Column(nullable = false)
+    private String amount;
 
-    @Column(name = "refund_date")
-    private String refundDate; // 환불일자
+    @Column(columnDefinition = "TEXT")
+    private String reason;
 
-    @Column(name = "refund_method")
-    private String refundMethod; // 환불수단 (cash, transfer, card_cancel 등)
+    @Column(length = 20, nullable = false)
+    private String method;
+
+    @Column(length = 20, nullable = false)
+    private String status;
+
+    @Column(name = "request_date")
+    private String requestDate;
+
+    @Column(name = "processed_date")
+    private String processedDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String note;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_code", referencedColumnName = "user_code") // 환불 처리자 FK
-    private User user;
+    @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
+    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "student_id") // 환불 대상 학생 FK
+    @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id", referencedColumnName = "bill_id") // 청구서 FK
-    private Payment payment;
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
+    private Center center;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code")
+    private User user;
 
     @CreationTimestamp
-    private Timestamp createdAt; // 생성일시
+    private Timestamp createdAt;
+
+    @PrePersist
+    public void generateRefundKey() {
+        if (this.refundKey == null && this.center != null) {
+            this.refundKey = com.hohoedu.all_pass._core.utils.PaymentKeyGenerator.generate(center.getCenterCode());
+        }
+    }
 
     @Builder
-    public PaymentRefund(String refundAmount, String refundReason, String refundDate, String refundMethod, User user, Student student, Payment payment, Timestamp createdAt) {
-        this.refundAmount = refundAmount;
-        this.refundReason = refundReason;
-        this.refundDate = refundDate;
-        this.refundMethod = refundMethod;
-        this.user = user;
-        this.student = student;
+    public PaymentRefund(String amount, String reason, String method, String status,
+                         String requestDate, String processedDate, String note,
+                         Payment payment, Student student, Center center, User user) {
+        this.amount = amount;
+        this.reason = reason;
+        this.method = method;
+        this.status = status;
+        this.requestDate = requestDate;
+        this.processedDate = processedDate;
+        this.note = note;
         this.payment = payment;
-        this.createdAt = createdAt;
+        this.student = student;
+        this.center = center;
+        this.user = user;
     }
 }

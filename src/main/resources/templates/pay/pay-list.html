@@ -12,7 +12,7 @@
     <script th:src="@{/js/custom.js}"></script>
     <script th:src="@{/js/pay/pay_list.js}"></script>
     <!-- Html menu Load -->
-    <script th:src="@{/js/loadHTML.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
     <title>월별 결제 내역</title>
 </head>
 <body>
@@ -36,9 +36,9 @@
                     </div>
                     <div class="month-header">
                         <div class="month-title month-today">
-                            <span class="current-month">2025년 6월</span>
+                            <span class="current-month"></span>
                             <div style="position: relative;">
-                                <input type="date" class="hidden-date"/>
+                                <input type="month" class="hidden-date"/>
                                 <button type="button" class="icon-btn calendar-open">
                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                 </button>

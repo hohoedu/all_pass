@@ -935,7 +935,7 @@ table .checkbox-group {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 60%;
+    max-width: 80%;
 }
 
 .pay-row {
@@ -992,6 +992,7 @@ table .checkbox-group {
     display: flex;
     align-items: center;
     margin-top: 20px;
+    background: transparent;
     color: #989899;
     font-weight: 500;
 }
@@ -1023,6 +1024,51 @@ table .checkbox-group {
 .mbs {
     margin-bottom: 20px;
 }
+
+.manual-payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border-top: 2px solid #5a6284;
+    border-bottom: 2px solid #5a6284;
+    border-radius: 8px;
+}
+
+.manual-payment-table .label-cell {
+    background-color: #f5f5f5;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+}
+
+.manual-payment-table .content-cell {
+    background-color: #fff;
+    padding: 16px;
+    vertical-align: top;
+}
+
+.manual-payment-table tr td:nth-child(2) {
+    border-right: 1px dashed #ddd;
+}
+
+.manual-payment-table tr + tr td {
+    border-top: 1px dashed #bbb;
+}
+
+.manual-payment-table .pay-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.manual-payment-table .pay-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 
 /* ======================= login page ======================= */
 .login-container {

@@ -21,25 +21,20 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    // 결제선생 콜백
     @PostMapping("/callback")
     public ResponseEntity<?> callback(@RequestBody PaymentReqDTO.PayCallbackDTO dto) {
-        System.out.println("✅ 결제선생 콜백 도착");
-
-        paymentService.insertPaymentCallback(dto);
 
         return ResponseEntity.ok(ApiUtils.success("성공"));
     }
 
-
+    // 데이터 필터링
     @PostMapping("/students")
     public ResponseEntity<?> getStudents(HttpSession session, @RequestBody PaymentReqDTO.StudentsByMonthDTO paymentReqDTO) {
 
         String year = paymentReqDTO.getYear();
         String month = paymentReqDTO.getMonth();
         String userCode = paymentReqDTO.getUserCode();
-        System.out.println("year : " + year);
-        System.out.println("month : " + month);
-        System.out.println("userCode : " + userCode);
 
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode);
 
@@ -59,43 +54,6 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
-    @PostMapping("/history/insert")
-    public ResponseEntity<?> updatePayment(@RequestBody PaymentReqDTO.PaymentDTO paymentReqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-
-        paymentService.insertPayment(paymentReqDTO, user);
-
-        return ResponseEntity.ok(ApiUtils.success(null));
-    }
-
-    @PostMapping("/edu-personal")
-    public ResponseEntity<?> getPersonalModal(@RequestBody Map<String, String> studentId) {
-
-        List<PaymentRespDTO.PaymentDetailDTO> response = paymentService.findPaymentByStudentId(studentId.get("studentId"));
-
-        return ResponseEntity.ok(ApiUtils.success(response));
-    }
-
-    @PostMapping("/bill-id")
-    public ResponseEntity<?> getBillId(@RequestBody PaymentReqDTO.BillIdSerchDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-
-        List<PaymentRespDTO.PaymentBillIdDTO> response = paymentService.findPaymentBillIdByStudentId(reqDTO);
-
-        return ResponseEntity.ok(ApiUtils.success(response));
-    }
 
 
 }
