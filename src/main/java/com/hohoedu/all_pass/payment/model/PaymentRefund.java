@@ -29,7 +29,7 @@ public class PaymentRefund {
     private String refundKey;
 
     @Column(nullable = false)
-    private String amount;
+    private Integer amount;
 
     @Column(columnDefinition = "TEXT")
     private String reason;
@@ -68,17 +68,11 @@ public class PaymentRefund {
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @PrePersist
-    public void generateRefundKey() {
-        if (this.refundKey == null && this.center != null) {
-            this.refundKey = com.hohoedu.all_pass._core.utils.PaymentKeyGenerator.generate(center.getCenterCode());
-        }
-    }
-
     @Builder
-    public PaymentRefund(String amount, String reason, String method, String status,
+    public PaymentRefund(String refundKey, Integer amount, String reason, String method, String status,
                          String requestDate, String processedDate, String note,
                          Payment payment, Student student, Center center, User user) {
+        this.refundKey = refundKey;
         this.amount = amount;
         this.reason = reason;
         this.method = method;

@@ -1,6 +1,6 @@
+package com.hohoedu.all_pass.payment.model;
 
 import com.hohoedu.all_pass.payment.Payment;
-import com.hohoedu.all_pass.payment.model.PaymentBill;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,28 +21,32 @@ public class PaymentCallback {
     private Integer id;
 
     @Column(name = "bill_id", nullable = false, length = 50)
-    private String billId; // 결제선생 bill_id (외부 청구서 ID)
+    private String billId;
 
     @Column(name = "appr_state", nullable = false)
-    private String apprState; // 결제 상태 (1: 승인완료, 9: 취소)
+    private String apprState;
 
     @Column(name = "appr_date")
-    private String apprDate; // 승인 일자 (yyyy-MM-dd HH:mm)
+    private String apprDate;
 
     @Column(name = "appr_price")
-    private String apprPrice; // 결제 금액
+    private String apprPrice;
 
     @Column(name = "appr_pay_type")
-    private String apprPayType; // 결제 수단 (card, bank 등)
+    private String apprPayType;
 
     @Column(name = "appr_card_type")
-    private String apprCardType; // 카드 종류 (VISA, BC 등)
+    private String apprCardType;
 
     @Column(name = "appr_issuer")
-    private String apprIssuer; // 카드사
+    private String apprIssuer;
 
     @Column(name = "appr_num")
-    private String apprNum; // 승인번호
+    private String apprNum;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
+    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bill_id", referencedColumnName = "bill_id", insertable = false, updatable = false)
@@ -53,7 +57,8 @@ public class PaymentCallback {
 
     @Builder
     public PaymentCallback(String billId, String apprState, String apprDate, String apprPrice,
-                           String apprPayType, String apprCardType, String apprIssuer, String apprNum) {
+                           String apprPayType, String apprCardType, String apprIssuer,
+                           String apprNum, Payment payment) {
         this.billId = billId;
         this.apprState = apprState;
         this.apprDate = apprDate;
@@ -62,5 +67,6 @@ public class PaymentCallback {
         this.apprCardType = apprCardType;
         this.apprIssuer = apprIssuer;
         this.apprNum = apprNum;
+        this.payment = payment;
     }
 }

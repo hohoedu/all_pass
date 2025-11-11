@@ -57,8 +57,9 @@ public class ClassReqDTO {
             private String studentId;
             private String classKey;
             private String unitKey;
+            private String yy;
+            private String mm;
         }
-
     }
 
     @Data

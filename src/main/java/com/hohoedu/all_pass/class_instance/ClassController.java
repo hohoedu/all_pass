@@ -9,6 +9,7 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -44,6 +45,7 @@ public class ClassController {
     private final DateConfig dateConfig;
     private final ClassService classService;
     private final StudentService studentService;
+    private final PaymentService paymentService;
 
     @GetMapping("/classCodes")
     public ResponseEntity<?> createClass() {
@@ -95,18 +97,56 @@ public class ClassController {
                         .build();
             }
 
-            boolean isSuccess = reqDTO.getAssignments().stream()
-                    .allMatch(dto -> classService.addStudent(dto, user.getCenterCode()));
+            for (ClassReqDTO.AddStudentDTO dto : reqDTO.getAssignments()) {
 
-            if (isSuccess) {
-                return ResponseEntity.ok(ApiUtils.success(true));
-            } else {
-                return ResponseEntity.ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
+                boolean success = classService.addStudent(dto, user.getUserCode(), user.getCenterCode());
+                if (!success) {
+                    return ResponseEntity.ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
+                }
+
+                ClassRespDTO.ClassInfoDTO classInfo = classService.findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), user.getCenterCode());
+                if (classInfo != null) {
+                    studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
+                }
+                paymentService.createPayment(dto, classInfo, user.getUserCode(), user.getCenterCode());
+
+
             }
+
+            return ResponseEntity.ok(ApiUtils.success(true));
         } catch (DataIntegrityViolationException ex) {
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }
+
+    @PostMapping("/comclass/students")
+    public ResponseEntity<?> getComClassStudent(@RequestBody Map<String, String> request, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<ClassRespDTO.ComClassStudentDTO> response = classService.findComClassStudentsByTimeTableKey(request.get("timeTableKey"), user.getUserCode());
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/comclass/updateAssign")
+    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(response + "건"));
+    }
+
 
     @PostMapping("/delete/student")
     public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
@@ -148,35 +188,7 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
-    @PostMapping("/comclass/students")
-    public ResponseEntity<?> getComClassStudent(@RequestBody Map<String, String> request, HttpSession session) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-        List<ClassRespDTO.ComClassStudentDTO> response = classService.findComClassStudentsByTimeTableKey(request.get("timeTableKey"), user.getUserCode());
-
-        return ResponseEntity.ok(ApiUtils.success(response));
-    }
-
-    @PostMapping("/comclass/updateAssign")
-    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-
-        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
-
-
-        return ResponseEntity.ok(ApiUtils.success(response + "건"));
-
-    }
 
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/label")

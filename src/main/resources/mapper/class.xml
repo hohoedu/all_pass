@@ -44,11 +44,24 @@
         values (#{studentId}, #{timeTableKey}, #{weekNo});
     </insert>
 
-    <select id="findclassInfoByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
-        SELECT c.class_type, c.class_key, t.center_code, t.user_code
+    <select id="findClassInfoByTimeTableKeyAndStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
+        SELECT t.time_table_key AS timeTableKey,
+               c.class_type     AS classType,
+               c.class_key      AS classKey,
+               t.center_code    AS centerCode,
+               t.user_code      AS userCode,
+               cf.fee           AS classFee
         FROM erp_time_table t
-                 JOIN erp_class_code c ON t.class_key = c.class_key
-        where time_table_key = #{timeTableKey}
+                 JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 LEFT JOIN erp_class_code c ON c.class_key =
+                                          CASE
+                                              WHEN t.class_key = 'COM' THEN ta.class_key
+                                              ELSE t.class_key
+                                              END
+                LEFT JOIN erp_class_fee_map cf ON c.class_key = cf.class_key
+        where t.time_table_key = #{timeTableKey}
+          AND ta.student_id = #{studentId}
+        AND cf.center_code = #{centerCode}
     </select>
 
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">

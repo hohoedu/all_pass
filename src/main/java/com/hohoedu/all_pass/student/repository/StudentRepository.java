@@ -52,18 +52,24 @@ public interface StudentRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    int updateStudentClass(StudentClass studentClass);
+    int existsStudentClass(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
 
-    public int insertStudentClass(StudentClass studentClass);
+    int insertStudentClass(StudentClass studentClass);
+
+    int updateStudentClass(StudentClass studentClass);
 
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 
-    public List<StudentInOutDTO> selectTransferStudents(
+    List<StudentInOutDTO> selectTransferStudents(
             @Param("centerCode") String centerCode,
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    public List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);
+    List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);
 
     public void updateTransfer(
             @Param("studentId") String studentId,

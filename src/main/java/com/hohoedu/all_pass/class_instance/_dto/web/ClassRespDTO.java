@@ -60,8 +60,10 @@ public class ClassRespDTO {
 
     @Data
     public static class ClassInfoDTO {
+        private String timeTableKey;
         private String classType;
         private String classKey;
+        private Integer classFee;
         private String centerCode;
         private String userCode;
     }

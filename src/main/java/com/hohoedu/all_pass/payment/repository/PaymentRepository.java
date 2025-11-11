@@ -1,9 +1,11 @@
 package com.hohoedu.all_pass.payment.repository;
 
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
+import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,4 +32,16 @@ public interface PaymentRepository {
             @Param("studentId") String studentId,
             @Param("count") String count);
 
+    int createPayment(Payment payment);
+
+    int createPaymentDetail(PaymentDetail paymentDetail);
+
+    String findLatestPaymentKeyByStudent(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    void updateAmount(
+            @Param("paymentKey") String paymentKey,
+            @Param("amount") Integer amount);
 }

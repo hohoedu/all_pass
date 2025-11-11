@@ -63,11 +63,28 @@
                     </span>
                     <button class="input-button">발송하기</button>
                 </div>
-                <button class="evaluation-button">진단평가</button>
+                <button class="evaluation-button" id="assessment-btn" th:attr="data-center-code=${session.user.centerCode}">진단평가</button>
             </div>
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.getElementById("assessment-btn");
+        const centerCode = btn.dataset.centerCode;
+        const url = `https://highreader.co.kr/level-test/consult-test.html?center_code=${centerCode}`;
+
+        btn.addEventListener("click", async () => {
+            try {
+                await fetch(url, {method: "GET", mode: "no-cors"});
+                window.location.href = url;
+            } catch (err) {
+                console.error("이동 중 오류:", err);
+                window.location.href = url;
+            }
+        });
+    });
+</script>
 </body>
 
 </html>

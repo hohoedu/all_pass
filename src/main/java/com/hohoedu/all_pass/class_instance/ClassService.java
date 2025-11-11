@@ -8,6 +8,9 @@ import java.util.stream.Collectors;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
+import com.hohoedu.all_pass.payment.Payment;
+import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.StudentClass;
@@ -53,6 +56,7 @@ public class ClassService {
     private final StudentService studentService;
     private final StudentRepository studentRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
@@ -193,7 +197,7 @@ public class ClassService {
     }
 
     // 학생 수업 등록
-    public boolean addStudent(AddStudentDTO dto, String centerCode) {
+    public boolean addStudent(AddStudentDTO dto, String userCode, String centerCode) {
         try {
 
 
@@ -202,21 +206,22 @@ public class ClassService {
             if (count >= 8) {
                 return false;
             }
-            System.out.println("============year========="+dto.getYy());
-            System.out.println("============month========"+dto.getMm());
             classRepository.addStudent(dto);
 
             classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
 
             classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
 
-            ClassRespDTO.ClassInfoDTO classInfo = classRepository.findclassInfoByTimeTableKey(dto.getTimeTableKey());
-            studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
 
         } catch (Exception e) {
             System.out.println("=====================" + e.getMessage() + "====================================");
         }
         return true;
+    }
+
+    public ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(String timeTableKey, String studentId, String centerCode) {
+        ClassRespDTO.ClassInfoDTO classInfo = classRepository.findClassInfoByTimeTableKeyAndStudentId(timeTableKey, studentId, centerCode);
+        return classInfo;
     }
 
     public void deleteStudent(String timeTableKey, String studentId) {
@@ -273,21 +278,50 @@ public class ClassService {
             );
             Integer hanMaterialFee = 20000;
             Integer hanFee = paymentRepository.findFeeByClassKey(info.getClassKey(), centerCode);
+
+            boolean existsClass = studentRepository.existsStudentClass(info.getStudentId(), info.getYy(), info.getMm()) > 0;
+
             StudentClass studentClass = StudentClass.builder()
                     .student(Student.builder().studentId(info.getStudentId()).build())
+                    .yy(info.getYy())
+                    .mm(info.getMm())
                     .hanClassCode(ClassCode.builder().classKey(info.getClassKey()).build())
                     .hanUser(User.builder().userCode(userCode).build())
                     .hanFee(hanFee)
                     .hanMaterialFee(hanMaterialFee)
                     .build();
 
+            if (!existsClass) {
+                studentRepository.insertStudentClass(studentClass);
+            } else {
+                studentRepository.updateStudentClass(studentClass);
+            }
 
-            studentRepository.updateStudentClass(studentClass);
+            String paymentKey = paymentRepository.findLatestPaymentKeyByStudent(info.getStudentId(), info.getYy(), info.getMm());
 
+            if (paymentKey != null) {
+                PaymentDetail eduDetail = PaymentDetail.builder()
+                        .payment(Payment.builder().paymentKey(paymentKey).build())
+                        .amount(hanFee)
+                        .classType("1") // 한자 수업
+                        .itemType("교육비")
+                        .build();
+                paymentRepository.createPaymentDetail(eduDetail);
 
+                PaymentDetail bookDetail = PaymentDetail.builder()
+                        .payment(Payment.builder().paymentKey(paymentKey).build())
+                        .amount(hanMaterialFee)
+                        .classType("1")
+                        .itemType("교재비")
+                        .build();
+                paymentRepository.createPaymentDetail(bookDetail);
+
+                paymentRepository.updateAmount(paymentKey, hanFee + hanMaterialFee);
+            }
             if (updated > 0) {
                 result += updated;
             }
+
         }
 
         return result;

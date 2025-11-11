@@ -1,8 +1,6 @@
 package com.hohoedu.all_pass.payment.model;
 
-import com.hohoedu.all_pass._core.utils.PaymentKeyGenerator;
 import com.hohoedu.all_pass.center.Center;
-import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
@@ -35,10 +33,10 @@ public class PaymentPreset {
     private String targetMonth;
 
     @Column(name = "total_amount", nullable = false)
-    private String totalAmount;
+    private Integer totalAmount;
 
     @Column(name = "monthly_amount", nullable = false)
-    private String monthlyAmount;
+    private Integer monthlyAmount;
 
     @Column(name = "months_count", nullable = false)
     private int monthsCount;
@@ -73,13 +71,6 @@ public class PaymentPreset {
     @CreationTimestamp
     private Timestamp createdAt;
 
-    @PrePersist
-    public void generatePresetKey() {
-        if (this.presetKey == null && this.center != null) {
-            this.presetKey = PaymentKeyGenerator.generate(center.getCenterCode());
-        }
-    }
-
     public void useOneMonth() {
         this.usedMonths++;
         if (this.usedMonths >= this.monthsCount) {
@@ -91,17 +82,17 @@ public class PaymentPreset {
 
 
     @Builder
-    public PaymentPreset(String targetYear, String targetMonth, String totalAmount, String monthlyAmount,
-                         int monthsCount, String paidDate, String method, String status, String note,
-                         Student student, User user, Center center) {
+    public PaymentPreset(String presetKey, String targetYear, String targetMonth, Integer totalAmount, Integer monthlyAmount, int monthsCount, int usedMonths, String method, String status, String paidDate, String note, Student student, User user, Center center) {
+        this.presetKey = presetKey;
         this.targetYear = targetYear;
         this.targetMonth = targetMonth;
         this.totalAmount = totalAmount;
         this.monthlyAmount = monthlyAmount;
         this.monthsCount = monthsCount;
-        this.paidDate = paidDate;
+        this.usedMonths = usedMonths;
         this.method = method;
         this.status = status;
+        this.paidDate = paidDate;
         this.note = note;
         this.student = student;
         this.user = user;

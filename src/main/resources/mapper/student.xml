@@ -16,8 +16,7 @@
     </insert>
 
     <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
-        SELECT
-               s.*,
+        SELECT s.*,
                g.*,
                reg.registeredClassTypes as classType
         FROM erp_student s
@@ -90,12 +89,12 @@
                sc.status_name         AS statusName
         FROM ERP_STUDENT s
                  LEFT JOIN ERP_GRADE_CODE g ON s.grade_key = g.grade_key
-                 LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id AND stuc.yy = FORMAT(GETDATE(), 'yyyy') AND stuc.mm = FORMAT(GETDATE(),'MM')
-            LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
-            LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
-            LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
-            LEFT JOIN ERP_USER hu ON stuc.han_user_code = hu.user_code
-            LEFT JOIN ERP_USER bu ON stuc.book_user_code = bu.user_code
+                 LEFT JOIN ERP_STUDENT_CLASS stuc ON s.student_id = stuc.student_id AND stuc.yy = FORMAT(GETDATE(), 'yyyy') AND stuc.mm = FORMAT(GETDATE(), 'MM')
+                 LEFT JOIN ERP_CENTER c ON s.center_code = c.center_code
+                 LEFT JOIN ERP_PARENT p ON p.student_id = s.student_id
+                 LEFT JOIN ERP_STATUS_CODE sc ON sc.status_key = s.status_key
+                 LEFT JOIN ERP_USER hu ON stuc.han_user_code = hu.user_code
+                 LEFT JOIN ERP_USER bu ON stuc.book_user_code = bu.user_code
 
 -- APPLY로 class_name 가져오기
             OUTER APPLY (
@@ -145,7 +144,7 @@
         WHERE ta2.student_id = s.student_id
         AND cc2.class_type = 1
         AND t2.yy = FORMAT(GETDATE(),'yyyy')
-          AND t2.mm = FORMAT(GETDATE(),'MM')
+        AND t2.mm = FORMAT(GETDATE(),'MM')
         <if test="userCode != null and userCode != 'all'">
             AND t2.user_code = #{userCode}
         </if>
@@ -299,6 +298,15 @@
         WHERE student_id = #{student.studentId}
     </update>
 
+    <!--  학생 수강정보 여부 확인  -->
+    <select id="existsStudentClass" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_student_class
+        WHERE student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <!-- 학생 수강정보 입력 -->
     <insert id="insertStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
         INSERT INTO erp_student_class
@@ -307,6 +315,7 @@
         VALUES (#{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate}, #{hanFee}, #{hanMaterialFee},
                 #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{bookFee}, #{bookMaterialFee}, #{yy}, #{mm}, SYSDATETIME())
     </insert>
+
 
     <!-- 전입/전출 화면 전체 학생 조회 -->
     <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">

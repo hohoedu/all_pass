@@ -166,7 +166,6 @@ public class StudentService {
     }
 
     public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
-
         Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
         Integer materialFee = 20000;
 
@@ -175,7 +174,6 @@ public class StudentService {
                 .yy(yy)
                 .mm(mm);
 
-        if (!"COM".equals(dto.getClassKey())) {
             if ("1".equals(dto.getClassType())) {
                 builder
                         .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
@@ -190,8 +188,6 @@ public class StudentService {
                         .bookFee(fee)
                         .bookMaterialFee(materialFee);
             }
-        }
-
 
         StudentClass studentClass = builder.build();
 
@@ -267,25 +263,6 @@ public class StudentService {
         }
 
     }
-
-//    public void insertTransferHistory(StudentWebReqDTO.StudentTransferDTO dto) {
-//        try {
-//            for (String studentId : dto.getStudents()) {
-//                StudentTransferHistory history = StudentTransferHistory.builder()
-//                        .student(Student.builder().studentId("hello").build())
-//                        .fromUser(User.builder().userCode("DAE001cos").build())
-//                        .toUser(User.builder().userCode(dto.getUserCode()).build())
-//                        .classType(dto.getSelectedHan())
-//                        .transferReason(dto.getTransferReason())
-//                        .moveAt(dto.getMoveAt())
-//                        .build();
-//                studentRepository.insertTransferHistory(history);
-//            }
-//        } catch (Exception e) {
-//
-//        }
-//
-//    }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);

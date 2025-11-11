@@ -594,7 +594,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
                 const data = await res.json();
 
+                const currentMonthText = document.getElementById("currentMonth")?.textContent?.trim() || "";
+                let yy = "";
+                let mm = "";
+                const match = currentMonthText.match(/(\d{4})년\s*(\d{1,2})월/);
+                if (match) {
+                    yy = match[1];
+                    mm = match[2].padStart(2, "0");
+                }
+
+                // ✅ 모달에 값 저장
                 modal.dataset.timeTableKey = timeTableKey;
+                modal.dataset.yy = yy;
+                modal.dataset.mm = mm;
+
+                console.log("📅 currentMonth에서 가져온 연월:", yy, mm);
+
                 renderComclassTable(data.response, tbody);
                 modal.style.display = "flex";
 
@@ -670,7 +685,9 @@ document.addEventListener("DOMContentLoaded", () => {
             updateList.push({
                 studentId: studentId || null,
                 classKey: classKey || null,
-                unitKey: unitKey || null
+                unitKey: unitKey || null,
+                yy: modal.dataset.yy,
+                mm: modal.dataset.mm
             });
         });
 

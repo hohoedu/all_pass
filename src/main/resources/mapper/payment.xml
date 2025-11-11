@@ -3,6 +3,31 @@
 
 <mapper namespace="com.hohoedu.all_pass.payment.repository.PaymentRepository">
 
+    <insert id="createPayment">
+        INSERT INTO erp_payment (payment_key, amount, method, status, yy, mm, student_id, user_code, center_code, created_at)
+        VALUES (#{paymentKey}, #{amount}, #{method}, #{status}, #{yy}, #{mm}, #{student.studentId}, #{user.userCode}, #{center.centerCode}, SYSDATETIME())
+    </insert>
+
+    <insert id="createPaymentDetail">
+        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, created_at)
+        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, SYSDATETIME());
+    </insert>
+
+    <select id="findLatestPaymentKeyByStudent" resultType="string">
+        SELECT TOP 1 payment_key
+        FROM erp_payment
+        WHERE student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+        ORDER BY created_at DESC
+    </select>
+    
+    <update id="updateAmount">
+        UPDATE erp_payment
+        SET amount = #{amount}
+        WHERE payment_key = #{paymentKey}
+    </update>
+
     <select id="findByAssignStudents" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
         SELECT
         s.student_id AS studentId,
@@ -91,41 +116,41 @@
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
-<!--    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">-->
-<!--        SELECT TOP ${count} *-->
-<!--        FROM (select p.bill_id           AS billId,-->
-<!--                     (p.yy + '-' + p.mm) AS inym,-->
-<!--                     'S'                 AS gb,-->
-<!--                     p.approved_date     AS indate,-->
-<!--                     p.han_amount        AS inmoney,-->
-<!--                     CASE-->
-<!--                         WHEN p.product_name = '교육비' THEN 'S'-->
-<!--                         WHEN p.product_name = '교재비' THEN 'B'-->
-<!--                         ELSE null-->
-<!--                         END             AS gubun,-->
-<!--                     p.created_at-->
-<!--              from erp_payment p-->
-<!--              WHERE p.han_amount IS NOT NULL-->
-<!--                AND p.student_id = #{studentId}-->
-<!--                AND P.approved_date IS NOT NULL-->
+    <!--    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">-->
+    <!--        SELECT TOP ${count} *-->
+    <!--        FROM (select p.bill_id           AS billId,-->
+    <!--                     (p.yy + '-' + p.mm) AS inym,-->
+    <!--                     'S'                 AS gb,-->
+    <!--                     p.approved_date     AS indate,-->
+    <!--                     p.han_amount        AS inmoney,-->
+    <!--                     CASE-->
+    <!--                         WHEN p.product_name = '교육비' THEN 'S'-->
+    <!--                         WHEN p.product_name = '교재비' THEN 'B'-->
+    <!--                         ELSE null-->
+    <!--                         END             AS gubun,-->
+    <!--                     p.created_at-->
+    <!--              from erp_payment p-->
+    <!--              WHERE p.han_amount IS NOT NULL-->
+    <!--                AND p.student_id = #{studentId}-->
+    <!--                AND P.approved_date IS NOT NULL-->
 
-<!--              UNION ALL-->
+    <!--              UNION ALL-->
 
-<!--              select p.bill_id           AS billId,-->
-<!--                     (p.yy + '-' + p.mm) AS inym,-->
-<!--                     'I'                 AS gb,-->
-<!--                     p.approved_date     AS indate,-->
-<!--                     p.book_amount       AS inmoney,-->
-<!--                     CASE-->
-<!--                         WHEN p.product_name = '교육비' THEN 'S'-->
-<!--                         WHEN p.product_name = '교재비' THEN 'B'-->
-<!--                         ELSE null-->
-<!--                         END             AS gubun,-->
-<!--                     p.created_at-->
-<!--              from erp_payment p-->
-<!--              WHERE p.book_amount IS NOT NULL-->
-<!--                AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL-->
-<!--        ORDER BY combined.billId ASC;-->
+    <!--              select p.bill_id           AS billId,-->
+    <!--                     (p.yy + '-' + p.mm) AS inym,-->
+    <!--                     'I'                 AS gb,-->
+    <!--                     p.approved_date     AS indate,-->
+    <!--                     p.book_amount       AS inmoney,-->
+    <!--                     CASE-->
+    <!--                         WHEN p.product_name = '교육비' THEN 'S'-->
+    <!--                         WHEN p.product_name = '교재비' THEN 'B'-->
+    <!--                         ELSE null-->
+    <!--                         END             AS gubun,-->
+    <!--                     p.created_at-->
+    <!--              from erp_payment p-->
+    <!--              WHERE p.book_amount IS NOT NULL-->
+    <!--                AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL-->
+    <!--        ORDER BY combined.billId ASC;-->
 
-<!--    </select>-->
+    <!--    </select>-->
 </mapper>

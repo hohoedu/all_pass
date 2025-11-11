@@ -36,7 +36,7 @@ public class PaymentHistory {
     private String status;
 
     @Column(name = "amount")
-    private String amount;
+    private Integer amount;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -62,7 +62,7 @@ public class PaymentHistory {
 
     @Builder
     public PaymentHistory(String eventType, String eventSource, String status,
-                          String amount, String description, Payment payment,
+                          Integer amount, String description, Payment payment,
                           Student student, Center center, User user) {
         this.eventType = eventType;
         this.eventSource = eventSource;
