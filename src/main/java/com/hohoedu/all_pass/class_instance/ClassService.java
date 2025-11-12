@@ -200,12 +200,12 @@ public class ClassService {
     public boolean addStudent(AddStudentDTO dto, String userCode, String centerCode) {
         try {
 
-
             int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
 
             if (count >= 8) {
                 return false;
             }
+
             classRepository.addStudent(dto);
 
             classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
@@ -249,7 +249,6 @@ public class ClassService {
         int result = classRepository.deleteTimeTableRow(timeTableKey);
         return result;
     }
-
 
     public List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(String timeTableKey, String userCode) {
         List<ClassRespDTO.ComClassStudentDTO> students = classRepository.findComClassStudentsByTimeTableKey(timeTableKey, userCode);
@@ -304,7 +303,8 @@ public class ClassService {
                         .payment(Payment.builder().paymentKey(paymentKey).build())
                         .amount(hanFee)
                         .classType("1") // 한자 수업
-                        .itemType("교육비")
+                        .itemType("edu")
+                        .user(User.builder().userCode(userCode).build())
                         .build();
                 paymentRepository.createPaymentDetail(eduDetail);
 
@@ -312,7 +312,8 @@ public class ClassService {
                         .payment(Payment.builder().paymentKey(paymentKey).build())
                         .amount(hanMaterialFee)
                         .classType("1")
-                        .itemType("교재비")
+                        .itemType("book")
+                        .user(User.builder().userCode(userCode).build())
                         .build();
                 paymentRepository.createPaymentDetail(bookDetail);
 

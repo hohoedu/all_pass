@@ -5,6 +5,7 @@ import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.PaymentBill;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,27 +14,26 @@ import java.util.List;
 
 @Mapper
 public interface PaymentRepository {
+    String findByStudentAndYm(
+            @Param("studentId") String studentId,
+            @Param("year") String year,
+            @Param("month") String month);
+
+    // 수강료 청구 화면 데이터 필터링
     List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(
             @Param("year") String year,
             @Param("month") String month,
             @Param("userCode") String userCode);
 
-    Integer findFeeByClassKey(@Param("classKey") String classKey, @Param("centerCode") String centerCode);
+    // 수업별 센터별 수업료 조회
+    Integer findFeeByClassKey(
+            @Param("classKey") String classKey,
+            @Param("centerCode") String centerCode);
 
-    List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(@Param("centerCode") String centerCode);
-
-    // 학원별 수강료 수정
-    int updateClassFeeMap(@Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList);
-
-
-    // ======================================== APP ======================================== //
-    // i-with 납부내역 조회
-    List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(
-            @Param("studentId") String studentId,
-            @Param("count") String count);
-
+    // 학생 등록 후 결제 생성
     int createPayment(Payment payment);
 
+    // 학생 등록 후 결제 상세내용 생성
     int createPaymentDetail(PaymentDetail paymentDetail);
 
     String findLatestPaymentKeyByStudent(
@@ -44,4 +44,15 @@ public interface PaymentRepository {
     void updateAmount(
             @Param("paymentKey") String paymentKey,
             @Param("amount") Integer amount);
+
+    void insertPaymentBill(PaymentBill paymentBill);
+
+    List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId);
+
+    // ======================================== APP ======================================== //
+    // i-with 납부내역 조회
+    List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(
+            @Param("studentId") String studentId,
+            @Param("count") String count);
+
 }

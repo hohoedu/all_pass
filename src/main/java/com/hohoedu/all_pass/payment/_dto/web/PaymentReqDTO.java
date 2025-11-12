@@ -9,6 +9,21 @@ import java.util.List;
 public class PaymentReqDTO {
 
     @Data
+    public static class InsertBillDTO {
+        private String paymentKey;
+        private String billId;
+        private Integer amount;
+        private String status;
+        private String billType;
+        private String expireDate;
+        private String issueDate;
+        private String studentId;
+        private String centerCode;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class PayCallbackDTO {
         private String apikey;
         private String bill_id;
@@ -27,8 +42,6 @@ public class PaymentReqDTO {
         private String month;
         private String userCode;
     }
-
-
 
 
 }

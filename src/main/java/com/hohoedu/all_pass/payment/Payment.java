@@ -63,10 +63,6 @@ public class Payment {
     @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
     private Center center;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_code", referencedColumnName = "user_code")
-    private User user;
-
     @CreationTimestamp
     private Timestamp createdAt;
 
@@ -74,7 +70,7 @@ public class Payment {
     private Timestamp updatedAt;
 
     @Builder
-    public Payment(String paymentKey, String method, Integer amount, String status, String paidDate, String requestDate, String yy, String mm, Student student, Center center, User user) {
+    public Payment(String paymentKey, String method, Integer amount, String status, String paidDate, String requestDate, String yy, String mm, Student student, Center center) {
         this.paymentKey = paymentKey;
         this.method = method;
         this.amount = amount;
@@ -85,6 +81,5 @@ public class Payment {
         this.mm = mm;
         this.student = student;
         this.center = center;
-        this.user = user;
     }
 }

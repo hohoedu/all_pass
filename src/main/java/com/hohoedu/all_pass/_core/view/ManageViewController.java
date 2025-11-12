@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.manage.ManageService;
 import com.hohoedu.all_pass.notice.CenterNotice;
 import com.hohoedu.all_pass.notice.NoticeService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
@@ -33,6 +34,7 @@ public class ManageViewController {
     private final ClassService classService;
     private final PaymentService paymentService;
     private final NoticeService noticeService;
+    private final ManageService manageService;
 
     @GetMapping("/order")
     public String getManageOrderPage() {
@@ -88,7 +90,7 @@ public class ManageViewController {
                 .filter(c -> "2".equals(c.getClassType()))
                 .toList();
 
-        List<PaymentRespDTO.ClassFeeMapDTO> feeMaps = paymentService.findClassFeeMapByCenterCode(user.getCenterCode());
+        List<PaymentRespDTO.ClassFeeMapDTO> feeMaps = manageService.findClassFeeMapByCenterCode(user.getCenterCode());
 
         Map<String, String> bookFeeMap = feeMaps.stream()
                 .filter(f -> "2".equals(f.getClassType()))

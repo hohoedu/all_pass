@@ -41,9 +41,18 @@ public class PaymentBill {
     @Column(name = "status", length = 20)
     private String status; // 청구 상태 (issued, approved, cancelled, expired 등)
 
+    @Column(name = "bill_type", nullable = false)
+    private String billType;
+
+    @Column
+    private String yy;
+
+    @Column
+    private String mm;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
-    private Payment payment; // 내부 결제 기준키 연결
+    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
@@ -53,24 +62,22 @@ public class PaymentBill {
     @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
     private Center center;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_code", referencedColumnName = "user_code")
-    private User user;
-
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
     public PaymentBill(String billId, Integer amount, String expireDate, String issuedDate,
-                       String status, Payment payment, Student student, Center center, User user) {
+                       String status, String billType, String yy, String mm, Payment payment, Student student, Center center) {
         this.billId = billId;
         this.amount = amount;
         this.expireDate = expireDate;
         this.issuedDate = issuedDate;
         this.status = status;
+        this.billType = billType;
+        this.yy = yy;
+        this.mm = mm;
         this.payment = payment;
         this.student = student;
         this.center = center;
-        this.user = user;
     }
 }

@@ -3,14 +3,22 @@
 
 <mapper namespace="com.hohoedu.all_pass.payment.repository.PaymentRepository">
 
+    <select id="findByStudentAndYm" resultType="String">
+        SELECT payment_key AS paymentKey
+        FROM erp_payment
+        WHERE student_id = #{studentId}
+          AND yy = #{year}
+          AND mm = #{month}
+    </select>
+
     <insert id="createPayment">
-        INSERT INTO erp_payment (payment_key, amount, method, status, yy, mm, student_id, user_code, center_code, created_at)
-        VALUES (#{paymentKey}, #{amount}, #{method}, #{status}, #{yy}, #{mm}, #{student.studentId}, #{user.userCode}, #{center.centerCode}, SYSDATETIME())
+        INSERT INTO erp_payment (payment_key, amount, method, status, yy, mm, student_id, center_code, created_at)
+        VALUES (#{paymentKey}, #{amount}, #{method}, #{status}, #{yy}, #{mm}, #{student.studentId}, #{center.centerCode}, SYSDATETIME())
     </insert>
 
     <insert id="createPaymentDetail">
-        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, created_at)
-        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, SYSDATETIME());
+        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, user_code, created_at)
+        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, #{user.userCode}, SYSDATETIME());
     </insert>
 
     <select id="findLatestPaymentKeyByStudent" resultType="string">
@@ -21,41 +29,62 @@
           AND mm = #{mm}
         ORDER BY created_at DESC
     </select>
-    
+
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount = #{amount}
         WHERE payment_key = #{paymentKey}
     </update>
 
+    <insert id="insertPaymentBill">
+        INSERT INTO erp_payment_bill (bill_id, amount, status, bill_type, expire_date, issued_date, payment_key, student_id, center_code, yy, mm, created_At)
+        VALUES (#{billId}, #{amount}, #{status}, #{billType}, #{expireDate}, #{issuedDate}, #{payment.paymentKey}, #{student.studentId}, #{center.centerCode}, #{yy}, #{mm},
+                SYSDATETIME());
+    </insert>
+
     <select id="findByAssignStudents" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
         SELECT
-        s.student_id AS studentId,
-        s.student_name AS studentName,
-        sc.han_fee AS hanFee,
-        sc.book_fee AS bookFee,
-        sc.han_material_fee AS hanMaterialFee,
-        sc.book_material_fee AS bookMaterialFee,
-        hu.user_name AS hanTeacher,
-        bu.user_name AS bookTeacher,
-        (ISNULL(sc.han_fee, 0) + ISNULL(sc.book_fee, 0) + ISNULL(sc.han_material_fee, 0) + ISNULL(sc.book_material_fee, 0))
-        AS totalPrice,
-        (ISNULL(sc.han_fee, 0) + ISNULL(sc.book_fee, 0))
-        AS totalFee,
-        (ISNULL(sc.han_material_fee, 0) + ISNULL(sc.book_material_fee, 0))
-        AS totalMaterialFee,
-        (p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last) AS parentPhone,
-        pay.edu_status AS eduStatus,
-        pay.material_status AS materialStatus,
+        s.student_id, s.student_name,
+        pAgg.paymentKey, pAgg.hanFee, pAgg.bookFee, pAgg.hanMaterial, pAgg.bookMaterial,
+        hu.user_name AS hanTeacher, bu.user_name AS bookTeacher,
+        pAgg.totalPrice, pAgg.totalFee, pAgg.totalMaterialFee,
+        (a.parent_tel_first + a.parent_tel_middle + a.parent_tel_last) AS parentPhone,
+        subj.subject, bill.eduStatus, bill.materialStatus
+        FROM erp_student s
+        JOIN erp_parent a ON s.student_id = a.student_id
+        JOIN ( SELECT
+        p.student_id, p.payment_key AS paymentKey,
+        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'edu' THEN d.amount END) AS hanFee,
+        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'edu' THEN d.amount END) AS bookFee,
+        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'book' THEN d.amount END) AS hanMaterial,
+        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'book' THEN d.amount END) AS bookMaterial,
+        MAX(CASE WHEN d.class_type = 1 THEN d.user_code END) AS hanUserCode,
+        MAX(CASE WHEN d.class_type = 2 THEN d.user_code END) AS bookUserCode,
+        SUM(d.amount) AS totalPrice,
+        SUM(CASE WHEN d.item_type = 'edu' THEN d.amount ELSE 0 END) AS totalFee,
+        SUM(CASE WHEN d.item_type = 'book' THEN d.amount ELSE 0 END) AS totalMaterialFee
+        FROM erp_payment p
+        JOIN erp_payment_detail d ON p.payment_key = d.payment_key
+        WHERE p.yy = #{year}
+        AND p.mm = #{month}
+        GROUP BY p.student_id, p.payment_key
+        ) AS pAgg ON pAgg.student_id = s.student_id
+        LEFT JOIN erp_user hu ON pAgg.hanUserCode = hu.user_code
+        LEFT JOIN erp_user bu ON pAgg.bookUserCode = bu.user_code
+        OUTER APPLY (
+        SELECT MAX(CASE WHEN pb.bill_type = 'edu' THEN pb.status END) AS eduStatus,
+        MAX(CASE WHEN pb.bill_type = 'material' THEN pb.status END) AS materialStatus
+        FROM erp_payment_bill pb
+        WHERE pb.payment_key = pAgg.paymentKey
+        ) bill
+        OUTER APPLY (
+        SELECT
         STUFF((
         SELECT ', ' + c.class_name
         FROM erp_time_table_assign ta
         JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-        JOIN erp_class_code c ON c.class_key =
-        CASE WHEN t.class_key = 'COM'
-        THEN ta.class_key
-        ELSE t.class_key
-        END
+        JOIN erp_class_code c
+        ON c.class_key = CASE WHEN t.class_key = 'COM' THEN ta.class_key ELSE t.class_key END
         WHERE ta.student_id = s.student_id
         AND c.class_type IN (1, 2)
         AND t.yy = #{year}
@@ -64,31 +93,17 @@
             AND t.user_code = #{userCode}
         </if>
         ORDER BY c.class_type ASC
-        FOR XML PATH('')
-        ), 1, 2, '') AS subject
-        FROM erp_student s
-        JOIN erp_student_class sc on s.student_id = sc.student_id
-        JOIN erp_parent p ON s.student_id = p.student_id
-        LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
-        LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
-        LEFT JOIN (select student_id,
-        MAX(edu_status) AS edu_status,
-        MAX(material_status) AS material_status
-        from erp_payment
-        WHERE yy = #{year}
-        AND mm = #{month}
-        group by student_id) pay ON s.student_id = pay.student_id
+        FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') AS subject) subj
         WHERE EXISTS (
         SELECT 1
         FROM erp_time_table_assign ta
         JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
         WHERE ta.student_id = s.student_id
+        AND t.yy = #{year}
+        AND t.mm = #{month}
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
-        </if>
-        )
-        AND sc.yy = #{year}
-        AND sc.mm = #{month}
+        </if>);
     </select>
 
     <select id="findFeeByClassKey" resultType="int">
@@ -98,21 +113,44 @@
           AND center_code = #{centerCode}
     </select>
 
-    <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
-        SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
-        FROM erp_class_fee_map cf
-                 JOIN erp_class_code cc ON cf.class_key = cc.class_key
-        WHERE cf.center_code = #{centerCode}
+    <!--  수강료 청구 화면 모달 데이터  -->
+    <select id="findPaymentByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentModalDTO">
+        SELECT s.student_id AS studentId,
+        (p.yy + '-' + p.mm) AS classDate,
+        s.student_name AS studentName,
+        p.payment_key AS paymentKey,
+        STUFF((SELECT ', ' + sub.class_name
+        FROM (SELECT DISTINCT cc2.class_name, cc2.class_type
+        FROM erp_time_table_assign ta2
+        JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+        JOIN erp_class_code cc2 ON cc2.class_key =
+        CASE
+        WHEN t2.class_key = 'COM' THEN ta2.class_key
+        ELSE t2.class_key
+        END
+        WHERE ta2.student_id = p.student_id
+        AND t2.yy = p.yy
+        AND t2.mm = p.mm) AS sub
+        ORDER BY sub.class_type
+        FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS subject,
+        hu.user_name AS hanTeacher,
+        bu.user_name AS bookTeacher,
+        p.product_name AS billType,
+        p.approved_date AS approvedDate,
+        p.amount AS amount,
+        COALESCE(p.edu_status, p.material_status) AS status
+        FROM erp_payment p
+        JOIN erp_student s ON p.student_id = s.student_id
+        JOIN erp_student_class sc ON s.student_id = sc.student_id AND p.yy = sc.yy AND p.mm = sc.mm
+        LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
+        LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
+        <where>
+            <if test="studentId != 'all'">
+                p.student_id = #{studentId}
+            </if>
+        </where>
+        ORDER BY p.created_at DESC;
     </select>
-
-    <update id="updateClassFeeMap" parameterType="java.util.List">
-        <foreach collection="list" item="item" separator=";">
-            UPDATE erp_class_fee_map
-            SET fee = #{item.fee}
-            WHERE class_key = #{item.classKey}
-            AND center_code = #{item.centerCode}
-        </foreach>
-    </update>
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->

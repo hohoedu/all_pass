@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.manage.repository.ManageRepository">
+
+    <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
+        SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
+        FROM erp_class_fee_map cf
+                 JOIN erp_class_code cc ON cf.class_key = cc.class_key
+        WHERE cf.center_code = #{centerCode}
+    </select>
+
+    <update id="updateClassFeeMap" parameterType="java.util.List">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE erp_class_fee_map
+            SET fee = #{item.fee}
+            WHERE class_key = #{item.classKey}
+            AND center_code = #{item.centerCode}
+        </foreach>
+    </update>
+
+</mapper>

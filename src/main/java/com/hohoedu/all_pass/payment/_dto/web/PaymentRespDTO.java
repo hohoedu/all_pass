@@ -8,6 +8,7 @@ public class PaymentRespDTO {
     @Data
     public static class AssignStudentsDTO {
         private String studentId;
+        private String paymentKey;
         private String studentName;
         private String subject;
         private String hanTeacher;
@@ -30,6 +31,21 @@ public class PaymentRespDTO {
         private String className;
         private String fee;
         private String classType;
+    }
+
+    @Data
+    public static class PaymentModalDTO {
+        private String studentId;
+        private String studentName;
+        private String paymentKey;
+        private String classDate;
+        private String subject;
+        private String hanTeacher;
+        private String bookTeacher;
+        private String billType;
+        private Integer amount;
+        private String status;
+
     }
 
 

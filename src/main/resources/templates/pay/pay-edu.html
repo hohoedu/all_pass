@@ -102,10 +102,12 @@
                                 </thead>
                                 <tbody id="student-tbody" class="stripe">
 
+
                                 <tr th:each="student, stat : ${students}"
                                     th:attr="data-parent-phone = ${student.parentPhone},
                                             data-student-id = ${student.studentId},
                                             data-student-name = ${student.studentName},
+                                            data-payment-key = ${student.paymentKey},
                                             data-han-fee = ${student.hanFee},
                                             data-book-fee = ${student.bookFee},
                                             data-han-material = ${student.hanMaterialFee},

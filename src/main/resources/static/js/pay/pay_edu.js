@@ -430,165 +430,137 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 청구서 발행 버튼
     payIssue.addEventListener('click', async () => {
-        // 체크된 학생
         const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
-
-        if (checkedBoxes.length === 0) {
-            alert('학생을 선택하세요.');
-            return;
-        }
+        if (checkedBoxes.length === 0) return alert('학생을 선택하세요.');
 
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-        if (!eduChecked && !bookChecked) {
-            alert('청구 종류를 선택하세요.');
-            return;
-        }
+        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
+
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [year, month] = selectedMonth.split("-");
-        const yy = year;
-        const mm = month.padStart(2, "0");
+        const [yy, mm] = selectedMonth.split("-");
+        const monthStr = mm.padStart(2, "0");
+
+        const now = new Date();
+        const baseDate = new Date(2025, 0, 1);
+        const diffDays = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
+        const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        const dayCode = diffDays.toString(36).padStart(3, "0");
+        const timeCode = secondsOfDay.toString(36).padStart(4, "0");
+
+        const expireDate = document.querySelector('.expire-input').value;
+        const message = document.querySelector('input[name="message"]').value || '';
+
         for (const [index, box] of checkedBoxes.entries()) {
             const row = box.closest('tr');
             const issuedCell = row.querySelector('.unissued, .issued');
-            // 다시 생각
-            if (issuedCell && issuedCell.classList.contains('issued')) {
-                alert(`⚠️ ${row.dataset.studentName} 학생의 ${mm}월 청구서는 이미 발행되었습니다.`);
+
+            if (issuedCell?.classList.contains('issued')) {
+                alert(`⚠️ ${row.dataset.studentName} 학생의 ${monthStr}월 청구서는 이미 발행되었습니다.`);
                 continue;
             }
-            const studentId = row.dataset.studentId;
-            const studentName = row.dataset.studentName;
-            const hanFee = row.dataset.hanFee;
-            const bookFee = row.dataset.bookFee;
-            const hanMaterial = row.dataset.hanMaterial;
-            const bookMaterial = row.dataset.bookMaterial;
-            const phone = row.dataset.parentPhone;
-            const price = row.dataset.totalPrice;
-            const totalFee = row.dataset.totalFee;
-            const totalMaterialFee = row.dataset.totalMaterialFee;
-            const message = document.querySelector('input[name="message"]').value;
 
-            const now = new Date();
-            const baseDate = new Date(2025, 0, 1);
-            const diffDays = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
-            const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-
-            const dayCode = diffDays.toString(36).padStart(3, "0");
-            const timeCode = secondsOfDay.toString(36).padStart(4, "0");
+            const student = {
+                id: row.dataset.studentId,
+                name: row.dataset.studentName,
+                phone: row.dataset.parentPhone,
+                hanFee: row.dataset.hanFee,
+                bookFee: row.dataset.bookFee,
+                hanMaterial: row.dataset.hanMaterial,
+                bookMaterial: row.dataset.bookMaterial,
+                totalFee: row.dataset.totalFee,
+                totalMaterialFee: row.dataset.totalMaterialFee,
+                paymentKey: row.dataset.paymentKey,
+            };
 
             const indexStr = String(index).padStart(2, "0");
-            let statusType = '';
-            if (eduChecked && totalFee > 0) {
-                const billIdEdu = "3208800028" + dayCode + timeCode + indexStr + "1";
-                const sendHashEdu = generateSendHash(billIdEdu, phone, totalFee);
-                statusType = 'edu';
 
-                const billEdu = {
-                    bill_id: billIdEdu,
-                    product_nm: "교육비",
-                    message: message || `${studentName} 교육비 청구`,
-                    member_nm: studentName,
-                    phone: phone,
-                    price: totalFee,
-                    hash: sendHashEdu,
-                    expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://b8170e429d85.ngrok-free.app/pay/callback"
-                    // callbackURL: "https://hohocenter.co.kr/pay/callback"
-
-                };
-
-                await sendBill(billEdu, "EDU");
+            // EDU 청구
+            if (eduChecked && student.totalFee > 0) {
+                const billId = `3208800028${dayCode}${timeCode}${indexStr}1`;
+                const bill = createBill(billId, "교육비", `${student.name} 교육비 청구`, student, student.totalFee, expireDate);
+                await sendBill(bill, 'edu', student, now, yy, monthStr);
             }
 
-            if (bookChecked && totalMaterialFee > 0) {
-                const billIdBook = "3208800028" + dayCode + timeCode + indexStr + "0";
-                const sendHashBook = generateSendHash(billIdBook, phone, totalMaterialFee);
-                statusType = 'material'
-
-                const billBook = {
-                    bill_id: billIdBook,
-                    product_nm: "교재비",
-                    message: message || `${studentName} 교재비 청구`,
-                    member_nm: studentName,
-                    phone: phone,
-                    price: totalMaterialFee,
-                    hash: sendHashBook,
-                    expire_dt: document.querySelector('.expire-input').value,
-                    callbackURL: "https://b8170e429d85.ngrok-free.app/pay/callback"
-                    // callbackURL: "https://hohocenter.co.kr/pay/callback"
-                };
-
-                await sendBill(billBook, "BOOK");
-            }
-
-            async function sendBill(bill, type) {
-
-                let hanAmount = '';
-                let bookAmount = '';
-
-                if (type === "EDU") {
-                    hanAmount = hanFee;             // 교육비 한자
-                    bookAmount = bookFee;           // 교육비 독서
-                } else if (type === "BOOK") {
-                    hanAmount = hanMaterial;        // 교재비 한자
-                    bookAmount = bookMaterial;      // 교재비 독서
-                }
-
-
-                const requestBody = {
-                    apikey: "TEST-API-KEY-TALK",
-                    member: "TEST-MEMBER-FOR-API",
-                    merchant: "TEST-MERCHANT-FOR-API",
-                    bill
-                };
-
-                try {
-                    const res = await fetch("https://stg.paymint.co.kr/partner/if/bill/send", {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json", "Accept": "application/json"},
-                        body: JSON.stringify(requestBody)
-                    });
-
-                    const data = await res.json();
-
-                    if (data.code === "0000") {
-                        const saveBody = {
-                            billId: requestBody.bill.bill_id,
-                            productName: requestBody.bill.product_nm,
-                            message: requestBody.bill.message,
-                            studentName: requestBody.bill.member_nm,
-                            studentId: studentId,
-                            amount: requestBody.bill.price,
-                            hanAmount: hanAmount,
-                            bookAmount: bookAmount,
-                            statusType: statusType,
-                            requestDate: now.toISOString().split("T")[0],
-                            expireDate: requestBody.bill.expire_dt,
-                            yy: yy,
-                            mm: mm
-                        };
-                        await fetch("/pay/history/insert", {
-                            method: "POST",
-                            headers: {"Content-Type": "application/json", "Accept": "application/json"},
-                            body: JSON.stringify(saveBody)
-                        });
-
-                    } else {
-                        alert(`❌ ${bill.member_nm} ${type} 청구 실패: ${data.msg || '서버 오류'}`);
-                    }
-                } catch (err) {
-                    console.error(`❌ ${type} 청구 중 오류:`, err);
-                }
+            // BOOK 청구
+            if (bookChecked && student.totalMaterialFee > 0) {
+                const billId = `3208800028${dayCode}${timeCode}${indexStr}0`;
+                const bill = createBill(billId, "교재비", `${student.name} 교재비 청구`, student, student.totalMaterialFee, expireDate);
+                await sendBill(bill, 'material', student, now, yy, monthStr);
             }
         }
-
-        alert("✅ 모든 청구가 완료되었습니다.");
+        alert('청구서를 모두 발행했습니다.');
         window.location.reload();
     });
 
+    function createBill(billId, productName, defaultMsg, student, price, expireDate) {
+        const hash = generateSendHash(billId, student.phone, price);
+        return {
+            bill_id: billId,
+            product_nm: productName,
+            message: defaultMsg,
+            member_nm: student.name,
+            phone: student.phone,
+            price,
+            hash,
+            expire_dt: expireDate,
+            callbackURL: "https://268b6002b1fa.ngrok-free.app/pay/callback"
+            // callbackURL: "https://hohocenter.co.kr/pay/callback"
+        };
+    }
+
+    async function sendBill(bill, type, student, now, yy, mm) {
+        const requestBody = {
+            apikey: "TEST-API-KEY-TALK",
+            member: "TEST-MEMBER-FOR-API",
+            merchant: "TEST-MERCHANT-FOR-API",
+            bill
+        };
+
+        const hanAmount = type === 'edu' ? student.hanFee : student.hanMaterial;
+        const bookAmount = type === 'edu' ? student.bookFee : student.bookMaterial;
+
+        try {
+            const res = await fetch("/pay/send", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(requestBody)
+            });
+            const data = await res.json();
+
+            if (data.code === "0000") {
+                const saveBody = {
+                    paymentKey: student.paymentKey,
+                    billId: bill.bill_id,
+                    productName: bill.product_nm,
+                    message: bill.message,
+                    studentName: student.name,
+                    studentId: student.id,
+                    amount: bill.price,
+                    hanAmount: hanAmount,
+                    bookAmount: bookAmount,
+                    billType: type,
+                    requestDate: now.toISOString().split("T")[0],
+                    expireDate: bill.expire_dt,
+                    yy: yy,
+                    mm: mm,
+                };
+                await fetch("/pay/bill/insert", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(saveBody)
+                });
+            } else {
+                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${data.msg || '서버 오류'}`);
+            }
+        } catch (err) {
+            console.error(`❌ ${type.toUpperCase()} 청구 중 오류:`, err);
+        }
+
+
+    }
 
     // 결제 취소 버튼
-// 결제 취소 버튼
     payCancel.addEventListener('click', async () => {
         const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
         if (checkedBoxes.length === 0) {

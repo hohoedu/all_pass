@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.payment.model;
 
 import com.hohoedu.all_pass.payment.Payment;
+import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,12 +37,17 @@ public class PaymentDetail {
     @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
     private Payment payment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_code", referencedColumnName = "user_code", nullable = false)
+    private User user;
+
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
-    public PaymentDetail(Payment payment, String classType, String itemType, Integer amount, String note) {
+    public PaymentDetail(Payment payment,User user, String classType, String itemType, Integer amount, String note) {
         this.payment = payment;
+        this.user = user;
         this.classType = classType;
         this.itemType = itemType;
         this.amount = amount;
