@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.payment.model;
 
-import com.hohoedu.all_pass.payment.Payment;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,8 +19,8 @@ public class PaymentCallback {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "bill_id", nullable = false, length = 50)
-    private String billId;
+    @Column(name = "api_key")
+    private String apiKey;
 
     @Column(name = "appr_state", nullable = false)
     private String apprState;
@@ -44,22 +43,18 @@ public class PaymentCallback {
     @Column(name = "appr_num")
     private String apprNum;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
-    private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id", referencedColumnName = "bill_id", insertable = false, updatable = false)
+    @JoinColumn(name = "bill_id", referencedColumnName = "bill_id", nullable = false)
     private PaymentBill paymentBill;
 
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
-    public PaymentCallback(String billId, String apprState, String apprDate, String apprPrice,
-                           String apprPayType, String apprCardType, String apprIssuer,
-                           String apprNum, Payment payment) {
-        this.billId = billId;
+    public PaymentCallback(String apiKey, String apprState, String apprDate, String apprPrice, String apprPayType,
+                           String apprCardType, String apprIssuer, String apprNum, PaymentBill paymentBill) {
+        this.apiKey = apiKey;
         this.apprState = apprState;
         this.apprDate = apprDate;
         this.apprPrice = apprPrice;
@@ -67,6 +62,6 @@ public class PaymentCallback {
         this.apprCardType = apprCardType;
         this.apprIssuer = apprIssuer;
         this.apprNum = apprNum;
-        this.payment = payment;
+        this.paymentBill = paymentBill;
     }
 }

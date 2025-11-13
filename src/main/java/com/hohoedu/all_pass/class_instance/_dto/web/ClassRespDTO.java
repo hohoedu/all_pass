@@ -13,6 +13,8 @@ public class ClassRespDTO {
     @Data
     public static class TimeTableLabelDTO {
         private String timeTableKey;
+        private String classKey;
+        private String unitKey;
         private String classLabel;
         private String classTime;
         private String classSubject;
@@ -169,6 +171,7 @@ public class ClassRespDTO {
         }
     }
 
+
     @Data
     public static class RawClassDTO {
         private String classType;
@@ -179,6 +182,57 @@ public class ClassRespDTO {
         private String className;
         private String unitName;
         private String userName;
+    }
+
+    @Data
+    public static class InfantHanDTO {
+        private String classLabel;
+        private String imagePath;
+        private String subject;
+        private String newWord;
+        private String story;
+        private String subStory;
+        private String idiom;
+        private String subIdiom;
+        private String hanjaSong;
+        private String workBook;
+        private String storyComment;
+        private String clean;
+        private String insung;
+
+        private List<StudentInfo> students;
+
+        @Data
+        public static class StudentInfo {
+            private String studentId;
+            private String studentName;
+            private String appId;
+            private String appToken;
+
+        }
+    }
+
+    @Data
+    public static class InfantBookDTO {
+        private String subject;
+        private String imagePath;
+        private String content;
+        private String story;
+        private String knowledgeBoard;
+        private String thinkTalk;
+        private String goldbell;
+        private String findDiff;
+
+        private List<StudentInfo> students;
+
+        @Data
+        public static class StudentInfo {
+            private String studentId;
+            private String studentName;
+            private String appId;
+            private String appToken;
+
+        }
     }
 
 }

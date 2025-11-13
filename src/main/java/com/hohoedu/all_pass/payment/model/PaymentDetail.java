@@ -28,7 +28,7 @@ public class PaymentDetail {
     private String itemType; // EDU_FEE / BOOK_FEE 등
 
     @Column(name = "amount", nullable = false)
-    private Integer amount;
+    private Integer amount; // 레코드 단위 금액 ( 한자 수업료, 한자 교재비, 독서 수업료, 독서 교재비)
 
     @Column(columnDefinition = "TEXT")
     private String note;

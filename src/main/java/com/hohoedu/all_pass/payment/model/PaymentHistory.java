@@ -25,15 +25,15 @@ public class PaymentHistory {
 
     @Column(name = "event_type", nullable = false, length = 30)
     private String eventType;
-    // ex) issued(청구), approved(결제승인), cancelled(결제취소),
-    //     manual(수기입력), preset_linked(선결제연결), refunded(환불)
 
     @Column(name = "event_source", nullable = false, length = 30)
     private String eventSource;
-    // ex) system(자동처리), user(직접입력), callback(PG 콜백)
 
-    @Column(name = "status", length = 20)
-    private String status;
+    @Column(name = "old_status", length = 20)
+    private String oldStatus;
+
+    @Column(name = "new_status", length = 20)
+    private String newStatus;
 
     @Column(name = "amount")
     private Integer amount;
@@ -42,16 +42,8 @@ public class PaymentHistory {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
     private Payment payment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
-    private Student student;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
-    private Center center;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_code", referencedColumnName = "user_code")
@@ -61,17 +53,15 @@ public class PaymentHistory {
     private Timestamp createdAt;
 
     @Builder
-    public PaymentHistory(String eventType, String eventSource, String status,
-                          Integer amount, String description, Payment payment,
-                          Student student, Center center, User user) {
+    public PaymentHistory(String eventType, String eventSource, String oldStatus, String newStatus,
+                          Integer amount, String description, Payment payment, User user) {
         this.eventType = eventType;
         this.eventSource = eventSource;
-        this.status = status;
+        this.oldStatus = oldStatus;
+        this.newStatus = newStatus;
         this.amount = amount;
         this.description = description;
         this.payment = payment;
-        this.student = student;
-        this.center = center;
         this.user = user;
     }
 }

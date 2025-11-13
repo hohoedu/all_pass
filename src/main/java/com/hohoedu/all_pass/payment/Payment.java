@@ -30,10 +30,11 @@ public class Payment {
     private String method;
 
     @Column
-    private Integer amount;
+    private Integer amount; // 월 전체 학원비의 총 합
 
     /*
      *결제 상태
+     * - pending :
      * - issued : 청구서 발행 (결제 대기)
      * - approved : 결제 완료
      * - cancelled : 결제 취소

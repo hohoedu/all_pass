@@ -55,6 +55,16 @@
                         독서클리닉 프로그램 입니다.</p>
                     <button>바로가기</button>
                 </div>
+                <div class="menu-item"
+                     th:if="${session.user != null
+                        and session.user.centerCode != null
+                        and session.user.centerCode == 'PUS001'}">
+                    <img th:src="@{/image/reading-clinic.png}" alt="">
+                    <h2>관리자설정</h2>
+                    <p>관리자가 사용하는<br>
+                        프로그램 입니다.</p>
+                    <button>바로가기</button>
+                </div>
             </div>
             <div class="input-container">
                 <div class="menu-input">

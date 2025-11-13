@@ -16,6 +16,8 @@ import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.StudentClass;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -42,6 +44,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.threeten.bp.LocalDate;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -443,29 +446,6 @@ public class ClassService {
 
 
     // ================ 월간 평가 서비스 =====================//
-    public List<TimeTableLabelDTO> getLabelsByYM(String yy, String mm, String dayname) {
-
-        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname("all", yy, mm, dayname);
-
-        return labels.stream()
-                .map(dto -> {
-                    String label = dto.getClassLabel();
-                    String classTime = label;
-                    String classSubject = "";
-                    if (label != null) {
-                        int idx = label.indexOf(" ", label.indexOf("~") + 2);
-                        if (idx > -1) {
-                            classTime = label.substring(0, idx).trim();
-                            classSubject = label.substring(idx + 1).trim();
-                        }
-                    }
-                    dto.setClassTime(classTime);
-                    dto.setClassSubject(classSubject);
-                    return dto;
-                })
-                .toList();
-    }
-
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname) {
 
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname)
@@ -511,6 +491,32 @@ public class ClassService {
         return rows > 0;
     }
 
+
+    public List<TimeTableLabelDTO> findInfantClassLabel(String yy, String mm, String userCode) {
+
+        List<TimeTableLabelDTO> labels = classRepository.findInfantClassLabel(userCode, yy, mm)
+                .stream()
+                .map(c -> {
+                    String label = c.getClassLabel();
+                    if (label != null && !label.isBlank()) {
+                        int idx = label.indexOf(" ", label.indexOf("~") + 2);
+                        if (idx > 0) {
+                            String time = label.substring(0, idx).trim();
+                            String subject = label.substring(idx + 1).trim();
+                            c.setClassTime(time);
+                            c.setClassSubject(subject);
+                        } else {
+                            c.setClassSubject(label);
+                        }
+                    }
+                    return c;
+                })
+                .collect(Collectors.toList());
+
+        return labels;
+    }
+
+    // ========================================  APP  ======================================== //
     public List<ClassAppRespDTO.ClassInfoRespDTO> getClassInfo(String studentId, String yy, String mm) {
 
         List<ClassAppRespDTO.ClassInfoRespDTO> respDTOs = classRepository.findClassInfoByStudentId(studentId, yy, mm);
@@ -540,4 +546,64 @@ public class ClassService {
 
         return respDTOS;
     }
+
+
+    public ClassRespDTO.InfantHanDTO findInfantHan(TimeTableLabelDTO dto, String year) {
+
+        try {
+            ClassRespDTO.InfantHanDTO infantHanDTO =
+                    classRepository.findInfantHan(dto.getClassKey(), dto.getUnitKey(), year);
+
+            if (infantHanDTO == null) {
+                log.warn("InfantHanDTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
+                        dto.getClassKey(), dto.getUnitKey(), year);
+                return null;
+            }
+
+            List<ClassRespDTO.InfantHanDTO.StudentInfo> students =
+                    classRepository.findInfantHanStudents(dto.getTimeTableKey());
+
+            if (students == null) {
+                students = new ArrayList<>();
+            }
+
+            infantHanDTO.setStudents(students);
+
+            return infantHanDTO;
+
+        } catch (Exception e) {
+            log.error("유아 한자 조회 중 오류 발생", e);
+            return null;
+        }
+    }
+
+    public ClassRespDTO.InfantBookDTO findInfantBook(TimeTableLabelDTO dto, String year) {
+
+        try {
+            ClassRespDTO.InfantBookDTO infantBookDTO =
+                    classRepository.findInfantBook(dto.getClassKey(), dto.getUnitKey(), year);
+
+            if (infantBookDTO == null) {
+                log.warn("InfantBookTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
+                        dto.getClassKey(), dto.getUnitKey(), year);
+                return null;
+            }
+
+            List<ClassRespDTO.InfantBookDTO.StudentInfo> students =
+                    classRepository.findInfantBookStudents(dto.getTimeTableKey());
+
+            if (students == null) {
+                students = new ArrayList<>();
+            }
+
+            infantBookDTO.setStudents(students);
+
+            return infantBookDTO;
+
+        } catch (Exception e) {
+            log.error("유아 독서 조회 중 오류 발생", e);
+            return null;
+        }
+    }
 }
+

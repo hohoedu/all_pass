@@ -9,6 +9,30 @@ import java.util.List;
 public class PaymentReqDTO {
 
     @Data
+    public static class PaymentHistoryRecordDTO {
+        private String eventType;
+        private String eventSource;
+        private String oldStatus;
+        private String newStatus;
+        private Integer amount;
+        private String description;
+        private String paymentKey;
+        private String userCode;
+
+        @Builder
+        public PaymentHistoryRecordDTO(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount, String description, String paymentKey, String userCode) {
+            this.eventType = eventType;
+            this.eventSource = eventSource;
+            this.oldStatus = oldStatus;
+            this.newStatus = newStatus;
+            this.amount = amount;
+            this.description = description;
+            this.paymentKey = paymentKey;
+            this.userCode = userCode;
+        }
+    }
+
+    @Data
     public static class InsertBillDTO {
         private String paymentKey;
         private String billId;

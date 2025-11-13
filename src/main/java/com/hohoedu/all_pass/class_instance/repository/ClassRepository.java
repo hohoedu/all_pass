@@ -133,6 +133,12 @@ public interface ClassRepository {
             @Param("mm") String mm,
             @Param("dayname") String dayname);
 
+    List<ClassRespDTO.TimeTableLabelDTO> findInfantClassLabel(
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
     public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
@@ -185,6 +191,18 @@ public interface ClassRepository {
             @Param("count") int count);
 
     public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
+
+    ClassRespDTO.InfantHanDTO findInfantHan(
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("year") String year);
+    ClassRespDTO.InfantBookDTO findInfantBook(
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("year") String year);
+
+    List<ClassRespDTO.InfantHanDTO.StudentInfo> findInfantHanStudents(String TimeTableKey);
+    List<ClassRespDTO.InfantBookDTO.StudentInfo> findInfantBookStudents(String TimeTableKey);
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
 

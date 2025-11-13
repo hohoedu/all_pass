@@ -6,6 +6,7 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.PaymentBill;
+import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -14,6 +15,9 @@ import java.util.List;
 
 @Mapper
 public interface PaymentRepository {
+
+    int insertPaymentHistory(PaymentReqDTO.PaymentHistoryRecordDTO dto);
+
     String findByStudentAndYm(
             @Param("studentId") String studentId,
             @Param("year") String year,
@@ -45,9 +49,26 @@ public interface PaymentRepository {
             @Param("paymentKey") String paymentKey,
             @Param("amount") Integer amount);
 
-    void insertPaymentBill(PaymentBill paymentBill);
+    Payment findPaymentByKey(String paymentKey);
+
+    void createPaymentBill(PaymentBill paymentBill);
+
+    void updatePayment(
+            @Param("paymentKey") String paymentKey,
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("status") String status,
+            @Param("requestDate") String requestDate
+    );
+
+
+    void createPaymentCallback(PaymentCallback paymentCallback);
 
     List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId);
+
+    Payment findPaymentByBillId(String billId);
+
+    PaymentBill findPaymentBill(String billId);
 
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회

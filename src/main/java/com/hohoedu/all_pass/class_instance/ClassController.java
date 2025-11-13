@@ -189,7 +189,6 @@ public class ClassController {
     }
 
 
-
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/label")
     public ResponseEntity<?> findRecordLabel(@RequestBody ClassRecordReqDTO dto, HttpSession session) {
@@ -321,7 +320,15 @@ public class ClassController {
     public ResponseEntity<?> updateMonthlyScore(@RequestBody ClassMonthlyScoreDTO dto) {
 
         classService.updateMonthlyScore(dto);
-        return ResponseEntity.ok().body(ApiUtils.success("hello"));
+        return ResponseEntity.ok(ApiUtils.success("hello"));
     }
 
+//    // 월간 평가 (유아)
+//    @PostMapping("/api/monthly/infant")
+//    public ResponseEntity<?> updateMonthlyInfant() {
+//
+//        ClassRespDTO.InfantHanDTO response = classService.findInfantHan();
+//
+//        return ResponseEntity.ok(ApiUtils.success(response));
+//    }
 }

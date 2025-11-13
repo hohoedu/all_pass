@@ -884,9 +884,9 @@
     margin-bottom: 0;
   }
 
-  .menu-item:nth-last-child(2) img {
-    width: 130px;
-  }
+  /*.menu-item:nth-last-child(3) img {*/
+  /*  width: 130px;*/
+  /*}*/
 
   .menu-item h2 {
     font-size: 26px;

@@ -1307,10 +1307,6 @@ input[type="checkbox"]:checked::after {
     margin-bottom: 15px;
 }
 
-.menu-item:nth-last-child(2) img {
-    width: 130px;
-}
-
 .menu-item h2 {
     font-size: 30px;
     color: #0960F1;
@@ -1331,6 +1327,14 @@ input[type="checkbox"]:checked::after {
 
 .menu-item:nth-child(3) button {
     background: #3DB253;
+}
+
+.menu-item:nth-child(4) h2 {
+    color: #4B1550;
+}
+
+.menu-item:nth-child(4) button {
+    background: #4B1550;
 }
 
 .menu-item p {
@@ -6365,6 +6369,10 @@ input[type="time" i] {
 .charge {
     color: #241d5e;
     font-weight: bold;
+}
+
+.pay-amount {
+    color: #5C5C5C;
 }
 
 .unissued {

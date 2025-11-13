@@ -504,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
             price,
             hash,
             expire_dt: expireDate,
-            callbackURL: "https://268b6002b1fa.ngrok-free.app/pay/callback"
+            callbackURL: "https://82a6de325110.ngrok-free.app/pay/callback"
             // callbackURL: "https://hohocenter.co.kr/pay/callback"
         };
     }

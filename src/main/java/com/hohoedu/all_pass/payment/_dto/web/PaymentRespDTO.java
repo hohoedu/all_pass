@@ -20,6 +20,7 @@ public class PaymentRespDTO {
         private String eduStatus;
         private String materialStatus;
         private String totalPrice;
+        private String amountDue;
         private String totalFee;
         private String totalMaterialFee;
         private String parentPhone;

@@ -30,7 +30,7 @@ public class PaymentBill {
     private String billId;
 
     @Column(name = "amount", nullable = false)
-    private Integer amount;
+    private Integer amount; // 결제해야하는 금액
 
     @Column(name = "expire_date")
     private String expireDate; // (yyyy-MM-dd)

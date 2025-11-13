@@ -80,8 +80,9 @@
                                     <col width="8%">
                                     <col width="8%">
                                     <col width="10%">
-                                    <col width="25%">
+                                    <col width="15%">
                                     <col width="20%">
+                                    <col width="10%">
                                     <col width="10%">
                                     <col width="10%">
                                     <col width="10%">
@@ -95,7 +96,8 @@
                                     <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                                     <th>수강과목</th>
                                     <th>담임</th>
-                                    <th>금액</th>
+                                    <th>총 금액</th>
+                                    <th>미납 금액</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">발행</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결제</th>
                                 </tr>
@@ -126,6 +128,7 @@
                                     + (${#strings.defaultString(student.bookTeacher, '') != '' ? student.bookTeacher + '(독)' : ''})">
                                     </td>
                                     <td class="charge" th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
+                                    <td class="pay-amount" th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
                                     <td>
                                         <span th:if="${student.eduStatus == null and student.materialStatus == null}"
                                               class="unissued">미발행
@@ -148,102 +151,102 @@
                                     <td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td>
                                 </tr>
 
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>1</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span class="unissued">미발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-done">완료</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>2</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span>발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-late">미납</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>1</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span class="unissued">미발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-done">완료</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>2</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span>발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-late">미납</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>1</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span class="unissued">미발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-done">완료</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
-<!--                                <tr>-->
-<!--                                    <td class="checkbox-group">-->
-<!--                                        <input type="checkbox">-->
-<!--                                    </td>-->
-<!--                                    <td>2</td>-->
-<!--                                    <td>김호일</td>-->
-<!--                                    <td>초등천재, 새움, 독클</td>-->
-<!--                                    <td class="cal-content">-->
-<!--                                        김하나(한), 김두이(독)-->
-<!--                                    </td>-->
-<!--                                    <td class="charge">220,000</td>-->
-<!--                                    <td><span>발행</span></td>-->
-<!--                                    <td>-->
-<!--                                        <div class="pay-box pay-late">미납</div>-->
-<!--                                    </td>-->
-<!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>1</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span class="unissued">미발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-done">완료</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>2</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span>발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-late">미납</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>1</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span class="unissued">미발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-done">완료</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>2</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span>발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-late">미납</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>1</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span class="unissued">미발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-done">완료</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
+                                <!--                                <tr>-->
+                                <!--                                    <td class="checkbox-group">-->
+                                <!--                                        <input type="checkbox">-->
+                                <!--                                    </td>-->
+                                <!--                                    <td>2</td>-->
+                                <!--                                    <td>김호일</td>-->
+                                <!--                                    <td>초등천재, 새움, 독클</td>-->
+                                <!--                                    <td class="cal-content">-->
+                                <!--                                        김하나(한), 김두이(독)-->
+                                <!--                                    </td>-->
+                                <!--                                    <td class="charge">220,000</td>-->
+                                <!--                                    <td><span>발행</span></td>-->
+                                <!--                                    <td>-->
+                                <!--                                        <div class="pay-box pay-late">미납</div>-->
+                                <!--                                    </td>-->
+                                <!--                                </tr>-->
                                 </tbody>
                             </table>
                         </div>

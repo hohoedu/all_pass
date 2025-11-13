@@ -54,14 +54,14 @@
         FROM erp_time_table t
                  JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
                  LEFT JOIN erp_class_code c ON c.class_key =
-                                          CASE
-                                              WHEN t.class_key = 'COM' THEN ta.class_key
-                                              ELSE t.class_key
-                                              END
-                LEFT JOIN erp_class_fee_map cf ON c.class_key = cf.class_key
+                                               CASE
+                                                   WHEN t.class_key = 'COM' THEN ta.class_key
+                                                   ELSE t.class_key
+                                                   END
+                 LEFT JOIN erp_class_fee_map cf ON c.class_key = cf.class_key
         where t.time_table_key = #{timeTableKey}
           AND ta.student_id = #{studentId}
-        AND cf.center_code = #{centerCode}
+          AND cf.center_code = #{centerCode}
     </select>
 
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
@@ -536,6 +536,78 @@
         WHERE t.time_table_key = #{timeTableKey}
     </select>
 
+    <select id="findInfantClassLabel"
+            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
+        SELECT
+        tc.time_table_key AS timeTableKey,
+        tc.time_table_label AS classLabel,
+        t.class_key AS classKey,
+        t.unit_key AS unitKey
+        FROM ERP_TIME_TABLE t
+        JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
+        WHERE t.yy = #{yy}
+        AND t.mm = #{mm}
+        AND LEN(t.class_key) = 1
+        <if test="userCode != null and userCode != 'all'">
+            AND t.user_code = #{userCode}
+        </if>
+        ORDER BY tc.time_table_key
+    </select>
+
+    <select id="findInfantHan" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO">
+        SELECT image_path    AS imagePath,
+               subject       AS subject,
+               new_word      AS newWord,
+               story         AS story,
+               sub_story     AS subStory,
+               idiom         AS idiom,
+               sub_idiom     AS subIdiom,
+               hanja_song    AS hanjaSong,
+               workbook      AS workBook,
+               story_comment AS storyComment,
+               clean         AS clean,
+               insung        AS insung
+        FROM erp_infant_han
+        WHERE class_key = #{classKey}
+          AND unit_key = #{unitKey}
+          AND yy = #{year}
+    </select>
+
+    <select id="findInfantHanStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO$StudentInfo">
+        SELECT s.student_id   AS studentId,
+               s.student_name AS studentName,
+               s.app_id       AS appId,
+               s.app_token    AS appToken
+        FROM erp_student s
+                 JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+        WHERE ta.time_table_key = #{timeTableKey}
+    </select>
+
+    <select id="findInfantBook" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO">
+        SELECT subject         AS subject,
+               image_path      AS imagePath,
+               content         AS content,
+               story           AS story,
+               knowledge_board AS knowledgeBoard,
+               think_talk      AS thinkTalk,
+               goldenbell      AS goldbell,
+               find_diff       AS findDiff
+        FROM erp_infant_book
+        WHERE class_key = #{classKey}
+          AND unit_key = #{unitKey}
+          AND yy = #{year}
+    </select>
+
+    <select id="findInfantBookStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO$StudentInfo">
+        SELECT s.student_id   AS studentId,
+               s.student_name AS studentName,
+               s.app_id       AS appId,
+               s.app_token    AS appToken
+        FROM erp_student s
+                 JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+        WHERE ta.time_table_key = #{timeTableKey}
+    </select>
+
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->
     <insert id="insertBeforeClassNotice"
@@ -579,7 +651,7 @@
         FROM erp_after_class_notice
         WHERE student_id = #{studentId}
         ORDER BY created_at DESC, id DESC;
-
     </select>
+
 
 </mapper> 

@@ -2,376 +2,389 @@
 <html lang="ko" xmlns:th="http:www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- jQuery CDN -->
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <!-- Custom Css / Js -->
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" href="@{/css/media.css}">
-  <script th:src="@{/js/custom.js}"></script>
-  <script th:src="@{/js/class.js}"></script>
-  <!-- Html menu Load -->
-  <script th:src="@{/js/sidebar.js}"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <title>학습내용(유아)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/class/infant.js}"></script>
+    <!-- Html menu Load -->
+    <script th:src="@{/js/sidebar.js}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <title>학습내용(유아)</title>
 </head>
 
 <body>
-  <div class="main-container">
+<div class="main-container">
     <div class="main-frame">
-      <!-- left nav bar -->
-      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-      <main class="main-info">
-        <div class="student-frame">
-          <!-- section:top -->
-          <section>
-            <div class="class-desc">
-              <div class="class-header">
-                <div class="common-title">
-                  <h2>수업 일지</h2>
-                </div>
-                <div class="class-btns">
-                  <div class="common-btn class-comment">월간평가 발송</div>
-                  <div class="common-btn record-save">저장</div>
-                </div>
-              </div>
-              <div class="month-header">
-                <div class="month-title month-today">
-                  <span class="current-month">2025년 6월</span>
-                  <div style="position: relative;">
-                    <input type="date" class="hidden-date" />
-                    <button type="button" class="icon-btn calendar-open">
-                      <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                    </button>
-                  </div>
-                </div>
-                <div class="basic-select">
-                  <select name="teacher" id="teacher-select" style="width: 200px;">
-                    <option value="all">전체</option>
-                    <option value="t1">김쌤</option>
-                    <option value="t2">이쌤</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </section>
-          <!-- section:bottom -->
-          <div class="third-frame">
-            <div class="class-log-left select-class">
-              <h4 style="margin-bottom: 20px;">클래스 선택</h4>
-              <ul class="table-frame class-list">
-                <li class="class-btn active" data-class-id="새움1호" data-time="14:00~14:50">
-                  <span>월 17:00~17:50</span><br>새움 1호
-                </li>
-                <li class="class-btn" data-class-id="북스쿨1호" data-time="16:00~16:50">
-                  <span>월 18:00~18:50</span><br>북스쿨 1호
-                </li>
-                <li class="class-btn" data-class-id="초등박사3호" data-time="18:00~18:50">
-                  <span>화 17:00~17:50</span><br>초등박사 3호
-                </li>
-                <li class="class-btn" data-class-id="새움1호" data-time="19:00~19:50">
-                  <span>화 18:00~18:50</span><br>새움 1호
-                </li>
-                <li class="class-btn" data-class-id="북스쿨1호" data-time="16:00~16:50">
-                  <span>월 18:00~18:50</span><br>북스쿨 1호
-                </li>
-              </ul>
-            </div>
-            <div class="select-student">
-              <div class="learn-middle">
-                <h2 class="lm-title">학생 선택</h2>
-                <div class="bt">
-                  <div class="table-frame">
-                    <table class="learn-table stripe yh">
-                      <colgroup>
-                        <col width="20%">
-                        <col width="30%">
-                        <col width="40%">
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th class="checkbox-group"><input type="checkbox" /></th>
-                          <th>이름</th>
-                          <th>발송여부</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr data-student-id="1001">
-                          <td class="checkbox-group"><input type="checkbox" /></td>
-                          <td>김호일</td>
-                          <td class="send-ornot">
-                            <img th:src="@{/image/send2.png}" alt="">
-                          </td>
-                        </tr>
-                        <tr data-student-id="1002">
-                          <td class="checkbox-group"><input type="checkbox" /></td>
-                          <td>김호일</td>
-                          <td class="send-ornot">
-                            <img th:src="@{/image/send1.png}" alt="">
-                          </td>
-                        </tr>
-                        <tr data-student-id="1003">
-                          <td class="checkbox-group"><input type="checkbox" /></td>
-                          <td>김호일</td>
-                          <td class="send-ornot">
-                            <img th:src="@{/image/no-smartphones.png}" alt="">
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="intro-lesson">
-              <div class="intro-inner">
-                <div class="intro-book">
-                  <img th:src="@{/image/yeongjae1.png}" alt="">
-                  <div class="book-name">
-                    <span class="book-kind">영재 1권</span><br>
-                    유치원과 친구들
-                  </div>
-                </div>
-                <div class="hanja-list">
-                  <div class="hanja-row">
-                    <span class="hanja-label">신습한자</span>
-                    <span class="hanja-text">月火水木金土日口</span>
-                  </div>
-                  <div class="hanja-row">
-                    <span class="hanja-label">한자동화</span>
-                    <span class="hanja-text">훈이의 일주일(규칙적인 식생활과 양치질을 잘하자는 이야기를 담은 동화)</span>
-                  </div>
-                  <div class="hanja-row">
-                    <span class="hanja-label">인성 한자성어</span>
-                    <span class="hanja-text">水魚之交(수어지교, 친한 친구 사이에도 배려하는 마음이 필요해요.)</span>
-                  </div>
-                </div>
-                <div class="voca-tendency">
-                  <div class="tag-list">
-                    <div class="tag-row">
-                      <span class="tag-box tag-blue">어휘이해력</span>
-                      <div class="tag-desc">
-                        해가 뜨는 모습 등 이미지로 해 일 한자를 연상하고 기억한 한자를 주변에서 찾아보았어요.
-                        <div class="hash-block">
-                          <span class="hashtag hash-blue">#워크북</span>
-                          <span class="hashtag">#한글놀이터</span>
+        <!-- left nav bar -->
+        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+        <main class="main-info">
+            <div class="student-frame">
+                <!-- section:top -->
+                <section>
+                    <div class="class-desc">
+                        <div class="class-header">
+                            <div class="common-title">
+                                <h2>수업 일지</h2>
+                            </div>
+                            <div class="class-btns">
+                                <div class="common-btn class-comment">월간평가 발송</div>
+                                <div class="common-btn record-save">저장</div>
+                            </div>
                         </div>
-                      </div>
-                    </div>
-                    <div class="tag-row">
-                      <span class="tag-box tag-orange">의미표현력</span>
-                      <div class="class=" tag-desc"">
-                        요일과 관련된 한자의 생성원리와 뜻을 노래와 율동으로 표현했어요.
-                        <div class="hash-block">
-                          <span class="hashtag hash-orange">#자원송</span>
-                          <span class="hashtag">#한자송</span>
+                        <div class="month-header">
+                            <div class="month-title month-today">
+                                <span class="current-month"></span>
+                                <div style="position: relative;">
+                                    <div class="day-display">
+                                        <input type="month" class="hidden-date"/>
+                                        <button type="button" class="icon-btn calendar-open">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="basic-select">
+                                <select name="teacher" id="teacher-select" style="width: 200px;">
+                                    <option value="all">전체</option>
+                                    <th:block th:each="u : ${users}">
+                                        <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                    <div class="tag-row">
-                      <span class="tag-box tag-pink">어휘활용능력</span>
-                      <div class="class=" tag-desc"">
-                        훈이의 일주일을 읽고 올바른 식습관에 대해 생각하고 발표했어요.
-                        <div class="hash-block">
-                          <span class="hashtag hash-pink">#한자동화</span>
-                          <span class="hashtag">#뜻을 알아요</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tag-row">
-                      <span class="tag-box tag-purple">바른인성탐구</span>
-                      <div class="tag-desc">
-                        수어지교 애니메이션을 보며 친구를 배려했던 경험에 대해 이야기를 나눴어요.
-                        <div class="hash-block">
-                          <span class="hashtag hash-purple">#인성이야기</span>
-                          <span class="hashtag">#바른약속</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="tag-row">
-                      <span class="tag-box tag-green">창의적해결능력</span>
-                      <div class="tag-desc">
-                        숨겨진 그림을 보고 떠오르는 한자를 상상하며 큰소리로 외치며 맞췄어요.
-                        <div class="hash-block">
-                          <span class="hashtag hash-green">#쓱쓱쏙쏙</span>
-                          <span class="hashtag">#한자창조</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </section>
+                <!-- section:bottom -->
+                <div class="third-frame">
+                    <div class="class-log-left select-class">
+                        <h4 style="margin-bottom: 20px;">클래스 선택</h4>
 
-              </div>
+                        <ul class="table-frame class-list">
+
+                            <!-- 1) 조회된 클래스 없을 때 -->
+                            <li th:if="${#lists.isEmpty(labels)}"
+                                style="text-align:center; padding: 20px; color: #777;">
+                                조회된 클래스가 없습니다.
+                            </li>
+
+                            <!-- 2) 조회된 클래스 있을 때 -->
+                            <th:block th:each="l, lStat : ${labels}">
+                                <li class="class-btn"
+                                    th:classappend="${lStat.index == 0} ? ' active' : ''"
+                                    th:attr="data-class-id=${l.timeTableKey}, data-time=${l.classTime}">
+
+                                    <span th:text="${l.classTime}"></span><br>
+                                    <span th:text="${l.classSubject}"></span>
+                                </li>
+                            </th:block>
+                        </ul>
+                    </div>
+                    <div class="select-student">
+                        <div class="learn-middle">
+                            <h2 class="lm-title">학생 선택</h2>
+                            <div class="bt">
+                                <div class="table-frame">
+                                    <table class="learn-table stripe yh">
+                                        <colgroup>
+                                            <col width="20%">
+                                            <col width="30%">
+                                            <col width="40%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th class="checkbox-group"><input type="checkbox"/></th>
+                                            <th>이름</th>
+                                            <th>발송여부</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:if="${infantHanDTO == null or #lists.isEmpty(infantHanDTO.students)}">
+                                            <td colspan="3" style="text-align: center;">학생 데이터가 없습니다.</td>
+                                        </tr>
+
+                                        <tr th:each="s : ${infantHanDTO.students}" th:data-student-id="${s.studentId}">
+                                            <td class="checkbox-group"><input type="checkbox"/></td>
+                                            <td th:text="${s.studentName}"></td>
+                                            <td class="send-ornot">
+                                                <!-- appToken이 NULL → 스마트폰 없음 아이콘 -->
+                                                <img th:if="${s.appToken == null}"
+                                                     th:src="@{/image/no-smartphones.png}"
+                                                     alt="no-phone">
+
+                                                <!-- appToken 존재 → 발송 아이콘 -->
+                                                <img th:if="${s.appToken != null}"
+                                                     th:src="@{/image/send1.png}"
+                                                     alt="send-ok">
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="intro-lesson">
+                        <div class="intro-inner">
+                            <div class="intro-book">
+                                <img th:src="@{|https://sunandtree2.cafe24.com/report/haniimg/rimg/${infantHanDTO.imagePath}|}" alt="">
+                                <div class="book-name">
+                                    <span class="book-kind" th:text="${infantHanDTO.classLabel}"></span><br>
+                                    <span th:text="${infantHanDTO.subject}"></span>
+                                </div>
+                            </div>
+                            <div class="hanja-list">
+                                <div class="hanja-row">
+                                    <span class="hanja-label">신습한자</span>
+                                    <span class="hanja-text" th:text="${infantHanDTO.newWord}"></span>
+                                </div>
+                                <div class="hanja-row">
+                                    <span class="hanja-label" th:text="${infantHanDTO.story}"></span>
+                                    <span class="hanja-text" th:text="${infantHanDTO.story + '(' + infantHanDTO.subStory + ')'}"></span>
+                                </div>
+                                <div class="hanja-row">
+                                    <span class="hanja-label">인성 한자성어</span>
+                                    <span class="hanja-text" th:text="${infantHanDTO.idiom + '(' + infantHanDTO.subIdiom + ')'}"></span>
+                                </div>
+                            </div>
+                            <div class="voca-tendency">
+                                <div class="tag-list">
+
+                                    <!-- 1) 의미표현 활동 -->
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-blue">의미표현 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantHanDTO.hanjaSong}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-blue">#워크북</span>
+                                                <span class="hashtag">#한글놀이터</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2) 어휘활용 활동 -->
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-orange">어휘활용 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantHanDTO.workBook}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-orange">#자원송</span>
+                                                <span class="hashtag">#한자송</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3) 문장이해 활동 -->
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-pink">문장이해 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantHanDTO.storyComment}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-pink">#한자동화</span>
+                                                <span class="hashtag">#뜻을 알아요</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4) 창의놀이 활동 -->
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-purple">창의놀이 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantHanDTO.clean}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-purple">#인성이야기</span>
+                                                <span class="hashtag">#바른약속</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 5) 바른인성 활동 -->
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-green">바른인성 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantHanDTO.insung}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-green">#쓱쓱쏙쏙</span>
+                                                <span class="hashtag">#한자창조</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </div>
-      </main>
+        </main>
     </div>
-  </div>
-  <!-- section: 월간평가 modal -->
-  <div class="modal pre-modal">
+</div>
+<!-- section: 월간평가 modal -->
+<div class="modal pre-modal">
     <div class="pre-view">
-      <div class="remarks-frame mf">
-        <div class="m-t-line" style="margin-top: 10px;">
-          <div>
-            <div class="pre-title">김호호 학생의 월간평가 미리보기</div>
-          </div>
-          <a href="#" class="btn-close"></a>
-        </div>
-        <div class="pre-divide learn-divide">
-          <div class="pre-left">
-            <ul class="pre-sub-t">
-              <li>이 평가는 <strong>한자 및 어휘의 정확한 이해와</strong></li>
-              <li><strong>일상 활용 능력</strong>을 종합적으로 확인하였습니다.</li>
-            </ul>
-            <div class="table-frame bt">
-              <table class="basic-table pre-table stripe">
-                <thead>
-                  <tr>
-                    <th>No</th>
-                    <th>문제 유형</th>
-                    <th>난이도</th>
-                    <th>정답</th>
-                  </tr>
-                </thead>
-                <tbody id="" class="stripe">
-                  <colgroup>
-                    <col width="20%">
-                    <col width="30%">
-                    <col width="30%">
-                    <col width="20%">
-                  </colgroup>
-                  <!-- tr 1번째 줄 -->
-                  <tr>
-                    <td>1</td>
-                    <td>뜻소리 구별하기</td>
-                    <td>★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 2번째 줄 -->
-                  <tr>
-                    <td>2</td>
-                    <td>한자어 읽기</td>
-                    <td>★★★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 3번째 줄 -->
-                  <tr>
-                    <td>3</td>
-                    <td>어휘 이해</td>
-                    <td>★★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 4번째 줄 -->
-                  <tr>
-                    <td>4</td>
-                    <td>어휘 활용</td>
-                    <td>★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 5번째 줄 -->
-                  <tr>
-                    <td>5</td>
-                    <td>한자의 쓰임 알기</td>
-                    <td>★★★</td>
-                    <td>X</td>
-                  </tr>
-                  <!-- tr 6번째 줄 -->
-                  <tr>
-                    <td>6</td>
-                    <td>의미 이해</td>
-                    <td>★★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 7번째 줄 -->
-                  <tr>
-                    <td>7</td>
-                    <td>문장 읽기</td>
-                    <td>★★★★</td>
-                    <td>○</td>
-                  </tr>
-                  <!-- tr 8번째 줄 -->
-                  <tr>
-                    <td>8</td>
-                    <td>문장 이해</td>
-                    <td>★★★★★</td>
-                    <td>X</td>
-                  </tr>
-                </tbody>
-              </table>
+        <div class="remarks-frame mf">
+            <div class="m-t-line" style="margin-top: 10px;">
+                <div>
+                    <div class="pre-title">김호호 학생의 월간평가 미리보기</div>
+                </div>
+                <a href="#" class="btn-close"></a>
             </div>
-          </div>
-          <div class="pre-right">
-            <div class="overall">
-              <div class="overall-top">
-                <div class="overall-t">월간 평가 총평</div>
-                <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
-                  유사 단어들 사이에서도 핵심 의미를 잘
-                  구분했습니다. 다만, 비슷한 자형의 한자들이
-                  함께 제시될 때는 의미를 중심으로 구별하는
-                  연습이 더 필요합니다.</p>
-              </div>
-              <div class="overall-bottom">
-                <div class="overall-t">월간 수업 코멘트</div>
-                <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
-                  유사 단어들 사이에서도 핵심 의미를 잘
-                  구분했습니다. 다만, 비슷한 자형의 한자들이
-                  함께 제시될 때는 의미를 중심으로 구별하는
-                  연습이 더 필요합니다.</p>
-              </div>
+            <div class="pre-divide learn-divide">
+                <div class="pre-left">
+                    <ul class="pre-sub-t">
+                        <li>이 평가는 <strong>한자 및 어휘의 정확한 이해와</strong></li>
+                        <li><strong>일상 활용 능력</strong>을 종합적으로 확인하였습니다.</li>
+                    </ul>
+                    <div class="table-frame bt">
+                        <table class="basic-table pre-table stripe">
+                            <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>문제 유형</th>
+                                <th>난이도</th>
+                                <th>정답</th>
+                            </tr>
+                            </thead>
+                            <tbody id="" class="stripe">
+                            <colgroup>
+                                <col width="20%">
+                                <col width="30%">
+                                <col width="30%">
+                                <col width="20%">
+                            </colgroup>
+                            <!-- tr 1번째 줄 -->
+                            <tr>
+                                <td>1</td>
+                                <td>뜻소리 구별하기</td>
+                                <td>★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 2번째 줄 -->
+                            <tr>
+                                <td>2</td>
+                                <td>한자어 읽기</td>
+                                <td>★★★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 3번째 줄 -->
+                            <tr>
+                                <td>3</td>
+                                <td>어휘 이해</td>
+                                <td>★★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 4번째 줄 -->
+                            <tr>
+                                <td>4</td>
+                                <td>어휘 활용</td>
+                                <td>★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 5번째 줄 -->
+                            <tr>
+                                <td>5</td>
+                                <td>한자의 쓰임 알기</td>
+                                <td>★★★</td>
+                                <td>X</td>
+                            </tr>
+                            <!-- tr 6번째 줄 -->
+                            <tr>
+                                <td>6</td>
+                                <td>의미 이해</td>
+                                <td>★★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 7번째 줄 -->
+                            <tr>
+                                <td>7</td>
+                                <td>문장 읽기</td>
+                                <td>★★★★</td>
+                                <td>○</td>
+                            </tr>
+                            <!-- tr 8번째 줄 -->
+                            <tr>
+                                <td>8</td>
+                                <td>문장 이해</td>
+                                <td>★★★★★</td>
+                                <td>X</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pre-right">
+                    <div class="overall">
+                        <div class="overall-top">
+                            <div class="overall-t">월간 평가 총평</div>
+                            <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
+                                유사 단어들 사이에서도 핵심 의미를 잘
+                                구분했습니다. 다만, 비슷한 자형의 한자들이
+                                함께 제시될 때는 의미를 중심으로 구별하는
+                                연습이 더 필요합니다.</p>
+                        </div>
+                        <div class="overall-bottom">
+                            <div class="overall-t">월간 수업 코멘트</div>
+                            <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
+                                유사 단어들 사이에서도 핵심 의미를 잘
+                                구분했습니다. 다만, 비슷한 자형의 한자들이
+                                함께 제시될 때는 의미를 중심으로 구별하는
+                                연습이 더 필요합니다.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- section: 확인해주세요 modal -->
-  <div class="modal result-modal">
+<!-- section: 확인해주세요 modal -->
+<div class="modal result-modal">
     <div class="information">
-      <div class="inform-frame">
-        <div class="m-t-line">
-          <div>
-            <div class="title">확인해주세요!</div>
-          </div>
-          <a href="#" class="btn-close"></a>
+        <div class="inform-frame">
+            <div class="m-t-line">
+                <div>
+                    <div class="title">확인해주세요!</div>
+                </div>
+                <a href="#" class="btn-close"></a>
+            </div>
+            <p class="inform-desc">
+                결과보기를 다시 불러올 경우,<br>
+                작성되어있는 <span>월간평가 총평이 모두 초기화</span>됩니다.<br>
+                결과보기를 리셋하시겠습니까?
+            </p>
+            <div class="save-btn-frame" style="margin-top: 10px;">
+                <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
+                <button type="submit" class="save-btn" name="action" value="send">발송</button>
+            </div>
         </div>
-        <p class="inform-desc">
-          결과보기를 다시 불러올 경우,<br>
-          작성되어있는 <span>월간평가 총평이 모두 초기화</span>됩니다.<br>
-          결과보기를 리셋하시겠습니까?
-        </p>
-        <div class="save-btn-frame" style="margin-top: 10px;">
-          <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
-          <button type="submit" class="save-btn" name="action" value="send">발송</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- section: 발송 안내 modal -->
-  <div class="modal send-info-modal">
+<!-- section: 발송 안내 modal -->
+<div class="modal send-info-modal">
     <div class="information">
-      <div class="inform-frame">
-        <div class="m-t-line">
-          <div>
-            <div class="title">발송 안내</div>
-          </div>
-          <a href="#" class="btn-close"></a>
+        <div class="inform-frame">
+            <div class="m-t-line">
+                <div>
+                    <div class="title">발송 안내</div>
+                </div>
+                <a href="#" class="btn-close"></a>
+            </div>
+            <p class="inform-desc">
+                작성된 내용을 저장하고<br>
+                선택하신 <span>2명</span>의 학생에게 월간평가 내용을 발송합니다.<br>
+                <small>(내용만 수정을 원하시는 경우 저장버튼을 눌러주세요.)</small>
+            </p>
+            <div class="save-btn-frame" style="margin-top: 10px;">
+                <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
+                <button type="submit" class="save-btn" name="action" value="send">발송</button>
+            </div>
         </div>
-        <p class="inform-desc">
-          작성된 내용을 저장하고<br>
-          선택하신 <span>2명</span>의 학생에게 월간평가 내용을 발송합니다.<br>
-          <small>(내용만 수정을 원하시는 경우 저장버튼을 눌러주세요.)</small>
-        </p>
-        <div class="save-btn-frame" style="margin-top: 10px;">
-          <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
-          <button type="submit" class="save-btn" name="action" value="send">발송</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
 </body>
 

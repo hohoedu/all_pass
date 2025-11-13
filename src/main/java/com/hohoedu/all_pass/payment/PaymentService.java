@@ -10,18 +10,18 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.PaymentBill;
+import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
-import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.threeten.bp.LocalDate;
 
 import java.util.List;
+
 
 @Slf4j
 @Service
@@ -31,6 +31,24 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final DateConfig dateConfig;
+
+    // 결제 로그
+    private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus,
+                            Integer amount, String description, String paymentKey, String userCode) {
+
+        PaymentReqDTO.PaymentHistoryRecordDTO dto = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                .eventType(eventType)
+                .eventSource(eventSource)
+                .oldStatus(oldStatus)
+                .newStatus(newStatus)
+                .amount(amount)
+                .description(description)
+                .paymentKey(paymentKey)
+                .userCode(userCode)
+                .build();
+
+        paymentRepository.insertPaymentHistory(dto);
+    }
 
     // 결제 생성
     public void createPayment(ClassReqDTO.AddStudentDTO studentDTO, ClassRespDTO.ClassInfoDTO classInfoDTO, String userCode, String centerCode) {
@@ -64,6 +82,15 @@ public class PaymentService {
                 .build();
 
         paymentRepository.createPayment(payment);
+
+        String eventType = "payment_created";
+        String eventSource = "system";
+        String oldStatus = null;
+        String newStatus = payment.getStatus();
+        Integer amount = payment.getAmount();
+        String description = "결제 생성";
+
+        logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, userCode);
 
         if (classInfoDTO != null) {
             insertPaymentDetails(paymentKey, classInfoDTO);
@@ -111,14 +138,18 @@ public class PaymentService {
     }
 
     // 결제선생 청구서 저장
-    public void insertPaymentBill(PaymentReqDTO.InsertBillDTO dto) {
+    public void insertPaymentBill(PaymentReqDTO.InsertBillDTO dto, String userCode) {
         String today = dateConfig.currentYearMonth().get("today");
+        String status = "issued";
         log.info(today);
+
+        Payment oldPayment = paymentRepository.findPaymentByKey(dto.getPaymentKey());
+        log.info(oldPayment.getStatus());
         PaymentBill paymentBill = PaymentBill.builder()
                 .billId(dto.getBillId())
                 .payment(Payment.builder().paymentKey(dto.getPaymentKey()).build())
                 .amount(dto.getAmount())
-                .status("issued")
+                .status(status)
                 .expireDate(dto.getExpireDate())
                 .issuedDate(today)
                 .billType(dto.getBillType())
@@ -128,12 +159,69 @@ public class PaymentService {
                 .mm(dto.getMm())
                 .build();
 
-        paymentRepository.insertPaymentBill(paymentBill);
+        paymentRepository.createPaymentBill(paymentBill);
+
+
+        paymentRepository.updatePayment(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
+
+        String eventType = "bill_issued";
+        String eventSource = "system";
+        String oldStatus = oldPayment.getStatus();
+        String newStatus = status;
+        Integer amount = dto.getAmount();
+        String description = dto.getYy() + "년 " + dto.getMm() + "월 청구서 발행";
+        String paymentKey = dto.getPaymentKey();
+
+        logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, userCode);
+
     }
+
 
     // 모달 데이터 조회
     public List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId) {
 
         return paymentRepository.findPaymentByStudentId(studentId);
+    }
+
+    public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
+
+        PaymentCallback paymentCallback = PaymentCallback.builder()
+                .paymentBill(PaymentBill.builder().billId(dto.getBill_id()).build())
+                .apiKey(dto.getApikey())
+                .apprState(dto.getAppr_state())
+                .apprDate(dto.getAppr_dt())
+                .apprPayType(dto.getAppr_pay_type())
+                .apprCardType(dto.getAppr_card_type())
+                .apprIssuer(dto.getAppr_issuer())
+                .apprNum(dto.getAppr_num())
+                .build();
+
+        try {
+
+            paymentRepository.createPaymentCallback(paymentCallback);
+
+            Payment payment = paymentRepository.findPaymentByBillId(dto.getBill_id());
+            PaymentBill paymentBill = paymentRepository.findPaymentBill(dto.getBill_id());
+
+            if (payment == null || paymentBill == null) {
+                log.error("❌ Callback 처리 실패: payment 또는 bill 정보를 찾을 수 없음. bill_id=" + dto.getBill_id());
+                return;
+            }
+
+            String eventType = "callback_received";
+            String eventSource = "callback";
+            String oldStatus = payment.getStatus();
+            String newStatus = "approved";
+            Integer amount = paymentBill.getAmount();
+            String description = "Paymint 결제승인 콜백 처리";
+            String paymentKey = payment.getPaymentKey();
+
+            logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, null);
+
+            log.info("✅ 결제 콜백 처리 완료 (bill_id: {})", dto.getBill_id());
+
+        } catch (Exception e) {
+            log.error("❌ 결제 콜백 처리 중 오류: {}", e.getMessage(), e);
+        }
     }
 }
