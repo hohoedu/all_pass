@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -275,32 +276,43 @@ public class ClassViewController {
 
     @GetMapping("/infant")
     public String getMonthlyInfantPage(HttpSession session, Model model) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return "login";
-        }
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
-        List<TimeTableLabelDTO> labels = classService.findInfantClassLabel(
-                dateConfig.currentYearMonth().get("currentYear"),
-                dateConfig.currentYearMonth().get("currentMonth"),
-                "all");
+//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+//        if (user == null) {
+//            return "login";
+//        }
 
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+
+//        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode("DAE001");
+
+        ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();
+        classInfantDTO.setUserCode("all");
+        classInfantDTO.setYy(yy);
+        classInfantDTO.setMm(mm);
+
+        List<TimeTableLabelDTO> labels = classService.findInfantClassLabel(classInfantDTO);
+        TimeTableLabelDTO label = labels.get(0);
+        label.setYy(dateConfig.currentYearMonth().get("currentYear"));
         String classKey = labels.get(0).getClassKey();
+        log.info(classKey);
 
         Set<String> hanKeys = Set.of("Y", "P", "S");
 
         Set<String> bookKeys = Set.of("K", "M", "J");
 
         if (hanKeys.contains(classKey)) {
-            ClassRespDTO.InfantHanDTO infantHanDTO =
-                    classService.findInfantHan(labels.get(0), dateConfig.currentYearMonth().get("currentYear"));
+            ClassRespDTO.InfantHanDTO infantHanDTO = classService.findInfantHan(label);
+
             infantHanDTO.setClassLabel(labels.get(0).getClassSubject());
             model.addAttribute("infantHanDTO", infantHanDTO);
         }
 
         if (bookKeys.contains(classKey)) {
-            ClassRespDTO.InfantBookDTO infantBookDTO =
-                    classService.findInfantBook(labels.get(0), dateConfig.currentYearMonth().get("currentYear"));
+            ClassRespDTO.InfantBookDTO infantBookDTO = classService.findInfantBook(label);
+
+            infantBookDTO.setClassLabel(labels.get(0).getClassSubject());
             model.addAttribute("infantBookDTO", infantBookDTO);
         }
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http:www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -29,11 +29,11 @@
                     <div class="class-desc">
                         <div class="class-header">
                             <div class="common-title">
-                                <h2>수업 일지</h2>
+                                <h2>학습 내용(유아)</h2>
                             </div>
                             <div class="class-btns">
-                                <div class="common-btn class-comment">월간평가 발송</div>
-                                <div class="common-btn record-save">저장</div>
+                                <div class="common-btn class-comment" id="send-infant-btn">발행</div>
+                                <div class="common-btn record-save" id="save-infant-btn">저장</div>
                             </div>
                         </div>
                         <div class="month-header">
@@ -66,18 +66,17 @@
 
                         <ul class="table-frame class-list">
 
-                            <!-- 1) 조회된 클래스 없을 때 -->
                             <li th:if="${#lists.isEmpty(labels)}"
                                 style="text-align:center; padding: 20px; color: #777;">
-                                조회된 클래스가 없습니다.
+                                조회된 수업이 없습니다.
                             </li>
 
-                            <!-- 2) 조회된 클래스 있을 때 -->
                             <th:block th:each="l, lStat : ${labels}">
                                 <li class="class-btn"
                                     th:classappend="${lStat.index == 0} ? ' active' : ''"
-                                    th:attr="data-class-id=${l.timeTableKey}, data-time=${l.classTime}">
-
+                                    th:attr="data-class-key=${l.classKey}, data-unit-key=${l.unitKey},
+                                            data-time-table-key=${l.timeTableKey}, data-time=${l.classTime},
+                                            data-class-subject=${l.classSubject}">
                                     <span th:text="${l.classTime}"></span><br>
                                     <span th:text="${l.classSubject}"></span>
                                 </li>
@@ -97,40 +96,134 @@
                                         </colgroup>
                                         <thead>
                                         <tr>
-                                            <th class="checkbox-group"><input type="checkbox"/></th>
+                                            <th class="checkbox-group">
+                                                <input type="checkbox" id="infant-select-all"/>
+                                            </th>
                                             <th>이름</th>
                                             <th>발송여부</th>
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr th:if="${infantHanDTO == null or #lists.isEmpty(infantHanDTO.students)}">
-                                            <td colspan="3" style="text-align: center;">학생 데이터가 없습니다.</td>
+                                        <th:block th:if="${infantHanDTO != null}">
+                                            <tr th:each="s : ${infantHanDTO.students}">
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox"
+                                                           class="infant-row-checkbox"
+                                                           th:data-id="${s.studentId}"
+                                                           th:data-name="${s.studentName}"
+                                                           th:data-token="${s.appToken}"/>
+                                                </td>
+                                                <td th:text="${s.studentName}"></td>
+                                                <td class="send-ornot">
+                                                    <img th:if="${s.appToken == null}" th:src="@{/image/no-smartphones.png}">
+                                                    <img th:if="${s.appToken != null}" th:src="@{/image/send1.png}">
+                                                </td>
+                                            </tr>
+                                        </th:block>
+
+                                        <!-- 독서반 DTO 있을 때 -->
+                                        <th:block th:if="${infantBookDTO != null}">
+                                            <tr th:each="s : ${infantBookDTO.students}">
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox"
+                                                           class="infant-row-checkbox"
+                                                           th:data-id="${s.studentId}"
+                                                           th:data-name="${s.studentName}"
+                                                           th:data-token="${s.appToken}"/>
+                                                </td>
+                                                <td th:text="${s.studentName}"></td>
+                                                <td class="send-ornot">
+                                                    <img th:if="${s.appToken == null}" th:src="@{/image/no-smartphones.png}">
+                                                    <img th:if="${s.appToken != null}" th:src="@{/image/send1.png}">
+                                                </td>
+                                            </tr>
+                                        </th:block>
+
+                                        <!-- 둘 다 null -->
+                                        <tr th:if="${infantHanDTO == null and infantBookDTO == null}">
+                                            <td colspan="3" style="text-align:center;">학생 데이터가 없습니다.</td>
                                         </tr>
 
-                                        <tr th:each="s : ${infantHanDTO.students}" th:data-student-id="${s.studentId}">
-                                            <td class="checkbox-group"><input type="checkbox"/></td>
-                                            <td th:text="${s.studentName}"></td>
-                                            <td class="send-ornot">
-                                                <!-- appToken이 NULL → 스마트폰 없음 아이콘 -->
-                                                <img th:if="${s.appToken == null}"
-                                                     th:src="@{/image/no-smartphones.png}"
-                                                     alt="no-phone">
-
-                                                <!-- appToken 존재 → 발송 아이콘 -->
-                                                <img th:if="${s.appToken != null}"
-                                                     th:src="@{/image/send1.png}"
-                                                     alt="send-ok">
-                                            </td>
-                                        </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="intro-lesson">
+                    <div class="book-intro-lesson" th:if="${infantBookDTO != null}">
                         <div class="intro-inner">
-                            <div class="intro-book">
+                            <div class="book-intro-book">
+                                <div class="book-name">
+                                    <span class="book-kind" th:text="${infantBookDTO.classLabel}"></span><br>
+                                    <span th:text="${infantBookDTO.subject}"></span>
+                                </div>
+                                <img th:src="@{|https://sunandtree2.cafe24.com/report/bukiimg/J/${infantBookDTO.imagePath}|}" alt="">
+                            </div>
+                            <div class="hanja-list">
+                                <div class="hanja-row">
+                                    <span class="hanja-text" th:text="${infantBookDTO.content}"></span>
+                                </div>
+                            </div>
+                            <div class="voca-tendency">
+                                <div class="tag-list">
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-blue">동화이해 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantBookDTO.story}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-blue">#위인동화</span>
+                                                <span class="hashtag">#한글알기</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-orange">지식탐구 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantBookDTO.knowledgeBoard}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag">#워크북</span>
+                                                <span class="hashtag hash-orange">#지식활동</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-pink">창의표현 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantBookDTO.thinkTalk}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag">#스토리동요</span>
+                                                <span class="hashtag hash-pink">#생각말하기</span>
+                                                <span class="hashtag">#공감독서</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-purple">통합사고 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantBookDTO.goldenbell}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-purple">#골든벨</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tag-row">
+                                        <span class="tag-box tag-green">스마트놀이 활동</span>
+                                        <div class="tag-desc">
+                                            <span th:text="${infantBookDTO.findDiff}"></span>
+                                            <div class="hash-block">
+                                                <span class="hashtag hash-green">#다른그림찾기</span>
+                                                <span class="hashtag">#동화꾸미기</span>
+                                                <span class="hashtag">#그림맞추기</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="han-intro-lesson" th:if="${infantHanDTO != null}">
+                        <div class="intro-inner">
+                            <div class="han-intro-book">
                                 <img th:src="@{|https://sunandtree2.cafe24.com/report/haniimg/rimg/${infantHanDTO.imagePath}|}" alt="">
                                 <div class="book-name">
                                     <span class="book-kind" th:text="${infantHanDTO.classLabel}"></span><br>
@@ -153,8 +246,6 @@
                             </div>
                             <div class="voca-tendency">
                                 <div class="tag-list">
-
-                                    <!-- 1) 의미표현 활동 -->
                                     <div class="tag-row">
                                         <span class="tag-box tag-blue">의미표현 활동</span>
                                         <div class="tag-desc">
@@ -165,8 +256,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 2) 어휘활용 활동 -->
                                     <div class="tag-row">
                                         <span class="tag-box tag-orange">어휘활용 활동</span>
                                         <div class="tag-desc">
@@ -177,8 +266,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 3) 문장이해 활동 -->
                                     <div class="tag-row">
                                         <span class="tag-box tag-pink">문장이해 활동</span>
                                         <div class="tag-desc">
@@ -189,8 +276,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 4) 창의놀이 활동 -->
                                     <div class="tag-row">
                                         <span class="tag-box tag-purple">창의놀이 활동</span>
                                         <div class="tag-desc">
@@ -201,14 +286,12 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- 5) 바른인성 활동 -->
                                     <div class="tag-row">
                                         <span class="tag-box tag-green">바른인성 활동</span>
                                         <div class="tag-desc">
                                             <span th:text="${infantHanDTO.insung}"></span>
                                             <div class="hash-block">
-                                                <span class="hashtag hash-green">#쓱쓱쏙쏙</span>
+                                                <span class="hashtag hash-green">#쓱싹쓱싹</span>
                                                 <span class="hashtag">#한자창조</span>
                                             </div>
                                         </div>
@@ -220,146 +303,6 @@
                 </div>
             </div>
         </main>
-    </div>
-</div>
-<!-- section: 월간평가 modal -->
-<div class="modal pre-modal">
-    <div class="pre-view">
-        <div class="remarks-frame mf">
-            <div class="m-t-line" style="margin-top: 10px;">
-                <div>
-                    <div class="pre-title">김호호 학생의 월간평가 미리보기</div>
-                </div>
-                <a href="#" class="btn-close"></a>
-            </div>
-            <div class="pre-divide learn-divide">
-                <div class="pre-left">
-                    <ul class="pre-sub-t">
-                        <li>이 평가는 <strong>한자 및 어휘의 정확한 이해와</strong></li>
-                        <li><strong>일상 활용 능력</strong>을 종합적으로 확인하였습니다.</li>
-                    </ul>
-                    <div class="table-frame bt">
-                        <table class="basic-table pre-table stripe">
-                            <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>문제 유형</th>
-                                <th>난이도</th>
-                                <th>정답</th>
-                            </tr>
-                            </thead>
-                            <tbody id="" class="stripe">
-                            <colgroup>
-                                <col width="20%">
-                                <col width="30%">
-                                <col width="30%">
-                                <col width="20%">
-                            </colgroup>
-                            <!-- tr 1번째 줄 -->
-                            <tr>
-                                <td>1</td>
-                                <td>뜻소리 구별하기</td>
-                                <td>★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 2번째 줄 -->
-                            <tr>
-                                <td>2</td>
-                                <td>한자어 읽기</td>
-                                <td>★★★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 3번째 줄 -->
-                            <tr>
-                                <td>3</td>
-                                <td>어휘 이해</td>
-                                <td>★★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 4번째 줄 -->
-                            <tr>
-                                <td>4</td>
-                                <td>어휘 활용</td>
-                                <td>★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 5번째 줄 -->
-                            <tr>
-                                <td>5</td>
-                                <td>한자의 쓰임 알기</td>
-                                <td>★★★</td>
-                                <td>X</td>
-                            </tr>
-                            <!-- tr 6번째 줄 -->
-                            <tr>
-                                <td>6</td>
-                                <td>의미 이해</td>
-                                <td>★★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 7번째 줄 -->
-                            <tr>
-                                <td>7</td>
-                                <td>문장 읽기</td>
-                                <td>★★★★</td>
-                                <td>○</td>
-                            </tr>
-                            <!-- tr 8번째 줄 -->
-                            <tr>
-                                <td>8</td>
-                                <td>문장 이해</td>
-                                <td>★★★★★</td>
-                                <td>X</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="pre-right">
-                    <div class="overall">
-                        <div class="overall-top">
-                            <div class="overall-t">월간 평가 총평</div>
-                            <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
-                                유사 단어들 사이에서도 핵심 의미를 잘
-                                구분했습니다. 다만, 비슷한 자형의 한자들이
-                                함께 제시될 때는 의미를 중심으로 구별하는
-                                연습이 더 필요합니다.</p>
-                        </div>
-                        <div class="overall-bottom">
-                            <div class="overall-t">월간 수업 코멘트</div>
-                            <p>김호호 학생은 어휘의 정의를 정확히 이해하고,
-                                유사 단어들 사이에서도 핵심 의미를 잘
-                                구분했습니다. 다만, 비슷한 자형의 한자들이
-                                함께 제시될 때는 의미를 중심으로 구별하는
-                                연습이 더 필요합니다.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- section: 확인해주세요 modal -->
-<div class="modal result-modal">
-    <div class="information">
-        <div class="inform-frame">
-            <div class="m-t-line">
-                <div>
-                    <div class="title">확인해주세요!</div>
-                </div>
-                <a href="#" class="btn-close"></a>
-            </div>
-            <p class="inform-desc">
-                결과보기를 다시 불러올 경우,<br>
-                작성되어있는 <span>월간평가 총평이 모두 초기화</span>됩니다.<br>
-                결과보기를 리셋하시겠습니까?
-            </p>
-            <div class="save-btn-frame" style="margin-top: 10px;">
-                <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
-                <button type="submit" class="save-btn" name="action" value="send">발송</button>
-            </div>
-        </div>
     </div>
 </div>
 

@@ -17,12 +17,10 @@ import com.hohoedu.all_pass.student.model.StudentClass;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.vo.Constants;
-import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.AddStudentDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
@@ -492,9 +490,9 @@ public class ClassService {
     }
 
 
-    public List<TimeTableLabelDTO> findInfantClassLabel(String yy, String mm, String userCode) {
+    public List<TimeTableLabelDTO> findInfantClassLabel(ClassReqDTO.InfantClassLabelsDTO dto) {
 
-        List<TimeTableLabelDTO> labels = classRepository.findInfantClassLabel(userCode, yy, mm)
+        List<TimeTableLabelDTO> labels = classRepository.findInfantClassLabel(dto.getUserCode(), dto.getYy(), dto.getMm())
                 .stream()
                 .map(c -> {
                     String label = c.getClassLabel();
@@ -514,6 +512,64 @@ public class ClassService {
                 .collect(Collectors.toList());
 
         return labels;
+    }
+
+    public ClassRespDTO.InfantHanDTO findInfantHan(TimeTableLabelDTO dto) {
+
+        try {
+            ClassRespDTO.InfantHanDTO infantHanDTO =
+                    classRepository.findInfantHan(dto.getClassKey(), dto.getUnitKey(), dto.getYy());
+
+            if (infantHanDTO == null) {
+                log.warn("InfantHanDTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
+                        dto.getClassKey(), dto.getUnitKey(), dto.getYy());
+                return null;
+            }
+
+            List<ClassRespDTO.InfantHanDTO.StudentInfo> students =
+                    classRepository.findInfantHanStudents(dto.getTimeTableKey());
+
+            if (students == null) {
+                students = new ArrayList<>();
+            }
+
+            infantHanDTO.setStudents(students);
+
+            return infantHanDTO;
+
+        } catch (Exception e) {
+            log.error("유아 한자 조회 중 오류 발생", e);
+            return null;
+        }
+    }
+
+    public ClassRespDTO.InfantBookDTO findInfantBook(TimeTableLabelDTO dto) {
+
+        try {
+            ClassRespDTO.InfantBookDTO infantBookDTO =
+                    classRepository.findInfantBook(dto.getClassKey(), dto.getUnitKey(), dto.getYy());
+
+            if (infantBookDTO == null) {
+                log.warn("InfantBookTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
+                        dto.getClassKey(), dto.getUnitKey(), dto.getYy());
+                return null;
+            }
+
+            List<ClassRespDTO.InfantBookDTO.StudentInfo> students =
+                    classRepository.findInfantBookStudents(dto.getTimeTableKey());
+
+            if (students == null) {
+                students = new ArrayList<>();
+            }
+
+            infantBookDTO.setStudents(students);
+
+            return infantBookDTO;
+
+        } catch (Exception e) {
+            log.error("유아 독서 조회 중 오류 발생", e);
+            return null;
+        }
     }
 
     // ========================================  APP  ======================================== //
@@ -547,63 +603,5 @@ public class ClassService {
         return respDTOS;
     }
 
-
-    public ClassRespDTO.InfantHanDTO findInfantHan(TimeTableLabelDTO dto, String year) {
-
-        try {
-            ClassRespDTO.InfantHanDTO infantHanDTO =
-                    classRepository.findInfantHan(dto.getClassKey(), dto.getUnitKey(), year);
-
-            if (infantHanDTO == null) {
-                log.warn("InfantHanDTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
-                        dto.getClassKey(), dto.getUnitKey(), year);
-                return null;
-            }
-
-            List<ClassRespDTO.InfantHanDTO.StudentInfo> students =
-                    classRepository.findInfantHanStudents(dto.getTimeTableKey());
-
-            if (students == null) {
-                students = new ArrayList<>();
-            }
-
-            infantHanDTO.setStudents(students);
-
-            return infantHanDTO;
-
-        } catch (Exception e) {
-            log.error("유아 한자 조회 중 오류 발생", e);
-            return null;
-        }
-    }
-
-    public ClassRespDTO.InfantBookDTO findInfantBook(TimeTableLabelDTO dto, String year) {
-
-        try {
-            ClassRespDTO.InfantBookDTO infantBookDTO =
-                    classRepository.findInfantBook(dto.getClassKey(), dto.getUnitKey(), year);
-
-            if (infantBookDTO == null) {
-                log.warn("InfantBookTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
-                        dto.getClassKey(), dto.getUnitKey(), year);
-                return null;
-            }
-
-            List<ClassRespDTO.InfantBookDTO.StudentInfo> students =
-                    classRepository.findInfantBookStudents(dto.getTimeTableKey());
-
-            if (students == null) {
-                students = new ArrayList<>();
-            }
-
-            infantBookDTO.setStudents(students);
-
-            return infantBookDTO;
-
-        } catch (Exception e) {
-            log.error("유아 독서 조회 중 오류 발생", e);
-            return null;
-        }
-    }
 }
 

@@ -1258,7 +1258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         console.log('tokens = ', tokens);
 
-        fetch("/api/push/send", {
+        fetch("/api/push/before", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

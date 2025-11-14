@@ -5382,9 +5382,15 @@ input[type="time" i] {
     height: 80vh;
 }
 
-.intro-lesson {
+.han-intro-lesson {
     flex: 5;
     background: #fffcee;
+    border-radius: 10px;
+}
+
+.book-intro-lesson {
+    flex: 5;
+    background: #EDF8FD;
     border-radius: 10px;
 }
 
@@ -5415,12 +5421,21 @@ input[type="time" i] {
     padding: 20px;
 }
 
-.intro-book {
+.han-intro-book {
     display: flex;
     gap: 20px;
     font-weight: bold;
     font-size: 24px;
     align-items: flex-end;
+}
+
+.book-intro-book {
+    display: flex;
+    gap: 20px;
+    font-weight: bold;
+    font-size: 24px;
+    align-items: center;
+    justify-content: space-evenly;
 }
 
 .book-kind {
@@ -5495,7 +5510,7 @@ input[type="time" i] {
     padding: 3px 10px;
     border-radius: 4px;
     font-weight: 600;
-    width: 100px;
+    width: 105px;
     text-align: center;
     height: 100%;
 }

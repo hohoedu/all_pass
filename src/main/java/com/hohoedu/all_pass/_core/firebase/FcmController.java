@@ -13,8 +13,17 @@ public class FcmController {
 
     private final FcmService fcmService;
 
-    @PostMapping("/send")
-    public ResponseEntity<?> send(@RequestBody FcmDTO.BeforeFcmDTO fcmDTO) {
+    @PostMapping("/attendance")
+    public ResponseEntity<?> attendance(@RequestBody FcmDTO.SingleFcmDTO fcmDTO) {
+        if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
+            throw new IllegalArgumentException("토큰이 없습니다.");
+        }
+        fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/before")
+    public ResponseEntity<?> beforeClass(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
         if (fcmDTO.getTokens() == null || fcmDTO.getTokens().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }
@@ -25,17 +34,58 @@ public class FcmController {
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
     }
 
-    @PostMapping("/attendance")
-    public ResponseEntity<?> attendance(@RequestBody FcmDTO.AttendanceFcmDTO fcmDTO) {
-        if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
-            throw new IllegalArgumentException("토큰이 없습니다.");
+    @PostMapping("/after")
+    public ResponseEntity<?> afterClass(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
         }
-        fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
+
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
     }
 
-    @PostMapping("/after")
-    public ResponseEntity<?> afterClass(@RequestBody FcmDTO.AfterFcmDTO fcmDTO) {
+    @PostMapping("/monthly")
+    public ResponseEntity<?> monthly(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        }
+
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/infant")
+    public ResponseEntity<?> infant(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        }
+
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/clinic")
+    public ResponseEntity<?> clinic(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        }
+
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/guide")
+    public ResponseEntity<?> guide(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        for (String token : fcmDTO.getTokens()) {
+            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        }
+
+        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+    }
+
+    @PostMapping("/notice")
+    public ResponseEntity<?> notice(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
 
         for (String token : fcmDTO.getTokens()) {
             fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());

@@ -18,6 +18,7 @@ public class ClassRespDTO {
         private String classLabel;
         private String classTime;
         private String classSubject;
+        private String yy;
     }
 
     @Data
@@ -214,13 +215,14 @@ public class ClassRespDTO {
 
     @Data
     public static class InfantBookDTO {
+        private String classLabel;
         private String subject;
         private String imagePath;
         private String content;
         private String story;
         private String knowledgeBoard;
         private String thinkTalk;
-        private String goldbell;
+        private String goldenbell;
         private String findDiff;
 
         private List<StudentInfo> students;

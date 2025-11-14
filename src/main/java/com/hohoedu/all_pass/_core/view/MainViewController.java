@@ -18,7 +18,7 @@ public class MainViewController {
     public String getIndexPage(HttpSession session) {
         Object user = session.getAttribute("user");
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:https://highreader.co.kr";
         }
         return "index";
     }

@@ -551,7 +551,7 @@
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
         </if>
-        ORDER BY tc.time_table_key
+        ORDER BY tc.time_table_key;
     </select>
 
     <select id="findInfantHan" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO">
@@ -590,7 +590,7 @@
                story           AS story,
                knowledge_board AS knowledgeBoard,
                think_talk      AS thinkTalk,
-               goldenbell      AS goldbell,
+               goldenbell      AS goldenbell,
                find_diff       AS findDiff
         FROM erp_infant_book
         WHERE class_key = #{classKey}

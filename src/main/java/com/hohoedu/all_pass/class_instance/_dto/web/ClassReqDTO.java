@@ -160,6 +160,22 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class InfantClassLabelsDTO {
+        private String yy;
+        private String mm;
+        private String userCode;
+    }
+
+    @Data
+    public static class InfantDetailDTO {
+        private String classKey;
+        private String classSubject;
+        private String unitKey;
+        private String timeTableKey;
+        private String yy;
+    }
+
+    @Data
     public static class BeforeClassNoticeDTO {
         private String studentId;
         private String userCode;

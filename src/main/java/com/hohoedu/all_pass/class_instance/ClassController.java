@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.class_instance;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
@@ -10,7 +11,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.payment.PaymentService;
-import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -323,12 +323,65 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success("hello"));
     }
 
-//    // 월간 평가 (유아)
-//    @PostMapping("/api/monthly/infant")
-//    public ResponseEntity<?> updateMonthlyInfant() {
-//
-//        ClassRespDTO.InfantHanDTO response = classService.findInfantHan();
-//
-//        return ResponseEntity.ok(ApiUtils.success(response));
-//    }
+    // 월간 평가 (유아)
+    @PostMapping("/infant/labels")
+    public ResponseEntity<?> getInfantClassLabel(@RequestBody ClassReqDTO.InfantClassLabelsDTO dto) {
+
+        List<TimeTableLabelDTO> response = classService.findInfantClassLabel(dto);
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/infant/details")
+    public ResponseEntity<?> getInfantClassDetail(@RequestBody ClassReqDTO.InfantDetailDTO dto) {
+        TimeTableLabelDTO labelDTO = new TimeTableLabelDTO();
+        labelDTO.setClassKey(dto.getClassKey());
+        labelDTO.setUnitKey(dto.getUnitKey());
+        labelDTO.setTimeTableKey(dto.getTimeTableKey());
+        labelDTO.setYy(dto.getYy());
+
+        Map<String, Object> response = new HashMap<>();
+
+        Set<String> hanKeys = Set.of("Y", "P", "S");
+        Set<String> bookKeys = Set.of("K", "M", "J");
+
+        try {
+            if (hanKeys.contains(dto.getClassKey())) {
+
+                ClassRespDTO.InfantHanDTO hanDTO = classService.findInfantHan(labelDTO);
+                hanDTO.setClassLabel(dto.getClassSubject());
+                response.put("type", "HAN");
+                response.put("data", hanDTO);
+
+                return ResponseEntity.ok(ApiUtils.success(response));
+            }
+
+            if (bookKeys.contains(dto.getClassKey())) {
+
+                ClassRespDTO.InfantBookDTO bookDTO = classService.findInfantBook(labelDTO);
+                response.put("type", "BOOK");
+                response.put("data", bookDTO);
+                bookDTO.setClassLabel(dto.getClassSubject());
+                return ResponseEntity.ok(ApiUtils.success(response));
+            }
+
+        } catch (Exception e) {
+            response.put("type", "ERROR");
+            response.put("message", "데이터 조회 중 오류가 발생했습니다.");
+            return ResponseEntity.ok(ApiUtils.error("조회 실패", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+
+        // 둘 다 해당되지 않을 때
+        response.put("type", "NONE");
+        response.put("data", null);
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/infant/send")
+    public ResponseEntity<?> sendInfant() {
+
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
 }
