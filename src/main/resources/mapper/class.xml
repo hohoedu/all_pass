@@ -608,6 +608,105 @@
         WHERE ta.time_table_key = #{timeTableKey}
     </select>
 
+    <select id="existsInfantSendHistory" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_infant_send_history
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
+    <insert id="createInfantSendHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO erp_infant_send_history (class_type, student_id, time_table_key, center_code, sender_user, created_at)
+        VALUES (#{classType}, #{student.studentId}, #{timeTable.timeTableKey}, #{center.centerCode}, #{senderUser.userCode}, SYSDATETIME())
+    </insert>
+
+    <select id="findInfantSendId" resultType="int">
+        SELECT TOP 1 send_id
+        FROM erp_infant_send_history
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="countInfantBook" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_infant_book_notice
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
+    <select id="countInfantHan" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_infant_han_notice
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
+    <insert id="insertInfantHanNotice">
+        INSERT INTO erp_infant_han_notice (main_title, subtitle, title1, title2, title3,
+                                           img_url,
+                                           part1_title, part2_title, part3_title, part4_title, part5_title,
+                                           part1_note, part2_note, part3_note, part4_note, part5_note,
+                                           part1_tag_1, part1_tag_2, part1_tag_3,
+                                           part2_tag_1, part2_tag_2, part2_tag_3,
+                                           part3_tag_1, part3_tag_2, part3_tag_3,
+                                           part4_tag_1, part4_tag_2, part4_tag_3,
+                                           part5_tag_1, part5_tag_2, part5_tag_3,
+                                           created_at, updated_at, update_user,
+                                           student_id, time_table_key, center_code, user_code, send_id)
+        VALUES (#{dto.detail.classLabel},
+                #{dto.detail.subject},
+                #{dto.detail.storyComment},
+                #{dto.detail.workBook},
+                #{dto.detail.hanjaSong},
+                #{dto.detail.imagePath},
+                '신습한자', #{dto.detail.story}, '인성 한자성어', '문장이해', '바른인성',
+                #{dto.detail.newWord},
+                #{dto.detail.story} + '(' + #{dto.detail.subStory} + ')',
+                #{dto.detail.idiom} + '(' + #{dto.detail.subIdiom} + ')',
+                #{dto.detail.clean},
+                #{dto.detail.insung},
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                SYSDATETIME(), SYSDATETIME(), #{userCode},
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId})
+    </insert>
+
+    <insert id="insertInfantBookNotice">
+        INSERT INTO erp_infant_book_notice (main_title, subtitle, title1, title2, title3,
+                                            img_url,
+                                            part1_title, part2_title, part3_title, part4_title, part5_title,
+                                            part1_note, part2_note, part3_note, part4_note, part5_note,
+                                            part1_tag_1, part1_tag_2, part1_tag_3,
+                                            part2_tag_1, part2_tag_2, part2_tag_3,
+                                            part3_tag_1, part3_tag_2, part3_tag_3,
+                                            part4_tag_1, part4_tag_2, part4_tag_3,
+                                            part5_tag_1, part5_tag_2, part5_tag_3,
+                                            created_at, updated_at, update_user,
+                                            student_id, time_table_key, center_code, user_code, send_id)
+        VALUES (#{dto.detail.classLabel},
+                #{dto.detail.subject},
+                #{dto.detail.story},
+                #{dto.detail.knowledgeBoard},
+                #{dto.detail.thinkTalk},
+                #{dto.detail.imagePath},
+                '동화이해', '지식탐구', '창의표현', '통합사고', '스마트놀이',
+                #{dto.detail.story},
+                #{dto.detail.knowledgeBoard},
+                #{dto.detail.thinkTalk},
+                #{dto.detail.goldenbell},
+                #{dto.detail.findDiff},
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                NULL, NULL, NULL,
+                SYSDATETIME(), SYSDATETIME(), #{userCode},
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId})
+    </insert>
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->
     <insert id="insertBeforeClassNotice"

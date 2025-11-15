@@ -23,7 +23,16 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping("/login")
+    @GetMapping("/index")
+    public String getIndex(HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        return "index";
+    }
+
+    @GetMapping({"/admin", "/login"})
     public String getLoginPage() {
         return "login";
     }

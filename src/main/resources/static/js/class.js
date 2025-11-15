@@ -1364,7 +1364,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!sendBtn) return;
 
     sendBtn.addEventListener("click", () => {
-        // 체크된 행만 가져오기
         const checkedRows = Array.from(document.querySelectorAll("#record_tbody tr"))
             .filter(row => {
                 const checkbox = row.querySelector("input[type=checkbox]");
@@ -1376,7 +1375,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 체크된 학생들의 appToken 수집
         const tokens = checkedRows
             .map(row => row.getAttribute("data-app-token"))
             .filter(token => token && token.trim() !== "");

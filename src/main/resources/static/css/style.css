@@ -5382,6 +5382,18 @@ input[type="time" i] {
     height: 80vh;
 }
 
+.infant-row-checkbox:disabled {
+    cursor: default;
+    opacity: 0.35;
+    filter: grayscale(100%);
+}
+
+.disabled-row input[type="checkbox"] {
+    cursor: default;
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
 .han-intro-lesson {
     flex: 5;
     background: #fffcee;

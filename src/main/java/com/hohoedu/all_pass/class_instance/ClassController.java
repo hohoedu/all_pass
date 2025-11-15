@@ -11,8 +11,10 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,6 +39,7 @@ import com.hohoedu.all_pass.student.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RestController
 @RequestMapping("/class")
 @RequiredArgsConstructor
@@ -378,10 +381,27 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-    @PostMapping("/infant/send")
-    public ResponseEntity<?> sendInfant() {
+    @PostMapping("/infant/save")
+    public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session
+    ) {
+        try {
+            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiUtils.error("UNAUTHORIZED", HttpStatus.UNAUTHORIZED));
+            }
 
+            String centerCode = user.getCenterCode();
+            String userCode = user.getUserCode();
 
-        return ResponseEntity.ok(ApiUtils.success(null));
+            classService.saveInfantNotice(reqDTO, centerCode, userCode);
+
+            return ResponseEntity.ok(ApiUtils.success("success"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(ApiUtils.error("SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 }

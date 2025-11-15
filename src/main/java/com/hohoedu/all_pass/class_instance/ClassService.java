@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
@@ -572,6 +573,67 @@ public class ClassService {
         }
     }
 
+    public void saveInfantSendHistory(String classType, String timeTableKey, String senderUser, String centerCode, List<String> studentIds) {
+
+        for (String studentId : studentIds) {
+
+            if (classRepository.existsInfantSendHistory(studentId, timeTableKey) > 0) {
+                continue;
+            }
+
+            InfantSendHistory history = InfantSendHistory.builder()
+                    .classType(classType)
+                    .student(Student.builder().studentId(studentId).build())
+                    .timeTable(TimeTable.builder().timeTableKey(timeTableKey).build())
+                    .center(Center.builder().centerCode(centerCode).build())
+                    .senderUser(User.builder().userCode(senderUser).build())
+                    .build();
+
+            classRepository.createInfantSendHistory(history);
+        }
+    }
+
+    @Transactional
+    public void saveInfantNotice(ClassReqDTO.InfantSaveReqDTO reqDTO, String centerCode, String userCode) {
+
+        for (ClassReqDTO.InfantSaveReqDTO.StudentDTO s : reqDTO.getStudents()) {
+            int cnt = 0;
+            if (reqDTO.getType().equals("HAN")) {
+                cnt = classRepository.countInfantHan(
+                        s.getStudentId(),
+                        reqDTO.getTimeTableKey());
+            }
+            if (reqDTO.getType().equals("BOOK")) {
+                cnt = classRepository.countInfantBook(
+                        s.getStudentId(),
+                        reqDTO.getTimeTableKey());
+            }
+
+            log.info("cnt={}", cnt);
+            if (cnt > 0) continue;
+
+            Integer sendId = classRepository.findInfantSendId(
+                    s.getStudentId(),
+                    reqDTO.getTimeTableKey()
+            );
+
+            if (sendId == null) {
+                throw new IllegalStateException("sendHistory가 없습니다.");
+            }
+
+            // HAN or BOOK 분기하여 insert
+            if ("HAN".equals(reqDTO.getType())) {
+                classRepository.insertInfantHanNotice(
+                        reqDTO, centerCode, userCode, s.getStudentId(), sendId
+                );
+            } else {
+                classRepository.insertInfantBookNotice(
+                        reqDTO, centerCode, userCode, s.getStudentId(), sendId
+                );
+            }
+        }
+    }
+
     // ========================================  APP  ======================================== //
     public List<ClassAppRespDTO.ClassInfoRespDTO> getClassInfo(String studentId, String yy, String mm) {
 
@@ -602,6 +664,7 @@ public class ClassService {
 
         return respDTOS;
     }
+
 
 }
 

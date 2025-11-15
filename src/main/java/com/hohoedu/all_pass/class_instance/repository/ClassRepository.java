@@ -5,6 +5,7 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance.model.InfantSendHistory;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -196,13 +197,44 @@ public interface ClassRepository {
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("year") String year);
+
     ClassRespDTO.InfantBookDTO findInfantBook(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("year") String year);
 
     List<ClassRespDTO.InfantHanDTO.StudentInfo> findInfantHanStudents(String TimeTableKey);
+
     List<ClassRespDTO.InfantBookDTO.StudentInfo> findInfantBookStudents(String TimeTableKey);
+
+    int existsInfantSendHistory(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey
+    );
+
+    int createInfantSendHistory(InfantSendHistory history);
+
+    int countInfantHan(@Param("studentId") String studentId,
+                       @Param("timeTableKey") String timeTableKey);
+
+    int countInfantBook(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+    int findInfantSendId(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey);
+
+    void insertInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                               @Param("centerCode") String centerCode,
+                               @Param("userCode") String userCode,
+                               @Param("studentId") String studentId,
+                               @Param("sendId") Integer sendId);
+
+    void insertInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                                @Param("centerCode") String centerCode,
+                                @Param("userCode") String userCode,
+                                @Param("studentId") String studentId,
+                                @Param("sendId") Integer sendId);
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
 

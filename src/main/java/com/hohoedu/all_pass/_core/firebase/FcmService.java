@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Service
 public class FcmService {
-    public void sendMessage(String token, String title, String body) {
+    public boolean sendMessage(String token, String title, String body) {
         try {
             Message.Builder builder = Message.builder()
                     .setToken(token)
@@ -19,10 +19,10 @@ public class FcmService {
                             .build());
 
             String response = FirebaseMessaging.getInstance().send(builder.build());
-            System.out.println("Successfully sent message: " + response);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return true;
     }
 }

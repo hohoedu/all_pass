@@ -68,26 +68,31 @@ function infantSelectAllCheckbox() {
 
     if (!selectAll || checkboxes.length === 0) return;
 
-    // 전체 선택
-    selectAll.addEventListener("change", () => {
-        checkboxes.forEach(chk => chk.checked = selectAll.checked);
+    // 🔥 appToken 없는 학생 비활성화
+    checkboxes.forEach(cb => {
+        if (!cb.dataset.token) {
+            cb.disabled = true;
+            cb.closest("tr").classList.add("disabled-row"); // optional UI
+        }
+    });
 
+    const enabledCheckboxes = [...checkboxes].filter(cb => !cb.disabled);
+
+    selectAll.addEventListener("change", () => {
+        enabledCheckboxes.forEach(chk => (chk.checked = selectAll.checked));
         updateSelectedStudents();
     });
 
-    // 각각 선택
-    checkboxes.forEach(chk => {
+    enabledCheckboxes.forEach(chk => {
         chk.addEventListener("change", () => {
-
-            const allChecked = [...checkboxes].every(c => c.checked);
+            const allChecked = enabledCheckboxes.every(c => c.checked);
             selectAll.checked = allChecked;
-
             updateSelectedStudents();
         });
     });
 
     function updateSelectedStudents() {
-        selectedStudents = [...checkboxes]
+        selectedStudents = enabledCheckboxes
             .filter(c => c.checked)
             .map(c => ({
                 id: c.dataset.id,
@@ -232,14 +237,20 @@ function renderStudents(students) {
     }
 
     students.forEach(s => {
+
+        // 🔥 앱 미등록 → disabled 속성 + disabled-row 클래스 부여
+        const disabled = s.appToken == null ? "disabled" : "";
+        const disabledRowClass = s.appToken == null ? "disabled-row" : "";
+
         const row = `
-            <tr>
+            <tr class="${disabledRowClass}">
                 <td class="checkbox-group">
                     <input type="checkbox"
                         class="infant-row-checkbox"
                         data-id="${s.studentId}"
                         data-name="${s.studentName}"
-                        data-token="${s.appToken}"/>
+                        data-token="${s.appToken}"
+                        ${disabled}/>
                 </td>
                 <td>${s.studentName}</td>
                 <td class="send-ornot">
@@ -253,7 +264,7 @@ function renderStudents(students) {
         tbody.insertAdjacentHTML("beforeend", row);
     });
 
-    infantSelectAllCheckbox();
+    infantSelectAllCheckbox();   // 🔥 다시 비활성화/선택 로직 적용
 }
 
 function renderIntroSection(type, detail) {
@@ -466,69 +477,182 @@ function renderIntroSection(type, detail) {
     container.appendChild(frag);
 }
 
+function getLessonType() {
+    if (document.querySelector(".han-intro-lesson")) return "HAN";
+    if (document.querySelector(".book-intro-lesson")) return "BOOK";
+    return null;
+}
+
+function collectHanData() {
+    const wrap = document.querySelector(".han-intro-lesson");
+    if (!wrap) return null;
+
+    const text = (sel) => wrap.querySelector(sel)?.innerText.trim() || "";
+
+    return {
+        classLabel: text(".book-kind"),
+        subject: text(".book-name span:nth-of-type(2)"),
+        imagePath: wrap.querySelector(".han-intro-book img")?.src?.split("/").pop() || "",
+
+        newWord: text(".hanja-row:nth-of-type(1) .hanja-text"),
+        story: text(".hanja-row:nth-of-type(2) .hanja-label"),
+        subStory: text(".hanja-row:nth-of-type(2) .hanja-text").replace(/.*\(|\)/g, ""),
+        idiom: text(".hanja-row:nth-of-type(3) .hanja-text").split("(")[0].trim(),
+        subIdiom: text(".hanja-row:nth-of-type(3) .hanja-text").replace(/.*\(|\)/g, ""),
+
+        hanjaSong: text(".tag-row:nth-of-type(1) .tag-desc span"),
+        workBook: text(".tag-row:nth-of-type(2) .tag-desc span"),
+        storyComment: text(".tag-row:nth-of-type(3) .tag-desc span"),
+        clean: text(".tag-row:nth-of-type(4) .tag-desc span"),
+        insung: text(".tag-row:nth-of-type(5) .tag-desc span"),
+    };
+}
+
+function collectBookData() {
+    const wrap = document.querySelector(".book-intro-lesson");
+    if (!wrap) return null;
+
+    const text = (sel) => wrap.querySelector(sel)?.innerText.trim() || "";
+
+    return {
+        classLabel: text(".book-kind"),
+        subject: text(".book-name span:nth-of-type(2)"),
+        imagePath: wrap.querySelector(".book-intro-book img")?.src?.split("/").pop() || "",
+
+        content: text(".hanja-row .hanja-text"),
+
+        story: text(".tag-row:nth-of-type(1) .tag-desc span"),
+        knowledgeBoard: text(".tag-row:nth-of-type(2) .tag-desc span"),
+        thinkTalk: text(".tag-row:nth-of-type(3) .tag-desc span"),
+        goldenbell: text(".tag-row:nth-of-type(4) .tag-desc span"),
+        findDiff: text(".tag-row:nth-of-type(5) .tag-desc span"),
+    };
+}
+
+function collectLessonData() {
+    const type = getLessonType(); // HAN 또는 BOOK 리턴하는 기존 함수
+    if (!type) return null;
+
+    return {
+        type,
+        detail: type === "HAN" ? collectHanData() : collectBookData()
+    };
+}
+
+function collectSelectedStudents() {
+    const checkboxes = document.querySelectorAll(".infant-row-checkbox:checked");
+    const list = [];
+
+    checkboxes.forEach(cb => {
+        list.push({
+            studentId: cb.dataset.id,
+            studentName: cb.dataset.name,
+            appToken: cb.dataset.token || null
+        });
+    });
+
+    return list;
+}
+
 // 발행버튼 클릭
 document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = document.getElementById("send-infant-btn");
-
     if (!sendBtn) return;
 
     sendBtn.addEventListener("click", async () => {
         try {
-            // 선택된 학생 확인
-            if (!selectedStudents || selectedStudents.length === 0) {
+
+            const lesson = collectLessonData();
+            const students = collectSelectedStudents();
+
+            if (!lesson) {
+                alert("수업 정보가 없습니다.");
+                return;
+            }
+
+            if (students.length === 0) {
                 alert("학생을 선택하세요.");
                 return;
             }
 
-            const targets = selectedStudents.filter(s => s.appToken);
-
-            if (targets.length === 0) {
-                alert("앱 등록된 학생이 없습니다.");
-                return;
-            }
-
-            const requestBody = {
-                tokens: targets.map(s => s.appToken),
+            const sendRequestBody = {
+                students: selectedStudents.map(s => ({
+                    studentId: s.id,
+                    token: s.appToken
+                })),
+                classType: lesson.type,
+                timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
                 title: "학습 내용",
                 body: "내용이 입력되었습니다."
+            }
+
+
+            const saveRequestBody = {
+                type: lesson.type,
+                detail: lesson.detail,
+                students: students,
+                classKey: document.querySelector(".class-btn.active")?.dataset.classKey,
+                unitKey: document.querySelector(".class-btn.active")?.dataset.unitKey,
+                timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey
             };
 
-            console.log("📨 전송 요청 Body:", requestBody);
+            let sendSuccess = false;
 
-            const sendRes = await fetch("/api/push/infant", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(requestBody)
-            });
+            const appTargets = sendRequestBody.students.filter(s => s.token);
 
-            const sendData = await sendRes.json();
+            if (appTargets.length === 0) {
+                sendSuccess = false;
+            } else {
+                try {
+                    const sendRes = await fetch("/api/push/infant", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(sendRequestBody)
+                    });
 
-            if (!sendRes.ok || sendData.status !== "success") {
+                    const sendData = await sendRes.json();
+
+                    if (sendRes.ok && sendData.response === "success") {
+                        sendSuccess = true;
+                    }
+                } catch (e) {
+                    console.error("❌ SEND ERROR:", e);
+                }
+            }
+
+            if (!sendSuccess) {
                 alert("알림 전송에 실패했습니다.");
-                console.error("❌ 전송 실패:", sendData);
-                return;
+                return; // ❗ save 실행 안 함
             }
 
-            const saveRes = await fetch("/class/infant/save-send-history", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(requestBody)
-            });
+            let saveSuccess = false;
 
-            const saveData = await saveRes.json();
+            try {
+                const saveRes = await fetch("/class/infant/save", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(saveRequestBody)
+                });
 
-            if (!saveRes.ok || saveData.status !== "success") {
-                alert("알림은 전송되었으나 기록 저장에 실패했습니다.");
-                console.error("❌ 기록 저장 실패:", saveData);
-                return;
+                const saveData = await saveRes.json();
+                console.log("📥 SAVE:", saveData);
+
+                if (saveRes.ok && saveData.response === "success") {
+                    saveSuccess = true;
+                }
+            } catch (e) {
+                console.error("❌ SAVE ERROR:", e);
             }
 
-
-            alert("알림이 전송되고 기록이 저장되었습니다.");
+            if (saveSuccess) {
+                alert("알림이 정상적으로 전송되었습니다.");
+            } else {
+                alert("알림은 전송되었으나 저장에 실패했습니다.");
+            }
 
         } catch (err) {
-            console.error("❌ 발행 처리 중 오류:", err);
-            alert("처리 중 오류가 발생했습니다.");
+            console.error("❌ 전체 오류:", err);
+            alert("오류가 발생했습니다.");
         }
     });
 });

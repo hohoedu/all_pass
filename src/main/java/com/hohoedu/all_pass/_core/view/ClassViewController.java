@@ -276,16 +276,16 @@ public class ClassViewController {
 
     @GetMapping("/infant")
     public String getMonthlyInfantPage(HttpSession session, Model model) {
-//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//        if (user == null) {
-//            return "login";
-//        }
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "login";
+        }
 
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
 
-//        List<User> users = userService.findByCenterCode(user.getCenterCode());
-        List<User> users = userService.findByCenterCode("DAE001");
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
+
 
         ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();
         classInfantDTO.setUserCode("all");

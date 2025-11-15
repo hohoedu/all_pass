@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.class_instance._dto.web;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -173,6 +174,53 @@ public class ClassReqDTO {
         private String unitKey;
         private String timeTableKey;
         private String yy;
+    }
+
+
+    @Data
+    public static class InfantSaveReqDTO {
+
+        private String type;
+
+        private Detail detail;
+
+        private String classKey;
+        private String unitKey;
+        private String timeTableKey;
+
+        private List<StudentDTO> students;
+
+        @Data
+        public static class StudentDTO {
+            private String studentId;
+            private String studentName;
+        }
+
+        @Data
+        public static class Detail {
+            private String classLabel;
+            private String subject;
+            private String imagePath;
+
+            // BOOK
+            private String content;
+            private String story;
+            private String knowledgeBoard;
+            private String thinkTalk;
+            private String goldenbell;
+            private String findDiff;
+
+            // HAN
+            private String newWord;
+            private String subStory;
+            private String idiom;
+            private String subIdiom;
+            private String hanjaSong;
+            private String workBook;
+            private String storyComment;
+            private String clean;
+            private String insung;
+        }
     }
 
     @Data
