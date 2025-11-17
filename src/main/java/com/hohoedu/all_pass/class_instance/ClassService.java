@@ -87,11 +87,18 @@ public class ClassService {
         return grades;
     }
 
+    public List<TimeTableLabelDTO> getAllClassLabel(String userCode) {
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm, "0");
+        return labels;
+    }
+
     // 클래스 라벨 테이블 조회 (학생 정보 메인, 전입 전출 메인)
     public List<TimeTableLabelDTO> getClassLabel(String userCode) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
-        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm);
+        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm, "1");
         return labels;
     }
 

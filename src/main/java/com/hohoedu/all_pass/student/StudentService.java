@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -174,20 +175,20 @@ public class StudentService {
                 .yy(yy)
                 .mm(mm);
 
-            if ("1".equals(dto.getClassType())) {
-                builder
-                        .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                        .hanUser(User.builder().userCode(dto.getUserCode()).build())
-                        .hanFee(fee)
-                        .hanMaterialFee(materialFee);
+        if ("1".equals(dto.getClassType())) {
+            builder
+                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
+                    .hanFee(fee)
+                    .hanMaterialFee(materialFee);
 
-            } else if ("2".equals(dto.getClassType())) {
-                builder
-                        .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                        .bookUser(User.builder().userCode(dto.getUserCode()).build())
-                        .bookFee(fee)
-                        .bookMaterialFee(materialFee);
-            }
+        } else if ("2".equals(dto.getClassType())) {
+            builder
+                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
+                    .bookFee(fee)
+                    .bookMaterialFee(materialFee);
+        }
 
         StudentClass studentClass = builder.build();
 
@@ -275,7 +276,20 @@ public class StudentService {
         if (count != null && count > 0) {
             return false;
         }
-        studentRepository.checkinStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
+        String attendanceKey = "";
+
+        ClassRespDTO.TimeRangeDTO timeDTO = studentRepository.getStartClassTime(student.getStudentId(), dto.getYmd());
+
+        LocalTime start = LocalTime.parse(timeDTO.getStartTime());
+        LocalTime now = LocalTime.parse(dto.getHhmm());
+
+        if (now.isAfter(start)) {
+            attendanceKey = "late";
+        } else {
+            attendanceKey = "present";
+        }
+
+        studentRepository.checkinStudentAttendance(dto.getHhmm(), timeDTO.getEndTime(), attendanceKey, student.getStudentId(), dto.getYmd());
 
         return true;
     }

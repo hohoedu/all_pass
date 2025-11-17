@@ -428,10 +428,21 @@
           and attendance_date = #{attendanceDate}
     </select>
 
+    <select id="getStartClassTime" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeRangeDTO">
+        SELECT MIN(t.start_time) AS startTime,
+               MAX(t.end_time)   AS endTime
+        FROM erp_student_attendance esa
+                 JOIN erp_time_table t ON esa.time_table_key = t.time_table_key
+        WHERE esa.student_id = #{studentId}
+          AND attendance_date = #{attendanceDate}
+    </select>
+
     <!-- 등원 update -->
     <update id="checkinStudentAttendance">
         UPDATE erp_student_attendance
         SET in_time             = #{inTime},
+            out_time            = #{endTime},
+            attendance_key      = #{attendanceKey},
             check_in_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND attendance_date = #{attendanceDate}

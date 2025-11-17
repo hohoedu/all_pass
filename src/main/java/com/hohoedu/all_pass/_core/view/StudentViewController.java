@@ -56,7 +56,7 @@ public class StudentViewController {
 
         List<MainStudentDTO> students = studentService.getStudentsByUserCode("all", user.getCenterCode());
         List<User> teachers = studentService.findTeacher(user.getCenterCode());
-        List<TimeTableLabelDTO> labels = classService.getClassLabel("all");
+        List<TimeTableLabelDTO> labels = classService.getAllClassLabel("all");
 
         model.addAttribute("labels", labels);
         model.addAttribute("students", students);
@@ -77,7 +77,7 @@ public class StudentViewController {
 
         List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode());
         List<User> teachers = studentService.findTeacher(user.getCenterCode());
-        List<TimeTableLabelDTO> labels = classService.getClassLabel("all");
+        List<TimeTableLabelDTO> labels = classService.getAllClassLabel("all");
 
         model.addAttribute("labels", labels);
         model.addAttribute("students", students);

@@ -207,7 +207,9 @@
         JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
         WHERE YY = #{yy}
         AND MM = #{mm}
-        AND LEN(t.class_key) > 1
+        <if test="count != null and count != '0'">
+            AND LEN(t.class_key) > #{count}
+        </if>
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
         </if>
@@ -331,7 +333,7 @@
         <if test="userCode != null and userCode != 'all'">
             AND user_code = #{userCode}
         </if>
-        ORDER BY t.period_no ASC
+        ORDER BY t.start_time ASC
     </select>
 
     <!--  수업 일지 학생 불러오기  -->

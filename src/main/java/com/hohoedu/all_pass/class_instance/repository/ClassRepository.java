@@ -126,7 +126,8 @@ public interface ClassRepository {
     public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
             @Param("userCode") String userCode,
             @Param("yy") String yy,
-            @Param("mm") String mm);
+            @Param("mm") String mm,
+            @Param("count") String count);
 
     public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCodeAndDayname(
             @Param("userCode") String userCode,

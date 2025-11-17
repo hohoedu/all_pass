@@ -163,9 +163,6 @@ public class StudentController {
 
     @PostMapping("/app_token")
     public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
-        System.out.println("===============================");
-        System.out.println(attendanceTokenDTO.getAppId());
-        System.out.println("===============================");
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());
         return ResponseEntity.ok(ApiUtils.success(respDTO));
     }

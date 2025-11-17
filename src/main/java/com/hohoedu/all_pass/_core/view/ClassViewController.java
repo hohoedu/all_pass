@@ -198,7 +198,7 @@ public class ClassViewController {
 
         List<User> users = userService.findByCenterCode(user.getCenterCode());
 
-        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
+        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, "all", user.getCenterCode());
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();

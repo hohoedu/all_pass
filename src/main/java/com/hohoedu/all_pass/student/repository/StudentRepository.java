@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student.repository;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
@@ -88,10 +89,16 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
 
+    ClassRespDTO.TimeRangeDTO getStartClassTime(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate);
+
     // 출석 insert
     public void checkinStudentAttendance(
-            @Param("studentId") String studentId,
             @Param("inTime") String inTime,
+            @Param("endTime") String endTime,
+            @Param("attendanceKey") String attendanceKey,
+            @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
 
     // 하원 여부 체크

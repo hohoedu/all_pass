@@ -84,6 +84,12 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class TimeRangeDTO {
+        private String startTime;
+        private String endTime;
+    }
+
+    @Data
     public static class InitRecordDTO {
         private String timeTableKey;
         private String classLabel;
