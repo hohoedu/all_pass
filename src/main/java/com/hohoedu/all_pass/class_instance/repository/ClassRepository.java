@@ -5,6 +5,7 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.model.InfantSendHistory;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -14,9 +15,19 @@ import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.TimeTable;
 import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
 import com.hohoedu.all_pass.user.User;
+import org.springframework.security.core.parameters.P;
 
 @Mapper
 public interface ClassRepository {
+
+    void insertClassWeek(ClassWeek classWeek);
+
+    ClassRespDTO.ClassWeekDTO findClassWeek(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode);
+
+    void updateClassWeek(ClassReqDTO.SetWeekDTO dto);
 
     public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
 
@@ -150,7 +161,14 @@ public interface ClassRepository {
     public void createAttendance(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
-            @Param("centerCode") String centerCode);
+            @Param("centerCode") String centerCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    ClassWeek findClassWeekByCenter(
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("month") String month);
 
     void updateAttendance(
             @Param("studentId") String studentId,

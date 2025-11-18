@@ -91,13 +91,15 @@ public interface StudentRepository {
 
     ClassRespDTO.TimeRangeDTO getStartClassTime(
             @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate);
+            @Param("year") String year,
+            @Param("month") String month);
 
     // 출석 insert
-    public void checkinStudentAttendance(
+    public int checkinStudentAttendance(
             @Param("inTime") String inTime,
             @Param("endTime") String endTime,
             @Param("attendanceKey") String attendanceKey,
+            @Param("week") String week,
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
 

@@ -91,23 +91,42 @@ public class PaymentController {
     // 데이터 필터링
     @PostMapping("/students")
     public ResponseEntity<?> getStudents(HttpSession session, @RequestBody PaymentReqDTO.StudentsByMonthDTO paymentReqDTO) {
-
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
         String year = paymentReqDTO.getYear();
         String month = paymentReqDTO.getMonth();
         String userCode = paymentReqDTO.getUserCode();
 
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode);
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
 
     @PostMapping("edu-personal")
-    public ResponseEntity<?> getPersonalModal(@RequestBody Map<String, String> studentId) {
+    public ResponseEntity<?> getPersonalModal(HttpSession session, @RequestBody Map<String, String> studentId) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
 
-        List<PaymentRespDTO.PaymentModalDTO> response = paymentService.findPaymentByStudentId(studentId.get("studentId"));
+        List<PaymentRespDTO.PaymentModalDTO> response = paymentService.findPaymentByStudentId(studentId.get("studentId"), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/list/students")
+    public ResponseEntity<?> getListStudents(HttpSession session, @RequestBody Map<String, String> studentId) {
+        studentId.put("studentId", "DAE001cos");
+
+        return ResponseEntity.ok(ApiUtils.success(studentId));
+
     }
 
 

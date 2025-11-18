@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.bookTeacher ? `${item.bookTeacher}(북)` : ''
                 ].filter(Boolean).join(', ')
             }</td>
-            <td>${item.billType || ''}</td>
+            <td>${item.billType || '-'}</td>
             <td>${approvedDate.split(' ')[0]}</td>
             <td class="payment">${amount}</td>
             <td class="middle">
@@ -343,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getStatus(status) {
         switch (status) {
+            case 'pending':
+                return '청구서 미발행';
             case 'issued':
                 return '결제 대기';
             case 'approved':
@@ -358,6 +360,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getStatusClass(status) {
         switch (status) {
+            case 'pending':
+                return 'pending'
             case 'issued':
                 return 'standby';
             case 'approved':

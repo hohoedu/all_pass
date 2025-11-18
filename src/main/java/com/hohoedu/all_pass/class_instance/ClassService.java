@@ -60,6 +60,69 @@ public class ClassService {
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
 
+
+    public void createClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
+        dto.setCenterCode(centerCode);
+
+        // 기본값 null 넣기 위한 초기화
+        String ju1Start = null, ju1End = null;
+        String ju2Start = null, ju2End = null;
+        String ju3Start = null, ju3End = null;
+        String ju4Start = null, ju4End = null;
+
+        for (ClassReqDTO.SetWeekDTO.WeekDTO w : dto.getWeeks()) {
+            if (w == null) continue;
+
+            switch (w.getWeekNo()) {
+                case 1 -> {
+                    ju1Start = w.getStart();
+                    ju1End = w.getEnd();
+                }
+                case 2 -> {
+                    ju2Start = w.getStart();
+                    ju2End = w.getEnd();
+                }
+                case 3 -> {
+                    ju3Start = w.getStart();
+                    ju3End = w.getEnd();
+                }
+                case 4 -> {
+                    ju4Start = w.getStart();
+                    ju4End = w.getEnd();
+                }
+            }
+        }
+
+        ClassWeek week = ClassWeek.builder()
+                .year(dto.getYear())
+                .month(dto.getMonth())
+                .ju1Start(ju1Start)
+                .ju1End(ju1End)
+                .ju2Start(ju2Start)
+                .ju2End(ju2End)
+                .ju3Start(ju3Start)
+                .ju3End(ju3End)
+                .ju4Start(ju4Start)
+                .ju4End(ju4End)
+                .center(Center.builder().centerCode(dto.getCenterCode()).build())
+                .build();
+
+        classRepository.insertClassWeek(week);
+    }
+
+    public ClassRespDTO.ClassWeekDTO findClassWeek(ClassReqDTO.GetWeekDTO dto) {
+
+        return classRepository.findClassWeek(dto.getYear(), dto.getMonth(), dto.getCenterCode());
+    }
+
+    public void updateClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
+        dto.setCenterCode(centerCode);
+
+
+        classRepository.updateClassWeek(dto);
+
+    }
+
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
         List<ClassCode> classCodes = classCodeJpaRepository.findAll();
@@ -219,7 +282,7 @@ public class ClassService {
 
             classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
 
-            classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode);
+            classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
 
 
         } catch (Exception e) {
@@ -671,7 +734,6 @@ public class ClassService {
 
         return respDTOS;
     }
-
 
 }
 

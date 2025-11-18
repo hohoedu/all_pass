@@ -27,7 +27,8 @@ public interface PaymentRepository {
     List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(
             @Param("year") String year,
             @Param("month") String month,
-            @Param("userCode") String userCode);
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
 
     // 수업별 센터별 수업료 조회
     Integer findFeeByClassKey(
@@ -64,7 +65,9 @@ public interface PaymentRepository {
 
     void createPaymentCallback(PaymentCallback paymentCallback);
 
-    List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId);
+    List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(
+            @Param("studentId") String studentId,
+            @Param("centerCode") String centerCode);
 
     Payment findPaymentByBillId(String billId);
 

@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
 
-                const res = await fetch("/pay/list/students", {
+                    const res = await fetch("/pay/list/students", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({yy, mm})

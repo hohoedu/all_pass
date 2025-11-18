@@ -1,4 +1,7 @@
 // URL에서 날짜 가져오기
+let year = null;
+let month = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     const openMonthPicker = document.getElementById('openMonthPicker');
     const monthPickerInput = document.getElementById('monthPickerInput');
@@ -8,8 +11,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const url = new URL(window.location.href);
     const urlParams = url.searchParams;
 
-    let year = urlParams.get('year');
-    let month = urlParams.get('month');
+    year = urlParams.get('year');
+    month = urlParams.get('month');
+
     if (year && month) {
         currentMonthElement.textContent = `${year}년 ${parseInt(month, 10)}월`;
     }
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (url.pathname.includes('timetable')) {
             newUrl = `/class/timetable?year=${selectedYear}&month=${selectedMonth}`;
         } else if (url.pathname.includes('timeview')) {
-            newUrl = `/class/timeview?year=${selectedYear}&month=${selectedMonth}&user=2`;
+            newUrl = `/class/timeview?year=${selectedYear}&month=${selectedMonth}`;
         } else if (url.pathname.includes('remedial')) {
             newUrl = `/class/remedial?year=${selectedYear}&month=${selectedMonth}`;
         }
@@ -48,6 +52,345 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         input.value = v;
     });
+});
+
+// 센터별 수업 주차 설정하기
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        const modal = document.getElementById("weekModal");
+        const btn = document.getElementById("weekOpenBtn");
+        const close = document.querySelector(".week-modal-close");
+
+        const grid = document.getElementById("calendarGrid");
+        const monthLabel = document.getElementById("calendarMonthLabel");
+        const prevBtn = document.getElementById("calendarPrevBtn");
+        const nextBtn = document.getElementById("calendarNextBtn");
+
+        const startLabel = document.getElementById("calendarStartLabel");
+        const endLabel = document.getElementById("calendarEndLabel");
+        const confirmBtn = document.getElementById("weekConfirmBtn");
+
+
+        let hasWeekData = false;
+        let existingId = null;
+
+        let viewYear, viewMonth;
+        let startDate = null;
+        let endDate = null;
+
+        let weekIndex = 0;
+        let activeWeekIndex = null;
+
+        let weekData = [null, null, null, null];
+
+        const weekBoxes = [
+            document.getElementById("weekBox1"),
+            document.getElementById("weekBox2"),
+            document.getElementById("weekBox3"),
+            document.getElementById("weekBox4")
+        ];
+
+        weekBoxes.forEach((box, idx) => {
+            box.addEventListener("click", () => {
+                try {
+                    const hasValue = weekData[idx] !== null;
+
+                    if (hasValue) {
+                        const msg = `${idx + 1}주차에 이미 값이 있습니다.\n다시 설정하시겠습니까?`;
+                        if (!confirm(msg)) return;
+
+                        weekData[idx] = null;
+                        box.textContent = "";
+                    }
+
+                    activeWeekIndex = idx;
+
+                    weekBoxes.forEach(b => b.classList.remove("week-box-focused"));
+                    box.classList.add("week-box-focused");
+
+                } catch (e) {
+                    console.error(e);
+                    alert("주차 처리 오류");
+                }
+            });
+        });
+
+        btn.addEventListener("click", async () => {
+
+            try {
+                const res = await fetch("/class/week/get", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({year, month})
+                });
+
+                const data = await res.json();
+                if (data.response) {
+                    hasWeekData = true;
+                    existingId = data.response.id;  // update용
+                    const w = data.response;
+
+                    weekData = [
+                        w.ju1Start ? {start: new Date(w.ju1Start), end: new Date(w.ju1End)} : null,
+                        w.ju2Start ? {start: new Date(w.ju2Start), end: new Date(w.ju2End)} : null,
+                        w.ju3Start ? {start: new Date(w.ju3Start), end: new Date(w.ju3End)} : null,
+                        w.ju4Start ? {start: new Date(w.ju4Start), end: new Date(w.ju4End)} : null
+                    ];
+
+                    bindWeekBox(0, w.ju1Start, w.ju1End);
+                    bindWeekBox(1, w.ju2Start, w.ju2End);
+                    bindWeekBox(2, w.ju3Start, w.ju3End);
+                    bindWeekBox(3, w.ju4Start, w.ju4End);
+
+                } else {
+                    // 없는 경우
+                    hasWeekData = false;
+                    existingId = null;
+                    weekData = [null, null, null, null];
+                    weekBoxes.forEach(b => b.textContent = "");
+                }
+
+            } catch (err) {
+                console.error(err);
+                hasWeekData = false;
+            }
+
+
+            viewYear = parseInt(year);
+            viewMonth = parseInt(month) - 1;
+
+            startDate = null;
+            endDate = null;
+
+            startLabel.textContent = "";
+            endLabel.textContent = "";
+
+            activeWeekIndex = null;
+
+            weekBoxes.forEach(b => b.classList.remove("week-box-focused"));
+            weekBoxes[weekIndex].classList.add("week-box-focused");
+
+            renderCalendar();
+            modal.style.display = "block";
+        });
+
+        close.addEventListener("click", () => modal.style.display = "none");
+        window.addEventListener("click", e => {
+            if (e.target === modal) modal.style.display = "none";
+        });
+
+        prevBtn.addEventListener("click", () => {
+            viewMonth--;
+            if (viewMonth < 0) {
+                viewMonth = 11;
+                viewYear--;
+            }
+            renderCalendar();
+        });
+
+        nextBtn.addEventListener("click", () => {
+            viewMonth++;
+            if (viewMonth > 11) {
+                viewMonth = 0;
+                viewYear++;
+            }
+            renderCalendar();
+        });
+
+        function renderCalendar() {
+            try {
+                grid.innerHTML = "";
+                const date = new Date(viewYear, viewMonth, 1);
+                const firstDay = date.getDay();
+                const lastDay = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+                monthLabel.textContent = `${viewYear}년 ${viewMonth + 1}월`;
+
+                for (let i = 0; i < firstDay; i++) {
+                    const div = document.createElement("div");
+                    div.className = "calendar-day calendar-disabled";
+                    grid.appendChild(div);
+                }
+
+                for (let day = 1; day <= lastDay; day++) {
+                    const div = document.createElement("div");
+                    div.className = "calendar-day";
+                    div.textContent = day;
+
+                    const fullDate = new Date(viewYear, viewMonth, day);
+
+                    div.addEventListener("click", () => selectDate(fullDate));
+
+                    if (startDate && fullDate.getTime() === startDate.getTime())
+                        div.classList.add("calendar-start");
+
+                    if (endDate && fullDate.getTime() === endDate.getTime())
+                        div.classList.add("calendar-end");
+
+                    if (startDate && endDate && fullDate > startDate && fullDate < endDate)
+                        div.classList.add("calendar-range");
+
+                    grid.appendChild(div);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("달력 렌더링 오류");
+            }
+        }
+
+        function selectDate(d) {
+            try {
+                if (!startDate) {
+                    startDate = d;
+                    endDate = null;
+                } else if (!endDate) {
+                    if (d < startDate) startDate = d;
+                    else endDate = d;
+                } else {
+                    startDate = d;
+                    endDate = null;
+                }
+
+                startLabel.textContent = startDate ? formatDate(startDate) : "";
+                endLabel.textContent = endDate ? formatDate(endDate) : "";
+
+                renderCalendar();
+
+                if (startDate && endDate) {
+                    bindWeek(startDate, endDate);
+                    startDate = null;
+                    endDate = null;
+                    startLabel.textContent = "";
+                    endLabel.textContent = "";
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("날짜 선택 오류");
+            }
+        }
+
+        function bindWeek(st, en) {
+            try {
+                const formatted = `${formatDate(st)} ~ ${formatDate(en)}`;
+
+                if (activeWeekIndex !== null) {
+                    weekData[activeWeekIndex] = {start: st, end: en};
+                    weekBoxes[activeWeekIndex].textContent = formatted;
+
+                    weekBoxes[activeWeekIndex].classList.remove("week-box-focused");
+                    activeWeekIndex = null;
+
+                    return;
+                }
+
+                if (weekIndex > 3) {
+                    alert("4주차까지 모두 입력되었습니다. 주차를 클릭하여 다시 설정할 수 있습니다.");
+                    return;
+                }
+
+                weekData[weekIndex] = {start: st, end: en};
+                weekBoxes[weekIndex].textContent = formatted;
+
+                weekBoxes[weekIndex].classList.remove("week-box-focused");
+
+                weekIndex++;
+
+                if (weekIndex <= 3) {
+                    weekBoxes[weekIndex].classList.add("week-box-focused");
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("주차 바인딩 오류");
+            }
+        }
+
+        function bindWeekBox(idx, startStr, endStr) {
+            const box = weekBoxes[idx];
+
+            if (!startStr || !endStr) {
+                box.textContent = "";
+                return;
+            }
+
+            const s = new Date(startStr);
+            const e = new Date(endStr);
+
+            box.textContent =
+                `${s.getMonth() + 1}월 ${String(s.getDate()).padStart(2, "0")}일 `
+                + `~ ${e.getMonth() + 1}월 ${String(e.getDate()).padStart(2, "0")}일`;
+        }
+
+        function toISO(date) {
+            if (!(date instanceof Date)) return null;
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        }
+
+        function formatDate(d) {
+            return `${String(d.getMonth() + 1).padStart(2, "0")}월 ${String(d.getDate()).padStart(2, "0")}일`;
+        }
+
+        confirmBtn.addEventListener("click", async () => {
+            if (!year || !month) {
+                alert("URL에서 year/month를 찾을 수 없습니다.");
+                return;
+            }
+
+            const payload = {
+                year: year,
+                month: month.padStart(2, "0"),
+                weeks: weekData.map((w, idx) => {
+                    if (!w) return null;
+                    return {
+                        weekNo: idx + 1,
+                        start: toISO(w.start),
+                        end: toISO(w.end)
+                    };
+                })
+            };
+
+            // UPDATE 시 id 포함
+            if (hasWeekData) {
+                payload.id = existingId;
+            }
+
+            const url = hasWeekData ? "/class/week/update" : "/class/week/save";
+            console.log(JSON.stringify(payload));
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    alert("서버와 통신 중 문제가 발생했습니다.");
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (data.response === "success") {
+                    alert("저장되었습니다.");
+                    modal.style.display = "none";
+                } else {
+                    alert("저장에 실패했습니다.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("오류가 발생했습니다. 다시 시도해주세요.");
+            }
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("초기화 오류");
+    }
 });
 
 // 수업별 진도 가져오기

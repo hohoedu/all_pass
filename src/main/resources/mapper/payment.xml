@@ -71,12 +71,15 @@
         SELECT 1
         FROM erp_time_table_assign ta
         JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+        JOIN erp_user u ON t.user_code = u.user_code
         WHERE ta.student_id = s.student_id
         AND t.yy = #{year}
         AND t.mm = #{month}
+        AND u.center_code = #{centerCode}
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
-        </if>);
+        </if>
+        );
     </select>
 
     <select id="findFeeByClassKey" resultType="int">
@@ -174,21 +177,19 @@
         FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS subject,
         hu.user_name AS hanTeacher,
         bu.user_name AS bookTeacher,
-        p.product_name AS billType,
-        p.approved_date AS approvedDate,
         p.amount AS amount,
-        COALESCE(p.edu_status, p.material_status) AS status
+        p.status
         FROM erp_payment p
         JOIN erp_student s ON p.student_id = s.student_id
         JOIN erp_student_class sc ON s.student_id = sc.student_id AND p.yy = sc.yy AND p.mm = sc.mm
         LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
         LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
-        <where>
-            <if test="studentId != 'all'">
-                p.student_id = #{studentId}
-            </if>
-        </where>
-        ORDER BY p.created_at DESC;
+        WHERE
+        s.center_code = #{centerCode}
+        <if test="studentId!= null and studentId != 'all'">
+            AND p.student_id = #{studentId}
+        </if>
+        ORDER BY classDate ASC;
     </select>
 
     <!--  // ======================================== APP ======================================== // -->

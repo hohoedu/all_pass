@@ -33,7 +33,7 @@ public class PaymentViewController {
         List<User> users = userService.findByCenterCode(user.getCenterCode());
         String year = dateConfig.currentYearMonth().get("currentYear");
         String month = dateConfig.currentYearMonth().get("currentMonth");
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all");
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode());
 
         model.addAttribute("users", users);
         model.addAttribute("students", students);

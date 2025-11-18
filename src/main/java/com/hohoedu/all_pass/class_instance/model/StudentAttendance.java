@@ -63,6 +63,12 @@ public class StudentAttendance {
     @Column(name = "is_after_send")
     private boolean isAfterSend;
 
+    @Column(name = "yy")
+    private String yy;
+
+    @Column(name = "mm")
+    private String mm;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
@@ -80,7 +86,7 @@ public class StudentAttendance {
     private Center center;
 
     @Builder
-    public StudentAttendance(String inTime, String outTime, String week, Timestamp createdAt, Timestamp checkInUpdatedAt, Timestamp checkOutUpdatedAt, String attendanceDate, boolean isBeforeSend, boolean isAfterSend, Student student, TimeTable timeTable, AttendanceCode attendanceCode, Center center) {
+    public StudentAttendance(String inTime, String outTime, String week, Timestamp createdAt, Timestamp checkInUpdatedAt, Timestamp checkOutUpdatedAt, String attendanceDate, boolean isBeforeSend, boolean isAfterSend, String yy, String mm, Student student, TimeTable timeTable, AttendanceCode attendanceCode, Center center) {
         this.inTime = inTime;
         this.outTime = outTime;
         this.week = week;
@@ -90,6 +96,8 @@ public class StudentAttendance {
         this.attendanceDate = attendanceDate;
         this.isBeforeSend = isBeforeSend;
         this.isAfterSend = isAfterSend;
+        this.yy = yy;
+        this.mm = mm;
         this.student = student;
         this.timeTable = timeTable;
         this.attendanceCode = attendanceCode;

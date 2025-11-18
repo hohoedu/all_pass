@@ -121,9 +121,9 @@ public class PaymentService {
     }
 
     // 수업료 청구 화면 필터링
-    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode) {
+    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode) {
 
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode);
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode, centerCode);
 
         return students;
     }
@@ -178,9 +178,9 @@ public class PaymentService {
 
 
     // 모달 데이터 조회
-    public List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId) {
+    public List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId, String centerCode) {
 
-        return paymentRepository.findPaymentByStudentId(studentId);
+        return paymentRepository.findPaymentByStudentId(studentId, centerCode);
     }
 
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {

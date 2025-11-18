@@ -4,6 +4,34 @@
 
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
+    <!--  센터별 수업 주차 설정  -->
+    <insert id="insertClassWeek">
+        INSERT INTO erp_class_week (ju_1_start, ju_1_end, ju_2_start, ju_2_end, ju_3_start, ju_3_end, ju_4_start, ju_4_end, year, month, center_code, created_at)
+        VALUES (#{ju1Start}, #{ju1End}, #{ju2Start}, #{ju2End}, #{ju3Start}, #{ju3End}, #{ju4Start}, #{ju4End}, #{year}, #{month}, #{center.centerCode}, SYSDATETIME());
+    </insert>
+
+    <select id="findClassWeek" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassWeekDTO">
+        SELECT *
+        from erp_class_week
+        WHERE year = #{year}
+          AND month = #{month}
+          AND center_code = #{centerCode}
+    </select>
+
+    <update id="updateClassWeek">
+        UPDATE erp_class_week
+        SET ju_1_start = #{weeks[0].start},
+            ju_1_end   = #{weeks[0].end},
+            ju_2_start = #{weeks[1].start},
+            ju_2_end   = #{weeks[1].end},
+            ju_3_start = #{weeks[2].start},
+            ju_3_end   = #{weeks[2].end},
+            ju_4_start = #{weeks[3].start},
+            ju_4_end   = #{weeks[3].end},
+            updated_at = SYSDATETIME()
+        WHERE id = #{id}
+    </update>
+
 
     <!--시간표 추가-->
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
@@ -64,14 +92,24 @@
           AND cf.center_code = #{centerCode}
     </select>
 
+    <select id="findClassWeekByCenter" resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
+        SELECT *
+        from erp_class_week
+        WHERE center_code = #{centerCode}
+          AND year = #{year}
+          AND month = #{month}
+    </select>
+
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-            (student_id, attendance_key, time_table_key, center_code, week, created_at)
+            (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
                #{centerCode}     AS center_code,
                w.week            AS week,
+               #{yy}             AS yy,
+               #{mm}             AS mm,
                CURRENT_TIMESTAMP AS created_at
         FROM (VALUES ('ju_1'), ('ju_2'), ('ju_3'), ('ju_4')) AS w(week)
         WHERE NOT EXISTS (SELECT 1

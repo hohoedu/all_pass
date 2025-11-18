@@ -17,6 +17,7 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.AttendanceCode;
+import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.family.FamilyService;
@@ -272,26 +273,81 @@ public class StudentService {
 
     public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
+        // 출석 중복 체크
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
             return false;
         }
-        String attendanceKey = "";
+        LocalDate today = LocalDate.parse(dto.getYmd());
 
-        ClassRespDTO.TimeRangeDTO timeDTO = studentRepository.getStartClassTime(student.getStudentId(), dto.getYmd());
+        String year = String.valueOf(today.getYear());
+        String month = String.format("%02d", today.getMonthValue());  // "01", "02"
 
+        // 출석 or 지각 판정
+        ClassRespDTO.TimeRangeDTO timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
         LocalTime start = LocalTime.parse(timeDTO.getStartTime());
         LocalTime now = LocalTime.parse(dto.getHhmm());
 
-        if (now.isAfter(start)) {
-            attendanceKey = "late";
-        } else {
-            attendanceKey = "present";
+        String attendanceKey = now.isAfter(start) ? "late" : "present";
+
+        // --------------------------------------------
+        // 1) 주차 조회
+        // --------------------------------------------
+
+
+        ClassWeek classWeek = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
+
+        if (classWeek == null) {
+
+            throw new RuntimeException("이번 달 주차 설정이 없습니다.");
         }
 
-        studentRepository.checkinStudentAttendance(dto.getHhmm(), timeDTO.getEndTime(), attendanceKey, student.getStudentId(), dto.getYmd());
+        String week = findWeek(today, classWeek);
+
+        if (week == null) {
+            throw new RuntimeException("오늘 날짜는 어떤 주차에도 해당하지 않습니다.");
+        }
+
+        studentRepository.checkinStudentAttendance(
+                dto.getHhmm(),
+                timeDTO.getEndTime(),
+                attendanceKey,
+                week,
+                student.getStudentId(),
+                dto.getYmd()
+        );
 
         return true;
+    }
+
+
+    private String findWeek(LocalDate today, ClassWeek week) {
+
+        LocalDate ju1Start = LocalDate.parse(week.getJu1Start());
+        LocalDate ju1End = LocalDate.parse(week.getJu1End());
+        if (!today.isBefore(ju1Start) && !today.isAfter(ju1End)) {
+            return "ju_1";
+        }
+
+        LocalDate ju2Start = LocalDate.parse(week.getJu2Start());
+        LocalDate ju2End = LocalDate.parse(week.getJu2End());
+        if (!today.isBefore(ju2Start) && !today.isAfter(ju2End)) {
+            return "ju_2";
+        }
+
+        LocalDate ju3Start = LocalDate.parse(week.getJu3Start());
+        LocalDate ju3End = LocalDate.parse(week.getJu3End());
+        if (!today.isBefore(ju3Start) && !today.isAfter(ju3End)) {
+            return "ju_3";
+        }
+
+        LocalDate ju4Start = LocalDate.parse(week.getJu4Start());
+        LocalDate ju4End = LocalDate.parse(week.getJu4End());
+        if (!today.isBefore(ju4Start) && !today.isAfter(ju4End)) {
+            return "ju_4";
+        }
+
+        return null; // 어느 주차에도 해당되지 않음
     }
 
     public int checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {

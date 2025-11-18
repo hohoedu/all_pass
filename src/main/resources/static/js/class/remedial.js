@@ -4,6 +4,36 @@
 // ==                               == //
 // =================================== //
 
+document.addEventListener("DOMContentLoaded", () => {
+    const monthInput = document.getElementById("remedial_calender");
+    const monthDisplay = document.getElementById("remedial_current");
+    // const teacherSelect = document.getElementById("remedial-teacher-select");
+    const calendarBtn = document.querySelector(".remedial-calendar-open");
+
+    if (!monthInput) return;
+
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    monthInput.value = `${yyyy}-${mm}`;
+    monthDisplay.textContent = `${yyyy}년 ${mm}월`;
+
+    calendarBtn.addEventListener("click", () => {
+        monthInput.showPicker?.();
+        monthInput.click();
+    });
+
+    // 월 변경
+    monthInput.addEventListener("change", () => {
+        if (monthInput.value) {
+            const [year, month] = monthInput.value.split("-");
+            monthDisplay.textContent = `${year}년 ${month}월`;
+            // 데이터 호출 함수
+        }
+    });
+})
+
+
 // 보강 여부 수정
 document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener("change", (e) => {

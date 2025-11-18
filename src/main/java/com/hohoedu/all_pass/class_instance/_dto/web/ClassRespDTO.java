@@ -11,6 +11,21 @@ import lombok.Data;
 public class ClassRespDTO {
 
     @Data
+    public static class ClassWeekDTO {
+        private Integer id;
+        private String ju1Start;
+        private String ju1End;
+        private String ju2Start;
+        private String ju2End;
+        private String ju3Start;
+        private String ju3End;
+        private String ju4Start;
+        private String ju4End;
+        private String year;
+        private String month;
+    }
+
+    @Data
     public static class TimeTableLabelDTO {
         private String timeTableKey;
         private String classKey;
@@ -85,6 +100,7 @@ public class ClassRespDTO {
 
     @Data
     public static class TimeRangeDTO {
+        private String timeTableKey;
         private String startTime;
         private String endTime;
     }

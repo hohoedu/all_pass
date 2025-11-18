@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -46,6 +47,7 @@ public class ClassViewController {
     private final ClassService classService;
     private final StudentService studentService;
     private final DateConfig dateConfig;
+    private final ClassRepository classRepository;
 
     // 시간표 등록
     @GetMapping("/timetable")
@@ -62,10 +64,12 @@ public class ClassViewController {
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
 
+
         List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
         String classCodesJson = mapper.writeValueAsString(classCodes);
 
         List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
+
         String comclassInfosJson = mapper.writeValueAsString(comclassInfos);
         model.addAttribute("comclassInfosJson", comclassInfosJson);
         model.addAttribute("userCode", user.getUserCode());

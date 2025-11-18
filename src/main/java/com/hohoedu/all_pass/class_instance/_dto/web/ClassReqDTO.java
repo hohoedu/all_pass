@@ -64,6 +64,29 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class SetWeekDTO {
+        private Integer id;
+        private String year;
+        private String month;
+        private String centerCode;
+        private List<WeekDTO> weeks;
+
+        @Data
+        public static class WeekDTO {
+            private Integer weekNo;
+            private String start;
+            private String end;
+        }
+    }
+
+    @Data
+    public static class GetWeekDTO {
+        private String year;
+        private String month;
+        private String centerCode;
+    }
+
+    @Data
     public static class ClassRecordByDateDTO {
         private String classCode;
         private String yy;
