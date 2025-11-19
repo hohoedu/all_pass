@@ -121,11 +121,6 @@ public class StudentService {
         return relationCodes;
     }
 
-    public List<ClassCode> findClassCode() {
-        List<ClassCode> classCodes = classCodeJpaRepository.findAll();
-        return classCodes;
-    }
-
     public List<StudentInOutDTO> findAllInOut(String centerCode) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
@@ -162,9 +157,12 @@ public class StudentService {
         return respDTO;
     }
 
-    public List<GradeCode> getGrade() {
-        List<GradeCode> gradeCodes = gradeJpaRepository.findAll();
-        return gradeCodes;
+
+    public int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req) {
+
+        int updateDCount = studentRepository.updateStudentInfo(req);
+
+        return 1;
     }
 
     public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
@@ -497,4 +495,6 @@ public class StudentService {
 
         return respDTO;
     }
+
+
 }

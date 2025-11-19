@@ -1672,6 +1672,7 @@ textarea {
     background: #fff;
     padding-bottom: 20px;
     margin-left: -6vw;
+    width: 100%
 }
 
 .sidebar {

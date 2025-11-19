@@ -50,14 +50,14 @@ public class StudentWebReqDTO {
 
     @Data
     public static class StudentUpdateDTO {
+        private String studentId;
         private String studentName;
-        private String statusNo;
         private String birth;
         private String gender;
         private String school;
         private String address;
         private String addressDetail;
-        private String grade;
+        private String gradeKey;
     }
 
     @Data

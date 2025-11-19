@@ -46,7 +46,7 @@ public class ManageViewController {
         return "manage/reorder";
     }
 
-    @GetMapping("sms")
+    @GetMapping("/sms")
     public String getManageSmsPage(HttpSession session, Model model) throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -59,7 +59,7 @@ public class ManageViewController {
         model.addAttribute("noticeList", noticeList);
 
         ObjectMapper mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT); // 줄바꿈 + 들여쓰기 적용
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         if (!noticeList.isEmpty()) {
             model.addAttribute("firstNotice", noticeList.get(0));

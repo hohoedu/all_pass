@@ -272,6 +272,20 @@
         WHERE s.student_id = #{studentId}
     </select>
 
+    <update id="updateStudentInfo">
+        UPDATE erp_student s
+        SET s.student_name   = #{studentName},
+            s.birth          = #{birth},
+            s.gender         = #{gender},
+            s.school         = #{school},
+            s.address        = #{address},
+            s.address_detail = #{addressDetail},
+            s.gradeKey       = #{gradeKey},
+            s.updated_at     = SYSDATETIME()
+
+        where s.student_id = #{studentId}
+    </update>
+
     <select id="findStudentClassByStudentId" parameterType="string" resultType="com.hohoedu.all_pass.student.model.StudentClass">
         SELECT *
         FROM erp_student_class

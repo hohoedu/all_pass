@@ -63,6 +63,8 @@ public interface StudentRepository {
 
     int updateStudentClass(StudentClass studentClass);
 
+    int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req);
+
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 
     List<StudentInOutDTO> selectTransferStudents(

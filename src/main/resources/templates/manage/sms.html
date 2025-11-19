@@ -95,18 +95,39 @@
                             <div class="common-btn notice-delete">삭제</div>
                         </div>
                     </div>
+
+                    <!-- 해시박스는 고정 -->
                     <div class="hash-boxes">
                         <div class="hash-box">#7세</div>
                         <div class="hash-box">#1학년</div>
                         <div class="hash-box">#2학년</div>
                     </div>
-                    <div class="app-info">
-                        <div class="app-info-t" th:text="${noticeList[0].title}">공지 제목</div>
-                        <img th:src="@{|/image/notice0${noticeList[0].icon}.png|}" alt="">
+
+                    <div th:if="${noticeList != null and noticeList.size() > 0}">
+                        <div class="app-info">
+                            <div class="app-info-t" th:text="${noticeList[0].title}">
+                                공지 제목
+                            </div>
+
+                            <img th:src="@{|/image/notice0${noticeList[0].icon}.png|}" alt="">
+                        </div>
+
+                        <div class="app-info-desc" th:utext="${noticeList[0].rawContent}">
+                            공지 내용이 들어갑니다.
+                        </div>
                     </div>
-                    <div class="app-info-desc" th:utext="${noticeList[0].rawContent}">
-                        공지 내용이 들어갑니다.
+
+                    <div th:if="${noticeList == null or noticeList.size() == 0}">
+                        <div class="app-info">
+                            <div class="app-info-t">등록된 공지가 없습니다.</div>
+                            <img th:src="@{/image/notice00.png}" alt="">
+                        </div>
+
+                        <div class="app-info-desc">
+                            공지 내용이 없습니다.
+                        </div>
                     </div>
+
 
                     <div class="save-btn-frame">
                         <button class="view-details">상세 보기</button>

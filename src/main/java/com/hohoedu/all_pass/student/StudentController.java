@@ -13,6 +13,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import com.hohoedu.all_pass.student.model.GradeCode;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RestController
 @RequestMapping("/student")
 @RequiredArgsConstructor
@@ -122,22 +124,17 @@ public class StudentController {
 //        return ResponseEntity.ok(ApiUtils.success("hello"));
 //    }
 
-    @PostMapping("/updateEnrollmentStatus")
-    public ResponseEntity<String> updateEnrollmentStatus(@RequestBody Map<String, String> body) {
-        String type = body.get("type");
-        String status = body.get("status");
-
-        System.out.println("✅ 수강 상태 변경 요청 도착");
-        System.out.println("Type: " + type);
-        System.out.println("Status: " + status);
-
+    @PostMapping("/update/info")
+    public ResponseEntity<String> updateStudentInfo(@RequestBody StudentWebReqDTO.StudentUpdateDTO reqDTO) {
+        log.info(reqDTO.toString());
+        studentService.updateStudentInfo(reqDTO);
 
         return ResponseEntity.ok("ok");
     }
 
     @GetMapping("/gradeCodes")
     public ResponseEntity<?> getGradeCode() {
-        List<GradeCode> gradeCodes = studentService.getGrade();
+        List<GradeCode> gradeCodes = studentService.findGrade();
         return ResponseEntity.ok(ApiUtils.success(gradeCodes));
     }
 

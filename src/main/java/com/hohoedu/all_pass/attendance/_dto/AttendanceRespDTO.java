@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.attendance._dto;
 
 import com.hohoedu.all_pass.class_instance.TimeTable;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import lombok.*;
 
 import java.util.List;
@@ -23,10 +24,10 @@ public class AttendanceRespDTO {
         private String status;       // PROCESSED | SKIPPED | FAILED
         private String errorMessage; // 실패 시만 채움
 
-        public static ProcessedClassDTO processedOf(TimeTable tt) {
+        public static ProcessedClassDTO processedOf(ClassRespDTO.FinishClassDTO tt) {
             return ProcessedClassDTO.builder()
                     .timeTableKey(tt.getTimeTableKey())
-                    .className(tt.getClassCode() != null ? tt.getClassCode().getClassName() : null)
+                    .className(tt.getClassName() != null ? tt.getClassName() : null)
                     .period(tt.getStartTime() + "~" + tt.getEndTime())
                     .status("PROCESSED")
                     .build();

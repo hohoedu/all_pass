@@ -1,15 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    /** =======================
-     * 1️⃣ 공지 등록/수정 모달
-     ======================== */
     const modal = document.querySelector(".notice-modal");
     const modalContent = modal.querySelector(".pre-view");
     const openCreateBtn = document.querySelector(".notice-regist");
     const closeBtn = modal.querySelector(".btn-close");
     const registBtn = modal.querySelector(".regist-btn");
     const titleElem = modal.querySelector(".pre-title");
-    let mode = "create"; // 등록 / 수정 모드 구분
+    let mode = "create";
 
     const openModal = (type, data) => {
         mode = type;
@@ -54,9 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
         $('#content').summernote('code', data.rawContent || data.content || "");
     }
 
-    /** =======================
-     * 2️⃣ 공지 상세 클릭 로직
-     ======================== */
     window.loadNoticeDetail = async (element) => {
         const parent = element.closest(".app-style");
         const id = parent.dataset.id;
@@ -77,9 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    /** =======================
-     * 3️⃣ 공지 상세 화면 랜더링
-     ======================== */
     function renderNoticeDetail(data) {
         const rightSection = document.querySelector(".edu-right");
         if (!rightSection) return;
@@ -105,14 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="save-btn-frame"><button class="view-details">상세 보기</button></div>
         `;
 
-        // ✅ 새로 추가된 수정 버튼에 이벤트 다시 연결
         const openEditBtn = rightSection.querySelector(".notice-update");
         openEditBtn.addEventListener("click", () => openModal("edit", data));
     }
 
-    /** =======================
-     * 4️⃣ 이미지 업로드
-     ======================== */
     const uploadBtn = document.getElementById("uploadBtn");
     const imageInput = document.getElementById("imageInput");
     const fileName = document.getElementById("fileName");
@@ -146,9 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
         imagePathInput.value = "";
     });
 
-    /** =======================
-     * 5️⃣ 아이콘 선택 (드롭다운)
-     ======================== */
     const select = document.getElementById("noticeSelect");
     const selected = select.querySelector(".selected");
     const options = select.querySelectorAll(".select-options li");
@@ -169,9 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!select.contains(e.target)) select.classList.remove("open");
     });
 
-    /** =======================
-     * 6️⃣ Summernote 설정
-     ======================== */
     $('#content').summernote({
         height: 250,
         lang: 'ko-KR',
@@ -210,9 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /** =======================
-     * 7️⃣ 공지사항 저장
-     ======================== */
     const saveBtn = document.querySelector("#saveNotice");
     saveBtn.addEventListener("click", async () => {
         const title = document.querySelector('input[placeholder="제목을 입력해주세요."]').value.trim();

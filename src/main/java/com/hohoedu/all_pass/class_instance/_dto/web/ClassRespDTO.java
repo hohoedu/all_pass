@@ -106,6 +106,24 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class FinishClassDTO {
+        private String id;
+        private String yy;
+        private String mm;
+        private String dayname;
+        private String periodNo;
+        private String startTime;
+        private String endTime;
+        private String timeTableKey;
+        private String createdAt;
+        private String updatedAt;
+        private String userCode;
+        private String className;
+        private String week;
+        private String centerCode;
+    }
+
+    @Data
     public static class InitRecordDTO {
         private String timeTableKey;
         private String classLabel;

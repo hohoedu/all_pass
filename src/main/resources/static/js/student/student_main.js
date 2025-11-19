@@ -507,41 +507,103 @@ function renderStudents(tbody, students = []) {
 // });
 
 document.addEventListener("DOMContentLoaded", () => {
+
     const chooseGroups = document.querySelectorAll(".choose-group");
 
     chooseGroups.forEach(group => {
         const buttons = group.querySelectorAll(".btn-choose");
         const hiddenInput = group.querySelector('input[type="hidden"]');
-        const type = group.dataset.type; // han 또는 book
+        const type = group.dataset.type;
 
         buttons.forEach(button => {
             button.addEventListener("click", async () => {
-                // UI 업데이트
                 buttons.forEach(btn => btn.classList.remove("active"));
                 button.classList.add("active");
                 hiddenInput.value = button.dataset.value;
                 console.log(`✅ ${type} 상태 변경됨: ${button.textContent} (${hiddenInput.value})`);
-
-                // 서버로 전송 (fetch)
-                try {
-                    const response = await fetch("/student/updateEnrollmentStatus", {
-                        method: "POST",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify({
-                            type: type,
-                            status: hiddenInput.value
-                        })
-                    });
-
-                    if (!response.ok) throw new Error("서버 응답 오류");
-                    const result = await response.text();
-                    console.log(`📡 서버 응답: ${result}`);
-                } catch (err) {
-                    console.error(`❌ ${type} 상태 업데이트 실패:`, err);
-                }
             });
         });
     });
+
+    const updateBtn = document.getElementById("update-btn");
+    if (!updateBtn) return;
+
+    updateBtn.addEventListener("click", async () => {
+
+
+        try {
+            // 값 가져오기
+            const studentName = document.querySelector(".s_name")?.value?.trim();
+            const birth = document.getElementById("birth-date")?.value;
+            const gender = document.querySelector("input[name='gender']")?.value;
+            const school = document.querySelector(".s_school")?.value?.trim();
+            const address = document.querySelector(".s_address")?.value?.trim();
+            const addressDetail = document.querySelector(".s_address_detail")?.value?.trim();
+            const gradeKey = document.querySelector(".s_grade")?.value;
+
+            // 간단한 유효성검사
+            // if (!studentName) {
+            //     alert("이름을 입력해주세요.");
+            //     return;
+            // }
+            // if (!birth) {
+            //     alert("생년월일을 선택해주세요.");
+            //     return;
+            // }
+            // if (!gender) {
+            //     alert("성별을 선택해주세요.");
+            //     return;
+            // }
+            // if (!school) {
+            //     alert("학교를 입력해주세요.");
+            //     return;
+            // }
+            // if (!address) {
+            //     alert("주소를 입력해주세요.");
+            //     return;
+            // }
+            // if (!gradeNo) {
+            //     alert("학년을 선택해주세요.");
+            //     return;
+            // }
+
+            const payload = {
+                studentName: studentName,
+                birth: birth,
+                gender: gender,
+                school: school,
+                address: address,
+                addressDetail: addressDetail,
+                gradeKey: gradeKey
+            };
+
+            console.log("📌 Update Payload:", payload);
+
+            const response = await fetch("/student/update/info", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error("❌ 서버 오류:", result);
+                alert("저장에 실패했습니다.");
+                return;
+            }
+
+            alert("저장되었습니다.");
+        } catch (err) {
+            console.error("❌ 예외 발생:", err);
+            alert("오류가 발생했습니다.");
+        }
+    });
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
 });
 
 

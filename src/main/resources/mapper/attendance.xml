@@ -4,28 +4,8 @@
 
 <mapper namespace="com.hohoedu.all_pass.attendance.AttendanceRepository">
 
-    <resultMap id="timeTableResultMap" type="com.hohoedu.all_pass.class_instance.TimeTable">
-        <id property="id" column="id"/>
-        <result property="yy" column="yy"/>
-        <result property="mm" column="mm"/>
-        <result property="dayname" column="dayname"/>
-        <result property="periodNo" column="period_no"/>
-        <result property="startTime" column="start_time"/>
-        <result property="endTime" column="end_time"/>
-        <result property="timeTableKey" column="time_table_key"/>
-        <result property="createdAt" column="created_at"/>
-        <result property="updatedAt" column="updated_at"/>
 
-        <association property="user" javaType="com.hohoedu.all_pass.user.User">
-            <id property="userCode" column="user_code"/>
-        </association>
-
-        <association property="classCode" javaType="com.hohoedu.all_pass.class_instance.model.ClassCode">
-            <result property="className" column="class_name"/>
-        </association>
-    </resultMap>
-
-    <select id="findClassesToProcess" resultMap="timeTableResultMap">
+    <select id="findClassesToProcess" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$FinishClassDTO">
       <![CDATA[
         SELECT tt.id,
                tt.yy,
@@ -38,9 +18,13 @@
                tt.created_at,
                tt.updated_at,
                tt.user_code,
-               cc.class_name
+               cc.class_name,
+               sa.week,
+               u.center_code
         FROM erp_time_table tt
                  JOIN erp_class_code cc ON tt.class_key = cc.class_key
+                 JOIN erp_user u ON tt.user_code = u.user_code
+                 JOIN erp_student_attendance sa ON tt.time_table_key = sa.time_table_key
         WHERE tt.yy = #{yy}
           AND tt.mm = #{mm}
           AND tt.dayname = #{dayname}
@@ -50,21 +34,13 @@
 
     <insert id="bulkInsertAbsentForClass">
       <![CDATA[
-        INSERT INTO erp_student_attendance
-            (student_id, attendance_date, in_time, attendance_key, center_code, created_at)
-        SELECT s.student_id,
-               #{attendanceDate},
-               NULL,
-               'absent',
-               s.center_code,
-               CURRENT_TIMESTAMP
-        FROM erp_time_table_assign ta
-                 JOIN erp_student s ON s.student_id = ta.student_id
-        WHERE ta.time_table_key = #{timeTableKey}
-          AND NOT EXISTS (SELECT 1
-                          FROM erp_student_attendance sa
-                          WHERE sa.student_id = s.student_id
-                            AND sa.attendance_date = #{attendanceDate})
+        UPDATE erp_student_attendance
+        SET attendance_date     = #{attendanceDate},
+            attendance_key      = 'absent'
+        WHERE week = #{week}
+          AND in_time IS NULL
+          AND time_table_key = #{timeTableKey}
+
         ]]>
     </insert>
 
@@ -81,7 +57,11 @@
                #{week},
                SYSDATETIME(),
                tt.user_code,
-               CONCAT(REPLACE(CONVERT(char (10), #{absenceDate}, 23), '-', ''), tt.user_code, s.student_id)
+               CONCAT(
+                       REPLACE(CONVERT(char (10), #{absenceDate}, 23), '-', ''),
+                   LEFT(tt.time_table_key, 4), s.student_id,
+                       #{week}
+               )
         FROM erp_time_table_assign ta
                  JOIN erp_student s ON s.student_id = ta.student_id
                  JOIN erp_time_table tt ON tt.time_table_key = ta.time_table_key
@@ -103,8 +83,7 @@
     <update id="updateLatenessForClass">
       <![CDATA[
         UPDATE sa
-        SET sa.attendance_key = 'late',
-            sa.updated_at     = CURRENT_TIMESTAMP FROM erp_student_attendance AS sa
+        SET sa.attendance_key = 'late' FROM erp_student_attendance AS sa
         WHERE sa.attendance_date = #{attendanceDate}
           AND sa.in_time IS NOT NULL
           AND sa.in_time
