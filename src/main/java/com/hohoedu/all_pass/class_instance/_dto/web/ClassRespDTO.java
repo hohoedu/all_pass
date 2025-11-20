@@ -11,6 +11,16 @@ import lombok.Data;
 public class ClassRespDTO {
 
     @Data
+    public static class MainClassSummaryDTO {
+        private String className;
+        private String startTime;
+        private String userName;
+        private String timeTableKey;
+        private String classKey;
+        private String countStudent;
+    }
+
+    @Data
     public static class ClassWeekDTO {
         private Integer id;
         private String ju1Start;

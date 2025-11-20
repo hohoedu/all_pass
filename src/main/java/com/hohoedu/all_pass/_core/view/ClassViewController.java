@@ -53,7 +53,6 @@ public class ClassViewController {
     @GetMapping("/timetable")
     public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) throws JsonProcessingException {
 
-        // 세션 확인
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -248,9 +247,7 @@ public class ClassViewController {
     @GetMapping("/monthly")
     public String getClassMonthlyPage(HttpSession session, Model model) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
-
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "login";
         }
@@ -289,40 +286,54 @@ public class ClassViewController {
         String mm = dateConfig.currentYearMonth().get("currentMonth");
 
         List<User> users = userService.findByCenterCode(user.getCenterCode());
-
+        model.addAttribute("users", users);
 
         ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();
         classInfantDTO.setUserCode("all");
         classInfantDTO.setYy(yy);
         classInfantDTO.setMm(mm);
 
-        List<TimeTableLabelDTO> labels = classService.findInfantClassLabel(classInfantDTO);
+        List<TimeTableLabelDTO> labels;
+
+        try {
+            labels = classService.findInfantClassLabel(classInfantDTO);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "수업 정보를 불러오는 중 오류가 발생했습니다.");
+            return "class/infant";
+        }
+
+        model.addAttribute("labels", labels);
+
+        if (labels == null || labels.isEmpty()) {
+            model.addAttribute("noData", true);
+            return "class/infant";
+        }
+
         TimeTableLabelDTO label = labels.get(0);
-        label.setYy(dateConfig.currentYearMonth().get("currentYear"));
-        String classKey = labels.get(0).getClassKey();
-        log.info(classKey);
+        label.setYy(yy);
+        String classKey = label.getClassKey();
+
 
         Set<String> hanKeys = Set.of("Y", "P", "S");
 
         Set<String> bookKeys = Set.of("K", "M", "J");
 
-        if (hanKeys.contains(classKey)) {
-            ClassRespDTO.InfantHanDTO infantHanDTO = classService.findInfantHan(label);
+        try {
+            if (hanKeys.contains(classKey)) {
+                ClassRespDTO.InfantHanDTO infantHanDTO = classService.findInfantHan(label);
+                infantHanDTO.setClassLabel(label.getClassSubject());
+                model.addAttribute("infantHanDTO", infantHanDTO);
+            }
 
-            infantHanDTO.setClassLabel(labels.get(0).getClassSubject());
-            model.addAttribute("infantHanDTO", infantHanDTO);
+            if (bookKeys.contains(classKey)) {
+                ClassRespDTO.InfantBookDTO infantBookDTO = classService.findInfantBook(label);
+                infantBookDTO.setClassLabel(label.getClassSubject());
+                model.addAttribute("infantBookDTO", infantBookDTO);
+            }
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "수업 세부 정보를 불러오는 중 오류가 발생했습니다.");
         }
 
-        if (bookKeys.contains(classKey)) {
-            ClassRespDTO.InfantBookDTO infantBookDTO = classService.findInfantBook(label);
-
-            infantBookDTO.setClassLabel(labels.get(0).getClassSubject());
-            model.addAttribute("infantBookDTO", infantBookDTO);
-        }
-
-
-        model.addAttribute("users", users);
-        model.addAttribute("labels", labels);
 
         return "class/infant";
     }

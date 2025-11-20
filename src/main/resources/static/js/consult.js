@@ -318,8 +318,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ✅ 일자지정
     calendarBtn.addEventListener("click", () => {
-        const isCustom = document.getElementById("period-custom").checked;
-        if (!isCustom) return;
+        const customRadio = document.getElementById("period-custom");
+
+        // 자동으로 "일자지정" 라디오 선택
+        if (!customRadio.checked) {
+            customRadio.checked = true;
+            customRadio.dispatchEvent(new Event("change"));
+        }
+
+        // 달력 열기
         calendarInput.showPicker();
     });
 

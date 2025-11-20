@@ -31,9 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ====== 모달 오픈 ====== //
 function openTransferModal(row) {
     const studentId = row.getAttribute("data-id");
-    // loadTransferHistory(studentId)
-    //     .then(renderTransferTable)
-    //     .catch(console.error);
+    
 
     showTransferModal();
 }

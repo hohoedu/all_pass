@@ -42,6 +42,8 @@ public interface StudentRepository {
             @Param("userCode") String userCode,
             @Param("centerCode") String centerCode);
 
+    Integer findMaxAppIdSuffix(@Param("prefix") String prefix);
+
     public void insert(StudentJoinDTO student);
 
     public int statusHistoryInsert(StatusHistoryDTO historyDTO);

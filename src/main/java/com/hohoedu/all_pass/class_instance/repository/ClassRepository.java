@@ -20,6 +20,14 @@ import org.springframework.security.core.parameters.P;
 @Mapper
 public interface ClassRepository {
 
+    List<ClassRespDTO.MainClassSummaryDTO> findClassSummary(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("dayname") String dayname,
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode
+    );
+
     void insertClassWeek(ClassWeek classWeek);
 
     ClassRespDTO.ClassWeekDTO findClassWeek(

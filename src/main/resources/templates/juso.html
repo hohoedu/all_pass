@@ -9,7 +9,7 @@
 
 <body onload="init();">
 <form id="form" name="form" method="post" action="https://business.juso.go.kr/addrlink/addrMobileLinkUrl.do">
-    <input type="hidden" id="confmKey" name="confmKey" value="devU01TX0FVVEgyMDI1MDkyNTExMjIxNjExNjI2NDg="/>
+    <input type="hidden" id="confmKey" name="confmKey" value="U01TX0FVVEgyMDI1MTEyMDA5MzUzMjExNjQ3NDA="/>
     <input type="hidden" id="returnUrl" name="returnUrl" value="https://hohocenter.co.kr/juso"/>
     <input type="hidden" id="resultType" name="resultType" value="4"/>
 </form>
@@ -19,7 +19,7 @@
         const roadAddrPart1 = "[[${roadAddrPart1}]]";
         const roadFullAddr = "[[${roadFullAddr}]]";
         const addrDetail = "[[${addrDetail}]]";
-        
+
         if (!roadAddrPart1 || roadAddrPart1.trim() === "") {
             document.form.submit(); // 주소 검색 실행
         } else {

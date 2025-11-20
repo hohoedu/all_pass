@@ -96,9 +96,17 @@ public class StudentService {
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
         String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
+
         studentDTO.setStudentId(code);
 
-        studentDTO.setAppId(parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast() + 0);
+        String phoneNumber = parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
+        Integer maxSuffix = studentRepository.findMaxAppIdSuffix(phoneNumber);
+
+        int nextSuffix = (maxSuffix == null) ? 0 : maxSuffix + 1;
+
+        String appId = phoneNumber + nextSuffix;
+
+        studentDTO.setAppId(appId);
         studentDTO.setAppPassword(
                 DigestUtils.sha256Hex(parentDTO.getParentTelLast())
         );

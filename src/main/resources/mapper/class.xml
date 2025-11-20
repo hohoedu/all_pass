@@ -4,6 +4,30 @@
 
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
+    <select id="findClassSummary" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainClassSummaryDTO">
+        SElECT
+        t.time_table_key AS timeTableKey,
+        t.start_time AS startTime,
+        CONCAT(cc.class_name, ' ', uc.unit_name) AS className,
+        COUNT(ta.student_id) AS countStudent,
+        u.user_name AS userName
+        FROM erp_time_table t
+        LEFT JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+        LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
+        LEFT JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+        JOIN erp_user u ON t.user_code = u.user_code
+        WHERE t.yy = #{year}
+        AND t.mm = #{month}
+        AND t.dayname = #{dayname}
+        <if test="userCode != null and userCode != 'all'">
+            AND t.user_code = #{userCode}
+        </if>
+        AND u.center_code = #{centerCode}
+        GROUP BY t.time_table_key, t.start_time, cc.class_name, uc.unit_name, u.user_name
+        ORDER BY startTime ASC;
+
+    </select>
+
     <!--  센터별 수업 주차 설정  -->
     <insert id="insertClassWeek">
         INSERT INTO erp_class_week (ju_1_start, ju_1_end, ju_2_start, ju_2_end, ju_3_start, ju_3_end, ju_4_start, ju_4_end, year, month, center_code, created_at)

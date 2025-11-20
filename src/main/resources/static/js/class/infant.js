@@ -278,7 +278,7 @@ function renderIntroSection(type, detail) {
         const emptyHTML = `
             <div class="intro-inner">
                 <div class="no-class-msg" style="padding:25px; text-align:center; color:#777;">
-                    조회된 수업이 없습니다.
+                    조회된 수업 내용이 없습니다.
                 </div>
             </div>
         `;
@@ -336,7 +336,7 @@ function renderIntroSection(type, detail) {
                     <span class="hanja-text">${detail.newWord}</span>
                 </div>
                 <div class="hanja-row">
-                    <span class="hanja-label">${detail.story}</span>
+                    <span class="hanja-label">한자동화</span>
                     <span class="hanja-text">${detail.story}(${detail.subStory})</span>
                 </div>
                 <div class="hanja-row">

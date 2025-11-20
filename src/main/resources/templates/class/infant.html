@@ -236,7 +236,7 @@
                                     <span class="hanja-text" th:text="${infantHanDTO.newWord}"></span>
                                 </div>
                                 <div class="hanja-row">
-                                    <span class="hanja-label" th:text="${infantHanDTO.story}"></span>
+                                    <span class="hanja-label">한자동화</span>
                                     <span class="hanja-text" th:text="${infantHanDTO.story + '(' + infantHanDTO.subStory + ')'}"></span>
                                 </div>
                                 <div class="hanja-row">
@@ -297,6 +297,15 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="han-intro-lesson"
+                         th:if="${infantBookDTO == null and infantHanDTO == null}">
+                        <div class="intro-inner">
+                            <div class="no-class-msg"
+                                 style="padding:25px; text-align:center; color:#777;">
+                                조회된 수업 내용이 없습니다.
                             </div>
                         </div>
                     </div>

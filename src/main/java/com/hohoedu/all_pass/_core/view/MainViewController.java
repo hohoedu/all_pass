@@ -1,5 +1,14 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.google.api.Http;
+import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
+import com.hohoedu.all_pass.user._dto.UserReqDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +20,15 @@ import jakarta.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.List;
+
 @Controller
+@RequiredArgsConstructor
 public class MainViewController {
+
+    private final UserService userService;
+    private final ClassService classService;
+
 
     @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session) {
@@ -37,8 +53,21 @@ public class MainViewController {
         return "login";
     }
 
+    // 메인화면 열기
     @GetMapping("/main")
-    public String getMainPage() {
+    public String getMainPage(HttpSession session, Model model) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(), "all");
+
+
+        model.addAttribute("users", users);
+        model.addAttribute("classSummary", classSummary);
+
         return "main";
     }
 
@@ -46,11 +75,6 @@ public class MainViewController {
     @GetMapping("/juso")
     public String jusoPopup() {
         return "juso";
-    }
-
-    @PostMapping("/schedule/select")
-    public String getMethodName() {
-        return "test";
     }
 
     // 주소값 리턴

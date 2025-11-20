@@ -7,6 +7,20 @@
 //     this.classList.add("active");
 //   });
 // }
+//============================================== main.html ==============================================//
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        const title = document.getElementById("main-month-title");
+        if (!title) return;
+
+        const today = new Date();
+        const month = today.getMonth() + 1;
+
+        title.textContent = `${month}월 클래스 현황`;
+    } catch (e) {
+        console.error("월 타이틀 설정 중 오류 발생:", e);
+    }
+});
 
 $(document).ready(function () {
     /* ====== conslut.html ====== */
@@ -144,7 +158,7 @@ $(document).ready(function () {
     if (initVal) {
         $('.birth-display').text(formatDateKorean(initVal));
     }
-    
+
     /* ====== bfclass.html ====== */
     // remarks modal
     $('.remarks').click(function () {
@@ -314,10 +328,6 @@ function openJusoPopup() {
 
 
 function jusoCallBack(roadFullAddr, roadAddrPart1, addrDetail) {
-    console.log("[CallBack] 주소 검색 완료. 값 전달 받음");
-    console.log(" - roadFullAddr:", roadFullAddr);
-    console.log(" - roadAddrPart1:", roadAddrPart1);
-    console.log(" - addrDetail:", addrDetail);
     const addrInput = document.getElementById('address-input');
     if (addrInput) {
         addrInput.value = roadAddrPart1;

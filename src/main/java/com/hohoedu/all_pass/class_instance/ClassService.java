@@ -60,6 +60,45 @@ public class ClassService {
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
 
+    public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
+
+        String today = dateConfig.currentYearMonth().get("today");
+        String year = dateConfig.currentYearMonth().get("currentYear");
+        String month = dateConfig.currentYearMonth().get("currentMonth");
+
+        log.info(today);
+        List<ClassRespDTO.MainClassSummaryDTO> responseDTO =
+                classRepository.findClassSummary(year, month, "thu", userCode, centerCode);
+
+        try {
+            if (responseDTO != null && !responseDTO.isEmpty()) {
+
+                for (ClassRespDTO.MainClassSummaryDTO dto : responseDTO) {
+
+                    // 유효성 검사
+                    if (dto == null || dto.getCountStudent() == null) continue;
+
+                    int currentCount;
+
+                    try {
+                        currentCount = Integer.parseInt(dto.getCountStudent());
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+
+                    int maxCount = "COM".equalsIgnoreCase(dto.getClassKey()) ? 10 : 8;
+
+                    String converted = currentCount + "/" + maxCount;
+
+                    dto.setCountStudent(converted);
+                }
+            }
+        } catch (Exception e) {
+            log.error("수업 요약 countStudent 가공 중 오류 발생", e.getMessage());
+        }
+
+        return responseDTO;
+    }
 
     public void createClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
         dto.setCenterCode(centerCode);

@@ -15,6 +15,12 @@
                 #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree});
     </insert>
 
+    <select id="findMaxAppIdSuffix" resultType="java.lang.Integer">
+        SELECT MAX(CAST(RIGHT (app_id, 1) AS INT)) AS maxSuffix
+        FROM erp_student
+        WHERE app_id LIKE CONCAT(#{prefix}, '%')
+    </select>
+
     <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
         SELECT s.*,
                g.*,
@@ -42,7 +48,8 @@
             reg.registeredClassTypes IS NULL
            OR reg.registeredClassTypes IN ('1'
             , '2')
-            );
+            )
+          AND s.status_key = 'ACTIVE';
     </select>
 
     <select id="findStudentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentDTO">
@@ -443,9 +450,8 @@
     </select>
 
     <select id="getStartClassTime" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeRangeDTO">
-        SELECT
-            MIN(t.start_time) AS startTime,
-            MAX(t.end_time)   AS endTime
+        SELECT MIN(t.start_time) AS startTime,
+               MAX(t.end_time)   AS endTime
         FROM erp_student_attendance esa
                  JOIN erp_time_table t
                       ON esa.time_table_key = t.time_table_key
@@ -457,9 +463,9 @@
     <!-- 등원 update -->
     <update id="checkinStudentAttendance">
         UPDATE erp_student_attendance
-        SET in_time = #{inTime},
-            attendance_date = #{attendanceDate},
-            attendance_key = #{attendanceKey},
+        SET in_time             = #{inTime},
+            attendance_date     = #{attendanceDate},
+            attendance_key      = #{attendanceKey},
             check_in_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND week = #{week}

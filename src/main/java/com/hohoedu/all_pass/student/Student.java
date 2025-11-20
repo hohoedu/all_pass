@@ -48,7 +48,7 @@ public class Student {
     @Column(name = "address_detail", nullable = false, length = 100)
     private String addressDetail;
 
-    @Column(name = "app_id", nullable = false, length = 20)
+    @Column(name = "app_id", nullable = false, length = 20, unique = true)
     private String appId;
 
     @Column(name = "app_password", length = 100)
