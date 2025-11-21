@@ -165,7 +165,7 @@ public class ClassReqDTO {
     @Data
     public static class ClassMonthlyScoreDTO {
         private String studentId;
-        private String classCode;
+        private String timeTableKey;
         private String yy;
         private String mm;
         private List<MonthlyScoreDTO> scores;
@@ -181,6 +181,14 @@ public class ClassReqDTO {
             private boolean question7;
             private boolean question8;
         }
+    }
+
+    @Data
+    public static class MonthlyPreviewDTO {
+        private String studentId;
+        private String timeTableKey;
+        private String yy;
+        private String mm;
     }
 
     @Data

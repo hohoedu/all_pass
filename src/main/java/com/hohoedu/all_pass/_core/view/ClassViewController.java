@@ -267,6 +267,7 @@ public class ClassViewController {
             List<MonthlyStudentDTO> students = classService
                     .getMonthlyClassDetail(labels.get(0).getTimeTableKey());
             model.addAttribute("students", students);
+            log.info(students.get(0).toString());
         }
         log.info(labels.toString());
         model.addAttribute("users", users);

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
+import com.hohoedu.all_pass.class_instance.model.base_data.MonthlyFeedback;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -583,20 +584,93 @@ public class ClassService {
         return students;
     }
 
-    public boolean updateMonthlyScore(ClassMonthlyScoreDTO dto) {
-        if (dto.getScores() == null || dto.getScores().isEmpty()) {
-            return false;
-        }
+    public ClassRespDTO.ScoreResultDTO updateMonthlyScore(ClassMonthlyScoreDTO dto) {
+//        if (dto.getScores() == null || dto.getScores().isEmpty()) {
+//            return false;
+//        }
         ClassMonthlyScoreDTO.MonthlyScoreDTO score = dto.getScores().get(0);
 
-        int rows = classRepository.updateMonthlyScore(
-                dto.getStudentId(),
-                dto.getClassCode(),
-                dto.getYy(),
-                dto.getMm(),
-                score);
+        classRepository.updateMonthlyScore(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm(), score);
+        Map<String, String> monthlyFeedback = classRepository.getMonthlyFeedback(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
-        return rows > 0;
+        String feedback =
+                Optional.ofNullable(monthlyFeedback.get("topCorrectMent")).orElse("")
+                        + "\n" +
+                        Optional.ofNullable(monthlyFeedback.get("topWrongMent")).orElse("");
+
+        ClassRespDTO.ScoreResultDTO response = new ClassRespDTO.ScoreResultDTO();
+        response.setTimeTableKey(dto.getTimeTableKey());
+        response.setStudentId(dto.getStudentId());
+        response.setStudentName(monthlyFeedback.get("studentName"));
+        response.setScoreResult(feedback);
+
+        MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+
+        if (exist == null) {
+            MonthlyResult insertResult = MonthlyResult.builder()
+                    .topComment(monthlyFeedback.get("topComment"))
+                    .bottomComment(monthlyFeedback.get("bottomComment"))
+                    .feedback(feedback)
+                    .isSend(false)
+                    .yy(dto.getYy())
+                    .mm(dto.getMm())
+                    .timeTable(TimeTable.builder().timeTableKey(dto.getTimeTableKey()).build())
+                    .student(Student.builder().studentId(dto.getStudentId()).build())
+                    .build();
+
+            classRepository.insertMonthlyResult(insertResult);
+
+        } else {
+            MonthlyResult updateResult = MonthlyResult.builder()
+                    .id(exist.getId())
+                    .topComment(monthlyFeedback.get("topComment"))
+                    .bottomComment(monthlyFeedback.get("bottomComment"))
+                    .feedback(feedback)
+                    .build();
+
+            classRepository.updateMonthlyResult(updateResult);
+        }
+        return response;
+    }
+
+
+    public ClassRespDTO.MonthlyPreviewRespDTO getMonthlyPreview(ClassReqDTO.MonthlyPreviewDTO dto) {
+
+        List<Map<String, Object>> rows = classRepository.findMonthlyPreview(dto);
+
+        if (rows == null || rows.isEmpty()) {
+            throw new NoSuchElementException("월간 평가 데이터가 없습니다.");
+        }
+
+        ClassRespDTO.MonthlyPreviewRespDTO resp = new ClassRespDTO.MonthlyPreviewRespDTO();
+
+        List<String> scores = new ArrayList<>();
+        List<String> competency = new ArrayList<>();
+        List<String> difficultly = new ArrayList<>();
+
+        for (int i = 0; i < rows.size(); i++) {
+
+            Map<String, Object> r = rows.get(i);
+
+            if (i == 0) {
+                resp.setStudentId(String.valueOf(r.get("student_id")));
+                resp.setStudentName(String.valueOf(r.get("student_name")));
+                resp.setTimeTableKey(String.valueOf(r.get("time_table_key")));
+                resp.setTopComment(String.valueOf(r.get("top_comment")));
+                resp.setBottomComment(String.valueOf(r.get("bottom_comment")));
+                resp.setFeedback(String.valueOf(r.get("feedback")));
+            }
+
+            scores.add(String.valueOf(r.get("score")));
+            competency.add(String.valueOf(r.get("competency")));
+            difficultly.add(String.valueOf(r.get("difficultly")));
+        }
+
+        resp.setScores(scores);
+        resp.setCompetency(competency);
+        resp.setDifficultly(difficultly);
+
+        return resp;
     }
 
 

@@ -201,6 +201,9 @@ public class ClassRespDTO {
         private String studentId;
         private String studentName;
         private String timeTableKey;
+        private String feedback;
+        private String bottomComment;
+        private boolean isSend;
         private List<MonthlyScoreDTO> scores;
 
         @Data
@@ -220,6 +223,27 @@ public class ClassRespDTO {
                         question5, question6, question7, question8);
             }
         }
+    }
+
+    @Data
+    public static class ScoreResultDTO {
+        private String timeTableKey;
+        private String studentId;
+        private String studentName;
+        private String scoreResult;
+    }
+
+    @Data
+    public static class MonthlyPreviewRespDTO {
+        private String studentId;
+        private String studentName;
+        private String timeTableKey;
+        private String topComment;
+        private String bottomComment;
+        private String feedback;
+        private List<String> scores;
+        private List<String> competency;
+        private List<String> difficultly;
     }
 
 

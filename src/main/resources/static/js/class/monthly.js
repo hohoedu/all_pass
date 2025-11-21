@@ -38,25 +38,31 @@ document.addEventListener("DOMContentLoaded", () => {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(requestBody)
+
         })
             .then(res => res.json())
             .then(data => {
-                console.log("서버 응답:", data);
+
+                // 수업 리스트 랜더링
                 renderMonthlyClassList(data.response);
 
-                if (data.response && data.response.length > 0) {
-                    const timeTableKey = data.response[0].timeTableKey ?? "";
-                    if (timeTableKey) {
-                        fetch("/class/api/monthly/timeTableKey", {
-                            method: "POST",
-                            headers: {"Content-Type": "application/json"},
-                            body: JSON.stringify({timeTableKey})
-                        })
-                            .then(res => res.json())
-                            .then(data => renderMonthlyStudentList(data.response))
-                            .catch(err => console.error(err));
-                    }
+                if (!data.response || data.response.length === 0) {
+                    // 학생 리스트 랜더링
+                    renderMonthlyStudentList([]);
+                    return;
                 }
+
+                // 수업이 있을 때만 첫 번째 시간표로 학생 목록 조회
+                const timeTableKey = data.response[0].timeTableKey;
+                fetch("/class/api/monthly/timeTableKey", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({timeTableKey})
+                })
+                    .then(res => res.json())
+                    .then(data => renderMonthlyStudentList(data.response))
+                    .catch(err => console.error(err));
+
             })
             .catch(err => console.error("조회 에러:", err));
     }
@@ -141,13 +147,12 @@ function renderMonthlyClassList(classes) {
             const target = e.target.closest("li.class-btn");
             if (target) {
                 console.log("Clicked:", target.dataset.classId);
-                // 필요하면 active 클래스 토글
                 classList.querySelectorAll("li").forEach(li => li.classList.remove("active"));
                 target.classList.add("active");
             }
         });
 
-        li.dataset.classId = cls.classCode;
+        li.dataset.classId = cls.timeTableKey;
         li.dataset.time = cls.classTime;
         li.dataset.subject = cls.classSubject;
 
@@ -189,8 +194,19 @@ function renderMonthlyStudentList(students) {
         tr.dataset.studentId = stu.studentId ?? "";
         tr.dataset.timeTableKey = stu.timeTableKey ?? "";
 
-
         const scores = (stu.scores && stu.scores.length > 0) ? stu.scores[0] : {};
+
+        const sendImg = (stu.isSend === 1 || stu.isSend === true)
+            ? "/image/send2.png"
+            : "/image/send1.png";
+
+        const feedbackText = (stu.feedback == null)
+            ? "점수를 선택하고 결과보기를 눌러주세요"
+            : `${stu.studentName} 학생은 ${stu.feedback}`;
+
+        const bottomCommentText = (stu.bottomComment == null)
+            ? "점수를 선택하고 결과보기를 눌러주세요"
+            : stu.bottomComment;
 
         tr.innerHTML = `
       <td class="checkbox-group"><input type="checkbox" /></td>
@@ -214,20 +230,20 @@ function renderMonthlyStudentList(students) {
     </td>
     <td class="cell-middle">
       <div class="after-comment">
-        <textarea class="comment-text" placeholder="내용을 입력해주세요.">
-${stu.studentName} 학생은 어휘의 정의를 정확히 이해하고, 유사 단어 사이에서도 핵심 의미를 잘 구분 했습니다. 
-다만, 비슷한 자형의 한자들이 함께 제시될 때는 의미를 중심으로 구별하는 연습이 더 필요합니다.
+        <textarea class="comment-text" placeholder="내용을 입력해주세요.">${feedbackText}
         </textarea>
       </div>
     </td>
     <td>
       <div class="cell-middle">
         <div class="after-comment">
-          <textarea class="comment-text" placeholder="내용을 입력해주세요."></textarea>
+          <textarea class="comment-text" placeholder="내용을 입력해주세요.">${bottomCommentText}</textarea>
         </div>
       </div>
     </td>
-    <td class="send-ornot"><img src="/image/send2.png" alt=""></td>
+     <td class="send-ornot">
+                <img src="${sendImg}" alt="">
+            </td>
     <td class="pre-search"><img src="/image/pre-search.png" alt=""></td>
   `;
 
@@ -266,6 +282,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+
+// 월간 평가 점수 결과보기 클릭
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("monthly_student_tbody");
     if (!tbody) return;
@@ -276,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (target.classList.contains("btn-result")) {
             const row = target.closest("tr");
             const studentId = row.dataset.studentId;
-            const classCode = row.dataset.classCode;
+            const timeTableKey = row.dataset.timeTableKey;
             const monthValue = document.getElementById("monthly_calendar").value;
             let yy, mm;
 
@@ -293,9 +311,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 scores[qKey] = (btn.value === "true");
             });
 
+
             const requestBody = {
                 studentId: studentId,
-                classCode: classCode,
+                timeTableKey: timeTableKey,
                 scores: [scores],
                 yy: yy,
                 mm: mm
@@ -311,7 +330,13 @@ document.addEventListener("DOMContentLoaded", () => {
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log("✅ 서버 응답:", data);
+                    console.log("✅ 서버 응답:", data.response);
+                    const newFeedback = data.response?.scoreResult
+                        ? `${data.response.studentName} 학생은 ${data.response.scoreResult}`
+                        : "점수를 선택하고 결과보기를 눌러주세요";
+
+                    updateFeedbackOnly(row, newFeedback);
+
                 })
                 .catch(err => {
                     console.error("❌ 오류:", err);
@@ -320,32 +345,144 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+// 월간평가 총평 변경
+function updateFeedbackOnly(row, feedbackText) {
+    const textarea = row.querySelector("td:nth-child(5) .comment-text");
+
+    if (textarea) {
+        textarea.value = feedbackText ?? "점수를 선택하고 결과보기를 눌러주세요";
+    }
+}
+
 // 모달 오픈
 document.addEventListener("DOMContentLoaded", function () {
-    const preSearchBtns = document.querySelectorAll(".pre-search img");
     const modal = document.querySelector(".pre-modal");
-    if (preSearchBtns.length === 0 || !modal) {
-        return;
-    }
     const closeBtn = modal.querySelector(".btn-close");
 
-    // 열기 (모든 버튼에 대해 이벤트 등록)
-    preSearchBtns.forEach((btn) => {
-        btn.addEventListener("click", function () {
-            modal.style.display = "block";
-        });
+    document.body.addEventListener("click", function (e) {
+        const btn = e.target.closest(".pre-search img");
+        if (!btn) return;
+
+        const row = btn.closest("tr");
+        const studentId = row.dataset.studentId;
+        const timeTableKey = row.dataset.timeTableKey;
+
+        openPreviewModal(studentId, timeTableKey);
     });
 
-    // 닫기
     closeBtn.addEventListener("click", function (e) {
         e.preventDefault();
         modal.style.display = "none";
     });
 
-    // 모달 바깥 클릭 시 닫기
     window.addEventListener("click", function (e) {
         if (e.target === modal) {
             modal.style.display = "none";
         }
     });
 });
+
+function openPreviewModal(studentId, timeTableKey) {
+    const modal = document.querySelector(".pre-modal");
+
+    const monthValue = document.getElementById("monthly_calendar").value;
+    let yy, mm;
+
+    if (monthValue) {
+        [yy, mm] = monthValue.split("-");
+    } else {
+        const today = new Date();
+        yy = today.getFullYear().toString();
+        mm = String(today.getMonth() + 1).padStart(2, '0');
+    }
+
+    const requestBody = {studentId, timeTableKey, yy, mm};
+
+    fetch("/class/api/monthly/preview", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(requestBody)
+    })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            console.log("📌 미리보기 데이터:", data.response);
+            renderPreviewModal(data.response);
+            modal.style.display = "block";
+        })
+        .catch(err => {
+            console.error("❌ 미리보기 불러오기 오류:", err);
+        });
+}
+
+function renderPreviewModal(data) {
+    console.log("📌 렌더링 시작:", data);
+
+    /* -------------------------
+     * 1) 제목
+     * ------------------------- */
+    const title = document.querySelector(".pre-title");
+    if (title) {
+        title.textContent = `${data.studentName} 학생의 월간평가 미리보기`;
+    }
+
+    /* -------------------------
+     * 2) topComment → ul.pre-sub-t
+     * ------------------------- */
+    const topCommentEl = document.querySelector(".pre-sub-t");
+    topCommentEl.innerHTML = "";
+
+    const converted = convertStrong(data.topComment);
+
+// 문장을 <li> 단위로 자르고 strong 적용
+    converted.split("\n").forEach(line => {
+        if (line.trim() !== "") {
+            const li = document.createElement("li");
+            li.innerHTML = line;
+            topCommentEl.appendChild(li);
+        }
+    });
+
+    const tbody = document.querySelector(".pre-table tbody");
+    if (tbody) {
+        tbody.innerHTML = "";
+
+        for (let i = 0; i < 8; i++) {
+            const tr = document.createElement("tr");
+
+            const num = i + 1;
+            const comp = data.competency?.[i] ?? "-";
+            const diff = data.difficultly?.[i] ?? "-";
+            const score = data.scores?.[i] === "true" ? "○" : "X";
+
+            tr.innerHTML = `
+                <td>${num}</td>
+                <td>${comp}</td>
+                <td>${diff}</td>
+                <td>${score}</td>
+            `;
+
+            tbody.appendChild(tr);
+        }
+    }
+
+    const feedbackP = document.querySelector(".overall-top p");
+    if (feedbackP) {
+        const name = data.studentName ?? "";
+        const fb = data.feedback ?? "총평을 불러올 수 없습니다.";
+
+        // 학생명 + 공백 처리
+        feedbackP.textContent = `${name} 학생은 ${fb}`;
+    }
+
+    const bottomDiv = document.querySelector(".overall-bottom");
+    if (bottomDiv) {
+        let bottomP = bottomDiv.querySelector("p");
+        if (!bottomP) {
+            bottomP = document.createElement("p");
+            bottomDiv.appendChild(bottomP);
+        }
+        bottomP.textContent =
+            data.bottomComment ?? "코멘트를 불러올 수 없습니다.";
+    }
+}

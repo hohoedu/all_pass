@@ -120,8 +120,8 @@
         SELECT *
         from erp_class_week
         WHERE center_code = #{centerCode}
-          AND year = #{year}
-          AND month = #{month}
+                  AND year = #{year}
+                  AND month = #{month}
     </select>
 
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
@@ -502,6 +502,9 @@
         <id property="studentId" column="student_id"/>
         <result property="studentName" column="student_name"/>
         <result property="timeTableKey" column="time_table_key"/>
+        <result property="feedback" column="feedback"/>
+        <result property="bottomComment" column="bottom_comment"/>
+        <result property="isSend" column="is_send"/>
         <collection property="scores" ofType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
             <result property="question1" column="question1"/>
             <result property="question2" column="question2"/>
@@ -518,18 +521,22 @@
         SELECT s.student_id,
                s.student_name,
                t.time_table_key,
-               m.question1,
-               m.question2,
-               m.question3,
-               m.question4,
-               m.question5,
-               m.question6,
-               m.question7,
-               m.question8
+               mr.feedback,
+               mr.bottom_comment,
+               mr.is_send,
+               ms.question1,
+               ms.question2,
+               ms.question3,
+               ms.question4,
+               ms.question5,
+               ms.question6,
+               ms.question7,
+               ms.question8
         FROM erp_student s
                  JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
                  JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
-                 LEFT JOIN erp_monthly_score m ON m.time_table_key = t.time_table_key AND m.student_id = ta.student_id
+                 LEFT JOIN erp_monthly_score ms ON ms.time_table_key = t.time_table_key AND ms.student_id = ta.student_id
+                 LEFT JOIN erp_monthly_result mr ON mr.time_table_key = t.time_table_key AND mr.student_id = ta.student_id
         WHERE t.time_table_key = #{timeTableKey}
     </select>
 
@@ -545,11 +552,136 @@
             question8  = #{score.question8},
             updated_at = CURRENT_TIMESTAMP
         WHERE student_id = #{studentId}
-          AND time_table_key = #{classCode}
+          AND time_table_key = #{timeTableKey}
           AND yy = #{yy}
           AND mm = #{mm}
     </update>
 
+    <select id="getMonthlyFeedback" resultType="map">
+        WITH base AS (SELECT s.student_id,
+                             s.yy,
+                             s.mm,
+                             s.time_table_key,
+                             t.class_key,
+                             t.unit_key,
+                             question1,
+                             question2,
+                             question3,
+                             question4,
+                             question5,
+                             question6,
+                             question7,
+                             question8
+                      FROM erp_monthly_score s
+                               JOIN erp_time_table t
+                                    ON s.time_table_key = t.time_table_key
+                      WHERE s.student_id = #{studentId}
+                        AND s.yy = #{yy}
+                        AND s.mm = #{mm}
+                        AND s.time_table_key = #{timeTableKey}),
+             merged AS (SELECT f.number,
+                               f.difficultly,
+                               f.correct_ment,
+                               f.wrong_ment,
+                               CASE
+                                   WHEN f.number = 1 THEN b.question1
+                                   WHEN f.number = 2 THEN b.question2
+                                   WHEN f.number = 3 THEN b.question3
+                                   WHEN f.number = 4 THEN b.question4
+                                   WHEN f.number = 5 THEN b.question5
+                                   WHEN f.number = 6 THEN b.question6
+                                   WHEN f.number = 7 THEN b.question7
+                                   WHEN f.number = 8 THEN b.question8
+                                   END AS score,
+                               b.class_key,
+                               b.unit_key,
+                               b.student_id
+                        FROM base b
+                                 JOIN erp_monthly_feedback f
+                                      ON f.yy = b.yy
+                                          AND f.class_key = b.class_key
+                                          AND f.unit_key = b.unit_key)
+        SELECT st.student_name             AS studentName,
+               mc.top_comment              AS topComment,
+               mc.bottom_comment           AS bottomComment,
+               (SELECT TOP 1 correct_ment
+                FROM merged
+                WHERE score = 1
+                ORDER BY difficultly DESC) AS topCorrectMent,
+
+               (SELECT TOP 1 wrong_ment
+                FROM merged
+                WHERE score = 0
+                ORDER BY difficultly DESC) AS topWrongMent
+
+        FROM merged m
+                 LEFT JOIN erp_monthly_comment mc
+                           ON m.class_key = mc.class_key
+                               AND m.unit_key = mc.unit_key
+                 LEFT JOIN erp_student st
+                           ON m.student_id = st.student_id
+        GROUP BY st.student_name, mc.top_comment, mc.bottom_comment;
+
+    </select>
+
+    <select id="findMonthlyResult" resultType="com.hohoedu.all_pass.class_instance.model.MonthlyResult">
+        SELECT *
+        FROM erp_monthly_result
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
+    <insert id="insertMonthlyResult">
+        INSERT INTO erp_monthly_result (top_comment, bottom_comment, feedback, is_send, yy, mm, student_id, time_table_key, created_at)
+        VALUES (#{topComment}, #{bottomComment}, #{feedback}, #{isSend}, #{yy}, #{mm}, #{student.studentId}, #{timeTable.timeTableKey}, SYSDATETIME())
+    </insert>
+
+    <update id="updateMonthlyResult">
+        UPDATE erp_monthly_result
+        SET top_comment    = #{topComment},
+            bottom_comment = #{bottomComment},
+            feedback       = #{feedback},
+            updated_at     = SYSDATETIME()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findMonthlyPreview" resultType="map">
+        SELECT s.student_id,
+               st.student_name,
+               s.time_table_key,
+               mr.top_comment,
+               mr.bottom_comment,
+               mr.feedback,
+               f.number AS part,
+               CASE f.number
+                   WHEN 1 THEN s.question1
+                   WHEN 2 THEN s.question2
+                   WHEN 3 THEN s.question3
+                   WHEN 4 THEN s.question4
+                   WHEN 5 THEN s.question5
+                   WHEN 6 THEN s.question6
+                   WHEN 7 THEN s.question7
+                   WHEN 8 THEN s.question8
+                   END  AS score,
+
+               f.competency,
+               f.difficultly
+
+        FROM erp_monthly_score s
+                 JOIN erp_student st ON s.student_id = st.student_id
+                 JOIN erp_time_table t ON s.time_table_key = t.time_table_key
+                 JOIN erp_monthly_feedback f ON f.class_key = t.class_key AND f.unit_key = t.unit_key
+                 LEFT JOIN erp_monthly_result mr ON mr.time_table_key = t.time_table_key AND mr.student_id = s.student_id
+
+        WHERE s.student_id = #{studentId}
+          AND s.yy = #{yy}
+          AND s.mm = #{mm}
+          AND s.time_table_key = #{timeTableKey}
+
+        ORDER BY f.number ASC;
+    </select>
 
     <select id="findClassInfoByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClassInfoRespDTO">
         SELECT CASE c.class_type

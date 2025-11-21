@@ -375,8 +375,17 @@ public class ClassController {
     @PostMapping("/api/monthly/update_score")
     public ResponseEntity<?> updateMonthlyScore(@RequestBody ClassMonthlyScoreDTO dto) {
 
-        classService.updateMonthlyScore(dto);
-        return ResponseEntity.ok(ApiUtils.success("hello"));
+        ClassRespDTO.ScoreResultDTO response = classService.updateMonthlyScore(dto);
+
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/api/monthly/preview")
+    public ResponseEntity<?> MonthlyPreview(@RequestBody ClassReqDTO.MonthlyPreviewDTO dto) {
+
+        ClassRespDTO.MonthlyPreviewRespDTO response = classService.getMonthlyPreview(dto);
+
+        return ResponseEntity.ok(ApiUtils.success(response));
     }
 
     // 월간 평가 (유아)

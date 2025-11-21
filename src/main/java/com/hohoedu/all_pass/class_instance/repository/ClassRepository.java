@@ -1,19 +1,17 @@
 package com.hohoedu.all_pass.class_instance.repository;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
-import com.hohoedu.all_pass.class_instance.model.ClassWeek;
-import com.hohoedu.all_pass.class_instance.model.InfantSendHistory;
+import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.TimeTable;
-import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
 import com.hohoedu.all_pass.user.User;
 import org.springframework.security.core.parameters.P;
 
@@ -200,10 +198,30 @@ public interface ClassRepository {
 
     int updateMonthlyScore(
             @Param("studentId") String studentId,
-            @Param("classCode") String classCode,
+            @Param("timeTableKey") String timeTableKey,
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
+
+    Map<String, String> getMonthlyFeedback(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+    MonthlyResult findMonthlyResult(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+    void insertMonthlyResult(MonthlyResult monthlyResult);
+
+    void updateMonthlyResult(MonthlyResult monthlyResult);
+
+    List<Map<String, Object>> findMonthlyPreview(ClassReqDTO.MonthlyPreviewDTO dto);
 
     public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
             @Param("studentId") String studentId,
