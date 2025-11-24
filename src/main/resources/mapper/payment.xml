@@ -126,11 +126,22 @@
                 SYSDATETIME());
     </insert>
 
-    <update id="updatePayment">
+    <update id="updatePaymentByIssued">
         UPDATE erp_payment
         SET request_date = #{requestDate},
             status       = #{status},
             updated_at   = SYSDATETIME()
+        WHERE payment_key = #{paymentKey}
+          AND yy = #{year}
+          AND mm = #{month}
+    </update>
+
+    <update id="updatePaymentByApproved">
+        UPDATE erp_payment
+        SET status    = #{status},
+            method    = #{method},
+            paid_date = #{paidDate},
+            updated_at = SYSDATETIME()
         WHERE payment_key = #{paymentKey}
           AND yy = #{year}
           AND mm = #{month}

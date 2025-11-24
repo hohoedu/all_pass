@@ -54,12 +54,21 @@ public interface PaymentRepository {
 
     void createPaymentBill(PaymentBill paymentBill);
 
-    void updatePayment(
+    void updatePaymentByIssued(
             @Param("paymentKey") String paymentKey,
             @Param("year") String year,
             @Param("month") String month,
             @Param("status") String status,
             @Param("requestDate") String requestDate
+    );
+
+    void updatePaymentByApproved(
+            @Param("paymentKey") String paymentKey,
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("status") String status,
+            @Param("paidDate") String paidDate,
+            @Param("method") String method
     );
 
 

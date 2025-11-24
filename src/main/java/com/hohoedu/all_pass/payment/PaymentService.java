@@ -20,7 +20,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -31,6 +33,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final DateConfig dateConfig;
+    private final Map<String, String> currentYearMonth;
 
     // 결제 로그
     private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus,
@@ -162,7 +165,7 @@ public class PaymentService {
         paymentRepository.createPaymentBill(paymentBill);
 
 
-        paymentRepository.updatePayment(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
+        paymentRepository.updatePaymentByIssued(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
 
         String eventType = "bill_issued";
         String eventSource = "system";
@@ -207,6 +210,12 @@ public class PaymentService {
                 log.error("❌ Callback 처리 실패: payment 또는 bill 정보를 찾을 수 없음. bill_id=" + dto.getBill_id());
                 return;
             }
+            String rawDate = dto.getAppr_dt();
+            String paidDate = rawDate.substring(0, 4) + "-" +
+                    rawDate.substring(4, 6) + "-" +
+                    rawDate.substring(6, 8) + " " +
+                    rawDate.substring(8, 10) + ":" +
+                    rawDate.substring(10, 12);
 
             String eventType = "callback_received";
             String eventSource = "callback";
@@ -215,6 +224,8 @@ public class PaymentService {
             Integer amount = paymentBill.getAmount();
             String description = "Paymint 결제승인 콜백 처리";
             String paymentKey = payment.getPaymentKey();
+
+            paymentRepository.updatePaymentByApproved(paymentKey, payment.getYy(), payment.getMm(), newStatus, paidDate, "paymint");
 
             logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, null);
 

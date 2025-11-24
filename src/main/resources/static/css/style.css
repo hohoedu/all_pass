@@ -5568,6 +5568,8 @@ input[type="time" i] {
 
 .intro-inner {
     padding: 20px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .han-intro-book {
