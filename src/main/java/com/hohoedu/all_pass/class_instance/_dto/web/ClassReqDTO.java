@@ -68,14 +68,14 @@ public class ClassReqDTO {
         private Integer id;
         private String year;
         private String month;
+        private String week;
         private String centerCode;
-        private List<WeekDTO> weeks;
+        private List<DayDTO> days;
 
         @Data
-        public static class WeekDTO {
-            private Integer weekNo;
-            private String start;
-            private String end;
+        public static class DayDTO {
+            private String dayname;
+//            private String
         }
     }
 

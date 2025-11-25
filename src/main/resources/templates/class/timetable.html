@@ -37,7 +37,7 @@
                                 <h2>시간표 등록</h2>
                             </div>
                             <div class="class-btns">
-                                <div class="common-btn reset-btn" id="weekOpenBtn">주차 설정</div>
+                                <div class="common-btn reset-btn" id="openWeekModalBtn">주차 설정</div>
                                 <div class="common-btn reset-btn">전체 초기화</div>
                                 <div class="common-btn last-data" id="load-last-time-table">전월 데이터 불러오기</div>
                                 <div class="common-btn record-save" id="table_register">저장</div>
@@ -203,50 +203,47 @@
     </div>
 </div>
 
+<!-- 모달 -->
 <div id="weekModal" class="week-modal-overlay">
     <div class="week-modal-box">
 
         <span class="week-modal-close">&times;</span>
-        <h2 class="week-modal-title">주차 설정</h2>
 
-        <div class="week-modal-layout">
+        <h2 class="week-modal-title">수업 주차</h2>
 
-            <!-- 왼쪽 : 달력 -->
-            <div class="week-calendar-left">
-
-                <div class="calendar-header">
-                    <button id="calendarPrevBtn">&lt;</button>
-                    <span id="calendarMonthLabel"></span>
-                    <button id="calendarNextBtn">&gt;</button>
-                </div>
-
-                <div id="calendarGrid" class="calendar-grid"></div>
-
-                <div class="calendar-selected-display">
-                    <div>시작일: <span id="calendarStartLabel"></span></div>
-                    <div>종료일: <span id="calendarEndLabel"></span></div>
-                </div>
-
-            </div>
-
-            <!-- 오른쪽 : 주차 목록 -->
-            <div class="week-list-right">
-                <div class="week-label">1주차</div>
-                <div id="weekBox1" class="week-box"></div>
-
-                <div class="week-label">2주차</div>
-                <div id="weekBox2" class="week-box"></div>
-
-                <div class="week-label">3주차</div>
-                <div id="weekBox3" class="week-box"></div>
-
-                <div class="week-label">4주차</div>
-                <div id="weekBox4" class="week-box"></div>
-            </div>
-
+        <!-- 주차 버튼 -->
+        <div class="week-modal-week-buttons">
+            <button class="week-modal-week-btn week-modal-week1" data-week="1">1주차</button>
+            <button class="week-modal-week-btn week-modal-week2" data-week="2">2주차</button>
+            <button class="week-modal-week-btn week-modal-week3" data-week="3">3주차</button>
+            <button class="week-modal-week-btn week-modal-week4" data-week="4">4주차</button>
         </div>
 
-        <button id="weekConfirmBtn" class="week-save-btn">확인</button>
+        <!-- 달력 -->
+        <div class="week-modal-calendar-container">
+            <div class="week-modal-calendar-header">
+                <button id="calendarPrevBtn">&lt;</button>
+                <span id="calendarMonthLabel"></span>
+                <button id="calendarNextBtn">&gt;</button>
+            </div>
+
+            <div class="week-modal-calendar-weekdays">
+                <div>일</div>
+                <div>월</div>
+                <div>화</div>
+                <div>수</div>
+                <div>목</div>
+                <div>금</div>
+                <div>토</div>
+            </div>
+
+            <div id="calendarGrid" class="week-modal-calendar-grid"></div>
+        </div>
+
+        <!-- 저장 버튼 -->
+        <div class="week-modal-save-wrapper">
+            <div class="common-btn record-save" id="week-modal-save-btn">저장</div>
+        </div>
 
     </div>
 </div>
