@@ -67,21 +67,21 @@ public class AttendanceService {
 
         for (ClassRespDTO.FinishClassDTO dto : finished) {
             String centerCode = dto.getCenterCode();
-
-            if (!weekMap.containsKey(centerCode)) {
-
-                ClassRespDTO.ClassWeekDTO classWeek =
-                        classRepository.findClassWeek(yy, mm, centerCode);
-
-                if (classWeek == null) {
-                    weekMap.put(centerCode, "");
-                    continue;
-                }
-
-                String week = findWeek(currentDay, classWeek);
-
-                weekMap.put(centerCode, week);
-            }
+//
+//            if (!weekMap.containsKey(centerCode)) {
+//
+//                ClassRespDTO.ClassWeekDTO classWeek =
+//                        classRepository.findClassWeek(yy, mm, centerCode);
+//
+//                if (classWeek == null) {
+//                    weekMap.put(centerCode, "");
+//                    continue;
+//                }
+//
+//                String week = findWeek(currentDay, classWeek);
+//
+//                weekMap.put(centerCode, week);
+//            }
         }
 
         for (ClassRespDTO.FinishClassDTO dto : finished) {

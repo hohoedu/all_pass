@@ -102,30 +102,42 @@ public class ClassService {
         return responseDTO;
     }
 
-    public void createClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
-        dto.setCenterCode(centerCode);
+    public void saveClassWeek(ClassReqDTO.WeekReqDTO dto, String centerCode) {
 
-        ClassWeek week = ClassWeek.builder()
-                .year(dto.getYear())
-                .month(dto.getMonth())
-                .week(dto.getWeek())
-                .mon(dto.getMonth())
-                .tue(dto.getWeek())
-                .wed(dto.getMonth())
-                .thu(dto.getWeek())
-                .fri(dto.getMonth())
-                .sat(dto.getWeek())
-                .sun(dto.getMonth())
-                .center(Center.builder().centerCode(dto.getCenterCode()).build())
-                .build();
+        List<ClassWeek> existing = classRepository.getClassWeek(dto.getYear(), dto.getMonth(), centerCode);
 
-        classRepository.insertClassWeek(week);
+        for (int i = 1; i <= 4; i++) {
+
+            ClassReqDTO.WeekReqDTO.WeekDetailDTO detail = dto.getWeek().get(String.valueOf(i));
+            if (detail == null) continue;
+
+            String weekCode = "ju_" + i;
+
+            ClassReqDTO.SetWeekDTO set = new ClassReqDTO.SetWeekDTO();
+            set.setYear(dto.getYear());
+            set.setMonth(dto.getMonth());
+            set.setWeek(weekCode);
+            set.setMon(detail.getMon());
+            set.setTue(detail.getTue());
+            set.setWed(detail.getWed());
+            set.setThu(detail.getThu());
+            set.setFri(detail.getFri());
+            set.setSat(detail.getSat());
+            set.setSun(detail.getSun());
+            set.setCenterCode(centerCode);
+
+            boolean exists = existing.stream()
+                    .anyMatch(e -> e.getWeek().equals(weekCode));
+
+            if (exists) {
+                classRepository.updateClassWeek(set);
+            } else {
+                classRepository.insertClassWeek(set);
+            }
+        }
     }
 
-    public ClassRespDTO.ClassWeekDTO findClassWeek(ClassReqDTO.GetWeekDTO dto) {
 
-        return classRepository.findClassWeek(dto.getYear(), dto.getMonth(), dto.getCenterCode());
-    }
 
     public void updateClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
         dto.setCenterCode(centerCode);

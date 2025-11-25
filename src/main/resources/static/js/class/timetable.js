@@ -57,6 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // 센터별 수업 주차 설정하기
 document.addEventListener("DOMContentLoaded", () => {
     try {
+        // ------------------------------------------------
+        // ⭐ URL 쿼리에서 year, month 가져오기
+        // ------------------------------------------------
+        function getUrlParams() {
+            const url = new URL(window.location.href);
+            return {
+                year: url.searchParams.get("year"),
+                month: url.searchParams.get("month")
+            };
+        }
+        const { year: baseYear, month: baseMonth } = getUrlParams();
+
+        // ------------------------------------------------
+        // 기본 요소 선택
+        // ------------------------------------------------
         const modal = document.getElementById("weekModal");
         const openBtn = document.getElementById("openWeekModalBtn");
         const closeBtn = document.querySelector(".week-modal-close");
@@ -72,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ------------------------------------------------
-        // 주차 배경 색상
+        // 주차별 배경색 지정
         // ------------------------------------------------
         const weekColors = {
             1: "#fecec8",
@@ -82,69 +97,50 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // ------------------------------------------------
-        // 저장될 데이터 구조
+        // 클라이언트에서 관리하는 주차 데이터 구조
         // ------------------------------------------------
         const weekData = {
-            year: "",
-            month: "",
+            year: baseYear,      // ⭐ URL의 year 사용
+            month: baseMonth,    // ⭐ URL의 month 사용
             week: {
-                1: { sun:"", mon:"", tue:"", wed:"", thu:"", fri:"", sat:"" },
-                2: { sun:"", mon:"", tue:"", wed:"", thu:"", fri:"", sat:"" },
-                3: { sun:"", mon:"", tue:"", wed:"", thu:"", fri:"", sat:"" },
-                4: { sun:"", mon:"", tue:"", wed:"", thu:"", fri:"", sat:"" }
+                1: {sun: "", mon: "", tue: "", wed: "", thu: "", fri: "", sat: ""},
+                2: {sun: "", mon: "", tue: "", wed: "", thu: "", fri: "", sat: ""},
+                3: {sun: "", mon: "", tue: "", wed: "", thu: "", fri: "", sat: ""},
+                4: {sun: "", mon: "", tue: "", wed: "", thu: "", fri: "", sat: ""}
             }
         };
 
-        // 초기화
-        function resetWeekData() {
-            for (let w = 1; w <= 4; w++) {
-                for (let key in weekData.week[w]) {
-                    weekData.week[w][key] = "";
-                }
-            }
-        }
+        // ------------------------------------------------
+        // 저장 버튼 → 서버 전송
+        // ------------------------------------------------
+        document.getElementById("week-modal-save-btn").addEventListener("click", async () => {
+            try {
+                const res = await fetch("/class/week/save", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(weekData)
+                });
 
-        // 서버에서 받은 데이터 적용
-        function applyServerData(serverData) {
-            resetWeekData();
-
-            for (let w = 1; w <= 4; w++) {
-                const key = `week${w}`;
-                if (serverData[key]) {
-                    for (let dayName in serverData[key]) {
-                        weekData.week[w][dayName] = serverData[key][dayName] || "";
-                    }
+                if (res.ok) {
+                    alert("저장되었습니다.");
+                    modal.style.display = "none";
+                } else {
+                    alert("저장 실패");
                 }
+            } catch (err) {
+                console.error("저장 오류:", err);
             }
-        }
+        });
 
         // ------------------------------------------------
-        // 모달 열 때 서버 데이터 요청
+        // 모달 열기
         // ------------------------------------------------
         openBtn.addEventListener("click", () => {
             modal.style.display = "flex";
 
-            const year = current.getFullYear();
-            const month = current.getMonth() + 1;
-
-            loadWeekData(year, month);
+            // ⭐ 모달 띄울 때 항상 기준달(=URL의 연월) 달력 렌더링
+            renderCalendar(new Date(baseYear, baseMonth - 1));
         });
-
-        async function loadWeekData(year, month) {
-            try {
-                const res = await fetch(`/api/week?year=${year}&month=${month}`);
-                const data = await res.json();
-
-                // 서버 데이터 weekData에 반영
-                applyServerData(data);
-
-                // 달력 다시 칠함
-                repaintSelectedDates(year, month);
-
-            } catch (err) {
-                console.error("주차 조회 실패:", err);
-            }
-        }
 
         // 모달 닫기
         closeBtn.addEventListener("click", () => modal.style.display = "none");
@@ -153,41 +149,50 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // ------------------------------------------------
-        // 날짜 선택 & 해제
+        // 주차 선택 버튼
         // ------------------------------------------------
         let selectedWeek = null;
 
+        const weekButtons = document.querySelectorAll(".week-modal-week-btn");
+        weekButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                weekButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                selectedWeek = parseInt(btn.dataset.week);
+            });
+        });
+
+        // ------------------------------------------------
+        // 요일 매핑
+        // ------------------------------------------------
         const weekdayMap = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
         function getWeekday(year, month, day) {
-            const date = new Date(year, month - 1, day);
-            return weekdayMap[date.getDay()];
+            return weekdayMap[new Date(year, month - 1, day).getDay()];
         }
 
+        // ------------------------------------------------
+        // 날짜 클릭
+        // ------------------------------------------------
         function onDateClick(cell, day, year, month) {
             if (!selectedWeek) {
-                alert("먼저 주차를 선택해주세요.");
+                alert("주차를 먼저 선택해주세요.");
                 return;
             }
 
-            if (cell.classList.contains("disabled")) {
-                return;
-            }
+            if (cell.classList.contains("disabled")) return;
 
             const yyyyMMDD = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
             const weekday = getWeekday(year, month, day);
 
-            const alreadySelected =
-                weekData.week[selectedWeek][weekday] === yyyyMMDD;
-
-            // 해제
-            if (alreadySelected) {
+            // 선택 해제
+            if (weekData.week[selectedWeek][weekday] === yyyyMMDD) {
                 weekData.week[selectedWeek][weekday] = "";
                 cell.style.background = "#fafafa";
                 return;
             }
 
-            // 다른 주차 같은 날짜 금지
+            // 다른 주차 중복 방지
             for (let w = 1; w <= 4; w++) {
                 for (let key in weekData.week[w]) {
                     if (weekData.week[w][key] === yyyyMMDD) {
@@ -197,28 +202,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // 같은 주차 같은 요일 금지
+            // ίδια 요일 중복 방지
             if (weekData.week[selectedWeek][weekday] !== "") {
                 alert(`${selectedWeek}주차의 ${weekday}는 이미 선택되었습니다.`);
                 return;
             }
 
-            // 저장
-            weekData.year = year;
-            weekData.month = month;
+            // 선택 반영
             weekData.week[selectedWeek][weekday] = yyyyMMDD;
-
             cell.style.background = weekColors[selectedWeek];
         }
 
-        // 기존 선택 다시 색칠
+        // ------------------------------------------------
+        // 선택항목 다시 반영
+        // ------------------------------------------------
         function repaintSelectedDates(year, month) {
             const cells = document.querySelectorAll(".week-modal-calendar-cell");
 
             cells.forEach(cell => {
                 const day = parseInt(cell.textContent);
-                if (!day) return;
-                if (cell.classList.contains("disabled")) return;
+                if (!day || cell.classList.contains("disabled")) return;
 
                 const yyyyMMDD = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
@@ -233,10 +236,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // ------------------------------------------------
-        // 달력 렌더링
+        // 달력 생성
         // ------------------------------------------------
-        let current = new Date();
-
         function renderCalendar(date) {
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
@@ -249,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             calendarGrid.innerHTML = "";
 
-            // ----- 전달 날짜 -----
+            // 이전달
             for (let i = 0; i < firstDay; i++) {
                 const cell = document.createElement("div");
                 cell.className = "week-modal-calendar-cell disabled";
@@ -257,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 calendarGrid.appendChild(cell);
             }
 
-            // ----- 이번달 날짜 -----
+            // 현재달
             for (let d = 1; d <= daysInMonth; d++) {
                 const cell = document.createElement("div");
                 cell.className = "week-modal-calendar-cell";
@@ -266,67 +267,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 calendarGrid.appendChild(cell);
             }
 
-            // ----- 다음달 날짜 -----
-            const cellCount = firstDay + daysInMonth;
-            const nextFill = 42 - cellCount;
+            // 다음달
+            const total = firstDay + daysInMonth;
+            const remaining = 42 - total;
 
-            for (let i = 1; i <= nextFill; i++) {
+            for (let i = 1; i <= remaining; i++) {
                 const cell = document.createElement("div");
                 cell.className = "week-modal-calendar-cell disabled";
                 cell.textContent = i;
                 calendarGrid.appendChild(cell);
             }
 
-            // 이미 선택되어 있던 날짜 다시 색칠
             repaintSelectedDates(year, month);
         }
-
-        prevBtn.addEventListener("click", () => {
-            current.setMonth(current.getMonth() - 1);
-            renderCalendar(current);
-            loadWeekData(current.getFullYear(), current.getMonth() + 1);
-        });
-
-        nextBtn.addEventListener("click", () => {
-            current.setMonth(current.getMonth() + 1);
-            renderCalendar(current);
-            loadWeekData(current.getFullYear(), current.getMonth() + 1);
-        });
-
-        renderCalendar(current);
-
-        // ------------------------------------------------
-        // 주차 버튼
-        // ------------------------------------------------
-        const weekButtons = document.querySelectorAll(".week-modal-week-btn");
-
-        weekButtons.forEach(btn => {
-            btn.addEventListener("click", () => {
-                weekButtons.forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                selectedWeek = parseInt(btn.dataset.week);
-            });
-        });
-
-        // ------------------------------------------------
-        // 저장 버튼
-        // ------------------------------------------------
-        document.getElementById("week-modal-save-btn").addEventListener("click", () => {
-            console.log("저장 데이터:", weekData);
-
-            // fetch("/api/week/save", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify(weekData)
-            // });
-
-            alert("저장되었습니다.");
-        });
 
     } catch (err) {
         console.error("모달 초기화 오류:", err);
     }
 });
+
+
 
 
 // 수업별 진도 가져오기

@@ -40,14 +40,11 @@ public interface PaymentRepository {
 
     void createPaymentBill(PaymentBill paymentBill);
 
+    void updatePaymentStatusOnIssue(@Param("paymentKey") String paymentKey);
 
-    void updateBillStatus(@Param("billId") String billId, @Param("status") String status, @Param("paidDate") String paidDate);
+    void updateBillStatus(@Param("billId") String billId, @Param("status") String status);
 
-    Integer sumBillAmountsByPaymentKey(String paymentKey);
-
-    void updatePaymentAmount(String paymentKey, Integer newAmount);
-
-    void updatePaymentStatus(String paymentKey, String newStatus, String paidDate);
+    void updatePaymentStatus(@Param("paymentKey") String paymentKey, @Param("newStatus") String newStatus, @Param("paidDate") String paidDate, @Param("unpaidAmount") Integer unpaidAmount);
 
     List<PaymentBill> findBillsByPaymentKey(String paymentKey);
 

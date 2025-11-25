@@ -32,6 +32,9 @@ public class Payment {
     @Column
     private Integer amount; // 월 전체 학원비의 총 합
 
+    @Column(name = "unpaidAmount")
+    private Integer unpaidAmount;
+
     /*
      *결제 상태
      * - pending :
@@ -71,10 +74,11 @@ public class Payment {
     private Timestamp updatedAt;
 
     @Builder
-    public Payment(String paymentKey, String method, Integer amount, String status, String paidDate, String requestDate, String yy, String mm, Student student, Center center) {
+    public Payment(String paymentKey, String method, Integer amount, Integer unpaidAmount, String status, String paidDate, String requestDate, String yy, String mm, Student student, Center center) {
         this.paymentKey = paymentKey;
         this.method = method;
         this.amount = amount;
+        this.unpaidAmount = unpaidAmount;
         this.status = status;
         this.paidDate = paidDate;
         this.requestDate = requestDate;

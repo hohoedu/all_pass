@@ -71,6 +71,7 @@ public class PaymentService {
                 .yy(yy)
                 .mm(mm)
                 .amount(0)
+                .unpaidAmount(0)
                 .status("pending")
                 .build();
 
@@ -121,7 +122,6 @@ public class PaymentService {
                 .build();
         paymentRepository.createPaymentDetail(bookDetail);
 
-        // 3) amount 업데이트
         paymentRepository.updateAmount(paymentKey);
     }
 
@@ -167,8 +167,7 @@ public class PaymentService {
 
         paymentRepository.createPaymentBill(paymentBill);
 
-
-//        paymentRepository.updatePaymentByIssued(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
+        paymentRepository.updatePaymentStatusOnIssue(dto.getPaymentKey());
 
         String eventType = "bill_issued";
         String eventSource = "system";
@@ -220,14 +219,11 @@ public class PaymentService {
                 rawDate.substring(6, 8) + " " +
                 rawDate.substring(8, 10) + ":" +
                 rawDate.substring(10, 12);
-
-        paymentRepository.updateBillStatus(dto.getBill_id(), "approved", paidDate);
-
-        Integer newAmount = paymentRepository.sumBillAmountsByPaymentKey(payment.getPaymentKey());
-        paymentRepository.updatePaymentAmount(payment.getPaymentKey(), newAmount);
+        Integer unpaidAmount = payment.getUnpaidAmount() - Integer.parseInt(dto.getAppr_price());
+        paymentRepository.updateBillStatus(dto.getBill_id(), "approved");
 
         String newStatus = calculatePaymentStatus(payment.getPaymentKey());
-        paymentRepository.updatePaymentStatus(payment.getPaymentKey(), newStatus, paidDate);
+        paymentRepository.updatePaymentStatus(payment.getPaymentKey(), newStatus, paidDate, unpaidAmount);
 
         logHistory(
                 "callback_received",

@@ -65,17 +65,34 @@ public class ClassReqDTO {
 
     @Data
     public static class SetWeekDTO {
-        private Integer id;
         private String year;
         private String month;
         private String week;
         private String centerCode;
-        private List<DayDTO> days;
+        private String mon;
+        private String tue;
+        private String wed;
+        private String thu;
+        private String fri;
+        private String sat;
+        private String sun;
+    }
+
+    @Data
+    public static class WeekReqDTO {
+        private String year;
+        private String month;
+        private Map<String, WeekDetailDTO> week;
 
         @Data
-        public static class DayDTO {
-            private String dayname;
-//            private String
+        public static class WeekDetailDTO {
+            private String mon;
+            private String tue;
+            private String wed;
+            private String thu;
+            private String fri;
+            private String sat;
+            private String sun;
         }
     }
 

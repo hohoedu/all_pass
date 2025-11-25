@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (!students || students.length === 0) {
             tbody.innerHTML = `
-                <tr><td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>
+                <tr><td colspan="9" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>
             `;
             return;
         }
@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const teacherText = `${hanTeacherText}${teacherSeparator}${bookTeacherText}`;
 
             let statusHtml = '';
-            const eduIssued = student.eduStatus === 'issued';
-            const materialIssued = student.materialStatus === 'issued';
+            const eduIssued = !student.eduStatus != null;
+            const materialIssued = student.materialStatus != null;
 
             if (!eduIssued && !materialIssued) {
                 statusHtml = `<span class="unissued">미발행</span>`;
@@ -154,6 +154,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusHtml = `<span class="issued">발행</span>`;
             }
 
+            let payStatus = '';
+            if (!student.totalStatus) {
+                payStatus = `<span class="pay-box">-</span>`;
+            } else if (student.totalStatus && !student.totalStatuss === 'approved') {
+                payStatus = `<span class="pay-box">미결제</span>`;
+            } else {
+                payStatus = `<span class="pay-box">결제완료</span>`;
+            }
+
             tr.innerHTML = `
             <td class="checkbox-group">
                 <input type="checkbox" class="row-checkbox" value="${student.studentId}">
@@ -163,8 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${student.subject || '-'}</td>
             <td>${teacherText}</td>
             <td class="charge">${formattedPrice}</td>
+            <td>${student.unpaidAmount}</td>
             <td>${statusHtml}</td>
-            <td><div class="pay-box">-</div></td>
+            <td>${payStatus}</td>
         `;
 
             tbody.appendChild(tr);
@@ -461,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (issuedCell?.classList.contains('issued')) {
                 alert(`⚠️ ${row.dataset.studentName} 학생의 ${monthStr}월 청구서는 이미 발행되었습니다.`);
-                continue;
+                return;
             }
 
             const student = {
@@ -476,7 +486,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 totalMaterialFee: row.dataset.totalMaterialFee,
                 paymentKey: row.dataset.paymentKey,
             };
-
             const indexStr = String(index).padStart(2, "0");
 
             // EDU 청구
@@ -508,7 +517,7 @@ document.addEventListener("DOMContentLoaded", () => {
             price,
             hash,
             expire_dt: expireDate,
-            callbackURL: "https://67363a1e12f4.ngrok-free.app/pay/callback"
+            callbackURL: "https://871d3a9969e6.ngrok-free.app/pay/callback"
             // 배포시 변경 필요
             // callbackURL: "https://hohocenter.co.kr/pay/callback"
         };
@@ -586,8 +595,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        console.log(JSON.stringify({students, yy, mm}));
-
         const requestBody = {
             students: students.map(id => ({studentId: id})),
             yy,
@@ -602,7 +609,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await res.json();
-            console.log('data = ' + JSON.stringify(data, null, 2));
 
             if (!data || data.length === 0) {
                 alert('해당 월의 청구서 데이터를 찾을 수 없습니다.');
@@ -612,7 +618,6 @@ document.addEventListener("DOMContentLoaded", () => {
             let successCount = 0;
             let failCount = 0;
 
-            console.log('📄 조회된 청구서:', bills);
 
             // ✅ 2️⃣ 학생별 취소 요청
             for (const item of bills) {
@@ -654,7 +659,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cancelData = await cancelRes.json();
 
                 if (cancelData.code === "0000") {
-                    console.log(`✅ ${studentName} 결제 취소 완료`);
                     successCount++;
 
                 } else {

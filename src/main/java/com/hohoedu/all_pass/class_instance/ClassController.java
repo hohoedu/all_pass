@@ -57,57 +57,24 @@ public class ClassController {
     }
 
     @PostMapping("/week/save")
-    public ResponseEntity<?> createClassWeek(@RequestBody ClassReqDTO.SetWeekDTO setWeekDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
+    public ResponseEntity<?> saveWeek(@RequestBody ClassReqDTO.WeekReqDTO reqDTO, HttpSession session) {
+        try {
+            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, "/login")
+                        .build();
+            }
+
+            classService.saveClassWeek(reqDTO, user.getCenterCode());
+
+            return ResponseEntity.ok(ApiUtils.success("success"));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
         }
-        ClassReqDTO.GetWeekDTO getWeekDTO = new ClassReqDTO.GetWeekDTO();
-        getWeekDTO.setYear(setWeekDTO.getYear());
-        getWeekDTO.setMonth(setWeekDTO.getMonth());
-        getWeekDTO.setCenterCode(user.getCenterCode());
-
-        ClassRespDTO.ClassWeekDTO classWeek = classService.findClassWeek(getWeekDTO);
-        if (classWeek != null) {
-
-        }
-
-        classService.createClassWeek(setWeekDTO, user.getCenterCode());
-
-        return ResponseEntity.ok(ApiUtils.success("success"));
     }
 
-    @PostMapping("/week/get")
-    public ResponseEntity<?> getClassWeek(@RequestBody ClassReqDTO.GetWeekDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-        reqDTO.setCenterCode(user.getCenterCode());
-
-        ClassRespDTO.ClassWeekDTO response = classService.findClassWeek(reqDTO);
-
-        return ResponseEntity.ok(ApiUtils.success(response));
-
-    }
-
-    @PostMapping("/week/update")
-    public ResponseEntity<?> updateClassWeek(@RequestBody ClassReqDTO.SetWeekDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-
-        classService.updateClassWeek(reqDTO, user.getCenterCode());
-
-        return ResponseEntity.ok(ApiUtils.success("success"));
-    }
 
     // 시간표 등록
     @PostMapping("/register")
@@ -165,7 +132,7 @@ public class ClassController {
                     studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
                 }
                 // 결제 생성
-               String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), user.getCenterCode(), user.getUserCode());
+                String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), user.getCenterCode(), user.getUserCode());
                 paymentService.createPaymentDetail(paymentKey, classInfo, user.getUserCode());
             }
 

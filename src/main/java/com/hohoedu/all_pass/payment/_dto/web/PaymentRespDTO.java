@@ -19,7 +19,9 @@ public class PaymentRespDTO {
         private Integer bookMaterialFee;
         private String eduStatus;
         private String materialStatus;
+        private String totalStatus;
         private String totalPrice;
+        private String unpaidAmount;
         private String amountDue;
         private String totalFee;
         private String totalMaterialFee;
@@ -46,6 +48,7 @@ public class PaymentRespDTO {
         private String billType;
         private Integer amount;
         private String status;
+        private String paidDate;
 
     }
 
