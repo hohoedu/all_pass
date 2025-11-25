@@ -28,25 +28,29 @@ public class ClassWeek {
     @Column(name = "month")
     private String month;
 
-    @Column(name = "ju_1_start")
-    private String ju1Start;
-    @Column(name = "ju_1_end")
-    private String ju1End;
+    @Column(name = "week")
+    private String week;
 
-    @Column(name = "ju_2_start")
-    private String ju2Start;
-    @Column(name = "ju_2_end")
-    private String ju2End;
+    @Column(name = "mon")
+    private String mon;
 
-    @Column(name = "ju_3_start")
-    private String ju3Start;
-    @Column(name = "ju_3_end")
-    private String ju3End;
+    @Column(name = "tue")
+    private String tue;
 
-    @Column(name = "ju_4_start")
-    private String ju4Start;
-    @Column(name = "ju_4_end")
-    private String ju4End;
+    @Column(name = "wed")
+    private String wed;
+
+    @Column(name = "thu")
+    private String thu;
+
+    @Column(name = "fri")
+    private String fri;
+
+    @Column(name = "sat")
+    private String sat;
+
+    @Column(name = "sun")
+    private String sun;
 
     @ManyToOne
     @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
@@ -59,17 +63,17 @@ public class ClassWeek {
     private Timestamp updatedAt;
 
     @Builder
-    public ClassWeek(String year, String month, String ju1Start, String ju1End, String ju2Start, String ju2End, String ju3Start, String ju3End, String ju4Start, String ju4End, Center center) {
+    public ClassWeek(String year, String month, String week, String mon, String tue, String wed, String thu, String fri, String sat, String sun, Center center) {
         this.year = year;
         this.month = month;
-        this.ju1Start = ju1Start;
-        this.ju1End = ju1End;
-        this.ju2Start = ju2Start;
-        this.ju2End = ju2End;
-        this.ju3Start = ju3Start;
-        this.ju3End = ju3End;
-        this.ju4Start = ju4Start;
-        this.ju4End = ju4End;
+        this.week = week;
+        this.mon = mon;
+        this.tue = tue;
+        this.wed = wed;
+        this.thu = thu;
+        this.fri = fri;
+        this.sat = sat;
+        this.sun = sun;
         this.center = center;
     }
 }
