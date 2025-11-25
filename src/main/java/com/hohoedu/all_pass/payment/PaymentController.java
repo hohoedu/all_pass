@@ -27,6 +27,7 @@ public class PaymentController {
     // 결제선생 청구서 발행
     @PostMapping("/send")
     public ResponseEntity<String> sendBill(@RequestBody Map<String, Object> body) throws Exception {
+        System.out.println("=====================================================1");
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(body);
 
@@ -41,7 +42,9 @@ public class PaymentController {
         String url = "https://stg.paymint.co.kr/partner/if/bill/send";
 
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
+        System.out.println("=====================================================2");
+        log.info(response.getBody());
+        System.out.println("=====================================================3");
         return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
@@ -55,6 +58,7 @@ public class PaymentController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
+        log.info("청구서 발행 후 저장");
 
         // 2) 요청값 validation
         if (reqDTO == null) {

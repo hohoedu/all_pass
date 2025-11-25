@@ -164,9 +164,9 @@ public class ClassController {
                 if (classInfo != null) {
                     studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
                 }
-                paymentService.createPayment(dto, classInfo, user.getUserCode(), user.getCenterCode());
-
-
+                // 결제 생성
+               String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), user.getCenterCode(), user.getUserCode());
+                paymentService.createPaymentDetail(paymentKey, classInfo, user.getUserCode());
             }
 
             return ResponseEntity.ok(ApiUtils.success(true));

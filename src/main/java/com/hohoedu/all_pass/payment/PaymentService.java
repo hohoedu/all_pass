@@ -54,74 +54,77 @@ public class PaymentService {
     }
 
     // 결제 생성
-    public void createPayment(ClassReqDTO.AddStudentDTO studentDTO, ClassRespDTO.ClassInfoDTO classInfoDTO, String userCode, String centerCode) {
+    public String createPayment(String studentId, String yy, String mm, String centerCode, String userCode) {
 
-        String paymentKey;
+        String paymentKey = paymentRepository.findByStudentAndYm(studentId, yy, mm);
 
-        String existingPaymentKey = paymentRepository.findByStudentAndYm(studentDTO.getStudentId(), studentDTO.getYy(), studentDTO.getMm());
-
-        if (existingPaymentKey != null) {
-
-            paymentKey = existingPaymentKey;
-
-            if (classInfoDTO != null) {
-                insertPaymentDetails(paymentKey, classInfoDTO);
-                paymentRepository.updateAmount(paymentKey,
-                        classInfoDTO.getClassFee() + 20000);
-            }
-            return;
+        if (paymentKey != null) {
+            return paymentKey;
         }
 
         paymentKey = PaymentKeyGenerator.generate(centerCode);
 
         Payment payment = Payment.builder()
                 .paymentKey(paymentKey)
-                .amount(classInfoDTO != null ? classInfoDTO.getClassFee() : null)
-                .status("pending")
-                .yy(studentDTO.getYy())
-                .mm(studentDTO.getMm())
-                .student(Student.builder().studentId(studentDTO.getStudentId()).build())
+                .student(Student.builder().studentId(studentId).build())
                 .center(Center.builder().centerCode(centerCode).build())
+                .yy(yy)
+                .mm(mm)
+                .amount(0)
+                .status("pending")
                 .build();
 
         paymentRepository.createPayment(payment);
 
-        String eventType = "payment_created";
-        String eventSource = "system";
-        String oldStatus = null;
-        String newStatus = payment.getStatus();
-        Integer amount = payment.getAmount();
-        String description = "결제 생성";
+        logHistory(
+                "payment_created",
+                "system",
+                null,
+                "pending",
+                0,
+                "결제 생성",
+                paymentKey,
+                userCode
+        );
 
-        logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, userCode);
-
-        if (classInfoDTO != null) {
-            insertPaymentDetails(paymentKey, classInfoDTO);
-            paymentRepository.updateAmount(paymentKey,
-                    classInfoDTO.getClassFee() + 20000);
-        }
+        return paymentKey;
     }
 
     // 결제 상세 내역 저장
-    public void insertPaymentDetails(String paymentKey, ClassRespDTO.ClassInfoDTO classInfoDTO) {
+    public void createPaymentDetail(String paymentKey, ClassRespDTO.ClassInfoDTO classInfoDTO, String userCode) {
+
+        Payment payment = Payment.builder().paymentKey(paymentKey).build();
+
+        User creator = User.builder().userCode(userCode).build();
+
+        String classType = classInfoDTO.getClassType().equals("1") ? "한자" : "독서";
+
+        // 1) 교육비
         PaymentDetail eduDetail = PaymentDetail.builder()
-                .payment(Payment.builder().paymentKey(paymentKey).build())
-                .amount(classInfoDTO.getClassFee())
+                .payment(payment)
+                .user(creator)
+                .itemType("EDU_FEE")
                 .classType(classInfoDTO.getClassType())
-                .itemType("edu")
-                .user(User.builder().userCode(classInfoDTO.getUserCode()).build())
+                .amount(classInfoDTO.getClassFee())
+                .note("수업료 (" + classType + ")")
                 .build();
         paymentRepository.createPaymentDetail(eduDetail);
 
+        // 2) 교재비 (DTO에서 받아야 함)
         PaymentDetail bookDetail = PaymentDetail.builder()
-                .payment(Payment.builder().paymentKey(paymentKey).build())
-                .amount(15000)
+                .payment(payment)
+                .user(creator)
+                .itemType("BOOK_FEE")
                 .classType(classInfoDTO.getClassType())
-                .itemType("book")
-                .user(User.builder().userCode(classInfoDTO.getUserCode()).build())
+                .amount(15000)
+                .note("교재비")
                 .build();
         paymentRepository.createPaymentDetail(bookDetail);
+
+        // 3) amount 업데이트
+        paymentRepository.updateAmount(paymentKey);
     }
+
 
     // 수업료 청구 화면 필터링
     public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode) {
@@ -165,7 +168,7 @@ public class PaymentService {
         paymentRepository.createPaymentBill(paymentBill);
 
 
-        paymentRepository.updatePaymentByIssued(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
+//        paymentRepository.updatePaymentByIssued(dto.getPaymentKey(), dto.getYy(), dto.getMm(), status, today);
 
         String eventType = "bill_issued";
         String eventSource = "system";
@@ -188,6 +191,7 @@ public class PaymentService {
 
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
 
+        // 콜백 저장
         PaymentCallback paymentCallback = PaymentCallback.builder()
                 .paymentBill(PaymentBill.builder().billId(dto.getBill_id()).build())
                 .apiKey(dto.getApikey())
@@ -199,40 +203,60 @@ public class PaymentService {
                 .apprNum(dto.getAppr_num())
                 .build();
 
-        try {
+        paymentRepository.createPaymentCallback(paymentCallback);
 
-            paymentRepository.createPaymentCallback(paymentCallback);
+        PaymentBill paymentBill = paymentRepository.findPaymentBill(dto.getBill_id());
+        Payment payment = paymentRepository.findPaymentByBillId(dto.getBill_id());
 
-            Payment payment = paymentRepository.findPaymentByBillId(dto.getBill_id());
-            PaymentBill paymentBill = paymentRepository.findPaymentBill(dto.getBill_id());
-
-            if (payment == null || paymentBill == null) {
-                log.error("❌ Callback 처리 실패: payment 또는 bill 정보를 찾을 수 없음. bill_id=" + dto.getBill_id());
-                return;
-            }
-            String rawDate = dto.getAppr_dt();
-            String paidDate = rawDate.substring(0, 4) + "-" +
-                    rawDate.substring(4, 6) + "-" +
-                    rawDate.substring(6, 8) + " " +
-                    rawDate.substring(8, 10) + ":" +
-                    rawDate.substring(10, 12);
-
-            String eventType = "callback_received";
-            String eventSource = "callback";
-            String oldStatus = payment.getStatus();
-            String newStatus = "approved";
-            Integer amount = paymentBill.getAmount();
-            String description = "Paymint 결제승인 콜백 처리";
-            String paymentKey = payment.getPaymentKey();
-
-            paymentRepository.updatePaymentByApproved(paymentKey, payment.getYy(), payment.getMm(), newStatus, paidDate, "paymint");
-
-            logHistory(eventType, eventSource, oldStatus, newStatus, amount, description, paymentKey, null);
-
-            log.info("✅ 결제 콜백 처리 완료 (bill_id: {})", dto.getBill_id());
-
-        } catch (Exception e) {
-            log.error("❌ 결제 콜백 처리 중 오류: {}", e.getMessage(), e);
+        if (payment == null || paymentBill == null) {
+            log.error("❌ Callback 처리 실패: payment 또는 bill 정보를 찾을 수 없음. bill_id=" + dto.getBill_id());
+            return;
         }
+
+        // payment_bill 상태 업데이트
+        String rawDate = dto.getAppr_dt();
+        String paidDate = rawDate.substring(0, 4) + "-" +
+                rawDate.substring(4, 6) + "-" +
+                rawDate.substring(6, 8) + " " +
+                rawDate.substring(8, 10) + ":" +
+                rawDate.substring(10, 12);
+
+        paymentRepository.updateBillStatus(dto.getBill_id(), "approved", paidDate);
+
+        Integer newAmount = paymentRepository.sumBillAmountsByPaymentKey(payment.getPaymentKey());
+        paymentRepository.updatePaymentAmount(payment.getPaymentKey(), newAmount);
+
+        String newStatus = calculatePaymentStatus(payment.getPaymentKey());
+        paymentRepository.updatePaymentStatus(payment.getPaymentKey(), newStatus, paidDate);
+
+        logHistory(
+                "callback_received",
+                "callback",
+                payment.getStatus(),
+                newStatus,
+                paymentBill.getAmount(),
+                "Paymint 결제승인 콜백 처리",
+                payment.getPaymentKey(),
+                null
+        );
+
+        log.info("✅ 결제 콜백 처리 완료 (paymentKey: {}, bill_id: {})", payment.getPaymentKey(), dto.getBill_id());
+
+    }
+
+
+    private String calculatePaymentStatus(String paymentKey) {
+        List<PaymentBill> bills = paymentRepository.findBillsByPaymentKey(paymentKey);
+
+        boolean allApproved = bills.stream()
+                .allMatch(bill -> bill.getStatus().equals("approved"));
+
+        boolean anyApproved = bills.stream()
+                .anyMatch(bill -> bill.getStatus().equals("approved"));
+
+        if (allApproved) return "approved";
+        if (anyApproved) return "partial";
+
+        return "issued";
     }
 }

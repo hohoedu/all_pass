@@ -441,172 +441,6 @@ function renderStudents(tbody, students = []) {
     // </div>
 }
 
-
-// ==================== 수강정보 저장 ==================== //
-// document.addEventListener("DOMContentLoaded", () => {
-//     const btn = document.querySelector('#student-tab-3-save-btn');
-//
-//     btn.addEventListener("click", async (e) => {
-//
-//         e.preventDefault();
-//
-//
-//         const data = {
-//             studentId: currentStudentId,
-//
-//             // 한자 수강 정보
-//             hanClassKey: document.querySelector('#hanja')?.value || '',
-//             hanTeacherCode: document.querySelector('#han-teacher')?.value || '',
-//             hanStatus: document.querySelector('#hanja').closest('table')
-//                 .querySelector('input[name="status"]')?.value || '',
-//             hanEntryDate: document.querySelector('#hanja')
-//                 .closest('table')
-//                 .querySelector('.hidden-picker')?.value || '',
-//             hanFee: parseInt(document.querySelector('#hanFee')?.value.replace(/,/g, '') || '0'),
-//             hanMaterialFee: parseInt(document.querySelector('#hanMaterialFee')?.value.replace(/,/g, '') || '0'),
-//
-//             // 독서 수강 정보
-//             bookClassKey: document.querySelector('#book')?.value || '',
-//             bookTeacherCode: document.querySelector('#book-teacher')?.value || '',
-//             bookStatus: document.querySelector('#book').closest('table')
-//                 .querySelector('input[name="status"]')?.value || '',
-//             bookEntryDate: document.querySelector('#book')
-//                 .closest('table')
-//                 .querySelector('.hidden-picker')?.value || '',
-//             bookFee: parseInt(document.querySelector('#bookFee')?.value.replace(/,/g, '') || '0'),
-//             bookMaterialFee: parseInt(document.querySelector('#bookMaterialFee')?.value.replace(/,/g, '') || '0')
-//         };
-//         console.log(data.hanStatus);
-//         console.log(data.bookStatus);
-//         if (data.hanStatus === "inactive" && data.bookStatus === "inactive") {
-//             alert("수강 상태를 확인해주세요.");
-//             return;
-//         }
-//         try {
-//             const response = await fetch("/student/class/insert", {
-//                 method: "POST",
-//                 headers: {
-//                     "Content-Type": "application/json"
-//                 },
-//                 body: JSON.stringify(data)
-//             });
-//
-//             if (!response.ok) throw new Error(`서버 오류 (${response.status})`);
-//
-//             const result = await response.json();
-//             if (result.success) {
-//                 alert("수강정보가 저장되었습니다.");
-//             } else {
-//                 alert("저장 중 오류가 발생했습니다.");
-//             }
-//         } catch (err) {
-//             console.error("❌ 저장 실패:", err);
-//             alert("서버 통신 중 오류가 발생했습니다.");
-//         }
-//     });
-// });
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const chooseGroups = document.querySelectorAll(".choose-group");
-
-    chooseGroups.forEach(group => {
-        const buttons = group.querySelectorAll(".btn-choose");
-        const hiddenInput = group.querySelector('input[type="hidden"]');
-        const type = group.dataset.type;
-
-        buttons.forEach(button => {
-            button.addEventListener("click", async () => {
-                buttons.forEach(btn => btn.classList.remove("active"));
-                button.classList.add("active");
-                hiddenInput.value = button.dataset.value;
-                console.log(`✅ ${type} 상태 변경됨: ${button.textContent} (${hiddenInput.value})`);
-            });
-        });
-    });
-
-    const updateBtn = document.getElementById("update-btn");
-    if (!updateBtn) return;
-
-    updateBtn.addEventListener("click", async () => {
-
-
-        try {
-            // 값 가져오기
-            const studentName = document.querySelector(".s_name")?.value?.trim();
-            const birth = document.getElementById("birth-date")?.value;
-            const gender = document.querySelector("input[name='gender']")?.value;
-            const school = document.querySelector(".s_school")?.value?.trim();
-            const address = document.querySelector(".s_address")?.value?.trim();
-            const addressDetail = document.querySelector(".s_address_detail")?.value?.trim();
-            const gradeKey = document.querySelector(".s_grade")?.value;
-
-            // 간단한 유효성검사
-            // if (!studentName) {
-            //     alert("이름을 입력해주세요.");
-            //     return;
-            // }
-            // if (!birth) {
-            //     alert("생년월일을 선택해주세요.");
-            //     return;
-            // }
-            // if (!gender) {
-            //     alert("성별을 선택해주세요.");
-            //     return;
-            // }
-            // if (!school) {
-            //     alert("학교를 입력해주세요.");
-            //     return;
-            // }
-            // if (!address) {
-            //     alert("주소를 입력해주세요.");
-            //     return;
-            // }
-            // if (!gradeNo) {
-            //     alert("학년을 선택해주세요.");
-            //     return;
-            // }
-
-            const payload = {
-                studentName: studentName,
-                birth: birth,
-                gender: gender,
-                school: school,
-                address: address,
-                addressDetail: addressDetail,
-                gradeKey: gradeKey
-            };
-
-            console.log("📌 Update Payload:", payload);
-
-            const response = await fetch("/student/update/info", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                console.error("❌ 서버 오류:", result);
-                alert("저장에 실패했습니다.");
-                return;
-            }
-
-            alert("저장되었습니다.");
-        } catch (err) {
-            console.error("❌ 예외 발생:", err);
-            alert("오류가 발생했습니다.");
-        }
-    });
-});
-
-
-document.addEventListener("DOMContentLoaded", () => {
-
-});
-
-
 // ====== 상세정보 날짜 바꾸기 ====== //
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".birth-btn").forEach(btn => {
@@ -644,3 +478,89 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+function collectStudentInfo() {
+    try {
+        const getVal = (selector) => {
+            const el = document.querySelector(selector);
+            if (!el) return "";
+            return el.value?.trim?.() || el.innerText?.trim?.() || "";
+        };
+
+        return {
+            studentId: currentStudentId,
+
+            // 기본 정보
+            studentName: getVal(".s_name"),
+            birth: document.querySelector("#birth-date")?.value ?? "",
+            gender: document.querySelector(".s_gender.active")?.dataset.value || "",
+            school: getVal(".s_school"),
+            address: getVal(".s_address"),
+            addressDetail: getVal(".s_address_detail"),
+            grade: getVal(".s_grade"),
+            parentPhone: getVal(".s_phone"),
+
+            // 상태
+            status: document.querySelector('[data-visibility="current-status"] .s_status.active')?.dataset.status || "",
+
+            // 현금영수증
+            cashTypePersonal: document.querySelector('input[name="personal"]')?.checked ?? false,
+            cashTypeCorporate: document.querySelector('input[name="corporate"]')?.checked ?? false,
+            cashReceiptNumber: document.querySelector('input[name="cashReceipt"]')?.value ?? "",
+
+            // 형제연결
+            siblingSearchType: document.querySelector('#nameSelect')?.value ?? "",
+            siblingSearchValue: document.querySelector('#nameSelect')?.closest('.checkbox-group')?.querySelector('input[type="tel"]')?.value ?? "",
+            siblingSavePhone: document.querySelectorAll('.checkbox-group.round.cash-type')[1]?.querySelector('input[type="tel"]')?.value ?? "",
+
+            // 입회 정보
+            hanjaJoinDate: document.querySelectorAll('.hidden-picker')[0]?.value ?? "",
+            readingJoinDate: document.querySelectorAll('.hidden-picker')[1]?.value ?? ""
+        };
+
+    } catch (e) {
+        console.error("Collect Error:", e);
+        return null;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.querySelector('#update-btn');
+
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+        const data = collectStudentInfo();
+
+        if (!data) {
+            alert("데이터 수집 중 오류가 발생했습니다.");
+            return;
+        }
+
+        try {
+            const res = await fetch('/student/update', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (!res.ok) {
+                console.error(await res.text());
+                alert("저장 실패");
+                return;
+            }
+
+            // 🔥 서버에서 최신 학생 데이터를 반환받음
+            const updated = await res.json();
+
+            // 🔥 모달에 즉시 반영
+            renderStudentInfo(updated);
+
+            alert("저장되었습니다.");
+        } catch (err) {
+            console.error(err);
+            alert("처리 중 오류가 발생했습니다.");
+        }
+    });
+});
+;

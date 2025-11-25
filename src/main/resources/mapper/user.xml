@@ -11,11 +11,6 @@
         values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
     </insert>
 
-    <select id="findAll" resultType="com.hohoedu.all_pass.user.User">
-        select *
-        from user_tb
-    </select>
-
     <select id="findAllCount" resultType="int">
         select count(*)
         from erp_user
@@ -47,7 +42,7 @@
     </select>
 
     <select id="findUserByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.user.User">
-        select *
+        select id, created_at, user_code, user_id, user_name, center_code, role_key
         from ERP_USER u
         where center_code = #{centerCode}
     </select>

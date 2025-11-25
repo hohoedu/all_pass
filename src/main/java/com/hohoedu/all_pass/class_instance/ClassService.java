@@ -66,10 +66,11 @@ public class ClassService {
         String today = dateConfig.currentYearMonth().get("today");
         String year = dateConfig.currentYearMonth().get("currentYear");
         String month = dateConfig.currentYearMonth().get("currentMonth");
+        String dayname = dateConfig.currentYearMonth().get("currentDayName");
 
         log.info(today);
         List<ClassRespDTO.MainClassSummaryDTO> responseDTO =
-                classRepository.findClassSummary(year, month, "thu", userCode, centerCode);
+                classRepository.findClassSummary(year, month, dayname, userCode, centerCode);
 
         try {
             if (responseDTO != null && !responseDTO.isEmpty()) {
@@ -429,7 +430,7 @@ public class ClassService {
                         .build();
                 paymentRepository.createPaymentDetail(bookDetail);
 
-                paymentRepository.updateAmount(paymentKey, hanFee + hanMaterialFee);
+                paymentRepository.updateAmount(paymentKey);
             }
             if (updated > 0) {
                 result += updated;

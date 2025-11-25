@@ -11,7 +11,6 @@ import com.hohoedu.all_pass.user.User;
 
 @Mapper
 public interface UserRepository {
-    public List<User> findAll();
 
     public void insert(User user);
 
