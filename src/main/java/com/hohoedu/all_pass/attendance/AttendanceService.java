@@ -28,89 +28,98 @@ public class AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final ClassRepository classRepository;
+
     private String findWeek(LocalDate today, ClassRespDTO.ClassWeekDTO week) {
 
-        LocalDate ju1Start = LocalDate.parse(week.getJu1Start());
-        LocalDate ju1End = LocalDate.parse(week.getJu1End());
-        if (!today.isBefore(ju1Start) && !today.isAfter(ju1End)) {
-            return "ju_1";
+        if (today == null || week == null) {
+            return "";
         }
 
-        LocalDate ju2Start = LocalDate.parse(week.getJu2Start());
-        LocalDate ju2End = LocalDate.parse(week.getJu2End());
-        if (!today.isBefore(ju2Start) && !today.isAfter(ju2End)) {
-            return "ju_2";
+        try {
+            if (isSame(today, week.getMon()) ||
+                    isSame(today, week.getTue()) ||
+                    isSame(today, week.getWed()) ||
+                    isSame(today, week.getThu()) ||
+                    isSame(today, week.getFri()) ||
+                    isSame(today, week.getSat()) ||
+                    isSame(today, week.getSun())) {
+
+                return week.getWeek();   // "ju_1", "ju_2" 등
+            }
+
+        } catch (Exception e) {
+            log.error("주차 판단 오류: {}", e.getMessage());
         }
 
-        LocalDate ju3Start = LocalDate.parse(week.getJu3Start());
-        LocalDate ju3End = LocalDate.parse(week.getJu3End());
-        if (!today.isBefore(ju3Start) && !today.isAfter(ju3End)) {
-            return "ju_3";
-        }
-
-        LocalDate ju4Start = LocalDate.parse(week.getJu4Start());
-        LocalDate ju4End = LocalDate.parse(week.getJu4End());
-        if (!today.isBefore(ju4Start) && !today.isAfter(ju4End)) {
-            return "ju_4";
-        }
-
-        return null; // 어느 주차에도 해당되지 않음
+        return ""; // 해당 없음
     }
-    public ScheduleRunResultDTO executeScheduledAttendance(String nowHHmm, String yy, String mm, String day, String today) {
+
+    private boolean isSame(LocalDate today, String target) {
+        if (target == null || target.isBlank()) return false;
+
+        try {
+            LocalDate parsed = LocalDate.parse(target);
+            return today.isEqual(parsed);
+        } catch (Exception e) {
+            log.warn("날짜 파싱 실패: {}", target);
+            return false;
+        }
+    }
+
+
+    public ScheduleRunResultDTO executeScheduledAttendance(
+            String nowHHmm, String yy, String mm, String day, String today) {
 
         LocalDate currentDay = LocalDate.parse(today);
 
         List<ClassRespDTO.FinishClassDTO> finished = attendanceRepository.findClassesToProcess(yy, mm, day, nowHHmm);
 
-
         Map<String, String> weekMap = new HashMap<>();
 
         for (ClassRespDTO.FinishClassDTO dto : finished) {
             String centerCode = dto.getCenterCode();
-//
-//            if (!weekMap.containsKey(centerCode)) {
-//
-//                ClassRespDTO.ClassWeekDTO classWeek =
-//                        classRepository.findClassWeek(yy, mm, centerCode);
-//
-//                if (classWeek == null) {
-//                    weekMap.put(centerCode, "");
-//                    continue;
-//                }
-//
-//                String week = findWeek(currentDay, classWeek);
-//
-//                weekMap.put(centerCode, week);
-//            }
+
+            if (!weekMap.containsKey(centerCode)) {
+
+                List<ClassRespDTO.ClassWeekDTO> classWeeks = classRepository.getClassWeek(yy, mm, centerCode);
+                if (classWeeks == null || classWeeks.isEmpty()) {
+                    weekMap.put(centerCode, "");
+                    continue;
+                }
+
+                String week = "";
+                for (ClassRespDTO.ClassWeekDTO w : classWeeks) {
+                    week = findWeek(currentDay, w);
+                    if (!week.isBlank()) break;
+                }
+
+                weekMap.put(centerCode, week);
+            }
         }
 
         for (ClassRespDTO.FinishClassDTO dto : finished) {
             dto.setWeek(weekMap.get(dto.getCenterCode()));
         }
 
-        int processed = 0, skipped = 0;
-
+        int processed = 0;
         List<ProcessedClassDTO> details = new ArrayList<>();
 
         for (ClassRespDTO.FinishClassDTO tt : finished) {
-            String timeTableKey = tt.getTimeTableKey();
-
 
             try {
-                attendanceRepository.bulkInsertAbsentForClass(timeTableKey, today, tt.getWeek());
-                attendanceRepository.bulkInsertRemedialForClass(timeTableKey, today, tt.getWeek());
-                attendanceRepository.updateLatenessForClass(timeTableKey, today);
+                attendanceRepository.bulkInsertAbsentForClass(tt.getTimeTableKey(), today, tt.getWeek());
+                attendanceRepository.bulkInsertRemedialForClass(tt.getTimeTableKey(), today, tt.getWeek());
+                attendanceRepository.updateLatenessForClass(tt.getTimeTableKey(), today);
 
                 processed++;
                 details.add(ProcessedClassDTO.processedOf(tt));
 
             } catch (DataAccessException e) {
-                System.out.println("e = " + e.getMessage());
-//                details.add(ProcessedClassDTO.failedOf(tt, e.getClass().getSimpleName()));
-
+                log.error("출석 처리 중 오류", e);
             }
         }
-        return null;
+
+        return null; // 필요 시 ScheduleRunResultDTO 반환 구성
     }
 
 }

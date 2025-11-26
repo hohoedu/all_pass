@@ -104,7 +104,7 @@ public class ClassService {
 
     public void saveClassWeek(ClassReqDTO.WeekReqDTO dto, String centerCode) {
 
-        List<ClassWeek> existing = classRepository.getClassWeek(dto.getYear(), dto.getMonth(), centerCode);
+        List<ClassRespDTO.ClassWeekDTO> existing = classRepository.getClassWeek(dto.getYear(), dto.getMonth(), centerCode);
 
         for (int i = 1; i <= 4; i++) {
 
@@ -137,7 +137,9 @@ public class ClassService {
         }
     }
 
-
+    public List<ClassRespDTO.ClassWeekDTO> getClassWeek(String year, String month, String centerCode) {
+        return classRepository.getClassWeek(year, month, centerCode);
+    }
 
     public void updateClassWeek(ClassReqDTO.SetWeekDTO dto, String centerCode) {
         dto.setCenterCode(centerCode);

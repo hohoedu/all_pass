@@ -127,12 +127,14 @@
           AND cf.center_code = #{centerCode}
     </select>
 
-    <select id="findClassWeekByCenter" resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
+    <select id="findClassWeekByCenter"
+            resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
         SELECT *
-        from erp_class_week
+        FROM erp_class_week
         WHERE center_code = #{centerCode}
                   AND year = #{year}
                   AND month = #{month}
+        ORDER BY week
     </select>
 
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"

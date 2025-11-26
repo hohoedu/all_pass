@@ -279,40 +279,59 @@ public class StudentService {
 
     public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
-        // 출석 중복 체크
+        if (dto == null || student == null) {
+            throw new IllegalArgumentException("잘못된 요청 데이터입니다.");
+        }
+
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
             return false;
         }
-        LocalDate today = LocalDate.parse(dto.getYmd());
+
+        LocalDate today;
+        try {
+            today = LocalDate.parse(dto.getYmd());
+        } catch (Exception e) {
+            throw new RuntimeException("출석 날짜 형식이 잘못되었습니다.");
+        }
 
         String year = String.valueOf(today.getYear());
-        String month = String.format("%02d", today.getMonthValue());  // "01", "02"
+        String month = String.format("%02d", today.getMonthValue());
 
-        // 출석 or 지각 판정
         ClassRespDTO.TimeRangeDTO timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
+        if (timeDTO == null) {
+            throw new RuntimeException("수업 시간이 설정되지 않았습니다.");
+        }
+
         LocalTime start = LocalTime.parse(timeDTO.getStartTime());
         LocalTime now = LocalTime.parse(dto.getHhmm());
 
         String attendanceKey = now.isAfter(start) ? "late" : "present";
 
-        // --------------------------------------------
-        // 1) 주차 조회
-        // --------------------------------------------
+        List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
 
-
-        ClassWeek classWeek = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
-
-        if (classWeek == null) {
-
+        if (weekList == null || weekList.isEmpty()) {
             throw new RuntimeException("이번 달 주차 설정이 없습니다.");
         }
 
-//        String week = findWeek(today, classWeek);
-        String week = "ju_1";
+        String week = null;
+
+        for (ClassWeek w : weekList) {
+            if (isSame(today, w.getMon()) ||
+                    isSame(today, w.getTue()) ||
+                    isSame(today, w.getWed()) ||
+                    isSame(today, w.getThu()) ||
+                    isSame(today, w.getFri()) ||
+                    isSame(today, w.getSat()) ||
+                    isSame(today, w.getSun())) {
+
+                week = w.getWeek();
+                break;
+            }
+        }
 
         if (week == null) {
-            throw new RuntimeException("오늘 날짜는 어떤 주차에도 해당하지 않습니다.");
+            throw new RuntimeException("오늘 날짜는 어떤 주차에도 속하지 않습니다.");
         }
 
         studentRepository.checkinStudentAttendance(
@@ -327,35 +346,16 @@ public class StudentService {
         return true;
     }
 
-
-//    private String findWeek(LocalDate today, ClassWeek week) {
-//
-//        LocalDate ju1Start = LocalDate.parse(week.getJu1Start());
-//        LocalDate ju1End = LocalDate.parse(week.getJu1End());
-//        if (!today.isBefore(ju1Start) && !today.isAfter(ju1End)) {
-//            return "ju_1";
-//        }
-//
-//        LocalDate ju2Start = LocalDate.parse(week.getJu2Start());
-//        LocalDate ju2End = LocalDate.parse(week.getJu2End());
-//        if (!today.isBefore(ju2Start) && !today.isAfter(ju2End)) {
-//            return "ju_2";
-//        }
-//
-//        LocalDate ju3Start = LocalDate.parse(week.getJu3Start());
-//        LocalDate ju3End = LocalDate.parse(week.getJu3End());
-//        if (!today.isBefore(ju3Start) && !today.isAfter(ju3End)) {
-//            return "ju_3";
-//        }
-//
-//        LocalDate ju4Start = LocalDate.parse(week.getJu4Start());
-//        LocalDate ju4End = LocalDate.parse(week.getJu4End());
-//        if (!today.isBefore(ju4Start) && !today.isAfter(ju4End)) {
-//            return "ju_4";
-//        }
-//
-//        return null; // 어느 주차에도 해당되지 않음
-//    }
+    private boolean isSame(LocalDate today, String target) {
+        if (target == null || target.isBlank()) {
+            return false;
+        }
+        try {
+            return today.isEqual(LocalDate.parse(target));
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public int checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
         List<StudentAttendance> sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());

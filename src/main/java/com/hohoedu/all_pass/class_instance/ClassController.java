@@ -10,6 +10,7 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -73,6 +74,16 @@ public class ClassController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
         }
+    }
+
+    @PostMapping("/week/get")
+    public ResponseEntity<?> getWeekData(@RequestBody ClassReqDTO.GetWeekDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user =
+                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        List<ClassRespDTO.ClassWeekDTO> list = classService.getClassWeek(reqDTO.getYear(), reqDTO.getMonth(), user.getCenterCode());
+        log.info(list.toString());
+        return ResponseEntity.ok(ApiUtils.success(list));
     }
 
 

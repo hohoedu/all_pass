@@ -26,10 +26,11 @@ public interface ClassRepository {
             @Param("centerCode") String centerCode
     );
 
-    List<ClassWeek> getClassWeek(@Param("year") String year,
-                                 @Param("month") String month,
-                                 @Param("centerCode") String centerCode);
-
+    List<ClassRespDTO.ClassWeekDTO> getClassWeek(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode
+    );
 
     void insertClassWeek(ClassReqDTO.SetWeekDTO dto);
 
@@ -171,7 +172,7 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    ClassWeek findClassWeekByCenter(
+    List<ClassWeek> findClassWeekByCenter(
             @Param("centerCode") String centerCode,
             @Param("year") String year,
             @Param("month") String month);

@@ -416,19 +416,12 @@ function openPreviewModal(studentId, timeTableKey) {
 }
 
 function renderPreviewModal(data) {
-    console.log("📌 렌더링 시작:", data);
 
-    /* -------------------------
-     * 1) 제목
-     * ------------------------- */
     const title = document.querySelector(".pre-title");
     if (title) {
         title.textContent = `${data.studentName} 학생의 월간평가 미리보기`;
     }
 
-    /* -------------------------
-     * 2) topComment → ul.pre-sub-t
-     * ------------------------- */
     const topCommentEl = document.querySelector(".pre-sub-t");
     topCommentEl.innerHTML = "";
 

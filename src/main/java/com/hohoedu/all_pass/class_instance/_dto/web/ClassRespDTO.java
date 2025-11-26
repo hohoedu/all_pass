@@ -23,16 +23,16 @@ public class ClassRespDTO {
     @Data
     public static class ClassWeekDTO {
         private Integer id;
-        private String ju1Start;
-        private String ju1End;
-        private String ju2Start;
-        private String ju2End;
-        private String ju3Start;
-        private String ju3End;
-        private String ju4Start;
-        private String ju4End;
         private String year;
         private String month;
+        private String week;
+        private String mon;
+        private String tue;
+        private String wed;
+        private String thu;
+        private String fri;
+        private String sat;
+        private String sun;
     }
 
     @Data
