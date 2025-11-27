@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/manage/order.js}"></script>
     <!-- Html menu Load -->
     <script th:src="@{/js/sidebar.js}"></script>
     <title>교재 주문</title>
@@ -27,21 +28,16 @@
                     <div class="order-flex">
                         <div class="order-top">
                             <div class="stats-item-left">
-                                <div class="radio-group">
-                                    <input type="radio" name="period" id="period-1year" value="1y" checked>
-                                    <label for="period-1year">1년</label>
-                                    <input type="radio" name="period" id="period-6month" value="6m">
-                                    <label for="period-6month">6개월</label>
-                                    <input type="radio" name="period" id="period-3month" value="3m">
-                                    <label for="period-3month">3개월</label>
-                                    <input type="radio" name="period" id="period-custom" value="custom">
-                                    <label for="period-custom">일자지정</label>
-                                </div>
-                                <div class="icon-field basic-input cal-adjust" style="margin-bottom: 0;">
-                                    <span>2024-07 ~ 2025-06</span>
-                                    <button class="icon-btn" style="background: transparent;">
-                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                    </button>
+                                <div class="month-title2 month-today">
+                                    <span class="current-month"></span>
+                                    <div style="position: relative;">
+                                        <div class="day-display">
+                                            <input type="month" class="hidden-date hidden-picker"/>
+                                            <button type="button" class="icon-btn calendar-open">
+                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="table-frame makeup-table mt">
@@ -61,10 +57,25 @@
                                     </tr>
                                     </thead>
                                     <tbody id="order-left-body" class="stripe">
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
+                                    <tr th:each="order : ${orderList}"
+                                        th:data-class-key="${order.classKey}"
+                                        th:data-unit-key="${order.unitKey}">
+                                        <td th:text="${order.className}">수업</td>
+                                        <td th:text="${order.unitName}">진도</td>
+                                        <td th:text="${order.baseCount}">기본수량</td>
+                                        <!--                                        <td>-->
+                                        <!--                                            <div class="spinner-frame">-->
+                                        <!--                                                <div class="custom-spinner">-->
+                                        <!--                                                    <input type="number"-->
+                                        <!--                                                           th:value="${order.addCount != null ? order.addCount : 0}"-->
+                                        <!--                                                           step="1">-->
+                                        <!--                                                    <div class="spinner-buttons">-->
+                                        <!--                                                        <button type="button" class="increment-button">▲</button>-->
+                                        <!--                                                        <button type="button" class="decrement-button">▼</button>-->
+                                        <!--                                                    </div>-->
+                                        <!--                                                </div>-->
+                                        <!--                                            </div>-->
+                                        <!--                                        </td>-->
                                         <td>
                                             <div class="spinner-frame">
                                                 <div class="custom-spinner">
@@ -76,231 +87,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 수재</td>
-                                        <td>3호</td>
-                                        <td>10</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 신동</td>
-                                        <td>1호</td>
-                                        <td>8</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호부키 키움</td>
-                                        <td>2호</td>
-                                        <td>50</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호부키 만남</td>
-                                        <td>4호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호부키 자람</td>
-                                        <td>8호</td>
-                                        <td>10</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>호호하니 영재</td>
-                                        <td>2호</td>
-                                        <td>5</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    </
+                                    >
                                     </tbody>
                                 </table>
                             </div>
@@ -329,7 +117,7 @@
                 <!-- section:right -->
                 <section class="pre-order">
                     <div class="common-title">
-                        <h2>이전 주문 내역</h2>
+                        <h2>주문 내역</h2>
                     </div>
                     <div class="preorder-select">
                         <div class="preorder-day">

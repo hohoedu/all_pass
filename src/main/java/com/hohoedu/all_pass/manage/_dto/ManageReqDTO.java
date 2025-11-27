@@ -19,4 +19,17 @@ public class ManageReqDTO {
 
         }
     }
+
+    @Data
+    public static class InsertOrderDTO {
+        private String classKey;
+        private String unitKey;
+        private String centerCode;
+        private String userCode;
+        private Integer baseCount;
+        private Integer addCount;
+        private Integer totalCount;
+        private String yy;
+        private String mm;
+    }
 }

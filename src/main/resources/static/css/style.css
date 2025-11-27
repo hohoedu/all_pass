@@ -627,7 +627,8 @@ table .checkbox-group {
 .pay-desc,
 .add-payment,
 .notice-regist,
-.notice-update {
+.notice-update,
+.week-setting{
     background: #009844;
 }
 

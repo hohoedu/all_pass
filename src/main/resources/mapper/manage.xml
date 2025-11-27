@@ -3,6 +3,58 @@
 
 <mapper namespace="com.hohoedu.all_pass.manage.repository.ManageRepository">
 
+    <select id="findBasicOrderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$BasicOrderListDTO">
+        SELECT t.class_key,
+               c.class_name,
+               t.unit_key,
+               u.unit_name,
+               COUNT(ta.student_id) AS base_count
+        FROM erp_time_table t
+                 JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_class_code c ON t.class_key = c.class_key
+                 JOIN erp_unit_code u ON t.unit_key = u.unit_key
+        WHERE t.center_code = #{centerCode}
+          AND t.user_code = #{userCode}
+          AND t.yy = #{yy}
+          AND t.mm = #{mm}
+        GROUP BY t.class_key, c.class_name, t.unit_key, u.unit_name
+    </select>
+
+    <select id="findOrder" resultType="com.hohoedu.all_pass.manage._dto.ManageReqDTO$InsertOrderDTO">
+        SELECT base_count,
+               add_count,
+               total_count,
+               class_key,
+               unit_key,
+               center_code,
+               user_code,
+               yy,
+               mm
+        FROM erp_order
+        WHERE center_code = #{centerCode}
+          AND class_key = #{classKey}
+          AND unit_key = #{unitKey}
+          AND yy = #{yy}
+          ANd mm = #{mm}
+    </select>
+
+    <insert id="insertOrder">
+        INSERT INTO erp_order (class_key, unit_key, center_code, user_code, base_count, add_count, total_count, yy, mm, created_at)
+        VALUES (#{classKey}, #{unitKey}, #{centerCode}, #{userCode}, #{baseCount}, #{addCount}, #{totalCount}, #{yy}, #{mm}, SYSDATETIME())
+    </insert>
+
+    <update id="updateOrder">
+        UPDATE erp_order
+        SET add_count   = #{addCount},
+            total_count = #{totalCount},
+            updated_at  = SYSDATETIME()
+        WHERE center_code = #{centerCode}
+          AND class_key = #{classKey}
+          AND unit_key = #{unitKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </update>
+
     <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
         SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
         FROM erp_class_fee_map cf

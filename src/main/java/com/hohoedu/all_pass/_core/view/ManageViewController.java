@@ -3,9 +3,11 @@ package com.hohoedu.all_pass._core.view;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.manage.ManageService;
+import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.notice.CenterNotice;
 import com.hohoedu.all_pass.notice.NoticeService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
@@ -30,14 +32,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ManageViewController {
 
-    private final UserService userService;
     private final ClassService classService;
-    private final PaymentService paymentService;
     private final NoticeService noticeService;
     private final ManageService manageService;
+    private final DateConfig dateConfig;
 
     @GetMapping("/order")
-    public String getManageOrderPage() {
+    public String getManageOrderPage(HttpSession session, Model model) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        String userCode = user.getUserCode();
+        String cneterCode = user.getCenterCode();
+        String year = dateConfig.currentYearMonth().get("currentYear");
+        String month = dateConfig.currentYearMonth().get("currentMonth");
+
+        List<ManageRespDTO.BasicOrderListDTO> orderList = manageService.getBasicOrderList(userCode, cneterCode, year, month);
+
+        model.addAttribute("orderList", orderList);
         return "manage/order";
     }
 
