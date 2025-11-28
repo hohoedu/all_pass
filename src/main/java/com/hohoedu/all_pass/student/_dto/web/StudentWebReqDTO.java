@@ -2,7 +2,9 @@ package com.hohoedu.all_pass.student._dto.web;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 public class StudentWebReqDTO {
 
@@ -54,15 +56,13 @@ public class StudentWebReqDTO {
         private String studentId;
         private String studentName;
         private String birth;
-        private String gender;
-
         private String school;
         private String address;
         private String addressDetail;
-        private String grade;
         private String parentPhone;
-
-        private String status;
+        private String gradeKey;
+        private String genderKey;
+        private String relationKey;
 
         private boolean cashTypePersonal;
         private boolean cashTypeCorporate;
@@ -72,9 +72,19 @@ public class StudentWebReqDTO {
         private String siblingSearchValue;
         private String siblingSavePhone;
 
-        private String hanjaJoinDate;
-        private String readingJoinDate;
+        private String entryHanDate;
+        private String entryBookDate;
+
+        private String userCode;
     }
+
+    @Getter
+    @AllArgsConstructor
+    public static class MaterialCalcResult {
+        private Integer hanMaterial;
+        private Integer bookMaterial;
+    }
+
 
     @Data
     public static class StudentClassSaveReqDTO {

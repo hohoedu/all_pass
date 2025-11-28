@@ -9,10 +9,7 @@ import lombok.*;
 
 import java.sql.Timestamp;
 
-//@Entity
-//@Getter
-//@Table(name = "erp_grade_code", uniqueConstraints = @UniqueConstraint(name = "uq_grade_code_key", columnNames = "grade_key"))
-//@NoArgsConstructor(access = AccessLevel.PROTECTED)
+
 @Entity
 @Getter
 @Table(name = "ERP_TEACHER_ASSIGN")
@@ -39,6 +36,12 @@ public class TeacherAssign {
     @Column
     private String entryBookDate;
 
+    @Column(name = "han_material_fee")
+    private Integer hanMaterialFee;
+
+    @Column(name = "book_material_fee")
+    private Integer bookMaterialFee;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assign_han_teacher", referencedColumnName = "user_code")
     private User assignHanTeacher;
@@ -58,13 +61,15 @@ public class TeacherAssign {
 
 
     @Builder
-    public TeacherAssign(Student student, Boolean hanState, User assignHanTeacher, ClassCode assignHanClass, String entryHanDate, Boolean bookState, User assignBookTeacher, ClassCode assignBookClass, String entryBookDate) {
+    public TeacherAssign(Student student, Boolean hanState, Integer hanMaterialFee, User assignHanTeacher, ClassCode assignHanClass, String entryHanDate, Boolean bookState, Integer bookMaterialFee, User assignBookTeacher, ClassCode assignBookClass, String entryBookDate) {
         this.student = student;
         this.hanState = hanState;
+        this.hanMaterialFee = hanMaterialFee;
         this.assignHanTeacher = assignHanTeacher;
         this.assignHanClass = assignHanClass;
         this.entryHanDate = entryHanDate;
         this.bookState = bookState;
+        this.bookMaterialFee = bookMaterialFee;
         this.assignBookTeacher = assignBookTeacher;
         this.assignBookClass = assignBookClass;
         this.entryBookDate = entryBookDate;

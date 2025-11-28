@@ -80,25 +80,29 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
+
+    // 학생 개별 데이터 불러오기
     @GetMapping("/{studentId}")
     public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
 
-        System.out.println("컨트롤러의 studentId = " + studentId);
 
-        StudentWebRespDTO.StudentDTO student = studentService.findStudentByStudentId(studentId);
+        StudentWebRespDTO.StudentDTO student = studentService.getStudentDetailByStudentId(studentId);
 
         return ResponseEntity.ok(ApiUtils.success(student));
     }
 
+
+    // 학생 등록
     @PostMapping("/join")
-    public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
-                                         @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
+    public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO, @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
 
         studentService.studentInsert(studentDTO, parentDTO);
 
         return ResponseEntity.ok(ApiUtils.success("ok"));
     }
 
+
+    // 학생 상태 변경
     @PostMapping("/status")
     public ResponseEntity<?> statusUpdate(@RequestBody StatusHistoryDTO historyDTO, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
@@ -115,19 +119,23 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-//    @PostMapping("/class/insert")
-//    public ResponseEntity<?> insertStudentClass(@RequestBody StudentWebReqDTO.StudentClassSaveReqDTO saveReqDTO, HttpSession session) {
-//
-//            studentService.insertStudentClass(saveReqDTO);
-//
-//        return ResponseEntity.ok(ApiUtils.success("hello"));
-//    }
-
+    // 학생 정보 수정
     @PostMapping("/update/info")
-    public ResponseEntity<String> updateStudentInfo(@RequestBody StudentWebReqDTO.StudentUpdateDTO reqDTO) {
+    public ResponseEntity<String> updateStudentInfo(@RequestBody StudentWebReqDTO.StudentUpdateDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+
+        reqDTO.setUserCode(user.getUserCode());
         log.info(reqDTO.toString());
         studentService.updateStudentInfo(reqDTO);
 
+        // 학생 정보 조회 후 모달 업데이트 해야함
         return ResponseEntity.ok("ok");
     }
 

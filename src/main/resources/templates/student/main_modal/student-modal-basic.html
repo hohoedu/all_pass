@@ -1,163 +1,171 @@
-<form id="studentForm" method="post" action="/student/update/info">
+<div th:fragment="basic" id="tab2" class="tab">
+    <div class="modal-scroll">
+        <div class="modal-inner">
 
-    <div th:fragment="basic" id="tab2" class="tab">
-        <div class="modal-scroll">
-            <div class="modal-inner">
-
-                <!-- 상태 변경 버튼 (submit 제외 / 별도 API 처리) -->
-                <div class="btn-group">
-                    <div class="status-buttons" data-visibility="except-current">
-                        <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
-                        <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
-                        <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
-                        <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
-                    </div>
+            <!-- 상태 변경 버튼 (submit 제외 / 별도 API 처리) -->
+            <div class="btn-group">
+                <div class="status-buttons" data-visibility="except-current">
+                    <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                    <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                    <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                    <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
                 </div>
-
-                <!-- reason -->
-                <div class="reason-input">
-                    <div class="s_student_no" style="display:none;"></div>
-                    <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
-                    <button type="button" class="change-btn" id="status-change">변경</button>
-                </div>
-
-                <!-- 기본 정보 -->
-                <table class="base-info-t">
-                    <div class="small-title">기본 정보</div>
-                    <tbody>
-
-                    <tr>
-                        <th>이름</th>
-                        <td><input type="text" name="studentName" class="s_name"></td>
-
-                        <th>상태</th>
-                        <td>
-                            <div class="status-buttons" data-visibility="current-status">
-                                <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
-                                <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
-                                <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
-                                <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>생년월일</th>
-                        <td class="icon-field day-picker" style="position: relative;">
-                            <div class="birth-display s_birth"></div>
-                            <div>
-                                <input type="date" class="hidden-date" id="birth-date" name="birth">
-                                <button type="button" class="icon-btn">
-                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                </button>
-                            </div>
-                        </td>
-
-                        <th>성별</th>
-                        <td class="choose-group">
-                            <button type="button" class="btn-choose s_gender" data-value="남자">남자</button>
-                            <button type="button" class="btn-choose s_gender" data-value="여자">여자</button>
-                            <input type="hidden" name="gender" value="여자">
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>학교</th>
-                        <td class="icon-field">
-                            <input type="text" name="school" class="s_school">
-                            <button type="button" class="icon-btn search-school">
-                                <img th:src="@{/image/search.png}" alt="검색 아이콘">
-                            </button>
-                        </td>
-
-                        <th>주소</th>
-                        <td class="icon-field">
-                            <input type="text" name="address" class="s_address" readonly id="address-input" style="flex: 2;">
-                            <button type="button" class="icon-btn" onclick="openJusoPopup()">
-                                <img th:src="@{/image/search.png}" alt="검색 아이콘">
-                            </button>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>학년</th>
-                        <td><select name="gradeNo" class="grade-select s_grade"></select></td>
-
-                        <th>상세주소</th>
-                        <td><input type="text" name="addressDetail" class="s_address_detail" id="address-detail-input"></td>
-                    </tr>
-
-                    <tr>
-                        <th>부모님HP</th>
-                        <td><input type="tel" name="parentPhone" class="s_phone"></td>
-
-                        <th>학생과의 관계</th>
-                        <td class="choose-group">
-                            <button type="button" class="btn-choose" data-value="father">부</button>
-                            <button type="button" class="btn-choose active" data-value="mother">모</button>
-                            <button type="button" class="btn-choose" data-value="other">기타</button>
-                            <input type="hidden" name="relationship" value="모">
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th>현금영수증</th>
-                        <td>
-                            <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                                <input type="checkbox" name="personal" checked> 개인 소득공제용
-                                <input type="checkbox" name="corporate" style="margin-left:10px;"> 법인 지출증빙용
-                            </div>
-                            <input type="tel" name="cashReceipt" placeholder="010-1234-5678"
-                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                        </td>
-
-                        <th>형제 연결</th>
-                        <td>
-                            <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                                <select id="nameSelect" name="familySearchKey">
-                                    <option value="name">이름</option>
-                                    <option value="phone">전화번호</option>
-                                </select>
-                                <input type="text" name="familySearchValue"
-                                       style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                                <div class="explore common-btn">검색</div>
-                            </div>
-
-                            <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                                저장할 연락처
-                                <input type="text" name="familySavePhone"
-                                       style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                            </div>
-                        </td>
-                    </tr>
-
-                    </tbody>
-                </table>
-
-                <!-- 입회 정보 -->
-                <h4 class="small-title">입회 정보</h4>
-                <table class="base-info-t">
-                    <tbody>
-                    <tr>
-                        <th>한자 입회</th>
-                        <td>
-                            <input type="date" class="hidden-picker" name="hanjaJoinDate">
-                        </td>
-
-                        <th>독서 입회</th>
-                        <td>
-                            <input type="date" class="hidden-picker" name="bookJoinDate">
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <div class="save-btn-frame">
-                    <button type="submit" class="save-btn" id="update-btn">저장</button>
-                </div>
-
             </div>
+
+            <!-- reason -->
+            <div class="reason-input">
+                <div class="s_student_no" style="display:none;"></div>
+                <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
+                <button type="button" class="change-btn" id="status-change">변경</button>
+            </div>
+
+            <!-- 기본 정보 -->
+            <table class="base-info-t">
+                <div class="small-title">기본 정보</div>
+                <tbody>
+
+                <tr>
+                    <th>이름</th>
+                    <td><input type="text" name="studentName" class="s_name"></td>
+
+                    <th>상태</th>
+                    <td>
+                        <div class="status-buttons" data-visibility="current-status">
+                            <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                            <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                            <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                            <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>생년월일</th>
+                    <td class="icon-field day-picker" style="position: relative;">
+                        <div class="birth-display s_birth"></div>
+                        <div>
+                            <input type="date" class="hidden-date" id="birth-date" name="birth">
+                            <button type="button" class="icon-btn">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
+                        </div>
+                    </td>
+
+                    <th>성별</th>
+                    <td class="choose-group gender-group">
+                        <button type="button" class="btn-choose s_gender" data-value="1">남자</button>
+                        <button type="button" class="btn-choose s_gender" data-value="0">여자</button>
+                        <input type="hidden" name="gender" class="gender-hidden" value="0">
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>학교</th>
+                    <td class="icon-field">
+                        <input type="text" name="school" class="s_school">
+                        <button type="button" class="icon-btn search-school">
+                            <img th:src="@{/image/search.png}" alt="검색 아이콘">
+                        </button>
+                    </td>
+
+                    <th>주소</th>
+                    <td class="icon-field">
+                        <input type="text" name="address" class="s_address" readonly id="address-input" style="flex: 2;">
+                        <button type="button" class="icon-btn" onclick="openJusoPopup()">
+                            <img th:src="@{/image/search.png}" alt="검색 아이콘">
+                        </button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>학년</th>
+                    <td><select name="gradeNo" class="grade-select s_grade"></select></td>
+
+                    <th>상세주소</th>
+                    <td><input type="text" name="addressDetail" class="s_address_detail" id="address-detail-input"></td>
+                </tr>
+
+                <tr>
+                    <th>부모님HP</th>
+                    <td><input type="tel" name="parentPhone" class="s_phone"></td>
+
+                    <th>학생과의 관계</th>
+                    <td class="choose-group relation-group">
+                        <button type="button" class="btn-choose" data-value="father">부</button>
+                        <button type="button" class="btn-choose" data-value="mother">모</button>
+                        <button type="button" class="btn-choose" data-value="other">기타</button>
+                        <input type="hidden" class="relation-hidden" name="relationship" value="">
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>현금영수증</th>
+                    <td>
+                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
+                            <input type="checkbox" name="personal" checked> 개인 소득공제용
+                            <input type="checkbox" name="corporate" style="margin-left:10px;"> 법인 지출증빙용
+                        </div>
+                        <input type="tel" name="cashReceipt" placeholder="010-1234-5678"
+                               style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                    </td>
+
+                    <th>형제 연결</th>
+                    <td>
+                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
+                            <select id="nameSelect" name="familySearchKey">
+                                <option value="name">이름</option>
+                                <option value="phone">전화번호</option>
+                            </select>
+                            <input type="text" name="familySearchValue"
+                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                            <div class="explore common-btn">검색</div>
+                        </div>
+
+                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
+                            저장할 연락처
+                            <input type="text" name="familySavePhone"
+                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                        </div>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <!-- 입회 정보 -->
+            <h4 class="small-title">입회 정보</h4>
+            <table class="base-info-t">
+                <tbody>
+                <tr>
+                    <th>한자 입회</th>
+                    <td class="icon-field day-picker" style="position: relative;">
+                        <div class="birth-display s_entry_han_date"></div>
+                        <div>
+                            <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date">
+                            <button type="button" class="icon-btn">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
+                        </div>
+                    </td>
+
+                    <th>독서 입회</th>
+                    <td class="icon-field day-picker" style="position: relative;">
+                        <div class="birth-display s_entry_book_date"></div>
+                        <div>
+                            <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date">
+                            <button type="button" class="icon-btn">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="save-btn-frame">
+                <button type="submit" class="save-btn" id="update-btn">저장</button>
+            </div>
+
         </div>
     </div>
-
-</form>
+</div>

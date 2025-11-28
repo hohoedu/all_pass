@@ -30,9 +30,6 @@ public class StudentClass {
     @Column(name = "han_fee")
     private Integer hanFee;
 
-    @Column(name = "han_material_fee")
-    private Integer hanMaterialFee;
-
     @Column
     private String hanStatus;
 
@@ -41,9 +38,6 @@ public class StudentClass {
 
     @Column(name = "book_fee")
     private Integer bookFee;
-
-    @Column(name = "book_material_fee")
-    private Integer bookMaterialFee;
 
     @Column
     private String bookStatus;
@@ -87,9 +81,7 @@ public class StudentClass {
         this.entryHanDate = entryHanDate;
         this.entryBookDate = entryBookDate;
         this.hanFee = hanFee;
-        this.hanMaterialFee = hanMaterialFee;
         this.bookFee = bookFee;
-        this.bookMaterialFee = bookMaterialFee;
         this.yy = yy;
         this.mm = mm;
         this.createdAt = createdAt;

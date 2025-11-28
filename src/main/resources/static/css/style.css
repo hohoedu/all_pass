@@ -628,7 +628,7 @@ table .checkbox-group {
 .add-payment,
 .notice-regist,
 .notice-update,
-.week-setting{
+.week-setting {
     background: #009844;
 }
 
@@ -3046,6 +3046,10 @@ textarea {
     border: 2px solid #b02d2d;
 }
 
+.hide-input {
+    display: none !important;
+}
+
 .card-body {
     display: flex;
     align-items: center;
@@ -3443,6 +3447,7 @@ textarea#consult-memo {
 .choose-group {
     display: flex;
 }
+
 
 .btn-choose {
     width: 65px;

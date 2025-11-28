@@ -84,11 +84,18 @@ public class StudentService {
         return rows;
     }
 
-    public StudentWebRespDTO.StudentDTO findStudentByStudentId(String studentId) {
+    public StudentWebRespDTO.StudentDTO getStudentDetailByStudentId(String studentId) {
 
-        StudentWebRespDTO.StudentDTO student = studentRepository.findStudentByStudentId(studentId);
+        StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
+        List<GradeCode> grades = gradeJpaRepository.findAll();
+//        studentRepository.findStudentAttendanceByStudentId(studentId);
+//        studentRepository.findStudentConsultByStudentId(studentId);
 
-        return student;
+        StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
+                .studentInfo(student)
+                .gradeCodes(grades)
+                .build();
+        return studentDetailRespDTO;
     }
 
     public void studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
@@ -143,6 +150,12 @@ public class StudentService {
     }
 
     public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO, String userCode) {
+        String today = dateConfig.currentYearMonth().get("today");
+        historyDTO.setUserCode(userCode);
+        if (historyDTO.getStatusKey().equals("ACTIVE")) {
+            historyDTO.setReason(today + " 재원중으로 변경");
+        }
+
         int updateResult = studentRepository.studentStatusUpdate(historyDTO);
         System.out.println(updateResult);
         if (updateResult == 0) {
@@ -151,7 +164,6 @@ public class StudentService {
             System.out.println("업데이트 성공");
         }
 
-        historyDTO.setUserCode(userCode);
 
         int insertResult = studentRepository.statusHistoryInsert(historyDTO);
         if (insertResult == 0) {
@@ -168,14 +180,57 @@ public class StudentService {
 
     public int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req) {
 
-        int updateDCount = studentRepository.updateStudentInfo(req);
+        studentRepository.updateStudentInfo(req);
+
+        String rawPhone = req.getParentPhone();
+        String first = rawPhone.substring(0, 3);
+        String middle = rawPhone.substring(3, 7);
+        String last = rawPhone.substring(7, 11);
+        studentRepository.updateParent(first, middle, last, req.getRelationKey(), req.getStudentId());
+
+        insertTeacherAssign(req);
 
         return 1;
     }
 
+    public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
+
+        TeacherAssign old = studentRepository.findTeacherAssign(req.getStudentId());
+
+        boolean newHan = req.getEntryHanDate() != null;
+        boolean newBook = req.getEntryBookDate() != null;
+        if (old == null) {
+
+            int total = (newHan ? 1 : 0) + (newBook ? 1 : 0);
+
+            Integer hanFee = null;
+            Integer bookFee = null;
+
+            if (total == 1) {
+                hanFee = newHan ? 30000 : null;
+                bookFee = newBook ? 30000 : null;
+            } else {
+                hanFee = newHan ? 20000 : null;
+                bookFee = newBook ? 20000 : null;
+            }
+
+            TeacherAssign create = TeacherAssign.builder()
+                    .student(Student.builder().studentId(req.getStudentId()).build())
+                    .entryHanDate(req.getEntryHanDate())
+                    .entryBookDate(req.getEntryBookDate())
+                    .hanMaterialFee(hanFee)
+                    .bookMaterialFee(bookFee)
+                    .assignHanTeacher(newHan ? User.builder().userCode(req.getUserCode()).build() : null)
+                    .assignBookTeacher(newBook ? User.builder().userCode(req.getUserCode()).build() : null)
+                    .build();
+
+            studentRepository.insertTeacherAssign(create);
+        }
+
+    }
+
     public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
         Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
-        Integer materialFee = 20000;
 
         StudentClass.StudentClassBuilder builder = StudentClass.builder()
                 .student(Student.builder().studentId(studentId).build())
@@ -186,15 +241,13 @@ public class StudentService {
             builder
                     .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
                     .hanUser(User.builder().userCode(dto.getUserCode()).build())
-                    .hanFee(fee)
-                    .hanMaterialFee(materialFee);
+                    .hanFee(fee);
 
         } else if ("2".equals(dto.getClassType())) {
             builder
                     .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
                     .bookUser(User.builder().userCode(dto.getUserCode()).build())
-                    .bookFee(fee)
-                    .bookMaterialFee(materialFee);
+                    .bookFee(fee);
         }
 
         StudentClass studentClass = builder.build();

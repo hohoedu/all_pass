@@ -3,7 +3,10 @@ package com.hohoedu.all_pass.student._dto.web;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
+import com.hohoedu.all_pass.student.model.GradeCode;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -40,36 +43,41 @@ public class StudentWebRespDTO {
     }
 
     @Data
+    @Builder
     public static class StudentDTO {
+        private StudentInfoDTO studentInfo;
+        private List<StudentAttendanceDTO> studentAttendance;
+        private List<StudentConsultDTO> studentCounsult;
+        private List<GradeCode> gradeCodes;
+    }
+
+    @Data
+    public static class StudentAttendanceDTO {
+
+    }
+
+    @Data
+    public static class StudentConsultDTO {
+
+    }
+
+    @Data
+    public static class StudentInfoDTO {
         private String studentId;
-        private String school;
         private String studentName;
-        private String grade;
-        private String gender;
+        private String statusKey;
+        private String statusName;
+        private String hanClass;
+        private String bookClass;
+        private String parentPhone;
+        private String parentRelation;
+        private String school;
+        private String gradeKey;
+        private String gradeName;
         private String birth;
+        private String genderKey;
         private String address;
         private String addressDetail;
-        private String center;
-        private Timestamp statusModifiedAt;
-        private String status;
-        private String statusName;
-        private String reason;
-        private String entryDate;
-        private String hanClass;
-        private String hanClassKey;
-        private String bookClass;
-        private String bookClassKey;
-        private Timestamp createdAt;
-        private String parentTel;
-        private Integer hanFee;
-        private Integer bookFee;
-        private Integer hanMaterialFee;
-        private Integer bookMaterialFee;
-        private String hanUserCode;
-        private String hanTeacher;
-        private String bookUserCode;
-        private String bookTeacher;
-
     }
 
     @Data

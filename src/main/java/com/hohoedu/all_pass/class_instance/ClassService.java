@@ -373,7 +373,6 @@ public class ClassService {
                     info.getClassKey(),
                     info.getUnitKey()
             );
-            Integer hanMaterialFee = 20000;
             Integer hanFee = paymentRepository.findFeeByClassKey(info.getClassKey(), centerCode);
 
             boolean existsClass = studentRepository.existsStudentClass(info.getStudentId(), info.getYy(), info.getMm()) > 0;
@@ -385,7 +384,6 @@ public class ClassService {
                     .hanClassCode(ClassCode.builder().classKey(info.getClassKey()).build())
                     .hanUser(User.builder().userCode(userCode).build())
                     .hanFee(hanFee)
-                    .hanMaterialFee(hanMaterialFee)
                     .build();
 
             if (!existsClass) {
@@ -408,7 +406,6 @@ public class ClassService {
 
                 PaymentDetail bookDetail = PaymentDetail.builder()
                         .payment(Payment.builder().paymentKey(paymentKey).build())
-                        .amount(hanMaterialFee)
                         .classType("1")
                         .itemType("book")
                         .user(User.builder().userCode(userCode).build())

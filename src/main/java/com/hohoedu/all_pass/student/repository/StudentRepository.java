@@ -8,6 +8,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.student.model.StudentClass;
+import com.hohoedu.all_pass.student.model.TeacherAssign;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,7 +32,11 @@ public interface StudentRepository {
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode);
 
-    public StudentDTO findStudentByStudentId(@Param("studentId") String studentId);
+    public StudentWebRespDTO.StudentInfoDTO findStudentInfoByStudentId(@Param("studentId") String studentId);
+
+    void findStudentAttendanceByStudentId(@Param("studentId") String studentId);
+
+    void findStudentConsultByStudentId(@Param("studentId") String studentId);
 
     public List<MainStudentDTO> selectStudentByUserCode(
             @Param("userCode") String userCode,
@@ -66,6 +71,28 @@ public interface StudentRepository {
     int updateStudentClass(StudentClass studentClass);
 
     int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req);
+
+    int updateParent(
+            @Param("first") String first,
+            @Param("middle") String middle,
+            @Param("last") String last,
+            @Param("relationKey") String relationKey,
+            @Param("studentId") String studentId
+    );
+
+    TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
+
+    int insertTeacherAssign(TeacherAssign teacherAssign);
+
+    int updateTeacherAssign(
+            @Param("studentId") String studentId,
+            @Param("hanTeacher") String hanTeacher,
+            @Param("hanEntryDate") String hanEntryDate,
+            @Param("hanMaterial") Integer hanMaterial,
+            @Param("bookTeacher") String bookTeacher,
+            @Param("bookEntryDate") String bookEntryDate,
+            @Param("bookMaterial") Integer bookMaterial
+    );
 
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 

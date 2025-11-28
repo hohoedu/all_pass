@@ -10,12 +10,14 @@ import java.util.List;
 
 @Mapper
 public interface ManageRepository {
+    // viewController 주문서 조회
     List<ManageRespDTO.BasicOrderListDTO> findBasicOrderList(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    // 주문서 조회
     ManageReqDTO.InsertOrderDTO findOrder(
             @Param("centerCode") String centerCode,
             @Param("classKey") String classKey,
@@ -23,8 +25,10 @@ public interface ManageRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    // 주문서 최초 저장
     void insertOrder(ManageReqDTO.InsertOrderDTO dto);
 
+    // 주문서 업데이트
     void updateOrder(ManageReqDTO.InsertOrderDTO dto);
 
     // 학원별 수강료 조회
