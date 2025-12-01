@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass.payment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.PaymentKeyGenerator;
 import com.hohoedu.all_pass.center.Center;
@@ -11,16 +13,25 @@ import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.PaymentBill;
 import com.hohoedu.all_pass.payment.model.PaymentCallback;
+import com.hohoedu.all_pass.payment.model.PaymentConfig;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.temporal.ChronoUnit;
 
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +44,6 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final DateConfig dateConfig;
-    private final Map<String, String> currentYearMonth;
 
     // 결제 로그
     private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus,
@@ -53,6 +63,125 @@ public class PaymentService {
         paymentRepository.insertPaymentHistory(dto);
     }
 
+    public PaymentRespDTO.PaySendRespDTO sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+
+        PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+
+
+        if (conf == null) {
+            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode = " + user.getCenterCode());
+        }
+
+        String billId = generateBillId(conf.getPreBillId(), req.getIndex(), req.getType());
+
+        String raw = billId + "," + req.getPhone() + "," + req.getPrice();
+        String hashBillId = DigestUtils.sha256Hex(raw);
+
+        Map<String, Object> bill = Map.of(
+                "bill_id", billId,
+                "product_nm", req.getType().equals("edu") ? "교육비" : "교재비",
+                "message", req.getMessage(),
+                "member_nm", req.getStudentName(),
+                "phone", req.getPhone(),
+                "price", req.getPrice(),
+                "hash", hashBillId,
+                "expire_dt", req.getExpireDt(),
+                "callbackURL", conf.getCallbackUrl()
+        );
+
+        Map<String, Object> body = Map.of(
+                "apikey", conf.getApiKey(),
+                "member", conf.getMemberId(),
+                "merchant", conf.getMerchantId(),
+                "bill", bill
+        );
+
+        PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+        PaymentRespDTO.PaySendRespDTO respDTO = new PaymentRespDTO.PaySendRespDTO();
+        respDTO.setBillId(billId);
+        respDTO.setPaymintCode(paymintResp.getCode());
+        respDTO.setPaymintMsg(paymintResp.getMsg());
+
+        if (!"0000".equals(paymintResp.getCode())) {
+            respDTO.setDbSaved(false);
+            return respDTO;
+        }
+
+
+        boolean saved = false;
+
+        try {
+            String paymentKey = paymentRepository
+                    .findLatestPaymentKeyByStudent(req.getStudentId(), req.getYy(), req.getMm());
+
+            PaymentReqDTO.InsertBillDTO billDTO = new PaymentReqDTO.InsertBillDTO();
+            billDTO.setPaymentKey(paymentKey);
+            billDTO.setBillId(billId);
+            billDTO.setAmount(req.getPrice());
+            billDTO.setBillType(req.getType());
+            billDTO.setStudentId(req.getStudentId());
+            billDTO.setCenterCode(user.getCenterCode());
+            billDTO.setExpireDate(req.getExpireDt());
+            billDTO.setYy(req.getYy());
+            billDTO.setMm(req.getMm());
+
+            insertPaymentBill(billDTO, user.getUserCode());
+            saved = true;
+
+        } catch (Exception e) {
+            log.error("DB 저장 실패", e);
+            saved = false;
+        }
+
+        respDTO.setDbSaved(saved);
+        
+        return respDTO;
+    }
+
+    // ===================== 메서드 분리 ======================
+    private String generateBillId(String prefix, int index, String type) {
+
+        LocalDate now = LocalDate.now();
+        LocalDate base = LocalDate.of(2025, 1, 1);
+
+        long diffDays = ChronoUnit.DAYS.between(base, now);       // 날짜 → 36진수
+        int secondsOfDay = LocalTime.now().toSecondOfDay();       // 하루 초 → 36진수
+
+        String dayCode = Long.toString(diffDays, 36);
+        String timeCode = Integer.toString(secondsOfDay, 36);
+
+        String indexStr = String.format("%02d", index);           // 00 ~ 99
+        String typeCode = type.equals("edu") ? "1" : "0";         // 교육비 = 1, 교재비 = 0
+
+        return prefix
+                + String.format("%" + 3 + "s", dayCode).replace(" ", "0")
+                + String.format("%" + 4 + "s", timeCode).replace(" ", "0")
+                + indexStr
+                + typeCode;
+    }
+
+    private PaymentRespDTO.PaymintRespDTO callPaymint(String url, Map<String, Object> body) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonBody = mapper.writeValueAsString(body);
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+        ResponseEntity<PaymentRespDTO.PaymintRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentRespDTO.PaymintRespDTO.class);
+        System.out.println("=====================================================2");
+        log.info("response = {}", response.getBody());
+        System.out.println("=====================================================3");
+
+        return response.getBody();
+    }
+
+    // ========================================================
     // 결제 생성
     public String createPayment(String studentId, String yy, String mm, String centerCode, String userCode) {
 
@@ -143,7 +272,7 @@ public class PaymentService {
         return paymentRepository.findPaymentDetailsByStudentId(reqDTO.getStudentId(), reqDTO.getCount());
     }
 
-    // 결제선생 청구서 저장
+    //     결제선생 청구서 저장
     public void insertPaymentBill(PaymentReqDTO.InsertBillDTO dto, String userCode) {
         String today = dateConfig.currentYearMonth().get("today");
         String status = "issued";

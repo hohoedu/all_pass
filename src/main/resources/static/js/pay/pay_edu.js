@@ -453,303 +453,196 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [yy, mm] = selectedMonth.split("-");
-        const monthStr = mm.padStart(2, "0");
+        const expireDate = document.querySelector('.expire-input').value;
 
         const now = new Date();
-        const baseDate = new Date(2025, 0, 1);
-        const diffDays = Math.floor((now - baseDate) / (1000 * 60 * 60 * 24));
-        const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-        const dayCode = diffDays.toString(36).padStart(3, "0");
-        const timeCode = secondsOfDay.toString(36).padStart(4, "0");
-
-        const expireDate = document.querySelector('.expire-input').value;
-        const message = document.querySelector('input[name="message"]').value || '';
+        let issuedCount = 0;
+        let hasError = false;   // ★ 실패 여부 저장
 
         for (const [index, box] of checkedBoxes.entries()) {
             const row = box.closest('tr');
             const issuedCell = row.querySelector('.unissued, .issued');
 
             if (issuedCell?.classList.contains('issued')) {
-                alert(`⚠️ ${row.dataset.studentName} 학생의 ${monthStr}월 청구서는 이미 발행되었습니다.`);
-                return;
+                alert(`⚠️ ${row.dataset.studentName} 학생의 ${mm}월 청구서는 이미 발행되었습니다.`);
+                continue;
             }
 
             const student = {
                 id: row.dataset.studentId,
                 name: row.dataset.studentName,
                 phone: row.dataset.parentPhone,
-                hanFee: row.dataset.hanFee,
-                bookFee: row.dataset.bookFee,
-                hanMaterial: row.dataset.hanMaterial,
-                bookMaterial: row.dataset.bookMaterial,
-                totalFee: row.dataset.totalFee,
-                totalMaterialFee: row.dataset.totalMaterialFee,
+                hanFee: Number(row.dataset.hanFee),
+                bookFee: Number(row.dataset.bookFee),
+                hanMaterial: Number(row.dataset.hanMaterial),
+                bookMaterial: Number(row.dataset.bookMaterial),
+                totalFee: Number(row.dataset.totalFee),
+                totalMaterialFee: Number(row.dataset.totalMaterialFee),
                 paymentKey: row.dataset.paymentKey,
             };
+
             const indexStr = String(index).padStart(2, "0");
 
-            // EDU 청구
+            // EDU
             if (eduChecked && student.totalFee > 0) {
-                const billId = `3208800028${dayCode}${timeCode}${indexStr}1`;
-                const bill = createBill(billId, "교육비", `${student.name} 교육비 청구`, student, student.totalFee, expireDate);
-                await sendBill(bill, 'edu', student, now, yy, monthStr);
+                const ok = await requestSendBill("edu", student, student.totalFee,
+                    expireDate, now, yy, mm, indexStr);
+
+                if (ok) issuedCount++;
+                else hasError = true;
             }
 
-            // BOOK 청구
+            // MATERIAL
             if (bookChecked && student.totalMaterialFee > 0) {
-                const billId = `3208800028${dayCode}${timeCode}${indexStr}0`;
-                const bill = createBill(billId, "교재비", `${student.name} 교재비 청구`, student, student.totalMaterialFee, expireDate);
-                await sendBill(bill, 'material', student, now, yy, monthStr);
+                const ok = await requestSendBill("material", student, student.totalMaterialFee,
+                    expireDate, now, yy, mm, indexStr);
+
+                if (ok) issuedCount++;
+                else hasError = true;
             }
         }
-        alert('청구서를 모두 발행했습니다.');
+        if (hasError) {
+            alert(`일부 청구서 발행 실패가 있습니다.\n성공: ${issuedCount}건`);
+            return;   // 새로고침 금지
+        }
+
+        alert(`총 ${issuedCount}개의 청구서가 성공적으로 발행되었습니다.`);
         window.location.reload();
     });
 
-    function createBill(billId, productName, defaultMsg, student, price, expireDate) {
-        const hash = generateSendHash(billId, student.phone, price);
-        return {
-            bill_id: billId,
-            product_nm: productName,
-            message: defaultMsg,
-            member_nm: student.name,
+    async function requestSendBill(type, student, price, expireDt, now, yy, mm, index) {
+
+        const body = {
+            type,
+            studentId: student.id,
+            studentName: student.name,
             phone: student.phone,
-            price,
-            hash,
-            expire_dt: expireDate,
-            callbackURL: "https://6a02e3838843.ngrok-free.app/pay/callback"
-            // 배포시 변경 필요
-            // callbackURL: "https://hohocenter.co.kr/pay/callback"
+            price: price,
+            message: `${student.name} ${type === 'edu' ? '교육비' : '교재비'} 청구`,
+            expireDt,
+            index,
+            yy,
+            mm
         };
-    }
-
-    async function sendBill(bill, type, student, now, yy, mm) {
-        const requestBody = {
-            apikey: "TEST-API-KEY-TALK",
-            member: "TEST-MEMBER-FOR-API",
-            merchant: "TEST-MERCHANT-FOR-API",
-            bill
-        };
-
-        const hanAmount = type === 'edu' ? student.hanFee : student.hanMaterial;
-        const bookAmount = type === 'edu' ? student.bookFee : student.bookMaterial;
 
         try {
             const res = await fetch("/pay/send", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(body)
             });
+            if (!res.ok) {
+                const errorData = await res.json();    // ApiUtils.error 형태
+                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${errorData.response || '서버 오류'}`);
+                return;
+            }
+
             const data = await res.json();
 
-            if (data.code === "0000") {
-                const saveBody = {
-                    paymentKey: student.paymentKey,
-                    billId: bill.bill_id,
-                    productName: bill.product_nm,
-                    message: bill.message,
-                    studentName: student.name,
-                    studentId: student.id,
-                    amount: bill.price,
-                    hanAmount: hanAmount,
-                    bookAmount: bookAmount,
-                    billType: type,
-                    requestDate: now.toISOString().split("T")[0],
-                    expireDate: bill.expire_dt,
-                    yy: yy,
-                    mm: mm,
-                };
-                await fetch("/pay/bill/insert", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(saveBody)
-                });
-            } else {
-                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${data.msg || '서버 오류'}`);
+
+            if (!data.success) {
+            
+                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${data.response}`);
+                return;
             }
+            console.log("✓ 발행 완료:", data.response);
+            return true;
+
         } catch (err) {
-            console.error(`❌ ${type.toUpperCase()} 청구 중 오류:`, err);
-        }
-
-
-    }
-
-    // 결제 취소 버튼
-    payCancel.addEventListener('click', async () => {
-        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
-        if (checkedBoxes.length === 0) {
-            alert('결제 취소할 학생을 선택하세요.');
+            console.error("❌ sendBill 오류:", err);
+            alert("서버 오류로 청구서를 발행할 수 없습니다.");
             return;
         }
+    }
 
-        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm] = selectedMonth.split('-');
+// 결제 취소 버튼
+    payCancel.addEventListener('click', async () => {
 
-        // ✅ 선택된 학생 ID 리스트
-        const students = Array.from(checkedBoxes).map(box => box.closest('tr').dataset.studentId);
+        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
+        if (checkedBoxes.length === 0) return alert('결제 취소할 학생을 선택하세요.');
 
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-        if (!eduChecked && !bookChecked) {
-            alert('취소할 결제 종류(교육비/교재비)를 선택하세요.');
-            return;
-        }
+        if (!eduChecked && !bookChecked) return alert('취소할 결제 종류를 선택하세요.');
 
-        const requestBody = {
-            students: students.map(id => ({studentId: id})),
-            yy,
-            mm
-        };
+        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
+        const [yy, mm] = selectedMonth.split("-");
+
+        const students = Array.from(checkedBoxes).map(box => ({
+            studentId: box.closest('tr').dataset.studentId
+        }));
+
+        const body = {students, yy, mm, eduChecked, bookChecked};
+
         try {
-            // ✅ 1️⃣ 서버에 POST 요청으로 bill_id 리스트 조회
-            const res = await fetch("/pay/bill-id", {
+            const res = await fetch("/pay/cancel", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify(body)
             });
 
             const data = await res.json();
 
-            if (!data || data.length === 0) {
-                alert('해당 월의 청구서 데이터를 찾을 수 없습니다.');
-                return;
-            }
-            const bills = data.response;
-            let successCount = 0;
-            let failCount = 0;
-
-
-            // ✅ 2️⃣ 학생별 취소 요청
-            for (const item of bills) {
-                const {studentId, billId, amount} = item;
-
-
-                const row = Array.from(checkedBoxes)
-                    .find(b => b.closest('tr').dataset.studentId === studentId)
-                    ?.closest('tr');
-
-                const studentName = row?.dataset.studentName || '(이름없음)';
-
-                // billId 없으면 건너뛰기
-                if (!billId) {
-                    console.warn(`❌ ${studentName}: bill_id 없음`);
-                    failCount++;
-                    continue;
-                }
-
-                const cancelHash = generateCancelHash(billId, amount);
-                const requestBody = {
-                    apikey: "TEST-API-KEY-TALK",
-                    member: "TEST-MEMBER-FOR-API",
-                    merchant: "TEST-MERCHANT-FOR-API",
-                    bill_id: billId,
-                    price: amount,
-                    hash: cancelHash
-                };
-
-                const cancelRes = await fetch("https://stg.paymint.co.kr/partner/if/bill/cancel", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json"
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                const cancelData = await cancelRes.json();
-
-                if (cancelData.code === "0000") {
-                    successCount++;
-
-                } else {
-                    console.warn(`❌ ${studentName} 취소 실패: ${cancelData.msg}`);
-                    failCount++;
-                }
-            }
-
-            alert(`✅ 결제 취소 완료: ${successCount}명 / 실패: ${failCount}명`);
-            window.location.reload();
+            alert(`취소 결과: 성공 ${data.successCount}명 / 실패 ${data.failCount}명`);
+            // window.location.reload();
 
         } catch (err) {
-            console.error("❌ 결제 취소 중 오류:", err);
+            console.error("❌ 결제 취소 오류:", err);
             alert("결제 취소 중 오류가 발생했습니다.");
         }
     });
 
-    // 청구서 파기 버튼
-    payDestroy.addEventListener('click', () => {
+// ================================
+// 🔥 3. 청구서 파기
+// ================================
+    payDestroy.addEventListener('click', async () => {
 
-        const requestBody = {
-            apikey: "TEST-API-KEY-TALK",
-            member: "TEST-MEMBER-FOR-API",
-            merchant: "TEST-MERCHANT-FOR-API",
-            bill_id: bill_id,
-            price: price,
-            hash: cancelHash
-        };
+        const billId = prompt("파기할 bill_id 입력");
 
-        fetch("https://stg.paymint.co.kr/partner/if/bill/destroy", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        })
-            .then(res => {
-                return res.json(); // JSON 파싱
-            })
-            .then(data => {
-                if (data.code === "0000") {
-                    alert('청구서가 파기되었습니다.');
+        if (!billId) return;
 
-                } else if (data.code === "9980") {
-                    alert('청구서를 찾을 수 없습니다.');
-
-                } else if (data.code === "9999") {
-                    alert(data.msg);
-                }
-            })
-            .catch(err => {
-                console.error("오류 발생:", err);
+        try {
+            const res = await fetch("/pay/destroy", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({billId})
             });
+
+            const data = await res.json();
+
+            if (data.success) alert("청구서가 파기되었습니다.");
+            else alert(`파기 실패: ${data.msg}`);
+
+        } catch (err) {
+            console.error("❌ 파기 오류:", err);
+        }
     });
 
-    // 청구서 재발행 버튼
-    payReissue.addEventListener('click', () => {
+// ================================
+// 🔥 4. 청구서 재발행(재전송)
+// ================================
+    payReissue.addEventListener('click', async () => {
 
-        const requestBody = {
-            apikey: "TEST-API-KEY-TALK",
-            member: "TEST-MEMBER-FOR-API",
-            merchant: "TEST-MERCHANT-FOR-API",
-            bill_id: bill_id
-        };
+        const billId = prompt("재발행할 bill_id 입력");
 
-        fetch("https://stg.paymint.co.kr/partner/if/bill/resend", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        })
-            .then(res => {
-                return res.json(); // JSON 파싱
-            })
-            .then(data => {
-                if (data.code === "0000") {
-                    alert('청구서가 발행되었습니다.')
-                }
-                if (data.code === "9800") {
-                    alert('이미 발행된 청구서 입니다.')
-                }
-                if (data.code === "9980") {
-                    alert('청구서를 찾을 수 없습니다.');
-                }
-            })
-            .catch(err => {
-                console.error("오류 발생:", err);
+        if (!billId) return;
+
+        try {
+            const res = await fetch("/pay/reissue", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({billId})
             });
+
+            const data = await res.json();
+
+            if (data.success) alert("재발행 완료");
+            else alert(`재발행 실패: ${data.msg}`);
+
+        } catch (err) {
+            console.error("❌ 재발행 오류:", err);
+        }
     });
 
-});
+})
+;

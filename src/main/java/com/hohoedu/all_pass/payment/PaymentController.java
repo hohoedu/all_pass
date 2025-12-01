@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.payment;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
@@ -26,62 +27,60 @@ public class PaymentController {
 
     // 결제선생 청구서 발행
     @PostMapping("/send")
-    public ResponseEntity<String> sendBill(@RequestBody Map<String, Object> body) throws Exception {
-        System.out.println("=====================================================1");
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonBody = mapper.writeValueAsString(body);
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-        HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
-
-        String url = "https://stg.paymint.co.kr/partner/if/bill/send";
-
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-        System.out.println("=====================================================2");
-        log.info(response.getBody());
-        System.out.println("=====================================================3");
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-    }
-
-
-    // 결제선생 청구서 저장
-    @PostMapping("/bill/insert")
-    public ResponseEntity<?> createBill(@RequestBody PaymentReqDTO.InsertBillDTO reqDTO, HttpSession session) throws Exception {
+    public ResponseEntity<?> sendBill(@RequestBody PaymentReqDTO.PaySendReqDTO dto, HttpSession session) throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        log.info("청구서 발행 후 저장");
+        
+        PaymentRespDTO.PaySendRespDTO res = paymentService.sendBill(user, dto);
 
-        // 2) 요청값 validation
-        if (reqDTO == null) {
-            return ResponseEntity.badRequest()
-                    .body(ApiUtils.error("요청 데이터가 비어 있습니다.", HttpStatus.BAD_REQUEST));
+        if (!"0000".equals(res.getPaymintCode())) {
+            return ResponseEntity.ok(ApiUtils.error("청구서 발행 실패: " + res.getPaymintMsg(), HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
-        if (reqDTO.getBillId() == null || reqDTO.getBillId().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(ApiUtils.error("bill_id가 누락되었습니다.", HttpStatus.BAD_REQUEST));
+        if (!res.isDbSaved()) {
+            return ResponseEntity.ok(ApiUtils.error("청구는 되었지만 ERP 저장에 실패했습니다. 관리자에게 문의하세요.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
 
-        if (reqDTO.getPaymentKey() == null || reqDTO.getPaymentKey().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(ApiUtils.error("paymentKey가 없습니다.", HttpStatus.BAD_REQUEST));
-        }
-
-        reqDTO.setCenterCode(user.getCenterCode());
-
-        paymentService.insertPaymentBill(reqDTO, user.getUserCode());
-
-        return ResponseEntity.ok(ApiUtils.success("청구서 생성 완료"));
+        return ResponseEntity.ok(ApiUtils.success("청구서 발행 완료"));
     }
+
+    // 결제선생 청구서 저장
+//    @PostMapping("/bill/insert")
+//    public ResponseEntity<?> createBill(@RequestBody PaymentReqDTO.InsertBillDTO reqDTO, HttpSession session) throws Exception {
+//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.FOUND)
+//                    .header(HttpHeaders.LOCATION, "/login")
+//                    .build();
+//        }
+//        log.info("청구서 발행 후 저장");
+//
+//        // 2) 요청값 validation
+//        if (reqDTO == null) {
+//            return ResponseEntity.badRequest()
+//                    .body(ApiUtils.error("요청 데이터가 비어 있습니다.", HttpStatus.BAD_REQUEST));
+//        }
+//
+//        if (reqDTO.getBillId() == null || reqDTO.getBillId().isEmpty()) {
+//            return ResponseEntity.badRequest()
+//                    .body(ApiUtils.error("bill_id가 누락되었습니다.", HttpStatus.BAD_REQUEST));
+//        }
+//
+//        if (reqDTO.getPaymentKey() == null || reqDTO.getPaymentKey().isEmpty()) {
+//            return ResponseEntity.badRequest()
+//                    .body(ApiUtils.error("paymentKey가 없습니다.", HttpStatus.BAD_REQUEST));
+//        }
+//
+//        reqDTO.setCenterCode(user.getCenterCode());
+//
+//        paymentService.insertPaymentBill(reqDTO, user.getUserCode());
+//
+//        return ResponseEntity.ok(ApiUtils.success("청구서 생성 완료"));
+//    }
 
     // 결제선생 콜백
     @PostMapping("/callback")

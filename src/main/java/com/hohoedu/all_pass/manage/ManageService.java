@@ -60,6 +60,18 @@ public class ManageService {
         return classFeeMaps;
     }
 
+    public int insertClassFeeMap(List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList, String centerCode) {
+        List<PaymentRespDTO.ClassFeeMapDTO> classFeeMaps = manageRepository.findClassFeeMapByCenterCode(centerCode);
+        log.info("classFeeMaps = {}", classFeeMaps);
+        int resp = 0;
+        if (classFeeMaps == null || classFeeMaps.isEmpty()) {
+            resp = manageRepository.insertClassFeeMap(feeMapList);
+        } else {
+            resp = manageRepository.updateClassFeeMap(feeMapList);
+        }
+        return resp;
+    }
+
     // 수업료 수정
     public int updateClassFeeMap(List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList) {
         return manageRepository.updateClassFeeMap(feeMapList);

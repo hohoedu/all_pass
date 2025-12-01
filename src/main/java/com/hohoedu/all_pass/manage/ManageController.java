@@ -47,15 +47,26 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
-    @PostMapping("/insert")
-    public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO) {
+    @PostMapping("/fee/insert")
+    public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
 
         if (reqDTO.getClassFeeMap() == null || reqDTO.getClassFeeMap().isEmpty()) {
             return ResponseEntity.badRequest().body("등록할 데이터가 없습니다.");
         }
 
-        int inserted = manageService.updateClassFeeMap(reqDTO.getClassFeeMap());
 
-        return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
+        int response = manageService.insertClassFeeMap(reqDTO.getClassFeeMap(), user.getCenterCode());
+        if (response == 0) {
+            return ResponseEntity.ok(ApiUtils.error("저장되지 않았습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        } else {
+            return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
+        }
     }
 }

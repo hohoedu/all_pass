@@ -11,6 +11,12 @@
                 #{userCode}, SYSDATETIME())
     </insert>
 
+    <select id="findPayConfigByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentConfigDTO">
+        SELECT *
+        from erp_payment_config
+        WHERE center_code = #{centerCode}
+    </select>
+
     <select id="findByStudentAndYm" resultType="String">
         SELECT payment_key AS paymentKey
         FROM erp_payment
@@ -121,8 +127,7 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount
-        FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};

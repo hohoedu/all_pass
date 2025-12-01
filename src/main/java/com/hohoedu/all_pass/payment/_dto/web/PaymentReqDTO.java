@@ -33,6 +33,20 @@ public class PaymentReqDTO {
     }
 
     @Data
+    public static class PaySendReqDTO {
+        private String studentId;
+        private String studentName;
+        private String phone;
+        private Integer price;
+        private String type;
+        private String message;
+        private String expireDt;
+        private Integer index;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class InsertBillDTO {
         private String paymentKey;
         private String billId;

@@ -29,6 +29,31 @@ public class PaymentRespDTO {
     }
 
     @Data
+    public static class PaymentConfigDTO {
+        private String centerCode;
+        private String apiKey;
+        private String memberId;
+        private String merchantId;
+        private String preBillId;
+        private String callbackUrl;
+        private String sendUrl;
+    }
+
+    @Data
+    public static class PaySendRespDTO {
+        private String billId;
+        private String paymintCode;     // Paymint 응답코드
+        private String paymintMsg;      // Paymint 메시지
+        private boolean dbSaved;
+    }
+
+    @Data
+    public static class PaymintRespDTO {
+        private String code;
+        private String msg;
+    }
+
+    @Data
     public static class ClassFeeMapDTO {
         private String classKey;
         private String className;

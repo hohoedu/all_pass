@@ -18,6 +18,8 @@ public interface PaymentRepository {
 
     int insertPaymentHistory(PaymentReqDTO.PaymentHistoryRecordDTO dto);
 
+    PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
+
     String findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 
     // 수강료 청구 화면 데이터 필터링

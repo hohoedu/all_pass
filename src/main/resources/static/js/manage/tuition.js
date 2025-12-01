@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(JSON.stringify(data));
 
         try {
-            const response = await fetch("/manage/insert", {
+            const response = await fetch("/manage/fee/insert", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(data)

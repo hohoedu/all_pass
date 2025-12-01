@@ -69,7 +69,7 @@
                s.address                                                    AS address,
                s.address_detail                                             AS addressDetail
         from erp_student s
-                 JOIN erp_status_code sc ON s.status_key = sc.status_key
+                 LEFT JOIN erp_status_code sc ON s.status_key = sc.status_key
                  JOIN erp_grade_code gc ON s.grade_key = gc.grade_key
                  LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_class_code hc ON ta.assign_han_class = hc.class_key

@@ -62,6 +62,14 @@
         WHERE cf.center_code = #{centerCode}
     </select>
 
+    <insert id="insertClassFeeMap" parameterType="java.util.List">
+        INSERT INTO erp_class_fee_map (class_key, center_code, fee)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.classKey}, #{item.centerCode}, #{item.fee})
+        </foreach>
+    </insert>
+    
     <update id="updateClassFeeMap" parameterType="java.util.List">
         <foreach collection="list" item="item" separator=";">
             UPDATE erp_class_fee_map
