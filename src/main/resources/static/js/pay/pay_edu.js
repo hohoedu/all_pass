@@ -532,7 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(body)
             });
             if (!res.ok) {
-                const errorData = await res.json();    // ApiUtils.error 형태
+                const errorData = await res.json();
                 alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${errorData.response || '서버 오류'}`);
                 return;
             }
@@ -541,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             if (!data.success) {
-            
+
                 alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${data.response}`);
                 return;
             }
