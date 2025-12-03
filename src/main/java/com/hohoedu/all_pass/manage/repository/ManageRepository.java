@@ -17,6 +17,12 @@ public interface ManageRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    List<ManageRespDTO.SavedOrderListDTO> findSavedOrderList(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
     // 주문서 조회
     ManageReqDTO.InsertOrderDTO findOrder(
             @Param("centerCode") String centerCode,
@@ -35,6 +41,7 @@ public interface ManageRepository {
     List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(@Param("centerCode") String centerCode);
 
     int insertClassFeeMap(@Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList);
+
     // 학원별 수강료 수정
     int updateClassFeeMap(@Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList);
 

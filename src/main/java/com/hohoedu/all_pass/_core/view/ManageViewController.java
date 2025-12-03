@@ -49,9 +49,11 @@ public class ManageViewController {
         String year = dateConfig.currentYearMonth().get("currentYear");
         String month = dateConfig.currentYearMonth().get("currentMonth");
 
-        List<ManageRespDTO.BasicOrderListDTO> orderList = manageService.getBasicOrderList(userCode, cneterCode, year, month);
+        List<ManageRespDTO.BasicOrderListDTO> baseOrderList = manageService.getBasicOrderList(userCode, cneterCode, year, month);
+        List<ManageRespDTO.SavedOrderListDTO> savedOrderList = manageService.getSavedOrderList(userCode, cneterCode, year, month);
 
-        model.addAttribute("orderList", orderList);
+        model.addAttribute("baseOrderList", baseOrderList);
+        model.addAttribute("savedOrderList", savedOrderList);
         return "manage/order";
     }
 

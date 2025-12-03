@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.manage;
 import com.google.api.Http;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
+import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -41,10 +42,23 @@ public class ManageController {
                     dto.setUserCode(user.getUserCode());
                 });
 
-
         manageService.insertOrder(reqDTO);
 
         return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/order/list")
+    public ResponseEntity<?> getSavedOrderList(@RequestBody ManageReqDTO.GetOrderDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<ManageRespDTO.SavedOrderListDTO> orderList = manageService.getSavedOrderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        
+        return ResponseEntity.ok(ApiUtils.success(orderList));
     }
 
     @PostMapping("/fee/insert")
@@ -60,7 +74,6 @@ public class ManageController {
         if (reqDTO.getClassFeeMap() == null || reqDTO.getClassFeeMap().isEmpty()) {
             return ResponseEntity.badRequest().body("등록할 데이터가 없습니다.");
         }
-
 
         int response = manageService.insertClassFeeMap(reqDTO.getClassFeeMap(), user.getCenterCode());
         if (response == 0) {

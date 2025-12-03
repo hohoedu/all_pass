@@ -20,6 +20,25 @@
         GROUP BY t.class_key, c.class_name, t.unit_key, u.unit_name
     </select>
 
+    <select id="findSavedOrderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$SavedOrderListDTO">
+        SELECT o.base_count  AS baseCount,
+               o.add_count   AS addCount,
+               o.total_count AS totalCount,
+               o.yy,
+               o.mm,
+               o.class_key   AS classKey,
+               c.class_name  AS className,
+               o.unit_key    AS unitKey,
+               u.unit_name   AS unitName
+        FROM erp_order o
+                 JOIN erp_class_code c ON o.class_key = c.class_key
+                 JOIN erp_unit_code u ON o.unit_key = u.unit_key
+        WHERE center_code = #{centerCode}
+          AND user_code = #{userCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <select id="findOrder" resultType="com.hohoedu.all_pass.manage._dto.ManageReqDTO$InsertOrderDTO">
         SELECT base_count,
                add_count,

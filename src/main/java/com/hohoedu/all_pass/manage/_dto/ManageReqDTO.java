@@ -8,6 +8,27 @@ import java.util.List;
 public class ManageReqDTO {
 
     @Data
+    public static class InsertOrderDTO {
+        private String classKey;
+        private String unitKey;
+        private String centerCode;
+        private String userCode;
+        private Integer baseCount;
+        private Integer addCount;
+        private Integer totalCount;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
+    public static class GetOrderDTO {
+        private String yy;
+        private String mm;
+        private String userCode;
+        private String centerCode;
+    }
+
+    @Data
     public static class InsertClassFeeDTO {
         private List<ClassFeeMapDTO> classFeeMap;
 
@@ -20,16 +41,5 @@ public class ManageReqDTO {
         }
     }
 
-    @Data
-    public static class InsertOrderDTO {
-        private String classKey;
-        private String unitKey;
-        private String centerCode;
-        private String userCode;
-        private Integer baseCount;
-        private Integer addCount;
-        private Integer totalCount;
-        private String yy;
-        private String mm;
-    }
+
 }

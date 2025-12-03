@@ -1,507 +1,188 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- jQuery CDN -->
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <!-- Custom Css / Js -->
-  <link rel="stylesheet" th:href="@{/css/style.css}">
-  <link rel="stylesheet" th:href="@{/css/media.css}">
-  <script th:src="@{/js/custom.js}"></script>
-  <!-- Html menu Load -->
-  <script th:src="@{/js/loadHTML.js}"></script>
-  <title>교재 추가/반품</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/manage/reorder.js}"></script>
+    <!-- Html menu Load -->
+    <script th:src="@{/js/sidebar.js}"></script>
+    <title>교재 추가/반품</title>
 </head>
 <body>
-  <div class="main-container">
+<div class="main-container">
     <div class="main-frame">
-      <!-- left nav bar -->
-      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-      <main class="main-info">
-        <div class="line-second-frame">
-            <!-- section:left -->
-            <section class="book-order return-left">
-              <div class="common-title">
-                <h2>추가/반품</h2>
-              </div>
-              <div class="stats-item-left">
-                <div class="radio-group">
-                  <input type="radio" name="period" id="period-1year" value="1y" checked>
-                  <label for="period-1year">1년</label>
-                  <input type="radio" name="period" id="period-6month" value="6m">
-                  <label for="period-6month">6개월</label>
-                  <input type="radio" name="period" id="period-3month" value="3m">
-                  <label for="period-3month">3개월</label>
-                  <input type="radio" name="period" id="period-custom" value="custom">
-                  <label for="period-custom">일자지정</label>
-                </div>
-                <div class="icon-field basic-input cal-adjust" style="margin-bottom: 0;">
-                  <span>2024-07 ~ 2025-06</span>
-                  <button class="icon-btn" style="background: transparent;">
-                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                  </button>
-                </div>
-              </div>
+        <!-- left nav bar -->
+        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+        <main class="main-info">
+            <div class="line-second-frame">
+                <!-- section:left -->
+                <section class="book-order return-left">
+                    <div class="common-title">
+                        <h2>추가/반품</h2>
+                    </div>
+                    <div class="stats-item-left">
+                        <div class="month-title2 month-today">
+                            <div style="position: relative;">
+                                <div class="day-display">
+                                    <span class="month-text"></span>
+                                    <input type="month" class="hidden-date hidden-picker"/>
+                                    <button type="button" class="icon-btn calendar-open">
+                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-              <div class="order-flex">
-                <div>
-                  <div class="table-frame return-table mt">
-                    <table class="basic-table yh">
-                      <thead>
-                        <tr>
-                          <th>단계</th>
-                          <th>교재</th>
-                          <th>기본수량</th>
-                          <th>추가수량</th>
-                        </tr>
-                      </thead>
-                      <tbody class="stripe">
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
+                    <div class="reorder-flex">
+
+                        <div class="etc-add">
+                            <div class="radio-group reorder-radio">
+                                <label class="radio-label">
+                                    <input type="radio" name="orderType" value="ADD">
+                                    <div class="small-title">추가</div>
+                                </label>
+
+                                <label class="radio-label">
+                                    <input type="radio" name="orderType" value="RETURN">
+                                    <div class="small-title">반품</div>
+                                </label>
                             </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 수재</td>
-                          <td>3호</td>
-                          <td>10</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 신동</td>
-                          <td>1호</td>
-                          <td>8</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호부키 키움</td>
-                          <td>2호</td>
-                          <td>50</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호부키 만남</td>
-                          <td>4호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호부키 자람</td>
-                          <td>8호</td>
-                          <td>10</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>호호하니 영재</td>
-                          <td>2호</td>
-                          <td>5</td>
-                          <td>
-                            <div class="spinner-frame">
-                              <div class="custom-spinner">
-                                <input type="number" value="0" step="1">
-                                <div class="spinner-buttons">
-                                  <button type="button" class="increment-button">▲</button>
-                                  <button type="button" class="decrement-button">▼</button>
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="etc-add">
-                    <div class="small-title">기타 추가</div>
-                      <div class="all-add table-frame">
-                        <div class="add-extra">
-                          <div class="basic-select">
-                            <select name="bookStep">
-                              <option value="step0">단계 선택</option>
-                              <option value="step1">호호하니 영재</option>
-                              <option value="step2">호호하니 수재</option>
-                              <option value="step3">호호하니 신동</option>
-                            </select>
-                          </div>
-                          <div class="basic-select">
-                            <select name="bookChoice">
-                              <option value="">권수 선택</option>
-                              <option value="b1">1</option>
-                              <option value="b2">2</option>
-                              <option value="b3">3</option>
-                            </select>
-                          </div>
-                          <div class="custom-spinner">
-                            <input type="number" min="0" max="100" step="1" value="0">
-                            <div class="spinner-buttons">
-                              <button onclick="increment()">▲</button>
-                              <button onclick="decrement()">▼</button>
-                            </div>
-                          </div>
-                          <a class="trash-icon" href="#" style="visibility: hidden;"></a>
                         </div>
-                        <div class="add-extra">
-                          <div class="basic-select">
-                            <select name="">
-                              <option value="">단계 선택</option>
-                              <option value="">호호하니 영재</option>
-                              <option value="">호호하니 수재</option>
-                              <option value="">호호하니 신동</option>
-                            </select>
-                          </div>
-                          <div class="basic-select">
-                            <select name="">
-                              <option value="">권수 선택</option>
-                              <option value="">1</option>
-                              <option value="">2</option>
-                              <option value="">3</option>
-                            </select>
-                          </div>
-                          <div class="custom-spinner">
-                            <input type="number" min="0" max="100" step="1" value="0">
-                            <div class="spinner-buttons">
-                              <button onclick="increment()">▲</button>
-                              <button onclick="decrement()">▼</button>
+                        <div class="reorder-bottom">
+                            <div class="all-add table-frame">
+                                <div class="add-extra">
+                                    <div class="basic-select">
+                                        <select name="bookStep">
+                                            <option value="step0">단계 선택</option>
+                                        </select>
+                                    </div>
+                                    <div class="basic-select">
+                                        <select name="bookChoice">
+                                            <option value="">권수 선택</option>
+                                        </select>
+                                    </div>
+                                    <div class="custom-spinner">
+                                        <input type="number" min="0" max="100" step="1" value="0">
+                                        <div class="spinner-buttons">
+                                            <button type="button" class="increment-btn">▲</button>
+                                            <button type="button" class="decrement-btn">▼</button>
+                                        </div>
+                                    </div>
+                                    <div class="reason-box">
+                                        <div>사유 입력:</div>
+                                        <input type="text" name="" placeholder="사유를 입력해주세요.">
+                                    </div>
+                                </div>
                             </div>
-                          </div>
-                          <a class="trash-icon" href="#"></a>
+                            <div>
+                                <div class="book-add"><p>교재 추가하기</p></div>
+                                <div class="all-order">
+
+                                    <div class="add-order-view">
+                                        추가 <span class="addition">0</span>권
+                                    </div>
+
+                                    <div class="return-order-view" style="display:none;">
+                                        반품 <span class="takeback">0</span>권
+                                    </div>
+
+                                </div>
+                                <div class="book-order-save">
+                                    <div class="common-btn save-btn">저장하기</div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                    <div class="book-add"><p>교재 추가하기</p></div>
-                    <div class="all-order">
-                      추가 <span class="addition">98</span>권 / 반품 <span class="takeback">98</span>권
                     </div>
-                    <div class="book-order-save">
-                      <div class="common-btn save-btn">저장하기</div>
+                    <div class="order-info">
+                        <p>
+                            - 주문기간 이내의 추가수량은 합산되어 최종수량으로 발송됩니다.
+                        </p>
+                        <p>
+                            - 주문기간 이후의 추가/반품은 별도로 발송 및 회수 처리되며 추가 택배비가 발송할 수 있습니다.
+                        </p>
                     </div>
-                  </div>
-                </div>
-              <div class="order-info">
-                <p>
-                  - 주문기간 이내의 추가수량은 합산되어 최종수량으로 발송됩니다.
-                </p>
-                <p> 
-                  - 주문기간 이후의 추가/반품은 별도로 발송 및 회수 처리되며 추가 택배비가 발송할 수 있습니다.
-                </p>
-              </div>
-            </section>
-            <!-- gray line -->
-            <div class="divider"></div>
-            <!-- section:right -->
-            <section class="pre-order return-right">
-              <div class="common-title">
-                <h2>이전 주문 내역</h2>
-              </div>
-              <div class="preorder-select">
-                <div class="preorder-day">
-                  <div class="basic-select">
-                    <select id="order-year" name="year">
-                      <option value="">2024년</option>
-                      <option value="">2023년</option>
-                      <option value="">2022년</option>
-                      <option value="">2021년</option>
-                      <option value="">2020년</option>
-                    </select>
-                  </div>
-                  <div class="basic-select">
-                    <select id="order-month" name="month">
-                      <option value="">01월</option>
-                      <option value="">02월</option>
-                      <option value="">03월</option>
-                      <option value="">04월</option>
-                      <option value="">05월</option>
-                      <option value="">06월</option>
-                      <option value="">07월</option>
-                      <option value="">08월</option>
-                      <option value="">09월</option>
-                      <option value="">10월</option>
-                      <option value="">11월</option>
-                      <option value="">12월</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="basic-select">
-                  <select id="step-all" name="">
-                    <option value="">전체</option>
-                    <option value="">호호하니 영재</option>
-                    <option value="">호호하니 수재</option>
-                    <option value="">호호하니 신동</option>
-                  </select>
-                </div>
-              </div>
-              <div class="class-info">
-                <div class="table-frame preorder-frame mt">
-                  <table class="basic-table yh">
-                    <thead>
-                      <tr>
-                        <th>단계</th>
-                        <th>교재</th>
-                        <th>주문수량</th>
-                        <th>변동수량</th>
-                        <th>최종수량</th>
-                      </tr>
-                    </thead>
-                    <tbody class="stripe">
-                      <tr>
-                        <td>호호하니 영재</td>
-                        <td>2호</td>
-                        <td>5</td>
-                        <td><span class="decrease">-1</span></td>
-                        <td>4</td>
-                      </tr>
-                      <tr>
-                        <td>호호하니 수재</td>
-                        <td>3호</td>
-                        <td>10</td>
-                        <td></td>
-                        <td>10</td>
-                      </tr>
-                      <tr>
-                        <td>호호하니 신동</td>
-                        <td>3호</td>
-                        <td>10</td>
-                        <td></td>
-                        <td>10</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 키움</td>
-                        <td>2호</td>
-                        <td>15</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 만남</td>
-                        <td>2호</td>
-                        <td>15</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 만남</td>
-                        <td>8호</td>
-                        <td>30</td>
-                        <td><span class="decrease">-4</span></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 자람</td>
-                        <td>4호</td>
-                        <td>20</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>초등수재</td>
-                        <td>4호</td>
-                        <td>20</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>초등천재</td>
-                        <td>4호</td>
-                        <td>20</td>
-                        <td><span class="increase">+2</span></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>초등박사</td>
-                        <td>4호</td>
-                        <td>20</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호하니 영재</td>
-                        <td>2호</td>
-                        <td>5</td>
-                        <td><span class="decrease">-1</span></td>
-                        <td>4</td>
-                      </tr>
-                      <tr>
-                        <td>호호하니 수재</td>
-                        <td>3호</td>
-                        <td>10</td>
-                        <td></td>
-                        <td>10</td>
-                      </tr>
-                      <tr>
-                        <td>호호하니 신동</td>
-                        <td>3호</td>
-                        <td>10</td>
-                        <td></td>
-                        <td>10</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 키움</td>
-                        <td>2호</td>
-                        <td>15</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 만남</td>
-                        <td>2호</td>
-                        <td>15</td>
-                        <td></td>
-                        <td>9</td>
-                      </tr>
-                      <tr>
-                        <td>호호부키 만남</td>
-                        <td>8호</td>
-                        <td>30</td>
-                        <td><span class="decrease">-4</span></td>
-                        <td>9</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-            </section>
-        </div>
-      </main>
+                </section>
+                <!-- gray line -->
+                <div class="divider"></div>
+                <!-- section:right -->
+                <section class="pre-order return-right">
+                    <div class="common-title">
+                        <h2>이전 주문 내역</h2>
+                    </div>
+                    <div class="preorder-select">
+                        <div class="preorder-day">
+                            <div class="month-title2 month-today">
+                                <div style="position: relative;">
+                                    <div class="day-display">
+                                        <span class="month-text"></span>
+                                        <input type="month" class="hidden-date hidden-picker"/>
+                                        <button type="button" class="icon-btn calendar-open">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="basic-select">
+                            <select id="step-all" name="">
+                                <option value="">전체</option>
+                                <option value="">호호하니 영재</option>
+                                <option value="">호호하니 수재</option>
+                                <option value="">호호하니 신동</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="class-info">
+                        <div class="table-frame preorder-frame mt">
+                            <table class="basic-table yh">
+                                <colgroup>
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="20%">
+                                    <col width="15%">
+                                    <col width="10%">
+                                    <col width="5%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th>주문구분</th>
+                                    <th>단계</th>
+                                    <th>교재</th>
+                                    <th>수량</th>
+                                    <th>사유</th>
+                                    <th>등록일시</th>
+                                    <th>승인여부</th>
+                                    <th>취소</th>
+                                </tr>
+                                </thead>
+                                <tbody class="stripe">
+                                <tr>
+                                    <td>추가주문</td>
+                                    <td>호호하니 영재</td>
+                                    <td>2호</td>
+                                    <td>1</td>
+                                    <td>신규입회</td>
+                                    <td>2025.12.03 16:40</td>
+                                    <td>승인</td>
+                                    <td>아이콘</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
-  </div>
+</div>
 </body>
 </html>

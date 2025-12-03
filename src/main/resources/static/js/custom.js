@@ -257,28 +257,28 @@ $(document).ready(function () {
 
 /* ====== order.html ====== */
 // custom-spinner
-document.addEventListener('DOMContentLoaded', () => {
-    // All spinner
-    document.querySelectorAll('.custom-spinner').forEach((spinner) => {
-        const inputField = spinner.querySelector('input[type="number"]');
-        const incrementButton = spinner.querySelector('.spinner-buttons button:first-child');
-        const decrementButton = spinner.querySelector('.spinner-buttons button:last-child');
-
-        // Ensure that all elements exist
-        if (inputField && incrementButton && decrementButton) {
-            // Increase button event
-            incrementButton.addEventListener('click', () => {
-                inputField.stepUp();
-            });
-            // Decease button event
-            decrementButton.addEventListener('click', () => {
-                inputField.stepDown();
-            });
-        } else {
-            console.error('Spinner 구성 요소를 찾을 수 없습니다.', spinner);
-        }
-    });
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//     // All spinner
+//     document.querySelectorAll('.custom-spinner').forEach((spinner) => {
+//         const inputField = spinner.querySelector('input[type="number"]');
+//         const incrementButton = spinner.querySelector('.spinner-buttons button:first-child');
+//         const decrementButton = spinner.querySelector('.spinner-buttons button:last-child');
+//
+//         // Ensure that all elements exist
+//         if (inputField && incrementButton && decrementButton) {
+//             // Increase button event
+//             incrementButton.addEventListener('click', () => {
+//                 inputField.stepUp();
+//             });
+//             // Decease button event
+//             decrementButton.addEventListener('click', () => {
+//                 inputField.stepDown();
+//             });
+//         } else {
+//             console.error('Spinner 구성 요소를 찾을 수 없습니다.', spinner);
+//         }
+//     });
+// });
 
 
 function formatDateKorean(input) {

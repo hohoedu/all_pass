@@ -28,6 +28,13 @@ public class ManageService {
         return orderListDTO;
     }
 
+    public List<ManageRespDTO.SavedOrderListDTO> getSavedOrderList(String userCode, String centerCode, String year, String month) {
+
+        List<ManageRespDTO.SavedOrderListDTO> orderListDTO = manageRepository.findSavedOrderList(centerCode, userCode, year, month);
+
+        return orderListDTO;
+    }
+
     public void insertOrder(List<ManageReqDTO.InsertOrderDTO> reqDTO) {
         for (ManageReqDTO.InsertOrderDTO dto : reqDTO) {
 

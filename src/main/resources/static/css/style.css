@@ -6494,13 +6494,44 @@ input[type="time" i] {
 }
 
 /* ======================= reorder page ======================= */
+.reorder-flex {
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.reorder-radio {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 5px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.radio-label input[type="radio"] {
+    margin-right: 5px;
+}
+
+.radio-label .small-title {
+    margin: 5px;
+}
+
 .return-table {
     max-height: 300px;
     margin-top: 15px;
 }
 
-.all-add {
-    max-height: 11vh;
+.reorder-bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 65vh;
+    max-height: 65vh;
 }
 
 .add-extra {
@@ -6549,6 +6580,21 @@ input[type="time" i] {
     color: gray;
 }
 
+.reason-box {
+    display: flex;
+    align-items: center;
+
+}
+
+.reason-box input:not([type="checkbox"]) {
+    padding: 5px;
+    width: 350px;
+    height: 36px;
+    border: 1px solid #e2e2e2;
+    background: #FFFBEB;
+    border-radius: 10px;
+    margin-left: 10px;
+}
 
 /* ======================= pay-edu page ======================= */
 .edu-left {
