@@ -1,1204 +1,1210 @@
 @media (min-width: 768px) and (max-width: 1279px) {
 
-  button,
-  input,
-  select {
-    font-size: 13px;
-  }
-
-  table thead th {
-    font-size: 14px;
-  }
-
-  table tbody td,
-  .table-frame table {
-    font-size: 13px;
-  }
-
-  .modal-bflex {
-    margin-bottom: 0;
-    margin-top: 10px;
-  }
-
-  .basic-input,
-  .basic-select select,
-  .date-input .basic-input,
-  .basic-select {
-    /* width: 70%; */
-    height: 30px;
-    font-size: 13px;
-  }
-
-  .print {
-    display: none;
-  }
-
-  .search-box input:not([type="checkbox"]) {
-    height: 30px;
-  }
-
-  .common-btn {
-    font-size: 14px;
-    padding: 3px 13px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .radio-group input[type="radio"],
-  .checkbox-group input[type="checkbox"],
-  .checkbox-group2 input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-  }
-
-  .student-frame>section {
-    padding: 18px 10px 0 5px;
-  }
-
-  .radio-group input[type="radio"]:checked::after,
-  .checkbox-group input[type="checkbox"]:checked::after,
-  .checkbox-group2 input[type="checkbox"]:checked::after {
-    font-size: 14px;
-  }
-
-  .second-frame {
-    display: block;
-  }
-
-  /* main.html */
-  .main-sub {
-    width: 100%;
-  }
-
-  .class-status>article {
-    margin-bottom: 20px;
-  }
-
-  .class-status {
-    grid-template-columns: 5fr 5fr;
-  }
-
-  .class-status {
-    gap: 4px;
-  }
-
-  .class-status>article {
-    margin-bottom: 0;
-  }
-
-  .payment-area {
-    padding: 10px;
-  }
-
-  .status-card {
-    gap: 2px;
-  }
-
-  .class-action-btn {
-    padding: 3px 4px;
-    font-size: 10px;
-  }
-
-  .class-next {
-    width: 25px;
-    height: 25px;
-  }
-
-  .student-num,
-  .absence-num,
-  .edu-card,
-  .makeup-card,
-  .payment-area {
-    padding: 15px 10px;
-  }
-
-  .class-status-table thead th,
-  .unpaid-table thead th {
-    font-size: 13px;
-    padding: 4px;
-  }
-
-  .subtitle {
-    font-size: 16px;
-  }
-
-  .all-amounts {
-    font-size: 30px;
-  }
-
-  .unpaid-arrange {
-    gap: 10px;
-    align-items: center;
-  }
-
-  .unpaid.percent {
-    font-size: 13px;
-    width: 12vw;
-  }
-
-  .unpaid-tbody {
-    height: 16vh;
-  }
-
-  .unpaid-list {
-    margin-left: 2px;
-    align-items: center;
-    flex: 5;
-  }
-
-  .pax {
-    font-size: 32px;
-  }
-
-  .status-box .count {
-    font-size: 18px;
-  }
-
-  .btn-choose {
-    width: 45px;
-    height: 25px;
-  }
-
-  /* student-main.html */
-  .common-title {
-    width: 100%;
-  }
-
-  .info-filters {
-    width: 100%;
-  }
-
-  .link {
-    width: 16px;
-  }
-
-  select#subject-filter {
-    width: 200px;
-  }
-
-  select#student-filter,
-  select#stu-name {
-    width: 60px;
-  }
-
-  .stu-m-con {
-    width: 95%;
-  }
-
-  .all-info {
-    display: block;
-  }
-
-  .info-tab-btn {
-    gap: 0px;
-    max-width: 100%;
-  }
-
-  .info-tab-btn a {
-    padding: 9px 0;
-  }
-
-  .title {
-    font-size: 18px;
-    margin: 0;
-  }
-
-  .stu-m-con {
-    padding: 30px;
-  }
-
-  .modal-inner {
-    padding: 0px 5px;
-  }
-
-  .base-info-t tbody th {
-    font-size: 14px;
-  }
-
-  .base-info-t th,
-  .base-info-t td {
-    padding: 12px 3px;
-  }
-
-  #tab3 select,
-  #tab3 select option,
-  .consult-record select,
-  .consult-record select option {
-    font-size: 13px;
-  }
-
-  .save-btn {
-    padding: 8px 35px;
-    font-size: 16px;
-  }
-
-  /* student-inout */
-  .move-list {
-    width: 95%;
-  }
-
-  .line-second-frame {
-    display: block;
-  }
-
-  .move-summary,
-  .move-reason {
-    height: 60%;
-  }
-
-  .inout-btn {
-    width: 11vh;
-  }
-
-  .move-summary {
-    padding: 10px 10px 0 15px;
-  }
-
-  .stats-item-left {
-    display: block;
-  }
-
-  #teacher-select {
-    width: 20vw !important;
-  }
-
-  .class-btns {
-    width: 100%;
-    gap: 0px;
-  }
-
-  .student-pick-right {
-    margin-top: 10px;
-    margin-left: 0;
-  }
-
-  .size-160 {
-    width: 17vw;
-  }
-
-  .time-start,
-  .time-end {
-    width: 10vw;
-  }
-
-  .time-table tbody td:last-child {
-    text-align: center;
-  }
-
-  .student-badge {
-    width: 10vw;
-  }
-
-  .month-title,
-  .month-title2 {
-    font-size: 1.3em;
-  }
-
-  /* timeview */
-  .manager-list-frame {
-    padding-right: 15px;
-  }
-
-  .class-list {}
-
-  .class-log-left {
-    height: 44vh;
-    max-width: 100vw;
-  }
-
-  .lesson-log-table th:first-child,
-  .lesson-log-table td:first-child {
-    display: none;
-  }
+    button,
+    input,
+    select {
+        font-size: 13px;
+    }
+
+    table thead th {
+        font-size: 14px;
+    }
+
+    table tbody td,
+    .table-frame table {
+        font-size: 13px;
+    }
+
+    .modal-bflex {
+        margin-bottom: 0;
+        margin-top: 10px;
+    }
+
+    .basic-input,
+    .basic-select select,
+    .date-input .basic-input,
+    .basic-select {
+        /* width: 70%; */
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .print {
+        display: none;
+    }
+
+    .search-box input:not([type="checkbox"]) {
+        height: 30px;
+    }
+
+    .common-btn {
+        font-size: 14px;
+        padding: 3px 13px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .radio-group input[type="radio"],
+    .checkbox-group input[type="checkbox"],
+    .checkbox-group2 input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    .student-frame > section {
+        padding: 18px 10px 0 5px;
+    }
+
+    .radio-group input[type="radio"]:checked::after,
+    .checkbox-group input[type="checkbox"]:checked::after,
+    .checkbox-group2 input[type="checkbox"]:checked::after {
+        font-size: 14px;
+    }
+
+    .second-frame {
+        display: block;
+    }
+
+    /* main.html */
+    .main-sub {
+        width: 100%;
+    }
+
+    .class-status > article {
+        margin-bottom: 20px;
+    }
+
+    .class-status {
+        grid-template-columns: 5fr 5fr;
+    }
+
+    .class-status {
+        gap: 4px;
+    }
+
+    .class-status > article {
+        margin-bottom: 0;
+    }
+
+    .payment-area {
+        padding: 10px;
+    }
+
+    .status-card {
+        gap: 2px;
+    }
+
+    .class-action-btn {
+        padding: 3px 4px;
+        font-size: 10px;
+    }
+
+    .class-next {
+        width: 25px;
+        height: 25px;
+    }
+
+    .student-num,
+    .absence-num,
+    .edu-card,
+    .makeup-card,
+    .payment-area {
+        padding: 15px 10px;
+    }
+
+    .class-status-table thead th,
+    .unpaid-table thead th {
+        font-size: 13px;
+        padding: 4px;
+    }
+
+    .subtitle {
+        font-size: 16px;
+    }
+
+    .all-amounts {
+        font-size: 30px;
+    }
+
+    .unpaid-arrange {
+        gap: 10px;
+        align-items: center;
+    }
+
+    .unpaid.percent {
+        font-size: 13px;
+        width: 12vw;
+    }
+
+    .unpaid-tbody {
+        height: 16vh;
+    }
+
+    .unpaid-list {
+        margin-left: 2px;
+        align-items: center;
+        flex: 5;
+    }
+
+    .pax {
+        font-size: 32px;
+    }
+
+    .status-box .count {
+        font-size: 18px;
+    }
+
+    .btn-choose {
+        width: 45px;
+        height: 25px;
+    }
+
+    /* student-main.html */
+    .common-title {
+        width: 100%;
+    }
+
+    .info-filters {
+        width: 100%;
+    }
+
+    .link {
+        width: 16px;
+    }
+
+    select#subject-filter {
+        width: 200px;
+    }
+
+    select#student-filter,
+    select#stu-name {
+        width: 60px;
+    }
+
+    .stu-m-con {
+        width: 95%;
+    }
+
+    .all-info {
+        display: block;
+    }
+
+    .info-tab-btn {
+        gap: 0px;
+        max-width: 100%;
+    }
+
+    .info-tab-btn a {
+        padding: 9px 0;
+    }
+
+    .title {
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .stu-m-con {
+        padding: 30px;
+    }
+
+    .modal-inner {
+        padding: 0px 5px;
+    }
+
+    .base-info-t tbody th {
+        font-size: 14px;
+    }
+
+    .base-info-t th,
+    .base-info-t td {
+        padding: 12px 3px;
+    }
+
+    #tab3 select,
+    #tab3 select option,
+    .consult-record select,
+    .consult-record select option {
+        font-size: 13px;
+    }
+
+    .save-btn {
+        padding: 8px 35px;
+        font-size: 16px;
+    }
+
+    /* student-inout */
+    .move-list {
+        width: 95%;
+    }
+
+    .line-second-frame {
+        display: block;
+    }
+
+    .move-summary,
+    .move-reason {
+        height: 60%;
+    }
+
+    .inout-btn {
+        width: 11vh;
+    }
+
+    .move-summary {
+        padding: 10px 10px 0 15px;
+    }
+
+    .stats-item-left {
+        display: block;
+    }
+
+    #teacher-select {
+        width: 20vw !important;
+    }
+
+    .class-btns {
+        width: 100%;
+        gap: 0px;
+    }
+
+    .student-pick-right {
+        margin-top: 10px;
+        margin-left: 0;
+    }
+
+    .size-160 {
+        width: 17vw;
+    }
+
+    .time-start,
+    .time-end {
+        width: 10vw;
+    }
+
+    .time-table tbody td:last-child {
+        text-align: center;
+    }
+
+    .student-badge {
+        width: 10vw;
+    }
+
+    .month-title,
+    .month-title2 {
+        font-size: 1.3em;
+    }
+
+    /* timeview */
+    .manager-list-frame {
+        padding-right: 15px;
+    }
+
+    .class-list {
+    }
+
+    .class-log-left {
+        height: 44vh;
+        max-width: 100vw;
+    }
+
+    .lesson-log-table th:first-child,
+    .lesson-log-table td:first-child {
+        display: none;
+    }
 
 }
 
 /* ########################## 13inch notebook 1280px~1440px ########################## */
 @media (min-width: 1280px) and (max-width: 1440px) {
-  body {
-    font-size: 14px;
-    /* background-color: lightgray; */
-  }
-
-  section {
-    height: auto;
-  }
-
-  .container {
-    width: 80%;
-    margin: auto;
-  }
-
-  .main-container {
-    height: auto;
-  }
-
-  .quick-nav ul {
-    gap: 10px;
-  }
-
-  .quick-nav a {
-    font-size: 16px;
-  }
-
-  ::placeholder,
-  textarea::placeholder {
-    font-size: 11px;
-  }
-
-  .title {
-    font-size: 18px;
-  }
-
-  .radio-group {
-    gap: 4px;
-  }
-
-  .radio-group input[type="radio"],
-  .checkbox-group input[type="checkbox"],
-  .checkbox-group2 input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    font-size: 18px;
-  }
-
-  label {
-    font-size: 14px;
-    margin-right: 5px;
-  }
-
-  .checkbox-group input[type="checkbox"]+label {
-    margin-right: 10px;
-    font-size: 14px;
-  }
-
-  .radio-group input[type="radio"]:checked::after,
-  .checkbox-group input[type="checkbox"]:checked::after {
-    font-size: 12px;
-  }
-
-  select,
-  input,
-  textarea,
-  table thead th {
-    font-size: 14px;
-  }
-
-  #tab3 select,
-  #tab3 select option,
-  .consult-record select,
-  .consult-record select option {
-    font-size: 14px;
-  }
-
-  .month-title2,
-  .month-title {
-    font-size: 20px;
-  }
-
-  .basic-input {
-    height: 34px;
-  }
-
-  /* ======================= main page ======================= */
-  .student-status-boxes {
-    gap: 6px;
-  }
-
-  .subtitle {
-    font-size: 18px;
-  }
-
-  .all-amounts,
-  .pax {
-    font-size: 36px;
-  }
-
-  .unpaid.percent {
-    width: 100px;
-    font-size: 13px;
-  }
-
-  .status-box {
-    font-size: 15px;
-  }
-
-  .info-summary {
-    width: 100%;
-  }
-
-  .stu-m-con {
-    width: 1200px;
-  }
-
-  .all-info {
-    width: 100%;
-  }
-
-  /* ======================= student-out page ======================= */
-  .chart-box {
-    max-width: 700px;
-  }
-
-  /* ======================= class-titetable page ======================= */
-  .stu-chocie-frame {
-    width: 100%;
-  }
-
-  .svg-sort {
-    width: 15px;
-  }
-
-  .student-pick-right {
-    margin-left: 0;
-  }
-
-  .tab-radio label {
-    padding: 5px 3px;
-    font-size: 13px;
-  }
-
-  .time-regist-frame {
-    padding: 0;
-  }
-
-  .size-160 {
-    width: 130px;
-  }
-
-  .student-badge {
-    margin: 0px 1px;
-    width: 80px;
-    height: 29px;
-  }
-
-  .time-start,
-  .time-end {
-    width: 90px;
-  }
-
-  .time-table th:first-child,
-  .time-table td:first-child {
-    width: 5%;
-  }
-
-  .time-table th:nth-child(2),
-  .time-table td:nth-child(2) {
-    width: 5%;
-  }
-
-  /* ======================= student-inout page ======================= */
-  .save-btn {
-    padding: 10px 40px;
-    line-height: 1.2rem;
-    font-size: 16px;
-  }
-
-  .main-info {
-    width: 100%;
-  }
-
-  /* ======================= student-out page ======================= */
-  .student-num-frame {
-    gap: 10px;
-  }
-
-  .payment-area {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  /* ======================= class-titmetable page ======================= */
-  .time-frame {
-    width: 100%;
-  }
-
-  .time-tab-btn {
-    padding: 6px 0;
-  }
-
-  .timeview {
-    width: 100%;
-  }
-
-  .timeview>.second-frame {
-    gap: 30px;
-  }
-
-  .member {}
-
-  .time-table-index {
-    flex: 3;
-  }
-
-
-
-  /* ======================= bf-class page ======================= */
-  .bf-main .second-frame {
-    gap: 15px;
-  }
-
-  .bf-main {
-    width: 100%;
-  }
-
-  .stbox {
-    max-width: 70px;
-    font-size: 13px;
-    height: 27px;
-  }
-
-  .cal-adjust {
-    width: 155px;
-    font-size: 12px;
-    margin-bottom: 0px;
-    height: 30px;
-  }
-
-  .icon-btn {
-    margin-left: 0px;
-  }
-
-  .lesson-log-table th:nth-child(4) {
-    width: 15%;
-  }
-
-  .lesson-log-table th:nth-child(5) {
-    width: 25%;
-  }
-
-  .lesson-log-table th:nth-child(7) {
-    width: 40%;
-  }
-
-  .lesson-log-table th:nth-child(8) {
-    width: 40%;
-  }
-
-  .counsel-box {
-    margin: 10px 5px;
-  }
-
-  .counsel-type button {
-    flex-grow: 1;
-    padding: 2px 4px;
-    font-size: 14px;
-  }
-
-  .counsel-box {
-    width: 215px;
-  }
-
-  .after-comment {
-    width: 240px;
-  }
-
-  .week-btn {
-    font-size: 14px;
-  }
-
-  /* ======================= time-view page ======================= */
-  .timeview-frame {
-    width: 100%;
-  }
-
-  /* ======================= bfclass page ======================= */
-  .class-info-frame {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-
-  .bf-main .student-frame>section {
-    height: auto;
-  }
-
-  .before-send-section {
-    margin-top: 10px;
-  }
-
-  .modify-info-frame {
-    display: flex;
-    align-items: center;
-    line-height: 2rem;
-  }
-
-  .remark {
-    height: 93vh;
-  }
-
-  /* ======================= supplement page ======================= */
-  .sup-frame .icon-field {
-    width: 130px;
-  }
-
-  .last-modify {
-    font-size: 12px;
-    margin-top: -8px;
-  }
-
-  .supplement {
-    width: 100%;
-  }
-
-  .supplement .second-frame {
-    gap: 15px;
-  }
-
-  .sup-frame .basic-table td {
-    height: 75px;
-  }
-
-  /* ======================= monthly-test page ======================= */
-  .test-table td:nth-child(1),
-  .test-table th:nth-child(1) {
-    width: 5px;
-  }
-
-  .test-table td:nth-child(2),
-  .test-table th:nth-child(2) {
-    width: 5%;
-  }
-
-  .test-table td:nth-child(3),
-  .test-table th:nth-child(3) {
-    width: 5%;
-  }
-
-  .test-table td:nth-child(4),
-  .test-table th:nth-child(4) {}
-
-  .test-table td:nth-child(5),
-  .test-table th:nth-child(5) {}
-
-  .test-table td:nth-child(6),
-  .test-table th:nth-child(6) {}
-
-  .test-table td:nth-child(7),
-  .test-table th:nth-child(7) {
-    width: 5%;
-  }
-
-  .test-table td:nth-child(8),
-  .test-table th:nth-child(8) {
-    width: 5%;
-  }
-
-  .btn-number {
-    width: 40px;
-    height: 28px;
-  }
-
-  .number-grid,
-  .action-buttons {
-    gap: 4px;
-  }
-
-  .btn-reset,
-  .btn-result {
-    width: 85px;
-    height: 28px;
-  }
-
-  .after-comment {
-    width: 205px;
-    height: 140px;
-  }
-
-  .counsel-box,
-  .after-comment,
-  .memo-etc {
-    padding: 5px;
-  }
-
-  /* <!-- section: 월간평가 modal --> */
-  .mf .pre-divide {
-    margin-top: 40px;
-  }
-
-  .overall-top {
-    margin-bottom: 40px;
-  }
-
-  .pre-table th,
-  .pre-table td {
-    height: 50px;
-  }
-
-  .overall-top p,
-  .overall-bottom p {
-    width: 100%;
-  }
-
-  .overall-top,
-  .overall-bottom {
-    height: 240px;
-  }
-
-  .notice-modal .pre-divide {
-    margin-top: 10px;
-    gap: 30px;
-  }
-
-  /* ======================= consult page ======================= */
-  .consult-table {}
-
-  .consult-table td:nth-child(1),
-  .consult-table th:nth-child(1) {
-    width: 2%;
-  }
-
-  .consult-table td:nth-child(2),
-  .consult-table th:nth-child(2) {
-    width: 2%;
-  }
-
-  .consult-table td:nth-child(3),
-  .consult-table th:nth-child(3) {
-    width: 8%;
-  }
-
-  .consult-table td:nth-child(4),
-  .consult-table th:nth-child(4) {
-    width: 4%;
-  }
-
-  .consult-table td:nth-child(5),
-  .consult-table th:nth-child(5) {
-    width: 8%;
-  }
-
-  .consult-table td:nth-child(6),
-  .consult-table th:nth-child(6) {
-    width: 2%;
-  }
-
-  .consult-table td:nth-child(7),
-  .consult-table th:nth-child(7) {
-    width: 7%;
-  }
-
-  .consult-table td:nth-child(8),
-  .consult-table th:nth-child(8) {
-    width: 30%;
-  }
-
-  .consult-table td:nth-child(9),
-  .consult-table th:nth-child(9) {
-    width: 15%;
-  }
-
-  .consult-table td:nth-child(10),
-  .consult-table th:nth-child(10) {
-    width: 15%;
-  }
-
-  .memo-etc {
-    width: 250px;
-  }
-
-  /* ======================= pay-edu page ======================= */
-  .edu-l-con {
-    padding-right: 0px;
-  }
-
-  .edu-left {
-    flex: 1.8;
-  }
-
-  .edu-l-con .month-header2 {
-    flex-direction: column;
-  }
-
-  .btn-basic {
-    font-size: 15px;
-  }
-
-  .btn-basic {
-    padding: 5px 0;
-  }
-
-  .member-status-table tbody td {
-    padding: 15px;
-  }
-
-  /* ======================= pay-list page ======================= */
-  .acon-divide {
-    gap: 0px;
-  }
-
-  .pay-list-t {
-    line-height: 1.8rem;
-  }
-
-  .acon-title {
-    font-size: 19px;
-  }
-
-  .app-style {
-    height: 100%;
-  }
-
-  .acon-right img {
-    width: 155px;
-  }
-
-  .pre-view {
-    height: 90%;
-  }
-
-  .learn-divide {
-    margin-top: 10px;
-    gap: 30px;
-  }
-
-  /* ======================= manage-sms page ======================= */
-  .app-l-con {
-    padding-right: 0;
-  }
-
-  /* ======================= index page ======================= */
-  .menu-title {
-    margin: 0 30px;
-  }
-
-  .menu-logo img {
-    width: 250px;
-  }
-
-  .menu-greet {
-    font-size: 20px;
-  }
-
-  .menu-notice {
-    font-size: 20px;
-    padding: 20px 30px;
-    margin: 20px 0px 30px 0px;
-  }
-
-  .menu-item img {
-    width: 150px;
-    margin-bottom: 0;
-  }
-
-  /*.menu-item:nth-last-child(3) img {*/
-  /*  width: 130px;*/
-  /*}*/
-
-  .menu-item h2 {
-    font-size: 26px;
-  }
-
-  .menu-item p {
-    font-size: 16px;
-  }
-
-  .menu-item {
-    padding: 5px 15px 30px 25px;
-  }
-
-  .menu-item>button {
-    font-size: 16px;
-  }
-
-  .input-label {
-    font-size: 16px;
-  }
-
-  .input-button {
-    font-size: 16px;
-    padding: 0;
-  }
-
-  .menu-input {
-    flex: 4;
-  }
-
-  .evaluation-button {
-    font-size: 20px;
-  }
-
-  /* ======================= index page ======================= */
-  .welcome-greet h1 {
-    font-size: 1.6rem;
-  }
-
-  .class-title {
-    font-size: 16px;
-  }
-
-  .mini-menu {
-    font-size: 1.3rem;
-  }
-
-  span.number {
-    font-size: 2.5rem;
-  }
-
-  .payment-num,
-  .unpaid-num {
-    font-size: 2rem;
-  }
-
-  /* ======================= notice page ======================= */
-  .notice-inner {
-    width: 1000px;
-  }
-
-  /* ======================= manage-tuition page ======================= */
-  button.commission {
-    font-size: 14px;
-  }
-
-  .ma {
-    margin-right: 0;
-  }
-
-  .discount-row label {
-    width: 5vw;
-    font-size: 15px;
-  }
-
-  .tution-table tr td {
-    font-size: 15px;
-  }
+    body {
+        font-size: 14px;
+        /* background-color: lightgray; */
+    }
+
+    section {
+        height: auto;
+    }
+
+    .container {
+        width: 80%;
+        margin: auto;
+    }
+
+    .main-container {
+        height: auto;
+    }
+
+    .quick-nav ul {
+        gap: 10px;
+    }
+
+    .quick-nav a {
+        font-size: 16px;
+    }
+
+    ::placeholder,
+    textarea::placeholder {
+        font-size: 11px;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    .radio-group {
+        gap: 4px;
+    }
+
+    .radio-group input[type="radio"],
+    .checkbox-group input[type="checkbox"],
+    .checkbox-group2 input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        font-size: 18px;
+    }
+
+    label {
+        font-size: 14px;
+        margin-right: 5px;
+    }
+
+    .checkbox-group input[type="checkbox"] + label {
+        margin-right: 10px;
+        font-size: 14px;
+    }
+
+    .radio-group input[type="radio"]:checked::after,
+    .checkbox-group input[type="checkbox"]:checked::after {
+        font-size: 12px;
+    }
+
+    select,
+    input,
+    textarea,
+    table thead th {
+        font-size: 14px;
+    }
+
+    #tab3 select,
+    #tab3 select option,
+    .consult-record select,
+    .consult-record select option {
+        font-size: 14px;
+    }
+
+    .month-title2,
+    .month-title {
+        font-size: 20px;
+    }
+
+    .basic-input {
+        height: 34px;
+    }
+
+    /* ======================= main page ======================= */
+    .student-status-boxes {
+        gap: 6px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    .all-amounts,
+    .pax {
+        font-size: 36px;
+    }
+
+    .unpaid.percent {
+        width: 100px;
+        font-size: 13px;
+    }
+
+    .status-box {
+        font-size: 15px;
+    }
+
+    .info-summary {
+        width: 100%;
+    }
+
+    .stu-m-con {
+        width: 1200px;
+    }
+
+    .all-info {
+        width: 100%;
+    }
+
+    /* ======================= student-out page ======================= */
+    .chart-box {
+        max-width: 700px;
+    }
+
+    /* ======================= class-titetable page ======================= */
+    .stu-chocie-frame {
+        width: 100%;
+    }
+
+    .svg-sort {
+        width: 15px;
+    }
+
+    .student-pick-right {
+        margin-left: 0;
+    }
+
+    .tab-radio label {
+        padding: 5px 3px;
+        font-size: 13px;
+    }
+
+    .time-regist-frame {
+        padding: 0;
+    }
+
+    .size-160 {
+        width: 130px;
+    }
+
+    .student-badge {
+        margin: 0px 1px;
+        width: 80px;
+        height: 29px;
+    }
+
+    .time-start,
+    .time-end {
+        width: 90px;
+    }
+
+    .time-table th:first-child,
+    .time-table td:first-child {
+        width: 5%;
+    }
+
+    .time-table th:nth-child(2),
+    .time-table td:nth-child(2) {
+        width: 5%;
+    }
+
+    /* ======================= student-inout page ======================= */
+    .save-btn {
+        padding: 10px 40px;
+        line-height: 1.2rem;
+        font-size: 16px;
+    }
+
+    .main-info {
+        width: 100%;
+    }
+
+    /* ======================= student-out page ======================= */
+    .student-num-frame {
+        gap: 10px;
+    }
+
+    .payment-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* ======================= class-titmetable page ======================= */
+    .time-frame {
+        width: 100%;
+    }
+
+    .time-tab-btn {
+        padding: 6px 0;
+    }
+
+    .timeview {
+        width: 100%;
+    }
+
+    .timeview > .second-frame {
+        gap: 30px;
+    }
+
+    .member {
+    }
+
+    .time-table-index {
+        flex: 3;
+    }
+
+
+    /* ======================= bf-class page ======================= */
+    .bf-main .second-frame {
+        gap: 15px;
+    }
+
+    .bf-main {
+        width: 100%;
+    }
+
+    .stbox {
+        max-width: 70px;
+        font-size: 13px;
+        height: 27px;
+    }
+
+    .cal-adjust {
+        width: 155px;
+        font-size: 12px;
+        margin-bottom: 0px;
+        height: 30px;
+    }
+
+    .icon-btn {
+        margin-left: 0px;
+    }
+
+    .lesson-log-table th:nth-child(4) {
+        width: 15%;
+    }
+
+    .lesson-log-table th:nth-child(5) {
+        width: 25%;
+    }
+
+    .lesson-log-table th:nth-child(7) {
+        width: 40%;
+    }
+
+    .lesson-log-table th:nth-child(8) {
+        width: 40%;
+    }
+
+    .counsel-box {
+        margin: 10px 5px;
+    }
+
+    .counsel-type button {
+        flex-grow: 1;
+        padding: 2px 4px;
+        font-size: 14px;
+    }
+
+    .counsel-box {
+        width: 215px;
+    }
+
+    .after-comment {
+        width: 240px;
+    }
+
+    .week-btn {
+        font-size: 14px;
+    }
+
+    /* ======================= time-view page ======================= */
+    .timeview-frame {
+        width: 100%;
+    }
+
+    /* ======================= bfclass page ======================= */
+    .class-info-frame {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .bf-main .student-frame > section {
+        height: auto;
+    }
+
+    .before-send-section {
+        margin-top: 10px;
+    }
+
+    .modify-info-frame {
+        display: flex;
+        align-items: center;
+        line-height: 2rem;
+    }
+
+    .remark {
+        height: 93vh;
+    }
+
+    /* ======================= supplement page ======================= */
+    .sup-frame .icon-field {
+        width: 130px;
+    }
+
+    .last-modify {
+        font-size: 12px;
+        margin-top: -8px;
+    }
+
+    .supplement {
+        width: 100%;
+    }
+
+    .supplement .second-frame {
+        gap: 15px;
+    }
+
+    .sup-frame .basic-table td {
+        height: 75px;
+    }
+
+    /* ======================= monthly-test page ======================= */
+    .test-table td:nth-child(1),
+    .test-table th:nth-child(1) {
+        width: 5px;
+    }
+
+    .test-table td:nth-child(2),
+    .test-table th:nth-child(2) {
+        width: 5%;
+    }
+
+    .test-table td:nth-child(3),
+    .test-table th:nth-child(3) {
+        width: 5%;
+    }
+
+    .test-table td:nth-child(4),
+    .test-table th:nth-child(4) {
+    }
+
+    .test-table td:nth-child(5),
+    .test-table th:nth-child(5) {
+    }
+
+    .test-table td:nth-child(6),
+    .test-table th:nth-child(6) {
+    }
+
+    .test-table td:nth-child(7),
+    .test-table th:nth-child(7) {
+        width: 5%;
+    }
+
+    .test-table td:nth-child(8),
+    .test-table th:nth-child(8) {
+        width: 5%;
+    }
+
+    .btn-number {
+        width: 40px;
+        height: 28px;
+    }
+
+    .number-grid,
+    .action-buttons {
+        gap: 4px;
+    }
+
+    .btn-reset,
+    .btn-result {
+        width: 85px;
+        height: 28px;
+    }
+
+    .after-comment {
+        width: 205px;
+        height: 140px;
+    }
+
+    .counsel-box,
+    .after-comment,
+    .memo-etc {
+        padding: 5px;
+    }
+
+    /* <!-- section: 월간평가 modal --> */
+    .mf .pre-divide {
+        margin-top: 40px;
+    }
+
+    .overall-top {
+        margin-bottom: 40px;
+    }
+
+    .pre-table th,
+    .pre-table td {
+        height: 50px;
+    }
+
+    .overall-top p,
+    .overall-bottom p {
+        width: 100%;
+    }
+
+    .overall-top,
+    .overall-bottom {
+        height: 240px;
+    }
+
+    .notice-modal .pre-divide {
+        margin-top: 10px;
+        gap: 30px;
+    }
+
+    /* ======================= consult page ======================= */
+    .consult-table {
+    }
+
+    .consult-table td:nth-child(1),
+    .consult-table th:nth-child(1) {
+        width: 2%;
+    }
+
+    .consult-table td:nth-child(2),
+    .consult-table th:nth-child(2) {
+        width: 2%;
+    }
+
+    .consult-table td:nth-child(3),
+    .consult-table th:nth-child(3) {
+        width: 8%;
+    }
+
+    .consult-table td:nth-child(4),
+    .consult-table th:nth-child(4) {
+        width: 4%;
+    }
+
+    .consult-table td:nth-child(5),
+    .consult-table th:nth-child(5) {
+        width: 8%;
+    }
+
+    .consult-table td:nth-child(6),
+    .consult-table th:nth-child(6) {
+        width: 2%;
+    }
+
+    .consult-table td:nth-child(7),
+    .consult-table th:nth-child(7) {
+        width: 7%;
+    }
+
+    .consult-table td:nth-child(8),
+    .consult-table th:nth-child(8) {
+        width: 30%;
+    }
+
+    .consult-table td:nth-child(9),
+    .consult-table th:nth-child(9) {
+        width: 15%;
+    }
+
+    .consult-table td:nth-child(10),
+    .consult-table th:nth-child(10) {
+        width: 15%;
+    }
+
+    .memo-etc {
+        width: 250px;
+    }
+
+    /* ======================= pay-edu page ======================= */
+    .edu-l-con {
+        padding-right: 0px;
+    }
+
+    .edu-left {
+        flex: 1.8;
+    }
+
+    .edu-l-con .month-header2 {
+        flex-direction: column;
+    }
+
+    .btn-basic {
+        font-size: 15px;
+    }
+
+    .btn-basic {
+        padding: 5px 0;
+    }
+
+    .member-status-table tbody td {
+        padding: 15px;
+    }
+
+    /* ======================= pay-list page ======================= */
+    .acon-divide {
+        gap: 0px;
+    }
+
+    .pay-list-t {
+        line-height: 1.8rem;
+    }
+
+    .acon-title {
+        font-size: 19px;
+    }
+
+    .app-style {
+        height: 100%;
+    }
+
+    .acon-right img {
+        width: 155px;
+    }
+
+    .pre-view {
+        height: 90%;
+    }
+
+    .learn-divide {
+        margin-top: 10px;
+        gap: 30px;
+    }
+
+    /* ======================= manage-sms page ======================= */
+    .app-l-con {
+        padding-right: 0;
+    }
+
+    /* ======================= index page ======================= */
+    .menu-title {
+        margin: 0 30px;
+    }
+
+    .menu-logo img {
+        width: 250px;
+    }
+
+    .menu-greet {
+        font-size: 20px;
+    }
+
+    .menu-notice {
+        font-size: 20px;
+        padding: 20px 30px;
+        margin: 20px 0px 30px 0px;
+    }
+
+    .menu-item img {
+        width: 150px;
+        margin-bottom: 0;
+    }
+
+    /*.menu-item:nth-last-child(3) img {*/
+    /*  width: 130px;*/
+    /*}*/
+    .menu-item h2 {
+        font-size: 26px;
+    }
+
+    .menu-item p {
+        font-size: 16px;
+    }
+
+    .menu-item {
+        padding: 5px 15px 30px 25px;
+    }
+
+    .menu-item > button {
+        font-size: 16px;
+    }
+
+    .input-label {
+        font-size: 16px;
+    }
+
+    .input-button {
+        font-size: 16px;
+        padding: 0;
+    }
+
+    .menu-input {
+        flex: 4;
+    }
+
+    .evaluation-button {
+        font-size: 20px;
+    }
+
+    /* ======================= index page ======================= */
+    .welcome-greet h1 {
+        font-size: 1.6rem;
+    }
+
+    .class-title {
+        font-size: 16px;
+    }
+
+    .mini-menu {
+        font-size: 1.3rem;
+    }
+
+    span.number {
+        font-size: 2.5rem;
+    }
+
+    .payment-num,
+    .unpaid-num {
+        font-size: 2rem;
+    }
+
+    /* ======================= notice page ======================= */
+    .notice-inner {
+        width: 1000px;
+    }
+
+    /* ======================= manage-tuition page ======================= */
+    button.commission {
+        font-size: 14px;
+    }
+
+    .ma {
+        margin-right: 0;
+    }
+
+    .discount-row label {
+        width: 5vw;
+        font-size: 15px;
+    }
+
+    .tution-table tr td {
+        font-size: 15px;
+    }
 
 }
 
 
 /*########################## 14inch notebook 1441px~1599px ##########################*/
 @media (min-width: 1441px) and (max-width: 1599px) {
-  table thead th {
-    font-size: 14px;
-  }
-
-  /* index.html */
-  .menu-greet {
-    font-size: 24px;
-  }
-
-  .menu-notice {
-    font-size: 19px;
-  }
-
-  .menu-desc {
-    width: 85%;
-  }
-
-  .menu-item h2 {
-    font-size: 27px;
-  }
-
-  .menu-item p {
-    font-size: 16px;
-  }
-
-  .menu-item>button {
-    font-size: 16px;
-  }
-
-  .input-label,
-  .input-button {
-    font-size: 18px;
-  }
-
-  .evaluation-button {
-    font-size: 22px;
-  }
-
-  /* class-timetable */
-  .time-table tbody td:last-child {
-    text-align: center;
-  }
-
-  .subtitle {
-    font-size: 18px;
-  }
-
-  .all-amounts,
-  .pax {
-    font-size: 40px;
-  }
-
-  .unpaid.percent {
-    width: 100px;
-    font-size: 13px;
-  }
-
-  .status-box {
-    font-size: 15px;
-  }
-
-  .info-summary {
-    width: 100%;
-  }
-
-  .stu-m-con {
-    width: 1200px;
-  }
-
-  .all-info {
-    width: 100%;
-  }
-
-  .stu-m-con {
-    width: 90%;
-  }
-
-  .counsel-box textarea {
-    height: 70%;
-  }
-
-  /* bfclass.html */
-  .lesson-log-table th:last-child,
-  .lesson-log-table td:last-child {
-    width: 8%;
-  }
-
-  .cal-adjust {
-    width: 140px;
-  }
-
-  .cal-adjust span {
-    font-size: 12px;
-  }
-
-  .counsel-box {
-    padding: 5px;
-    margin: 10px;
-  }
-
-  /* supplement.html */
-  .svg-sort {
-    width: 18px;
-  }
-
-  /* consult.html */
-  .counsel-header .cal-adjust {
-    width: 200px;
-  }
-
-  .counsel-header .cal-adjust span {
-    font-size: 14px;
-  }
-
-  .icon-field span {
-    font-size: 12px;
-  }
-
-  /* manage-sms */
-  .app-l-con {
-    padding-right: 0;
-  }
-
-  .stats-item-left .cal-adjust {
-    width: 200px;
-
-    .stats-item-left .cal-adjust span {
-      font-size: 14px;
+    table thead th {
+        font-size: 14px;
     }
 
-    .acon-title {
-      font-size: 21px;
+    /* index.html */
+    .menu-greet {
+        font-size: 24px;
     }
 
-    .acon-right img {
-      width: 170px;
+    .menu-notice {
+        font-size: 19px;
     }
 
-    .hash-box {
-      font-size: 14px;
+    .menu-desc {
+        width: 85%;
+    }
+
+    .menu-item h2 {
+        font-size: 27px;
+    }
+
+    .menu-item p {
+        font-size: 16px;
+    }
+
+    .menu-item > button {
+        font-size: 16px;
+    }
+
+    .input-label,
+    .input-button {
+        font-size: 18px;
+    }
+
+    .evaluation-button {
+        font-size: 22px;
+    }
+
+    /* class-timetable */
+    .time-table tbody td:last-child {
+        text-align: center;
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    .all-amounts,
+    .pax {
+        font-size: 40px;
+    }
+
+    .unpaid.percent {
+        width: 100px;
+        font-size: 13px;
+    }
+
+    .status-box {
+        font-size: 15px;
+    }
+
+    .info-summary {
+        width: 100%;
+    }
+
+    .stu-m-con {
+        width: 1200px;
+    }
+
+    .all-info {
+        width: 100%;
+    }
+
+    .stu-m-con {
+        width: 90%;
+    }
+
+    .counsel-box textarea {
+        height: 70%;
+    }
+
+    /* bfclass.html */
+    .lesson-log-table th:last-child,
+    .lesson-log-table td:last-child {
+        width: 8%;
+    }
+
+    .cal-adjust {
+        width: 140px;
+    }
+
+    .cal-adjust span {
+        font-size: 12px;
+    }
+
+    .counsel-box {
+        padding: 5px;
+        margin: 10px;
+    }
+
+    /* supplement.html */
+    .svg-sort {
+        width: 18px;
+    }
+
+    /* consult.html */
+    .counsel-header .cal-adjust {
+        width: 200px;
+    }
+
+    .counsel-header .cal-adjust span {
+        font-size: 14px;
+    }
+
+    .icon-field span {
+        font-size: 12px;
     }
 
     /* manage-sms */
-    .pre-divide {
-      margin-top: 40px;
+    .app-l-con {
+        padding-right: 0;
     }
 
-    /* manage-tuition */
+    .stats-item-left .cal-adjust {
+        width: 200px;
 
-  }
+        .stats-item-left .cal-adjust span {
+            font-size: 14px;
+        }
+
+        .acon-title {
+            font-size: 21px;
+        }
+
+        .acon-right img {
+            width: 170px;
+        }
+
+        .hash-box {
+            font-size: 14px;
+        }
+
+        /* manage-sms */
+
+        .pre-divide {
+            margin-top: 40px;
+        }
+
+        /* manage-tuition */
+
+    }
 }
 
 /*########################## 15inch notebook 1600px~1919px ##########################*/
 @media (min-width: 1600px) and (max-width: 1919px) {
-  table thead th {
-    font-size: 15px;
-  }
+    table thead th {
+        font-size: 15px;
+    }
 
-  .menu-greet {
-    font-size: 24px;
-  }
+    .menu-greet {
+        font-size: 24px;
+    }
 
-  .menu-item h2 {
-    font-size: 28px;
-  }
+    .menu-item h2 {
+        font-size: 28px;
+    }
 
-  .menu-item {
-    padding: 5px 40px 30px 30px;
-  }
+    .menu-item {
+        padding: 5px 40px 30px 30px;
+    }
 
-  .menu-notice {
-    font-size: 19px;
-  }
+    .menu-notice {
+        font-size: 19px;
+    }
 
-  .menu-item p {
-    font-size: 16px;
-  }
+    .menu-item p {
+        font-size: 16px;
+    }
 
-  .evaluation-button {
-    font-size: 22px;
-  }
+    .evaluation-button {
+        font-size: 22px;
+    }
 
-  .class-log-right .cal-adjust {
-    width: 170px;
-  }
+    .class-log-right .cal-adjust {
+        width: 170px;
+    }
 
-  .pre-divide {
-    margin-top: 40px;
-  }
+    .pre-divide {
+        margin-top: 40px;
+    }
 
-  .app-l-con {
-    padding-right: 50px;
-  }
+    .app-l-con {
+        padding-right: 50px;
+    }
 }
 
 /* join page smartphone 320 ~ 480px */
-@media (min-width:320px) and (max-width:480px) {
-  .join-title {
-    font-size: 2rem;
-  }
+@media (min-width: 320px) and (max-width: 480px) {
+    .join-title {
+        font-size: 2rem;
+    }
 
-  .join-group h2 {
-    font-size: 1.1rem;
-  }
+    .join-group h2 {
+        font-size: 1.1rem;
+    }
 
-  .join-line {
-    margin: 60px 0 60px 0;
-  }
+    .join-line {
+        margin: 60px 0 60px 0;
+    }
 
-  .join-group p {
-    font-size: 14px;
-    text-align: left;
-    margin-bottom: 50px;
-  }
+    .join-group p {
+        font-size: 14px;
+        text-align: left;
+        margin-bottom: 50px;
+    }
 
-  .join-group label {
-    font-size: 14px;
-  }
+    .join-group label {
+        font-size: 14px;
+    }
 
-  #privacy-agree label,
-  #guardian-agree label {
-    font-size: 12px;
-  }
+    #privacy-agree label,
+    #guardian-agree label {
+        font-size: 12px;
+    }
 
-  #clear-button {
-    padding: 5px 10px;
-  }
+    #clear-button {
+        padding: 5px 10px;
+    }
 }
 
 /* join page tablet Pc 320 ~ 480px */
-@media (min-width:481) and (max-width: 768px) {}
+@media (min-width: 481px) and (max-width: 768px) {
+}

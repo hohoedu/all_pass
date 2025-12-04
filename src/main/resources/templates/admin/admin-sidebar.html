@@ -1,0 +1,68 @@
+<aside class="sidebar" th:fragment="adminSidebar">
+    <div class="sidebar-frame">
+        <div class="sidebar-left">
+            <div class="sidebar-con">
+                <div class="left-top">
+                    <div class="sidebar-item">
+                        <a th:href="@{/index}" class="home-back" data-target="dashboard">
+                            <img th:src="@{/image/hoho-icon.png}" alt="">
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a href="main.html" class="menu-toggle" data-target="order">
+                            <img th:src="@{/image/menu-icon6.png}" alt=""><span>주문관리</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a href="#" class="menu-toggle" data-target="ebook">
+                            <img th:src="@{/image/menu-icon7.png}" alt=""><span>이북코드</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a href="#" class="menu-toggle" data-target="center">
+                            <img th:src="@{/image/menu-icon8.png}" alt=""><span>학원관리</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a href="#" class="menu-toggle" data-target="app">
+                            <img th:src="@{/image/menu-icon9.png}" alt=""><span>앱관리</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="left-bottom">
+                    <div class="sidebar-line"></div>
+                    <a href="#" class="ecl-icon"><img th:src="@{/image/sidebar-eclass.png}" alt=""></a>
+                    <a href="#" class="dokcl-icon"><img th:src="@{/image/sidebar-dokclass.png}" alt=""></a>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-right collapsed">
+            <div class="sub-frame">
+                <!-- 1 -->
+                <div class="submenu" data-menu="order">
+                    <a href="1order_1list.html" class="menu-link">교재주문 리스트</a>
+                    <a href="1order_2check.html" class="menu-link">교재 입금 확인</a>
+                    <a href="1order_2bill.html" class="menu-link">청구서 발행</a>
+                </div>
+                <!-- 2 -->
+                <div class="submenu" data-menu="ebook">
+                    <a href="2ebook_1make.html" class="menu-link">이북코드 생성</a>
+                    <a href="2ebook_2year.html" class="menu-link">연간 이북 세팅</a>
+                </div>
+                <!-- 3 -->
+                <div class="submenu" data-menu="center">
+                    <a href="3center_1info.html" class="menu-link">학원 정보</a>
+                    <a href="3center_2table.html" class="menu-link">학원 시간표</a>
+                    <a href="3center_3resource.html" class="menu-link">공지/자료실</a>
+                </div>
+                <div class="submenu" data-menu="app">
+                    <a href="4app_1class.html" class="menu-link">수업 전/후 알림</a>
+                    <a href="4app_2kids.html" class="menu-link">유아 학습내용</a>
+                    <a href="4app_3junior.html" class="menu-link">초등 월말평가</a>
+                    <a href="4app_4book.html" class="menu-link">수업도서</a>
+                </div>
+                <!-- 4 -->
+            </div>
+        </div>
+    </div>
+</aside>

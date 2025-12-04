@@ -5,10 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
-import com.hohoedu.all_pass.class_instance.model.base_data.MonthlyFeedback;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -831,5 +830,9 @@ public class ClassService {
         return respDTOS;
     }
 
+    public List<UnitCode> findUnitCodeForPerson() {
+        List<UnitCode> unitCodes = classRepository.findUnitCodeForPerson();
+        return unitCodes;
+    }
 }
 

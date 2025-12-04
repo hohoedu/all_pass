@@ -1,5 +1,7 @@
-package com.hohoedu.all_pass.class_instance.model;
+package com.hohoedu.all_pass.admin.ebook.model;
 
+import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,12 +32,17 @@ public class PersonYear {
     @JoinColumn(name = "class_key", referencedColumnName = "class_key", nullable = false)
     private ClassCode classCode;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
+    private Center center;
+
     @Builder
-    public PersonYear(String yy, String mm, String unitKey, String subUnitKey, ClassCode classCode) {
+    public PersonYear(String yy, String mm, String unitKey, String subUnitKey, ClassCode classCode, Center center) {
         this.yy = yy;
         this.mm = mm;
         this.unitKey = unitKey;
         this.subUnitKey = subUnitKey;
         this.classCode = classCode;
+        this.center = center;
     }
 }

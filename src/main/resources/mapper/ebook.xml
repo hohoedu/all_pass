@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.admin.ebook.EbookRepository">
+    <update id="insertPersonYear">
+        MERGE INTO erp_person_year AS target
+            USING (SELECT #{centerCode} AS center_code,
+                          #{yy}         AS yy,
+                          #{mm}         AS mm,
+                          #{classKey}   AS class_key) AS src
+            ON (
+                target.center_code = src.center_code
+                    AND target.yy = src.yy
+                    AND target.mm = src.mm
+                    AND target.class_key = src.class_key
+                )
+            WHEN MATCHED THEN
+                UPDATE SET
+                    unit_key = #{unitKey},
+                    sub_unit_key = #{subUnitKey}
+
+            WHEN NOT MATCHED THEN
+                INSERT (center_code, yy, mm, class_key, unit_key, sub_unit_key)
+                    VALUES (#{centerCode}, #{yy}, #{mm}, #{classKey}, #{unitKey}, #{subUnitKey});
+    </update>
+
+    <select id="selectPersonYear" resultType="com.hohoedu.all_pass.admin.ebook._dto.EbookRespDTO$PersonYearDTO">
+        SELECT center_code, yy, mm, class_key, unit_key, sub_unit_key
+        FROM erp_person_year
+        WHERE center_code = #{centerCode}
+          AND yy = #{yy}
+        ORDER BY mm, class_key;
+    </select>
+    
+</mapper>

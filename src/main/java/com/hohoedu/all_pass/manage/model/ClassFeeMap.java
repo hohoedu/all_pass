@@ -1,6 +1,6 @@
 package com.hohoedu.all_pass.manage.model;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

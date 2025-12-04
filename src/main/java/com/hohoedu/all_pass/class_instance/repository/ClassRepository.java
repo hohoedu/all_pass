@@ -286,4 +286,5 @@ public interface ClassRepository {
 
     public void insertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
 
+    List<UnitCode> findUnitCodeForPerson();
 }

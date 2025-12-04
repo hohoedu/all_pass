@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 import com.hohoedu.all_pass.user.model.UserRoleCode;
 
 import jakarta.persistence.Column;

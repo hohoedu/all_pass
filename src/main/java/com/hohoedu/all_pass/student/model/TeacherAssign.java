@@ -1,13 +1,10 @@
 package com.hohoedu.all_pass.student.model;
 
-import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.sql.Timestamp;
 
 
 @Entity

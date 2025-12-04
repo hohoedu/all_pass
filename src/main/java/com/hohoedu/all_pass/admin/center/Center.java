@@ -1,8 +1,8 @@
-package com.hohoedu.all_pass.center;
+package com.hohoedu.all_pass.admin.center;
 
 import java.time.LocalDate;
 
-import com.hohoedu.all_pass.center.code.RegionCode;
+import com.hohoedu.all_pass.admin.center.model.RegionCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,13 +53,16 @@ public class Center {
     @Column(name = "center_address", nullable = false, length = 100)
     private String centerAddress;
 
+    @Column(name = "status")
+    private String status;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "region_key", referencedColumnName = "region_key", nullable = false)
     private RegionCode region;
 
     @Builder
     public Center(String centerCode, String centerName, LocalDate openedAt, String bizNo, String directorName,
-            String centerTel, String centerAddress, String centerEmail, RegionCode region) {
+                  String centerTel, String centerAddress, String status, String centerEmail, RegionCode region) {
         this.centerCode = centerCode;
         this.centerName = centerName;
         this.openedAt = openedAt;
@@ -67,6 +70,7 @@ public class Center {
         this.directorName = directorName;
         this.centerTel = centerTel;
         this.centerAddress = centerAddress;
+        this.status = status;
         this.centerEmail = centerEmail;
         this.region = region;
     }

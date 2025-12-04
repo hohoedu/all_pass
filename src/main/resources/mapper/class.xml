@@ -997,4 +997,9 @@
     </select>
 
 
-</mapper> 
+    <select id="findUnitCodeForPerson" resultType="com.hohoedu.all_pass.class_instance.model.UnitCode">
+        SELECT *
+        FROM erp_unit_code
+        where unit_type = 'peo'
+    </select>
+</mapper>

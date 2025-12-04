@@ -1,6 +1,6 @@
 package com.hohoedu.all_pass.payment.model;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;

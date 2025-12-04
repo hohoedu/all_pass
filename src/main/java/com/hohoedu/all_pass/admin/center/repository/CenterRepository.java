@@ -1,8 +1,7 @@
-package com.hohoedu.all_pass.center.repository;
+package com.hohoedu.all_pass.admin.center.repository;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

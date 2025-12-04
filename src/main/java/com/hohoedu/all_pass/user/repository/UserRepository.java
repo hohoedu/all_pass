@@ -6,7 +6,7 @@ import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.admin.center.Center;
 import com.hohoedu.all_pass.user.User;
 
 @Mapper
