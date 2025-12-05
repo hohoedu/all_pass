@@ -1,6 +1,8 @@
 package com.hohoedu.all_pass.manage._dto;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -29,6 +31,20 @@ public class ManageReqDTO {
     }
 
     @Data
+    public static class InsertReorderDTO {
+        private String reorderType;
+        private List<ReorderItemDTO> items;
+
+        @Data
+        public static class ReorderItemDTO {
+            private String classKey;
+            private String unitKey;
+            private Integer count;
+            private String reason;
+        }
+    }
+
+    @Data
     public static class InsertClassFeeDTO {
         private List<ClassFeeMapDTO> classFeeMap;
 
@@ -40,6 +56,5 @@ public class ManageReqDTO {
 
         }
     }
-
 
 }

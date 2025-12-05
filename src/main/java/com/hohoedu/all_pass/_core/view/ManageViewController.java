@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.manage.ManageService;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
@@ -13,20 +14,24 @@ import com.hohoedu.all_pass.notice.NoticeService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.threeten.bp.LocalDate;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequestMapping("/manage")
 @RequiredArgsConstructor
@@ -58,7 +63,36 @@ public class ManageViewController {
     }
 
     @GetMapping("/reorder")
-    public String getManageReorderPage() {
+    public String getManageReorderPage(Model model, HttpSession session) throws JsonProcessingException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        String userCode = user.getUserCode();
+        String cneterCode = user.getCenterCode();
+        LocalDate now = LocalDate.now();            // 이번 달
+        LocalDate prev = now.minusMonths(1);        // 지난 달
+
+        String startYear = String.valueOf(prev.getYear());
+        String startMonth = String.format("%02d", prev.getMonthValue());
+
+        String endYear = String.valueOf(now.getYear());
+        String endMonth = String.format("%02d", now.getMonthValue());
+
+        List<ClassCode> classCodes = classService.findClassCode();
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnitsOverPeriod(cneterCode, startYear, startMonth, endYear, endMonth);
+        ObjectMapper mapper = new ObjectMapper();
+        String classUnits = mapper.writeValueAsString(classUnitMap);
+        String classCodesJson = mapper.writeValueAsString(classCodes);
+
+        List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(userCode, cneterCode, endYear, endMonth);
+
+        model.addAttribute("reorderList", reorderList);
+        model.addAttribute("classCodes", classCodes);
+        model.addAttribute("classCodesJson", classCodesJson);
+        model.addAttribute("classUnits", classUnits);
+
         return "manage/reorder";
     }
 

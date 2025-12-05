@@ -10,8 +10,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,6 +38,43 @@ public class ManageService {
         List<ManageRespDTO.SavedOrderListDTO> orderListDTO = manageRepository.findSavedOrderList(centerCode, userCode, year, month);
 
         return orderListDTO;
+    }
+
+    public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
+        LocalDate now = LocalDate.now();
+        String yy = String.valueOf(now.getYear());
+        String mm = String.format("%02d", now.getMonthValue());
+
+        String userCode = user.getUserCode();
+        String centerCode = user.getCenterCode();
+
+        for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
+            log.info(req.getReorderType());
+            manageRepository.insertReorder(userCode, centerCode, yy, mm, req.getReorderType(), item.getClassKey(), item.getUnitKey(), item.getCount(), item.getReason());
+        }
+        return 1;
+    }
+
+    public List<ManageRespDTO.ReorderListDTO> getReorderList(String userCode, String centerCode, String year, String month) {
+
+        List<ManageRespDTO.ReorderListDTO> reorderListDTO = manageRepository.findReorderList(centerCode, userCode, year, month);
+        reorderListDTO.stream()
+                .peek(dto -> {
+                    if (dto.getCreatedAt() != null) {
+                        dto.setCreatedAt(
+                                LocalDateTime.parse(
+                                        dto.getCreatedAt(),
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                                ).format(
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                )
+                        );
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return reorderListDTO;
+
     }
 
     public void insertOrder(List<ManageReqDTO.InsertOrderDTO> reqDTO) {

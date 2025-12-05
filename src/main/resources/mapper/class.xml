@@ -64,6 +64,68 @@
           AND center_code = #{centerCode}
     </update>
 
+    <select id="findClassUnitMap" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassUnitDTO">
+        SELECT map.class_key AS classKey,
+               uc.unit_key   AS unitKey,
+               uc.unit_name  AS unitName
+        FROM erp_class_unit_map map
+                 JOIN erp_unit_code uc ON map.unit_key = uc.unit_key
+    </select>
+
+    <select id="findPersonUnit" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassUnitDTO">
+        SELECT py.class_key   AS classKey,
+               py.unit_key    AS unitKey,
+               main.unit_name AS unitName,
+               1              AS orderFlag
+        FROM erp_person_year py
+                 JOIN erp_unit_code main ON py.unit_key = main.unit_key
+        WHERE center_code = #{centerCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND py.class_key = #{classKey}
+
+        UNION ALL
+
+        SELECT py.class_key    AS classKey,
+               py.sub_unit_key AS unitKey,
+               sub.unit_name   AS unitName,
+               2               AS orderFlag
+        FROM erp_person_year py
+                 JOIN erp_unit_code sub ON py.sub_unit_key = sub.unit_key
+        WHERE center_code = #{centerCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND py.class_key = #{classKey}
+        ORDER BY orderFlag ASC;
+    </select>
+
+    <select id="findPersonUnitsInRange" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassUnitDTO">
+        SELECT py.class_key   AS classKey,
+               py.unit_key    AS unitKey,
+               main.unit_name AS unitName,
+               1              AS orderFlag
+        FROM erp_person_year py
+                 JOIN erp_unit_code main ON py.unit_key = main.unit_key
+        WHERE center_code = #{centerCode}
+          AND (yy * 100 + mm) BETWEEN (#{startYear} * 100 + #{startMonth})
+            AND (#{endYear} * 100 + #{endMonth})
+          AND py.class_key = #{classKey}
+
+        UNION ALL
+
+        SELECT py.class_key    AS classKey,
+               py.sub_unit_key AS unitKey,
+               sub.unit_name   AS unitName,
+               2               AS orderFlag
+        FROM erp_person_year py
+                 JOIN erp_unit_code sub ON py.sub_unit_key = sub.unit_key
+        WHERE center_code = #{centerCode}
+          AND (yy * 100 + mm) BETWEEN (#{startYear} * 100 + #{startMonth})
+            AND (#{endYear} * 100 + #{endMonth})
+          AND py.class_key = #{classKey}
+        ORDER BY orderFlag ASC;
+    </select>
+
     <!--시간표 추가-->
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
@@ -391,7 +453,7 @@
                  LEFT JOIN erp_class_code c ON ta.class_key = c.class_key
                  LEFT JOIN erp_unit_code uc ON ta.unit_key = uc.unit_key
         WHERE t.yy = #{yy}
-          AND t.mm = ${mm}
+          AND t.mm = #{mm}
           AND t.user_code = #{userCode}
           AND t.class_key = 'COM'
     </select>

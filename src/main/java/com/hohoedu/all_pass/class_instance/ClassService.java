@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.admin.ebook.EbookRepository;
+import com.hohoedu.all_pass.admin.ebook.model.PersonYear;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
@@ -54,11 +56,8 @@ public class ClassService {
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
     private final DateConfig dateConfig;
-    private final ClassUnitMapJpaRepository classUnitMapJpaRepository;
-    private final StudentService studentService;
     private final StudentRepository studentRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentService paymentService;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -155,19 +154,55 @@ public class ClassService {
     }
 
     // 수업 코드 - 유닛 매핑 테이블 조회 서비스 (시간표 등록)
-    public Map<String, List<UnitCode>> findClassUnits() {
-        Map<String, List<UnitCode>> result = new HashMap<>();
+    public Map<String, List<ClassRespDTO.ClassUnitDTO>> findClassUnits(String centerCode, String year, String month) {
 
-        List<ClassUnitMap> allMappings = classUnitMapJpaRepository.findAllWithUnitCode();
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> result = new HashMap<>();
 
-        result = allMappings.stream()
-                .collect(Collectors.groupingBy(
-                        map -> map.getClassCode().getClassKey(),
-                        Collectors.mapping(ClassUnitMap::getUnitCode, Collectors.toList())
-                ));
+        List<ClassRespDTO.ClassUnitDTO> baseList = classRepository.findClassUnitMap();
+
+        baseList.stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.ClassUnitDTO::getClassKey))
+                .forEach(result::put);
+
+        List<String> specialClasses = List.of("K", "M", "J");
+
+        for (String classKey : specialClasses) {
+            List<ClassRespDTO.ClassUnitDTO> personUnits = classRepository.findPersonUnit(centerCode, year, month, classKey);
+
+            if (!personUnits.isEmpty()) {
+                result.put(classKey, personUnits);
+            }
+        }
 
         return result;
     }
+
+    public Map<String, List<ClassRespDTO.ClassUnitDTO>> findClassUnitsOverPeriod(String centerCode, String startYear, String startMonth, String endYear, String endMonth) {
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> result = new HashMap<>();
+
+        List<ClassRespDTO.ClassUnitDTO> baseList = classRepository.findClassUnitMap();
+        baseList.stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.ClassUnitDTO::getClassKey))
+                .forEach(result::put);
+
+        List<String> specialClasses = List.of("K", "M", "J");
+
+        for (String classKey : specialClasses) {
+            List<ClassRespDTO.ClassUnitDTO> units = classRepository.findPersonUnitsInRange(
+                    centerCode,
+                    startYear, startMonth,
+                    endYear, endMonth,
+                    classKey
+            );
+
+            if (!units.isEmpty()) {
+                result.put(classKey, units);
+            }
+        }
+
+        return result;
+    }
+
 
     // 학년 및 연령 테이블 조회 서비스 (시간표 등록)
     public List<GradeCode> findGrade() {

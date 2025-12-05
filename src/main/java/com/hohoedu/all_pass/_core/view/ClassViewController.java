@@ -59,13 +59,12 @@ public class ClassViewController {
         }
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
-        Map<String, List<UnitCode>> classUnitMap = classService.findClassUnits();
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnits(user.getCenterCode(), year, month);
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
-
+        String classCodesJson = mapper.writeValueAsString(classCodes);
 
         List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
-        String classCodesJson = mapper.writeValueAsString(classCodes);
 
         List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
 

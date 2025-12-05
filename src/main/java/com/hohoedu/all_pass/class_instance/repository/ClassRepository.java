@@ -38,6 +38,24 @@ public interface ClassRepository {
 
     public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
 
+    List<ClassRespDTO.ClassUnitDTO> findClassUnitMap();
+
+    List<ClassRespDTO.ClassUnitDTO> findPersonUnit(
+            @Param("centerCode") String centerCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("classKey") String classKey
+    );
+
+    List<ClassRespDTO.ClassUnitDTO> findPersonUnitsInRange(
+            @Param("centerCode") String centerCode,
+            @Param("startYear") String startYear,
+            @Param("startMonth") String startMonth,
+            @Param("endYear") String endYear,
+            @Param("endMonth") String endMonth,
+            @Param("classKey") String classKey
+    );
+
     public void createTimeTableKey(TimeTableCode entity);
 
     public ClassRespDTO.TimeTableDTO existsByYearAndMonthAndPeriodNo(

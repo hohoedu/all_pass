@@ -20,6 +20,8 @@
         <!-- left nav bar -->
         <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
         <main class="main-info">
+            <input type="hidden" id="classUnits" th:value="${classUnits}">
+            <input type="hidden" id="classCodes" th:value="${classCodesJson}">
             <div class="line-second-frame">
                 <!-- section:left -->
                 <section class="book-order return-left">
@@ -45,7 +47,7 @@
                         <div class="etc-add">
                             <div class="radio-group reorder-radio">
                                 <label class="radio-label">
-                                    <input type="radio" name="orderType" value="ADD">
+                                    <input type="radio" name="orderType" value="ADD" checked>
                                     <div class="small-title">추가</div>
                                 </label>
 
@@ -95,7 +97,7 @@
 
                                 </div>
                                 <div class="book-order-save">
-                                    <div class="common-btn save-btn">저장하기</div>
+                                    <div class="common-btn save-btn" id="saveReorderBtn">저장하기</div>
                                 </div>
                             </div>
                         </div>
@@ -117,19 +119,7 @@
                         <h2>이전 주문 내역</h2>
                     </div>
                     <div class="preorder-select">
-                        <div class="preorder-day">
-                            <div class="month-title2 month-today">
-                                <div style="position: relative;">
-                                    <div class="day-display">
-                                        <span class="month-text"></span>
-                                        <input type="month" class="hidden-date hidden-picker"/>
-                                        <button type="button" class="icon-btn calendar-open">
-                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div></div>
                         <div class="basic-select">
                             <select id="step-all" name="">
                                 <option value="">전체</option>
@@ -164,15 +154,17 @@
                                     <th>취소</th>
                                 </tr>
                                 </thead>
-                                <tbody class="stripe">
-                                <tr>
-                                    <td>추가주문</td>
-                                    <td>호호하니 영재</td>
-                                    <td>2호</td>
-                                    <td>1</td>
-                                    <td>신규입회</td>
-                                    <td>2025.12.03 16:40</td>
-                                    <td>승인</td>
+                                <tbody id="reorder-tbody" class="stripe">
+                                <tr th:each="reorder : ${reorderList}"
+                                    th:data-class-key="${reorder.classKey}"
+                                    th:data-unit-key="${reorder.unitKey}">
+                                    <td th:text="${reorder.reorderType} == 'add' ? '추가주문' : '반품' ">종류</td>
+                                    <td th:text="${reorder.className}">수업</td>
+                                    <td th:text="${reorder.unitName}">교재</td>
+                                    <td th:text="${reorder.count}">수량</td>
+                                    <td th:text="${reorder.reason}">사유</td>
+                                    <td th:text="${reorder.createdAt}">등록 일시</td>
+                                    <td th:text="${reorder.confirmed} == 'checked' ? '승인':'미승인' ">등록 일시</td>
                                     <td>아이콘</td>
                                 </tr>
                                 </tbody>

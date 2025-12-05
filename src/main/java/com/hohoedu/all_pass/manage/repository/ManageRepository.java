@@ -23,6 +23,13 @@ public interface ManageRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    List<ManageRespDTO.ReorderListDTO> findReorderList(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+
     // 주문서 조회
     ManageReqDTO.InsertOrderDTO findOrder(
             @Param("centerCode") String centerCode,
@@ -36,6 +43,17 @@ public interface ManageRepository {
 
     // 주문서 업데이트
     void updateOrder(ManageReqDTO.InsertOrderDTO dto);
+
+    int insertReorder(
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("reorderType") String reorderType,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("count") Integer count,
+            @Param("reason") String reason);
 
     // 학원별 수강료 조회
     List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(@Param("centerCode") String centerCode);

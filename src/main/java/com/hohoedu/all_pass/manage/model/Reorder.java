@@ -31,7 +31,7 @@ public class Reorder {
     private String unitKey;
 
     @Column(name = "count", nullable = false)
-    private String count;
+    private Integer count;
 
     @Column(name = "reason", nullable = false)
     private String reason;
@@ -42,8 +42,8 @@ public class Reorder {
     @Column(name = "mm", nullable = false)
     private String mm;
 
-    @Column(name = "comfirmed")
-    private String comfirmed; //(Y/N)
+    @Column(name = "confirmed")
+    private String confirmed; //(Y/N)
 
     @CreationTimestamp
     private Timestamp createdAt;
@@ -60,7 +60,7 @@ public class Reorder {
     private User user;
 
     @Builder
-    public Reorder(String reorderType, String classKey, String unitKey, String count, String reason, String yy, String mm, String comfirmed, Center center, User user) {
+    public Reorder(String reorderType, String classKey, String unitKey, Integer count, String reason, String yy, String mm, String confirmed, Center center, User user) {
         this.reorderType = reorderType;
         this.classKey = classKey;
         this.unitKey = unitKey;
@@ -68,7 +68,7 @@ public class Reorder {
         this.reason = reason;
         this.yy = yy;
         this.mm = mm;
-        this.comfirmed = comfirmed;
+        this.confirmed = confirmed;
         this.center = center;
         this.user = user;
     }

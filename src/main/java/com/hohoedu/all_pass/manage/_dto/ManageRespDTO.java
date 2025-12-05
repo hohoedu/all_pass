@@ -2,6 +2,8 @@ package com.hohoedu.all_pass.manage._dto;
 
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @Data
 public class ManageRespDTO {
     @Data
@@ -24,6 +26,19 @@ public class ManageRespDTO {
         private String unitKey;
         private String yy;
         private String mm;
+    }
+
+    @Data
+    public static class ReorderListDTO {
+        private String reorderType;
+        private String classKey;
+        private String className;
+        private String unitKey;
+        private String unitName;
+        private String reason;
+        private Integer count;
+        private String confirmed;
+        private String createdAt;
 
     }
 }

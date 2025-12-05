@@ -36,6 +36,13 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class ClassUnitDTO {
+        private String classKey;
+        private String unitKey;
+        private String unitName;
+    }
+
+    @Data
     public static class TimeTableLabelDTO {
         private String timeTableKey;
         private String classKey;

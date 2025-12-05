@@ -39,6 +39,30 @@
           AND mm = #{mm}
     </select>
 
+    <insert id="insertReorder">
+        INSERT INTO erp_reorder (user_code, center_code, yy, mm, reorder_type, class_key, unit_key, count, reason, created_at, confirmed)
+        VALUES (#{userCode}, #{centerCode}, #{yy}, #{mm}, #{reorderType}, #{classKey}, #{unitKey}, #{count}, #{reason}, SYSDATETIME(), 'unchecked')
+    </insert>
+
+    <select id="findReorderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$ReorderListDTO">
+        SELECT reorder_type AS reorderType,
+               r.class_key  AS classKey,
+               c.class_name AS className,
+               r.unit_key   AS unitKey,
+               u.unit_name  AS unitName,
+               reason       AS reason,
+               count,
+               confirmed,
+               created_at   AS createdAt
+        FROM erp_reorder r
+                 JOIN erp_class_code c ON r.class_key = c.class_key
+                 JOIN erp_unit_code u ON r.unit_key = u.unit_key
+        WHERE center_code = #{centerCode}
+          AND user_code = #{userCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <select id="findOrder" resultType="com.hohoedu.all_pass.manage._dto.ManageReqDTO$InsertOrderDTO">
         SELECT base_count,
                add_count,
@@ -88,7 +112,7 @@
             (#{item.classKey}, #{item.centerCode}, #{item.fee})
         </foreach>
     </insert>
-    
+
     <update id="updateClassFeeMap" parameterType="java.util.List">
         <foreach collection="list" item="item" separator=";">
             UPDATE erp_class_fee_map

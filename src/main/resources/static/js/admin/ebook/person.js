@@ -55,22 +55,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = "";
 
+        const classKeys = ["K", "M", "J"];     // 추가: 3개 class 순서 정의
+        const types = ["unit", "sub"];        // 메인, 서브
+
         for (let m = 1; m <= 12; m++) {
             const month = String(m).padStart(2, '0');
 
             html += `<tr>
                         <td>${month}</td>`;
 
-            for (let i = 1; i <= 6; i++) {
-                html += `
-                <td>
-                    <div class="select-wrap">
-                        <select name="bookiLevel[]" class="styled-select">
-                            ${unitOptionsHtml}
-                        </select>
-                    </div>
-                </td>`;
-            }
+            // 6개의 셀 생성 (K-unit, K-sub, M-unit, M-sub, J-unit, J-sub)
+            classKeys.forEach(classKey => {
+                types.forEach(type => {
+                    html += `
+                       <td>
+                           <div class="select-wrap">
+                               <!-- 수정: name 제거, data-class / data-month / data-type 추가 -->
+                               <select 
+                                   class="styled-select"
+                                   data-class="${classKey}"
+                                   data-month="${month}"
+                                   data-type="${type}">
+                                   ${unitOptionsHtml}
+                               </select>
+                           </div>
+                       </td>`;
+                });
+            });
 
             html += `</tr>`;
         }
@@ -85,28 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function fillTable(data) {
         if (!data || !data.classes) return;
 
-        const classMap = {};
-        data.classes.forEach(c => classMap[c.class_key] = c.months);
+        data.classes.forEach(c => {
+            const classKey = c.class_key;
 
-        const selects = document.querySelectorAll('select[name="bookiLevel[]"]');
+            c.months.forEach(monthData => {
+                const month = monthData.month;
 
-        let index = 0;
+                // main select
+                const mainSel = document.querySelector(
+                    `select[data-class="${classKey}"][data-month="${month}"][data-type="unit"]`
+                );
+                if (mainSel) mainSel.value = monthData.unit_key || "";
 
-        for (let m = 1; m <= 12; m++) {
-            const month = String(m).padStart(2, '0');
-
-            ['K', 'M', 'J'].forEach(classKey => {
-                const rows = classMap[classKey];
-                const row = rows ? rows.find(r => r.month === month) : null;
-
-                if (row) {
-                    selects[index].value = row.unit_key || "";
-                    selects[index + 1].value = row.sub_unit_key || "";
-                }
-
-                index += 2;
+                // sub select
+                const subSel = document.querySelector(
+                    `select[data-class="${classKey}"][data-month="${month}"][data-type="sub"]`
+                );
+                if (subSel) subSel.value = monthData.sub_unit_key || "";
             });
-        }
+        });
     }
 
 
@@ -161,6 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
             classes: classes
         };
 
+        console.log(JSON.stringify(body));
+
         try {
             const res = await fetch("/admin/save/person", {
                 method: "POST",
@@ -169,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-            alert(data.message);
+            alert(data.response);
 
         } catch (e) {
             console.error(e);
@@ -182,30 +192,32 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. 테이블 값 → JSON 구조로 변환 //
     // ------------------------------- */
     function collectTableData() {
-        const selects = document.querySelectorAll('select[name="bookiLevel[]"]');
-        const arr = Array.from(selects).map(s => s.value || null);
-
         const classKeys = ["K", "M", "J"];
         const classes = [];
-        let index = 0;
 
-        for (let c = 0; c < classKeys.length; c++) {
+        classKeys.forEach(classKey => {
             const months = [];
 
             for (let m = 1; m <= 12; m++) {
-                const monthStr = String(m).padStart(2, '0');
+                const month = String(m).padStart(2, '0');
+
+                // 수정: data-class / data-month / data-type 기반으로 값 수집
+                const mainSel = document.querySelector(
+                    `select[data-class="${classKey}"][data-month="${month}"][data-type="unit"]`
+                );
+                const subSel = document.querySelector(
+                    `select[data-class="${classKey}"][data-month="${month}"][data-type="sub"]`
+                );
+
                 months.push({
-                    month: monthStr,
-                    unit_key: arr[index++],
-                    sub_unit_key: arr[index++]
+                    month: month,
+                    unit_key: mainSel?.value || null,
+                    sub_unit_key: subSel?.value || null
                 });
             }
 
-            classes.push({
-                class_key: classKeys[c],
-                months: months
-            });
-        }
+            classes.push({ class_key: classKey, months });
+        });
 
         return classes;
     }
