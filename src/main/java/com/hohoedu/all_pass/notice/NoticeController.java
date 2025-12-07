@@ -37,7 +37,7 @@ public class NoticeController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> noticeImageUpload(@RequestParam("file") MultipartFile file) {
-        String savedPath = fileUploadService.uploadToFTP(file);
+        String savedPath = fileUploadService.uploadNotice(file);
 
         return ResponseEntity.ok(savedPath);
     }

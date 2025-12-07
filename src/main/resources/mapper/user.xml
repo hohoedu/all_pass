@@ -47,7 +47,7 @@
         where center_code = #{centerCode}
     </select>
 
-    <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.admin.center.Center">
+    <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.center.Center">
         select *
         from ERP_CENTER
         where center_code = #{centerCode}

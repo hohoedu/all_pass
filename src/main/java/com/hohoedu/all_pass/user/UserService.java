@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
-import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
 import com.hohoedu.all_pass.user.repository.UserJpaRepository;

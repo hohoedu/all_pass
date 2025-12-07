@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- jQuery CDN -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- Custom Css / Js -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/media.css">
+  <script src="js/custom.js"></script>
+  <!-- Html menu Load -->
+  <script src="js/loadHTML.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <title>교재 입금 확인</title>
+</head>
+<body>
+  <div class="main-container">
+    <!-- header -->
+    <div class="main-frame">
+      <!-- left nav bar -->
+      <aside id="sidebar-load"></aside>
+      <main class="main-info">
+        <div class="student-frame time-regist-frame">
+          <!-- section:top -->
+          <section>
+            <div class="class-desc">
+              <div class="class-header">
+                <div class="common-title">
+                  <h2>교재 입금 확인</h2>
+                </div>
+                <div class="class-btns">
+                  <div class="common-btn record-save">저장</div>
+                </div>
+              </div>
+              <div class="month-header2 month-today" style="padding: 10px 0;">
+                <div class="month-title2">
+                  <span class="current-month"></span>
+                  <div class="calendar-wrapper">
+                    <input type="month" class="hidden-date" />
+                    <button type="button" class="icon-btn calendar-open">
+                      <img src="image/calendar.png" alt="달력 아이콘">
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- section:bottom -->
+          <div class="second-frame" style="padding: 0 15px;">
+            <section class="order-code-left">
+              <div class="student-content">
+                <h4>학원 선택</h4>
+                <div class="mt">
+                  <div class="table-frame stu-chocie-frame">
+                    <table class="basic-table stu-chocie-table stripe">
+                      <colgroup>
+                        <col width="30%">
+                        <col width="30%">
+                        <col width="20%">
+                        <col width="20%">
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th><img src="image/sort_checked.svg" alt="" class="svg-sort">지점명</th>
+                          <th><img src="image/sort.svg" alt="" class="svg-sort">등록일</th>
+                          <th>상태</th>
+                          <th>관리</th>
+                        </tr>
+                      </thead>
+                      <tbody id="" class="stripe">
+                        <tr>
+                          <td>부산 남천점</td>
+                          <td>2025-10-29</td>
+                          <td>사용중</td>
+                          <td><a href="#"><img src="image/ico_paysite.png"></a></td>
+                        </tr>
+                        <tr>
+                          <td>대구 월성점</td>
+                          <td>2025-10-29</td>
+                          <td>사용중</td>
+                          <td><a href="#"><img src="image/ico_paysite.png"></a></td>
+                        </tr>
+                        <tr>
+                          <td>울산 유곡점</td>
+                          <td>2025-10-29</td>
+                          <td>사용중</td>
+                          <td><a href="#"><img src="image/ico_paysite.png"></a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="ebook-code-right">
+              <div class="">
+                <div class="table-frame move-t-frame">
+                  <table class="basic-table yh">
+                    <colgroup>
+                      <col width="5%">
+                      <col width="5%">
+                      <col width="12%">
+                      <col width="10%">
+                      <col width="10%">
+                      <col width="10%">
+                      <col width="10%">
+                      <col width="10%">
+                      <col width="12%">
+                      <col width="16%">
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <th>No</th>
+                        <th>마감</th>
+                        <th><img src="image/sort.svg" alt="" class="svg-sort">수강연월</th>
+                        <th><img src="image/sort.svg" alt="" class="svg-sort">이름</th>
+                        <th><img src="image/sort.svg" alt="" class="svg-sort">선생님</th>
+                        <th>과목</th>
+                        <th>금액</th>
+                        <th><img src="image/sort.svg" alt="" class="svg-sort">결제</th>
+                        <th><img src="image/sort.svg" alt="" class="svg-sort">결제일</th>
+                        <th>메모</th>
+                      </tr>
+                    </thead>
+                    <div class="table-body">
+                      <tbody id="student-tbody" class="stripe">
+                        <tr>
+                          <td>1</td>
+                          <td class="checkbox-group">
+                            <input type="checkbox" id="" name="">
+                          </td>
+                          <td>2025-08</td>
+                          <td>김호호</td>
+                          <td>김나영</td>
+                          <td>한자</td>
+                          <td>15,000</td>
+                          <td>
+                            <div class="pay-box pay-done">완료</div>
+                          </td>
+                          <td>2025-08-20</td>
+                          <td>
+                            <div class="td-inputs">
+                              <input type="text" name="memo" value="전월 20일" class="td-input">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>1</td>
+                          <td class="checkbox-group">
+                            <input type="checkbox" id="" name="">
+                          </td>
+                          <td>2025-08</td>
+                          <td>김호호</td>
+                          <td>김나영</td>
+                          <td>한자</td>
+                          <td>15,000</td>
+                          <td>
+                            <div class="pay-box pay-late">미납</div>
+                          </td>
+                          <td>2025-08-20</td>
+                          <td>
+                            <div class="td-inputs">
+                              <input type="text" name="memo" value="전월 20일" class="td-input">
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>1</td>
+                          <td class="checkbox-group">
+                            <input type="checkbox" id="" name="">
+                          </td>
+                          <td>2025-08</td>
+                          <td>김호호</td>
+                          <td>김나영</td>
+                          <td>한자</td>
+                          <td>15,000</td>
+                          <td>
+                            <div class="pay-box pay-done">완료</div>
+                          </td>
+                          <td>2025-08-20</td>
+                          <td>
+                            <div class="td-inputs">
+                              <input type="text" name="memo" value="전월 20일" class="td-input">
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </div>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

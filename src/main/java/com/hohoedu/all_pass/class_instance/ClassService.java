@@ -5,17 +5,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.hohoedu.all_pass.admin.center.Center;
-import com.hohoedu.all_pass.admin.ebook.EbookRepository;
-import com.hohoedu.all_pass.admin.ebook.model.PersonYear;
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
-import com.hohoedu.all_pass.class_instance.repository.ClassUnitMapJpaRepository;
 import com.hohoedu.all_pass.payment.Payment;
-import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
-import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.StudentClass;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
@@ -150,6 +145,11 @@ public class ClassService {
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
         List<ClassCode> classCodes = classCodeJpaRepository.findAll();
+        return classCodes;
+    }
+
+    public List<ClassCode> findClassCodeExcludeMid() {
+        List<ClassCode> classCodes = classRepository.findClassListExcludeMid();
         return classCodes;
     }
 

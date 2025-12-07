@@ -221,6 +221,10 @@ $(document).ready(function () {
         $('.class-btn').removeClass('active');
         $(this).addClass('active');
     });
+    $('.class-btn2').click(function () {
+        $('.class-btn2').removeClass('active');
+        $(this).addClass('active');
+    });
     // 컨설트 버튼
     $('.counsel-type button').click(function () {
         $('.counsel-type button').removeClass('active');

@@ -12,8 +12,8 @@ import java.util.UUID;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
-import com.hohoedu.all_pass.admin.center.Center;
-import com.hohoedu.all_pass.admin.center.repository.CenterRepository;
+import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;

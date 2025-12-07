@@ -1,4 +1,4 @@
-package com.hohoedu.all_pass.admin.center.model;
+package com.hohoedu.all_pass.center.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

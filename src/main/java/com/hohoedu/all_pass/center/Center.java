@@ -1,8 +1,8 @@
-package com.hohoedu.all_pass.admin.center;
+package com.hohoedu.all_pass.center;
 
 import java.time.LocalDate;
 
-import com.hohoedu.all_pass.admin.center.model.RegionCode;
+import com.hohoedu.all_pass.center.model.RegionCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

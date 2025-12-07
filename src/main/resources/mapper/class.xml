@@ -1064,4 +1064,11 @@
         FROM erp_unit_code
         where unit_type = 'peo'
     </select>
+
+    <select id="findClassListExcludeMid" resultType="com.hohoedu.all_pass.class_instance.model.ClassCode">
+        SELECT *
+        FROM erp_class_code
+        WHERE class_key NOT IN ('BSS', 'BSA')
+          AND class_type = '2'
+    </select>
 </mapper>

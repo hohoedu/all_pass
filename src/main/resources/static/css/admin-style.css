@@ -4250,18 +4250,18 @@ input[type="time" i] {
 }
 
 .ebook-person-table td {
-    padding: 4px 6px;   /* 셀 기본 높이 줄이기 */
+    padding: 4px 6px; /* 셀 기본 높이 줄이기 */
 }
 
 .ebook-person-table .select-wrap {
-    padding: 0;         /* 기존 wrap padding 제거 */
+    padding: 0; /* 기존 wrap padding 제거 */
 }
 
 .ebook-person-table .styled-select {
-    height: 40px;       /* 원하는 높이 */
+    height: 40px; /* 원하는 높이 */
     line-height: 28px;
-    padding: 0 6px;     /* 내부 여백 줄이기 */
-    font-size: 13px;    /* 글자 크기를 조금만 줄이면 더 컴팩트해짐 */
+    padding: 0 6px; /* 내부 여백 줄이기 */
+    font-size: 13px; /* 글자 크기를 조금만 줄이면 더 컴팩트해짐 */
 }
 
 .month-header2 {
@@ -4744,7 +4744,7 @@ input[type="time" i] {
 }
 
 .class-btn.active {
-    background-color: #7366e8;
+    background-color: #7c0682;
     color: white;
 }
 
@@ -6627,8 +6627,96 @@ td.middle {
     overflow-y: scroll;
 }
 
+/*===================================== /app/book-suggest.html ===============================*/
+label {
+    margin-right: 10px;
+}
 
+.file-upload {
+    display: inline-block;
+    padding: 7px 14px;
+    background-color: #7c0682;
+    color: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
 
+.file-name {
+    width: 120%;
+}
 
+.file-remove {
+    font-size: 16px;
+    color: #878787;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    font-weight: bold;
+}
 
+.book-frame .book-list {
+    display: flex;
+    gap: 10px;
+}
 
+.class-btn2 {
+    padding: 5px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    color: #9b9ba8;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+    background-color: #f4f5f8;
+    color: #b2b5c1;
+}
+
+.class-btn2 strong {
+    display: blo-ck;
+    margin-bottom: -20px;
+}
+
+.class-btn2.active {
+    background-color: #7c0682;
+    color: white;
+}
+
+.class-btn2.active strong {
+    color: white;
+}
+
+.base-info-t textarea {
+    background: #fff;
+    border: none;
+    min-height: 11vh;
+}
+
+.class-log-left2 {
+    flex: 1;
+    max-width: 173px;
+    background-color: #f4f3fa;
+    padding: 16px;
+    width: 160px;
+    border-radius: 8px;
+}
+
+.class-log-left2 {
+    height: 85vh;
+}
+
+.class-log-left2 h4 {
+    font-size: 17px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.class-log-right2 {
+    height: 85vh;
+    overflow-y: auto;
+}
+
+.base-info-t .styled-select {
+    padding: 0;
+}

@@ -1,6 +1,6 @@
-package com.hohoedu.all_pass.admin.center;
+package com.hohoedu.all_pass.center;
 
-import com.hohoedu.all_pass.admin.center.repository.CenterRepository;
+import com.hohoedu.all_pass.center.repository.CenterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

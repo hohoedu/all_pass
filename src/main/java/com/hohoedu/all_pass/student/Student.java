@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.model.StatusCode;
 

@@ -1,7 +1,7 @@
 package com.hohoedu.all_pass.student.model;
 
 
-import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.center.Center;
 import jakarta.persistence.*;
 import lombok.*;
 

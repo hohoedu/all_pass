@@ -1,9 +1,9 @@
-package com.hohoedu.all_pass.admin.ebook._dto;
+package com.hohoedu.all_pass.admin._dto;
 
 import lombok.Data;
 
 @Data
-public class EbookRespDTO {
+public class AdminRespDTO {
 
     @Data
     public static class PersonYearDTO {

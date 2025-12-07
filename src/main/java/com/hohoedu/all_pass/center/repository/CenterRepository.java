@@ -1,6 +1,6 @@
-package com.hohoedu.all_pass.admin.center.repository;
+package com.hohoedu.all_pass.center.repository;
 
-import com.hohoedu.all_pass.admin.center.Center;
+import com.hohoedu.all_pass.center.Center;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
