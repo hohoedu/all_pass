@@ -27,8 +27,11 @@ import org.springframework.web.client.RestTemplate;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -182,7 +185,7 @@ public class PaymentService {
     // 결제 생성
     public String createPayment(String studentId, String yy, String mm, String centerCode, String userCode) {
 
-        String paymentKey = paymentRepository.findByStudentAndYm(studentId, yy, mm);
+        String paymentKey = paymentRepository.findPaymentKeyByStudentAndYm(studentId, yy, mm);
 
         if (paymentKey != null) {
             return paymentKey;
@@ -364,6 +367,135 @@ public class PaymentService {
 
         log.info("✅ 결제 콜백 처리 완료 (paymentKey: {}, bill_id: {})", payment.getPaymentKey(), dto.getBill_id());
 
+    }
+
+    public PaymentRespDTO.ManualPaymentRespDTO processManualPayment(PaymentReqDTO.ManualPaymentReqDTO dto) {
+
+        // 1. 현재 결제건(payment) 조회
+        Payment payment = paymentRepository.findByStudentAndYm(dto.getStudentId(), dto.getYear(), dto.getMonth());
+        if (payment == null) {
+            throw new IllegalArgumentException("해당 학생의 결제 정보가 없습니다.");
+        }
+
+        // 2. bill 조회
+        List<PaymentBill> bills = paymentRepository.findBillsByPaymentKey(payment.getPaymentKey());
+        if (bills == null || bills.isEmpty()) {
+            throw new IllegalArgumentException("해당 결제의 청구서가 존재하지 않습니다.");
+        }
+
+        // 일반적으로 edu, material 두 개일 수 있음
+        PaymentBill eduBill = bills.stream().filter(b -> "edu".equals(b.getBillType())).findFirst().orElse(null);
+        PaymentBill materialBill = bills.stream().filter(b -> "material".equals(b.getBillType())).findFirst().orElse(null);
+
+        // 3. 실제 결제된 금액 계산
+        int paidEdu = (dto.getEduCard() == null ? 0 : dto.getEduCard()) +
+                (dto.getEduCash() == null ? 0 : dto.getEduCash()) +
+                (dto.getEduTransfer() == null ? 0 : dto.getEduTransfer());
+
+        int paidBook = (dto.getBookCard() == null ? 0 : dto.getBookCard()) +
+                (dto.getBookCash() == null ? 0 : dto.getBookCash()) +
+                (dto.getBookTransfer() == null ? 0 : dto.getBookTransfer());
+
+        int totalPaid = paidEdu + paidBook;
+        int unpaidAmount = payment.getUnpaidAmount() - totalPaid;
+
+        // 4. bill 상태 수정(= callback 시 approved와 동일)
+        if (paidEdu > 0 && eduBill != null) {
+            paymentRepository.updateBillStatus(eduBill.getBillId(), "approved");
+        }
+        if (paidBook > 0 && materialBill != null) {
+            paymentRepository.updateBillStatus(materialBill.getBillId(), "approved");
+        }
+
+        // 5. payment 상태 업데이트
+        String paidDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String newStatus = unpaidAmount == 0 ? "paid" : "partial_paid";
+
+        paymentRepository.updatePaymentStatus(payment.getPaymentKey(), newStatus, paidDate, unpaidAmount);
+
+        // 6. HISTORY 작성
+        PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                .eventType("manual_paid")
+                .eventSource("manual")
+                .oldStatus(payment.getStatus())
+                .newStatus(newStatus)
+                .amount(totalPaid)
+                .description("수기 결제 처리")
+                .paymentKey(payment.getPaymentKey())
+                .build();
+
+        paymentRepository.insertPaymentHistory(history);
+
+        // 7. bill “파기” 처리
+        // delete 대신 status="canceled" 또는 "manual_paid" 등을 권장
+        for (PaymentBill bill : bills) {
+            paymentRepository.updateBillStatus(bill.getBillId(), "manual_paid");
+        }
+
+        PaymentBill targetBill = eduBill != null ? eduBill : materialBill;
+
+        PaymentRespDTO.ManualPaymentRespDTO resp = new PaymentRespDTO.ManualPaymentRespDTO();
+        resp.setPaymentKey(payment.getPaymentKey());
+        resp.setBillId(targetBill.getBillId());
+        resp.setPrice(targetBill.getAmount());
+        resp.setStudentId(dto.getStudentId());
+        resp.setMessage("수기 결제가 완료되었습니다.");
+
+        log.info("수기 결제 처리 완료: student={}, paymentKey={}", dto.getStudentId(), payment.getPaymentKey());
+        return resp;
+    }
+
+    @Transactional
+    public void destroyBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayDestroyReqDTO req) throws JsonProcessingException {
+
+        PaymentRespDTO.PaymentConfigDTO conf =
+                paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+
+        if (conf == null) {
+            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode=" + user.getCenterCode());
+        }
+
+        String raw = req.getBillId() + "," + req.getPrice();
+        String hash = DigestUtils.sha256Hex(raw);
+
+        log.info("hash={}", hash);
+
+        Map<String, Object> body = Map.of(
+                "apikey", conf.getApiKey(),
+                "member", conf.getMemberId(),
+                "merchant", conf.getMerchantId(),
+                "bill_id", req.getBillId(),
+                "price", req.getPrice(),
+                "hash", hash
+        );
+        log.info("body={}", body);
+        PaymentRespDTO.PaymintRespDTO resp = callPaymint(conf.getDestroyUrl(), body);
+
+        if (resp == null || !"0000".equals(resp.getCode())) {
+            log.error("Paymint 청구서 파기 실패: {}", resp != null ? resp.getMsg() : "응답 없음");
+            throw new RuntimeException("Paymint 청구서 파기 실패: " +
+                    (resp != null ? resp.getMsg() : "응답 없음"));
+        }
+
+        // 4. bill 상태 변경 (destroyed)
+        paymentRepository.updateBillStatus(req.getBillId(), "destroyed");
+
+        // 5. HISTORY 기록
+        PaymentReqDTO.PaymentHistoryRecordDTO history =
+                PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                        .eventType("manual_bill_destroyed")
+                        .eventSource("manual")
+                        .oldStatus(null)
+                        .newStatus("destroyed")
+                        .amount(0)
+                        .description("수기 결제로 인한 청구서 파기")
+                        .paymentKey(req.getPaymentKey())
+                        .userCode(user.getUserCode())
+                        .build();
+
+        paymentRepository.insertPaymentHistory(history);
+
+        log.info("청구서 파기 완료 billId={}, studentId={}", req.getBillId(), req.getStudentId());
     }
 
 

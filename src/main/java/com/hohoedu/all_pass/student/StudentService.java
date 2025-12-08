@@ -105,6 +105,11 @@ public class StudentService {
 
         studentDTO.setStudentId(code);
 
+        if (studentDTO.getBirth() != null) {
+            String formattedBirth = convertBirthToFullDate(studentDTO.getBirth());
+            studentDTO.setBirth(formattedBirth);
+        }
+
         String phoneNumber = parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
         Integer maxSuffix = studentRepository.findMaxAppIdSuffix(phoneNumber);
 
@@ -121,6 +126,21 @@ public class StudentService {
         studentRepository.insert(studentDTO);
         parentDTO.setStudentId(studentDTO.getStudentId());
         familyService.parentInsert(parentDTO);
+    }
+
+    private String convertBirthToFullDate(String birth) {
+        if (birth == null || birth.length() != 6) return null;
+
+        String yy = birth.substring(0, 2);
+        String mm = birth.substring(2, 4);
+        String dd = birth.substring(4, 6);
+
+        // 현재 연도 기준 세기 판정
+        int year2 = Integer.parseInt(yy);
+        int currentYY = LocalDate.now().getYear() % 100;
+        int fullYear = (year2 > currentYY) ? 1900 + year2 : 2000 + year2;
+
+        return String.format("%04d-%02d-%02d", fullYear, Integer.parseInt(mm), Integer.parseInt(dd));
     }
 
     public List<GradeCode> findGrade() {

@@ -58,6 +58,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// ============ 검색 ============ //
+document.addEventListener("DOMContentLoaded", () => {
+    const searchBtn = document.getElementById("search-main-student");
+    const tbody = document.getElementById("main-student-tbody");
+
+    if (!searchBtn || !tbody) return;
+
+    searchBtn.addEventListener("click", () => {
+        const filterType = document.getElementById("stu-name")?.value || "all";
+        const keyword = document.getElementById("search-name")?.value.trim().toLowerCase();
+
+        // 검색어 없으면 전체 표시
+        if (!keyword) {
+            [...tbody.querySelectorAll("tr")].forEach(tr => tr.style.display = "");
+            return;
+        }
+
+        [...tbody.querySelectorAll("tr")].forEach(tr => {
+            const tds = tr.querySelectorAll("td");
+            if (tds.length < 8) return;
+
+            let textToSearch = "";
+
+            switch (filterType) {
+                case "이름":
+                case "name":
+                    textToSearch = tds[1].innerText.toLowerCase();  // 이름
+                    break;
+
+                case "수강과목":
+                    textToSearch = tds[4].innerText.toLowerCase();  // 수강과목
+                    break;
+
+                case "학교/유치원":
+                    textToSearch = tds[6].innerText.toLowerCase();  // 학교
+                    break;
+
+                default:
+                    // 전체에서 검색
+                    textToSearch = tr.innerText.toLowerCase();
+                    break;
+            }
+
+            // 포함 여부 확인
+            tr.style.display = textToSearch.includes(keyword) ? "" : "none";
+        });
+    });
+});
+
 // ====== 학생 리스트 변경 ====== //
 function renderStudents(tbody, students = []) {
     tbody.innerHTML = "";

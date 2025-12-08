@@ -11,14 +11,15 @@
                 #{userCode}, SYSDATETIME())
     </insert>
 
-    <select id="findPayConfigByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentConfigDTO">
+    <select id="findPayConfigByCenterCode"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentConfigDTO">
         SELECT *
         from erp_payment_config
         WHERE center_code = #{centerCode}
     </select>
 
-    <select id="findByStudentAndYm" resultType="String">
-        SELECT payment_key AS paymentKey
+    <select id="findByStudentAndYm" resultType="com.hohoedu.all_pass.payment.Payment">
+        SELECT *
         FROM erp_payment
         WHERE student_id = #{studentId}
           AND yy = #{year}
@@ -127,7 +128,8 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount
+        FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
@@ -293,5 +295,12 @@
         where p.status = 'issued'
           AND p.center_code = #{centerCode}
           AND (hu.user_code = #{userCode} OR bu.user_code = #{userCode})
+    </select>
+    <select id="findPaymentKeyByStudentAndYm" resultType="java.lang.String">
+        SELECT payment_key
+        FROM erp_payment
+        WHERE student_id = #{studentId}
+          AND yy = #{year}
+          AND mm = #{month}
     </select>
 </mapper>

@@ -47,6 +47,14 @@ public class PaymentReqDTO {
     }
 
     @Data
+    public static class PayDestroyReqDTO {
+        private String studentId;
+        private String paymentKey;
+        private String billId;
+        private Integer price;
+    }
+
+    @Data
     public static class InsertBillDTO {
         private String paymentKey;
         private String billId;
@@ -72,6 +80,31 @@ public class PaymentReqDTO {
         private String appr_num;
         private String appr_price;
         private String appr_state;
+    }
+
+    @Data
+    public static class ManualPaymentReqDTO {
+
+        private String studentId;
+        private String centerCode;
+        private String year;
+        private String month;
+
+        private boolean eduFee;   // 교육비 체크 여부
+        private boolean bookFee;  // 교재비 체크 여부
+
+        private Integer eduCard;
+        private Integer eduCash;
+        private Integer eduTransfer;
+
+        private Integer bookCard;
+        private Integer bookCash;
+        private Integer bookTransfer;
+
+        private Integer prepayMonth;     // 선결제 개월 수
+        private String prepayStartYm;    // 선결제 시작 เดือน
+        private String note;             // 비고
+
     }
 
     @Data

@@ -20,8 +20,8 @@ public interface PaymentRepository {
 
     PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
 
-    String findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
-
+    Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
+    String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
     // 수강료 청구 화면 데이터 필터링
     List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(@Param("year") String year, @Param("month") String month, @Param("userCode") String userCode, @Param("centerCode") String centerCode);
 

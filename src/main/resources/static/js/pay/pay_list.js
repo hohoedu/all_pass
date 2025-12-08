@@ -92,6 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             /* 학생 클릭 시 우측 학생명 변경 */
             tr.addEventListener("click", () => {
+
+                // 기존 선택 제거
+                document.querySelectorAll("#unpaid-student-list tr").forEach(r => r.classList.remove("selected"));
+
+                // 현재 선택 추가
+                tr.classList.add("selected");
+
+                // 우측 학생명 변경
                 const nameCell = document.querySelector("#paid-student td:nth-child(2)");
                 if (nameCell) nameCell.textContent = s.studentName;
             });
@@ -158,6 +166,67 @@ document.addEventListener("DOMContentLoaded", () => {
     btnAddPayment?.addEventListener("click", openAddPaymentModal);
 
 
+    document.querySelector("#save-pay").addEventListener("click", async () => {
+
+        const selectedRow = document.querySelector("#unpaid-student-list tr.selected");
+        if (!selectedRow) {
+            alert("학생을 선택하세요.");
+            return;
+        }
+
+        const dto = {
+            studentId: selectedRow.dataset.studentId,
+            year: monthInput.value.split("-")[0],
+            month: monthInput.value.split("-")[1],
+            eduFee: document.querySelector('input[name="eduFee"]').checked,
+            bookFee: document.querySelector('input[name="bookFee"]').checked,
+            eduCard: Number(document.querySelector('.pay-edu-table .border-green')?.value || 0),
+            eduCash: Number(document.querySelector('.pay-edu-table .border-blue')?.value || 0),
+            eduTransfer: Number(document.querySelector('.pay-edu-table .border-olive')?.value || 0),
+            bookCard: Number(document.querySelectorAll('.pay-edu-table .border-green')[1]?.value || 0),
+            bookCash: Number(document.querySelectorAll('.pay-edu-table .border-blue')[1]?.value || 0),
+            bookTransfer: Number(document.querySelectorAll('.pay-edu-table .border-olive')[1]?.value || 0)
+        };
+        try {
+            const res = await fetch("/pay/manual", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(dto)
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+
+                const destroyRes = await fetch("/pay/destroy/bill", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        paymentKey: result.response.paymentKey,
+                        billId: result.response.billId,
+                        price: result.response.price,
+                        studentId: result.response.studentId
+                    })
+                });
+
+                const destroyResult = await destroyRes.json();
+
+                if (!destroyResult.success) {
+                    alert("청구서 파기 실패: " + destroyResult.message);
+                    return;
+                }
+
+                alert("수기 결제가 완료되었습니다.");
+
+                location.reload();
+            } else {
+                alert("수기 결제 실패: " + result.message);
+            }
+        } catch (err) {
+            alert("오류가 발생했습니다.");
+        }
+    });
+
     /* -----------------------------
         모달 열기: 현금영수증
     ----------------------------- */
@@ -209,4 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     prepayAddBtn?.addEventListener("click", togglePrepayRow);
+
+
 });

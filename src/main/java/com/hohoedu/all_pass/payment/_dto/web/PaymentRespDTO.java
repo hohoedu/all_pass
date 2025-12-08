@@ -37,6 +37,7 @@ public class PaymentRespDTO {
         private String preBillId;
         private String callbackUrl;
         private String sendUrl;
+        private String destroyUrl;
     }
 
     @Data
@@ -86,5 +87,13 @@ public class PaymentRespDTO {
         private String bookTeacher;
     }
 
+    @Data
+    public static class ManualPaymentRespDTO {
+        private String paymentKey;
+        private String studentId;
+        private String billId;
+        private Integer price;
+        private String message;
+    }
 
 }

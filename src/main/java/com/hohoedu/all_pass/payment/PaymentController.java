@@ -27,7 +27,7 @@ public class PaymentController {
 
     // 결제선생 청구서 발행
     @PostMapping("/send")
-    public ResponseEntity<?> sendBill(@RequestBody PaymentReqDTO.PaySendReqDTO dto, HttpSession session) throws JsonProcessingException {
+    public ResponseEntity<?> sendBill(HttpSession session, @RequestBody PaymentReqDTO.PaySendReqDTO dto) throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -90,6 +90,39 @@ public class PaymentController {
 
         return ResponseEntity.ok(ApiUtils.success("성공"));
     }
+
+    @PostMapping("/manual")
+    public ResponseEntity<?> manualPay(HttpSession session, @RequestBody PaymentReqDTO.ManualPaymentReqDTO dto) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        try {
+            dto.setCenterCode(user.getCenterCode());
+            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.processManualPayment(dto);
+            return ResponseEntity.ok(ApiUtils.success(response));
+        } catch (Exception e) {
+            log.error("수기 결제 실패", e);
+            return ResponseEntity.ok(ApiUtils.error("수기 결제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @PostMapping("/destroy/bill")
+    public ResponseEntity<?> destroyBills(HttpSession session, @RequestBody PaymentReqDTO.PayDestroyReqDTO dto) throws JsonProcessingException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        paymentService.destroyBill(user, dto);
+
+        return ResponseEntity.ok(ApiUtils.success("청구서 파기 완료"));
+    }
+
 
     // 데이터 필터링
     @PostMapping("/students")

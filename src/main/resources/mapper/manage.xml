@@ -88,7 +88,8 @@
 
     <update id="updateOrder">
         UPDATE erp_order
-        SET add_count   = #{addCount},
+        SET base_count = #{baseCount},
+            add_count   = #{addCount},
             total_count = #{totalCount},
             updated_at  = SYSDATETIME()
         WHERE center_code = #{centerCode}

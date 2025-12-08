@@ -38,6 +38,9 @@ public class PaymentConfig {
     @Column(name = "send_url")
     private String sendUrl;
 
+    @Column(name = "destroy_url")
+    private String destroyUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
     private Center centerCode;
@@ -46,13 +49,14 @@ public class PaymentConfig {
     private Timestamp createdAt;
 
     @Builder
-    public PaymentConfig(String preBillId, String apiKey, String memberId, String merchantId, String callbackUrl, String sendUrl, Center centerCode) {
+    public PaymentConfig(String preBillId, String apiKey, String memberId, String merchantId, String callbackUrl, String sendUrl, String destroyUrl, Center centerCode) {
         this.preBillId = preBillId;
         this.apiKey = apiKey;
         this.memberId = memberId;
         this.merchantId = merchantId;
         this.callbackUrl = callbackUrl;
         this.sendUrl = sendUrl;
+        this.destroyUrl = destroyUrl;
         this.centerCode = centerCode;
     }
 }
