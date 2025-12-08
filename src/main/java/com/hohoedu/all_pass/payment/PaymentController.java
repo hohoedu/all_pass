@@ -34,7 +34,7 @@ public class PaymentController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        
+
         PaymentRespDTO.PaySendRespDTO res = paymentService.sendBill(user, dto);
 
         if (!"0000".equals(res.getPaymintCode())) {
@@ -125,10 +125,18 @@ public class PaymentController {
     }
 
     @PostMapping("/list/students")
-    public ResponseEntity<?> getListStudents(HttpSession session, @RequestBody Map<String, String> studentId) {
-        studentId.put("studentId", "DAE001cos");
+    public ResponseEntity<?> getListStudents(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
 
-        return ResponseEntity.ok(ApiUtils.success(studentId));
+        List<PaymentRespDTO.UnpaidStudentDTO> studentList = paymentService.findUnpaidStudent(user.getCenterCode(), user.getUserCode());
+
+        return ResponseEntity.ok(ApiUtils.success(studentList));
 
     }
 

@@ -167,6 +167,23 @@ public class ClassReqDTO {
 
 
     @Data
+    public static class TeacherAssignUpdateDTO {
+        private String studentId;
+
+        private boolean hanState;
+        private String hanTeacher;
+        private String hanEntryDate;
+        private Integer hanMaterialFee;
+        private String hanClass;
+
+        private boolean bookState;
+        private String bookTeacher;
+        private String bookEntryDate;
+        private Integer bookMaterialFee;
+        private String bookClass;
+    }
+
+    @Data
     public static class ClassMonthlyDTO {
         private String yy;
         private String mm;

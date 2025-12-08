@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student.repository;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -84,15 +85,7 @@ public interface StudentRepository {
 
     int insertTeacherAssign(TeacherAssign teacherAssign);
 
-    int updateTeacherAssign(
-            @Param("studentId") String studentId,
-            @Param("hanTeacher") String hanTeacher,
-            @Param("hanEntryDate") String hanEntryDate,
-            @Param("hanMaterial") Integer hanMaterial,
-            @Param("bookTeacher") String bookTeacher,
-            @Param("bookEntryDate") String bookEntryDate,
-            @Param("bookMaterial") Integer bookMaterial
-    );
+    int updateTeacherAssign(ClassReqDTO.TeacherAssignUpdateDTO teacherAssign);
 
     StudentWebRespDTO.StudentStatusDTO findStatusByStudentId(@Param("studentId") String studentId);
 

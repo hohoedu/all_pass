@@ -58,6 +58,10 @@ public interface PaymentRepository {
 
     PaymentBill findPaymentBill(String billId);
 
+    List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode);
+
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회
     List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(@Param("studentId") String studentId, @Param("count") String count);

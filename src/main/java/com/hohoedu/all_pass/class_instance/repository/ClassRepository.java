@@ -307,4 +307,8 @@ public interface ClassRepository {
     List<UnitCode> findUnitCodeForPerson();
 
     List<ClassCode> findClassListExcludeMid();
+
+    ClassRespDTO.BasicTimeTableInfo findBasicTimeTableInfo(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("centerCode") String centerCode);
 }

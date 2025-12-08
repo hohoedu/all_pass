@@ -98,18 +98,14 @@ function formatPhone(phone) {
     return `${first}-${middle}-${last}`;
 }
 
-// 화면용: YYMMDD -> "YYYY년 MM월 DD일"
 function formatBirthDisplay(birth) {
-    if (!birth || birth.length !== 6) return "";
+    if (!birth) return "";
 
-    const yy = birth.substring(0, 2);
-    const mm = birth.substring(2, 4);
-    const dd = birth.substring(4, 6);
+    const [year, month, day] = birth.split("-");
 
-    const currentYY = new Date().getFullYear() % 100;
-    const fullYear = yy > currentYY ? `19${yy}` : `20${yy}`;
+    if (!year || !month || !day) return "";
 
-    return `${fullYear}년 ${mm}월 ${dd}일`;
+    return `${year}년 ${month}월 ${day}일`;
 }
 
 // date input용: YYMMDD -> "YYYY-MM-DD"

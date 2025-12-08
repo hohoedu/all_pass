@@ -1071,4 +1071,15 @@
         WHERE class_key NOT IN ('BSS', 'BSA')
           AND class_type = '2'
     </select>
+
+    <select id="findBasicTimeTableInfo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BasicTimeTableInfo">
+        SELECT c.class_key  AS classKey,
+               t.user_code  AS teacherCode,
+               c.class_type AS classType
+        FROM erp_time_table t
+                 JOIN erp_class_code c ON t.class_key = c.class_key
+        WHERE t.time_table_key = #{timeTableKey}
+          AND t.center_code = #{centerCode}
+    </select>
+
 </mapper>

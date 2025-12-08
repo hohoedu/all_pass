@@ -131,7 +131,7 @@ public class PaymentService {
         }
 
         respDTO.setDbSaved(saved);
-        
+
         return respDTO;
     }
 
@@ -380,5 +380,11 @@ public class PaymentService {
         if (anyApproved) return "partial";
 
         return "issued";
+    }
+
+
+    public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode) {
+        List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode);
+        return studentDTO;
     }
 }

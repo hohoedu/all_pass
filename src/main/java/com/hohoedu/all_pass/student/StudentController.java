@@ -132,8 +132,8 @@ public class StudentController {
 
 
         reqDTO.setUserCode(user.getUserCode());
-        log.info(reqDTO.toString());
-        studentService.updateStudentInfo(reqDTO);
+
+         studentService.updateStudentInfo(reqDTO);
 
         // 학생 정보 조회 후 모달 업데이트 해야함
         return ResponseEntity.ok("ok");

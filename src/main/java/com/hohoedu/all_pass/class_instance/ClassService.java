@@ -11,6 +11,7 @@ import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
+import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.StudentClass;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
@@ -53,6 +54,7 @@ public class ClassService {
     private final DateConfig dateConfig;
     private final StudentRepository studentRepository;
     private final PaymentRepository paymentRepository;
+    private final StudentService studentService;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -344,7 +346,10 @@ public class ClassService {
 
             classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
 
+            ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
 
+            // 5) 담당 선생님 자동 배정
+            studentService.assignTeacher(dto.getStudentId(), info);
         } catch (Exception e) {
             System.out.println("=====================" + e.getMessage() + "====================================");
         }

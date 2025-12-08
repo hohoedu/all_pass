@@ -260,9 +260,29 @@
     </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">
-        INSERT INTO ERP_TEACHER_ASSIGN (student_id, entry_han_date, entry_book_date, han_material_fee, book_material_fee, assign_han_teacher, assign_book_teacher)
-        VALUES (#{student.studentId}, #{entryHanDate}, #{entryBookDate}, #{hanMaterialFee}, #{bookMaterialFee}, #{assignHanTeacher.userCode}, #{assignBookTeacher.userCode})
+        INSERT INTO ERP_TEACHER_ASSIGN (student_id, entry_han_date, entry_book_date, han_material_fee, book_material_fee, assign_han_teacher, assign_book_teacher,
+                                        han_state, book_state, assign_han_class, assign_book_class)
+        VALUES (#{student.studentId}, #{entryHanDate}, #{entryBookDate}, #{hanMaterialFee}, #{bookMaterialFee}, #{assignHanTeacher.userCode}, #{assignBookTeacher.userCode},
+                #{hanState}, #{bookState}, #{assignHanClass.classKey}, #{assignBookClass.classKey})
     </insert>
+
+    <update id="updateTeacherAssign" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$TeacherAssignUpdateDTO">
+        UPDATE ERP_TEACHER_ASSIGN
+        <set>
+            <if test="hanState != null">han_state = #{hanState},</if>
+            <if test="hanTeacher != null">assign_han_teacher = #{hanTeacher},</if>
+            <if test="hanEntryDate != null">entry_han_date = #{hanEntryDate},</if>
+            <if test="hanMaterialFee != null">han_material_fee = #{hanMaterialFee},</if>
+            <if test="hanClass != null">assign_han_class = #{hanClass},</if>
+
+            <if test="bookState != null">book_state = #{bookState},</if>
+            <if test="bookTeacher != null">assign_book_teacher = #{bookTeacher},</if>
+            <if test="bookEntryDate != null">entry_book_date = #{bookEntryDate},</if>
+            <if test="bookMaterialFee != null">book_material_fee = #{bookMaterialFee},</if>
+            <if test="bookClass != null">assign_book_class = #{bookClass},</if>
+        </set>
+        WHERE student_id = #{studentId}
+    </update>
 
     <select id="findStudentClassByStudentId" parameterType="string" resultType="com.hohoedu.all_pass.student.model.StudentClass">
         SELECT *

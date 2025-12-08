@@ -983,6 +983,14 @@ table .checkbox-group {
     border-color: #6b8c05;
 }
 
+#unpaid-student-list tr {
+    cursor: pointer;
+}
+
+#unpaid-student-list tr:hover {
+    background-color: #f5f5f5;
+}
+
 /* 청구내역 추가 */
 .charge-add img {
     margin-right: 5px;

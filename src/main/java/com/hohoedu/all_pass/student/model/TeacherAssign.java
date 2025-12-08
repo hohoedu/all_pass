@@ -71,5 +71,19 @@ public class TeacherAssign {
         this.assignBookClass = assignBookClass;
         this.entryBookDate = entryBookDate;
     }
+
+    public void updateHanAssign(User teacher, ClassCode classCode, String entryDate) {
+        this.hanState = true;
+        this.assignHanTeacher = teacher;
+        this.assignHanClass = classCode;
+        this.entryHanDate = entryDate;
+    }
+
+    public void updateBookAssign(User teacher, ClassCode classCode, String entryDate) {
+        this.bookState = true;
+        this.assignBookTeacher = teacher;
+        this.assignBookClass = classCode;
+        this.entryBookDate = entryDate;
+    }
 }
 

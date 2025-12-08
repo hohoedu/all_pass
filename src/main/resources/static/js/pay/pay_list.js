@@ -1,26 +1,50 @@
+let unpaidStudents = [];
+
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* ------------------------------
-       공통 요소 캐싱
-       ------------------------------ */
+    /* -----------------------------
+        DOM 캐싱
+    ----------------------------- */
     const monthInput = document.querySelector(".hidden-date");
     const calendarBtn = document.querySelector(".calendar-open");
     const currentMonth = document.querySelector(".current-month");
 
-    const btnAddPayment = document.querySelector("#btn-add-payment"); // 납부내역 추가 버튼
-    const btnAddCashbill = document.querySelector("#btn-add-cashbill"); // 현금영수증 버튼
+    const btnAddPayment = document.querySelector("#btn-add-payment");
+    const btnAddCashbill = document.querySelector("#btn-add-cashbill");
 
     const modalPayment = document.querySelector(".add-payment-modal");
     const modalCashbill = document.querySelector(".add-cashbill-modal");
 
-    const studentTableBody = document.querySelector("#student-list");
+    const studentTableBody = document.querySelector("#unpaid-student-list");
     const prepayAddBtn = document.querySelector(".charge-add");
     const manualTableBody = document.querySelector(".manual-payment-table tbody");
 
+    const searchInput = document.querySelector(".student-content .basic-input");
+    const searchBtn = document.querySelector("#search-unpaid-student");
 
-    /* ------------------------------
-       1. 날짜 초기화 + 변경 이벤트
-       ------------------------------ */
+
+    /* -----------------------------
+        유틸 함수
+    ----------------------------- */
+
+    const getCurrentDateTime = () => {
+        const now = new Date();
+        const yy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        const hh = String(now.getHours()).padStart(2, "0");
+        const min = String(now.getMinutes()).padStart(2, "0");
+        return `${yy}-${mm}-${dd} ${hh}:${min}`;
+    };
+
+    const closeAllModals = () =>
+        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+
+
+    /* -----------------------------
+        날짜 초기화 + 변경
+    ----------------------------- */
+
     function initMonth() {
         const now = new Date();
         const yy = now.getFullYear();
@@ -30,102 +54,130 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentMonth) currentMonth.textContent = `${yy}년 ${parseInt(mm)}월`;
     }
 
-    function handleMonthChange() {
+    const handleMonthChange = () => {
         if (!monthInput || !currentMonth) return;
-
         const [year, month] = monthInput.value.split("-");
         currentMonth.textContent = `${year}년 ${parseInt(month)}월`;
-    }
+    };
 
-    if (calendarBtn) {
-        calendarBtn.addEventListener("click", () => monthInput?.showPicker());
-    }
-
-    if (monthInput) {
-        monthInput.addEventListener("change", handleMonthChange);
-    }
-
+    monthInput?.addEventListener("change", handleMonthChange);
+    calendarBtn?.addEventListener("click", () => monthInput.showPicker());
     initMonth();
 
 
-    /* ------------------------------
-       공통: 모든 모달 닫기
-       ------------------------------ */
-    function closeAllModals() {
-        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-    }
+    /* -----------------------------
+        학생 검색
+    ----------------------------- */
+
+    const renderStudentList = list => {
+        if (!studentTableBody) return;
+        studentTableBody.innerHTML = "";
+
+        if (!list.length) {
+            studentTableBody.innerHTML =
+                `<tr><td colspan="3" class="empty">결제 가능 학생이 없습니다.</td></tr>`;
+            return;
+        }
+
+        list.forEach(s => {
+            const tr = document.createElement("tr");
+            tr.dataset.billId = s.billId;
+            tr.dataset.studentId = s.studentId;
+
+            tr.innerHTML = `
+                <td>${s.studentName}</td>
+                <td>${s.gradeName || "-"}</td>
+                <td>${[s.hanTeacher, s.bookTeacher].filter(v => v?.trim()).join(",")}</td>
+            `;
+
+            /* 학생 클릭 시 우측 학생명 변경 */
+            tr.addEventListener("click", () => {
+                const nameCell = document.querySelector("#paid-student td:nth-child(2)");
+                if (nameCell) nameCell.textContent = s.studentName;
+            });
+
+            studentTableBody.appendChild(tr);
+        });
+    };
+
+    const filterStudents = keyword => {
+        keyword = keyword.trim();
+
+        if (!keyword) {
+            renderStudentList(unpaidStudents);
+            return;
+        }
+
+        const filtered = unpaidStudents.filter(s =>
+            s.studentName.includes(keyword) ||
+            s.gradeName?.includes(keyword) ||
+            s.hanTeacher?.includes(keyword) ||
+            s.bookTeacher?.includes(keyword)
+        );
+
+        renderStudentList(filtered);
+    };
+
+    searchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") filterStudents(searchInput.value);
+    });
+
+    searchBtn.addEventListener("click", () => filterStudents(searchInput.value));
 
 
-    /* ------------------------------
-       2. 학생 조회 후 “수기 결제 추가” 모달 열기
-       ------------------------------ */
-    async function openAddPaymentModal() {
+    /* -----------------------------
+        모달 열기: 수기 결제 추가
+    ----------------------------- */
+
+    const openAddPaymentModal = async () => {
         try {
             closeAllModals();
 
-            const now = new Date();
-            const yy = now.getFullYear().toString();
-            const mm = String(now.getMonth() + 1).padStart(2, "0");
-
             const res = await fetch("/pay/list/students", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ yy, mm })
+                headers: {"Content-Type": "application/json"}
             });
 
             if (!res.ok) throw new Error("학생 조회 실패");
+
             const students = await res.json();
+            unpaidStudents = students.response || [];
 
-            if (studentTableBody) {
-                studentTableBody.innerHTML = "";
+            renderStudentList(unpaidStudents);
 
-                if (students.length === 0) {
-                    studentTableBody.innerHTML = `
-                        <tr><td colspan="3" class="empty">해당 월의 결제 가능 학생이 없습니다.</td></tr>
-                    `;
-                } else {
-                    students.forEach(s => {
-                        const tr = document.createElement("tr");
-                        tr.dataset.billId = s.billId;
-                        tr.dataset.studentId = s.studentId;
-                        tr.innerHTML = `
-                            <td>${s.studentName}</td>
-                            <td>${s.grade || "-"}</td>
-                            <td>${s.teacherName || "-"}</td>
-                        `;
-                        studentTableBody.appendChild(tr);
-                    });
-                }
-            }
+            const paidDateCell = document.querySelector("#paid-student td:nth-child(4)");
+            if (paidDateCell) paidDateCell.textContent = getCurrentDateTime();
 
-            if (modalPayment) modalPayment.style.display = "block";
+            modalPayment.style.display = "block";
 
         } catch (err) {
             alert("납부내역 추가 중 오류가 발생했습니다.");
         }
-    }
+    };
 
-    if (btnAddPayment) {
-        btnAddPayment.addEventListener("click", openAddPaymentModal);
-    }
+    btnAddPayment?.addEventListener("click", openAddPaymentModal);
 
-    function openCashbillModal() {
+
+    /* -----------------------------
+        모달 열기: 현금영수증
+    ----------------------------- */
+
+    const openCashbillModal = () => {
         closeAllModals();
         modalCashbill.style.display = "block";
-    }
+    };
 
-    if (btnAddCashbill) {
-        btnAddCashbill.addEventListener("click", openCashbillModal);
-    }
+    btnAddCashbill?.addEventListener("click", openCashbillModal);
 
-    /* ------------------------------
-       3. 선결제 행 추가 / 제거
-       ------------------------------ */
-    function togglePrepayRow() {
+
+    /* -----------------------------
+        선결제 행 추가/삭제 토글
+    ----------------------------- */
+
+    const togglePrepayRow = () => {
         if (!manualTableBody) return;
 
         const existingRow = manualTableBody.querySelector(".prepay-row");
-
         if (existingRow) {
             existingRow.remove();
             return;
@@ -139,18 +191,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="prepay-input-group">
                     <div class="prepay-period">
                         <span>기간 선택 :</span>
-                        <label><input type="radio" name="prepay-period" value="2"> 2개월</label>
-                        <label><input type="radio" name="prepay-period" value="3"> 3개월</label>
-                        <label><input type="radio" name="prepay-period" value="4"> 4개월</label>
-                        <label><input type="radio" name="prepay-period" value="5"> 5개월</label>
-                        <label><input type="radio" name="prepay-period" value="6"> 6개월</label>
+                        ${[2, 3, 4, 5, 6].map(m => `<label><input type="radio" name="prepay-period" value="${m}"> ${m}개월</label>`).join("")}
                     </div>
-
                     <div class="prepay-month-row">
                         <label>시작 월</label>
                         <input type="month" class="prepay-start-month">
                     </div>
-
                     <div class="prepay-note-row">
                         <label>비고</label>
                         <input type="text" class="prepay-note" placeholder="비고 입력">
@@ -158,10 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </td>
         `;
-        manualTableBody.appendChild(newRow);
-    }
 
-    if (prepayAddBtn) {
-        prepayAddBtn.addEventListener("click", togglePrepayRow);
-    }
+        manualTableBody.appendChild(newRow);
+    };
+
+    prepayAddBtn?.addEventListener("click", togglePrepayRow);
 });

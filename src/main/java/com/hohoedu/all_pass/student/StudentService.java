@@ -14,6 +14,7 @@ import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
@@ -226,6 +227,108 @@ public class StudentService {
         }
 
     }
+
+    public void assignTeacher(String studentId, ClassRespDTO.BasicTimeTableInfo info) {
+
+        if (info == null) return;
+
+        TeacherAssign assign = studentRepository.findTeacherAssign(studentId);
+        String today = LocalDate.now().toString();
+
+        boolean isHan = "1".equals(info.getClassType());
+        boolean isBook = "2".equals(info.getClassType());
+
+        User teacher = User.builder().userCode(info.getTeacherCode()).build();
+        ClassCode classCode = ClassCode.builder().classKey(info.getClassKey()).build();
+
+        // ======================
+        // 신규 생성
+        // ======================
+        if (assign == null) {
+
+            Integer hanFee = isHan ? 30000 : null;
+            Integer bookFee = isBook ? 30000 : null;
+
+            TeacherAssign newAssign = TeacherAssign.builder()
+                    .student(Student.builder().studentId(studentId).build())
+                    .hanState(isHan)
+                    .bookState(isBook)
+                    .assignHanTeacher(isHan ? teacher : null)
+                    .assignBookTeacher(isBook ? teacher : null)
+                    .assignHanClass(isHan ? classCode : null)
+                    .assignBookClass(isBook ? classCode : null)
+                    .entryHanDate(isHan ? today : null)
+                    .entryBookDate(isBook ? today : null)
+                    .hanMaterialFee(hanFee)
+                    .bookMaterialFee(bookFee)
+                    .build();
+
+            studentRepository.insertTeacherAssign(newAssign);
+            return;
+        }
+
+        // ======================
+        // 기존 데이터 로딩
+        // ======================
+        boolean oldHan = assign.getHanState() != null && assign.getHanState();
+        boolean oldBook = assign.getBookState() != null && assign.getBookState();
+
+        // 추가되는 과목만 true
+        boolean addHan = isHan && !oldHan;
+        boolean addBook = isBook && !oldBook;
+
+        if (!addHan && !addBook) {
+            return; // 변경 없음
+        }
+
+        // ======================
+        // 최종 상태 확정
+        // ======================
+        boolean finalHanState = oldHan || addHan;
+        boolean finalBookState = oldBook || addBook;
+
+        Integer finalHanFee = null;
+        Integer finalBookFee = null;
+
+        if (finalHanState && finalBookState) {
+            // 둘 다 켜지면 무조건 20,000원
+            finalHanFee = 20000;
+            finalBookFee = 20000;
+        } else if (finalHanState) {
+            finalHanFee = 30000;
+        } else if (finalBookState) {
+            finalBookFee = 30000;
+        }
+
+        // ======================
+        // MyBatis DTO 생성 (전체 값 넣기)
+        // ======================
+        ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
+
+        dto.setStudentId(studentId);
+
+        dto.setHanState(finalHanState);
+        dto.setBookState(finalBookState);
+
+        dto.setHanMaterialFee(finalHanFee);
+        dto.setBookMaterialFee(finalBookFee);
+
+        // 새로 들어온 과목만 teacher/class/date 갱신
+        if (addHan) {
+            dto.setHanTeacher(info.getTeacherCode());
+            dto.setHanClass(info.getClassKey());
+            dto.setHanEntryDate(today);
+        }
+
+        if (addBook) {
+            dto.setBookTeacher(info.getTeacherCode());
+            dto.setBookClass(info.getClassKey());
+            dto.setBookEntryDate(today);
+        }
+
+        studentRepository.updateTeacherAssign(dto);
+    }
+
 
     public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
         Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());

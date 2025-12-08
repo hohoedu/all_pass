@@ -277,4 +277,21 @@
     <!--        ORDER BY combined.billId ASC;-->
 
     <!--    </select>-->
+
+    <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
+        SELECT s.student_id   AS studentId,
+               s.student_name AS studentName,
+               g.grade_name   AS gradeName,
+               hu.user_name   AS hanTeacher,
+               bu.user_name   AS bookTeacher
+        FROM erp_payment p
+                 JOIN erp_student s ON p.student_id = s.student_id
+                 JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
+                 LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
+        where p.status = 'issued'
+          AND p.center_code = #{centerCode}
+          AND (hu.user_code = #{userCode} OR bu.user_code = #{userCode})
+    </select>
 </mapper>

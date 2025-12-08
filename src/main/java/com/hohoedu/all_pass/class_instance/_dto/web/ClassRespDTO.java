@@ -7,6 +7,8 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ClassRespDTO {
 
@@ -316,6 +318,13 @@ public class ClassRespDTO {
             private String appToken;
 
         }
+    }
+
+    @Data
+    public static class BasicTimeTableInfo {
+        private String classKey;     // 시간표의 class_key
+        private String teacherCode;  // user_code
+        private String classType;    // 한자 = 1, 독서 = 2
     }
 
 }

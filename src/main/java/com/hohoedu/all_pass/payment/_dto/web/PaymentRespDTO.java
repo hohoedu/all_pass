@@ -77,5 +77,14 @@ public class PaymentRespDTO {
 
     }
 
+    @Data
+    public static class UnpaidStudentDTO {
+        private String studentId;
+        private String studentName;
+        private String gradeName;
+        private String hanTeacher;
+        private String bookTeacher;
+    }
+
 
 }
