@@ -309,6 +309,31 @@
         ORDER BY dayname, period_no
     </select>
 
+    <!-- 한자: 현재 class/unit 기반 ID 조회 -->
+    <select id="findUnitByClassAndUnit" resultType="map">
+        SELECT id, class_key, unit_key
+        FROM class_unit_map
+        WHERE class_key = #{classKey}
+          AND unit_key = #{unitKey}
+    </select>
+
+    <!-- 한자: 다음 ID 조회 -->
+    <select id="findNextUnitById" resultType="map">
+        SELECT id, class_key, unit_key
+        FROM class_unit_map
+        WHERE id = #{id}
+    </select>
+
+    <!-- 독서 월 매핑 -->
+    <select id="findReadingMapping" resultType="map">
+        SELECT unit_key, sub_unit_key
+        FROM reading_month_map
+        WHERE class_key = #{classKey}
+          AND center_code = #{centerCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <insert id="createTimeTableKey" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableCode"
             useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">

@@ -468,23 +468,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
 
     btn.addEventListener('click', () => {
+
         fetch(`/class/api/load_time_table`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
+            body: JSON.stringify({
+                year: year,
+                month: month
+            })
         })
-            .then(res => res.json()
-            )
+            .then(res => res.json())
             .then(data => {
                 renderTimeTable(data.response);
             })
             .catch(err => {
-                console.log('오류 발생');
+                console.log('오류 발생', err);
             });
 
-    })
+    });
 });
 
 // 전월 데이터로 갈아끼우기
@@ -495,23 +499,18 @@ function renderTimeTable(tables) {
         );
         if (!row) return;
 
-        const startInput = row.querySelector(".start-time");
-        const endInput = row.querySelector(".end-time");
-        if (startInput) startInput.value = entry.startTime ?? "";
-        if (endInput) endInput.value = entry.endTime ?? "";
+        row.querySelector(".start-time").value = entry.startTime ?? "";
+        row.querySelector(".end-time").value = entry.endTime ?? "";
 
         const classSelect = row.querySelector(".class-select");
         const unitSelect = row.querySelector(".unit-select");
 
-        if (classSelect) {
-            classSelect.value = entry.classKey ?? "";
-        }
+        if (classSelect) classSelect.value = entry.classKey ?? "";
 
-        if (classSelect && unitSelect) {
-            const classKey = entry.classKey ?? "";
-            const classUnits = getClassUnits();
-
-            fillUnitSelect(unitSelect, classUnits, classKey, null);
+        if (unitSelect && classSelect) {
+            const classKey = entry.classKey;
+            const classUnits = getClassUnits(); // 기존 함수 사용
+            fillUnitSelect(unitSelect, classUnits, classKey, entry.unitKey);
         }
     });
 }

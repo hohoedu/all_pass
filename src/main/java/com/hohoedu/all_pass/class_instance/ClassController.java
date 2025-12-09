@@ -191,7 +191,7 @@ public class ClassController {
     }
 
     @PostMapping("/api/load_time_table")
-    public ResponseEntity<?> loadTimeTable(HttpSession session) {
+    public ResponseEntity<?> loadTimeTable(HttpSession session, @RequestBody Map<String, String> request) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -199,7 +199,9 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        List<TimeTableDTO> tables = classService.getLastTimeTable(user.getUserCode());
+
+
+        List<TimeTableDTO> tables = classService.getLastTimeTable(user.getUserCode(), request);
 
         return ResponseEntity.ok(ApiUtils.success(tables));
     }

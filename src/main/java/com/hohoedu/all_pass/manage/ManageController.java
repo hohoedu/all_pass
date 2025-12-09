@@ -61,6 +61,20 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(orderList));
     }
 
+    @PostMapping("/order/base/list")
+    public ResponseEntity<?> getBasedOrderList(@RequestBody ManageReqDTO.GetOrderDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<ManageRespDTO.BasicOrderListDTO> orderList = manageService.getBasicOrderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+
+        return ResponseEntity.ok(ApiUtils.success(orderList));
+    }
+
 
     @PostMapping("/reorder/save")
     public ResponseEntity<?> insertReorder(@RequestBody ManageReqDTO.InsertReorderDTO reqDTO, HttpSession session) {

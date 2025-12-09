@@ -92,6 +92,20 @@ public interface ClassRepository {
             @Param("year") String year,
             @Param("month") String month);
 
+    Map<String, Object> findUnitByClassAndUnit(
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey
+    );
+
+    Map<String, Object> findNextUnitById(@Param("id") int id);
+
+    Map<String, String> findReadingMapping(
+            @Param("classKey") String classKey,
+            @Param("centerCode") String centerCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
     public List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);

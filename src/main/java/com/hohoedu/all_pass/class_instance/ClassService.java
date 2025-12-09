@@ -365,13 +365,19 @@ public class ClassService {
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
     }
 
-    public List<TimeTableDTO> getLastTimeTable(String userCode) {
+    public List<TimeTableDTO> getLastTimeTable(String userCode, Map<String, String> req) {
 
-        LocalDate now = LocalDate.now();
-        LocalDate prevMonth = now.minusMonths(1);
-        String lastYear = String.valueOf(prevMonth.getYear());
-        String lastMonth = String.format("%02d", prevMonth.getMonthValue());
+        LocalDate selected = LocalDate.of(
+                Integer.parseInt(req.get("year")),
+                Integer.parseInt(req.get("month")),
+                1
+        );
 
+        // 이전 달
+        LocalDate prev = selected.minusMonths(1);
+
+        String lastYear = String.valueOf(prev.getYear());
+        String lastMonth = String.format("%02d", prev.getMonthValue());
         List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, lastYear, lastMonth);
         return tables;
     }

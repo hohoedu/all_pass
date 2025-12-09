@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    /* ======= *
+     *   LEFT  *
+     * ======= */
     const monthInput = document.querySelector('.hidden-picker');
     const monthBtn = document.querySelector('.calendar-open');
     const monthDisplay = document.querySelector('.day-display');
@@ -17,116 +21,220 @@ document.addEventListener('DOMContentLoaded', () => {
             monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
             monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
         } catch (e) {
-            console.log('initCurrentMonth Error', e);
+            console.error("initCurrentMonth Error:", e);
         }
     }
 
-    // 월 변경
     async function onMonthChange() {
-        const date = new Date(monthInput.value);
-        if (isNaN(date)) return;
+        try {
+            const date = new Date(monthInput.value);
+            if (isNaN(date)) return;
 
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
 
-        monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
+            monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
 
+            const response = await fetch(`/manage/order/base/list`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    yy: String(year),
+                    mm: String(month).padStart(2, "0")
+                })
+            });
+
+            if (!response.ok) {
+                console.error("서버 조회 실패:", response.status);
+                return;
+            }
+
+            const data = await response.json();
+            renderLeftTable(data.response);
+
+        } catch (e) {
+            console.error("월 변경 처리 중 오류:", e);
+        }
     }
 
-    try {
-        const yearSelect = document.getElementById('order-year');
-        const monthSelect = document.getElementById('order-month');
+    function renderLeftTable(list) {
+        const tbody = document.getElementById("order-left-body");
+        tbody.innerHTML = "";
 
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:20px;">
+                        등록된 수업이 없습니다.
+                    </td>
+                </tr>`;
+            calculateTotal();
+            return;
+        }
+
+        list.forEach(item => {
+            tbody.insertAdjacentHTML("beforeend", `
+                <tr data-class-key="${item.classKey}"
+                    data-unit-key="${item.unitKey}">
+                    <td>${item.className}</td>
+                    <td>${item.unitName}</td>
+                    <td>${item.baseCount}</td>
+                    <td>
+                        <div class="spinner-frame">
+                            <div class="custom-spinner">
+                                <input type="number" value="${item.addCount || 0}" step="1">
+                                <div class="spinner-buttons">
+                                    <button type="button" class="increment-button">▲</button>
+                                    <button type="button" class="decrement-button">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `);
+        });
+
+        bindLeftTableEvents();
+        calculateTotal();
+    }
+
+    function bindLeftTableEvents() {
+        const rows = document.querySelectorAll("#order-left-body tr");
+
+        rows.forEach(row => {
+            const input = row.querySelector("input[type='number']");
+            const incBtn = row.querySelector(".increment-button");
+            const decBtn = row.querySelector(".decrement-button");
+
+            input?.addEventListener("input", () => {
+                if (input.value === "" || isNaN(input.value)) input.value = 0;
+                calculateTotal();
+            });
+
+            incBtn?.addEventListener("click", () => {
+                input.value = Number(input.value || 0) + 1;
+                calculateTotal();
+            });
+
+            decBtn?.addEventListener("click", () => {
+                input.value = Number(input.value || 0) - 1;
+                calculateTotal();
+            });
+        });
+    }
+
+    const totalSpan = document.querySelector(".all-order span");
+
+    function calculateTotal() {
+        const rows = document.querySelectorAll("#order-left-body tr");
+        let total = 0;
+
+        rows.forEach(row => {
+            const base = parseInt(row.querySelector("td:nth-child(3)")?.innerText || 0);
+            const addInput = row.querySelector("input[type='number']");
+            const add = parseInt(addInput?.value || 0);
+            total += (base + add);
+        });
+
+        totalSpan.innerText = total;
+    }
+
+    if (window.initialBaseList) {
+        renderLeftTable(window.initialBaseList);
+    } else {
+        calculateTotal(); // 최소한 총합 표시
+    }
+
+    /* ======= *
+     *  RIGHT  *
+     * ======= */
+    const yearSelect = document.getElementById("order-year");
+    const monthSelect = document.getElementById("order-month");
+
+    initYearOptions();
+    renderMonthOptions(yearSelect.value);
+
+    yearSelect.addEventListener("change", async () => {
+        renderMonthOptions(yearSelect.value);
+        await loadSavedOrder();
+    });
+
+    monthSelect.addEventListener("change", async () => {
+        await loadSavedOrder();
+    });
+
+    function initYearOptions() {
         const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth() + 1;
+        const ty = now.getFullYear();
+        const tm = now.getMonth() + 1;
+
+        const start = new Date(ty, tm - 7, 1);
+        const end = new Date(ty, tm, 1);
+
+        const startYear = start.getFullYear();
+        const endYear = end.getFullYear();
 
         yearSelect.innerHTML = "";
-        for (let i = 0; i < 3; i++) {
-            const y = currentYear - i;
-            const opt = document.createElement('option');
+
+        for (let y = startYear; y <= endYear; y++) {
+            const opt = document.createElement("option");
             opt.value = y;
             opt.textContent = `${y}년`;
-            if (i === 0) opt.selected = true;
+            if (y === ty) opt.selected = true;  // 현재년 선택
             yearSelect.appendChild(opt);
         }
+    }
 
-        function renderMonthOptions(selectedYear) {
-            monthSelect.innerHTML = "";
+    function renderMonthOptions(selectedYear) {
+        const now = new Date();
+        const ty = now.getFullYear();
+        const tm = now.getMonth() + 1;
 
-            let lastMonth = 12;
+        const start = new Date(ty, tm - 7, 1);
+        const end = new Date(ty, tm, 1);
 
-            if (parseInt(selectedYear) === currentYear) {
-                lastMonth = currentMonth;
-            }
+        monthSelect.innerHTML = "";
 
-            for (let m = 1; m <= lastMonth; m++) {
-                const mm = String(m).padStart(2, "0");
-                const opt = document.createElement('option');
-                opt.value = mm;
-                opt.textContent = `${mm}월`;
-                if (m === currentMonth && selectedYear == currentYear) {
-                    opt.selected = true;
+        let d = new Date(start);
+
+        while (d <= end) {
+            const yy = d.getFullYear();
+            const mm = d.getMonth() + 1;
+
+            if (yy == selectedYear) {
+                const opt = document.createElement("option");
+                opt.value = String(mm).padStart(2, "0");
+                opt.textContent = `${String(mm).padStart(2, "0")}월`;
+
+                if (yy === ty && mm === tm) {
+                    opt.selected = true; // 현재월 자동 선택
                 }
+
                 monthSelect.appendChild(opt);
-
             }
+
+            d.setMonth(d.getMonth() + 1); // 다음달로 이동
         }
-
-        renderMonthOptions(currentYear);
-
-        yearSelect.addEventListener('change', async () => {
-            const selectedYear = yearSelect.value;
-            renderMonthOptions(selectedYear);
-            await loadSavedOrder();   // ★ 여기에 추가
-        });
-
-        monthSelect.addEventListener('change', async () => {
-            await loadSavedOrder();   // ★ 여기에 추가
-        });
-
-    } catch (e) {
-        console.error("년도/월 select 렌더링 오류:", e);
     }
 
     const rightBody = document.getElementById("order-right-body");
 
     async function loadSavedOrder() {
         try {
-            const yy = document.getElementById("order-year")?.value;
-            const mm = document.getElementById("order-month")?.value;
-
-            if (!yy || !mm) {
-                console.warn("년도 또는 월이 선택되지 않았습니다.");
-                return;
-            }
-
-            const payload = {
-                yy: yy,
-                mm: mm
-            };
+            const yy = yearSelect.value;
+            const mm = monthSelect.value;
+            if (!yy || !mm) return;
 
             const res = await fetch("/manage/order/list", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({yy, mm})
             });
 
-            if (!res.ok) {
-                console.error("서버 응답 오류:", res.status);
-                return;
-            }
+            if (!res.ok) return;
 
             const data = await res.json();
-            const response = data.response
-            if (!Array.isArray(response)) {
-                console.error("서버 응답 형식 오류:", response);
-                return;
-            }
-
-            renderSavedOrder(response);
+            renderSavedOrder(data.response);
 
         } catch (e) {
             console.error("loadSavedOrder Error:", e);
@@ -142,8 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td colspan="5" style="text-align:center; padding:20px;">
                         주문 내역이 없습니다.
                     </td>
-                </tr>
-            `;
+                </tr>`;
             return;
         }
 
@@ -155,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? `<span class="decrease">${item.addCount}</span>`
                         : `<span></span>`;
 
-            const row = `
+            rightBody.insertAdjacentHTML("beforeend", `
                 <tr>
                     <td>${item.className}</td>
                     <td>${item.unitName}</td>
@@ -163,55 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${add}</td>
                     <td>${item.totalCount}</td>
                 </tr>
-            `;
-            rightBody.insertAdjacentHTML("beforeend", row);
+            `);
         });
     }
 
-    const totalSpan = document.querySelector(".all-order span");
-    const rows = document.querySelectorAll("#order-left-body tr");
-
-    function calculateTotal() {
-        let total = 0;
-        rows.forEach(row => {
-            try {
-                const base = parseInt(row.querySelector("td:nth-child(3)")?.innerText.trim() || "0");
-                const addInput = row.querySelector("input[type='number']");
-                const add = parseInt(addInput?.value || "0");
-                total += (base + add);
-            } catch (e) {
-                console.error("합산 오류:", e);
-            }
-        });
-        totalSpan.innerText = total;
-    }
-
-    rows.forEach(row => {
-        const input = row.querySelector("input[type='number']");
-        const incBtn = row.querySelector(".increment-button");
-        const decBtn = row.querySelector(".decrement-button");
-
-        input?.addEventListener("input", () => {
-            if (input.value === "" || isNaN(input.value)) input.value = 0;
-            calculateTotal();
-        });
-
-        incBtn?.addEventListener("click", () => {
-            input.value = Number(input.value || 0) + 1;
-            calculateTotal();
-        });
-
-        decBtn?.addEventListener("click", () => {
-            const now = Number(input.value || 0);
-            input.value = now - 1;
-            calculateTotal();
-        });
-    });
-
-    calculateTotal(); // 초기 계산
-
-
-    // 주문 입력
     const saveBtn = document.querySelector(".save-btn");
 
     saveBtn.addEventListener("click", async () => {
@@ -221,25 +283,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("주문년월을 선택해주세요.");
                 return;
             }
-            const ym = ymRaw.replace("-", "");
 
+            const ym = ymRaw.replace("-", "");
             const rows = document.querySelectorAll("#order-left-body tr");
             const orderList = [];
 
             rows.forEach(row => {
-
-                const classKey = row.dataset.classKey;
-                const unitKey = row.dataset.unitKey;
-
-                const tds = row.querySelectorAll("td");
-                const baseCount = parseInt(tds[2].innerText.trim());
-                const addCount = parseInt(row.querySelector("input").value);
-
                 orderList.push({
-                    classKey: classKey,
-                    unitKey: unitKey,
-                    baseCount: baseCount,
-                    addCount: addCount,
+                    classKey: row.dataset.classKey,
+                    unitKey: row.dataset.unitKey,
+                    baseCount: parseInt(row.querySelector("td:nth-child(3)").innerText),
+                    addCount: parseInt(row.querySelector("input").value),
                     yy: ym.substring(0, 4),
                     mm: ym.substring(4, 6)
                 });
@@ -258,9 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             alert("저장 완료!");
             window.location.reload();
+
         } catch (e) {
-            console.error(e);
             alert("에러 발생");
         }
     });
+
 });

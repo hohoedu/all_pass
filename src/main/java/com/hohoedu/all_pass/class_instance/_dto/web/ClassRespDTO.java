@@ -69,6 +69,7 @@ public class ClassRespDTO {
         private String gradeName;
         private String classKey;
         private String unitKey;
+        private String subUnitKey;
         private String gradeKey;
         private String classType;
 
