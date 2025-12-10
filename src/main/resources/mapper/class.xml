@@ -243,7 +243,7 @@
         INSERT INTO erp_monthly_score
         (question1, question2, question3, question4, question5, question6, question7, question8, student_id, yy, mm,
          time_table_key, created_at)
-        VALUES (0, 0, 0, 0, 0, 0, 0, 0, #{studentId}, #{yy}, #{mm}, #{timeTableKey}, SYSDATETIME());
+        VALUES (1, 1, 1, 1, 1, 1, 1, 1, #{studentId}, #{yy}, #{mm}, #{timeTableKey}, SYSDATETIME());
     </insert>
 
     <select id="countByTimeTableKey" parameterType="String" resultType="int">
@@ -342,7 +342,7 @@
         values (#{timeTableKey}, #{timeTableLabel}, #{timeTableYm});
     </insert>
 
-    <!--단일 수업 제거-->
+    <!--다중 수업 제거-->
     <delete id="deleteTimeTableRow" parameterType="string">
         DELETE
         FROM erp_time_table_assign
@@ -362,6 +362,10 @@
 
         DELETE
         FROM erp_time_table_code
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_payment_detail
         WHERE time_table_key = #{timeTableKey}
     </delete>
 

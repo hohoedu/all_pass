@@ -220,25 +220,10 @@ public class StudentService {
         boolean newBook = req.getEntryBookDate() != null;
         if (old == null) {
 
-            int total = (newHan ? 1 : 0) + (newBook ? 1 : 0);
-
-            Integer hanFee = null;
-            Integer bookFee = null;
-
-            if (total == 1) {
-                hanFee = newHan ? 30000 : null;
-                bookFee = newBook ? 30000 : null;
-            } else {
-                hanFee = newHan ? 20000 : null;
-                bookFee = newBook ? 20000 : null;
-            }
-
             TeacherAssign create = TeacherAssign.builder()
                     .student(Student.builder().studentId(req.getStudentId()).build())
                     .entryHanDate(req.getEntryHanDate())
                     .entryBookDate(req.getEntryBookDate())
-                    .hanMaterialFee(hanFee)
-                    .bookMaterialFee(bookFee)
                     .assignHanTeacher(newHan ? User.builder().userCode(req.getUserCode()).build() : null)
                     .assignBookTeacher(newBook ? User.builder().userCode(req.getUserCode()).build() : null)
                     .build();
@@ -261,14 +246,7 @@ public class StudentService {
         User teacher = User.builder().userCode(info.getTeacherCode()).build();
         ClassCode classCode = ClassCode.builder().classKey(info.getClassKey()).build();
 
-        // ======================
-        // 신규 생성
-        // ======================
         if (assign == null) {
-
-            Integer hanFee = isHan ? 30000 : null;
-            Integer bookFee = isBook ? 30000 : null;
-
             TeacherAssign newAssign = TeacherAssign.builder()
                     .student(Student.builder().studentId(studentId).build())
                     .hanState(isHan)
@@ -279,21 +257,15 @@ public class StudentService {
                     .assignBookClass(isBook ? classCode : null)
                     .entryHanDate(isHan ? today : null)
                     .entryBookDate(isBook ? today : null)
-                    .hanMaterialFee(hanFee)
-                    .bookMaterialFee(bookFee)
                     .build();
 
             studentRepository.insertTeacherAssign(newAssign);
             return;
         }
 
-        // ======================
-        // 기존 데이터 로딩
-        // ======================
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();
 
-        // 추가되는 과목만 true
         boolean addHan = isHan && !oldHan;
         boolean addBook = isBook && !oldBook;
 
@@ -301,28 +273,11 @@ public class StudentService {
             return; // 변경 없음
         }
 
-        // ======================
-        // 최종 상태 확정
-        // ======================
         boolean finalHanState = oldHan || addHan;
         boolean finalBookState = oldBook || addBook;
 
-        Integer finalHanFee = null;
-        Integer finalBookFee = null;
 
-        if (finalHanState && finalBookState) {
-            // 둘 다 켜지면 무조건 20,000원
-            finalHanFee = 20000;
-            finalBookFee = 20000;
-        } else if (finalHanState) {
-            finalHanFee = 30000;
-        } else if (finalBookState) {
-            finalBookFee = 30000;
-        }
 
-        // ======================
-        // MyBatis DTO 생성 (전체 값 넣기)
-        // ======================
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
 
         dto.setStudentId(studentId);
@@ -330,10 +285,7 @@ public class StudentService {
         dto.setHanState(finalHanState);
         dto.setBookState(finalBookState);
 
-        dto.setHanMaterialFee(finalHanFee);
-        dto.setBookMaterialFee(finalBookFee);
 
-        // 새로 들어온 과목만 teacher/class/date 갱신
         if (addHan) {
             dto.setHanTeacher(info.getTeacherCode());
             dto.setHanClass(info.getClassKey());

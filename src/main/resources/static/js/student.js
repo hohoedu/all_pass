@@ -224,10 +224,53 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("joinForm");
 
     form.addEventListener("submit", async (e) => {
-        e.preventDefault(); // 기본 form submit 막기
+        e.preventDefault(); // 기본 제출 막기
 
-        // form 데이터를 수집
+        // ---------------------------------------------------------
+        // 1) 서명 PNG 변환 (Canvas -> PNG dataURL -> Blob)
+        // ---------------------------------------------------------
+        const canvas = document.getElementById("signature-pad");
+        const dataURL = canvas.toDataURL("image/png"); // PNG 생성
+        const blob = await (await fetch(dataURL)).blob(); // Blob 변환
+
+        // ---------------------------------------------------------
+        // 2) 서버로 PNG 업로드
+        // ---------------------------------------------------------
+        const uploadForm = new FormData();
+        uploadForm.append("file", blob, "signature.png");
+
+        let signaturePath = null;
+
+        try {
+            const uploadResponse = await fetch("/student/upload/signature", {
+                method: "POST",
+                body: uploadForm
+            });
+
+            if (!uploadResponse.ok) {
+                alert("서명 업로드 중 오류가 발생했습니다.");
+                return;
+            }
+
+            const result = await uploadResponse.json();
+
+            if (!result.success) {
+                alert("서명 업로드에 실패했습니다.");
+                return;
+            }
+
+            signaturePath = result.url;
+        } catch (err) {
+            console.error("업로드 오류:", err);
+            alert("서명 업로드 오류");
+            return;
+        }
+
+        // ---------------------------------------------------------
+        // 3) URL을 formData에 포함하여 최종 가입 요청 전송
+        // ---------------------------------------------------------
         const formData = new FormData(form);
+        formData.append("signature", signaturePath);
 
         try {
             const response = await fetch(form.action, {
@@ -235,25 +278,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
-            if (!response.ok) throw new Error("서버 오류 발생");
+            if (!response.ok) {
+                alert("서버 응답 오류");
+                return;
+            }
 
-            const result = await response.json();
+            const joinResult = await response.json();
 
-            if (result.success && result.response === "ok") {
+            if (joinResult.success && joinResult.response === "ok") {
                 alert("가입이 완료되었습니다.");
+
                 if (window.opener && !window.opener.closed) {
                     window.opener.location.reload();
                 }
-
-                // ✅ 팝업 닫기
-                window.close();
+                window.close(); // 팝업 닫기
             } else {
-                alert("가입 중 오류가 발생했습니다. 다시 시도해 주세요.");
+                alert("가입 중 오류가 발생했습니다.");
             }
 
-        } catch (error) {
-            console.error("가입 요청 실패:", error);
-            alert("서버와의 통신에 실패했습니다.");
+        } catch (err) {
+            console.error("가입 요청 실패:", err);
+            alert("가입 요청 중 오류 발생");
         }
     });
 });

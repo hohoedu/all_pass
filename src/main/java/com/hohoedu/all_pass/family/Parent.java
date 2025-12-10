@@ -46,6 +46,9 @@ public class Parent {
     @Column(name = "parent_privacy_agree", nullable = false)
     private boolean parentPrivacyAgree;
 
+    @Column(name="signature")
+    private String signaturePath;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
@@ -63,13 +66,14 @@ public class Parent {
     private RelationCode relationCode;
 
     @Builder
-    public Parent(Integer id, String parentName, String parentTelFirst, String parentTelMiddle, String parentTelLast, boolean parentPrivacyAgree, Student student, RelationCode relationCode) {
+    public Parent(Integer id, String parentName, String parentTelFirst, String parentTelMiddle, String parentTelLast, boolean parentPrivacyAgree, String signaturePath, Student student, RelationCode relationCode) {
         this.id = id;
         this.parentName = parentName;
         this.parentTelFirst = parentTelFirst;
         this.parentTelMiddle = parentTelMiddle;
         this.parentTelLast = parentTelLast;
         this.parentPrivacyAgree = parentPrivacyAgree;
+        this.signaturePath = signaturePath;
         this.student = student;
         this.relationCode = relationCode;
     }

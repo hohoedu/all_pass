@@ -173,13 +173,11 @@ public class ClassReqDTO {
         private boolean hanState;
         private String hanTeacher;
         private String hanEntryDate;
-        private Integer hanMaterialFee;
         private String hanClass;
 
         private boolean bookState;
         private String bookTeacher;
         private String bookEntryDate;
-        private Integer bookMaterialFee;
         private String bookClass;
     }
 

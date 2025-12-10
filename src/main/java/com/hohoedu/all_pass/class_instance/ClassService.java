@@ -9,6 +9,7 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.payment.Payment;
+import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.StudentService;
@@ -55,6 +56,7 @@ public class ClassService {
     private final StudentRepository studentRepository;
     private final PaymentRepository paymentRepository;
     private final StudentService studentService;
+    private final PaymentService paymentService;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -331,29 +333,43 @@ public class ClassService {
     }
 
     // 학생 수업 등록
-    public boolean addStudent(AddStudentDTO dto, String userCode, String centerCode) {
-        try {
+    public boolean addStudent(AddStudentDTO dto) {
+        int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
+        if (count >= 10) return false;
 
-            int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
-
-            if (count >= 10) {
-                return false;
-            }
-
-            classRepository.addStudent(dto);
-
-            classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
-
-            classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
-
-            ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
-
-            // 5) 담당 선생님 자동 배정
-            studentService.assignTeacher(dto.getStudentId(), info);
-        } catch (Exception e) {
-            System.out.println("=====================" + e.getMessage() + "====================================");
-        }
+        classRepository.addStudent(dto);
         return true;
+    }
+
+    @Transactional
+    public void registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode) {
+
+        boolean success = addStudent(dto);
+        if (!success) {
+            throw new IllegalStateException("정원 초과");
+        }
+
+        // 월간 평가 생성
+        classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
+
+        // 출결 생성
+        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
+
+        // 기본 수업 정보
+        ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
+
+        // 담당 선생님 자동 배정
+        studentService.assignTeacher(dto.getStudentId(), info);
+
+        // student_class 생성
+        ClassRespDTO.ClassInfoDTO classInfo = findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), centerCode);
+        log.info(classInfo.getClassKey());
+        if (!classInfo.getClassKey().equals("HL")) {
+            // 결제 + 상세
+            String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), centerCode, userCode);
+            paymentService.createPaymentDetail(paymentKey, classInfo, userCode);
+        }
+
     }
 
     public ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(String timeTableKey, String studentId, String centerCode) {
@@ -363,6 +379,7 @@ public class ClassService {
 
     public void deleteStudent(String timeTableKey, String studentId) {
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
+        paymentService.deleteDetail(timeTableKey, studentId);
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode, Map<String, String> req) {

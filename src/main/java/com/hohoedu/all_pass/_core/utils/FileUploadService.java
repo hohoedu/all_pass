@@ -32,6 +32,10 @@ public class FileUploadService {
     @Value("${ftp.course-book-dir}")
     private String courseBookDir;
 
+    @Value("${ftp.signature-dir}")
+    private String signatureDir;
+    
+
     public String uploadNotice(MultipartFile file) {
         return uploadToFTP(file, noticeDir);
     }
@@ -39,6 +43,10 @@ public class FileUploadService {
 
     public String uploadCourseBook(MultipartFile file) {
         return uploadToFTP(file, courseBookDir);
+    }
+
+    public String uploadSignature(MultipartFile file) {
+        return uploadToFTP(file, signatureDir);
     }
 
     public String uploadToFTP(MultipartFile file, String subDir) {

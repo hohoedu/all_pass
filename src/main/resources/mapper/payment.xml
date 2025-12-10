@@ -112,8 +112,8 @@
     </insert>
 
     <insert id="createPaymentDetail">
-        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, user_code, created_at)
-        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, #{user.userCode}, SYSDATETIME());
+        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, time_table_key, user_code, created_at)
+        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, #{timeTableKey}, #{user.userCode}, SYSDATETIME());
     </insert>
 
     <select id="findLatestPaymentKeyByStudent" resultType="string">
@@ -303,4 +303,20 @@
           AND yy = #{year}
           AND mm = #{month}
     </select>
+
+    <select id="findPaymentKeyByStudentId" resultType="String">
+        SELECT p.payment_key
+        FROM erp_payment p
+                 JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+        WHERE p.student_id = #{studentId}
+          AND pd.time_table_key = #{timeTableKey}
+        GROUP BY p.payment_key
+    </select>
+
+    <delete id="deletePaymentDetail" parameterType="String">
+        DELETE
+        FROM erp_payment_detail
+        WHERE time_table_key = #{timeTableKey}
+          AND payment_key = #{paymentKey}
+    </delete>
 </mapper>

@@ -21,7 +21,9 @@ public interface PaymentRepository {
     PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
 
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
+
     String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
+
     // 수강료 청구 화면 데이터 필터링
     List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(@Param("year") String year, @Param("month") String month, @Param("userCode") String userCode, @Param("centerCode") String centerCode);
 
@@ -61,6 +63,10 @@ public interface PaymentRepository {
     List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode);
+
+    String findPaymentKeyByStudentId(String studentId, String timeTableKey);
+
+    void deletePaymentDetail(String paymentKey, String timeTableKey);
 
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회

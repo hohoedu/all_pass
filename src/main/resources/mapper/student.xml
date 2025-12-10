@@ -22,19 +22,24 @@
     </select>
 
     <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
-        SELECT s.*,
-               g.*,
-               reg.registeredClassTypes as classType
+        SELECT s.*
+             , g.*
+             , reg.registeredClassTypes AS classType
         FROM erp_student s
-                 JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 JOIN erp_grade_code g
+                      ON s.grade_key = g.grade_key
+                 LEFT JOIN erp_teacher_assign ta
+                           ON s.student_id = ta.student_id
             OUTER APPLY (
     SELECT STUFF((
         SELECT ',' + cc.class_type
-        FROM erp_time_table_assign ta
-        JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-        JOIN erp_class_code cc ON t.class_key = cc.class_key
-        WHERE ta.student_id = s.student_id
-          AND t.yy  = #{year}
+        FROM erp_time_table_assign tta
+        JOIN erp_time_table t
+            ON tta.time_table_key = t.time_table_key
+        JOIN erp_class_code cc
+            ON t.class_key = cc.class_key
+        WHERE tta.student_id = s.student_id
+          AND t.yy = #{year}
             AND t.mm = #{month}
             FOR XML PATH ('')
            , TYPE
@@ -42,14 +47,19 @@
            , 'NVARCHAR(MAX)')
            , 1
            , 1
-           , '') AS registeredClassTypes) reg
+           , '') AS registeredClassTypes
+            ) reg
         WHERE s.center_code = #{centerCode}
-          AND (
-            reg.registeredClassTypes IS NULL
+          AND (reg.registeredClassTypes IS NULL
            OR reg.registeredClassTypes IN ('1'
-            , '2')
-            )
-          AND s.status_key = 'ACTIVE';
+            , '2', '3'))
+          AND s.status_key = 'ACTIVE'
+          AND (
+            ta.assign_han_teacher = #{userCode}
+           OR ta.assign_book_teacher = #{userCode}
+           OR (ta.assign_han_teacher IS NULL
+          AND ta.assign_book_teacher IS NULL)
+            );
     </select>
 
     <select id="findStudentInfoByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInfoDTO">
@@ -260,9 +270,9 @@
     </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">
-        INSERT INTO ERP_TEACHER_ASSIGN (student_id, entry_han_date, entry_book_date, han_material_fee, book_material_fee, assign_han_teacher, assign_book_teacher,
+        INSERT INTO ERP_TEACHER_ASSIGN (student_id, entry_han_date, entry_book_date,assign_han_teacher, assign_book_teacher,
                                         han_state, book_state, assign_han_class, assign_book_class)
-        VALUES (#{student.studentId}, #{entryHanDate}, #{entryBookDate}, #{hanMaterialFee}, #{bookMaterialFee}, #{assignHanTeacher.userCode}, #{assignBookTeacher.userCode},
+        VALUES (#{student.studentId}, #{entryHanDate}, #{entryBookDate}, #{assignHanTeacher.userCode}, #{assignBookTeacher.userCode},
                 #{hanState}, #{bookState}, #{assignHanClass.classKey}, #{assignBookClass.classKey})
     </insert>
 
@@ -272,13 +282,11 @@
             <if test="hanState != null">han_state = #{hanState},</if>
             <if test="hanTeacher != null">assign_han_teacher = #{hanTeacher},</if>
             <if test="hanEntryDate != null">entry_han_date = #{hanEntryDate},</if>
-            <if test="hanMaterialFee != null">han_material_fee = #{hanMaterialFee},</if>
             <if test="hanClass != null">assign_han_class = #{hanClass},</if>
 
             <if test="bookState != null">book_state = #{bookState},</if>
             <if test="bookTeacher != null">assign_book_teacher = #{bookTeacher},</if>
             <if test="bookEntryDate != null">entry_book_date = #{bookEntryDate},</if>
-            <if test="bookMaterialFee != null">book_material_fee = #{bookMaterialFee},</if>
             <if test="bookClass != null">assign_book_class = #{bookClass},</if>
         </set>
         WHERE student_id = #{studentId}

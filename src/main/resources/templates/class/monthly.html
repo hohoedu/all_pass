@@ -121,7 +121,7 @@
                                                     <button class="btn-number" th:each="i : ${#numbers.sequence(1,8)}"
                                                             th:classappend="${!#lists.isEmpty(stu.scores) and (stu.scores[0]['question' + i])} ? 'active' : ''"
                                                             th:value="${!#lists.isEmpty(stu.scores) and (stu.scores[0]['question' + i])} ? 'true' : 'false'"
-                                                            th:text="${i} + '번'">
+                                                            th:text="${i} + '번'" checked>
                                                     </button>
                                                 </div>
                                                 <div class="action-buttons">

@@ -31,14 +31,14 @@
                     </div>
                     <div class="lump-sum">
                         <div class="radio-group">
-                            <input type="radio" name="feeMethod" id="fee-submit" checked>
+                            <input type="radio" name="feeMethod" id="fee-submit" >
                             <div>
                                 <label for="fee-submit">수강료 일괄 적용</label>
                                 <input type="text" class="basic-input edu-input no-spin" id="fee-input">
                             </div>
                         </div>
                         <div class="radio-group">
-                            <input type="radio" name="feeMethod" id="fee-each">
+                            <input type="radio" name="feeMethod" id="fee-each" checked>
                             <label for="fee-each">수강료 개별 적용</label>
                         </div>
                     </div>
@@ -62,7 +62,7 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="cls, stat : ${hanClasses}">
-                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(bookClasses)}">한자 교육비</td>
+                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hanClasses)}">한자 교육비</td>
                                         <td th:text="${cls.className}"></td>
                                         <td>
                                             <input type="number"
@@ -127,44 +127,68 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td rowspan="7">한자급수 교육비</td>
-                                    <td>호호하니 영재</td>
+                                    <td rowspan="11">한자급수 교육비</td>
+                                    <td>8급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>호호하니 수재</td>
+                                    <td>7급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>호호하니 신동</td>
+                                    <td>준6급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>초등신동</td>
+                                    <td>6급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>초등천재</td>
+                                    <td>준5급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>초등수재</td>
+                                    <td>5급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>초등박사</td>
+                                    <td>준4급</td>
+                                    <td>
+                                        <input type="number" class="basic-input edu-input">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>4급</td>
+                                    <td>
+                                        <input type="number" class="basic-input edu-input">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>준3급</td>
+                                    <td>
+                                        <input type="number" class="basic-input edu-input">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3급</td>
+                                    <td>
+                                        <input type="number" class="basic-input edu-input">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2급</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">
                                     </td>

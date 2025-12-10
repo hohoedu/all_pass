@@ -237,6 +237,7 @@ public class PaymentService {
                 .classType(classInfoDTO.getClassType())
                 .amount(classInfoDTO.getClassFee())
                 .note("수업료 (" + classType + ")")
+                .timeTableKey(classInfoDTO.getTimeTableKey())
                 .build();
         paymentRepository.createPaymentDetail(eduDetail);
 
@@ -248,6 +249,7 @@ public class PaymentService {
                 .classType(classInfoDTO.getClassType())
                 .amount(15000)
                 .note("교재비")
+                .timeTableKey(classInfoDTO.getTimeTableKey())
                 .build();
         paymentRepository.createPaymentDetail(bookDetail);
 
@@ -518,5 +520,12 @@ public class PaymentService {
     public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode) {
         List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode);
         return studentDTO;
+    }
+
+    // 수업에서 학생 제거했을 때 상세내용 제거
+    public void deleteDetail(String timeTableKey, String studentId) {
+        String paymentKey = paymentRepository.findPaymentKeyByStudentId(studentId, timeTableKey);
+
+        paymentRepository.deletePaymentDetail(paymentKey, timeTableKey);
     }
 }

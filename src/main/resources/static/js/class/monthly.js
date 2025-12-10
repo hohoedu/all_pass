@@ -255,6 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("monthly_student_tbody");
     if (!tbody) return;
 
+    tbody.querySelectorAll(".btn-number").forEach(btn => {
+        btn.classList.add("active");
+        btn.value = "true";
+    });
+
     tbody.addEventListener("click", (e) => {
         const target = e.target;
 

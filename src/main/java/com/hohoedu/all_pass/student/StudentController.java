@@ -7,6 +7,7 @@ import java.util.Map;
 
 
 import com.google.protobuf.Api;
+import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -31,6 +32,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDT
 import com.hohoedu.all_pass.student.model.GradeCode;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -40,6 +42,7 @@ public class StudentController {
 
     final private StudentService studentService;
     final private ClassService classService;
+    final private FileUploadService fileUploadService;
 
 
     @GetMapping("/api/label")
@@ -133,7 +136,7 @@ public class StudentController {
 
         reqDTO.setUserCode(user.getUserCode());
 
-         studentService.updateStudentInfo(reqDTO);
+        studentService.updateStudentInfo(reqDTO);
 
         // 학생 정보 조회 후 모달 업데이트 해야함
         return ResponseEntity.ok("ok");
@@ -219,5 +222,18 @@ public class StudentController {
 
         return studentService.getSnapshot(startYm, nowYm, userNo);
     }
+
+
+    @PostMapping("/upload/signature")
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String uploadedPath = fileUploadService.uploadSignature(file);
+            return ResponseEntity.ok(ApiUtils.success(uploadedPath));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("UPLOAD_FAIL");
+        }
+    }
+
 
 }

@@ -48,8 +48,6 @@ public class ClassController {
 
     private final DateConfig dateConfig;
     private final ClassService classService;
-    private final StudentService studentService;
-    private final PaymentService paymentService;
 
     @GetMapping("/classCodes")
     public ResponseEntity<?> createClass() {
@@ -82,7 +80,6 @@ public class ClassController {
                 (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         List<ClassRespDTO.ClassWeekDTO> list = classService.getClassWeek(reqDTO.getYear(), reqDTO.getMonth(), user.getCenterCode());
-        log.info(list.toString());
         return ResponseEntity.ok(ApiUtils.success(list));
     }
 
@@ -122,33 +119,20 @@ public class ClassController {
     @ResponseBody
     public ResponseEntity<?> timeTableAssginStudent(HttpSession session, @RequestBody ClassReqDTO.AddStudentList reqDTO) {
 
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
         try {
-
-            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                        .header(HttpHeaders.LOCATION, "/login")
-                        .build();
-            }
-
             for (ClassReqDTO.AddStudentDTO dto : reqDTO.getAssignments()) {
-
-                boolean success = classService.addStudent(dto, user.getUserCode(), user.getCenterCode());
-                if (!success) {
-                    return ResponseEntity.ok(ApiUtils.error("최대 8명까지 등록 가능합니다.", HttpStatus.OK));
-                }
-
-                ClassRespDTO.ClassInfoDTO classInfo = classService.findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), user.getCenterCode());
-                if (classInfo != null) {
-                    studentService.insertStudentClass(classInfo, dto.getStudentId(), dto.getYy(), dto.getMm());
-                }
-                // 결제 생성
-                String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), user.getCenterCode(), user.getUserCode());
-                paymentService.createPaymentDetail(paymentKey, classInfo, user.getUserCode());
+                classService.registerStudentFullProcess(dto, user.getUserCode(), user.getCenterCode());
             }
-
             return ResponseEntity.ok(ApiUtils.success(true));
-        } catch (DataIntegrityViolationException ex) {
+
+        } catch (Exception e) {
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }

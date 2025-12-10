@@ -33,6 +33,9 @@ public class PaymentDetail {
     @Column(columnDefinition = "TEXT")
     private String note;
 
+    @Column(name = "time_table_key")
+    private String timeTableKey;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_key", referencedColumnName = "payment_key", nullable = false)
     private Payment payment;
@@ -45,11 +48,12 @@ public class PaymentDetail {
     private Timestamp createdAt;
 
     @Builder
-    public PaymentDetail(Payment payment,User user, String classType, String itemType, Integer amount, String note) {
+    public PaymentDetail(Payment payment, User user, String classType, String itemType, String timeTableKey, Integer amount, String note) {
         this.payment = payment;
         this.user = user;
         this.classType = classType;
         this.itemType = itemType;
+        this.timeTableKey = timeTableKey;
         this.amount = amount;
         this.note = note;
     }
