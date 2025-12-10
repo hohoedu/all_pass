@@ -1,0 +1,159 @@
+document.addEventListener("DOMContentLoaded", () => {
+
+    const monthInput = document.getElementById("monthPickerInput");
+    const openBtn = document.getElementById("openMonthPicker");
+    const currentMonthLabel = document.getElementById("currentMonth");
+
+    if (!monthInput || !openBtn || !currentMonthLabel) return;
+
+    initCurrentMonth();
+    bindEvents();
+
+    /** 초기 월 세팅 */
+    function initCurrentMonth() {
+        try {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+
+            monthInput.value = `${year}-${month}`;
+            updateMonthLabel(year, month);
+        } catch (err) {
+            console.error("initCurrentMonth error:", err);
+        }
+    }
+
+    /** 이벤트 바인딩 */
+    function bindEvents() {
+
+        // 달력 열기
+        openBtn.addEventListener("click", () => {
+            monthInput.showPicker();
+        });
+
+        // 월 변경 → 서버에서 해당 월 시간표 + 회원현황 다시 가져오기
+        monthInput.addEventListener("change", async () => {
+            const selected = new Date(monthInput.value);
+            if (isNaN(selected)) return;
+
+            const year = selected.getFullYear();
+            const month = String(selected.getMonth() + 1).padStart(2, "0");
+
+            updateMonthLabel(year, month);
+
+            await loadMonthlyData(year, month);
+        });
+    }
+
+    function updateMonthLabel(year, month) {
+        currentMonthLabel.textContent = `${year}년 ${month}월`;
+    }
+
+    /**
+     * 서버에서 월별 데이터 조회
+     * (시간표 테이블 전체 + 회원 현황 테이블 HTML 받아서 교체)
+     */
+    async function loadMonthlyData(year, month) {
+        try {
+            const teacher = document.getElementById("teacher-select")?.value || "all";
+
+            const res = await fetch(`/class/timetable/view`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    year: year,
+                    month: month
+                })
+            });
+
+            if (!res.ok) {
+                console.error("조회 실패:", res.status);
+                return;
+            }
+
+            const data = await res.json();
+            const tables = data.response; // ApiUtils.success(data) 구조
+
+            console.log(tables);
+            renderTimetableTable(tables);
+        } catch (err) {
+            console.error("loadMonthlyData error:", err);
+        }
+
+        function renderTimetableTable(tables) {
+
+            // 요일을 항상 고정으로 렌더링
+            const dayOrder = ["mon", "tue", "wed", "thu", "fri", "sat"];
+            const dayLabel = {
+                mon: "월",
+                tue: "화",
+                wed: "수",
+                thu: "목",
+                fri: "금",
+                sat: "토",
+            };
+
+            // 교시도 항상 1~6 고정
+            const periods = [1, 2, 3, 4, 5, 6];
+
+            let html = `
+        <thead>
+            <tr>
+                <th style="padding:0;">교시</th>
+                ${dayOrder.map(d => `<th>${dayLabel[d]}</th>`).join("")}
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+            periods.forEach(period => {
+                html += `<tr>`;
+                html += `<td>${period}</td>`;
+
+                // 요일 칸 7개 모두 렌더링
+                dayOrder.forEach(day => {
+
+                    // 해당 요일 + 교시 데이터 찾기
+                    const tt = tables.find(t => t.dayname === day && Number(t.periodNo) === period);
+
+                    // 데이터 없으면 빈 칸
+                    if (!tt) {
+                        html += `<td style="height:150px;"></td>`;
+                        return;
+                    }
+
+                    const boxColor = tt.classType === "1" ? "pink" : "blue";
+
+                    html += `
+                <td style="height:150px;">
+                    <div class="timetable-lookup-box ${boxColor}">
+                        <div class="header">
+                            ${tt.startTime} ~ ${tt.endTime}<br>
+                            <strong>${tt.className} ${tt.unitName ?? ""}</strong>
+                        </div>
+                        <div class="inner-grid">
+                            ${tt.students.map(s => `
+                                <div data-name="${s.studentName}">
+                                    ${s.studentName}
+                                </div>
+                            `).join("")}
+                        </div>
+                    </div>
+                </td>
+            `;
+                });
+
+                html += `</tr>`;
+            });
+
+            html += `</tbody>`;
+
+            // 테이블 업데이트
+            document.querySelector(".timetable-lookup-table").innerHTML = html;
+        }
+    }
+
+});

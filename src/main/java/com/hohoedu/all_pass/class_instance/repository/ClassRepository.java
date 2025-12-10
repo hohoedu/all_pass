@@ -128,8 +128,8 @@ public interface ClassRepository {
             @Param("mm") String mm,
             @Param("userNo") String userNo);
 
-    public List<TimeTableCode> findTimeTableCodeByUserNo(
-            @Param("userNo") Integer userNo);
+    public List<TimeTableCode> findTimeTableCodeByUserCode(
+            @Param("userCode") String userCode);
 
     List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(
             @Param("timeTableKey") String timeTableKey,

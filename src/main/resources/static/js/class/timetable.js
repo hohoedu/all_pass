@@ -504,6 +504,7 @@ function renderTimeTable(tables) {
 
         const classSelect = row.querySelector(".class-select");
         const unitSelect = row.querySelector(".unit-select");
+        const gradeSelect = row.querySelector(".grade-select");
 
         if (classSelect) classSelect.value = entry.classKey ?? "";
 
@@ -512,6 +513,11 @@ function renderTimeTable(tables) {
             const classUnits = getClassUnits(); // 기존 함수 사용
             fillUnitSelect(unitSelect, classUnits, classKey, entry.unitKey);
         }
+
+        if (gradeSelect) {
+            gradeSelect.value = entry.gradeKey ?? "";
+        }
+
     });
 }
 

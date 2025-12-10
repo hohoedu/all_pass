@@ -336,7 +336,7 @@ public class ClassService {
 
             int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
 
-            if (count >= 8) {
+            if (count >= 10) {
                 return false;
             }
 
@@ -382,8 +382,8 @@ public class ClassService {
         return tables;
     }
 
-    public List<TimeTableCode> findTimeTableCodeByUserNo(Integer userNo) {
-        List<TimeTableCode> codes = classRepository.findTimeTableCodeByUserNo(userNo);
+    public List<TimeTableCode> findTimeTableCodeByUserCode(String userCode) {
+        List<TimeTableCode> codes = classRepository.findTimeTableCodeByUserCode(userCode);
         return codes;
 
     }

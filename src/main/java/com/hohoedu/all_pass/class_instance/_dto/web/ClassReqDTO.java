@@ -318,4 +318,12 @@ public class ClassReqDTO {
         private String icon;
     }
 
+    // 시간표 조회 Controller 요청 dto
+    @Data
+    public static class TimeTaleViewReqDTO {
+        private String year;
+        private String month;
+        private String userCode;
+    }
+
 }

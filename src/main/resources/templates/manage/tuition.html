@@ -62,7 +62,7 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="cls, stat : ${hanClasses}">
-                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(bookClasses)}">독서 교육비</td>
+                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(bookClasses)}">한자 교육비</td>
                                         <td th:text="${cls.className}"></td>
                                         <td>
                                             <input type="number"
@@ -127,7 +127,7 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td rowspan="7">한자 교육비</td>
+                                    <td rowspan="7">한자급수 교육비</td>
                                     <td>호호하니 영재</td>
                                     <td>
                                         <input type="number" class="basic-input edu-input">

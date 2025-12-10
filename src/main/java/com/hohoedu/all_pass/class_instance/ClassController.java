@@ -206,10 +206,17 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(tables));
     }
 
-    @GetMapping("/api/timetable/{userNo}")
-    public ResponseEntity<?> findTimeTableCodeByUserNo(@PathVariable("userNo") Integer userNo) {
-        List<TimeTableCode> codes = classService.findTimeTableCodeByUserNo(userNo);
-        return ResponseEntity.ok(ApiUtils.success(codes));
+    @PostMapping("/timetable/view")
+    public ResponseEntity<?> viewTimeTable(@RequestBody ClassReqDTO.TimeTaleViewReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), user.getUserCode());
+        return ResponseEntity.ok(ApiUtils.success(timeTableList));
     }
 
     @PostMapping("/api/delete/timetable/row")
