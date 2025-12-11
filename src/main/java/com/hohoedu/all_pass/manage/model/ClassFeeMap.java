@@ -29,10 +29,14 @@ public class ClassFeeMap {
     @JoinColumn(name = "center_code", nullable = false, referencedColumnName = "center_code")
     private Center center;
 
+    @Column(name = "unit_key")
+    private String unitKey;
+
     @Builder
-    public ClassFeeMap(Integer fee, ClassCode classCode, Center center) {
+    public ClassFeeMap(Integer fee, ClassCode classCode, Center center , String unitKey) {
         this.fee = fee;
         this.classCode = classCode;
         this.center = center;
+        this.unitKey = unitKey;
     }
 }

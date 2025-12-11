@@ -35,6 +35,7 @@ public interface ManageRepository {
             @Param("centerCode") String centerCode,
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
+            @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm);
 

@@ -183,10 +183,9 @@
                                                    WHEN t.class_key = 'COM' THEN ta.class_key
                                                    ELSE t.class_key
                                                    END
-                 LEFT JOIN erp_class_fee_map cf ON c.class_key = cf.class_key
-        where t.time_table_key = #{timeTableKey}
-          AND ta.student_id = #{studentId}
-          AND cf.center_code = #{centerCode}
+                 LEFT JOIN erp_class_fee_map cf ON cf.class_key = c.class_key AND cf.center_code = t.center_code
+        WHERE t.time_table_key = #{timeTableKey}
+          AND ta.student_id = #{studentId};
     </select>
 
     <select id="findClassWeekByCenter"
@@ -1099,6 +1098,12 @@
         FROM erp_class_code
         WHERE class_key NOT IN ('BSS', 'BSA')
           AND class_type = '2'
+    </select>
+
+    <select id="findHanLevelCode" resultType="com.hohoedu.all_pass.class_instance.model.UnitCode">
+        SELECT *
+        FROM erp_unit_code
+        WHERE unit_type = 'lv'
     </select>
 
     <select id="findBasicTimeTableInfo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BasicTimeTableInfo">

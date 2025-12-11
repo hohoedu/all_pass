@@ -9,6 +9,7 @@
     <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/index.js}"></script>
     <title>hoho-menu</title>
 </head>
 
@@ -69,9 +70,9 @@
             <div class="input-container">
                 <div class="menu-input">
                     <span class="input-label">신규회원 등록</span>
-                    <input type="text" class="input-box" placeholder="‘-’를 제외한 번호를 입력해 주세요.">
-                    </span>
-                    <button class="input-button">발송하기</button>
+                    <input type="text" id="new-member-phone" class="input-box"
+                           placeholder="‘-’를 제외한 번호를 입력해 주세요.">
+                    <button id="send-btn" class="input-button">발송하기</button>
                 </div>
                 <button class="evaluation-button" id="assessment-btn" th:attr="data-center-code=${session.user.centerCode}">진단평가</button>
             </div>
@@ -94,6 +95,8 @@
             }
         });
     });
+
+
 </script>
 </body>
 

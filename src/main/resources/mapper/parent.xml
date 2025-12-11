@@ -6,8 +6,8 @@
 
     <insert id="insert" parameterType="com.hohoedu.all_pass.family.Parent" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
-     INSERT INTO erp_parent (parent_name, parent_tel_first, parent_tel_middle, parent_tel_last, relation_key, parent_privacy_agree, student_id, created_at)
-        VALUES (#{parentName}, #{parentTelFirst}, #{parentTelMiddle}, #{parentTelLast}, #{relationKey}, #{parentPrivacyAgree}, #{studentId}, SYSDATETIME());
+     INSERT INTO erp_parent (parent_name, parent_tel_first, parent_tel_middle, parent_tel_last, relation_key, parent_privacy_agree, signature, student_id, created_at)
+        VALUES (#{parentName}, #{parentTelFirst}, #{parentTelMiddle}, #{parentTelLast}, #{relationKey}, #{parentPrivacyAgree},#{signature}, #{studentId}, SYSDATETIME());
     </insert>
     
 

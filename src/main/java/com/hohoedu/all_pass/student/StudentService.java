@@ -97,7 +97,7 @@ public class StudentService {
         return studentDetailRespDTO;
     }
 
-    public void studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
+    public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
         String today = dateConfig.currentYearMonth().get("today");
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
@@ -125,7 +125,10 @@ public class StudentService {
 
         studentRepository.insert(studentDTO);
         parentDTO.setStudentId(studentDTO.getStudentId());
+        parentDTO.setSignature(studentDTO.getStudentId()+"signature.png");
         familyService.parentInsert(parentDTO);
+
+        return studentDTO.getStudentId();
     }
 
     private String convertBirthToFullDate(String birth) {
@@ -275,7 +278,6 @@ public class StudentService {
 
         boolean finalHanState = oldHan || addHan;
         boolean finalBookState = oldBook || addBook;
-
 
 
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();

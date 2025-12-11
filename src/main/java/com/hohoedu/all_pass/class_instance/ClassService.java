@@ -149,7 +149,15 @@ public class ClassService {
     // 수업 코드 테이블 조회 서비스 (시간표 등록)
     public List<ClassCode> findClassCode() {
         List<ClassCode> classCodes = classCodeJpaRepository.findAll();
-        return classCodes;
+
+        return classCodes.stream()
+                .filter(c -> !Set.of("HL").contains(c.getClassKey()))
+                .toList();
+    }
+
+    public List<UnitCode> findHanLevelCode() {
+        List<UnitCode> unitCodes = classRepository.findHanLevelCode();
+        return unitCodes;
     }
 
     public List<ClassCode> findClassCodeExcludeMid() {

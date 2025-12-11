@@ -60,6 +60,8 @@ public class PaymentRespDTO {
         private String className;
         private String fee;
         private String classType;
+        private String unitKey;
+        private String unitName;
     }
 
     @Data

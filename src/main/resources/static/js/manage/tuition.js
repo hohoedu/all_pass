@@ -6,23 +6,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const feeMapList = [];
         inputs.forEach(input => {
-            const name = input.getAttribute("name"); // 예: fee_HAN001
+            const name = input.getAttribute("name"); // fee_HAN001 또는 fee_HL_H01
             const value = input.value.trim();
+            const centerCode = document.querySelector("#centerCode").value;
 
-            if (name && name.startsWith("fee_")) {
-                const classKey = name.replace("fee_", "");
-                const fee = value === "" ? 0 : parseInt(value);
-                const centerCode = document.querySelector("#centerCode").value;
-                if (!centerCode) {
-                    alert("지점코드가 없습니다. 다시 로그인해주세요.");
-                }
+            if (!name || !name.startsWith("fee_")) return;
 
-                feeMapList.push({
-                    centerCode: centerCode,
-                    classKey: classKey,
-                    fee: fee
-                });
+            const parts = name.split("_");
+            // ["fee", "HAN001"] or ["fee", "HL", "H01"]
+
+            let classKey = null;
+            let unitKey = null;
+
+            if (parts.length === 2) {
+                // 일반 과목: fee_HAN001
+                classKey = parts[1];
+            } else if (parts.length === 3) {
+                // 급수 과목: fee_HL_H01
+                classKey = parts[1];
+                unitKey = parts[2];
             }
+
+            const fee = value === "" ? 0 : parseInt(value);
+
+            feeMapList.push({
+                centerCode: centerCode,
+                classKey: classKey,
+                unitKey: unitKey, // 일반 과목이면 null
+                fee: fee
+            });
         });
 
         if (feeMapList.length === 0) {
@@ -30,12 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
-        const data = {
-            classFeeMap: feeMapList
-        };
+        const data = { classFeeMap: feeMapList };
         console.log(data);
-        console.log(JSON.stringify(data));
 
         try {
             const response = await fetch("/manage/fee/insert", {
@@ -45,8 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const result = await response.json();
-            console.log(result.response);
-            console.log(result["response"]);
             alert(result.response);
         } catch (error) {
             console.error("저장 중 오류:", error);

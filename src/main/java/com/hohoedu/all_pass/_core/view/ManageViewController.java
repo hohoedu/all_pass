@@ -7,6 +7,7 @@ import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.manage.ManageService;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.notice.CenterNotice;
@@ -131,7 +132,7 @@ public class ManageViewController {
             return "redirect:/login";
         }
         List<ClassCode> classCodes = classService.findClassCode();
-
+        List<UnitCode> hanLevelCode = classService.findHanLevelCode();
         List<ClassCode> hanClasses = classCodes.stream()
                 .filter(c -> "1".equals(c.getClassType()))
                 .toList();
@@ -150,10 +151,16 @@ public class ManageViewController {
                 .filter(f -> "1".equals(f.getClassType()))
                 .collect(Collectors.toMap(PaymentRespDTO.ClassFeeMapDTO::getClassKey, PaymentRespDTO.ClassFeeMapDTO::getFee));
 
+        Map<String, String> levelFeeMap = feeMaps.stream()
+                .filter(f -> "HL".equals(f.getClassKey()))
+                .collect(Collectors.toMap(PaymentRespDTO.ClassFeeMapDTO::getUnitKey, PaymentRespDTO.ClassFeeMapDTO::getFee));
+
         model.addAttribute("hanFeeMap", hanFeeMap);
         model.addAttribute("bookFeeMap", bookFeeMap);
+        model.addAttribute("levelFeeMap", levelFeeMap);
         model.addAttribute("hanClasses", hanClasses);
         model.addAttribute("bookClasses", bookClasses);
+        model.addAttribute("hanLevelCode", hanLevelCode);
         model.addAttribute("centerCode", user.getCenterCode());
 
         return "manage/tuition";

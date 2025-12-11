@@ -84,6 +84,7 @@ public class ManageService {
                     manageRepository.findOrder(dto.getCenterCode(),
                             dto.getClassKey(),
                             dto.getUnitKey(),
+                            dto.getUserCode(),
                             dto.getYy(),
                             dto.getMm());
 

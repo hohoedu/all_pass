@@ -98,10 +98,10 @@ public class StudentController {
     // 학생 등록
     @PostMapping("/join")
     public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO, @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
+        log.info("parentDTO = {}", parentDTO);
+        String studentId = studentService.studentInsert(studentDTO, parentDTO);
 
-        studentService.studentInsert(studentDTO, parentDTO);
-
-        return ResponseEntity.ok(ApiUtils.success("ok"));
+        return ResponseEntity.ok(ApiUtils.success(Map.of("studentId", studentId)));
     }
 
 

@@ -247,7 +247,7 @@ public class PaymentService {
                 .user(creator)
                 .itemType("BOOK_FEE")
                 .classType(classInfoDTO.getClassType())
-                .amount(15000)
+                .amount(0)
                 .note("교재비")
                 .timeTableKey(classInfoDTO.getTimeTableKey())
                 .build();

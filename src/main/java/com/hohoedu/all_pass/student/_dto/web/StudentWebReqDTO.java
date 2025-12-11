@@ -39,7 +39,7 @@ public class StudentWebReqDTO {
         private String relationKey;
         private boolean parentPrivacyAgree;
         private String studentId;
-        private String signaturePath;
+        private String signature;
     }
 
     @Data

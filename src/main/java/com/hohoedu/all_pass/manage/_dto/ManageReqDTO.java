@@ -53,6 +53,7 @@ public class ManageReqDTO {
             private String centerCode;
             private Integer fee;
             private String classKey;
+            private String unitKey;
 
         }
     }

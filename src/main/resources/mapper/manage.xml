@@ -77,6 +77,7 @@
         WHERE center_code = #{centerCode}
           AND class_key = #{classKey}
           AND unit_key = #{unitKey}
+          AND user_code = #{userCode}
           AND yy = #{yy}
           ANd mm = #{mm}
     </select>
@@ -88,7 +89,7 @@
 
     <update id="updateOrder">
         UPDATE erp_order
-        SET base_count = #{baseCount},
+        SET base_count  = #{baseCount},
             add_count   = #{addCount},
             total_count = #{totalCount},
             updated_at  = SYSDATETIME()
@@ -100,17 +101,23 @@
     </update>
 
     <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
-        SELECT cf.class_key AS classKey, cf.fee AS fee, cc.class_name AS className, cc.class_type AS classType
+        SELECT cf.class_key  AS classKey,
+               cf.unit_key   AS unitKey,
+               cf.fee        AS fee,
+               cc.class_name AS className,
+               cc.class_type AS classType,
+               uc.unit_name  AS unitName
         FROM erp_class_fee_map cf
                  JOIN erp_class_code cc ON cf.class_key = cc.class_key
+                 LEFT JOIN erp_unit_code uc ON cf.unit_key = uc.unit_key
         WHERE cf.center_code = #{centerCode}
     </select>
 
     <insert id="insertClassFeeMap" parameterType="java.util.List">
-        INSERT INTO erp_class_fee_map (class_key, center_code, fee)
+        INSERT INTO erp_class_fee_map (class_key, unit_key, center_code, fee)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.classKey}, #{item.centerCode}, #{item.fee})
+            (#{item.classKey}, #{item.unitKey}, #{item.centerCode}, #{item.fee})
         </foreach>
     </insert>
 
@@ -120,6 +127,10 @@
             SET fee = #{item.fee}
             WHERE class_key = #{item.classKey}
             AND center_code = #{item.centerCode}
+            AND (
+            (unit_key IS NULL AND #{item.unitKey} IS NULL)
+            OR unit_key = #{item.unitKey}
+            )
         </foreach>
     </update>
 

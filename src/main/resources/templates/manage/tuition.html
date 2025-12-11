@@ -126,71 +126,22 @@
                                 <th>수강료</th>
                                 </thead>
                                 <tbody>
-                                <tr>
-                                    <td rowspan="11">한자급수 교육비</td>
-                                    <td>8급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
+                                <tr th:each="lvl, stat : ${hanLevelCode}">
+                                    <!-- 첫 번째 행에서만 rowspan 처리 -->
+                                    <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hanLevelCode)}">
+                                        한자급수 교육비
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td>7급</td>
+
+                                    <!-- 급수명 -->
+                                    <td th:text="${lvl.unitName}"></td>
+
+                                    <!-- 입력창: fee_HL_H01 형태로 name 생성 -->
                                     <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>준6급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>6급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>준5급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>5급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>준4급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>4급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>준3급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>3급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>2급</td>
-                                    <td>
-                                        <input type="number" class="basic-input edu-input">
+                                        <input type="number"
+                                               class="basic-input edu-input"
+                                               th:name="'fee_HL_' + ${lvl.unitKey}"
+                                               th:value="${levelFeeMap.containsKey(lvl.unitKey) ? levelFeeMap[lvl.unitKey] : ''}"
+                                               step="10000">
                                     </td>
                                 </tr>
                                 </tbody>

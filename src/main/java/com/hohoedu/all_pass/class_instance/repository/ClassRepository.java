@@ -322,6 +322,8 @@ public interface ClassRepository {
 
     List<ClassCode> findClassListExcludeMid();
 
+    List<UnitCode> findHanLevelCode();
+
     ClassRespDTO.BasicTimeTableInfo findBasicTimeTableInfo(
             @Param("timeTableKey") String timeTableKey,
             @Param("centerCode") String centerCode);
