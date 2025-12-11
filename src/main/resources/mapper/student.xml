@@ -58,7 +58,7 @@
             ta.assign_han_teacher = #{userCode}
            OR ta.assign_book_teacher = #{userCode}
            OR (ta.assign_han_teacher IS NULL
-          AND ta.assign_book_teacher IS NULL)
+          OR ta.assign_book_teacher IS NULL)
             );
     </select>
 

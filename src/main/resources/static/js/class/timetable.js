@@ -612,27 +612,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingRows = document.querySelectorAll('.timetable-pending-list');
     if (!btn && !pendingRows === 0) return;
 
+    const savedDay = sessionStorage.getItem('selectedDay');
     const savedPeriod = sessionStorage.getItem('selectedPeriod');
-    if (savedPeriod) {
-        const activeTab = document.querySelector('.time-tab-content.active');
-        activeTab.querySelectorAll('tr.time-row').forEach(row => {
-            const p = row.querySelector('td:nth-child(2)').innerText.trim();
-            if (p === savedPeriod) {
-                row.querySelector('input[type=radio]').checked = true;
-            }
-        });
-        sessionStorage.removeItem('selectedPeriod');
+
+    if (savedDay && savedPeriod) {
+        const tabContent = document.getElementById(savedDay);
+        if (tabContent) {
+            document.querySelectorAll('.time-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.time-tab-content').forEach(ct => ct.classList.remove('active'));
+
+            const tabBtn = document.querySelector(`.time-tab-btn[data-tab="${savedDay}"]`);
+            if (tabBtn) tabBtn.classList.add('active');
+            tabContent.classList.add('active');
+
+            const targetRadio = tabContent.querySelector(`tr.time-row[data-period-no="${savedPeriod}"] input[type=radio]`);
+            if (targetRadio) targetRadio.checked = true;
+        }
     }
+
 
     const addStudents = () => {
         const activeContent = document.querySelector('.time-tab-content.active');
-        const selRow = activeContent.querySelector('input[type=radio]:checked').closest('tr.time-row');
-
-        if (!selRow) {
-            showAlert({icon: "warning", text: "수업을 선택해주세요."})
+        if (!activeContent) {
+            showAlert({icon: "warning", text: "요일을 선택해주세요."});
             return;
         }
 
+        const selRadio = activeContent.querySelector('input[type=radio]:checked');
+        if (!selRadio) {
+            showAlert({icon: "warning", text: "수업을 선택해주세요."});
+            return;
+        }
+
+        const selRow = selRadio.closest('tr.time-row');
+
+        // 선택된 요일(탭 id) 저장
+        const selectedDay = activeContent.getAttribute('id');
+        sessionStorage.setItem('selectedDay', selectedDay);
+
+        // 선택된 교시 저장
+        const selectedPeriod = selRow.dataset.periodNo;
+        sessionStorage.setItem('selectedPeriod', selectedPeriod);
 
         const timeTableKey = selRow.dataset.timeTableKey;
         if (!timeTableKey) {
@@ -640,17 +660,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const studentRows = Array.from(
-            document.querySelectorAll('.stu-chocie-table tbody tr')
-        ).filter(tr => tr.querySelector('input[type="checkbox"]').checked);
+        const studentRows = Array.from(document.querySelectorAll('.stu-chocie-table tbody tr'))
+            .filter(tr => tr.querySelector('input[type="checkbox"]').checked);
 
         if (studentRows.length === 0) {
             showAlert({icon: 'warning', text: '추가할 학생을 선택해주세요.'});
             return;
         }
+
         const [yy, mm] = document.getElementById('currentMonth')
             .textContent.trim().match(/(\d{4})년\s*(\d{1,2})월/).slice(1, 3)
             .map((v, i) => i === 1 ? v.padStart(2, '0') : v);
+
         const assignments = studentRows.map(tr => {
             const studentId = tr.querySelector('input[type="checkbox"]').value;
             const weekNo = tr.querySelector('input[name^="weeks-"]:checked').value;
@@ -659,9 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetch('/class/add_student', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({assignments})
         })
             .then(res => {
@@ -669,8 +688,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return res.json();
             })
             .then(apiResult => {
-                // const periodNo = selRow.querySelector('td:nth-child(2)').innerText.trim();
-                // sessionStorage.setItem('selectedPeriod', periodNo);
                 return showAlert({
                     icon: apiResult.response ? 'success' : 'error',
                     title: apiResult.response ? '학생이 추가되었습니다.' : '등록 실패',
@@ -679,26 +696,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     allowOutsideClick: false,
                     allowEscapeKey: false
                 });
-            }).then(result => {
-            if (result.isConfirmed) {
-                window.location.reload();
-            }
-        })
+            })
+            .then(result => {
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
+            })
             .catch(err => {
                 console.error(err);
-                showAlert({
-                    icon: 'error',
-                    title: '오류가 발생했습니다.',
-                    text: err.message
-                });
-                return;
+                showAlert({icon: 'error', title: '오류가 발생했습니다.', text: err.message});
             });
+    };
 
-    }
-
-    if (btn) {
-        btn.addEventListener('click', addStudents);
-    }
+    /* ---------------------------------------------------------
+     * 이벤트 바인딩
+     * --------------------------------------------------------- */
+    if (btn) btn.addEventListener('click', addStudents);
 
     pendingRows.forEach(row => {
         row.addEventListener('dblclick', () => {
@@ -709,6 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addStudents();
         });
     });
+
 });
 
 // 학생 삭제 로직

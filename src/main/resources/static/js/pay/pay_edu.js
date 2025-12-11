@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const teacherText = `${hanTeacherText}${teacherSeparator}${bookTeacherText}`;
 
             let statusHtml = '';
-            const eduIssued = !student.eduStatus != null;
+            const eduIssued = student.eduStatus != null;
             const materialIssued = student.materialStatus != null;
 
             if (!eduIssued && !materialIssued) {
@@ -155,14 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let payStatus = '';
+
             if (!student.totalStatus) {
                 payStatus = `<span class="pay-box">-</span>`;
-            } else if (student.totalStatus && !student.totalStatuss === 'approved') {
+            } else if (student.totalStatus !== 'approved') {
                 payStatus = `<span class="pay-box">미결제</span>`;
-            } else {
+            } else if (student.totalStatus === 'approved') {
                 payStatus = `<span class="pay-box">결제완료</span>`;
             }
-
             tr.innerHTML = `
             <td class="checkbox-group">
                 <input type="checkbox" class="row-checkbox" value="${student.studentId}">

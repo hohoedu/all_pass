@@ -41,8 +41,7 @@
                         <input type="hidden" id="comclassInfos" th:value="${comclassInfosJson}">
                         <td class="radio-group round">
                             <input type="radio"
-                                   th:attr="name=${'selectedPeriod_' + day.id}"
-                                   th:checked="${i == 1}"/>
+                                   th:attr="name=${'selectedPeriod_' + day.id}, data-period=${i} "/>
                         </td>
 
                         <td th:text="${i}">1</td>
