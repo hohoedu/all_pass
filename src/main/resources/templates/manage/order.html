@@ -160,9 +160,9 @@
                                 <tr th:each="savedOrder : ${savedOrderList}"
                                     th:data-class-key="${savedOrder.classKey}"
                                     th:data-unit-key="${savedOrder.unitKey}">
-                                    <td th:text="${savedOrder.className}">단계</td>
-                                    <td th:text="${savedOrder.unitName}">진도</td>
-                                    <td th:text="${savedOrder.baseCount}">기본수량</td>
+                                    <td th:text="${savedOrder.className}"></td>
+                                    <td th:text="${savedOrder.unitName}"></td>
+                                    <td th:text="${savedOrder.baseCount}"></td>
                                     <td>
                                         <span th:if="${savedOrder.addCount > 0}"
                                               th:text="'+' + ${savedOrder.addCount}"
@@ -175,11 +175,23 @@
                                         <span th:if="${savedOrder.addCount == 0}"></span>
                                     </td>
 
-                                    <td th:text="${savedOrder.totalCount}">총 수량</td>
+                                    <td th:text="${savedOrder.totalCount}"></td>
                                 </tr>
                                 </tbody>
+<!--                                <tfoot class="order-table">-->
+<!--                                <tr>-->
+<!--                                    <td>-->
+<!--                                        합계-->
+<!--                                    </td>-->
+<!--                                    <td></td>-->
+<!--                                    <td></td>-->
+<!--                                    <td>5</td>-->
+<!--                                    <td></td>-->
+<!--                                </tr>-->
+<!--                                </tfoot>-->
                             </table>
                         </div>
+                    </div>
                 </section>
             </div>
         </main>

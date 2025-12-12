@@ -1,63 +1,99 @@
 package com.hohoedu.all_pass.popbill;
 
+import com.hohoedu.all_pass._core.utils.Aes256Util;
+import com.hohoedu.all_pass._core.utils.PopbillServiceFactory;
+import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
+import com.hohoedu.all_pass.popbill.repository.PopbillRepository;
 import com.popbill.api.KakaoService;
 import com.popbill.api.PopbillException;
-import com.popbill.api.kakao.KakaoReceiver;
+import com.popbill.api.kakao.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.threeten.bp.LocalDateTime;
-import org.threeten.bp.format.DateTimeFormatter;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PopbillService {
 
-    private final KakaoService kakaoService;
-    private final PopbillProperties popbillProperties;
+    private final PopbillRepository popbillRepository;
+    private final PopbillServiceFactory serviceFactory;
 
-    public String sendAts(
-            String centerCode,
-            String templateCode,
-            String receiver,
-            String receiverName,
-            String content
-    ) throws PopbillException {
+    @Value("${popbill.aes.key}")
+    private String aesKey;
 
-        PopbillCenterProperties center = popbillProperties.getCenters().get(centerCode);
+    public void createPopbillConfig(PopbillReqDTO.PopbillInsertReqDTO reqDTO) {
 
-        if (center == null) {
-            throw new IllegalArgumentException("잘못된 센터 코드: " + centerCode);
-        }
+        String encryptedKey = Aes256Util.encrypt(reqDTO.getSecretKey(), aesKey);
 
-        String corpNum = center.getCorpNum();
-        String sender = center.getSenderNumber();
-        String userId = center.getUserId();
+        PopbillConfig config = PopbillConfig.builder()
+                .corpNumber(reqDTO.getCorpNumber())
+                .linkId(reqDTO.getLinkId())
+                .popbillId(reqDTO.getPopbillId())
+                .encryptedKey(encryptedKey)
+                .senderNumber(reqDTO.getSenderNumber())
+                .center(Center.builder().centerCode(reqDTO.getCenterCode()).build())
+                .build();
 
-        // KakaoReceiver 배열 생성 (단건)
-        KakaoReceiver rc = new KakaoReceiver();
-        rc.setReceiverNum(receiver);      // 수신번호
-        rc.setReceiverName(receiverName);    // 수신자명
-        rc.setMessage(content);              // 알림톡 본문 (중요)
+        int result = popbillRepository.insertPopbillConfig(config);
 
-        KakaoReceiver[] receivers = new KakaoReceiver[] { rc };
-
-        // altContent = null (대체문자 없음)
-        String altContent = null;
-
-        // sendATS 호출
-        return kakaoService.sendATS(
-                corpNum,
-                templateCode,
-                sender,
-                null,
-                altContent,
-                "C",
-                rc.getReceiverNum(),
-                rc.getReceiverName(),
-                "20251211210000"
-        );
     }
 
+    public String sendJoinAlimtalk(String centerCode, String phone, String regionName, String centerName) {
+
+        try {
+
+            KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
+
+            PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
+
+            // 알림톡 내용
+            String content = String.format(
+                    "[호호서당]\n%s %s에 오신 것을 환영합니다!\n\n" +
+                            "회원가입을 진행하시려면 아래 링크를 클릭해주세요.\n\n" +
+                            "링크: https://hohoedu.com/join?center=%s",
+                    regionName,
+                    centerName,
+                    centerCode
+            );
+
+            // 대체문자 내용
+            String altContent = String.format(
+                    "[호호서당] %s %s 회원가입 안내\nhttps://hohoedu.com/join?center=%s",
+                    regionName,
+                    centerName,
+                    centerCode
+            );
+
+            // 🔥 다른 sendATS 메서드 시도
+            String receiptNum = kakaoService.sendATS(
+                    config.getCorpNumber(),      // 사업자번호
+                    "025120000348",           // 템플릿 코드
+                    config.getSenderNumber(), // 발신번호
+                    phone,                    // 수신번호
+                    "신규회원",                // 수신자명
+                    content,                  // 알림톡 내용
+                    altContent,               // 대체문자 내용
+                    "A",                      // 대체문자 발송타입
+                    (String) null,                     // 예약일시
+                    (String) null                      // 버튼
+            );
+
+            log.info("알림톡 전송 성공 - receiptNum: {}, receiver: {}", receiptNum, phone);
+            return receiptNum;
+
+        } catch (PopbillException e) {
+            log.error("팝빌 알림톡 전송 실패 - code: {}, message: {}", e.getCode(), e.getMessage());
+            throw new RuntimeException("알림톡 전송 실패: " + e.getMessage(), e);
+        }
+    }
 }
+
+
+

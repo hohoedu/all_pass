@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectedRange = document.getElementById("selectedDateRange");
     const teacherSelect = document.getElementById("teacher-select");
 
-    if (!calendarBtn || !calendarInput || !selectedRange || !teacherSelect || !exploreBtn) {
+    if (!calendarBtn || !calendarInput || !selectedRange || !teacherSelect) {
         return;
     }
 

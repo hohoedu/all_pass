@@ -9,6 +9,7 @@ public class PaymentRespDTO {
     public static class AssignStudentsDTO {
         private String studentId;
         private String paymentKey;
+        private String billId;
         private String studentName;
         private String subject;
         private String hanTeacher;

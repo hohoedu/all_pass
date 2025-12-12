@@ -173,6 +173,31 @@ public class PaymentController {
 
     }
 
+    @PostMapping("/find/bill")
+    public ResponseEntity<?> getBill(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelPayment(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
 
     @GetMapping("/fee/{classKey}")
     public ResponseEntity<?> getClassFee(HttpSession session, @PathVariable String classKey) {

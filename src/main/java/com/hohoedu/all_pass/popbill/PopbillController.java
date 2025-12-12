@@ -1,60 +1,93 @@
 package com.hohoedu.all_pass.popbill;
 
+import com.google.protobuf.Api;
+import com.hohoedu.all_pass._core.handler.GlobalExceptionHandler;
+import com.hohoedu.all_pass._core.utils.Aes256Util;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-@RestController
+import java.util.Map;
+
+@Slf4j
+@Controller
+@RequestMapping("/popbill")
 @RequiredArgsConstructor
-@RequestMapping("/notice")
 public class PopbillController {
 
-    private final PopbillService popbillSendService;
+    private final PopbillService popbillService;
 
-    @PostMapping("/send-join")
-    public ResponseEntity<?> sendJoin(@RequestBody PopbillReqDTO.JoinNoticeRequest req, HttpSession session) {
+    @ResponseBody
+    @PostMapping("/insert/config")
+    public ResponseEntity<?> createPopbillConfig(@RequestBody PopbillReqDTO.PopbillInsertReqDTO dto) {
 
         try {
 
+            popbillService.createPopbillConfig(dto);
+            return ResponseEntity.ok(ApiUtils.success("입력 성공"));
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiUtils.error("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    @PostMapping("/send-join")
+    public ResponseEntity<?> sendJoinAlimtalk(@RequestBody Map<String, String> request, HttpSession session) {
+        String AESKey = "E3V5JyV1ukGsgxvIHEqY0Zd0CCWNvRkmsytyV6avVEk=";
+        String testKey = Aes256Util.encrypt("SwWxqU+0TErBXy/9TVjIPEnI0VTUMMSQZtJf3Ed8q3I=", AESKey);
+        log.info("testKey = {}", testKey);
+        String decTestKey = Aes256Util.decrypt(testKey, AESKey);
+        log.info("decTestKey= {}", decTestKey);
+        try {
+            // 1️⃣ 세션 체크
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                return ResponseEntity.status(HttpStatus.FOUND)
                         .header(HttpHeaders.LOCATION, "/login")
                         .build();
             }
-            // 세션에서 센터코드 가져오기 (이미 메뉴 페이지에서 사용 중)
-            String centerCode = user.getCenterCode();
 
-            // 템플릿코드: 알림톡 승인된 템플릿 코드 사용
-            String templateCode = "022070000338";
+            // 2️⃣ 전화번호 검증
+            String phone = request.get("phone");
+            if (phone == null || phone.trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(ApiUtils.error("전화번호를 입력해주세요.", HttpStatus.BAD_REQUEST));
+            }
 
-            // 수신자명은 모르면 공백으로 처리
-            String receiverName = "신규회원";
 
-            String content = "[호호서당]\n회원 등록 안내 메시지입니다.";
+            // 3️⃣ PopbillService에 위임 🔥
+//            String receiptNum = popbillService.sendJoinAlimtalk(
+//                    user.getCenterCode(),
+//                    phone,
+//                    user.getRegionName(),
+//                    user.getCenterName()
+//            );
 
-            String receipt = popbillSendService.sendAts(
-                    centerCode,
-                    templateCode,
-                    req.getPhone(),
-                    "신규회원",
-                    content
-            );
+//            log.info("신규회원 알림톡 발송 성공 - centerCode: {}, phone: {}, receiptNum: {}",
+//                    user.getCenterCode(), phone, receiptNum);
 
-            return ResponseEntity.ok(ApiUtils.success("hello"));
+            // 4️⃣ 성공 응답
+            return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.ok(ApiUtils.error(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+            log.error("알림톡 발송 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiUtils.error("알림톡 발송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 }

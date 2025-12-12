@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         students.forEach((student, index) => {
             const tr = document.createElement('tr');
-
+            tr.dataset.billId = student.billId || '';
             tr.dataset.parentPhone = student.parentPhone || '';
             tr.dataset.studentId = student.studentId || '';
             tr.dataset.studentName = student.studentName || '';
@@ -328,7 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="checkbox-group">
                 <input type="checkbox" 
                        data-student-id="${item.studentId}" 
-                       data-bill-id="${item.billId}">
+                       data-bill-id="${item.billId}"
+                       data-total-fee = "${item.totalFee}"
+                       data-total-material-fee = "${item.totalMaterialFee}">
             </td>
             <td>${index + 1}</td>
             <td>${item.classDate || ''}</td>
@@ -558,21 +560,63 @@ document.addEventListener("DOMContentLoaded", () => {
 // 결제 취소 버튼
     payCancel.addEventListener('click', async () => {
 
-        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
-        if (checkedBoxes.length === 0) return alert('결제 취소할 학생을 선택하세요.');
+        const checkedBoxes = document.querySelectorAll(
+            '#student-tbody input[type="checkbox"]:checked'
+        );
+
+        if (checkedBoxes.length === 0) {
+            alert('결제 취소할 학생을 선택하세요.');
+            return;
+        }
+
+        if (checkedBoxes.length !== 1) {
+            alert('결제 취소는 한 명씩만 가능합니다.');
+            return;
+        }
 
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-        if (!eduChecked && !bookChecked) return alert('취소할 결제 종류를 선택하세요.');
+
+        if (!eduChecked && !bookChecked) {
+            alert('취소할 결제 종류를 선택하세요.');
+            return;
+        }
+
+        const row = checkedBoxes[0].closest('tr');
+
+        if (row.dataset.totalStatus !== 'approved') {
+            alert('결제 완료된 건만 취소할 수 있습니다.');
+            return;
+        }
+
+        const billId = row.dataset.billId;
+        const paymentKey = row.dataset.paymentKey;
+        const studentId = row.dataset.studentId;
+
+        if (!billId || !paymentKey) {
+            alert('결제 정보가 불완전하여 취소할 수 없습니다.');
+            return;
+        }
+
+        if (!confirm(
+            `${row.dataset.studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n` +
+            `※ 이 작업은 되돌릴 수 없습니다.`
+        )) {
+            return;
+        }
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [yy, mm] = selectedMonth.split("-");
 
-        const students = Array.from(checkedBoxes).map(box => ({
-            studentId: box.closest('tr').dataset.studentId
-        }));
-
-        const body = {students, yy, mm, eduChecked, bookChecked};
+        const body = {
+            studentId,
+            billId,
+            paymentKey,
+            yy,
+            mm,
+            eduChecked,
+            bookChecked
+        };
 
         try {
             const res = await fetch("/pay/cancel", {
@@ -583,8 +627,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            alert(`취소 결과: 성공 ${data.successCount}명 / 실패 ${data.failCount}명`);
-            // window.location.reload();
+            if (data.success) {
+                alert('결제가 취소되었습니다.');
+                location.reload();
+            } else {
+                alert(data.msg || '결제 취소에 실패했습니다.');
+            }
 
         } catch (err) {
             console.error("❌ 결제 취소 오류:", err);
@@ -597,24 +645,69 @@ document.addEventListener("DOMContentLoaded", () => {
 // ================================
     payDestroy.addEventListener('click', async () => {
 
-        const billId = prompt("파기할 bill_id 입력");
+        const checked = document.querySelectorAll(
+            '#student-tbody .row-checkbox:checked'
+        );
 
-        if (!billId) return;
+        if (checked.length === 0) {
+            alert('청구서를 파기할 학생을 선택하세요.');
+            return;
+        }
+
+        if (checked.length > 1) {
+            alert('청구서 파기는 한 명씩만 가능합니다.');
+            return;
+        }
+
+        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
+        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
+        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
+
+        const row = checked[0].closest('tr');
+        let price = "";
+        if(eduChecked){
+            price = row.dataset.totalFee;
+        }
+        if(bookChecked){
+            price = row.dataset.totalMaterialFee;
+        }
+        const billId = row.dataset.billId;
+        const studentId = row.dataset.studentId;
+        const paymentKey = row.dataset.paymentKey;
+
+        if (!billId || !price) {
+            alert('파기 가능한 청구서가 없습니다.');
+            return;
+        }
+
+        if (!confirm(`${row.dataset.studentName} 학생의 청구서를 파기하시겠습니까?`)) {
+            return;
+        }
 
         try {
-            const res = await fetch("/pay/destroy", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({billId})
+            const res = await fetch('/pay/destroy/bill', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    billId,
+                    price: Number(price),
+                    studentId,
+                    paymentKey
+                })
             });
 
             const data = await res.json();
 
-            if (data.success) alert("청구서가 파기되었습니다.");
-            else alert(`파기 실패: ${data.msg}`);
+            if (data.success) {
+                alert('청구서가 파기되었습니다.');
+                location.reload();
+            } else {
+                alert(data.msg || '청구서 파기에 실패했습니다.');
+            }
 
         } catch (err) {
-            console.error("❌ 파기 오류:", err);
+            console.error('❌ 청구서 파기 오류:', err);
+            alert('서버 오류로 청구서를 파기할 수 없습니다.');
         }
     });
 

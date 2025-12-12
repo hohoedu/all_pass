@@ -131,4 +131,5 @@ public class ManageController {
             return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
         }
     }
+
 }

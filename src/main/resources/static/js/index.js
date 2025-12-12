@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch("/notice/send-join", {
+            const response = await fetch("/popbill/send-join", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

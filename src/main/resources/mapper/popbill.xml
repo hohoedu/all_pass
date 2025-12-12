@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.popbill.repository.PopbillRepository">
+
+    <insert id="insertPopbillConfig" parameterType="com.hohoedu.all_pass.popbill.PopbillConfig">
+        INSERT INTO erp_popbill_config (corp_number, link_id, popbill_id, encrypted_key, sender_number, center_code, created_at)
+        VALUES (#{corpNumber}, #{linkId}, #{popbillId}, #{encryptedKey}, #{senderNumber}, #{center.centerCode}, SYSDATETIME());
+    </insert>
+
+    <select id="findPopbillConfig" resultType="com.hohoedu.all_pass.popbill.PopbillConfig">
+        SELECT *
+        FROM erp_popbill_config
+        WHERE center_code = #{centerCode}
+    </select>
+</mapper>

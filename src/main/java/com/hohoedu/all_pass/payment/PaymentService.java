@@ -461,7 +461,13 @@ public class PaymentService {
         String hash = DigestUtils.sha256Hex(raw);
 
         log.info("hash={}", hash);
-
+        log.info("billId = {}", req.getBillId());
+        log.info("price={}", req.getPrice());
+        log.info("studentId={}", req.getStudentId());
+        log.info("apiKey={}", conf.getApiKey());
+        log.info("getMemberId={}", conf.getMemberId());
+        log.info("getMerchantId={}", conf.getMerchantId());
+        log.info("getPrice={}", req.getPrice());
         Map<String, Object> body = Map.of(
                 "apikey", conf.getApiKey(),
                 "member", conf.getMemberId(),
