@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-
+            console.log(data.response);
             renderReorderRows(data.response);
 
         } catch (e) {
@@ -262,10 +262,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector("#reorder-tbody");
         tbody.innerHTML = "";
 
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `
+        <tr>
+            <td colspan="8" style="text-align:center;">
+                추가/반품이 없습니다.
+            </td>
+        </tr>
+    `;
+            return;
+        }
+
         list.forEach(item => {
             const html = `
             <tr data-class-key="${item.classKey}" data-unit-key="${item.unitKey}">
-                <td>${item.reorderType === 'add' ? '추가주문' : '반품'}</td>
+                <td>${item.reorderType === 'ADD' ? '추가주문' : '반품'}</td>
                 <td>${item.className}</td>
                 <td>${item.unitName}</td>
                 <td>${item.count}</td>

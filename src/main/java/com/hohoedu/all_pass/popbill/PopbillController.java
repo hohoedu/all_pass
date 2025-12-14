@@ -63,11 +63,6 @@ public class PopbillController {
 
     @PostMapping("/send-join")
     public ResponseEntity<?> sendJoinAlimtalk(@RequestBody Map<String, String> request, HttpSession session) {
-        String AESKey = "E3V5JyV1ukGsgxvIHEqY0Zd0CCWNvRkmsytyV6avVEk=";
-        String testKey = Aes256Util.encrypt("SwWxqU+0TErBXy/9TVjIPEnI0VTUMMSQZtJf3Ed8q3I=", AESKey);
-        log.info("testKey = {}", testKey);
-        String decTestKey = Aes256Util.decrypt(testKey, AESKey);
-        log.info("decTestKey= {}", decTestKey);
         try {
             // 1️⃣ 세션 체크
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

@@ -158,7 +158,7 @@
                                 <tr th:each="reorder : ${reorderList}"
                                     th:data-class-key="${reorder.classKey}"
                                     th:data-unit-key="${reorder.unitKey}">
-                                    <td th:text="${reorder.reorderType} == 'add' ? '추가주문' : '반품' ">종류</td>
+                                    <td th:text="${reorder.reorderType} == 'ADD' ? '추가주문' : '반품' ">종류</td>
                                     <td th:text="${reorder.className}">수업</td>
                                     <td th:text="${reorder.unitName}">교재</td>
                                     <td th:text="${reorder.count}">수량</td>
@@ -166,6 +166,11 @@
                                     <td th:text="${reorder.createdAt}">등록 일시</td>
                                     <td th:text="${reorder.confirmed} == 'checked' ? '승인':'미승인' ">등록 일시</td>
                                     <td>아이콘</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(reorderList)}">
+                                    <td colspan="8" style="text-align: center;">
+                                        추가/반품이 없습니다.
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
