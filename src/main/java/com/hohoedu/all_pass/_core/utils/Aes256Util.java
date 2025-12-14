@@ -23,25 +23,28 @@ public class Aes256Util {
             throw new IllegalArgumentException("AES key cannot be null or empty");
         }
 
-        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        // ✅ Base64 디코딩
+        byte[] keyBytes;
+        try {
+            keyBytes = Base64.getDecoder().decode(key);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("AES key must be Base64 encoded", e);
+        }
 
-        // 정확히 32바이트가 아니면 에러
+        // ✅ 디코딩 후 길이 체크
         if (keyBytes.length != AES_KEY_LENGTH) {
             throw new IllegalArgumentException(
-                    String.format("AES key must be exactly %d bytes. current=%d bytes",
-                            AES_KEY_LENGTH, keyBytes.length)
+                    String.format(
+                            "AES key must be exactly %d bytes after Base64 decoding. current=%d bytes",
+                            AES_KEY_LENGTH, keyBytes.length
+                    )
             );
         }
 
         return new SecretKeySpec(keyBytes, "AES");
     }
 
-    /**
-     * 평문 암호화
-     * @param plainText 암호화할 평문
-     * @param key 32바이트 암호화 키
-     * @return Base64 인코딩된 암호문 (IV + 암호문)
-     */
+
     public static String encrypt(String plainText, String key) {
         // 입력값 검증
         if (plainText == null || plainText.isEmpty()) {
@@ -82,14 +85,7 @@ public class Aes256Util {
         }
     }
 
-    /**
-     * 암호문 복호화
-     * @param cipherText Base64 인코딩된 암호문 (IV + 암호문)
-     * @param key 32바이트 암호화 키
-     * @return 복호화된 평문
-     */
     public static String decrypt(String cipherText, String key) {
-        // 입력값 검증
         if (cipherText == null || cipherText.isEmpty()) {
             throw new IllegalArgumentException("Cipher text cannot be null or empty");
         }

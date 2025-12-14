@@ -13,10 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -46,6 +43,24 @@ public class PopbillController {
         }
     }
 
+    @GetMapping("/access-url")
+    public ResponseEntity<?> getAccessURL(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        try {
+            String url = popbillService.getPopbillAccessURL(user.getCenterCode());
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/send-join")
     public ResponseEntity<?> sendJoinAlimtalk(@RequestBody Map<String, String> request, HttpSession session) {
         String AESKey = "E3V5JyV1ukGsgxvIHEqY0Zd0CCWNvRkmsytyV6avVEk=";
@@ -71,15 +86,17 @@ public class PopbillController {
 
 
             // 3️⃣ PopbillService에 위임 🔥
-//            String receiptNum = popbillService.sendJoinAlimtalk(
-//                    user.getCenterCode(),
-//                    phone,
-//                    user.getRegionName(),
-//                    user.getCenterName()
-//            );
+            String receiptNum = popbillService.sendJoinAlimtalk(
+                    user.getCenterCode(),
+                    phone,
+                    user.getRegionName(),
+                    user.getCenterName()
+            );
 
-//            log.info("신규회원 알림톡 발송 성공 - centerCode: {}, phone: {}, receiptNum: {}",
-//                    user.getCenterCode(), phone, receiptNum);
+
+
+            log.info("신규회원 알림톡 발송 성공 - centerCode: {}, phone: {}, receiptNum: {}",
+                    user.getCenterCode(), phone, receiptNum);
 
             // 4️⃣ 성공 응답
             return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));

@@ -36,9 +36,8 @@ public class PopbillServiceFactory {
         PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
 
         String secretKey = Aes256Util.decrypt(config.getEncryptedKey(), aesKey);
-        log.info("secretKey= {}", secretKey);
-        KakaoServiceImp kakaoService = new KakaoServiceImp();
 
+        KakaoServiceImp kakaoService = new KakaoServiceImp();
         kakaoService.setLinkID(config.getLinkId());
         kakaoService.setSecretKey(secretKey);
         kakaoService.setTest(isTest);

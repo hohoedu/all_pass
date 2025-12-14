@@ -20,6 +20,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/student")
@@ -30,7 +31,7 @@ public class StudentViewController {
     private final ClassService classService;
 
     // 학생 등록
-    @GetMapping("/join")
+    @GetMapping("/web/join")
     public String getStudentJoinPage(Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -43,6 +44,20 @@ public class StudentViewController {
 
         return "student/join";
     }
+
+    @GetMapping("/mobile/join")
+    public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode, Model model, HttpSession session) {
+
+        List<GradeCode> gradeCodes = studentService.findGrade();
+        List<RelationCode> relationCodes = studentService.findRelation();
+
+        model.addAttribute("centerCode", centerCode);
+        model.addAttribute("gradeCodes", gradeCodes);
+        model.addAttribute("relationCodes", relationCodes);
+
+        return "student/join";
+    }
+
 
     // 학생 정보 메인
     @GetMapping("/main")
