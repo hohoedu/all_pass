@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass.admin.AdminService;
+import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.CenterService;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -38,8 +41,19 @@ public class AdminViewController {
     public String book(Model model, HttpSession session) {
         List<ClassCode> classCodes = classService.findClassCodeExcludeMid();
         List<SubjectCode> subjects = adminService.findSubjects();
+        List<AdminRespDTO.BookSuggestViewDTO> list = adminService.findBookSuggest();
+
+        // week 기준 Map (1~4)
+        Map<Integer, AdminRespDTO.BookSuggestViewDTO> bookMap =
+                list.stream()
+                        .collect(Collectors.toMap(
+                                b -> Integer.parseInt(b.getWeek()),
+                                b -> b,
+                                (a, b) -> a
+                        ));
         model.addAttribute("subjects", subjects);
         model.addAttribute("classCodes", classCodes);
+        model.addAttribute("bookMap", bookMap);
         return "admin/app/book-suggest";
     }
 }

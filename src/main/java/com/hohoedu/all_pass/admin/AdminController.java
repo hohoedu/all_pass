@@ -4,6 +4,7 @@ import com.google.api.Http;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.admin._dto.AdminReqDTO;
+import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -47,8 +49,16 @@ public class AdminController {
 
             return ApiUtils.success("저장되었습니다.");
         } catch (Exception e) {
-            return ApiUtils.error("저장 실패: ", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ApiUtils.error("저장 실패: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/book/suggest")
+    @ResponseBody
+    public ResponseEntity<?> getBookSuggest(@RequestBody AdminReqDTO.BookSuggestSearchReqDTO req) {
+        List<AdminRespDTO.BookSuggestViewDTO> result = adminService.findBookSuggestByMonth(req.getClassKey(), req.getYy(), req.getMm());
+
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
     @PostMapping("/upload/book-image")

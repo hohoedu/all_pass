@@ -261,7 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderReorderRows(list) {
         const tbody = document.querySelector("#reorder-tbody");
         tbody.innerHTML = "";
-
+        const confirmedTextMap = {
+            checked: '승인',
+            unchecked: '미승인',
+            admin_cancel: '관리자 취소',
+            user_cancel: '사용자 취소'
+        };
         if (!list || list.length === 0) {
             tbody.innerHTML = `
         <tr>
@@ -282,8 +287,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.count}</td>
                 <td>${item.reason}</td>
                 <td>${item.createdAt}</td>
-                <td>${item.confirmed === 'checked' ? '승인' : '미승인'}</td>
-                <td>아이콘</td>
+                <td>${confirmedTextMap[item.confirmed] ?? '-'}</td>
+                <td>취소</td>
             </tr>
         `;
 

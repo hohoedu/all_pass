@@ -53,6 +53,13 @@ public class AdminReqDTO {
     }
 
     @Data
+    public static class BookSuggestSearchReqDTO {
+        private String classKey;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class BookSuggestDTO {
         private String classKey;
         private String yy;

@@ -46,25 +46,25 @@
                             <li th:each="c : ${classCodes}"
                                 class="class-btn"
                                 th:data-key="${c.classKey}"
-                                th:text="${c.className}">
+                                th:text="${c.classKey == 'J'} ? '유아' :(${c.classKey == 'BSS'} ? '북스쿨 중등' : ${c.className})">
                             </li>
                         </ul>
                     </section>
                     <section class="class-log-right class-log-right2">
                         <div class="book-frame">
                             <ul class="table-frame book-list">
-                                <li class="class-btn2 active" data-class-id="1월">1월</li>
-                                <li class="class-btn2" data-class-id="2월">2월</li>
-                                <li class="class-btn2" data-class-id="3월">3월</li>
-                                <li class="class-btn2" data-class-id="4월">4월</li>
-                                <li class="class-btn2" data-class-id="5월">5월</li>
-                                <li class="class-btn2" data-class-id="6월">6월</li>
-                                <li class="class-btn2" data-class-id="7월">7월</li>
-                                <li class="class-btn2" data-class-id="8월">8월</li>
-                                <li class="class-btn2" data-class-id="9월">9월</li>
-                                <li class="class-btn2" data-class-id="10월">10월</li>
-                                <li class="class-btn2" data-class-id="11월">11월</li>
-                                <li class="class-btn2" data-class-id="12월">12월</li>
+                                <li class="class-btn2 active" data-class-id="01">1월</li>
+                                <li class="class-btn2" data-class-id="02">2월</li>
+                                <li class="class-btn2" data-class-id="03">3월</li>
+                                <li class="class-btn2" data-class-id="04">4월</li>
+                                <li class="class-btn2" data-class-id="05">5월</li>
+                                <li class="class-btn2" data-class-id="06">6월</li>
+                                <li class="class-btn2" data-class-id="07">7월</li>
+                                <li class="class-btn2" data-class-id="08">8월</li>
+                                <li class="class-btn2" data-class-id="09">9월</li>
+                                <li class="class-btn2" data-class-id="10">10월</li>
+                                <li class="class-btn2" data-class-id="11">11월</li>
+                                <li class="class-btn2" data-class-id="12">12월</li>
                             </ul>
                         </div>
                         <div th:each="week : ${#numbers.sequence(1,4)}">
@@ -79,16 +79,19 @@
                                 </colgroup>
 
                                 <tbody>
+                                <!-- 주제 / 출판사 -->
                                 <tr>
                                     <th>주제</th>
                                     <td>
                                         <div class="select-wrap">
-                                            <select name="subject" class="styled-select"
+                                            <select name="subject"
+                                                    class="styled-select"
                                                     th:id="'subject-' + ${week}">
                                                 <option value="">주제 선택</option>
                                                 <option th:each="s : ${subjects}"
                                                         th:value="${s.subjectKey}"
-                                                        th:text="${s.subjectName}">
+                                                        th:text="${s.subjectName}"
+                                                        th:selected="${bookMap[week]?.subjectKey == s.subjectKey}">
                                                 </option>
                                             </select>
                                         </div>
@@ -97,16 +100,23 @@
                                     <th>출판사</th>
                                     <td>
                                         <div class="td-inputs">
-                                            <input type="text" th:id="'publisher-' + ${week}" placeholder="출판사를 입력하세요.">
+                                            <input type="text"
+                                                   th:id="'publisher-' + ${week}"
+                                                   th:value="${bookMap[week]?.publisher}"
+                                                   placeholder="출판사를 입력하세요.">
                                         </div>
                                     </td>
                                 </tr>
 
+                                <!-- 도서명 / 이미지 -->
                                 <tr>
                                     <th>도서명</th>
                                     <td>
                                         <div class="td-inputs">
-                                            <input type="text" th:id="'bookName-' + ${week}" placeholder="도서명을 입력하세요.">
+                                            <input type="text"
+                                                   th:id="'bookName-' + ${week}"
+                                                   th:value="${bookMap[week]?.bookName}"
+                                                   placeholder="도서명을 입력하세요.">
                                         </div>
                                     </td>
 
@@ -116,8 +126,20 @@
                                             파일 선택
                                             <input type="file" th:id="'file-' + ${week}" hidden>
                                         </label>
-                                        <span class="file-name" th:id="'file-name-' + ${week}">이미지</span>
-                                        <input type="hidden" th:id="'imagePath-' + ${week}">
+
+                                        <!-- 파일명 표시 -->
+                                        <span class="file-name"
+                                              th:id="'file-name-' + ${week}"
+                                              th:text="${bookMap[week]?.bookImageUrl != null
+                               ? #strings.substringAfterLast(bookMap[week].bookImageUrl, '/')
+                               : '이미지'}">
+                </span>
+
+                                        <!-- 실제 이미지 경로 -->
+                                        <input type="hidden"
+                                               th:id="'imagePath-' + ${week}"
+                                               th:value="${bookMap[week]?.bookImageUrl}">
+
                                         <span class="file-remove">X</span>
                                     </td>
                                 </tr>

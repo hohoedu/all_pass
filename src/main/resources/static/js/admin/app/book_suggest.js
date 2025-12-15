@@ -1,21 +1,114 @@
+let currentClassKey = null;
+let currentYear = new Date().getFullYear().toString();
+let currentMonth = null
+
 document.addEventListener("DOMContentLoaded", () => {
 
-    // 월 선택 버튼 (.class-btn2)
     const monthButtons = document.querySelectorAll(".class-btn2");
+    const classButtons = document.querySelectorAll(".class-btn");
+
+    // ===== 월 클릭 =====
     monthButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             monthButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
+
+            currentMonth = btn.dataset.classId;
+
+            if (currentClassKey) {
+                loadBookSuggest();
+            }
         });
     });
 
-    const classButtons = document.querySelectorAll(".class-btn");
+    // ===== 단계 클릭 =====
     classButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             classButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
+
+            currentClassKey = btn.dataset.key;
+
+            if (currentMonth) {
+                loadBookSuggest();
+            }
         });
     });
+
+    if (classButtons.length > 0) {
+        classButtons.forEach(b => b.classList.remove("active"));
+
+        const firstClassBtn = classButtons[0];
+        firstClassBtn.classList.add("active");
+        currentClassKey = firstClassBtn.dataset.key;
+    }
+
+    // 2️⃣ 월: 무조건 1월
+    monthButtons.forEach(b => b.classList.remove("active"));
+
+    const januaryBtn = document.querySelector('.class-btn2[data-class-id="01"]');
+    if (januaryBtn) {
+        januaryBtn.classList.add("active");
+        currentMonth = "01";
+    }
+
+
+    // 3️⃣ 자동 조회
+    if (currentClassKey && currentMonth) {
+        loadBookSuggest();
+    }
+
+    async function loadBookSuggest() {
+        try {
+            const res = await fetch("/admin/book/suggest", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    classKey: currentClassKey,
+                    yy: currentYear,
+                    mm: currentMonth
+                })
+            });
+
+            if (!res.ok) throw new Error("조회 실패");
+
+            const list = await res.json();
+            renderBookSuggest(list.response);
+
+        } catch (err) {
+            console.error(err);
+            alert("도서 정보를 불러오지 못했습니다.");
+        }
+    }
+
+    function renderBookSuggest(list) {
+
+        // 1~4주 초기화
+        for (let week = 1; week <= 4; week++) {
+            document.getElementById(`subject-${week}`).value = "";
+            document.getElementById(`publisher-${week}`).value = "";
+            document.getElementById(`bookName-${week}`).value = "";
+            document.getElementById(`imagePath-${week}`).value = "";
+            document.getElementById(`file-name-${week}`).textContent = "이미지";
+        }
+
+        // 데이터 채우기
+        list.forEach(item => {
+            const week = item.week;
+
+            document.getElementById(`subject-${week}`).value = item.subjectKey || "";
+            document.getElementById(`publisher-${week}`).value = item.publisher || "";
+            document.getElementById(`bookName-${week}`).value = item.bookName || "";
+            document.getElementById(`imagePath-${week}`).value = item.bookImageUrl || "";
+
+            if (item.bookImageUrl) {
+                document.getElementById(`file-name-${week}`).textContent =
+                    item.bookImageUrl.split("/").pop();
+            }
+        });
+    }
 
 
     for (let week = 1; week <= 4; week++) {

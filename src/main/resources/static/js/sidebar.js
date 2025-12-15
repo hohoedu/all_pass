@@ -153,3 +153,28 @@ document.addEventListener('DOMContentLoaded', function () {
     window.location.href = url;
   });
 });
+
+// ================ 수강료 청구 ============ //
+document.addEventListener('DOMContentLoaded', function () {
+  const link = document.getElementById('payEduLink');
+  if (!link) return;
+
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+
+    let year = params.get('year');
+    let month = params.get('month');
+
+    // URL에 없을 경우만 현재월 fallback
+    if (!year || !month) {
+      const now = new Date();
+      year = String(now.getFullYear());
+      month = String(now.getMonth() + 1).padStart(2, '0');
+    }
+
+    window.location.href = `/pay/pay-edu?year=${year}&month=${month}`;
+  });
+});

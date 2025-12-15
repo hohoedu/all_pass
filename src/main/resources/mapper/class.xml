@@ -1096,7 +1096,7 @@
     <select id="findClassListExcludeMid" resultType="com.hohoedu.all_pass.class_instance.model.ClassCode">
         SELECT *
         FROM erp_class_code
-        WHERE class_key NOT IN ('BSS', 'BSA')
+        WHERE class_key NOT IN ('BSA', 'K', 'M')
           AND class_type = '2'
     </select>
 

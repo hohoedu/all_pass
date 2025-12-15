@@ -25,5 +25,11 @@ public interface AdminRepository {
 
     List<SubjectCode> findSubject();
 
+    List<AdminRespDTO.BookSuggestViewDTO> findBookSuggest();
+    List<AdminRespDTO.BookSuggestViewDTO> findBookSuggestByMonth(
+            String classKey,
+            String yy,
+            String mm
+    );
     int upsertBookSuggest(AdminReqDTO.BookSuggestDTO dto);
 }

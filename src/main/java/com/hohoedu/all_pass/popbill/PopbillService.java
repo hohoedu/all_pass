@@ -52,6 +52,7 @@ public class PopbillService {
 //            KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
 
             // SSO URL 발급
+            KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
             String url = kakaoService.getAccessURL(
                     config.getCorpNumber(),
                     config.getPopbillId()

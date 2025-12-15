@@ -38,6 +38,27 @@
         FROM erp_subject_code
     </select>
 
+    <select id="findBookSuggest" resultType="com.hohoedu.all_pass.admin._dto.AdminRespDTO$BookSuggestViewDTO">
+        SELECT *
+        from erp_book_suggest
+    </select>
+
+    <select id="findBookSuggestByMonth"
+            resultType="com.hohoedu.all_pass.admin._dto.AdminRespDTO$BookSuggestViewDTO">
+        SELECT class_key      AS classKey,
+               yy,
+               mm,
+               week,
+               subject_key    AS subjectKey,
+               book_name      AS bookName,
+               publisher,
+               book_image_url AS bookImageUrl
+        FROM erp_book_suggest
+        WHERE class_key = #{classKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <update id="upsertBookSuggest">
         MERGE INTO erp_book_suggest AS target
             USING (SELECT #{classKey} AS class_key,
@@ -56,8 +77,7 @@
                     book_image_url = #{bookImageUrl},
                     updated_at = SYSDATETIME()
             WHEN NOT MATCHED THEN
-                INSERT (subject_key, book_name, publisher, book_image_url, class_key, yy, mm,
-                        week, created_at)
+                INSERT (subject_key, book_name, publisher, book_image_url, class_key, yy, mm, week, created_at)
                     VALUES (#{subjectKey}, #{bookName}, #{publisher}, #{bookImageUrl}, #{classKey}, #{yy}, #{mm},
                             #{week}, SYSDATETIME());
     </update>

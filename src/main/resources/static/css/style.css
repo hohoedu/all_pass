@@ -1721,12 +1721,12 @@ textarea {
     text-align: center;
 }
 
-.left-bottom img {
-    width: 40px;
-}
+/*.left-bottom img {*/
+/*    width: 40px;*/
+/*}*/
 
 .ecl-icon img {
-    padding: 30px 0 10px 0;
+    margin: 30px 0 30px 0;
 }
 
 .dokcl-icon {

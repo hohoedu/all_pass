@@ -3,25 +3,24 @@
 document.addEventListener('DOMContentLoaded', () => {
     const monthInput = document.querySelector('.hidden-picker');
     const monthBtn = document.querySelector('.calendar-open');
-    const monthDisplay = document.querySelector('.day-display');
+    const monthDisplay = document.querySelector('.current-month');
     const teacherSelect = document.getElementById('student-filter');
     const tbody = document.getElementById('student-tbody');
 
-    initCurrentMonth();
     bindSelectAllCheckbox();
+    initMonthFromUrl();
 
-    monthBtn.addEventListener('click', () => monthInput.showPicker());
+    monthBtn.addEventListener('click', () => {
+        if (typeof monthInput.showPicker === 'function') {
+            monthInput.showPicker();
+        } else {
+            monthInput.click();
+        }
+    });
+
     monthInput.addEventListener('change', onMonthChange);
     teacherSelect.addEventListener('change', onTeacherChange);
 
-    function initCurrentMonth() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
-
-        monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
-        monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
-    }
 
     // 체크박스 전체 선택
     function bindSelectAllCheckbox() {
@@ -44,27 +43,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initMonthFromUrl() {
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+
+        let year = params.get('year');
+        let month = params.get('month');
+
+        if (!year || !month) {
+            const now = new Date();
+            year = now.getFullYear();
+            month = String(now.getMonth() + 1).padStart(2, '0');
+        } else {
+            month = String(month).padStart(2, '0');
+        }
+
+        // input 값 세팅 (달력용)
+        monthInput.value = `${year}-${month}`;
+
+        // 화면 표시용 (span)
+        monthDisplay.textContent = `${year}년 ${parseInt(month, 10)}월`;
+    }
+
     // 월 변경
-    async function onMonthChange() {
-        const date = new Date(monthInput.value);
-        if (isNaN(date)) return;
+    function onMonthChange() {
+        const [year, month] = monthInput.value.split('-');
 
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
+        // 화면 표시 갱신
+        monthDisplay.textContent = `${year}년 ${parseInt(month, 10)}월`;
 
-        monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
+        // URL 갱신
+        const url = new URL(window.location.href);
+        url.searchParams.set('year', year);
+        url.searchParams.set('month', month);
 
-        const teacherCode = teacherSelect.value || null;
-        await fetchStudents(year, month, teacherCode);
+        window.location.href = url.toString();
     }
 
     // 선생님 변경
     async function onTeacherChange() {
-        const date = new Date(monthInput.value);
-        if (isNaN(date)) return;
-
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
+        const [year, month] = monthInput.value.split('-');
         const teacherCode = teacherSelect.value || null;
 
         await fetchStudents(year, month, teacherCode);
@@ -132,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.totalPrice = student.totalPrice || 0;
             tr.dataset.totalFee = student.totalFee || 0;
             tr.dataset.totalMaterialFee = student.totalMaterialFee || 0;
+            tr.dataset.totalStatus = student.totalStatus;
 
             const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
 
@@ -188,31 +207,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const expireInput = document.querySelector('.expire-input');
     const expireBtn = document.querySelector('.expire-btn');
     const expireDisplay = document.querySelector('.day-picker .day-display');
-    const now = new Date();
-    const plus5 = new Date();
-    plus5.setDate(now.getDate() + 5);
 
-    const y = plus5.getFullYear();
-    const m = plus5.getMonth() + 1;
-    const d = plus5.getDate();
+    const formatYYYYMMDD = (dt) => {
+        const y = dt.getFullYear();
+        const m = String(dt.getMonth() + 1).padStart(2, '0');
+        const d = String(dt.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    };
 
-    expireInput.value = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    expireDisplay.textContent = `${y}년 ${m}월 ${d}일`;
+    const setDisplay = (dt) => {
+        expireDisplay.textContent =
+            `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
+    };
+
+    const getLastDayOfMonth = (year, month) => {
+        return new Date(year, month, 0);
+    };
+
+    const billingMonth = document.querySelector('.hidden-picker')?.value;
+    let baseDate = new Date();
+
+    if (billingMonth) {
+        const [yy, mm] = billingMonth.split('-').map(Number);
+        baseDate = getLastDayOfMonth(yy, mm);
+    } else {
+        baseDate = getLastDayOfMonth(
+            baseDate.getFullYear(),
+            baseDate.getMonth() + 1
+        );
+    }
+
+    expireInput.value = formatYYYYMMDD(baseDate);
+    setDisplay(baseDate);
 
     const today = new Date();
-    const minY = today.getFullYear();
-    const minM = today.getMonth() + 1;
-    const minD = today.getDate();
-    expireInput.min = `${minY}-${String(minM).padStart(2, '0')}-${String(minD).padStart(2, '0')}`;
+    expireInput.min = formatYYYYMMDD(today);
 
     expireBtn.addEventListener('click', () => {
-        expireInput.showPicker();
+        if (typeof expireInput.showPicker === 'function') {
+            expireInput.showPicker();
+        } else {
+            expireInput.click();
+        }
     });
 
     expireInput.addEventListener('change', () => {
-        const date = new Date(expireInput.value);
-        if (isNaN(date)) return;
-        expireDisplay.textContent = `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+        const [yy, mm, dd] = expireInput.value.split('-').map(Number);
+        if (!yy || !mm || !dd) return;
+
+        const selected = new Date(yy, mm - 1, dd);
+        if (isNaN(selected)) return;
+
+        setDisplay(selected);
     });
 });
 
@@ -426,16 +472,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePriceState();
 });
 
-function generateSendHash(billId, phone, price) {
-    const input = `${billId},${phone},${price}`;
-    return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
-}
-
-function generateCancelHash(billId, price) {
-    const input = `${billId},${price}`;
-    return CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
-}
-
 // ========== 우측 버튼 클릭 ========== //
 document.addEventListener("DOMContentLoaded", () => {
     const payIssue = document.querySelector('#pay-issue');
@@ -459,7 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const now = new Date();
         let issuedCount = 0;
-        let hasError = false;   // ★ 실패 여부 저장
+        let hasError = false;
 
         for (const [index, box] of checkedBoxes.entries()) {
             const row = box.closest('tr');
@@ -583,7 +619,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const row = checkedBoxes[0].closest('tr');
-
+        console.log('row = ', row)
         if (row.dataset.totalStatus !== 'approved') {
             alert('결제 완료된 건만 취소할 수 있습니다.');
             return;
@@ -665,10 +701,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const row = checked[0].closest('tr');
         let price = "";
-        if(eduChecked){
+        if (eduChecked) {
             price = row.dataset.totalFee;
         }
-        if(bookChecked){
+        if (bookChecked) {
             price = row.dataset.totalMaterialFee;
         }
         const billId = row.dataset.billId;
@@ -737,5 +773,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-})
-;
+});

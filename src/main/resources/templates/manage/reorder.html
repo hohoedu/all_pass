@@ -164,8 +164,14 @@
                                     <td th:text="${reorder.count}">수량</td>
                                     <td th:text="${reorder.reason}">사유</td>
                                     <td th:text="${reorder.createdAt}">등록 일시</td>
-                                    <td th:text="${reorder.confirmed} == 'checked' ? '승인':'미승인' ">등록 일시</td>
-                                    <td>아이콘</td>
+                                    <td th:switch="${reorder.confirmed}">
+                                        <span th:case="'checked'">승인</span>
+                                        <span th:case="'unchecked'">미승인</span>
+                                        <span th:case="'admin_cancel'">관리자 취소</span>
+                                        <span th:case="'user_cancel'">사용자 취소</span>
+                                        <span th:case="*">-</span>
+                                    </td>
+                                    <td>취소</td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(reorderList)}">
                                     <td colspan="8" style="text-align: center;">

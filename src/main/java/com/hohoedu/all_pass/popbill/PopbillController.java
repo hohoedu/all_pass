@@ -54,7 +54,10 @@ public class PopbillController {
 
         try {
             String url = popbillService.getPopbillAccessURL(user.getCenterCode());
-            return ResponseEntity.ok(Map.of("url", url));
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, url)
+                    .build();
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
@@ -87,7 +90,6 @@ public class PopbillController {
                     user.getRegionName(),
                     user.getCenterName()
             );
-
 
 
             log.info("신규회원 알림톡 발송 성공 - centerCode: {}, phone: {}, receiptNum: {}",

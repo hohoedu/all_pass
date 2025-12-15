@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -25,14 +26,13 @@ public class PaymentViewController {
     private final DateConfig dateConfig;
 
     @GetMapping("/pay-edu")
-    public String getPayEduPage(HttpSession session, Model model) {
+    public String getPayEduPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
         List<User> users = userService.findByCenterCode(user.getCenterCode());
-        String year = dateConfig.currentYearMonth().get("currentYear");
-        String month = dateConfig.currentYearMonth().get("currentMonth");
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode());
 
         model.addAttribute("users", users);

@@ -1,0 +1,145 @@
+<div class="modal sibling-modal" th:fragment="studentSiblingModal">
+
+    <div class="add-m-frame">
+        <div class="m-t-line " style="margin: 10px 10px 0px 10px;">
+            <div>
+                <div class="title">형제 등록</div>
+            </div>
+            <a href="#" class="btn-close"></a>
+        </div>
+        <div class="second-frame" style="padding: 30px 40px;">
+            <div class="add-m-left table-frame">
+                <div class="student-content">
+                    <h4>학생 선택</h4>
+                    <div class="add-inform">
+                        <input type="text" class="basic-input" style="max-width: 75%;">
+                        <div class="common-btn stu-explore" id="search-unpaid-student">검색</div>
+                    </div>
+                    <div class="mt">
+                        <div class="table-frame pay-add-t">
+                            <table class="basic-table pay-add-t stripe yh">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="30%">
+                                    <col width="40%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
+                                </tr>
+                                </thead>
+                                <tbody id="unpaid-student-list" class="stripe">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="add-m-right">
+                <!-- 학생명 -->
+                <div class="student-summary">
+                    <div class="row">
+                        <div class="label">학생명</div>
+                        <div class="value">학생을 선택해주세요.</div>
+                        <div class="label">전화번호</div>
+                        <div class="value">010-6295-4886</div>
+                    </div>
+                </div>
+                <div class="sibling-search-box">
+                    <div class="label">검색</div>
+                    <div class="search-controls">
+                        <select>
+                            <option>이름</option>
+                            <option>전화번호</option>
+                        </select>
+                        <input type="text" placeholder="검색어 입력">
+                        <button class="common-btn">검색</button>
+                    </div>
+                </div>
+
+                <!-- 형제 목록 (테이블은 여기만 사용) -->
+                <div class="sibling-table-wrap">
+                    <table class="basic-table stripe yh">
+                        <colgroup>
+                            <col width="25%">
+                            <col width="30%">
+                            <col width="25%">
+                            <col width="20%">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>부모님 성함</th>
+                            <th>전화번호</th>
+                            <th>등록여부</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>홍길동</td>
+                            <td>김호부</td>
+                            <td>010-6295-4886</td>
+                            <td><span class="status on">등록</span></td>
+                        </tr>
+                        <tr>
+                            <td>임꺽정</td>
+                            <td>김호모</td>
+                            <td>010-8538-9291</td>
+                            <td><span class="status off">해제</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+.add-m-right {
+display: flex;
+flex-direction: column;
+gap: 16px;
+}
+
+.student-summary {
+background: #f9f9f9;
+border-radius: 10px;
+padding: 12px 16px;
+}
+
+.student-summary .row {
+display: grid;
+grid-template-columns: 80px 1fr 80px 1fr;
+gap: 8px 12px;
+}
+
+.sibling-search-box {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.search-controls {
+display: flex;
+gap: 8px;
+flex: 1;
+}
+
+.sibling-table-wrap {
+flex: 1;
+overflow-y: auto;
+border: 1px solid #eee;
+border-radius: 10px;
+}
+
+.status.on {
+color: #2e7d32;
+font-weight: 600;
+}
+
+.status.off {
+color: #c62828;
+}

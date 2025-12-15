@@ -51,6 +51,9 @@ public class Reorder {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
+    @CreationTimestamp
+    private Timestamp confirmedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "center_code", referencedColumnName = "center_code", nullable = false)
     private Center center;

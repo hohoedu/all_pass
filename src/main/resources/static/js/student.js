@@ -385,9 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ---------------------------------------------------------
-        // 4) 전체 완료 후 UI 처리
-        // ---------------------------------------------------------
         alert("가입이 완료되었습니다.");
 
         if (window.opener && !window.opener.closed) {

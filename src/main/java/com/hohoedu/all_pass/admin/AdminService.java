@@ -5,12 +5,14 @@ import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.BookSuggest;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Transactional
 @Service
 @RequiredArgsConstructor
@@ -82,27 +84,60 @@ public class AdminService {
 
 
     public void saveBookSuggest(AdminReqDTO.BookSuggestSaveReqDTO req) {
+        log.info("service: saveBookSuggest");
 
-        for (AdminReqDTO.BookSuggestSaveReqDTO.WeekDTO w : req.getWeeks()) {
+        List<String> classKeys;
+        if ("J".equals(req.getClassKey())) {
+            classKeys = List.of("K", "M", "J");
 
-            AdminReqDTO.BookSuggestDTO dto = new AdminReqDTO.BookSuggestDTO();
-            dto.setClassKey(req.getClassKey());
-            dto.setYy(req.getYy());
-            dto.setMm(req.getMm());
-            dto.setWeek(w.getWeek());
+        } else if ("BSS".equals(req.getClassKey())) {
+            classKeys = List.of("BSA", "BSS");
 
-            dto.setSubjectKey(w.getSubjectKey());
-            dto.setBookName(w.getBookName());
-            dto.setPublisher(w.getPublisher());
-            dto.setBookImageUrl(w.getImageUrl());
+        } else {
+            classKeys = List.of(req.getClassKey());
+        }
 
-            adminRepository.upsertBookSuggest(dto);
+        for (String classKey : classKeys) {
+            for (AdminReqDTO.BookSuggestSaveReqDTO.WeekDTO w : req.getWeeks()) {
+
+                AdminReqDTO.BookSuggestDTO dto = new AdminReqDTO.BookSuggestDTO();
+                dto.setClassKey(classKey);
+                dto.setYy(req.getYy());
+                dto.setMm(req.getMm());
+                dto.setWeek(w.getWeek());
+
+                dto.setSubjectKey(w.getSubjectKey());
+                dto.setBookName(w.getBookName());
+                dto.setPublisher(w.getPublisher());
+                dto.setBookImageUrl(w.getImageUrl());
+
+                int affected = adminRepository.upsertBookSuggest(dto);
+
+                if (affected == 0) {
+                    throw new IllegalStateException(
+                            "MERGE 결과 0건 - classKey=" + classKey
+                                    + ", yy=" + dto.getYy()
+                                    + ", mm=" + dto.getMm()
+                                    + ", week=" + dto.getWeek()
+                    );
+                }
+            }
         }
     }
 
     public List<SubjectCode> findSubjects() {
 
         return adminRepository.findSubject();
+    }
+
+    public List<AdminRespDTO.BookSuggestViewDTO> findBookSuggestByMonth(String classKey, String year, String month) {
+        List<AdminRespDTO.BookSuggestViewDTO> response = adminRepository.findBookSuggestByMonth(classKey, year, month);
+        return response;
+    }
+
+    public List<AdminRespDTO.BookSuggestViewDTO> findBookSuggest() {
+
+        return adminRepository.findBookSuggest();
     }
 
 }
