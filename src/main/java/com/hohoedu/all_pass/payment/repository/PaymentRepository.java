@@ -68,6 +68,8 @@ public interface PaymentRepository {
 
     void deletePaymentDetail(String paymentKey, String timeTableKey);
 
+    int insertPaymentRefund();
+
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회
     List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(@Param("studentId") String studentId, @Param("count") String count);

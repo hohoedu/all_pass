@@ -610,6 +610,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const row = checkedBoxes[0].closest('tr');
+
+        if (row.dataset.totalStatus !== 'approved') {
+            alert('결제 완료된 건만 취소할 수 있습니다.');
+            return;
+        }
+
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
@@ -618,19 +625,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const row = checkedBoxes[0].closest('tr');
-        console.log('row = ', row)
-        if (row.dataset.totalStatus !== 'approved') {
-            alert('결제 완료된 건만 취소할 수 있습니다.');
-            return;
-        }
+        const cancelReason = prompt(
+            `${row.dataset.studentName} 학생의 취소 사유를 입력해주세요.`
+        );
 
-        const billId = row.dataset.billId;
-        const paymentKey = row.dataset.paymentKey;
-        const studentId = row.dataset.studentId;
-
-        if (!billId || !paymentKey) {
-            alert('결제 정보가 불완전하여 취소할 수 없습니다.');
+        if (!cancelReason || cancelReason.trim() === '') {
+            alert('취소 사유는 필수입니다.');
             return;
         }
 
@@ -642,22 +642,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm] = selectedMonth.split("-");
+        const [yy, mm] = selectedMonth.split('-');
+
+        // ✅ cancelTypes 구성
+        // const cancelTypes = [];
+        // if (eduChecked) cancelTypes.push('EDU');
+        // if (bookChecked) cancelTypes.push('BOOK');
 
         const body = {
-            studentId,
-            billId,
-            paymentKey,
+            studentId: row.dataset.studentId,
+            paymentKey: row.dataset.paymentKey,
+            billId: row.dataset.billId,
             yy,
             mm,
-            eduChecked,
-            bookChecked
+            // cancelTypes,
+            cancelReason: cancelReason.trim()
         };
 
         try {
-            const res = await fetch("/pay/cancel", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
+            const res = await fetch('/pay/cancel', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
 
@@ -671,8 +676,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } catch (err) {
-            console.error("❌ 결제 취소 오류:", err);
-            alert("결제 취소 중 오류가 발생했습니다.");
+            console.error('❌ 결제 취소 오류:', err);
+            alert('결제 취소 중 오류가 발생했습니다.');
         }
     });
 

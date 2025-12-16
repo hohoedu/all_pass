@@ -125,16 +125,16 @@ function renderStudents(tbody, students = []) {
       <td>${s.gradeName ?? ""}</td>
       <td>${s.school ?? ""}</td>
       <td>
-        <!-- 하단 주석 자리 -->
+        <div class="tooltip-container">
+        <img src="/image/link.png" alt="link" class="link">
+            <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
+        </div>
       </td>
     `;
 
         tbody.appendChild(tr);
     });
-    // <div class="tooltip-container">
-    //     <img src="/image/link.png" alt="link" class="link">
-    //         <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
-    // </div>
+
 }
 
 
@@ -252,6 +252,7 @@ function renderStudentModal(data) {
     }
 
     const info = data.studentInfo;
+    const payment = data.studentPayment;
     const grade = data.gradeCodes;
 
     const setValue = (selector, value) => {
@@ -293,6 +294,55 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_entry_han_date", info.entryHanDate);
     setValue("#tab2 .s_entry_book_date", info.entryBookDate);
 
+    // ---------------- TAB3: 수업 정보 ----------------
+    setValue("#tab3 .s_han_class", payment.hanClassName);
+    setValue("#tab3 .s_book_class", payment.bookClassName);
+
+    setValue("#tab3 .p_han_teacher", payment.hanTeacher);
+    setValue("#tab3 .p_book_teacher", payment.bookTeacher);
+
+    setValue("#tab3 .p_han_fee", formatMoney(payment.hanFee));
+    setValue("#tab3 .p_book_fee", formatMoney(payment.bookFee));
+
+    setValue("#tab3 .p_han_material_fee", formatMoney(payment.hanMaterialPrice));
+    setValue("#tab3 .p_book_material_fee", formatMoney(payment.bookMaterialPrice));
+
+    // 5) 수강 상태 버튼 표시 + 비활성화
+    setCourseState("han", payment.hanState);
+    setCourseState("book", payment.bookState);
+
+    // 6) 시작일자
+    setCourseDate("han", payment.entryHanDate);
+    setCourseDate("book", payment.entryBookDate);
+
+    // 7) 회비 합계
+    updateTotalFee(payment);
+
+
+    function setCourseState(type, state) {
+        const group = document.querySelector(
+            `#tab3 .choose-group[data-type="${type}"]`
+        );
+        if (!group) return;
+
+        const buttons = group.querySelectorAll(".btn-choose");
+        const hidden = group.querySelector('input[type="hidden"]');
+
+        buttons.forEach(btn => {
+            btn.classList.remove("active");
+            btn.disabled = true; // 클릭 방지
+
+            const isActive =
+                (state === "1" && btn.dataset.value === "active") ||
+                (state === "0" && btn.dataset.value === "inactive");
+
+            if (isActive) {
+                btn.classList.add("active");
+                hidden.value = btn.dataset.value;
+            }
+        });
+    }
+
     const birthInput = document.querySelector("#tab2 #birth-date");
     if (birthInput) {
         birthInput.value = formatBirthInput(info.birth); // date input용
@@ -306,6 +356,58 @@ function renderStudentModal(data) {
     const bookInput = document.querySelector("#entry-book-date");
     if (bookInput) {
         bookInput.value = info.entryBookDate;
+    }
+
+
+}
+
+function formatMoney(value) {
+    if (value === null || value === undefined || value === '') {
+        return '';
+    }
+
+    const num = Number(value.toString().replace(/,/g, ''));
+    if (isNaN(num)) {
+        return '';
+    }
+
+    return num.toLocaleString('ko-KR');
+}
+
+function updateTotalFee() {
+    function removeComma(value) {
+        if (!value) return '0';
+        return value.toString().replace(/,/g, '');
+    }
+
+    const hanFee = parseInt(removeComma(
+        document.querySelector("#hanFee")?.value
+    )) || 0;
+
+    const bookFee = parseInt(removeComma(
+        document.querySelector("#bookFee")?.value
+    )) || 0;
+
+    const hanMat = parseInt(removeComma(
+        document.querySelector("#hanMaterialFee")?.value
+    )) || 0;
+
+    const bookMat = parseInt(removeComma(
+        document.querySelector("#bookMaterialFee")?.value
+    )) || 0;
+
+    const total = hanFee + bookFee + hanMat + bookMat;
+
+    document.querySelector(".dues-sum span").innerText =
+        formatMoney(total);
+}
+
+function setCourseDate(type, value) {
+    const input = document.querySelector(
+        `#tab3 input[type="date"][data-type="${type}"]`
+    );
+    if (input && value) {
+        input.value = value;
     }
 }
 
@@ -400,6 +502,24 @@ function renderGradeDropdown(gradeCodes, selectedKey) {
     }
 }
 
+document.addEventListener("change", (e) => {
+    const input = e.target;
+    if (input.type !== "date") return;
+
+    const td = input.closest("td");
+    if (!td) return;
+
+    const display = td.querySelector(".day-display");
+    if (!display) return;
+
+    if (!input.value) {
+        display.textContent = "날짜를 선택해주세요.";
+        return;
+    }
+
+    const [y, m, d] = input.value.split("-");
+    display.textContent = `${y}년 ${m}월 ${d}일`;
+});
 // ===============================
 // 업데이트 (저장 버튼)
 // ===============================
@@ -419,8 +539,6 @@ async function updateStudentInfo() {
             entryHanDate: getValue("#entry-han-date")?.trim() === "" ? null : getValue("#entry-han-date"),
             entryBookDate: getValue("#entry-book-date")?.trim() === "" ? null : getValue("#entry-book-date"),
         };
-
-        console.log("업데이트 요청:", req);
 
         const res = await fetch("/student/update/info", {
             method: "POST",
@@ -494,45 +612,6 @@ function updateStatusButton(statusCode) {
             }
         });
     });
-}
-
-// ====== 수강료 포맷팅 및 합계 연산 ====== //
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.p_han_fee, .p_book_fee, .p_han_material_fee, .p_book_material_fee')
-        .forEach(input => {
-            input.addEventListener('input', (e) => {
-
-                let value = e.target.value.replace(/[^0-9]/g, '');
-
-                if (value) value = Number(value).toLocaleString();
-                e.target.value = value;
-
-                updateTotalFee({
-                    hanFee: document.querySelector('.p_han_fee').value.replace(/,/g, '') || 0,
-                    bookFee: document.querySelector('.p_book_fee').value.replace(/,/g, '') || 0,
-                    hanMaterialFee: document.querySelector('.p_han_material_fee').value.replace(/,/g, '') || 0,
-                    bookMaterialFee: document.querySelector('.p_book_material_fee').value.replace(/,/g, '') || 0
-                });
-            });
-        });
-});
-
-function updateTotalFee(s) {
-    const parse = v => Number(v) || 0;
-    const format = n => n.toLocaleString();
-
-    const hanFee = parse(s.hanFee);
-    const bookFee = parse(s.bookFee);
-    const hanMat = parse(s.hanMaterialFee);
-    const bookMat = parse(s.bookMaterialFee);
-
-    document.querySelector('.p_han_fee').value = format(hanFee);
-    document.querySelector('.p_book_fee').value = format(bookFee);
-    document.querySelector('.p_han_material_fee').value = format(hanMat);
-    document.querySelector('.p_book_material_fee').value = format(bookMat);
-
-    const total = hanFee + bookFee + hanMat + bookMat;
-    document.querySelector('.dues-sum span').textContent = format(total);
 }
 
 // ====== 학생 상태 변경 로직 ====== //

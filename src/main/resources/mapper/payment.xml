@@ -272,6 +272,11 @@
         ORDER BY classDate ASC;
     </select>
 
+    <insert id="insertPaymentRefund">
+        INSERT INTO erp_payment_refund ()
+        VALUES ();
+    </insert>
+
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
     <!--    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">-->

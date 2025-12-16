@@ -77,21 +77,25 @@ public class StudentService {
         return rows;
     }
 
+    // 학생 리스트 조회
     public List<MainStudentDTO> getStudentsByUserCode(String userCode, String centerCode) {
         System.out.println(userCode);
         List<MainStudentDTO> rows = studentRepository.selectStudentByUserCode(userCode, centerCode);
         return rows;
     }
 
+    // 개별 학생 조회
     public StudentWebRespDTO.StudentDTO getStudentDetailByStudentId(String studentId) {
 
         StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
         List<GradeCode> grades = gradeJpaRepository.findAll();
+        StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
 //        studentRepository.findStudentAttendanceByStudentId(studentId);
 //        studentRepository.findStudentConsultByStudentId(studentId);
 
         StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
                 .studentInfo(student)
+                .studentPayment(payment)
                 .gradeCodes(grades)
                 .build();
         return studentDetailRespDTO;
@@ -125,7 +129,7 @@ public class StudentService {
 
         studentRepository.insert(studentDTO);
         parentDTO.setStudentId(studentDTO.getStudentId());
-        parentDTO.setSignature(studentDTO.getStudentId()+"signature.png");
+        parentDTO.setSignature(studentDTO.getStudentId() + "signature.png");
         familyService.parentInsert(parentDTO);
 
         return studentDTO.getStudentId();

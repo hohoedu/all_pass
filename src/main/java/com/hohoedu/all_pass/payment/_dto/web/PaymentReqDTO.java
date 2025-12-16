@@ -114,5 +114,16 @@ public class PaymentReqDTO {
         private String userCode;
     }
 
+    @Data
+    public static class PaymentCancelReqDTO {
+        private String studentId;
+        private String paymentKey;
+        private String billId;
+        private String yy;
+        private String mm;
+        private String cancelTypes;
+        private String cancelReason;
+    }
+
 
 }

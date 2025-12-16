@@ -46,10 +46,30 @@ public class StudentWebRespDTO {
     @Builder
     public static class StudentDTO {
         private StudentInfoDTO studentInfo;
+        private StudentPaymentDTO studentPayment;
         private List<StudentAttendanceDTO> studentAttendance;
         private List<StudentConsultDTO> studentCounsult;
         private List<GradeCode> gradeCodes;
     }
+
+    @Data
+    public static class StudentPaymentDTO {
+        private String hanState;
+        private String bookState;
+        private String hanMaterialPrice;
+        private String bookMaterialPrice;
+        private String hanClassKey;
+        private String bookClassKey;
+        private String hanTeacher;
+        private String bookTeacher;
+        private String hanClassName;
+        private String bookClassName;
+        private String hanFee;
+        private String bookFee;
+        private String entryHanDate;
+        private String entryBookDate;
+    }
+
 
     @Data
     public static class StudentAttendanceDTO {

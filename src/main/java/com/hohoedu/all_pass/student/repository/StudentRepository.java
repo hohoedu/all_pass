@@ -35,6 +35,8 @@ public interface StudentRepository {
 
     public StudentWebRespDTO.StudentInfoDTO findStudentInfoByStudentId(@Param("studentId") String studentId);
 
+    public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
+
 
     public List<MainStudentDTO> selectStudentByUserCode(
             @Param("userCode") String userCode,

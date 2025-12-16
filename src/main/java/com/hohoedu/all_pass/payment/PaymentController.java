@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
@@ -48,47 +49,16 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success("청구서 발행 완료"));
     }
 
-    // 결제선생 청구서 저장
-//    @PostMapping("/bill/insert")
-//    public ResponseEntity<?> createBill(@RequestBody PaymentReqDTO.InsertBillDTO reqDTO, HttpSession session) throws Exception {
-//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.FOUND)
-//                    .header(HttpHeaders.LOCATION, "/login")
-//                    .build();
-//        }
-//        log.info("청구서 발행 후 저장");
-//
-//        // 2) 요청값 validation
-//        if (reqDTO == null) {
-//            return ResponseEntity.badRequest()
-//                    .body(ApiUtils.error("요청 데이터가 비어 있습니다.", HttpStatus.BAD_REQUEST));
-//        }
-//
-//        if (reqDTO.getBillId() == null || reqDTO.getBillId().isEmpty()) {
-//            return ResponseEntity.badRequest()
-//                    .body(ApiUtils.error("bill_id가 누락되었습니다.", HttpStatus.BAD_REQUEST));
-//        }
-//
-//        if (reqDTO.getPaymentKey() == null || reqDTO.getPaymentKey().isEmpty()) {
-//            return ResponseEntity.badRequest()
-//                    .body(ApiUtils.error("paymentKey가 없습니다.", HttpStatus.BAD_REQUEST));
-//        }
-//
-//        reqDTO.setCenterCode(user.getCenterCode());
-//
-//        paymentService.insertPaymentBill(reqDTO, user.getUserCode());
-//
-//        return ResponseEntity.ok(ApiUtils.success("청구서 생성 완료"));
-//    }
-
     // 결제선생 콜백
     @PostMapping("/callback")
     public ResponseEntity<?> callback(@RequestBody PaymentReqDTO.PayCallbackDTO dto) {
 
         paymentService.insertPaymentCallback(dto);
 
-        return ResponseEntity.ok(ApiUtils.success("성공"));
+        return ResponseEntity.ok(Map.of(
+                "code", "0000",
+                "msg", "성공하였습니다."
+        ));
     }
 
     @PostMapping("/manual")
@@ -122,7 +92,6 @@ public class PaymentController {
 
         return ResponseEntity.ok(ApiUtils.success("청구서 파기 완료"));
     }
-
 
     // 데이터 필터링
     @PostMapping("/students")
@@ -187,17 +156,25 @@ public class PaymentController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<?> cancelPayment(HttpSession session) {
+    public ResponseEntity<?> cancelPayment(HttpSession session, @RequestBody PaymentReqDTO.PaymentCancelReqDTO reqDTO) throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
+        log.info(reqDTO.toString());
+        paymentService.cancelPayment(reqDTO, user);
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+
+    @PostMapping("/refund")
+    public ResponseEntity<?> paymentRefund() {
+        paymentService.insertPaymentRefund();
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
 
     @GetMapping("/fee/{classKey}")
     public ResponseEntity<?> getClassFee(HttpSession session, @PathVariable String classKey) {

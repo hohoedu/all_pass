@@ -41,13 +41,15 @@
 
                 <tr>
                     <th>생년월일</th>
-                    <td class="icon-field day-picker" style="position: relative;">
-                        <div class="birth-display s_birth"></div>
-                        <div>
-                            <input type="date" class="hidden-date" id="birth-date" name="birth">
-                            <button type="button" class="icon-btn">
-                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                            </button>
+                    <td class="day-picker" style="position: relative;">
+                        <div class="icon-field">
+                            <div class="birth-display s_birth"></div>
+                            <div>
+                                <input type="date" class="hidden-date" id="birth-date" name="birth">
+                                <button type="button" class="icon-btn">
+                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                </button>
+                            </div>
                         </div>
                     </td>
 
@@ -131,36 +133,35 @@
 
                 </tbody>
             </table>
+            <!--            &lt;!&ndash; 입회 정보 &ndash;&gt;-->
+            <!--            <h4 class="small-title">입회 정보</h4>-->
+            <!--            <table class="base-info-t">-->
+            <!--                <tbody>-->
+            <!--                <tr>-->
+            <!--                    <th>한자 입회</th>-->
+            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
+            <!--                        <div class="birth-display s_entry_han_date"></div>-->
+            <!--                        <div>-->
+            <!--                            <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date">-->
+            <!--                            <button type="button" class="icon-btn">-->
+            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
+            <!--                            </button>-->
+            <!--                        </div>-->
+            <!--                    </td>-->
 
-            <!-- 입회 정보 -->
-            <h4 class="small-title">입회 정보</h4>
-            <table class="base-info-t">
-                <tbody>
-                <tr>
-                    <th>한자 입회</th>
-                    <td class="icon-field day-picker" style="position: relative;">
-                        <div class="birth-display s_entry_han_date"></div>
-                        <div>
-                            <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date">
-                            <button type="button" class="icon-btn">
-                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                            </button>
-                        </div>
-                    </td>
-
-                    <th>독서 입회</th>
-                    <td class="icon-field day-picker" style="position: relative;">
-                        <div class="birth-display s_entry_book_date"></div>
-                        <div>
-                            <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date">
-                            <button type="button" class="icon-btn">
-                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <!--                    <th>독서 입회</th>-->
+            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
+            <!--                        <div class="birth-display s_entry_book_date"></div>-->
+            <!--                        <div>-->
+            <!--                            <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date">-->
+            <!--                            <button type="button" class="icon-btn">-->
+            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
+            <!--                            </button>-->
+            <!--                        </div>-->
+            <!--                    </td>-->
+            <!--                </tr>-->
+            <!--                </tbody>-->
+            <!--            </table>-->
 
             <div class="save-btn-frame">
                 <button type="submit" class="save-btn" id="update-btn">저장</button>

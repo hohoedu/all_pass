@@ -534,4 +534,49 @@ public class PaymentService {
 
         paymentRepository.deletePaymentDetail(paymentKey, timeTableKey);
     }
+
+    public boolean insertPaymentRefund() {
+        int result = paymentRepository.insertPaymentRefund();
+        return result > 0;
+    }
+
+    public void cancelPayment(PaymentReqDTO.PaymentCancelReqDTO dto, UserRespDTO.LoginRespDTO user) throws JsonProcessingException {
+
+        Payment payment = paymentRepository.findPaymentByKey(dto.getPaymentKey());
+        PaymentBill paymentBill = paymentRepository.findPaymentBill(dto.getBillId());
+        if (payment == null) {
+            throw new IllegalStateException("결제 정보 없음");
+        }
+
+        if (!"approved".equals(payment.getStatus())) {
+            throw new IllegalStateException("결제 완료 상태만 취소 가능");
+        }
+
+        PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+
+
+        if (conf == null) {
+            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode = " + user.getCenterCode());
+        }
+
+        String raw = dto.getBillId() + "," + paymentBill.getAmount();
+        String hash = DigestUtils.sha256Hex(raw);
+
+        Map<String, Object> body = Map.of(
+                "apikey", conf.getApiKey(),
+                "member", conf.getMemberId(),
+                "merchant", conf.getMerchantId(),
+                "bill_id", dto.getBillId(),
+                "price", paymentBill.getAmount(),
+                "hash", hash
+        );
+
+        //결제선생 취소 요청
+        PaymentRespDTO.PaymintRespDTO resp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/cancel", body);
+
+            paymentRepository.updateBillStatus(dto.getBillId(), "CANCELLED");
+            paymentRepository.updatePaymentStatus(payment.getPaymentKey(), "CANCELLED", payment.getPaidDate(), paymentBill.getAmount());
+log.info(resp.toString());
+
+    }
 }
