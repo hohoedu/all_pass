@@ -130,10 +130,12 @@
                                                 <button class="select-status"
                                                         th:data-status="${c.progressKey != null ? c.progressKey : 'counseling'}"
                                                         th:text="${c.progressKey != null ?
-                              (c.progressKey == 'waiting' ? '수업대기' :
-                              (c.progressKey == 'confirmed' ? '수업확정' :
-                              (c.progressKey == 'ended' ? '종료' : '상담진행')))
-                              : '상담진행'}">
+                                                            (c.progressKey == 'waiting' ? '수업대기' :
+                                                                (c.progressKey == 'confirmed' ? '수업확정' :
+                                                                    (c.progressKey == 'ended' ? '종료' : '상담진행')
+                                                                )
+                                                            )
+                                                        : '상담진행'}">
                                                     상담진행
                                                 </button>
 
@@ -148,11 +150,19 @@
 
                                         <!-- 등록폼 발송/입회일 -->
                                         <td>
-                                            <div class="cell-middle">
-                                                <div class="icon-field basic-input" style="width: 150px;"><span>2026-06-25</span>
-                                                    <button class="icon-btn" style="background: transparent;"><img
-                                                            th:src="@{/image/calendar.png}" alt="달력 아이콘"></button>
-                                                </div>
+                                            <div class="join-link common-btn"
+                                                 th:if="${c.progressKey == 'counseling'}">
+                                                가입링크 발송
+                                            </div>
+
+                                            <!-- 그 외 -->
+                                            <div class="icon-field basic-input"
+                                                 style="width:150px;"
+                                                 th:unless="${c.progressKey == 'counseling'}">
+                                                <span th:text="${c.sendAt}"></span>
+                                                <button class="icon-btn" style="background:transparent;">
+                                                    <img src="/image/calendar.png" alt="달력 아이콘">
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

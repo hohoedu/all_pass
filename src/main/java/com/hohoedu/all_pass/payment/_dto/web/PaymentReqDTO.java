@@ -126,4 +126,11 @@ public class PaymentReqDTO {
     }
 
 
+    @Data
+    public static class PersonalDTO {
+        private String studentId;
+        private String centerCode;
+        private String yy;
+        private String mm;
+    }
 }

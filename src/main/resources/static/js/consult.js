@@ -1,30 +1,165 @@
-// 상담 기록 추가 모달 띄우기
 document.addEventListener('DOMContentLoaded', () => {
-    const consultAddBtn = document.querySelector('.consult-add');
-    const modal = document.querySelector('.consult-modal');
-    const closeBtn = modal.querySelector('.btn-close');
 
-    consultAddBtn.addEventListener('click', () => {
+    /* =================== *
+     *   유틸리티 함수      *
+     * =================== */
+    function formatYM(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}`;
+    }
+
+    function getMonthRange(monthsAgo) {
+        const today = new Date();
+        const past = new Date(today);
+        past.setMonth(today.getMonth() - monthsAgo);
+        return {
+            startYm: formatYM(past),
+            endYm: formatYM(today)
+        };
+    }
+
+    function formatPhoneNumber(raw) {
+        let digits = raw.replace(/\D/g, '');
+        if (!digits.startsWith('010')) digits = '010' + digits;
+        if (digits.length > 11) digits = digits.slice(0, 11);
+
+        if (digits.length <= 7) {
+            return digits.replace(/(\d{3})(\d{0,4})/, '$1-$2');
+        }
+        return digits.replace(/(\d{3})(\d{4})(\d{0,4})/, '$1-$2-$3');
+    }
+
+    function getProgressText(progressKey) {
+        switch (progressKey) {
+            case 'waiting': return '수업대기';
+            case 'confirmed': return '수업확정';
+            case 'ended': return '종료';
+            default: return '상담진행';
+        }
+    }
+
+    /* =================== *
+     *   모달 관리          *
+     * =================== */
+    const modal = document.querySelector('.consult-modal');
+    const consultAddBtn = document.querySelector('.consult-add');
+    const closeBtn = modal?.querySelector('.btn-close');
+    const saveBtn = modal?.querySelector('.save-btn');
+
+    let isEditMode = false;
+    let editingId = null;
+
+    // 모달 열기
+    function openModal(data = null) {
+        if (data) {
+            isEditMode = true;
+            editingId = data.id;
+            fillModalData(data);
+        } else {
+            isEditMode = false;
+            editingId = null;
+            clearModalData();
+        }
         modal.style.display = 'block';
+    }
+
+    // 모달 닫기
+    function closeModal() {
+        modal.style.display = 'none';
+        clearModalData();
+        isEditMode = false;
+        editingId = null;
+    }
+
+    // 모달 데이터 채우기 (수정용)
+    function fillModalData(data) {
+        modal.querySelector('[name="studentName"]').value = data.studentName || '';
+        modal.querySelector('[name="consultDate"]').value = data.consultDate || '';
+        modal.querySelector('[name="school"]').value = data.school || '';
+        modal.querySelector('[name="gradeKey"]').value = data.gradeKey || '';
+        modal.querySelector('[name="parentPhone"]').value = data.phone || '';
+        modal.querySelector('[name="inflowRouteKey"]').value = data.inflowRouteKey || '';
+        modal.querySelector('[name="content"]').value = data.content || '';
+
+        // 날짜 디스플레이 업데이트
+        if (data.consultDate) {
+            const [year, month, day] = data.consultDate.split('-');
+            dateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
+        }
+    }
+
+    // 모달 데이터 초기화
+    function clearModalData() {
+        modal.querySelector('[name="studentName"]').value = '';
+        modal.querySelector('[name="consultDate"]').value = '';
+        modal.querySelector('[name="school"]').value = '';
+        modal.querySelector('[name="gradeKey"]').value = '';
+        modal.querySelector('[name="parentPhone"]').value = '';
+        modal.querySelector('[name="inflowRouteKey"]').value = '';
+        modal.querySelector('[name="content"]').value = '';
+        dateDisplay.textContent = '';
+    }
+
+    // 모달 열기/닫기 이벤트
+    consultAddBtn?.addEventListener('click', () => {
+        openModal();
     });
 
-    closeBtn.addEventListener('click', (e) => {
+    closeBtn?.addEventListener('click', (e) => {
         e.preventDefault();
-        modal.style.display = 'none';
+        closeModal();
     });
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.style.display = 'none';
+            closeModal();
         }
     });
-});
 
-// 상담 기록 추가
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.consult-modal .save-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const modal = button.closest('.consult-modal');
+    // 날짜 선택
+    const dateInput = modal?.querySelector('input[name="consultDate"]');
+    const dateDisplay = modal?.querySelector('.day-display');
+    const calendarBtn = modal?.querySelector('.birth-btn');
+
+    calendarBtn?.addEventListener('click', () => {
+        dateInput.showPicker?.();
+        dateInput.click();
+    });
+
+    dateInput?.addEventListener('change', () => {
+        const selected = dateInput.value;
+        if (selected) {
+            const [year, month, day] = selected.split('-');
+            dateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
+        } else {
+            dateDisplay.textContent = '';
+        }
+    });
+
+    // 전화번호 입력
+    const phoneInput = modal?.querySelector('input[name="parentPhone"]');
+
+    phoneInput?.addEventListener('focus', () => {
+        if (!phoneInput.value.trim()) {
+            phoneInput.value = '010-';
+        }
+    });
+
+    phoneInput?.addEventListener('input', () => {
+        phoneInput.value = formatPhoneNumber(phoneInput.value);
+    });
+
+    phoneInput?.addEventListener('keydown', (e) => {
+        if ((e.key === 'Backspace' || e.key === 'Delete') &&
+            phoneInput.value.replace(/\D/g, '').length <= 3) {
+            e.preventDefault();
+        }
+    });
+
+    // 상담 기록 저장/수정
+    saveBtn?.addEventListener('click', async () => {
+        try {
             const data = {
                 studentName: modal.querySelector('[name="studentName"]')?.value.trim(),
                 consultDate: modal.querySelector('[name="consultDate"]')?.value,
@@ -34,228 +169,156 @@ document.addEventListener('DOMContentLoaded', () => {
                 inflowRouteKey: modal.querySelector('[name="inflowRouteKey"]')?.value,
                 content: modal.querySelector('[name="content"]')?.value.trim()
             };
-            console.log(data);
 
-            fetch('/consult/save', {
+            // 수정 모드일 경우 id 추가
+            if (isEditMode && editingId) {
+                data.id = editingId;
+            }
+
+            const url = isEditMode ? '/consult/update' : '/consult/save';
+            const res = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
-            })
-                .then(res => {
-                    if (res.ok) {
-                        alert('저장 완료');
-                        location.reload();
-                    } else {
-                        alert('저장 실패');
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('에러 발생');
-                });
-        });
-    });
-});
-
-// 상담 기록 날짜 선택
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.querySelector('.consult-modal');
-    const dateInput = modal.querySelector('input[name="consultDate"]');
-    const display = modal.querySelector('.day-display');
-    const calendarBtn = modal.querySelector('.birth-btn');
-
-    calendarBtn.addEventListener('click', () => {
-        dateInput.showPicker?.();
-        dateInput.click();
-    });
-
-    dateInput.addEventListener('change', () => {
-        const selected = dateInput.value;
-        if (selected) {
-            const [year, month, day] = selected.split('-');
-            display.textContent = `${year}년 ${month}월 ${day}일`;
-        } else {
-            display.textContent = '';
-        }
-    });
-});
-
-// 상담기록 전화번호 포맷 변경
-// 상담기록 전화번호 입력 (자동 010 붙이기 + 포맷)
-document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.querySelector('.consult-modal');
-    const phoneInput = modal.querySelector('input[name="parentPhone"]');
-
-    phoneInput.addEventListener('focus', () => {
-        // 포커스 시 자동 010 붙이기
-        if (!phoneInput.value.trim()) {
-            phoneInput.value = '010-';
-        }
-    });
-
-    phoneInput.addEventListener('input', () => {
-        // 숫자만 추출
-        let raw = phoneInput.value.replace(/\D/g, '');
-
-        // 010이 없으면 자동으로 추가
-        if (!raw.startsWith('010')) {
-            raw = '010' + raw;
-        }
-
-        // 최대 11자리로 제한
-        if (raw.length > 11) raw = raw.slice(0, 11);
-
-        // 하이픈 자동 추가
-        let formatted = raw;
-        if (raw.length <= 7) {
-            formatted = raw.replace(/(\d{3})(\d{0,4})/, '$1-$2');
-        } else {
-            formatted = raw.replace(/(\d{3})(\d{4})(\d{0,4})/, '$1-$2-$3');
-        }
-
-        phoneInput.value = formatted;
-    });
-
-    // 백스페이스로 010 전체 삭제 방지
-    phoneInput.addEventListener('keydown', (e) => {
-        if ((e.key === 'Backspace' || e.key === 'Delete') && phoneInput.value.replace(/\D/g, '').length <= 3) {
-            e.preventDefault();
-        }
-    });
-});
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const radios = document.querySelectorAll('input[name="period"]');
-    const periodDisplay = document.getElementById('period-display');
-    const calendarBtn = document.getElementById('calendar-btn');
-    const calendarInput = document.getElementById('calendar-input');
-    const consultTableBody = document.querySelector('.consult-table tbody');
-
-    // 📆 yyyy-MM 포맷
-    function formatYM(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        return `${year}-${month}`;
-    }
-
-    // 📆 n개월 전 ~ 오늘
-    function getMonthRange(monthsAgo) {
-        const today = new Date();
-        const past = new Date(today);
-        past.setMonth(today.getMonth() - monthsAgo);
-        return { startYm: formatYM(past), endYm: formatYM(today) };
-    }
-
-    // ✅ fetch POST 요청
-    async function fetchConsults(startYm, endYm) {
-        try {
-            const res = await fetch('/consult/search', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ startYm, endYm })
             });
 
-            if (!res.ok) throw new Error(`HTTP 오류: ${res.status}`);
+            if (!res.ok) {
+                alert(isEditMode ? '수정 실패' : '저장 실패');
+                return;
+            }
 
-            const data = await res.json();
-            renderConsultTable(data);
+            alert(isEditMode ? '수정 완료' : '저장 완료');
+            window.location.reload();
+
         } catch (err) {
-            console.error("조회 실패:", err);
+            console.error(err);
+            alert('에러 발생');
         }
-    }
+    });
 
-    // ✅ 테이블 렌더링
+    /* =================== *
+     *   테이블 관리         *
+     * =================== */
+    const consultTableBody = document.querySelector('.consult-table tbody');
+
+    // 테이블 렌더링
     function renderConsultTable(data) {
         consultTableBody.innerHTML = "";
 
         if (!data || data.length === 0) {
-            consultTableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">조회된 데이터가 없습니다.</td></tr>`;
+            consultTableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" style="text-align:center;">
+                        조회된 데이터가 없습니다.
+                    </td>
+                </tr>`;
             return;
         }
 
-        data.forEach((c, i) => {
-            const progressKey = c.progressKey || 'counseling';
-            const progressText = (() => {
-                switch (progressKey) {
-                    case 'waiting': return '수업대기';
-                    case 'confirmed': return '수업확정';
-                    case 'ended': return '종료';
-                    default: return '상담진행';
-                }
-            })();
+        data.forEach((item, index) => {
+            const progressKey = item.progressKey || 'counseling';
+            const progressText = getProgressText(progressKey);
 
-            const row = document.createElement("tr");
-            row.setAttribute("data-student-id", c.id || "");
-
-            row.innerHTML = `
-                <td class="checkbox-group"><input type="checkbox"></td>
-                <td>${i + 1}</td>
-                <td>${c.consultDate || ""}</td>
-                <td>${c.studentName || ""}</td>
-                <td>${c.school || ""}</td>
-                <td>${c.gradeName || ""}</td>
-                <td>${c.phone || ""}</td>
-                <td>
-                    <div class="memo-etc text-middle">
-                        <textarea class="comment-text">${c.content || ""}</textarea>
-                    </div>
-                </td>
-                <td>
-                    <div class="select-arrow">
-                        <button class="select-status" data-status="${progressKey}">${progressText}</button>
-                        <ul class="dropdown-status">
-                            <li data-status="counseling">상담진행</li>
-                            <li data-status="waiting">수업대기</li>
-                            <li data-status="confirmed">수업확정</li>
-                            <li data-status="ended">종료</li>
-                        </ul>
-                    </div>
-                </td>
-                <td>
-                    <div class="cell-middle">
-                        <div class="icon-field basic-input" style="width: 150px;">
-                            <span>${c.entryDate || ""}</span>
-                            <button class="icon-btn" style="background: transparent;">
-                                <img src="/image/calendar.png" alt="달력 아이콘">
-                            </button>
+            consultTableBody.insertAdjacentHTML('beforeend', `
+                <tr data-student-id="${item.id || ""}" 
+                    data-student-name="${item.studentName || ""}"
+                    data-consult-date="${item.consultDate || ""}"
+                    data-school="${item.school || ""}"
+                    data-grade-key="${item.gradeKey || ""}"
+                    data-phone="${item.phone || ""}"
+                    data-inflow-route-key="${item.inflowRouteKey || ""}"
+                    data-content="${item.content || ""}"
+                    data-progress-key="${progressKey}"
+                    class="consult-row">
+                    <td class="checkbox-group" onclick="event.stopPropagation()">
+                        <input type="checkbox">
+                    </td>
+                    <td>${index + 1}</td>
+                    <td>${item.consultDate || ""}</td>
+                    <td>${item.studentName || ""}</td>
+                    <td>${item.school || ""}</td>
+                    <td>${item.gradeName || ""}</td>
+                    <td>${item.phone || ""}</td>
+                    <td onclick="event.stopPropagation()">
+                        <div class="memo-etc text-middle">
+                            <textarea class="comment-text">${item.content || ""}</textarea>
                         </div>
-                    </div>
-                </td>
-            `;
-
-            consultTableBody.appendChild(row);
+                    </td>
+                    <td onclick="event.stopPropagation()">
+                        <div class="select-arrow">
+                            <button class="select-status" data-status="${progressKey}">
+                                ${progressText}
+                            </button>
+                            <ul class="dropdown-status">
+                                <li data-status="counseling">상담진행</li>
+                                <li data-status="waiting">수업대기</li>
+                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="ended">종료</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td onclick="event.stopPropagation()">
+                        <div class="join-link common-btn">가입링크 발송</div>
+                    </td>
+                </tr>
+            `);
         });
 
+        attachRowClickEvents();
         attachDropdownEvents();
     }
 
-    // ✅ 드롭다운 동작
+    // 행 클릭 이벤트
+    function attachRowClickEvents() {
+        document.querySelectorAll('.consult-row').forEach(row => {
+            row.addEventListener('click', function() {
+                const data = {
+                    id: this.dataset.studentId,
+                    studentName: this.dataset.studentName,
+                    consultDate: this.dataset.consultDate,
+                    school: this.dataset.school,
+                    gradeKey: this.dataset.gradeKey,
+                    phone: this.dataset.phone,
+                    inflowRouteKey: this.dataset.inflowRouteKey,
+                    content: this.dataset.content,
+                    progressKey: this.dataset.progressKey
+                };
+                openModal(data);
+            });
+        });
+    }
+
+    // 드롭다운 이벤트
     function attachDropdownEvents() {
         // 드롭다운 열기/닫기
         document.querySelectorAll('.select-status').forEach(button => {
             button.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const dropdown = this.nextElementSibling;
+
+                // 모든 드롭다운 닫기
+                document.querySelectorAll('.dropdown-status').forEach(dd => {
+                    dd.style.display = 'none';
+                });
+
+                // 현재 드롭다운 토글
                 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
             });
         });
 
-        // 항목 선택 시 진행상황 업데이트
+        // 항목 선택
         document.querySelectorAll('.dropdown-status li').forEach(item => {
             item.addEventListener('click', async function (e) {
                 e.stopPropagation();
+
                 const selectWrap = this.closest('.select-arrow');
                 const button = selectWrap.querySelector('.select-status');
                 const status = this.dataset.status;
                 const text = this.textContent;
 
-                // 선택한 행의 student id 가져오기
                 const tr = this.closest('tr');
                 const id = tr?.dataset.studentId;
+
                 if (!id) {
                     console.warn("⚠️ data-student-id가 없습니다.");
                     return;
@@ -266,13 +329,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 button.setAttribute('data-status', status);
                 this.parentElement.style.display = 'none';
 
-                console.log("🔹 진행상황 업데이트 요청:", { id, progressKey: status });
-
                 try {
                     const res = await fetch('/consult/update-progress', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id, progressKey: status })
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({id, progressKey: status})
                     });
 
                     if (!res.ok) {
@@ -282,8 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         return;
                     }
 
-                    const msg = await res.text();
-                    console.log("✅ 성공:", msg);
+                    console.log("✅ 진행상황 업데이트 성공");
                 } catch (err) {
                     console.error("🚨 통신 오류:", err);
                     alert('서버 통신 오류가 발생했습니다.');
@@ -291,69 +351,129 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // 드롭다운 외부 클릭 시 닫기
+        // 외부 클릭 시 닫기
         document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-status').forEach(dd => dd.style.display = 'none');
+            document.querySelectorAll('.dropdown-status').forEach(dd => {
+                dd.style.display = 'none';
+            });
         });
     }
 
-    // ✅ 라디오 버튼 변경 시 기간 조회
+    // 데이터 조회
+    async function fetchConsults(startYm, endYm) {
+        try {
+            const res = await fetch('/consult/search', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({startYm, endYm})
+            });
+
+            if (!res.ok) {
+                console.error("서버 조회 실패:", res.status);
+                return;
+            }
+
+            const data = await res.json();
+            renderConsultTable(data.response);
+        } catch (err) {
+            console.error("조회 실패:", err);
+        }
+    }
+
+    /* =================== *
+     *   기간 필터          *
+     * =================== */
+    const radios = document.querySelectorAll('input[name="period"]');
+    const periodDisplay = document.getElementById('period-display');
+    const calendarFilterBtn = document.getElementById('calendar-btn');
+    const calendarInput = document.getElementById('calendar-input');
+
+    // 초기 로드 시 기본 기간으로 조회 (예: 3개월)
+    async function initPeriodFilter() {
+        const defaultRadio = document.querySelector('input[name="period"][value="3m"]');
+        if (defaultRadio) {
+            defaultRadio.checked = true;
+            const range = getMonthRange(3);
+            periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
+            await fetchConsults(range.startYm, range.endYm);
+        }
+    }
+
+    // 라디오 버튼 변경
     radios.forEach(radio => {
-        radio.addEventListener("change", e => {
+        radio.addEventListener("change", async (e) => {
             const val = e.target.value;
             let range;
 
-            if (val === "1y") range = getMonthRange(12);
-            else if (val === "6m") range = getMonthRange(6);
-            else if (val === "3m") range = getMonthRange(3);
-            else if (val === "custom") {
+            if (val === "1y") {
+                range = getMonthRange(12);
+            } else if (val === "6m") {
+                range = getMonthRange(6);
+            } else if (val === "3m") {
+                range = getMonthRange(3);
+            } else if (val === "custom") {
                 periodDisplay.textContent = "직접 날짜를 선택하세요";
                 return;
             }
 
             periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
-            fetchConsults(range.startYm, range.endYm);
+            await fetchConsults(range.startYm, range.endYm);
         });
     });
 
-    // ✅ 일자지정
-    calendarBtn.addEventListener("click", () => {
+    // 일자지정 버튼
+    calendarFilterBtn?.addEventListener("click", () => {
         const customRadio = document.getElementById("period-custom");
-
-        // 자동으로 "일자지정" 라디오 선택
         if (!customRadio.checked) {
             customRadio.checked = true;
             customRadio.dispatchEvent(new Event("change"));
         }
-
-        // 달력 열기
         calendarInput.showPicker();
     });
 
-    calendarInput.addEventListener("change", e => {
+    // 달력 입력
+    calendarInput?.addEventListener("change", async (e) => {
         const selectedMonth = e.target.value;
         if (!selectedMonth) return;
+
         const today = new Date();
         const endYm = formatYM(today);
         const startYm = selectedMonth;
+
         periodDisplay.textContent = `${startYm} ~ ${endYm}`;
-        fetchConsults(startYm, endYm);
+        await fetchConsults(startYm, endYm);
     });
 
-    // ✅ 기본 1년 조회
-    const defaultRange = getMonthRange(12);
-    periodDisplay.textContent = `${defaultRange.startYm} ~ ${defaultRange.endYm}`;
-    fetchConsults(defaultRange.startYm, defaultRange.endYm);
-});
+    // 초기 데이터 로드
+    initPeriodFilter();
 
-//상담 삭제
-document.addEventListener('DOMContentLoaded', () => {
+    /* =================== *
+     *   체크박스 관리       *
+     * =================== */
+    const table = document.querySelector('.consult-table');
+    const headerCheckbox = table?.querySelector('thead input[type="checkbox"]');
+
+    // 전체 선택/해제
+    headerCheckbox?.addEventListener('change', () => {
+        const bodyCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+        bodyCheckboxes.forEach(cb => cb.checked = headerCheckbox.checked);
+    });
+
+    // 개별 체크박스 변경 시
+    table?.addEventListener('change', (e) => {
+        if (e.target.matches('tbody input[type="checkbox"]')) {
+            const bodyCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
+            const allChecked = Array.from(bodyCheckboxes).every(cb => cb.checked);
+            headerCheckbox.checked = allChecked;
+        }
+    });
+
+    /* =================== *
+     *   삭제 기능          *
+     * =================== */
     const deleteBtn = document.querySelector('.select-del');
 
-    if (!deleteBtn) return;
-
-    deleteBtn.addEventListener('click', async () => {
-        // 체크된 항목 찾기
+    deleteBtn?.addEventListener('click', async () => {
         const checked = document.querySelectorAll('.consult-table tbody input[type="checkbox"]:checked');
 
         if (checked.length === 0) {
@@ -361,11 +481,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 선택된 ID 목록 수집
-        const ids = Array.from(checked).map(chk => {
-            const tr = chk.closest('tr');
-            return tr?.dataset.studentId;
-        }).filter(Boolean);
+        const ids = Array.from(checked)
+            .map(chk => chk.closest('tr')?.dataset.studentId)
+            .filter(Boolean);
 
         if (ids.length === 0) {
             alert('선택된 데이터에 ID가 없습니다.');
@@ -379,62 +497,22 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await fetch('/consult/delete', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(ids)
             });
 
-            if (res.ok) {
-                alert('삭제 완료');
-                location.reload();
-            } else {
+            if (!res.ok) {
                 const msg = await res.text();
                 alert('삭제 실패: ' + msg);
+                return;
             }
+
+            alert('삭제 완료');
+            location.reload();
         } catch (err) {
             console.error('삭제 중 오류:', err);
             alert('서버 통신 오류가 발생했습니다.');
         }
     });
+
 });
-
-// ✅ 상담기록 전체 선택 / 해제 기능 (렌더링 후에도 동작)
-document.addEventListener('DOMContentLoaded', () => {
-    const table = document.querySelector('.consult-table');
-    if (!table) return;
-
-    const headerCheckbox = table.querySelector('thead input[type="checkbox"]');
-
-    // ✅ 전체선택 버튼 클릭 시 tbody 전체 on/off
-    function toggleAllCheckboxes(isChecked) {
-        const bodyCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
-        bodyCheckboxes.forEach(cb => cb.checked = isChecked);
-    }
-
-    // ✅ 상단 체크박스 클릭 시
-    headerCheckbox.addEventListener('change', () => {
-        toggleAllCheckboxes(headerCheckbox.checked);
-    });
-
-    // ✅ 개별 체크박스 클릭 시 상단 상태 갱신
-    function updateHeaderCheckbox() {
-        const bodyCheckboxes = table.querySelectorAll('tbody input[type="checkbox"]');
-        const allChecked = Array.from(bodyCheckboxes).every(cb => cb.checked);
-        headerCheckbox.checked = allChecked;
-    }
-
-    // ✅ 테이블 내에서 change 이벤트 감지
-    table.addEventListener('change', e => {
-        if (e.target.matches('tbody input[type="checkbox"]')) {
-            updateHeaderCheckbox();
-        }
-    });
-
-    // ✅ 데이터 fetch 후 렌더링 시에도 다시 동작하도록 export
-    window.attachCheckboxSync = () => {
-        const bodyCheckboxes = document.querySelectorAll('.consult-table tbody input[type="checkbox"]');
-        bodyCheckboxes.forEach(cb => {
-            cb.addEventListener('change', updateHeaderCheckbox);
-        });
-    };
-});
-

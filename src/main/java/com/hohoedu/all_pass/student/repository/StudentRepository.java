@@ -80,6 +80,8 @@ public interface StudentRepository {
             @Param("studentId") String studentId
     );
 
+    int updateStudentPayment(StudentWebReqDTO.StudentPaymentUpdateDTO req);
+
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
 
     int insertTeacherAssign(TeacherAssign teacherAssign);

@@ -2,6 +2,8 @@ package com.hohoedu.all_pass._core.view;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +26,15 @@ public class ConsultViewController {
     private final ConsultService consultService;
 
     @GetMapping("/main")
-    public String getConsultMainPase(Model model) {
+    public String getConsultMainPase(Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
-        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult();
+        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode());
         model.addAttribute("grades", grades);
         model.addAttribute("routes", routes);
         model.addAttribute("consults", consults);
@@ -39,6 +46,7 @@ public class ConsultViewController {
 
         return "consult/consult-test";
     }
+
     @GetMapping("/level")
     public String getConsultLevelPage(Model model) {
 

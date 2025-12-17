@@ -14,6 +14,8 @@ public class ConsultReqDTO {
         private String gradeKey;
         private String inflowRouteKey;
         private String content;
+        private String centerCode;
+        private String userCode;
     }
     
 }

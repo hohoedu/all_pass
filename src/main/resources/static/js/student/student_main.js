@@ -252,7 +252,7 @@ function renderStudentModal(data) {
     }
 
     const info = data.studentInfo;
-    const payment = data.studentPayment;
+    const payment = data.studentPayment ?? {};
     const grade = data.gradeCodes;
 
     const setValue = (selector, value) => {
@@ -716,4 +716,58 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
         });
     }
+});
+
+// ===== 교재비 & 입회날짜 변경 ===== //
+
+document.addEventListener("DOMContentLoaded", () => {
+    const payBtn = document.getElementById("pay-info");
+    if (!payBtn) return;
+
+    payBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        console.log('버튼 클릭')
+
+        if (!currentStudentId) {
+            alert("학생을 먼저 선택해주세요.");
+            return;
+        }
+
+        const payload = {
+            studentId: currentStudentId,
+
+            entryHanDate: getValue("#entry-han-date")?.trim() || null,
+            entryBookDate: getValue("#entry-book-date")?.trim() || null,
+
+            hanMaterialFee: parseInt(
+                (getValue("#hanMaterialFee") || "0").replace(/,/g, "")
+            ) || 0,
+
+            bookMaterialFee: parseInt(
+                (getValue("#bookMaterialFee") || "0").replace(/,/g, "")
+            ) || 0
+        };
+
+        try {
+            const res = await fetch("/student/update/payment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                throw new Error("결제 정보 저장 실패");
+            }
+
+            alert("결제 정보가 저장되었습니다.");
+
+            updateTotalFee();
+
+        } catch (err) {
+            console.error(err);
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    });
 });

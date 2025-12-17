@@ -1,8 +1,14 @@
 package com.hohoedu.all_pass.user;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
 
+import com.google.firebase.auth.hash.Sha256;
+import com.hohoedu.all_pass._core.utils.Sha256Util;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.conscrypt.OpenSSLCipherRSA;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +24,7 @@ import com.hohoedu.all_pass.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,22 +51,35 @@ public class UserService {
 
         Center center = userRepository.findCenterByCenterCode(loginDTO.getCenterCode());
         if (center == null) {
-            throw new CustomRestfulException("존재하지 않는 지점 코드입니다.", HttpStatus.NOT_FOUND);
+            throw new CustomRestfulException("지점코드를 확인해주세요.", HttpStatus.NOT_FOUND);
         }
 
         UserRespDTO.UserAuthDTO authDTO = userRepository.findByLoginInfo(loginDTO.getUserId());
 
         // 아이디 체크
         if (authDTO == null) {
-            throw new CustomRestfulException("존재하지 않는 아이디입니다.", HttpStatus.FORBIDDEN);
+            throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
         }
 
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String inputHash = Sha256Util.sha256(loginDTO.getUserPassword(), authDTO.getSalt());
+        String test1 = Sha256Util.generateSalt();
+        String test2 = Sha256Util.generateSalt();
+        String test3 = Sha256Util.generateSalt();
+        String test4 = Sha256Util.generateSalt();
+        String test5 = Sha256Util.generateSalt();
+        String test6 = Sha256Util.generateSalt();
 
-        String encode = passwordEncoder.encode(loginDTO.getUserPassword());
+        log.info(test1);
+        log.info(test2);
+        log.info(test3);
+        log.info(test4);
+        log.info(test5);
+        log.info(test6);
+        log.info(inputHash);
+
         // 아이디 비밀번호 체크
-        if (!passwordEncoder.matches(loginDTO.getUserPassword(), authDTO.getPasswordHash())) {
-            throw new CustomRestfulException("비밀번호가 일치하지 않습니다.", HttpStatus.FORBIDDEN);
+        if (!MessageDigest.isEqual(inputHash.getBytes(StandardCharsets.UTF_8), authDTO.getPasswordHash().getBytes(StandardCharsets.UTF_8))) {
+            throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
         }
 
         // 아이디 지점코드 체크

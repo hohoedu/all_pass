@@ -289,6 +289,15 @@
         where student_id = #{studentId}
     </update>
 
+    <update id="updateStudentPayment">
+        UPDATE erp_teacher_assign
+        SET entry_han_date    = #{entryHanDate},
+            entry_book_date   = #{entryBookDate},
+            han_material_fee  = #{hanMaterialFee},
+            book_material_fee = #{bookMaterialFee}
+        WHERE student_id = #{studentId}
+    </update>
+
     <select id="findTeacherAssign" resultType="com.hohoedu.all_pass.student.model.TeacherAssign">
         SELECT *
         FROM erp_teacher_assign

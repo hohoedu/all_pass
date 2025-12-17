@@ -314,9 +314,9 @@ public class PaymentService {
 
 
     // 모달 데이터 조회
-    public List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(String studentId, String centerCode) {
+    public List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(PaymentReqDTO.PersonalDTO dto) {
 
-        return paymentRepository.findPaymentByStudentId(studentId, centerCode);
+        return paymentRepository.findPaymentByStudentId(dto);
     }
 
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {

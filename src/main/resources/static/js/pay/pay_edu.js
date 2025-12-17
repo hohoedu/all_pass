@@ -330,12 +330,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const studentId = row.dataset.studentId;
             if (!studentId) return;
 
+            const url = new URL(window.location.href);
+
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
+
+            const body = {
+                studentId: studentId,
+                yy: yy,
+                mm: mm
+            };
             try {
 
                 const response = await fetch('/pay/edu-personal', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({studentId})
+                    body: JSON.stringify(body)
                 });
 
                 if (!response.ok) throw new Error('데이터 조회 실패');
@@ -354,48 +364,209 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fillModal(data, type) {
         const tbody = document.getElementById(`${type}-tbody`);
-        tbody.innerHTML = ''; // 초기화
+        tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
             tbody.innerHTML = `
             <tr>
-                <td colspan="10" style="text-align:center;">등록된 데이터가 없습니다.</td>
+                <td colspan="10" style="text-align:center;">
+                    등록된 데이터가 없습니다.
+                </td>
             </tr>
         `;
             return;
         }
 
+        /* =========================
+           탭1 채우기
+        ========================= */
+        const firstItem = data[0];
+        const modal = document.querySelector(`.${type}-modal`);
+            if (modal) {
+
+                // 제목
+                modal.querySelector('.m-t-line .title').textContent =
+                    `${firstItem.studentName}의 수강료 상세 내역`;
+
+                modal.querySelector('.pay-details h4 span').textContent =
+                    firstItem.studentName;
+
+                const toNumber = (v) => Number(v || 0);
+
+                const hanEduFee = toNumber(firstItem.hanFee);
+                const bookEduFee = toNumber(firstItem.bookFee);
+
+                // ✅ 교재비
+                const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
+                const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
+
+                const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
+
+                if (tableRows.length >= 5) {
+                    // 한자 교육비
+                    const hanEduInput = tableRows[0].querySelector('.edu-input');
+                    hanEduInput.value = hanEduFee.toLocaleString();
+                    hanEduInput.dataset.rawValue = hanEduFee;
+
+                    // 한자 교재비
+                    tableRows[1].querySelector('td:last-child').textContent =
+                        hanMaterialFee.toLocaleString();
+
+                    // 독서 교육비 (조회값 없음 → 0)
+                    const bookEduInput = tableRows[2].querySelector('.edu-input');
+                    bookEduInput.value = bookEduFee.toLocaleString();
+                    bookEduInput.dataset.rawValue = bookEduFee;
+
+                    // 독서 교재비
+                    tableRows[3].querySelector('td:last-child').textContent =
+                        bookMaterialFee.toLocaleString();
+
+                    // 합계
+                    const total =
+                        hanEduFee +
+                        bookEduFee +
+                        hanMaterialFee +
+                        bookMaterialFee;
+
+                    tableRows[4]
+                        .querySelector('.edu-sum')
+                        .textContent = total.toLocaleString();
+                }
+
+                setupInputListeners(modal);
+                setupSaveButton(modal, firstItem.studentId);
+            }
+
+        /* =========================
+           탭2 채우기
+        ========================= */
         data.forEach((item, index) => {
-            const approvedDate = item.approvedDate ? item.approvedDate : '-';
-            const amount = item.amount ? Number(item.amount).toLocaleString() : '0';
+            const amount = Number(item.amount || 0).toLocaleString();
+            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
 
             const row = document.createElement('tr');
             row.innerHTML = `
             <td class="checkbox-group">
-                <input type="checkbox" 
-                       data-student-id="${item.studentId}" 
-                       data-bill-id="${item.billId}"
-                       data-total-fee = "${item.totalFee}"
-                       data-total-material-fee = "${item.totalMaterialFee}">
+                <input type="checkbox"
+                       data-student-id="${item.studentId}"
+                       data-payment-key="${item.paymentKey}">
             </td>
             <td>${index + 1}</td>
-            <td>${item.classDate || ''}</td>
-            <td>${item.studentName || ''}</td>
-            <td>${item.subject || ''}</td>
-            <td>${
-                [
-                    item.hanTeacher ? `${item.hanTeacher}(한)` : '',
-                    item.bookTeacher ? `${item.bookTeacher}(북)` : ''
-                ].filter(Boolean).join(', ')
-            }</td>
-            <td>${item.billType || '-'}</td>
-            <td>${approvedDate.split(' ')[0]}</td>
+            <td>${item.classDate}</td>
+            <td>${item.studentName}</td>
+            <td>${item.subject}</td>
+            <td>${item.hanTeacher || ''}</td>
+            <td>${paidDate}</td>
             <td class="payment">${amount}</td>
             <td class="middle">
-                <div class="state-box ${getStatusClass(item.status)}">${getStatus(item.status) || ''}</div>
+                <div class="state-box ${getStatusClass(item.status)}">
+                    ${getStatus(item.status)}
+                </div>
             </td>
         `;
             tbody.appendChild(row);
+        });
+    }
+
+    // 입력 필드 리스너 설정
+    function setupInputListeners(modal) {
+        const inputs = modal.querySelectorAll('.edu-input');
+
+        inputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                // 숫자와 쉼표만 허용
+                let value = e.target.value.replace(/[^0-9]/g, '');
+
+                // 숫자를 저장
+                e.target.dataset.rawValue = value;
+
+                // 천단위 구분자 추가
+                e.target.value = Number(value).toLocaleString();
+
+                // 합계 업데이트
+                updateTotal(modal);
+            });
+        });
+    }
+
+    // 합계 계산 함수
+    function updateTotal(modal) {
+        const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
+
+        let total = 0;
+
+        // 한자 교육비
+        const hanFeeInput = tableRows[0]?.querySelector('.edu-input');
+        if (hanFeeInput) {
+            total += Number(hanFeeInput.dataset.rawValue || 0);
+        }
+
+        // 한자 교재비
+        const hanMaterialText = tableRows[1]?.querySelector('td:last-child').textContent;
+        total += Number(hanMaterialText.replace(/,/g, '') || 0);
+
+        // 독서 교육비
+        const bookFeeInput = tableRows[2]?.querySelector('.edu-input');
+        if (bookFeeInput) {
+            total += Number(bookFeeInput.dataset.rawValue || 0);
+        }
+
+        // 독서 교재비
+        const bookMaterialText = tableRows[3]?.querySelector('td:last-child').textContent;
+        total += Number(bookMaterialText.replace(/,/g, '') || 0);
+
+        // 합계 표시
+        const sumCell = tableRows[4]?.querySelector('.edu-sum');
+        if (sumCell) {
+            sumCell.textContent = total.toLocaleString();
+        }
+    }
+
+    // 저장 버튼 설정
+    function setupSaveButton(modal, studentId) {
+        const saveBtn = modal.querySelector('.save-btn');
+        if (!saveBtn) return;
+
+        // 기존 이벤트 리스너 제거
+        const newSaveBtn = saveBtn.cloneNode(true);
+        saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+
+        newSaveBtn.addEventListener('click', async () => {
+            const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
+
+            const hanFee = Number(tableRows[0]?.querySelector('.edu-input')?.dataset.rawValue || 0);
+            const bookFee = Number(tableRows[2]?.querySelector('.edu-input')?.dataset.rawValue || 0);
+
+            if (!confirm('교육비를 저장하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/pay/update-fee', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        hanFee: hanFee,
+                        bookFee: bookFee
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('교육비가 저장되었습니다.');
+                    location.reload();
+                } else {
+                    alert('저장에 실패했습니다: ' + (result.message || ''));
+                }
+
+            } catch (error) {
+                console.error('❌ 교육비 저장 오류:', error);
+                alert('서버와의 통신에 실패했습니다.');
+            }
         });
     }
 

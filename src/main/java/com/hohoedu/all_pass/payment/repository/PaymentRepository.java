@@ -54,7 +54,7 @@ public interface PaymentRepository {
 
     void createPaymentCallback(PaymentCallback paymentCallback);
 
-    List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(@Param("studentId") String studentId, @Param("centerCode") String centerCode);
+    List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(PaymentReqDTO.PersonalDTO dto);
 
     Payment findPaymentByBillId(String billId);
 

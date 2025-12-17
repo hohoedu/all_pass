@@ -526,17 +526,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('table_register');
     if (!btn) return;
     const savedPeriod = sessionStorage.getItem('selectedPeriod');
+    console.log('savedPeriod =', savedPeriod);
+
     if (savedPeriod) {
         const activeTab = document.querySelector('.time-tab-content.active');
-        const rows = activeTab.querySelectorAll('tr.time-row');
-        rows.forEach(row => {
-            const p = row.querySelector('td:nth-child(2)').innerText.trim();
-            if (p === savedPeriod) {
-                row.querySelector('input[type=radio]').checked = true;
-            }
-        });
+
+        if (activeTab) {
+            const rows = activeTab.querySelectorAll('tr.time-row');
+
+            rows.forEach(row => {
+                const periodCell = row.querySelector('td:nth-child(2)');
+                const periodText = periodCell?.innerText?.trim();
+
+                if (periodText === savedPeriod) {
+                    const radio = row.querySelector('input[type=radio]');
+                    if (radio) radio.checked = true;
+                }
+            });
+        }
+
         sessionStorage.removeItem('selectedPeriod');
     }
+
 
     btn.addEventListener('click', () => {
         const [yy, mm] = document.getElementById('currentMonth')

@@ -219,6 +219,13 @@ public class StudentService {
         return 1;
     }
 
+    public int updatePaymentInfo(StudentWebReqDTO.StudentPaymentUpdateDTO dto) {
+        studentRepository.updateStudentPayment(dto);
+
+        return 1;
+
+    }
+
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
         TeacherAssign old = studentRepository.findTeacherAssign(req.getStudentId());

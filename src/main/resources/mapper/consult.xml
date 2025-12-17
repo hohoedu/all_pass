@@ -7,8 +7,8 @@
     <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
 
-     INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, progress_key, content, created_at)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, 'counseling', #{content}, SYSDATETIME());
+        INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, progress_key, content, created_at, center_code, user_code)
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, 'counseling', #{content}, SYSDATETIME(), #{centerCode}, #{userCode});
     </insert>
 
     <select id="findAll" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
@@ -24,6 +24,7 @@
             FROM ERP_CONSULT c
                  JOIN erp_grade_code g ON c.grade_key = g.grade_key
                  JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+        WHERE c.center_code = #{centerCode}
     </select>
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
@@ -41,6 +42,7 @@
         JOIN erp_grade_code g ON c.grade_key = g.grade_key
         JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         <where>
+            c.center_code = #{centerCode}
             <if test="startYm != null and endYm != null">
                 AND c.consult_date BETWEEN CONCAT(#{startYm}, '-01')
                 AND EOMONTH(CONCAT(#{endYm}, '-01'))
@@ -61,5 +63,18 @@
         UPDATE ERP_CONSULT
         SET progress_key = #{progressKey}
         WHERE id = #{id}
+    </update>
+
+    <update id="updateConsult">
+        UPDATE erp_consult
+        SET student_name     = #{studentName},
+            consult_date     = #{consultDate},
+            school           = #{school},
+            grade_key        = #{gradeKey},
+            phone            = #{phone},
+            inflow_route_key = #{inflowRouteKey},
+            content          = #{content},
+            updated_at       = SYSDATETime()
+        WHERE id = #{id};
     </update>
 </mapper>

@@ -36,7 +36,8 @@
         SELECT u.user_code     as userCode,
                u.user_id       as userId,
                u.password_hash as passwordHash,
-               u.center_code   as centerCode
+               u.center_code   as centerCode,
+               u.salt as salt
         FROM ERP_USER u
         WHERE u.user_id = #{userId}
     </select>

@@ -160,8 +160,7 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount
-        FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
@@ -234,14 +233,16 @@
 
 
     <!--  수강료 청구 화면 모달 데이터  -->
-    <select id="findPaymentByStudentId"
-            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentModalDTO">
+    <select id="findPaymentByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentModalDTO">
         SELECT s.student_id AS studentId,
         (p.yy + '-' + p.mm) AS classDate,
         s.student_name AS studentName,
         p.payment_key AS paymentKey,
-        STUFF((SELECT ', ' + sub.class_name
-        FROM (SELECT DISTINCT cc2.class_name, cc2.class_type
+
+        STUFF((
+        SELECT ', ' + sub.class_name
+        FROM (
+        SELECT DISTINCT cc2.class_name, cc2.class_type
         FROM erp_time_table_assign ta2
         JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
         JOIN erp_class_code cc2 ON cc2.class_key =
@@ -253,23 +254,35 @@
         AND t2.yy = p.yy
         AND t2.mm = p.mm) AS sub
         ORDER BY sub.class_type
-        FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS subject,
+        FOR XML PATH (''), TYPE
+        ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS subject,
         hu.user_name AS hanTeacher,
         bu.user_name AS bookTeacher,
         p.amount AS amount,
         p.status,
-        p.paid_date AS paidDate
+        p.paid_date AS paidDate,
+        ta.han_material_fee AS hanMaterialFee,
+        ta.book_material_fee AS booKMaterialFee,
+        edu.han_fee AS hanFee,
+        edu.book_fee AS bookFee
+
         FROM erp_payment p
+        LEFT JOIN (
+        SELECT
+        pd.payment_key,
+        MAX(CASE WHEN class_type = '1' THEN pd.amount END ) AS han_fee,
+        MAX(CASE WHEN class_type = '2' THEN pd.amount END ) AS book_fee
+        FROM erp_payment_detail pd
+        GROUP BY pd.payment_key) AS edu ON p.payment_key = edu.payment_key
         JOIN erp_student s ON p.student_id = s.student_id
-        JOIN erp_student_class sc ON s.student_id = sc.student_id AND p.yy = sc.yy AND p.mm = sc.mm
-        LEFT JOIN erp_user hu ON sc.han_user_code = hu.user_code
-        LEFT JOIN erp_user bu ON sc.book_user_code = bu.user_code
-        WHERE
-        s.center_code = #{centerCode}
+        JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+        LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
+        LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
+        WHERE s.center_code = #{centerCode}
         <if test="studentId!= null and studentId != 'all'">
             AND p.student_id = #{studentId}
         </if>
-        ORDER BY classDate ASC;
+        ORDER BY classDate DESC;
     </select>
 
     <insert id="insertPaymentRefund">

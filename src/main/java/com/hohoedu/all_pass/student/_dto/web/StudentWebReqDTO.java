@@ -79,6 +79,15 @@ public class StudentWebReqDTO {
         private String userCode;
     }
 
+    @Data
+    public static class StudentPaymentUpdateDTO {
+        private String studentId;
+        private String entryHanDate;
+        private String entryBookDate;
+        private Integer hanMaterialFee;
+        private Integer bookMaterialFee;
+    }
+
     @Getter
     @AllArgsConstructor
     public static class MaterialCalcResult {

@@ -15,5 +15,6 @@ public class ConsultRespDTO {
         private String inflowRouteName;
         private String progressKey;
         private String content;
+        private String sendAt;
     }
 }

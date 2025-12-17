@@ -14,6 +14,8 @@ import com.hohoedu.all_pass.consult.repository.InflowRouteJpaRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
 
 @Service
 @Transactional
@@ -29,20 +31,48 @@ public class ConsultService {
     }
 
     public void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
-        System.out.println("호출");
+
         consultRepository.registerConsult(reqDTO);
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findConsult(){
-        
-        return consultRepository.findAll();
+    public List<ConsultRespDTO.ConsultDTO> findConsult(String centerCode) {
+        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findAll(centerCode);
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
+
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+
+        response.stream()
+                .forEach(dto -> {
+                    String sendAt = dto.getSendAt();
+                    if (sendAt == null || sendAt.isBlank()) return;
+
+                    LocalDate date = LocalDate.parse(sendAt, inputFormatter);
+                    dto.setSendAt(date.format(outputFormatter));
+                });
+        return response;
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm) {
+    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm, String centerCode) {
         Map<String, Object> params = new HashMap<>();
         params.put("startYm", startYm);
         params.put("endYm", endYm);
-        return consultRepository.findByPeriod(params);
+        params.put("centerCode", centerCode);
+        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findByPeriod(params);
+        DateTimeFormatter inputFormatter =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
+
+        DateTimeFormatter outputFormatter =
+                DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+
+        response.stream()
+                .forEach(dto -> {
+                    String sendAt = dto.getSendAt();
+                    if (sendAt == null || sendAt.isBlank()) return;
+
+                    LocalDate date = LocalDate.parse(sendAt, inputFormatter);
+                    dto.setSendAt(date.format(outputFormatter));
+                });
+        return response;
     }
 
     public void deleteByIds(List<Integer> ids) {
@@ -52,5 +82,9 @@ public class ConsultService {
 
     public void updateProgress(Integer id, String progressKey) {
         consultRepository.updateProgress(id, progressKey);
+    }
+
+    public void updateConsult (ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
+        consultRepository.updateConsult(reqDTO);
     }
 }

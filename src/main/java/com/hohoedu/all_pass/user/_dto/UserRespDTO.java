@@ -11,6 +11,7 @@ public class UserRespDTO {
         private String userId;
         private String passwordHash;
         private String centerCode;
+        private String salt;
 
         @Builder
         public UserAuthDTO(String userId, String passwordHash, String centerCode) {

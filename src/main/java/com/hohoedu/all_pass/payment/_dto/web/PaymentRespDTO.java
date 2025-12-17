@@ -78,7 +78,10 @@ public class PaymentRespDTO {
         private Integer amount;
         private String status;
         private String paidDate;
-
+        private Integer hanMaterialFee;
+        private Integer bookMaterialFee;
+        private Integer hanFee;
+        private Integer bookFee;
     }
 
     @Data

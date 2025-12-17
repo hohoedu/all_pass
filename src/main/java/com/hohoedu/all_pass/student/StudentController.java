@@ -87,8 +87,7 @@ public class StudentController {
     // 학생 개별 데이터 불러오기
     @GetMapping("/{studentId}")
     public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
-
-
+        
         StudentWebRespDTO.StudentDTO student = studentService.getStudentDetailByStudentId(studentId);
 
         return ResponseEntity.ok(ApiUtils.success(student));
@@ -133,13 +132,18 @@ public class StudentController {
                     .build();
         }
 
-
         reqDTO.setUserCode(user.getUserCode());
 
         studentService.updateStudentInfo(reqDTO);
 
-        // 학생 정보 조회 후 모달 업데이트 해야함
         return ResponseEntity.ok("ok");
+    }
+
+    @PostMapping("/update/payment")
+    public ResponseEntity<?> updatePayment(@RequestBody StudentWebReqDTO.StudentPaymentUpdateDTO req) {
+        log.info("req = {}", req);
+        studentService.updatePaymentInfo(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
     }
 
     @GetMapping("/gradeCodes")
