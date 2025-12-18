@@ -1,3 +1,5 @@
+let draggedData = null;
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const monthInput = document.getElementById("monthPickerInput");
@@ -134,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${tt.startTime} ~ ${tt.endTime}<br>
                             <strong>${tt.className} ${tt.unitName ?? ""}</strong>
                         </div>
-                        <div class="inner-grid">
+                        <div class="inner-grid" draggable="true">
                             ${tt.students.map(s => `
                                 <div data-name="${s.studentName}">
                                     ${s.studentName}
@@ -151,9 +153,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
             html += `</tbody>`;
 
-            // 테이블 업데이트
             document.querySelector(".timetable-lookup-table").innerHTML = html;
         }
     }
 
+
+    document.addEventListener("dragstart", (e) => {
+        const grid = e.target.closest(".inner-grid");
+        if (!grid) return;
+
+        const timeTableKey = grid.dataset.timeTableKey;
+
+        const [yy, mm] = document.getElementById('currentMonth')
+            .textContent.trim()
+            .match(/(\d{4})년\s*(\d{1,2})월/)
+            .slice(1, 3)
+            .map((v, i) => i === 1 ? v.padStart(2, '0') : v);
+
+        dragAssignments = [...grid.children].map(el => ({
+            studentId: el.dataset.studentId,
+            weekNo: el.dataset.weekNo,   // 기존 배정 정보
+            yy,
+            mm
+        }));
+
+        e.dataTransfer.setData("text/plain", "students");
+    });
+
+    document.addEventListener("dragover", (e) => {
+        if (e.target.closest(".inner-grid")) {
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener("drop", async (e) => {
+        const targetGrid = e.target.closest(".inner-grid");
+        if (!targetGrid || !dragAssignments) return;
+
+        e.preventDefault();
+
+        const targetTimeTableKey = targetGrid.dataset.timeTableKey;
+
+        const assignments = dragAssignments.map(a => ({
+            ...a,
+            timeTableKey: targetTimeTableKey
+        }));
+
+        console.log('assignments='+assignments);
+        await fetch('/class/add_student', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({assignments})
+        });
+
+        dragAssignments = null;
+
+        // window.location.reload();
+    });
 });

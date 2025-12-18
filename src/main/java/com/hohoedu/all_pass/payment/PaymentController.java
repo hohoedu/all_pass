@@ -35,7 +35,7 @@ public class PaymentController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-
+        log.info("PaySendDTO = {}", dto.toString());
         PaymentRespDTO.PaySendRespDTO res = paymentService.sendBill(user, dto);
 
         if (!"0000".equals(res.getPaymintCode())) {

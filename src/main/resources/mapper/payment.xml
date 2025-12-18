@@ -11,6 +11,16 @@
                 #{userCode}, SYSDATETIME())
     </insert>
 
+    <select id="existsBill" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_payment_bill
+        WHERE student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND bill_type = #{billType}
+          AND status IN ('issued', 'approved', 'partial');
+    </select>
+
     <select id="findPayConfigByCenterCode"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentConfigDTO">
         SELECT *

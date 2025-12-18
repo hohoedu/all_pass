@@ -1,6 +1,19 @@
 // Sidebar load
 // const menu = document.querySelectorAll(".menu-link");
 
+setInterval(() => {
+    fetch('/user/ping', {
+        method: 'GET',
+        credentials: 'same-origin'
+    }).then(res => {
+        if (res.status === 401) {
+            alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+            location.href = '/login';
+        }
+    }).catch(() => {
+    });
+}, 10 * 60 * 1000);
+
 // for (let i = 0; i < menu.length; i++) {
 //   menu[i].addEventListener("click", function () {
 //     menu.forEach(link => link.classList.remove("active"));
@@ -534,4 +547,7 @@ function convertStrong(text) {
     if (!text) return "";
     return text.replace(/@@(.*?)@@/g, "<strong>$1</strong>");
 }
+
+
+
 

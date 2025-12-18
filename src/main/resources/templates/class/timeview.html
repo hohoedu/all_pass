@@ -70,70 +70,73 @@
                                             <div class="header" th:utext="${tt.startTime} + ' ~ ' + ${tt.endTime} + '<br>
                             <strong>' + ${tt.className} + ' ' +(${tt.unitName} ?: '') + '</strong>'">
                                             </div>
-                                            <div class="inner-grid">
+                                            <div class="inner-grid" draggable="true"
+                                                 th:attr="data-time-table-key=${tt.timeTableKey}">
                                                 <div th:each="stu : ${tt.students}" th:text="${stu.studentName}"
-                                                     th:attr="data-name=${stu.studentName}">
-                                                </div>
+                                                     th:attr="data-name=${stu.studentName},
+                                                     data-student-id=${stu.studentId},
+                                                     data-week-no=${stu.week}">
                                             </div>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
                     </div>
-                </section>
-                <!-- 회원현황 -->
-                <section class="member">
-                    <div class="common-title" style="margin-bottom: 30px;">
-                        <h2>회원 현황</h2>
-                    </div>
-                    <table class="member-status-table">
-                        <tbody>
-                        <tr>
-                            <td>입회</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>탈퇴</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>전입</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>전출</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>1-3주</td>
-                            <td>
-                                <span th:text="${memberStats.oneToThreeWeeks} + '명'"></span>
-                            </td>
-                            <td th:text="${memberStats.oneToThreeWeekNames}"></td>
-                        </tr>
-                        <tr>
-                            <td>주의필요</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="2">총원</td>
-                            <td><span class="pax-people" th:text="${memberStats.total}+'명'"></span></td>
-                        </tr>
-                        </tfoot>
+                    </td>
+                    </tr>
+                    </tbody>
                     </table>
-                </section>
             </div>
-        </main>
+            </section>
+            <!-- 회원현황 -->
+            <section class="member">
+                <div class="common-title" style="margin-bottom: 30px;">
+                    <h2>회원 현황</h2>
+                </div>
+                <table class="member-status-table">
+                    <tbody>
+                    <tr>
+                        <td>입회</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>탈퇴</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>전입</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>전출</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>1-3주</td>
+                        <td>
+                            <span th:text="${memberStats.oneToThreeWeeks} + '명'"></span>
+                        </td>
+                        <td th:text="${memberStats.oneToThreeWeekNames}"></td>
+                    </tr>
+                    <tr>
+                        <td>주의필요</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="2">총원</td>
+                        <td><span class="pax-people" th:text="${memberStats.total}+'명'"></span></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </section>
     </div>
+    </main>
+</div>
 </div>
 </div>
 </body>

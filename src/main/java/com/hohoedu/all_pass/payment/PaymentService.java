@@ -64,8 +64,26 @@ public class PaymentService {
     }
 
     public PaymentRespDTO.PaySendRespDTO sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+        int activeCount = paymentRepository.existsBill(req.getStudentId(), req.getYy(), req.getMm(), req.getType());
 
-        PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+        if (activeCount > 0) {
+            throw new IllegalStateException(
+                    "이미 발행된 청구서가 존재합니다."
+            );
+        }
+
+        PaymentRespDTO.PaymentConfigDTO conf;
+
+
+        if ("edu".equals(req.getType())) {
+
+            conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+        } else if ("material".equals(req.getType())) {
+
+            conf = paymentRepository.findPayConfigByCenterCode("PUS001");
+        } else {
+            throw new IllegalArgumentException("알 수 없는 청구 타입: " + req.getType());
+        }
 
 
         if (conf == null) {
@@ -247,7 +265,7 @@ public class PaymentService {
                 .user(creator)
                 .itemType("BOOK_FEE")
                 .classType(classInfoDTO.getClassType())
-                .amount(0)
+                .amount(classInfoDTO.getBookFee())
                 .note("교재비")
                 .timeTableKey(classInfoDTO.getTimeTableKey())
                 .build();
@@ -460,14 +478,6 @@ public class PaymentService {
         String raw = req.getBillId() + "," + req.getPrice();
         String hash = DigestUtils.sha256Hex(raw);
 
-        log.info("hash={}", hash);
-        log.info("billId = {}", req.getBillId());
-        log.info("price={}", req.getPrice());
-        log.info("studentId={}", req.getStudentId());
-        log.info("apiKey={}", conf.getApiKey());
-        log.info("getMemberId={}", conf.getMemberId());
-        log.info("getMerchantId={}", conf.getMerchantId());
-        log.info("getPrice={}", req.getPrice());
         Map<String, Object> body = Map.of(
                 "apikey", conf.getApiKey(),
                 "member", conf.getMemberId(),
@@ -476,7 +486,7 @@ public class PaymentService {
                 "price", req.getPrice(),
                 "hash", hash
         );
-        log.info("body={}", body);
+
         PaymentRespDTO.PaymintRespDTO resp = callPaymint(conf.getDestroyUrl(), body);
 
         if (resp == null || !"0000".equals(resp.getCode())) {
@@ -540,43 +550,91 @@ public class PaymentService {
         return result > 0;
     }
 
+    //결제선생 취소 요청
     public void cancelPayment(PaymentReqDTO.PaymentCancelReqDTO dto, UserRespDTO.LoginRespDTO user) throws JsonProcessingException {
 
         Payment payment = paymentRepository.findPaymentByKey(dto.getPaymentKey());
-        PaymentBill paymentBill = paymentRepository.findPaymentBill(dto.getBillId());
+        List<PaymentBill> bills = paymentRepository.findBillsByPaymentKey(dto.getPaymentKey());
         if (payment == null) {
             throw new IllegalStateException("결제 정보 없음");
         }
 
-        if (!"approved".equals(payment.getStatus())) {
-            throw new IllegalStateException("결제 완료 상태만 취소 가능");
+        List<PaymentBill> targets = bills.stream()
+                .filter(bill -> {
+                    if (bill.getBillType().equals("edu")) {
+                        return dto.isCancelEdu();
+                    }
+                    if (bill.getBillType().equals("material")) {
+                        return dto.isCancelBook();
+                    }
+                    return false;
+                })
+                .toList();
+
+        if (targets.isEmpty()) {
+            throw new IllegalStateException("선택된 취소 대상이 없습니다.");
         }
 
-        PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+        for (PaymentBill bill : targets) {
+
+            PaymentRespDTO.PaymentConfigDTO conf;
+
+            if ("edu".equals(bill.getBillType())) {
+                conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+            } else if ("material".equals(bill.getBillType())) {
+                conf = paymentRepository.findPayConfigByCenterCode("PUS001");
+            } else {
+                throw new IllegalStateException("알 수 없는 billType");
+            }
+
+            // Paymint 취소 호출
+            callPaymintCancel(bill, conf);
+
+            Integer newUnpaidAmount = payment.getUnpaidAmount() + bill.getAmount();
+
+            // DB 상태 변경
+            paymentRepository.updateBillStatus(bill.getBillId(), "canceled");
+            paymentRepository.updatePaymentStatus(payment.getPaymentKey(), "canceled", payment.getPaidDate(), newUnpaidAmount);
 
 
-        if (conf == null) {
-            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode = " + user.getCenterCode());
+            logHistory(
+                    "payment_cancel",
+                    "system",
+                    payment.getStatus(),
+                    "canceled",
+                    bill.getAmount(),
+                    dto.getCancelReason(),
+                    payment.getPaymentKey(),
+                    user.getUserCode()
+            );
+
         }
 
-        String raw = dto.getBillId() + "," + paymentBill.getAmount();
+
+    }
+
+    private void callPaymintCancel(PaymentBill bill, PaymentRespDTO.PaymentConfigDTO conf) throws JsonProcessingException {
+
+        String raw = bill.getBillId() + "," + bill.getAmount();
         String hash = DigestUtils.sha256Hex(raw);
 
         Map<String, Object> body = Map.of(
                 "apikey", conf.getApiKey(),
                 "member", conf.getMemberId(),
                 "merchant", conf.getMerchantId(),
-                "bill_id", dto.getBillId(),
-                "price", paymentBill.getAmount(),
+                "bill_id", bill.getBillId(),
+                "price", bill.getAmount(),
                 "hash", hash
         );
 
-        //결제선생 취소 요청
-        PaymentRespDTO.PaymintRespDTO resp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/cancel", body);
+        PaymentRespDTO.PaymintRespDTO resp = callPaymint(conf.getCancelUrl(), body);
 
-            paymentRepository.updateBillStatus(dto.getBillId(), "CANCELLED");
-            paymentRepository.updatePaymentStatus(payment.getPaymentKey(), "CANCELLED", payment.getPaidDate(), paymentBill.getAmount());
-log.info(resp.toString());
-
+        if (!"0000".equals(resp.getCode())) {
+            throw new IllegalStateException(
+                    "청구서 취소 실패: " + resp.getMsg()
+            );
+        }
     }
+
+
 }

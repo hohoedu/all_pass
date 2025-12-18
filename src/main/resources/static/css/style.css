@@ -6670,11 +6670,19 @@ input[type="time" i] {
 .pay-done {
     background: #7adfd2;
     color: #008d7b;
+    padding: 4px;
 }
 
 .pay-late {
     background: #ff9696;
     color: #be2727;
+    padding: 4px;
+}
+
+.pay-partial {
+    background: #f7c106;
+    color: #9b5102;
+    padding: 4px;
 }
 
 .pay-frame {

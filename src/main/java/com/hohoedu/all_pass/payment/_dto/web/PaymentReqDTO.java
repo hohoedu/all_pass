@@ -121,7 +121,8 @@ public class PaymentReqDTO {
         private String billId;
         private String yy;
         private String mm;
-        private String cancelTypes;
+        private boolean cancelEdu;
+        private boolean cancelBook;
         private String cancelReason;
     }
 

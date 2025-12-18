@@ -18,6 +18,12 @@ public interface PaymentRepository {
 
     int insertPaymentHistory(PaymentReqDTO.PaymentHistoryRecordDTO dto);
 
+    int existsBill(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("billType") String billType);
+
     PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
 
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
@@ -41,6 +47,8 @@ public interface PaymentRepository {
     void updateAmount(@Param("paymentKey") String paymentKey);
 
     Payment findPaymentByKey(String paymentKey);
+
+    List<PaymentBill> findPaymentBillsByPaymentKey(String paymentKey);
 
     void createPaymentBill(PaymentBill paymentBill);
 

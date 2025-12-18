@@ -119,6 +119,8 @@
                                             data-total-price = ${student.totalPrice},
                                             data-total-fee = ${student.totalFee},
                                             data-total-material-fee = ${student.totalMaterialFee},
+                                            data-edu-status = ${student.eduStatus},
+                                            data-material-status = ${student.materialStatus},
                                             data-total-status = ${student.totalStatus}">
                                     <td class="checkbox-group">
                                         <input type="checkbox" class="row-checkbox" th:value="${student.studentId}">
@@ -137,28 +139,35 @@
                                         th:text="${student.unpaidAmount == '0' ? 0 : #numbers.formatInteger(student.unpaidAmount, 3, 'COMMA')}">
                                     </td>
                                     <td>
-                                        <span th:if="${student.eduStatus == null and student.materialStatus == null}"
-                                              class="unissued">미발행
-                                        </span>
-                                        <span th:if="${student.eduStatus != null and student.materialStatus == null}"
-                                              class="edu-issued">발행(교육)
-                                        </span>
-                                        <span th:if="${student.eduStatus == null and student.materialStatus != null}"
-                                              class="material-issued">발행(교재)
-                                        </span>
-                                        <span th:if="${student.eduStatus != null and student.materialStatus != null}"
-                                              class="issued">발행
-                                        </span>
+                                       <span th:if="${student.eduStatus == null and student.materialStatus == null}"
+                                             class="unissued">미발행</span>
+
+                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == null}"
+                                              class="edu-issued">발행(교육)</span>
+
+                                        <span th:if="${student.eduStatus == null and student.materialStatus == 'issued'}"
+                                              class="material-issued">발행(교재)</span>
+
+                                        <span th:if="${student.eduStatus == 'issued' and student.materialStatus == 'issued'}"
+                                              class="issued">발행</span>
+
+                                        <span th:if="${student.eduStatus == 'destroyed' or student.materialStatus == 'destroyed'}"
+                                              class="destroyed">파기</span>
                                     </td>
                                     <td>
                                         <span th:if="${student.totalStatus == null}" class="pay-box">
                                             -
                                         </span>
-                                        <span th:if="${student.totalStatus != null and student.totalStatus != 'approved'}"
-                                              class="pay-box">미결제
-                                        </span><span th:if="${student.totalStatus == 'approved'}"
-                                                     class="pay-box">결제 완료
+                                        <span th:if="${student.totalStatus == 'partial'}"
+                                              class="pay-box pay-partial">부분 결제
                                         </span>
+                                        <span th:if="${student.totalStatus == 'approved'}"
+                                              class="pay-box pay-done">결제 완료
+                                        </span>
+                                        <span th:if="${student.totalStatus != null and student.totalStatus != 'partial' and student.totalStatus != 'approved'}"
+                                              class="pay-box pay-late">미결제
+                                        </span>
+
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(students)}">

@@ -2,6 +2,8 @@ package com.hohoedu.all_pass.user;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -30,6 +33,16 @@ public class UserController {
 
     private final UserService userService;
     private final HttpSession session;
+
+    @GetMapping("/ping")
+    @ResponseBody
+    public ResponseEntity<?> ping(HttpSession session) {
+        Object user = session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/login")
     public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO, RedirectAttributes redirectAttributes) {

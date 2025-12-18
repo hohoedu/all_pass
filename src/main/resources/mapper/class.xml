@@ -175,7 +175,12 @@
                c.class_key      AS classKey,
                t.center_code    AS centerCode,
                t.user_code      AS userCode,
-               cf.fee           AS classFee
+               cf.fee           AS classFee,
+               max(CASE
+                       WHEN c.class_type = '1' THEN eta.han_material_fee
+                       WHEN c.class_type = '2' THEN eta.book_material_fee
+                   END)         AS bookFee
+
         FROM erp_time_table t
                  JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
                  LEFT JOIN erp_class_code c ON c.class_key =
@@ -184,8 +189,10 @@
                                                    ELSE t.class_key
                                                    END
                  LEFT JOIN erp_class_fee_map cf ON cf.class_key = c.class_key AND cf.center_code = t.center_code
+                 LEFT JOIN erp_teacher_assign eta ON ta.student_id = eta.student_id
         WHERE t.time_table_key = #{timeTableKey}
-          AND ta.student_id = #{studentId};
+          AND ta.student_id = #{studentId}
+        GROUP BY t.time_table_key, c.class_type, c.class_key, t.center_code, t.user_code, cf.fee;
     </select>
 
     <select id="findClassWeekByCenter"

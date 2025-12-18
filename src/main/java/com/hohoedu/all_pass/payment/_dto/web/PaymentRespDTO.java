@@ -39,6 +39,7 @@ public class PaymentRespDTO {
         private String callbackUrl;
         private String sendUrl;
         private String destroyUrl;
+        private String cancelUrl;
     }
 
     @Data

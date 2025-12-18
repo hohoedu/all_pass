@@ -102,6 +102,7 @@ public class ClassRespDTO {
         private String classType;
         private String classKey;
         private Integer classFee;
+        private Integer bookFee;
         private String centerCode;
         private String userCode;
     }

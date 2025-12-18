@@ -150,9 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.totalPrice = student.totalPrice || 0;
             tr.dataset.totalFee = student.totalFee || 0;
             tr.dataset.totalMaterialFee = student.totalMaterialFee || 0;
+            tr.dataset.eduStatus = student.eduStatus;
+            tr.dataset.materialStatus = student.materialStatus;
             tr.dataset.totalStatus = student.totalStatus;
 
             const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
+            const formattedUnpaid = Number(student.unpaidAmount || 0).toLocaleString();
 
             const hanTeacherText = student.hanTeacher ? `${student.hanTeacher}(한)` : '';
             const bookTeacherText = student.bookTeacher ? `${student.bookTeacher}(독)` : '';
@@ -178,9 +181,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!student.totalStatus) {
                 payStatus = `<span class="pay-box">-</span>`;
             } else if (student.totalStatus !== 'approved') {
-                payStatus = `<span class="pay-box">미결제</span>`;
+                payStatus = `<span class="pay-box pay-late">미결제</span>`;
+            } else if (student.totalStatus === 'partiel') {
+                payStatus = `<span class="pay-box pay-partial">부분 결제</span>`;
             } else if (student.totalStatus === 'approved') {
-                payStatus = `<span class="pay-box">결제완료</span>`;
+                payStatus = `<span class="pay-box pay-done">결제완료</span>`;
             }
             tr.innerHTML = `
             <td class="checkbox-group">
@@ -191,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${student.subject || '-'}</td>
             <td>${teacherText}</td>
             <td class="charge">${formattedPrice}</td>
-            <td>${student.unpaidAmount}</td>
+            <td>${formattedUnpaid}</td>
             <td>${statusHtml}</td>
             <td>${payStatus}</td>
         `;
@@ -382,64 +387,61 @@ document.addEventListener('DOMContentLoaded', () => {
         ========================= */
         const firstItem = data[0];
         const modal = document.querySelector(`.${type}-modal`);
-            if (modal) {
+        if (modal) {
 
-                // 제목
-                modal.querySelector('.m-t-line .title').textContent =
-                    `${firstItem.studentName}의 수강료 상세 내역`;
+            // 제목
+            modal.querySelector('.m-t-line .title').textContent =
+                `${firstItem.studentName}의 수강료 상세 내역`;
 
-                modal.querySelector('.pay-details h4 span').textContent =
-                    firstItem.studentName;
+            modal.querySelector('.pay-details h4 span').textContent =
+                firstItem.studentName;
 
-                const toNumber = (v) => Number(v || 0);
+            const toNumber = (v) => Number(v || 0);
 
-                const hanEduFee = toNumber(firstItem.hanFee);
-                const bookEduFee = toNumber(firstItem.bookFee);
+            const hanEduFee = toNumber(firstItem.hanFee);
+            const bookEduFee = toNumber(firstItem.bookFee);
 
-                // ✅ 교재비
-                const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
-                const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
+            // ✅ 교재비
+            const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
+            const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
 
-                const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
+            const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
 
-                if (tableRows.length >= 5) {
-                    // 한자 교육비
-                    const hanEduInput = tableRows[0].querySelector('.edu-input');
-                    hanEduInput.value = hanEduFee.toLocaleString();
-                    hanEduInput.dataset.rawValue = hanEduFee;
+            if (tableRows.length >= 5) {
+                // 한자 교육비
+                const hanEduInput = tableRows[0].querySelector('.edu-input');
+                hanEduInput.value = hanEduFee.toLocaleString();
+                hanEduInput.dataset.rawValue = hanEduFee;
 
-                    // 한자 교재비
-                    tableRows[1].querySelector('td:last-child').textContent =
-                        hanMaterialFee.toLocaleString();
+                // 한자 교재비
+                tableRows[1].querySelector('td:last-child').textContent =
+                    hanMaterialFee.toLocaleString();
 
-                    // 독서 교육비 (조회값 없음 → 0)
-                    const bookEduInput = tableRows[2].querySelector('.edu-input');
-                    bookEduInput.value = bookEduFee.toLocaleString();
-                    bookEduInput.dataset.rawValue = bookEduFee;
+                // 독서 교육비 (조회값 없음 → 0)
+                const bookEduInput = tableRows[2].querySelector('.edu-input');
+                bookEduInput.value = bookEduFee.toLocaleString();
+                bookEduInput.dataset.rawValue = bookEduFee;
 
-                    // 독서 교재비
-                    tableRows[3].querySelector('td:last-child').textContent =
-                        bookMaterialFee.toLocaleString();
+                // 독서 교재비
+                tableRows[3].querySelector('td:last-child').textContent =
+                    bookMaterialFee.toLocaleString();
 
-                    // 합계
-                    const total =
-                        hanEduFee +
-                        bookEduFee +
-                        hanMaterialFee +
-                        bookMaterialFee;
+                // 합계
+                const total =
+                    hanEduFee +
+                    bookEduFee +
+                    hanMaterialFee +
+                    bookMaterialFee;
 
-                    tableRows[4]
-                        .querySelector('.edu-sum')
-                        .textContent = total.toLocaleString();
-                }
-
-                setupInputListeners(modal);
-                setupSaveButton(modal, firstItem.studentId);
+                tableRows[4]
+                    .querySelector('.edu-sum')
+                    .textContent = total.toLocaleString();
             }
 
-        /* =========================
-           탭2 채우기
-        ========================= */
+            setupInputListeners(modal);
+            setupSaveButton(modal, firstItem.studentId);
+        }
+
         data.forEach((item, index) => {
             const amount = Number(item.amount || 0).toLocaleString();
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
@@ -712,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (hasError) {
             alert(`일부 청구서 발행 실패가 있습니다.\n성공: ${issuedCount}건`);
-            return;   // 새로고침 금지
+            return;
         }
 
         alert(`총 ${issuedCount}개의 청구서가 성공적으로 발행되었습니다.`);
@@ -783,17 +785,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const row = checkedBoxes[0].closest('tr');
 
-        if (row.dataset.totalStatus !== 'approved') {
-            alert('결제 완료된 건만 취소할 수 있습니다.');
-            return;
-        }
-
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
         if (!eduChecked && !bookChecked) {
             alert('취소할 결제 종류를 선택하세요.');
             return;
+        }
+
+        if (eduChecked) {
+            if (row.dataset.eduStatus !== 'approved') {
+                alert('교육비 결제 완료 건만 취소할 수 있습니다.');
+                return;
+            }
+        }
+
+        if (bookChecked) {
+            if (row.dataset.materialStatus !== 'approved') {
+                alert('교재비 결제 완료 건만 취소할 수 있습니다.');
+                return;
+            }
         }
 
         const cancelReason = prompt(
@@ -826,7 +837,8 @@ document.addEventListener("DOMContentLoaded", () => {
             billId: row.dataset.billId,
             yy,
             mm,
-            // cancelTypes,
+            cancelEdu: eduChecked,
+            cancelBook: bookChecked,
             cancelReason: cancelReason.trim()
         };
 
