@@ -379,4 +379,24 @@
         WHERE time_table_key = #{timeTableKey}
           AND payment_key = #{paymentKey}
     </delete>
+
+    <select id="findPaymentKeys" resultType="String">
+        SELECT payment_key
+        FROM erp_payment p
+        where student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
+    <update id="updateEduFeeDetailByPaymentKey">
+        UPDATE erp_payment_detail
+        SET amount = CASE class_type
+                         WHEN '1' THEN #{hanEduFee}
+                         WHEN '2' THEN #{bookEduFee}
+            END
+        WHERE payment_key = #{paymentKey}
+          AND item_type = 'EDU_FEE';
+    </update>
+
+
 </mapper>

@@ -14,6 +14,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/app")
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ public class AppController {
     private final ClassService classService;
     private final PaymentService paymentService;
     private final NoticeService noticeService;
+    private final AppService appService;
 
     @PostMapping("/login")
     public ResponseEntity<?> AppLogin(@RequestBody StudentAppReqDTO.LoginReqDTO reqDTO) {
@@ -66,14 +69,27 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successOne(null));
     }
 
+    // 메인화면
     @PostMapping("/course_book_main")
-    public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListReqDTO reqDTO) {
+    public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListMainReqDTO reqDTO) {
 
-        return ResponseEntity.ok(AppApiUtils.successOne(null));
+        ClassAppRespDTO.BookListMainRespDTO response = appService.getBookMainInfo(reqDTO);
+
+        return ResponseEntity.ok(AppApiUtils.successOne(response));
+    }
+
+    // 도서 상세 화면
+    @PostMapping("/course_book")
+    public ResponseEntity<?> AppCourseBook(@RequestBody ClassAppReqDTO.BooklistReqDTO reqDTO) {
+
+        ClassAppRespDTO.BookListRespDTO response = appService.getBookInfo(reqDTO);
+
+        return ResponseEntity.ok(AppApiUtils.successOne(response));
     }
 
     @PostMapping("/book_list")
     public ResponseEntity<?> AppBookList(@RequestBody ClassAppReqDTO.ClinicBookReqDTO reqDTO) {
+
 
         return ResponseEntity.ok(AppApiUtils.successList(null));
     }

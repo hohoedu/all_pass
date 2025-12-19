@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             const students = result.response || result;
-
+            console.log(students)
             renderStudentTable(students);
 
         } catch (error) {
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.eduStatus = student.eduStatus;
             tr.dataset.materialStatus = student.materialStatus;
             tr.dataset.totalStatus = student.totalStatus;
-
+            console.log('materialStatus = ' + student.materialStatus);
             const formattedPrice = Number(student.totalPrice || 0).toLocaleString();
             const formattedUnpaid = Number(student.unpaidAmount || 0).toLocaleString();
 
@@ -529,32 +529,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const saveBtn = modal.querySelector('.save-btn');
         if (!saveBtn) return;
 
-        // 기존 이벤트 리스너 제거
+        // 기존 이벤트 제거
         const newSaveBtn = saveBtn.cloneNode(true);
         saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
 
         newSaveBtn.addEventListener('click', async () => {
             const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');
 
-            const hanFee = Number(tableRows[0]?.querySelector('.edu-input')?.dataset.rawValue || 0);
-            const bookFee = Number(tableRows[2]?.querySelector('.edu-input')?.dataset.rawValue || 0);
+            const hanFee = Number(
+                tableRows[0]?.querySelector('.edu-input')?.dataset.rawValue || 0
+            );
+            const bookFee = Number(
+                tableRows[2]?.querySelector('.edu-input')?.dataset.rawValue || 0
+            );
 
-            if (!confirm('교육비를 저장하시겠습니까?')) {
+            const url = new URL(window.location.href);
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
+
+            if (!yy || !mm) {
+                alert('년월 정보가 없습니다.');
                 return;
             }
+
+            if (!confirm('교육비를 저장하시겠습니까?')) return;
 
             try {
                 const response = await fetch('/pay/update-fee', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         studentId: studentId,
-                        hanFee: hanFee,
-                        bookFee: bookFee
+                        yy: yy,
+                        mm: mm,
+                        hanEduFee: hanFee,
+                        bookEduFee: bookFee
                     })
                 });
+
+                if (!response.ok) throw new Error('저장 실패');
 
                 const result = await response.json();
 
@@ -562,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('교육비가 저장되었습니다.');
                     location.reload();
                 } else {
-                    alert('저장에 실패했습니다: ' + (result.message || ''));
+                    alert(result.message || '저장에 실패했습니다.');
                 }
 
             } catch (error) {

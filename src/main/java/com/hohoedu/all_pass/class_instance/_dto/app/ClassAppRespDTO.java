@@ -2,6 +2,8 @@ package com.hohoedu.all_pass.class_instance._dto.app;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ClassAppRespDTO {
 
@@ -17,8 +19,53 @@ public class ClassAppRespDTO {
     }
 
     @Data
-    public static class BookListRespDTO {
+    public static class BookListRawDTO {
+        private String hakInfo;
+        private String weekSubject;
+        private String weekTitle;
+        private String weekPublisher;
+        private String weekBookimg;
+    }
 
+    @Data
+    public static class BookListRespDTO {
+        private String hak_info;
+        private List<BookList> books;
+
+        @Data
+        public static class BookList {
+            private String week_subject;
+            private String week_title;
+            private String week_publisher;
+            private String week_bookimg;
+        }
+    }
+
+    @Data
+    public static class BookListMainRawDTO {
+        private String hakInfo;
+        private String yyyy;
+        private String mm;
+        private String weekSubject;
+        private String weekTitle;
+        private String weekPublisher;
+        private String weekBookimg;
+    }
+
+    @Data
+    public static class BookListMainRespDTO {
+        private String hak_info;
+        private String yyyy;
+        private String mm;
+        private List<BookMainList> data;
+
+        @Data
+        public static class BookMainList {
+            private String week_subject;
+            private String week_title;
+            private String week_publisher;
+            private String week_bookimg;
+        }
     }
 
     @Data

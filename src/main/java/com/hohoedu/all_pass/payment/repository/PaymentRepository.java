@@ -78,6 +78,17 @@ public interface PaymentRepository {
 
     int insertPaymentRefund();
 
+
+    List<String> findPaymentKeys(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    int updateEduFeeDetailByPaymentKey(
+            @Param("paymentKey") String paymentKey,
+            @Param("hanEduFee") Integer hanEduFee,
+            @Param("bookEduFee") Integer bookEduFee);
+
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회
     List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(@Param("studentId") String studentId, @Param("count") String count);

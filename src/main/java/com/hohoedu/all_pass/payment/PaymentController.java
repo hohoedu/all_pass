@@ -107,7 +107,7 @@ public class PaymentController {
         String userCode = paymentReqDTO.getUserCode();
 
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
-
+        log.info("students = {}", students);
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
@@ -191,5 +191,13 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
+    @PostMapping("/update-fee")
+    public ResponseEntity<?> updateEduPrice(HttpSession session, @RequestBody PaymentReqDTO.EduFeeUpdateReqDTO reqDTO) {
+
+        paymentService.updateEduFeeAndRecalculate(reqDTO);
+
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
 
 }

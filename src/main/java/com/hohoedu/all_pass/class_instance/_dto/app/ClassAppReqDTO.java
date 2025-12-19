@@ -17,14 +17,25 @@ public class ClassAppReqDTO {
         private int count;
     }
 
+    // 메인화면
     @Data
-    public static class BookListReqDTO {
-        private String bookCode;
+    public static class BookListMainReqDTO {
+        private String ihak;
     }
 
     @Data
-    public static class ClinicBookReqDTO {
+    public static class BooklistReqDTO {
+        private String id;
+        private String yyyy;
+        private String mm;
+    }
 
+    // 도서 상세 화면
+    @Data
+    public static class ClinicBookReqDTO {
+        private String id;
+        private String yyyy;
+        private String mm;
     }
 
     @Data

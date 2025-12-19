@@ -134,4 +134,13 @@ public class PaymentReqDTO {
         private String yy;
         private String mm;
     }
+
+    @Data
+    public static class EduFeeUpdateReqDTO {
+        private String studentId;
+        private String yy;
+        private String mm;
+        private Integer hanEduFee;
+        private Integer bookEduFee;
+    }
 }

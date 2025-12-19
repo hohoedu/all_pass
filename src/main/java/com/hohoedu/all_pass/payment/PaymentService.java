@@ -615,7 +615,7 @@ public class PaymentService {
 
     private void callPaymintCancel(PaymentBill bill, PaymentRespDTO.PaymentConfigDTO conf) throws JsonProcessingException {
 
-        String raw = bill.getBillId() + "," + bill.getAmount();
+        String raw = bill.getBillId() + "," + 30000;
         String hash = DigestUtils.sha256Hex(raw);
 
         Map<String, Object> body = Map.of(
@@ -623,7 +623,7 @@ public class PaymentService {
                 "member", conf.getMemberId(),
                 "merchant", conf.getMerchantId(),
                 "bill_id", bill.getBillId(),
-                "price", bill.getAmount(),
+                "price", 30000,
                 "hash", hash
         );
 
@@ -636,5 +636,29 @@ public class PaymentService {
         }
     }
 
+    public void updateEduFeeAndRecalculate(PaymentReqDTO.EduFeeUpdateReqDTO dto) {
+        if (dto.getStudentId() == null || dto.getYy() == null || dto.getMm() == null) {
+            throw new IllegalArgumentException("필수 값 누락");
+        }
 
+        List<String> paymentKeys = paymentRepository.findPaymentKeys(dto.getStudentId(), dto.getYy(), dto.getMm());
+
+        if (paymentKeys == null || paymentKeys.isEmpty()) {
+            return;
+        }
+
+        int hanEduFee = dto.getHanEduFee() != null ? dto.getHanEduFee() : 0;
+        int bookEduFee = dto.getBookEduFee() != null ? dto.getBookEduFee() : 0;
+
+        for (String paymentKey : paymentKeys) {
+            paymentRepository.updateEduFeeDetailByPaymentKey(
+                    paymentKey,
+                    hanEduFee,
+                    bookEduFee
+            );
+        }
+    }
 }
+
+
+
