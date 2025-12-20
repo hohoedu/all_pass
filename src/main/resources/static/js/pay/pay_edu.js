@@ -403,6 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // ✅ 교재비
             const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
+            console.log(hanMaterialFee);
             const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
 
             const tableRows = modal.querySelectorAll('.pay-edu-table tbody tr');

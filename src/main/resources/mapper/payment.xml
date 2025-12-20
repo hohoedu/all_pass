@@ -155,7 +155,7 @@
 
     <insert id="createPaymentDetail">
         INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, time_table_key, user_code, created_at)
-        VALUES (#{payment.paymentKey}, #{amount}, #{classType}, #{itemType}, #{timeTableKey}, #{user.userCode}, SYSDATETIME());
+        VALUES (#{payment.paymentKey}, ISNULL(#{amount}, 0), #{classType}, #{itemType}, #{timeTableKey}, #{user.userCode}, SYSDATETIME());
     </insert>
 
     <select id="findLatestPaymentKeyByStudent" resultType="string">
@@ -396,6 +396,21 @@
             END
         WHERE payment_key = #{paymentKey}
           AND item_type = 'EDU_FEE';
+    </update>
+
+    <select id="findPaymentDetailsByPaymentKey" resultType="String">
+        select amount
+        from erp_payment_detail
+        where payment_key = #{paymentKey}
+    </select>
+
+    <update id="updateAmountAndUnpaidAmountByPaymentKey">
+        UPDATE erp_payment
+        SET amount       = #{amount},
+            unpaid_amount = #{unpaidAmount}
+        where payment_key = #{paymentKey}
+
+
     </update>
 
 

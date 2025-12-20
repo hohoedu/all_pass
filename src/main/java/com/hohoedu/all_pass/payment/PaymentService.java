@@ -98,7 +98,7 @@ public class PaymentService {
         Map<String, Object> bill = Map.of(
                 "bill_id", billId,
                 "product_nm", req.getType().equals("edu") ? "교육비" : "교재비",
-                "message", req.getMessage(),
+                "message", req.getType().equals("edu") ? req.getMessage() : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
                 "member_nm", req.getStudentName(),
                 "phone", req.getPhone(),
                 "price", req.getPrice(),
@@ -656,6 +656,23 @@ public class PaymentService {
                     hanEduFee,
                     bookEduFee
             );
+
+            List<String> paymentDetails = paymentRepository.findPaymentDetailsByPaymentKey(paymentKey);
+
+            int amount = paymentDetails.stream()
+                    .mapToInt(v -> {
+                        if (v == null || v.isBlank()) {
+                            return 0;
+                        }
+                        try {
+                            return Integer.parseInt(v);
+                        } catch (NumberFormatException e) {
+                            return 0;
+                        }
+                    })
+                    .sum();
+
+            paymentRepository.updateAmountAndUnpaidAmountByPaymentKey(paymentKey, amount, amount);
         }
     }
 }

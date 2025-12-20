@@ -89,6 +89,13 @@ public interface PaymentRepository {
             @Param("hanEduFee") Integer hanEduFee,
             @Param("bookEduFee") Integer bookEduFee);
 
+    List<String> findPaymentDetailsByPaymentKey(@Param("paymentKey") String paymentKey);
+
+    int updateAmountAndUnpaidAmountByPaymentKey(
+            @Param("paymentKey") String paymentKey,
+            @Param("amount") int amount,
+            @Param("unpaidAmount") int unpaidAmount);
+
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회
     List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(@Param("studentId") String studentId, @Param("count") String count);

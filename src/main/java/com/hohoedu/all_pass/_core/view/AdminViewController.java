@@ -37,6 +37,22 @@ public class AdminViewController {
         return "/admin/ebook/person";
     }
 
+    @GetMapping("/app/record")
+    public String getAdminRecordPage(Model model, HttpSession session) {
+        return "/admin/app/record";
+    }
+
+    @GetMapping("/app/infant")
+    public String getAdminInfantPage(Model model, HttpSession session) {
+        return "/admin/app/infant";
+    }
+
+    @GetMapping("/app/monthly")
+    public String getAdminMonthlyPage(Model model, HttpSession session) {
+        return "/admin/app/monthly";
+    }
+
+
     @GetMapping("/app/book")
     public String book(Model model, HttpSession session) {
         List<ClassCode> classCodes = classService.findClassCodeExcludeMid();
