@@ -188,16 +188,16 @@ public class PaymentService {
         // 1. 타입 정규화
         String billType;
         if ("edu".equals(req.getType())) {
-            billType = "EDU_FEE";
+            billType = "edu";
         } else if ("material".equals(req.getType())) {
-            billType = "BOOK_FEE";
+            billType = "material";
         } else {
             throw new IllegalArgumentException("잘못된 타입");
         }
 
         // 2. 결제 설정
         PaymentRespDTO.PaymentConfigDTO conf =
-                "EDU_FEE".equals(billType)
+                "edu".equals(billType)
                         ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode())
                         : paymentRepository.findPayConfigByCenterCode("PUS001");
 
@@ -267,8 +267,8 @@ public class PaymentService {
             // 5-4. Paymint 호출
             Map<String, Object> bill = Map.of(
                     "bill_id", billId,
-                    "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
-                    "message", "EDU_FEE".equals(billType)
+                    "product_nm", "edu".equals(billType) ? "교육비" : "교재비",
+                    "message", "edu".equals(billType)
                             ? req.getMessage()
                             : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
                     "member_nm", memberName,
