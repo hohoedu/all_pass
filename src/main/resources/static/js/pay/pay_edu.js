@@ -669,115 +669,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 청구서 발행 버튼
     payIssue.addEventListener('click', async () => {
-        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked');
-        if (checkedBoxes.length === 0) return alert('학생을 선택하세요.');
+        const checkedBoxes = document.querySelectorAll(
+            '#student-tbody input[type="checkbox"]:checked'
+        );
+
+        if (checkedBoxes.length === 0) {
+            return alert('학생을 선택하세요.');
+        }
 
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
 
-        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm] = selectedMonth.split("-");
-        const expireDate = document.querySelector('.expire-input').value;
+        if (!eduChecked && !bookChecked) {
+            return alert('청구 종류를 선택하세요.');
+        }
 
-        const now = new Date();
-        let issuedCount = 0;
-        let hasError = false;
+        const selectedMonth =
+            document.querySelector('.hidden-date.hidden-picker').value;
+        const [yy, mm] = selectedMonth.split('-');
 
-        for (const [index, box] of checkedBoxes.entries()) {
-            const row = box.closest('tr');
-            const issuedCell = row.querySelector('.unissued, .issued');
+        const expireDt = document.querySelector('.expire-input').value;
 
-            if (issuedCell?.classList.contains('issued')) {
-                alert(`⚠️ ${row.dataset.studentName} 학생의 ${mm}월 청구서는 이미 발행되었습니다.`);
-                continue;
-            }
+        // ✅ 선택된 학생 ID만 수집
+        const studentIds = Array.from(checkedBoxes).map(
+            box => box.closest('tr').dataset.studentId
+        );
 
-            const student = {
-                id: row.dataset.studentId,
-                name: row.dataset.studentName,
-                phone: row.dataset.parentPhone,
-                hanFee: Number(row.dataset.hanFee),
-                bookFee: Number(row.dataset.bookFee),
-                hanMaterial: Number(row.dataset.hanMaterial),
-                bookMaterial: Number(row.dataset.bookMaterial),
-                totalFee: Number(row.dataset.totalFee),
-                totalMaterialFee: Number(row.dataset.totalMaterialFee),
-                paymentKey: row.dataset.paymentKey,
-            };
-
-            const indexStr = String(index).padStart(2, "0");
-
+        try {
             // EDU
-            if (eduChecked && student.totalFee > 0) {
-                const ok = await requestSendBill("edu", student, student.totalFee,
-                    expireDate, now, yy, mm, indexStr);
-
-                if (ok) issuedCount++;
-                else hasError = true;
+            if (eduChecked) {
+                await sendBills({
+                    studentIds,
+                    type: 'edu',
+                    message: `${mm}월 교육비 청구`,
+                    expireDt,
+                    yy,
+                    mm
+                });
             }
 
             // MATERIAL
-            if (bookChecked && student.totalMaterialFee > 0) {
-                const ok = await requestSendBill("material", student, student.totalMaterialFee,
-                    expireDate, now, yy, mm, indexStr);
-
-                if (ok) issuedCount++;
-                else hasError = true;
+            if (bookChecked) {
+                await sendBills({
+                    studentIds,
+                    type: 'material',
+                    message: `${mm}월 교재비 청구`,
+                    expireDt,
+                    yy,
+                    mm
+                });
             }
-        }
-        if (hasError) {
-            alert(`일부 청구서 발행 실패가 있습니다.\n성공: ${issuedCount}건`);
-            return;
-        }
 
-        alert(`총 ${issuedCount}개의 청구서가 성공적으로 발행되었습니다.`);
-        window.location.reload();
+            alert('청구서 발행이 완료되었습니다.');
+            window.location.reload();
+
+        } catch (e) {
+            console.error(e);
+            alert(e.message || '청구서 발행 중 오류가 발생했습니다.');
+        }
     });
 
-    async function requestSendBill(type, student, price, expireDt, now, yy, mm, index) {
+    async function sendBills(body) {
+        const res = await fetch('/pay/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
 
-        const body = {
-            type,
-            studentId: student.id,
-            studentName: student.name,
-            phone: student.phone,
-            price: price,
-            message: `${student.name} ${type === 'edu' ? '교육비' : '교재비'} 청구`,
-            expireDt,
-            index,
-            yy,
-            mm
-        };
+        const data = await res.json();
 
-        try {
-            const res = await fetch("/pay/send", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body)
-            });
-            if (!res.ok) {
-                const errorData = await res.json();
-                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${errorData.response || '서버 오류'}`);
-                return;
-            }
-
-            const data = await res.json();
-
-
-            if (!data.success) {
-
-                alert(`❌ ${student.name} ${type.toUpperCase()} 청구 실패: ${data.response}`);
-                return;
-            }
-            console.log("✓ 발행 완료:", data.response);
-            return true;
-
-        } catch (err) {
-            console.error("❌ sendBill 오류:", err);
-            alert("서버 오류로 청구서를 발행할 수 없습니다.");
-            return;
+        if (!res.ok || !data.success) {
+            throw new Error(data.response || '청구 실패');
         }
+
+        console.log('✓ 발행 결과:', data.response);
     }
 
 // 결제 취소 버튼

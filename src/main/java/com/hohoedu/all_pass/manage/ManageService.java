@@ -41,9 +41,9 @@ public class ManageService {
     }
 
     public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
-        LocalDate now = LocalDate.now();
-        String yy = String.valueOf(now.getYear());
-        String mm = String.format("%02d", now.getMonthValue());
+
+        String yy = req.getYy();
+        String mm = req.getMm();
 
         String userCode = user.getUserCode();
         String centerCode = user.getCenterCode();

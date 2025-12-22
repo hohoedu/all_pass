@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -63,97 +64,261 @@ public class PaymentService {
         paymentRepository.insertPaymentHistory(dto);
     }
 
-    public PaymentRespDTO.PaySendRespDTO sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
-        int activeCount = paymentRepository.existsBill(req.getStudentId(), req.getYy(), req.getMm(), req.getType());
+    //    public PaymentRespDTO.PaySendRespDTO sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+//        int activeCount = paymentRepository.existsBill(req.getStudentId(), req.getYy(), req.getMm(), req.getType());
+//
+//        if (activeCount > 0) {
+//            throw new IllegalStateException(
+//                    "이미 발행된 청구서가 존재합니다."
+//            );
+//        }
+//
+//        PaymentRespDTO.PaymentConfigDTO conf;
+//
+//
+//        if ("edu".equals(req.getType())) {
+//
+//            conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+//        } else if ("material".equals(req.getType())) {
+//
+//            conf = paymentRepository.findPayConfigByCenterCode("PUS001");
+//        } else {
+//            throw new IllegalArgumentException("알 수 없는 청구 타입: " + req.getType());
+//        }
+//
+//
+//        if (conf == null) {
+//            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode = " + user.getCenterCode());
+//        }
+//        if (req.getType().equals("edu")) {
+//            req.setType("EDU_FEE");
+//        } else if (req.getType().equals("material")) {
+//            req.setType("BOOK_FEE");
+//        }
+//        List<PaymentRespDTO.PayTargetDTO> targets =
+//                paymentRepository.findTargetsByParentPhone(
+//                        req.getPhone(),
+//                        req.getYy(),
+//                        req.getMm(),
+//                        req.getType()
+//                );
+//
+//        if (targets.isEmpty()) {
+//            throw new IllegalStateException("청구 대상 학생이 없습니다.");
+//        }
+//
+//        int totalPrice = targets.stream()
+//                .mapToInt(PaymentRespDTO.PayTargetDTO::getAmount)
+//                .sum();
+//
+//
+//        String billId = generateBillId(conf.getPreBillId(), req.getIndex(), req.getType());
+//
+//        String raw = billId + "," + req.getPhone() + "," + totalPrice;
+//        String hashBillId = DigestUtils.sha256Hex(raw);
+//
+//        String memberName = targets.size() == 1
+//                ? targets.get(0).getStudentName()
+//                : targets.get(0).getStudentName() + " 외 " + (targets.size() - 1) + "명";
+//
+//        Map<String, Object> bill = Map.of(
+//                "bill_id", billId,
+//                "product_nm", req.getType().equals("edu") ? "교육비" : "교재비",
+//                "message", req.getType().equals("edu") ? req.getMessage() : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
+//                "member_nm", memberName,
+//                "phone", req.getPhone(),
+//                "price", totalPrice,
+//                "hash", hashBillId,
+//                "expire_dt", req.getExpireDt(),
+//                "callbackURL", conf.getCallbackUrl()
+//        );
+//
+//        Map<String, Object> body = Map.of(
+//                "apikey", conf.getApiKey(),
+//                "member", conf.getMemberId(),
+//                "merchant", conf.getMerchantId(),
+//                "bill", bill
+//        );
+//
+//        PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+//
+//        PaymentRespDTO.PaySendRespDTO respDTO = new PaymentRespDTO.PaySendRespDTO();
+//        respDTO.setBillId(billId);
+//        respDTO.setPaymintCode(paymintResp.getCode());
+//        respDTO.setPaymintMsg(paymintResp.getMsg());
+//
+//        if (!"0000".equals(paymintResp.getCode())) {
+//            respDTO.setDbSaved(false);
+//            return respDTO;
+//        }
+//
+//
+//        boolean saved = false;
+//
+//        try {
+//            String paymentKey = paymentRepository
+//                    .findLatestPaymentKeyByStudent(req.getStudentId(), req.getYy(), req.getMm());
+//
+//            PaymentReqDTO.InsertBillDTO billDTO = new PaymentReqDTO.InsertBillDTO();
+//            billDTO.setPaymentKey(paymentKey);
+//            billDTO.setBillId(billId);
+//            billDTO.setAmount(totalPrice);
+//            billDTO.setBillType(req.getType());
+//            billDTO.setStudentId(targets.get(0).getStudentId());
+//            billDTO.setCenterCode(user.getCenterCode());
+//            billDTO.setExpireDate(req.getExpireDt());
+//            billDTO.setYy(req.getYy());
+//            billDTO.setMm(req.getMm());
+//
+//            insertPaymentBill(billDTO, user.getUserCode());
+//            saved = true;
+//
+//        } catch (Exception e) {
+//            log.error("DB 저장 실패", e);
+//            saved = false;
+//        }
+//
+//        respDTO.setDbSaved(saved);
+//
+//        return respDTO;
+//    }
+    public void sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req)
+            throws JsonProcessingException {
 
-        if (activeCount > 0) {
-            throw new IllegalStateException(
-                    "이미 발행된 청구서가 존재합니다."
-            );
-        }
-
-        PaymentRespDTO.PaymentConfigDTO conf;
-
-
+        // 1. 타입 정규화
+        String billType;
         if ("edu".equals(req.getType())) {
-
-            conf = paymentRepository.findPayConfigByCenterCode(user.getCenterCode());
+            billType = "EDU_FEE";
         } else if ("material".equals(req.getType())) {
-
-            conf = paymentRepository.findPayConfigByCenterCode("PUS001");
+            billType = "BOOK_FEE";
         } else {
-            throw new IllegalArgumentException("알 수 없는 청구 타입: " + req.getType());
+            throw new IllegalArgumentException("잘못된 타입");
         }
 
+        // 2. 결제 설정
+        PaymentRespDTO.PaymentConfigDTO conf =
+                "EDU_FEE".equals(billType)
+                        ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode())
+                        : paymentRepository.findPayConfigByCenterCode("PUS001");
 
         if (conf == null) {
-            throw new RuntimeException("해당 지점의 결제 설정이 없습니다. centerCode = " + user.getCenterCode());
+            throw new IllegalStateException("결제 설정 없음");
         }
 
-        String billId = generateBillId(conf.getPreBillId(), req.getIndex(), req.getType());
+        // 3. 선택 학생 + 부모번호 조회
+        List<PaymentRespDTO.PayTargetDTO> targets =
+                paymentRepository.findTargetsByStudentIds(
+                        req.getStudentIds(),
+                        req.getYy(),
+                        req.getMm(),
+                        billType
+                );
 
-        String raw = billId + "," + req.getPhone() + "," + req.getPrice();
-        String hashBillId = DigestUtils.sha256Hex(raw);
-
-        Map<String, Object> bill = Map.of(
-                "bill_id", billId,
-                "product_nm", req.getType().equals("edu") ? "교육비" : "교재비",
-                "message", req.getType().equals("edu") ? req.getMessage() : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
-                "member_nm", req.getStudentName(),
-                "phone", req.getPhone(),
-                "price", req.getPrice(),
-                "hash", hashBillId,
-                "expire_dt", req.getExpireDt(),
-                "callbackURL", conf.getCallbackUrl()
-        );
-
-        Map<String, Object> body = Map.of(
-                "apikey", conf.getApiKey(),
-                "member", conf.getMemberId(),
-                "merchant", conf.getMerchantId(),
-                "bill", bill
-        );
-
-        PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
-        PaymentRespDTO.PaySendRespDTO respDTO = new PaymentRespDTO.PaySendRespDTO();
-        respDTO.setBillId(billId);
-        respDTO.setPaymintCode(paymintResp.getCode());
-        respDTO.setPaymintMsg(paymintResp.getMsg());
-
-        if (!"0000".equals(paymintResp.getCode())) {
-            respDTO.setDbSaved(false);
-            return respDTO;
+        if (targets.isEmpty()) {
+            throw new IllegalStateException("청구 대상 없음");
         }
 
+        // 4. 부모 전화번호 기준 그룹핑
+        Map<String, List<PaymentRespDTO.PayTargetDTO>> groupByParent =
+                targets.stream()
+                        .collect(Collectors.groupingBy(PaymentRespDTO.PayTargetDTO::getParentPhone));
+        int seq = 1;
+        // 5. 그룹별 청구서 발행
+        for (Map.Entry<String, List<PaymentRespDTO.PayTargetDTO>> entry : groupByParent.entrySet()) {
 
-        boolean saved = false;
+            String parentPhone = entry.getKey();
+            List<PaymentRespDTO.PayTargetDTO> group = entry.getValue();
 
-        try {
-            String paymentKey = paymentRepository
-                    .findLatestPaymentKeyByStudent(req.getStudentId(), req.getYy(), req.getMm());
+            // 5-1. 중복 발행 체크
+            List<String> groupStudentIds = group.stream()
+                    .map(PaymentRespDTO.PayTargetDTO::getStudentId)
+                    .collect(Collectors.toList());
+
+            // 🔥 5-2. 학생 기준 중복 발행 체크 (정답)
+            int exists = paymentRepository.existsBillByStudentIds(
+                    groupStudentIds,
+                    req.getYy(),
+                    req.getMm(),
+                    billType
+            );
+            if (exists > 0) continue;
+
+            // 5-2. 금액 합산
+            int totalPrice = group.stream()
+                    .mapToInt(PaymentRespDTO.PayTargetDTO::getAmount)
+                    .sum();
+
+            // 5-3. billId / hash
+            String indexStr = String.format("%02d", seq++);
+
+            String billId = generateBillId(
+                    conf.getPreBillId(),
+                    Integer.parseInt(indexStr),
+                    billType
+            );
+            String raw = billId + "," + parentPhone + "," + totalPrice;
+            String hash = DigestUtils.sha256Hex(raw);
+
+            String memberName =
+                    group.size() == 1
+                            ? group.get(0).getStudentName()
+                            : group.get(0).getStudentName() + " 외 " + (group.size() - 1) + "명";
+
+            // 5-4. Paymint 호출
+            Map<String, Object> bill = Map.of(
+                    "bill_id", billId,
+                    "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
+                    "message", "EDU_FEE".equals(billType)
+                            ? req.getMessage()
+                            : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
+                    "member_nm", memberName,
+                    "phone", parentPhone,
+                    "price", totalPrice,
+                    "hash", hash,
+                    "expire_dt", req.getExpireDt(),
+                    "callbackURL", conf.getCallbackUrl()
+            );
+
+            Map<String, Object> body = Map.of(
+                    "apikey", conf.getApiKey(),
+                    "member", conf.getMemberId(),
+                    "merchant", conf.getMerchantId(),
+                    "bill", bill
+            );
+
+            PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+
+            if (!"0000".equals(paymintResp.getCode())) {
+                continue;
+            }
+
+            // 5-5. bill 저장 (대표 학생)
+            PaymentRespDTO.PayTargetDTO rep = group.get(0);
 
             PaymentReqDTO.InsertBillDTO billDTO = new PaymentReqDTO.InsertBillDTO();
-            billDTO.setPaymentKey(paymentKey);
             billDTO.setBillId(billId);
-            billDTO.setAmount(req.getPrice());
-            billDTO.setBillType(req.getType());
-            billDTO.setStudentId(req.getStudentId());
+            billDTO.setPaymentKey(rep.getPaymentKey());
+            billDTO.setStudentId(rep.getStudentId());
+            billDTO.setAmount(totalPrice);
+            billDTO.setBillType(billType);
+            billDTO.setPhone(parentPhone);
             billDTO.setCenterCode(user.getCenterCode());
             billDTO.setExpireDate(req.getExpireDt());
             billDTO.setYy(req.getYy());
             billDTO.setMm(req.getMm());
 
             insertPaymentBill(billDTO, user.getUserCode());
-            saved = true;
 
-        } catch (Exception e) {
-            log.error("DB 저장 실패", e);
-            saved = false;
+            // 5-6. 학생별 매핑 저장
+//            for (PaymentRespDTO.PayTargetDTO t : group) {
+//                paymentRepository.insertPaymentBillMap(
+//                        billId,
+//                        t.getStudentId(),
+//                        t.getPaymentKey(),
+//                        t.getAmount()
+//                );
+//            }
         }
-
-        respDTO.setDbSaved(saved);
-
-        return respDTO;
     }
 
     // ===================== 메서드 분리 ======================

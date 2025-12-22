@@ -34,6 +34,8 @@ public class ManageReqDTO {
     public static class InsertReorderDTO {
         private String reorderType;
         private List<ReorderItemDTO> items;
+        private String yy;
+        private String mm;
 
         @Data
         public static class ReorderItemDTO {

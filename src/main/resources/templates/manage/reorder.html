@@ -29,7 +29,7 @@
                         <h2>추가/반품</h2>
                     </div>
                     <div class="stats-item-left">
-                        <div class="month-title2 month-today">
+                        <div class="month-title2 month-today save-calendar">
                             <div style="position: relative;">
                                 <div class="day-display">
                                     <span class="month-text"></span>
@@ -117,6 +117,17 @@
                 <section class="pre-order return-right">
                     <div class="common-title">
                         <h2>이전 주문 내역</h2>
+                    </div>
+                    <div class="month-title2 month-today search-calendar">
+                        <div style="position: relative;">
+                            <div class="day-display">
+                                <span class="month-text"></span>
+                                <input type="month" class="hidden-date hidden-picker"/>
+                                <button type="button" class="icon-btn calendar-open">
+                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="preorder-select">
                         <div></div>

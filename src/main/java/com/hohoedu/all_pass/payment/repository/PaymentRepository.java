@@ -10,6 +10,7 @@ import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -24,7 +25,34 @@ public interface PaymentRepository {
             @Param("mm") String mm,
             @Param("billType") String billType);
 
+    int existsBillByStudentIds(
+            @Param("studentIds") List<String> studentIds,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("billType") String billType
+    );
+
     PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
+
+    List<PaymentRespDTO.PayTargetDTO> findTargetsByStudentIds(
+            @Param("studentIds") List<String> studentIds,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("type") String type
+    );
+
+//    int insertPaymentBill(
+//            @Param("bill") PaymentReqDTO.InsertBillDTO bill,
+//            @Param("userCode") String userCode
+//    );
+
+//    int insertPaymentBillMap(
+//            @Param("billId") String billId,
+//            @Param("studentId") String studentId,
+//            @Param("paymentKey") String paymentKey,
+//            @Param("amount") Integer amount
+//    );
+
 
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 

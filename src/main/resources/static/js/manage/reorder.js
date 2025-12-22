@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onMonthChange(display, monthInput) {
         const date = new Date(monthInput.value);
-        if (!date) return;
+        if (isNaN(date.getTime())) return;
 
         const year = date.getFullYear();
         const month = date.getMonth() + 1;
@@ -59,8 +59,12 @@ document.addEventListener('DOMContentLoaded', () => {
             span.textContent = `${year}년 ${month}월`;
         }
 
-        loadReorderList(year, month);
+        // ✅ 조회용 달력인 경우에만 목록 조회
+        if (display.closest(".search-calendar")) {
+            loadReorderList(year, month);
+        }
 
+        // ❌ 저장용 달력은 여기서 아무 것도 하지 않음
     }
 
     const addView = document.querySelector(".add-order-view");
@@ -298,18 +302,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector("#saveReorderBtn").addEventListener("click", async () => {
 
+        const saveCalendar = document.querySelector(".save-calendar .hidden-picker");
+        const [yy, mm] = saveCalendar.value.split("-");
+
         const orderType = document.querySelector('input[name="orderType"]:checked').value;
-        const extras = Array.from(document.querySelectorAll(".all-add .add-extra")).map(box => {
-            return {
-                classKey: box.querySelector("select[name='bookStep']").value,
-                unitKey: box.querySelector("select[name='bookChoice']").value,
-                count: Number(box.querySelector("input[type='number']").value),
-                reason: box.querySelector("input[type='text']").value
-            };
-        });
+
+        const extras = Array.from(document.querySelectorAll(".all-add .add-extra")).map(box => ({
+            classKey: box.querySelector("select[name='bookStep']").value,
+            unitKey: box.querySelector("select[name='bookChoice']").value,
+            count: Number(box.querySelector("input[type='number']").value),
+            reason: box.querySelector("input[type='text']").value
+        }));
 
         const body = {
-            reorderType: orderType,   // ADD or RETURN
+            yy: Number(yy),
+            mm: Number(mm),
+            reorderType: orderType,
             items: extras
         };
 

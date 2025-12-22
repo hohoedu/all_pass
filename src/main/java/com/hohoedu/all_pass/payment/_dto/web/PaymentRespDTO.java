@@ -43,6 +43,15 @@ public class PaymentRespDTO {
     }
 
     @Data
+    public static class PayTargetDTO {
+        private String studentId;
+        private String studentName;
+        private String parentPhone;   // 01012345678
+        private String paymentKey;
+        private int amount;
+    }
+
+    @Data
     public static class PaySendRespDTO {
         private String billId;
         private String paymintCode;     // Paymint 응답코드

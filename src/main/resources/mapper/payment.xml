@@ -36,6 +36,64 @@
           AND mm = #{month}
     </select>
 
+    <select id="findTargetsByStudentIds" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayTargetDTO">
+        SELECT
+        s.student_id,
+        s.student_name,
+        pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS parent_phone,
+        p.payment_key,
+        SUM(pd.amount) AS amount
+        FROM erp_payment p
+        JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+        JOIN erp_student s ON s.student_id = p.student_id
+        JOIN erp_parent pa ON pa.student_id = s.student_id
+        WHERE s.student_id IN
+        <foreach collection="studentIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        AND p.yy = #{yy}
+        AND p.mm = #{mm}
+        AND pd.item_type = #{type}
+        GROUP BY
+        s.student_id,
+        s.student_name,
+        pa.parent_tel_first,
+        pa.parent_tel_middle,
+        pa.parent_tel_last,
+        p.payment_key;
+    </select>
+
+    <select id="existsBillByStudentIds" parameterType="map" resultType="int">
+
+        SELECT COUNT(*)
+        FROM erp_payment_bill
+        WHERE student_id IN
+        <foreach collection="studentIds"
+                 item="id"
+                 open="("
+                 close=")"
+                 separator=",">
+            #{id}
+        </foreach>
+        AND yy = #{yy}
+        AND mm = #{mm}
+        AND bill_type = #{billType}
+        AND status NOT IN ('cancelled', 'destroyed')
+
+    </select>
+
+    <insert id="insertPaymentBill" parameterType="map">
+        INSERT INTO erp_payment_bill (bill_id, payment_key, student_id, amount, bill_type, status, expire_date,
+                                      issued_date,
+                                      center_code,
+                                      yy,
+                                      mm,
+                                      created_at)
+        VALUES (#{bill.billId}, #{bill.paymentKey}, #{bill.studentId}, #{bill.amount}, #{bill.billType}, 'issued', #{bill.expireDate}, SYSDATETIME(),
+                #{bill.centerCode},#{bill.yy},#{bill.mm},SYSDATETIME(),#{userCode})
+    </insert>
+
+
     <select id="findByAssignStudents"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
         SELECT
@@ -406,7 +464,7 @@
 
     <update id="updateAmountAndUnpaidAmountByPaymentKey">
         UPDATE erp_payment
-        SET amount       = #{amount},
+        SET amount        = #{amount},
             unpaid_amount = #{unpaidAmount}
         where payment_key = #{paymentKey}
 

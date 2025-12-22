@@ -34,16 +34,15 @@ public class PaymentReqDTO {
 
     @Data
     public static class PaySendReqDTO {
-        private String studentId;
-        private String studentName;
-        private String phone;
-        private Integer price;
+        private List<String> studentIds;
+
         private String type;
         private String message;
         private String expireDt;
         private Integer index;
         private String yy;
         private String mm;
+
     }
 
     @Data
@@ -63,6 +62,7 @@ public class PaymentReqDTO {
         private String billType;
         private String expireDate;
         private String issueDate;
+        private String phone;
         private String studentId;
         private String centerCode;
         private String yy;
