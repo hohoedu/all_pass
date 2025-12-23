@@ -61,49 +61,71 @@ document.addEventListener("DOMContentLoaded", () => {
 // ============ 검색 ============ //
 document.addEventListener("DOMContentLoaded", () => {
     const searchBtn = document.getElementById("search-main-student");
+    const searchInput = document.getElementById("search-name");
+    const filterSelect = document.getElementById("stu-name");
     const tbody = document.getElementById("main-student-tbody");
 
-    if (!searchBtn || !tbody) return;
+    if (!searchBtn || !searchInput || !tbody) return;
 
-    searchBtn.addEventListener("click", () => {
-        const filterType = document.getElementById("stu-name")?.value || "all";
-        const keyword = document.getElementById("search-name")?.value.trim().toLowerCase();
+    const getRows = () =>
+        Array.from(tbody.querySelectorAll("tr"));
 
-        // 검색어 없으면 전체 표시
+    function doSearch() {
+        const keyword = searchInput.value.trim().toLowerCase();
+        const filterType = filterSelect?.value || "all";
+        const rows = getRows();
+
         if (!keyword) {
-            [...tbody.querySelectorAll("tr")].forEach(tr => tr.style.display = "");
+            rows.forEach(tr => (tr.style.display = ""));
             return;
         }
 
-        [...tbody.querySelectorAll("tr")].forEach(tr => {
+        let matchedCount = 0;
+
+        rows.forEach(tr => {
             const tds = tr.querySelectorAll("td");
-            if (tds.length < 8) return;
+            if (tds.length === 0) return;
 
             let textToSearch = "";
 
             switch (filterType) {
-                case "이름":
-                case "name":
-                    textToSearch = tds[1].innerText.toLowerCase();  // 이름
+                case "all": // 이름
+                    textToSearch = tds[1]?.innerText.toLowerCase() || "";
                     break;
-
-                case "수강과목":
-                    textToSearch = tds[4].innerText.toLowerCase();  // 수강과목
-                    break;
-
-                case "학교/유치원":
-                    textToSearch = tds[6].innerText.toLowerCase();  // 학교
-                    break;
-
                 default:
-                    // 전체에서 검색
                     textToSearch = tr.innerText.toLowerCase();
-                    break;
             }
 
-            // 포함 여부 확인
-            tr.style.display = textToSearch.includes(keyword) ? "" : "none";
+            if (textToSearch.includes(keyword)) {
+                tr.style.display = "";
+                matchedCount++;
+            } else {
+                tr.style.display = "none";
+            }
         });
+
+        // 🔹 검색 결과가 하나도 없으면 전체 복구
+        if (matchedCount === 0) {
+            rows.forEach(tr => (tr.style.display = ""));
+        }
+    }
+
+    // 버튼 클릭
+    searchBtn.addEventListener("click", doSearch);
+
+    // 🔥 Enter 키 검색
+    searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            doSearch();
+        }
+    });
+
+    // 🔹 입력값 지우면 즉시 전체 복구
+    searchInput.addEventListener("input", () => {
+        if (searchInput.value.trim() === "") {
+            getRows().forEach(tr => (tr.style.display = ""));
+        }
     });
 });
 

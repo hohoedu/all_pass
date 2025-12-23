@@ -87,6 +87,7 @@
                                     <col width="10%">
                                     <col width="10%">
                                     <col width="10%">
+                                    <col width="10%">
                                 </colgroup>
                                 <thead>
                                 <tr>
@@ -97,7 +98,8 @@
                                     <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                                     <th>수강과목</th>
                                     <th>담임</th>
-                                    <th>총 금액</th>
+                                    <th>교육비</th>
+                                    <th>교재비</th>
                                     <th>미납 금액</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">발행</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결제</th>
@@ -133,7 +135,9 @@
                                     + (${#strings.defaultString(student.bookTeacher, '') != '' ? student.bookTeacher + '(독)' : ''})">
                                     </td>
                                     <td class="charge"
-                                        th:text="${#numbers.formatInteger(student.totalPrice, 3, 'COMMA')}"></td>
+                                        th:text="${#numbers.formatInteger(student.totalFee, 1, 'COMMA')}"></td>
+                                    <td class="material-charge"
+                                        th:text="${#numbers.formatInteger(student.totalMaterialFee, 1, 'COMMA')}"></td>
                                     <td class="pay-amount"
 
                                         th:text="${student.unpaidAmount == '0' ? 0 : #numbers.formatInteger(student.unpaidAmount, 3, 'COMMA')}">

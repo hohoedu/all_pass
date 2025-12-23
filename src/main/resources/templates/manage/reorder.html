@@ -182,7 +182,14 @@
                                         <span th:case="'user_cancel'">사용자 취소</span>
                                         <span th:case="*">-</span>
                                     </td>
-                                    <td>취소</td>
+                                    <td th:switch="${reorder.confirmed}">
+                                        <button th:case="'unchecked'" class="btn-cancel"
+                                                th:data-id="${reorder.id}">
+                                            취소
+                                        </button>
+
+                                        <span th:case="*">-</span>
+                                    </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(reorderList)}">
                                     <td colspan="8" style="text-align: center;">

@@ -8,6 +8,7 @@ import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,9 @@ import jakarta.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Controller
@@ -110,6 +114,27 @@ public class MainViewController {
     @GetMapping("/school")
     public String getSchool() {
         return "school";
+    }
+
+    @PostMapping("/eclass/redirect")
+    public void redirectToEClass(HttpSession session, HttpServletResponse response) throws IOException {
+
+        UserRespDTO.LoginRespDTO user =
+                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        if (user == null) {
+            response.sendRedirect("/login");
+            return;
+        }
+
+        String userCode = user.getUserCode();
+        String centerCode = user.getCenterCode();
+
+        String redirectUrl = "http://hohoseodang.com/eclass_center_erp.html"
+                + "?userCode=" + URLEncoder.encode(userCode, StandardCharsets.UTF_8)
+                + "&centerCode=" + URLEncoder.encode(centerCode, StandardCharsets.UTF_8);
+
+        response.sendRedirect(redirectUrl);
     }
 
 }

@@ -271,6 +271,16 @@ document.addEventListener('DOMContentLoaded', () => {
             admin_cancel: '관리자 취소',
             user_cancel: '사용자 취소'
         };
+        const confirmedCancelMap = {
+            unchecked: '취소',
+            checked: '-',
+            admin_cancel: '-',
+            user_cancel: '-'
+        };
+
+        const canCancel = item.confirmed === 'unchecked';
+
+
         if (!list || list.length === 0) {
             tbody.innerHTML = `
         <tr>
@@ -292,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.reason}</td>
                 <td>${item.createdAt}</td>
                 <td>${confirmedTextMap[item.confirmed] ?? '-'}</td>
-                <td>취소</td>
+                <td>${confirmedCancelMap[item.confirmed] ?? '-'}</td>
             </tr>
         `;
 
@@ -303,8 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector("#saveReorderBtn").addEventListener("click", async () => {
 
         const saveCalendar = document.querySelector(".save-calendar .hidden-picker");
-        const [yy, mm] = saveCalendar.value.split("-");
-
+        const [yy, mmRaw] = saveCalendar.value.split("-");
+        const mm = mmRaw.padStart(2, "0");
         const orderType = document.querySelector('input[name="orderType"]:checked').value;
 
         const extras = Array.from(document.querySelectorAll(".all-add .add-extra")).map(box => ({
@@ -316,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const body = {
             yy: Number(yy),
-            mm: Number(mm),
+            mm: mm,
             reorderType: orderType,
             items: extras
         };
@@ -339,5 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("saveReorder Error:", e);
         }
     });
+
 
 });

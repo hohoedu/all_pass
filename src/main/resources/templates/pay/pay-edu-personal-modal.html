@@ -3,7 +3,7 @@
         <div class="pay-m-frame">
             <div class="m-t-line" style="margin-bottom: 10px;">
                 <div class="title">
-                    김호호?? 학생의 수강료 상세 내역
+                    학생의 수강료 상세 내역
                 </div>
                 <a href="#" class="btn-close"></a>
             </div>
@@ -28,22 +28,41 @@
                                         <tr>
                                             <td>한자 교육비</td>
                                             <td>
-                                                <input type="text" class="basic-input edu-input">
+                                                <input type="text"
+                                                       class="basic-input edu-input"
+                                                       data-type="hanEdu"
+                                                       data-raw-value="0">
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td>한자 교재비</td>
-                                            <td>20,000</td>
+                                            <td>
+                                                <input type="text"
+                                                       class="basic-input edu-input material-input"
+                                                       data-type="hanMaterial"
+                                                       data-raw-value="0">
+                                            </td>
                                         </tr>
+
                                         <tr>
                                             <td>독서 교육비</td>
                                             <td>
-                                                <input type="text" class="basic-input edu-input">
+                                                <input type="text"
+                                                       class="basic-input edu-input"
+                                                       data-type="bookEdu"
+                                                       data-raw-value="0">
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td>독서 교재비</td>
-                                            <td>20,000</td>
+                                            <td>
+                                                <input type="text"
+                                                       class="basic-input edu-input material-input"
+                                                       data-type="bookMaterial"
+                                                       data-raw-value="0">
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td>합계</td>
@@ -97,7 +116,7 @@
                                             </tr>
                                             </thead>
                                             <tbody id="personal-tbody" class="stripe">
-                                           
+
                                             </tbody>
                                         </table>
                                     </div>

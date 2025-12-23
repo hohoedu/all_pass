@@ -169,6 +169,7 @@ public class StudentController {
         // 3-3. erp_student_transfer_history 인서트
         studentService.transferStudent(studentInOutDTO);
 //        studentService.insertTransferHistory(studentInOutDTO);
+
         return ResponseEntity.ok(ApiUtils.success("okay"));
     }
 

@@ -36,31 +36,50 @@
           AND mm = #{month}
     </select>
 
-    <select id="findTargetsByStudentIds" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayTargetDTO">
-        SELECT
-        s.student_id,
-        s.student_name,
-        pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS parent_phone,
-        p.payment_key,
-        SUM(pd.amount) AS amount
-        FROM erp_payment p
-        JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
-        JOIN erp_student s ON s.student_id = p.student_id
-        JOIN erp_parent pa ON pa.student_id = s.student_id
+    <select id="findParentPhonesByStudentIds" resultType="String">
+        SELECT DISTINCT
+        (p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last) AS householdKey
+        FROM erp_student s
+        JOIN erp_parent p
+        ON p.student_id = s.student_id
         WHERE s.student_id IN
-        <foreach collection="studentIds" item="id" open="(" close=")" separator=",">
+        <foreach collection="studentIds" item="id" open="(" separator="," close=")">
             #{id}
+        </foreach>
+    </select>
+
+    <select id="findTargetsByParentPhones" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayTargetDTO">
+        SELECT
+        s.student_id AS studentId,
+        s.student_name AS studentName,
+        (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last) AS parentPhone,
+        p.payment_key AS paymentKey,
+        SUM(pd.amount) AS amount
+        FROM erp_student s
+        JOIN erp_parent pa
+        ON pa.student_id = s.student_id
+        JOIN erp_payment p
+        ON p.student_id = s.student_id
+        JOIN erp_payment_detail pd
+        ON pd.payment_key = p.payment_key
+        WHERE (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last) IN
+        <foreach collection="parentPhones" item="phone" open="(" separator="," close=")">
+            #{phone}
         </foreach>
         AND p.yy = #{yy}
         AND p.mm = #{mm}
         AND pd.item_type = #{type}
-        GROUP BY
-        s.student_id,
-        s.student_name,
-        pa.parent_tel_first,
-        pa.parent_tel_middle,
-        pa.parent_tel_last,
-        p.payment_key;
+        GROUP BY s.student_id, s.student_name, (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last), p.payment_key
+    </select>
+
+    <select id="findPaymentBillByType"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentBillDTO">
+        SELECT bill_id     AS billId,
+               SUM(amount) AS price
+        FROM erp_payment_bill
+        WHERE bill_id = #{billId}
+          AND status IN ('issued', 'approved')
+        GROUP BY bill_id
     </select>
 
     <select id="existsBillByStudentIds" parameterType="map" resultType="int">
@@ -90,7 +109,7 @@
                                       mm,
                                       created_at)
         VALUES (#{bill.billId}, #{bill.paymentKey}, #{bill.studentId}, #{bill.amount}, #{bill.billType}, 'issued', #{bill.expireDate}, SYSDATETIME(),
-                #{bill.centerCode},#{bill.yy},#{bill.mm},SYSDATETIME(),#{userCode})
+                #{bill.centerCode}, #{bill.yy}, #{bill.mm}, SYSDATETIME(), #{userCode})
     </insert>
 
 
@@ -156,8 +175,8 @@
 
         OUTER APPLY (
         SELECT
-        MAX(CASE WHEN pb.bill_type = 'edu' THEN pb.status END) AS eduStatus,
-        MAX(CASE WHEN pb.bill_type = 'material' THEN pb.status END) AS materialStatus,
+        MAX(CASE WHEN pb.bill_type IN ('edu', 'EDU_FEE')THEN pb.status END) AS eduStatus,
+        MAX(CASE WHEN pb.bill_type IN ('material', 'BOOK_FEE')THEN pb.status END) AS materialStatus,
         MAX(pb.bill_id) AS billId
         FROM erp_payment_bill pb
         WHERE pb.payment_key = pAgg.paymentKey
@@ -329,17 +348,22 @@
         p.amount AS amount,
         p.status,
         p.paid_date AS paidDate,
-        ta.han_material_fee AS hanMaterialFee,
-        ta.book_material_fee AS booKMaterialFee,
-        edu.han_fee AS hanFee,
-        edu.book_fee AS bookFee
+        edu.han_material_fee AS hanMaterialFee,
+        edu.book_material_fee AS booKMaterialFee,
+        edu.han_edu_fee AS hanFee,
+        edu.book_edu_fee AS bookFee
 
         FROM erp_payment p
         LEFT JOIN (
         SELECT
         pd.payment_key,
-        MAX(CASE WHEN class_type = '1' THEN pd.amount END ) AS han_fee,
-        MAX(CASE WHEN class_type = '2' THEN pd.amount END ) AS book_fee
+        -- 교육비
+        MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount END) AS han_edu_fee,
+        MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount END) AS book_edu_fee,
+        -- 교재비
+        MAX(CASE WHEN pd.item_type = 'BOOK_FEE' AND pd.class_type = '1' THEN pd.amount END) AS han_material_fee,
+        MAX(CASE WHEN pd.item_type = 'BOOK_FEE' AND pd.class_type = '2' THEN pd.amount END) AS book_material_fee
+
         FROM erp_payment_detail pd
         GROUP BY pd.payment_key) AS edu ON p.payment_key = edu.payment_key
         JOIN erp_student s ON p.student_id = s.student_id
@@ -448,12 +472,18 @@
 
     <update id="updateEduFeeDetailByPaymentKey">
         UPDATE erp_payment_detail
-        SET amount = CASE class_type
-                         WHEN '1' THEN #{hanEduFee}
-                         WHEN '2' THEN #{bookEduFee}
-            END
+        SET amount =
+                CASE
+                    -- 교육비
+                    WHEN item_type = 'EDU_FEE' AND class_type = '1' THEN #{hanEduFee}
+                    WHEN item_type = 'EDU_FEE' AND class_type = '2' THEN #{bookEduFee}
+
+                    -- 교재비
+                    WHEN item_type = 'BOOK_FEE' AND class_type = '1' THEN #{hanMaterialFee}
+                    WHEN item_type = 'BOOK_FEE' AND class_type = '2' THEN #{bookMaterialFee}
+                    END
         WHERE payment_key = #{paymentKey}
-          AND item_type = 'EDU_FEE';
+          AND item_type IN ('EDU_FEE', 'BOOK_FEE');
     </update>
 
     <select id="findPaymentDetailsByPaymentKey" resultType="String">
@@ -469,6 +499,13 @@
         where payment_key = #{paymentKey}
 
 
+    </update>
+
+    <update id="updateTeacherAssiginMaterialFee">
+        UPDATE erp_teacher_assign
+        set han_material_fee  = #{hanMaterialFee},
+            book_material_fee = #{bookMaterialFee}
+        where student_id = #{studentId}
     </update>
 
 

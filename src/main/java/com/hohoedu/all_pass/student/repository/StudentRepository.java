@@ -84,6 +84,8 @@ public interface StudentRepository {
 
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
 
+    StudentWebRespDTO.TeacherDTO findTeacherAssignByStudentId(@Param("studentId") String studentId);
+
     int insertTeacherAssign(TeacherAssign teacherAssign);
 
     int updateTeacherAssign(ClassReqDTO.TeacherAssignUpdateDTO teacherAssign);

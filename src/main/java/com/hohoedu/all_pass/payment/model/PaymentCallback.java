@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.checkerframework.checker.units.qual.C;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -43,17 +44,15 @@ public class PaymentCallback {
     @Column(name = "appr_num")
     private String apprNum;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bill_id", referencedColumnName = "bill_id", nullable = false)
-    private PaymentBill paymentBill;
+    @Column(name = "bill_id ")
+    private String billId;
 
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
     public PaymentCallback(String apiKey, String apprState, String apprDate, String apprPrice, String apprPayType,
-                           String apprCardType, String apprIssuer, String apprNum, PaymentBill paymentBill) {
+                           String apprCardType, String apprIssuer, String apprNum, String billId) {
         this.apiKey = apiKey;
         this.apprState = apprState;
         this.apprDate = apprDate;
@@ -62,6 +61,6 @@ public class PaymentCallback {
         this.apprCardType = apprCardType;
         this.apprIssuer = apprIssuer;
         this.apprNum = apprNum;
-        this.paymentBill = paymentBill;
+        this.billId = billId;
     }
 }

@@ -48,7 +48,13 @@ public class PaymentRespDTO {
         private String studentName;
         private String parentPhone;   // 01012345678
         private String paymentKey;
-        private int amount;
+        private Integer amount;
+    }
+
+    @Data
+    public static class PaymentBillDTO{
+        private String billId;
+        private Integer price;
     }
 
     @Data

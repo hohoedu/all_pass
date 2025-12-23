@@ -28,7 +28,9 @@
                     <img th:src="@{/image/log-out.png}" alt="">
                 </a>
             </div>
-            <div class="menu-greet">
+            <div class="menu-greet"
+                 th:attr="data-user-code=${session.user.userCode},
+                 data-center-code=${session.user.centerCode}">
                 호호서당 <span class="highlight"
                            th:text="${session.user.regionName + ' ' + session.user.centerName + ' ' + session.user.userName}"> </span> 선생님 안녕하세요!
             </div>
@@ -47,8 +49,10 @@
                     <h2>E-CLASS</h2>
                     <p>수업에 활용되는 교사용<br>
                         E-CLASS 프로그램 입니다.</p>
-                    <button><a th:href="@{/main}">바로가기</a></button>
-<!--                    post요청 {선생님 id, 센터 id} -->
+                    <button id="eclass-btn">
+                        바로가기
+                    </button>
+                    <!--                    post요청 {선생님 id, 센터 id} -->
                 </div>
                 <div class="menu-item">
                     <img th:src="@{/image/reading-clinic.png}" alt="">
@@ -97,6 +101,22 @@
         });
     });
 
+
+    document.getElementById('eclass-btn').addEventListener('click', () => {
+        console.log('클릭');
+        const session = document.querySelector('.menu-greet');
+
+        const userCode = session.dataset.userCode;
+        const centerCode = session.dataset.centerCode;
+
+        const url =
+            "http://hohoseodang.com/eclass_center_erp.asp"
+            + "?user_code=" + encodeURIComponent(userCode)
+            + "&center_code=" + encodeURIComponent(centerCode);
+
+        window.open(url, "_blank");
+
+    });
 
 </script>
 </body>

@@ -16,9 +16,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Getter
-@Table(name = "erp_payment_bill", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_bill_id", columnNames = "bill_id")
-})
+@Table(name = "erp_payment_bill")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentBill {
 
@@ -26,7 +24,7 @@ public class PaymentBill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "bill_id", nullable = false, unique = true, length = 50)
+    @Column(name = "bill_id", nullable = false, length = 50)
     private String billId;
 
     @Column(name = "amount", nullable = false)

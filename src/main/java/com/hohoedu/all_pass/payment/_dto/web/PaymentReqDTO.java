@@ -47,10 +47,10 @@ public class PaymentReqDTO {
 
     @Data
     public static class PayDestroyReqDTO {
+        private String billId;
         private String studentId;
         private String paymentKey;
-        private String billId;
-        private Integer price;
+        private String destroyType;
     }
 
     @Data
@@ -141,6 +141,8 @@ public class PaymentReqDTO {
         private String yy;
         private String mm;
         private Integer hanEduFee;
+        private Integer hanMaterialFee;
         private Integer bookEduFee;
+        private Integer bookMaterialFee;
     }
 }

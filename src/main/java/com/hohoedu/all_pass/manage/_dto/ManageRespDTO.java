@@ -30,6 +30,7 @@ public class ManageRespDTO {
 
     @Data
     public static class ReorderListDTO {
+        private Integer id;
         private String reorderType;
         private String classKey;
         private String className;

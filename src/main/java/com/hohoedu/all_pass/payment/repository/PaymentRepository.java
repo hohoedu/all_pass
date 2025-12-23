@@ -10,6 +10,7 @@ import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.hibernate.annotations.Parent;
 import org.springframework.security.core.parameters.P;
 
 import java.util.List;
@@ -34,8 +35,10 @@ public interface PaymentRepository {
 
     PaymentRespDTO.PaymentConfigDTO findPayConfigByCenterCode(@Param("centerCode") String centerCode);
 
-    List<PaymentRespDTO.PayTargetDTO> findTargetsByStudentIds(
-            @Param("studentIds") List<String> studentIds,
+    List<String> findParentPhonesByStudentIds(List<String> studentIds);
+
+    List<PaymentRespDTO.PayTargetDTO> findTargetsByParentPhones(
+            @Param("parentPhones") List<String> parentPhones,
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("type") String type
@@ -106,6 +109,7 @@ public interface PaymentRepository {
 
     int insertPaymentRefund();
 
+    PaymentRespDTO.PaymentBillDTO findPaymentBillByType(@Param("billId") String billId);
 
     List<String> findPaymentKeys(
             @Param("studentId") String studentId,
@@ -115,7 +119,9 @@ public interface PaymentRepository {
     int updateEduFeeDetailByPaymentKey(
             @Param("paymentKey") String paymentKey,
             @Param("hanEduFee") Integer hanEduFee,
-            @Param("bookEduFee") Integer bookEduFee);
+            @Param("hanMaterialFee") Integer hanMaterialFee,
+            @Param("bookEduFee") Integer bookEduFee,
+            @Param("bookMaterialFee") Integer bookMaterialFee);
 
     List<String> findPaymentDetailsByPaymentKey(@Param("paymentKey") String paymentKey);
 
@@ -123,6 +129,11 @@ public interface PaymentRepository {
             @Param("paymentKey") String paymentKey,
             @Param("amount") int amount,
             @Param("unpaidAmount") int unpaidAmount);
+
+    int updateTeacherAssiginMaterialFee(
+            @Param("studentId") String studentId,
+            @Param("hanMaterialFee") Integer hanMaterialFee,
+            @Param("bookMaterialFee") Integer bookMaterialFee);
 
     // ======================================== APP ======================================== //
     // i-with 납부내역 조회

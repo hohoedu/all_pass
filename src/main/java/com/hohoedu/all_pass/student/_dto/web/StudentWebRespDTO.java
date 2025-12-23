@@ -3,8 +3,12 @@ package com.hohoedu.all_pass.student._dto.web;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.hohoedu.all_pass.class_instance.model.ClassCode;
+import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
+import com.hohoedu.all_pass.user.User;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -166,6 +170,19 @@ public class StudentWebRespDTO {
         private String userCode;
         private String timeTableKey;
         private String classKey;
+    }
+
+    @Data
+    public static class TeacherDTO {
+        private Student studentId;
+        private Boolean hanState;
+        private Boolean bookState;
+        private String entryHanDate;
+        private String entryBookDate;
+        private String assignHanTeacher;
+        private String assignHanClass;
+        private String assignBookTeacher;
+        private String assignBookClass;
     }
 
     @Data

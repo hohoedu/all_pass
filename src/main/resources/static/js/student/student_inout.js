@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ====== 모달 오픈 ====== //
 function openTransferModal(row) {
     const studentId = row.getAttribute("data-id");
-    
+
 
     showTransferModal();
 }
@@ -94,6 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
         // ✅ 4. JSON 데이터 생성
         const requestBody = {
             students: selectedStudents,
@@ -111,18 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(requestBody)
             });
 
-            if (!response.ok) throw new Error("서버 오류");
 
             const result = await response.json();
-            if (result.success) {
-                alert("전입/전출 처리가 완료되었습니다.");
-                location.reload();
-            } else {
-                alert(result.message || "처리 중 오류가 발생했습니다.");
+
+            if (!response.ok || result.success === false) {
+                // 서버에서 내려준 메시지 그대로 사용
+                throw new Error(result.message || "처리 중 오류가 발생했습니다.");
             }
+
+            alert("전입/전출 처리가 완료되었습니다.");
+            location.reload();
+
         } catch (err) {
             console.error(err);
-            alert("서버 통신 중 문제가 발생했습니다.");
+            alert(err.message);
         }
     });
 });

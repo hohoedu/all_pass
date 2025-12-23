@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
+import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
@@ -20,6 +21,7 @@ import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.family.FamilyService;
+import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -64,6 +66,7 @@ public class StudentService {
     private final DateConfig dateConfig;
     private final FamilyService familyService;
     private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
 
     public List<Student> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
@@ -351,62 +354,76 @@ public class StudentService {
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);
         return responseDTO;
-
     }
 
     public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto) {
-        try {
-            String year = dateConfig.currentYearMonth().get("currentYear");
-            String month = dateConfig.currentYearMonth().get("currentMonth");
-            System.out.println(year + "-" + month);
-            if (reqDto.getSelectedHan() != null) {
-                for (String studentId : reqDto.getStudents()) {
 
-                    // 시간표 삭제
-                    // 타임테이블 키 조회
-                    StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), year, month);
-                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-                    // student_class 변경
-                    studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), year, month);
-                    // history 저장 (누가 변경했는지 없음
-                    StudentTransferHistory history = StudentTransferHistory.builder()
-                            .student(Student.builder().studentId(studentId).build())
-                            .fromUser(User.builder().userCode(dto.getUserCode()).build())
-                            .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-                            .classCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                            .classType(reqDto.getSelectedHan())
-                            .transferReason(reqDto.getTransferReason())
-                            .moveAt(reqDto.getMoveAt())
-                            .build();
-                    studentRepository.insertTransferHistory(history);
+        String[] parts = reqDto.getMoveAt().split("-");
+        String yy = parts[0];
+        String mm = parts[1];
 
+        if (reqDto.getSelectedHan() != null) {
+            for (String studentId : reqDto.getStudents()) {
+
+                // 시간표 삭제
+                // 타임테이블 키 조회
+//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
+//                if (dto == null) {
+//                    throw new Exception400("전입 월의 시간표가 없습니다.");
+//                }
+//                classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+//                paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+
+                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+                if (teacher.getAssignHanTeacher() == null) {
+                    throw new Exception400("등록된 한자 수업이 없습니다.");
                 }
+                // 전입/전출
+                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
+
+                StudentTransferHistory history = StudentTransferHistory.builder()
+                        .student(Student.builder().studentId(studentId).build())
+                        .fromUser(User.builder().userCode(teacher.getAssignHanTeacher()).build())
+                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+                        .classCode(ClassCode.builder().classKey(teacher.getAssignHanClass()).build())
+                        .classType(reqDto.getSelectedHan())
+                        .transferReason(reqDto.getTransferReason())
+                        .moveAt(reqDto.getMoveAt())
+                        .build();
+                studentRepository.insertTransferHistory(history);
+
             }
-            if (reqDto.getSelectedBook() != null) {
-                for (String studentId : reqDto.getStudents()) {
-                    // 시간표 삭제
-                    // 타임테이블 키 조회
-                    StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), year, month);
-                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-                    // student_class 변경
-                    studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), year, month);
-                    // history 저장 (누가 변경했는지 없음)
-                    StudentTransferHistory history = StudentTransferHistory.builder()
-                            .student(Student.builder().studentId(studentId).build())
-                            .fromUser(User.builder().userCode(dto.getUserCode()).build())
-                            .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-                            .classCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                            .classType(reqDto.getSelectedBook())
-                            .transferReason(reqDto.getTransferReason())
-                            .moveAt(reqDto.getMoveAt())
-                            .build();
-
-                    studentRepository.insertTransferHistory(history);
-
+        }
+        if (reqDto.getSelectedBook() != null) {
+            for (String studentId : reqDto.getStudents()) {
+                // 시간표 삭제
+                // 타임테이블 키 조회
+//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
+//                if (dto == null) {
+//                    throw new Exception400("전입 월의 시간표가 없습니다.");
+//                }
+//                classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+//                paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+                if (teacher.getAssignBookTeacher() == null) {
+                    throw new Exception400("등록된 독서 수업이 없습니다.");
                 }
+                // 전입/전출
+                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), yy, mm);
+                // history 저장 (누가 변경했는지 없음)
+                StudentTransferHistory history = StudentTransferHistory.builder()
+                        .student(Student.builder().studentId(studentId).build())
+                        .fromUser(User.builder().userCode(teacher.getAssignBookTeacher()).build())
+                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+                        .classCode(ClassCode.builder().classKey(teacher.getAssignBookClass()).build())
+                        .classType(reqDto.getSelectedBook())
+                        .transferReason(reqDto.getTransferReason())
+                        .moveAt(reqDto.getMoveAt())
+                        .build();
+
+                studentRepository.insertTransferHistory(history);
+
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
         }
 
     }

@@ -6624,6 +6624,9 @@ input[type="time" i] {
     font-weight: bold;
 }
 
+.material-charge{
+    color: #c8c8c8;
+}
 .pay-amount {
     color: #5C5C5C;
 }
@@ -6830,7 +6833,7 @@ input[type="time" i] {
 }
 
 .pay-edu-frame {
-    height: 360px;
+    height: 400px;
 }
 
 .pay-edu-frame td {

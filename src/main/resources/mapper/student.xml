@@ -303,6 +303,11 @@
         FROM erp_teacher_assign
         WHERE student_id = #{studentId}
     </select>
+    <select id="findTeacherAssignByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TeacherDTO">
+        SELECT *
+        FROM erp_teacher_assign
+        WHERE student_id = #{studentId}
+    </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">
         INSERT INTO ERP_TEACHER_ASSIGN (student_id, entry_han_date, entry_book_date,assign_han_teacher, assign_book_teacher,
@@ -386,14 +391,12 @@
                s.created_at
         FROM erp_student s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
-                 JOIN erp_student_class stuc ON s.student_id = stuc.student_id
-                 LEFT JOIN erp_class_code hc ON stuc.han_class_key = hc.class_key
-                 LEFT JOIN erp_class_code bc ON stuc.book_class_key = bc.class_key
-                 LEFT JOIN erp_user hu ON stuc.han_user_code = hu.user_code
-                 LEFT JOIN erp_user bu ON stuc.book_user_code = bu.user_code
+                 JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_class_code hc ON ta.assign_han_class = hc.class_key
+                 LEFT JOIN erp_class_code bc ON ta.assign_book_class = bc.class_key
+                 LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
+                 LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
         WHERE s.center_code = #{centerCode}
-          AND stuc.yy = #{yy}
-          AND stuc.mm = #{mm}
     </select>
 
     <select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentTransferDTO">
@@ -431,21 +434,14 @@
         <choose>
             <!-- class_type이 1이면 한자 관련 컬럼 업데이트 -->
             <when test="classType == 1">
-                UPDATE erp_student_class
-                SET han_user_code = #{userCode},
-                han_fee = 0,
-                han_material_fee = 0,
-                han_class_key = NULL
+                UPDATE erp_teacher_assign
+                SET assign_han_teacher = #{userCode}
                 WHERE student_id = #{studentId}
             </when>
-
             <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
             <when test="classType == 2">
-                UPDATE erp_student_class
-                SET book_user_code = #{userCode},
-                book_fee = 0,
-                book_material_fee = 0,
-                book_class_key = NULL
+                UPDATE erp_teacher_assign
+                SET assign_book_teacher = #{userCode}
                 WHERE student_id = #{studentId}
             </when>
         </choose>
