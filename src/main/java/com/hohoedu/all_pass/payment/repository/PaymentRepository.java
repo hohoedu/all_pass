@@ -44,6 +44,13 @@ public interface PaymentRepository {
             @Param("type") String type
     );
 
+    List<PaymentRespDTO.PayTargetDTO> findTargetsByStudentIds(
+            @Param("studentIds") List<String> studentIds,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("type") String type
+    );
+
 //    int insertPaymentBill(
 //            @Param("bill") PaymentReqDTO.InsertBillDTO bill,
 //            @Param("userCode") String userCode
@@ -79,8 +86,6 @@ public interface PaymentRepository {
 
     Payment findPaymentByKey(String paymentKey);
 
-    List<PaymentBill> findPaymentBillsByPaymentKey(String paymentKey);
-
     void createPaymentBill(PaymentBill paymentBill);
 
     void updatePaymentStatusOnIssue(@Param("paymentKey") String paymentKey);
@@ -89,7 +94,10 @@ public interface PaymentRepository {
 
     void updatePaymentStatus(@Param("paymentKey") String paymentKey, @Param("newStatus") String newStatus, @Param("paidDate") String paidDate, @Param("unpaidAmount") Integer unpaidAmount);
 
-    List<PaymentBill> findBillsByPaymentKey(String paymentKey);
+    List<PaymentBill> findBillsByPaymentKey(@Param("paymentKey") String paymentKey);
+
+    List<PaymentBill> findBillsByPaymentKeyAndType(
+            @Param("paymentKey") String paymentKey);
 
     void createPaymentCallback(PaymentCallback paymentCallback);
 
@@ -97,11 +105,13 @@ public interface PaymentRepository {
 
     Payment findPaymentByBillId(String billId);
 
-    PaymentBill findPaymentBill(String billId);
+    List<PaymentBill> findPaymentBill(String billId);
 
     List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(
             @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode);
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     String findPaymentKeyByStudentId(String studentId, String timeTableKey);
 
@@ -109,7 +119,20 @@ public interface PaymentRepository {
 
     int insertPaymentRefund();
 
-    PaymentRespDTO.PaymentBillDTO findPaymentBillByType(@Param("billId") String billId);
+    String findBillIdByPaymentKey(
+            @Param("paymentKey") String paymentKey,
+            @Param("type") String type);
+
+    void updateBillStatusByBillIdAndStatus(
+            @Param ("billId") String billId,
+            @Param ("fromStatus") String fromStatus,
+            @Param ("toStatus") String toStatus
+    );
+
+    List<PaymentRespDTO.PaymentBillDTO> findBillsByBillIdAndType(
+        @Param("billId") String billId,
+        @Param("billType") String billType
+    );
 
     List<String> findPaymentKeys(
             @Param("studentId") String studentId,

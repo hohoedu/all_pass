@@ -52,9 +52,11 @@ public class PaymentRespDTO {
     }
 
     @Data
-    public static class PaymentBillDTO{
+    public static class PaymentBillDTO {
         private String billId;
+        private String paymentKey;
         private Integer price;
+        private String status;
     }
 
     @Data

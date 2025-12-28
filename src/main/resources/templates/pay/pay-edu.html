@@ -36,13 +36,23 @@
                         <div class="month-header2" style="padding: 0px; margin-bottom: 15px;">
                             <div class="month-title2 month-today">
                                 <span class="current-month"></span>
-                                <div style="position: relative;">
+                                <div style="position: relative">
                                     <div class="day-display">
                                         <input type="month" class="hidden-date hidden-picker"/>
                                         <button type="button" class="icon-btn calendar-open">
                                             <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                         </button>
                                     </div>
+                                </div>
+                                <div class="fee-filter" style="display: flex">
+                                    <label class="radio-group" style="margin-left: 20px">
+                                        <input type="radio" name="feeView" value="edu" checked>
+                                        <span>교육비</span>
+                                    </label>
+                                    <label class="radio-group" style="margin-left: 20px">
+                                        <input type="radio" name="feeView" value="book">
+                                        <span>교재비</span>
+                                    </label>
                                 </div>
                             </div>
                             <div class="info-filters">
@@ -95,16 +105,36 @@
                                         <input type="checkbox" id="pay-edu-select-all">
                                     </th>
                                     <th>No</th>
-                                    <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+
+                                    <th data-sort="name" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">이름
+                                    </th>
+
                                     <th>수강과목</th>
                                     <th>담임</th>
-                                    <th>교육비</th>
-                                    <th>교재비</th>
-                                    <th>미납 금액</th>
-                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">발행</th>
-                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결제</th>
+
+                                    <th data-sort="eduFee" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">교육비
+                                    </th>
+
+                                    <th data-sort="bookFee" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">교재비
+                                    </th>
+
+                                    <th data-sort="unpaid" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">미납 금액
+                                    </th>
+
+                                    <th data-sort="issued" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">발행
+                                    </th>
+
+                                    <th data-sort="payment" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">결제
+                                    </th>
                                 </tr>
                                 </thead>
+
                                 <tbody id="student-tbody" class="stripe">
 
 
@@ -175,7 +205,7 @@
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(students)}">
-                                    <td colspan="8" style="text-align:center;">등록된 학생 데이터가 없습니다.</td>
+                                    <td colspan="10" style="text-align:center;">등록된 학생 데이터가 없습니다.</td>
                                 </tr>
                                 </tbody>
                             </table>

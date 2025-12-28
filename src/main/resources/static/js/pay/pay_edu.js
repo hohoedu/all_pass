@@ -116,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchStudents(year, month, teacherCode);
     }
 
+
+
     // 학생 조회
     async function fetchStudents(year, month, teacherCode) {
         const requestBody = {
@@ -148,92 +150,196 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    let currentStudents = [];
+    let currentSort = {
+        key: null,
+        order: 'asc'
+    };
+
+    /* ===============================
+     * 학생 조회
+     * =============================== */
+    async function fetchStudents(year, month, teacherCode) {
+        const requestBody = {
+            year,
+            month: String(month).padStart(2, '0'),
+            userCode: teacherCode
+        };
+
+        try {
+            const response = await fetch("/pay/students", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) throw new Error("서버 오류");
+
+            const result = await response.json();
+            currentStudents = result.response || result;
+
+            renderStudentTable(currentStudents);
+            bindSortEvents();
+
+        } catch (e) {
+            console.error(e);
+            alert("학생 목록을 불러오지 못했습니다.");
+        }
+    }
+
+    /* ===============================
+     * 정렬 이벤트 바인딩
+     * =============================== */
+    function bindSortEvents() {
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.onclick = () => handleSort(th.dataset.sort);
+        });
+    }
+
+    /* ===============================
+     * 정렬 처리
+     * =============================== */
+    function handleSort(key) {
+        if (currentSort.key === key) {
+            currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.key = key;
+            currentSort.order = 'asc';
+        }
+
+        const sorted = [...currentStudents].sort((a, b) => {
+            let v1, v2;
+
+            switch (key) {
+                case 'name':
+                    v1 = a.studentName || '';
+                    v2 = b.studentName || '';
+                    break;
+                case 'eduFee':
+                    v1 = Number(a.totalFee || 0);
+                    v2 = Number(b.totalFee || 0);
+                    break;
+                case 'bookFee':
+                    v1 = Number(a.totalMaterialFee || 0);
+                    v2 = Number(b.totalMaterialFee || 0);
+                    break;
+                case 'unpaid':
+                    v1 = Number(a.unpaidAmount || 0);
+                    v2 = Number(b.unpaidAmount || 0);
+                    break;
+                case 'issued':
+                    v1 = issueRank(a);
+                    v2 = issueRank(b);
+                    break;
+                case 'payment':
+                    v1 = paymentRank(a.totalStatus);
+                    v2 = paymentRank(b.totalStatus);
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (v1 < v2) return currentSort.order === 'asc' ? -1 : 1;
+            if (v1 > v2) return currentSort.order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        updateSortIcons();
+        renderStudentTable(sorted);
+    }
+
+    /* ===============================
+     * 상태 우선순위
+     * =============================== */
+    function issueRank(s) {
+        if (!s.eduStatus && !s.materialStatus) return 0;
+        if (s.eduStatus && s.materialStatus) return 3;
+        return 2;
+    }
+
+    function paymentRank(status) {
+        switch (status) {
+            case 'approved': return 3;
+            case 'partial': return 2;
+            default: return 1;
+        }
+    }
+
+    /* ===============================
+     * 아이콘 갱신
+     * =============================== */
+    function updateSortIcons() {
+        document.querySelectorAll('.svg-sort').forEach(i => {
+            i.src = '/image/sort.svg';
+        });
+
+        const th = document.querySelector(`th[data-sort="${currentSort.key}"]`);
+        if (!th) return;
+
+        const icon = th.querySelector('.svg-sort');
+        if (!icon) return;
+
+        icon.src =
+            currentSort.order === 'asc'
+                ? '/image/sort_checked.svg'
+                : '/image/sort_checked.svg';
+    }
+
     // 랜더링
     function renderStudentTable(students) {
         const tbody = document.querySelector('#student-tbody');
         tbody.innerHTML = '';
-        tbody.addEventListener('click', (e) => {
-            const row = e.target.closest('tr');
-            if (!row || !tbody.contains(row)) return;
 
-            if (e.target.classList.contains('row-checkbox')) {
-                return;
-            }
-
-            row.classList.toggle('selected');
-        });
         if (!students || students.length === 0) {
-            tbody.innerHTML = `
-                <tr><td colspan="9" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>
-            `;
+            tbody.innerHTML =
+                `<tr><td colspan="10" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>`;
             return;
         }
 
-        students.forEach((student, index) => {
+        students.forEach((s, i) => {
             const tr = document.createElement('tr');
-            tr.dataset.billId = student.billId || '';
-            tr.dataset.parentPhone = student.parentPhone || '';
-            tr.dataset.studentId = student.studentId || '';
-            tr.dataset.studentName = student.studentName || '';
-            tr.dataset.totalPrice = student.totalPrice || 0;
-            tr.dataset.totalFee = student.totalFee || 0;
-            tr.dataset.totalMaterialFee = student.totalMaterialFee || 0;
-            tr.dataset.eduStatus = student.eduStatus;
-            tr.dataset.materialStatus = student.materialStatus;
-            tr.dataset.totalStatus = student.totalStatus;
-            console.log('materialStatus = ' + student.materialStatus);
-            const formattedFee = Number(student.totalFee || 0).toLocaleString();
-            const formattedMaterial = Number(student.totalMaterialFee || 0).toLocaleString();
-            const formattedUnpaid = Number(student.unpaidAmount || 0).toLocaleString();
 
-            const hanTeacherText = student.hanTeacher ? `${student.hanTeacher}(한)` : '';
-            const bookTeacherText = student.bookTeacher ? `${student.bookTeacher}(독)` : '';
-            const teacherSeparator = hanTeacherText && bookTeacherText ? ', ' : '';
-            const teacherText = `${hanTeacherText}${teacherSeparator}${bookTeacherText}`;
+            const teacherText =
+                `${s.hanTeacher ? s.hanTeacher + '(한)' : ''}`
+                + (s.hanTeacher && s.bookTeacher ? ', ' : '')
+                + `${s.bookTeacher ? s.bookTeacher + '(독)' : ''}`;
 
-            let statusHtml = '';
-            const eduIssued = student.eduStatus != null;
-            const materialIssued = student.materialStatus != null;
-
-            if (!eduIssued && !materialIssued) {
-                statusHtml = `<span class="unissued">미발행</span>`;
-            } else if (eduIssued && !materialIssued) {
-                statusHtml = `<span class="edu-issued">발행(교육)</span>`;
-            } else if (!eduIssued && materialIssued) {
-                statusHtml = `<span class="material-issued">발행(교재)</span>`;
-            } else {
-                statusHtml = `<span class="issued">발행</span>`;
-            }
-
-            let payStatus = '';
-
-            if (!student.totalStatus) {
-                payStatus = `<span class="pay-box">-</span>`;
-            } else if (student.totalStatus !== 'approved') {
-                payStatus = `<span class="pay-box pay-late">미결제</span>`;
-            } else if (student.totalStatus === 'partiel') {
-                payStatus = `<span class="pay-box pay-partial">부분 결제</span>`;
-            } else if (student.totalStatus === 'approved') {
-                payStatus = `<span class="pay-box pay-done">결제완료</span>`;
-            }
             tr.innerHTML = `
             <td class="checkbox-group">
-                <input type="checkbox" class="row-checkbox" value="${student.studentId}">
+                <input type="checkbox" class="row-checkbox" value="${s.studentId}">
             </td>
-            <td>${index + 1}</td>
-            <td>${student.studentName || '-'}</td>
-            <td>${student.subject || '-'}</td>
+            <td>${i + 1}</td>
+            <td>${s.studentName || '-'}</td>
+            <td>${s.subject || '-'}</td>
             <td>${teacherText}</td>
-            <td class="charge">${formattedFee}</td>
-            <td class="material-charge">${formattedMaterial}</td>
-            <td>${formattedUnpaid}</td>
-            <td>${statusHtml}</td>
-            <td>${payStatus}</td>
+            <td class="charge">${Number(s.totalFee || 0).toLocaleString()}</td>
+            <td class="material-charge">${Number(s.totalMaterialFee || 0).toLocaleString()}</td>
+            <td>${Number(s.unpaidAmount || 0).toLocaleString()}</td>
+            <td>${renderIssueStatus(s)}</td>
+            <td>${renderPayStatus(s)}</td>
         `;
 
             tbody.appendChild(tr);
         });
+
         bindSelectAllCheckbox();
+    }
+
+    function renderIssueStatus(s) {
+        if (!s.eduStatus && !s.materialStatus) return `<span class="unissued">미발행</span>`;
+        if (s.eduStatus && !s.materialStatus) return `<span class="edu-issued">발행(교육)</span>`;
+        if (!s.eduStatus && s.materialStatus) return `<span class="material-issued">발행(교재)</span>`;
+        return `<span class="issued">발행</span>`;
+    }
+
+    function renderPayStatus(s) {
+        if (!s.totalStatus) return `<span class="pay-box">-</span>`;
+        if (s.totalStatus === 'partial') return `<span class="pay-box pay-partial">부분 결제</span>`;
+        if (s.totalStatus === 'approved') return `<span class="pay-box pay-done">결제완료</span>`;
+        return `<span class="pay-box pay-late">미결제</span>`;
     }
 });
 
@@ -684,6 +790,9 @@ document.addEventListener("DOMContentLoaded", () => {
             box => box.closest('tr').dataset.studentId
         );
 
+        const includeSibling =
+            document.querySelector('input[name = "includeSibling"]').checked;
+
         try {
             // EDU
             if (eduChecked) {
@@ -693,7 +802,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     message: `${mm}월 교육비 청구`,
                     expireDt,
                     yy,
-                    mm
+                    mm,
+                    includeSibling
                 });
             }
 
@@ -705,7 +815,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     message: `${mm}월 교재비 청구`,
                     expireDt,
                     yy,
-                    mm
+                    mm,
+                    includeSibling
                 });
             }
 
@@ -756,23 +867,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
+        const cancelType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
+
         if (!eduChecked && !bookChecked) {
             alert('취소할 결제 종류를 선택하세요.');
             return;
         }
 
-        if (eduChecked) {
-            if (row.dataset.eduStatus !== 'approved') {
-                alert('교육비 결제 완료 건만 취소할 수 있습니다.');
-                return;
-            }
+        if (cancelType === 'EDU_FEE' && row.dataset.eduStatus !== 'approved') {
+            alert('교육비 결제 완료 건만 취소할 수 있습니다.');
+            return;
         }
 
-        if (bookChecked) {
-            if (row.dataset.materialStatus !== 'approved') {
-                alert('교재비 결제 완료 건만 취소할 수 있습니다.');
-                return;
-            }
+        if (cancelType === 'BOOK_FEE' && row.dataset.materialStatus !== 'approved') {
+            alert('교재비 결제 완료 건만 취소할 수 있습니다.');
+            return;
         }
 
         const cancelReason = prompt(
@@ -794,19 +903,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [yy, mm] = selectedMonth.split('-');
 
-        // ✅ cancelTypes 구성
-        // const cancelTypes = [];
-        // if (eduChecked) cancelTypes.push('EDU');
-        // if (bookChecked) cancelTypes.push('BOOK');
 
         const body = {
-            studentId: row.dataset.studentId,
             paymentKey: row.dataset.paymentKey,
-            billId: row.dataset.billId,
-            yy,
-            mm,
-            cancelEdu: eduChecked,
-            cancelBook: bookChecked,
+            cancelType: cancelType,
             cancelReason: cancelReason.trim()
         };
 
@@ -819,16 +919,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            if (data.success) {
-                alert('결제가 취소되었습니다.');
-                location.reload();
-            } else {
-                alert(data.msg || '결제 취소에 실패했습니다.');
+            if (!res.ok) {
+                throw new Error(data.msg || '결제 취소에 실패했습니다.');
             }
+
+            alert(data.data || '결제가 취소되었습니다.');
+            location.reload();
 
         } catch (err) {
             console.error('❌ 결제 취소 오류:', err);
-            alert('결제 취소 중 오류가 발생했습니다.');
+            alert(err.message);
         }
     });
 
@@ -854,7 +954,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
         if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
-
+        alert('educhecked = ' + eduChecked);
         const destroyType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
 
         const row = checked[0].closest('tr');
@@ -886,16 +986,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            if (data.success) {
-                alert('청구서가 파기되었습니다.');
-                location.reload();
-            } else {
-                alert(data.msg || '청구서 파기에 실패했습니다.');
+            if (!res.ok) {
+                throw new Error(data.msg || '청구서 파기에 실패했습니다.');
             }
+            alert(data.data || '청구서가 파기되었습니다.');
+            location.reload();
 
         } catch (err) {
             console.error('❌ 청구서 파기 오류:', err);
-            alert('서버 오류로 청구서를 파기할 수 없습니다.');
+            alert(err.message);
         }
     });
 

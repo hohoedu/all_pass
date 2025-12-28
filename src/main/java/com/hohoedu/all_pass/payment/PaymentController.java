@@ -71,7 +71,7 @@ public class PaymentController {
         }
         try {
             dto.setCenterCode(user.getCenterCode());
-            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.processManualPayment(dto);
+            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.processManualPayment(user,dto);
             return ResponseEntity.ok(ApiUtils.success(response));
         } catch (Exception e) {
             log.error("수기 결제 실패", e);
@@ -129,7 +129,7 @@ public class PaymentController {
     }
 
     @PostMapping("/list/students")
-    public ResponseEntity<?> getListStudents(HttpSession session) {
+    public ResponseEntity<?> getListStudents(HttpSession session, @RequestBody PaymentReqDTO.StudentsByMonthDTO reqDTO) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
                 session.getAttribute("user");
         if (user == null) {
@@ -138,7 +138,7 @@ public class PaymentController {
                     .build();
         }
 
-        List<PaymentRespDTO.UnpaidStudentDTO> studentList = paymentService.findUnpaidStudent(user.getCenterCode(), user.getUserCode());
+        List<PaymentRespDTO.UnpaidStudentDTO> studentList = paymentService.findUnpaidStudent(user.getCenterCode(), user.getUserCode(), reqDTO.getYear(), reqDTO.getMonth());
 
         return ResponseEntity.ok(ApiUtils.success(studentList));
 
@@ -166,7 +166,7 @@ public class PaymentController {
                     .build();
         }
         log.info(reqDTO.toString());
-        paymentService.cancelPayment(reqDTO, user);
+        paymentService.cancelPayment(user, reqDTO);
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }

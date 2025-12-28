@@ -4,11 +4,12 @@ import com.hohoedu.all_pass._core.handler.exception.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception400.class)
@@ -55,9 +56,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleAppException(AppRestfulException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("success", false);
-        body.put("message", ex.getMessage());
+        body.put("msg", ex.getMessage());
         body.put("status", ex.getStatus().value());
         return ResponseEntity.status(ex.getStatus()).body(body);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("success", false);
+        body.put("msg", e.getMessage());
+        body.put("status", 400);
+        return ResponseEntity.badRequest().body(body);
     }
 
 }

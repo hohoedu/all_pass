@@ -43,6 +43,8 @@ public class PaymentReqDTO {
         private String yy;
         private String mm;
 
+        private boolean includeSibling;
+
     }
 
     @Data
@@ -91,15 +93,10 @@ public class PaymentReqDTO {
         private String month;
 
         private boolean eduFee;   // 교육비 체크 여부
-        private boolean bookFee;  // 교재비 체크 여부
 
         private Integer eduCard;
         private Integer eduCash;
         private Integer eduTransfer;
-
-        private Integer bookCard;
-        private Integer bookCash;
-        private Integer bookTransfer;
 
         private Integer prepayMonth;     // 선결제 개월 수
         private String prepayStartYm;    // 선결제 시작 เดือน
@@ -116,13 +113,9 @@ public class PaymentReqDTO {
 
     @Data
     public static class PaymentCancelReqDTO {
-        private String studentId;
         private String paymentKey;
         private String billId;
-        private String yy;
-        private String mm;
-        private boolean cancelEdu;
-        private boolean cancelBook;
+        private String cancelType;
         private String cancelReason;
     }
 

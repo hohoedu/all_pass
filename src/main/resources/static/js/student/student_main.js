@@ -306,6 +306,7 @@ function renderStudentModal(data) {
     setValue("#tab1 .s_address", info.address);
     setValue("#tab1 .s_address_detail", info.addressDetail);
 
+
     // ---------------- TAB2: 기본 정보 ----------------
     setValue("#tab2 .s_name", info.studentName);
     setValue("#tab2 .s_school", info.school);
@@ -339,7 +340,7 @@ function renderStudentModal(data) {
 
     // 7) 회비 합계
     updateTotalFee(payment);
-
+    renderFeeTable(payment);
 
     function setCourseState(type, state) {
         const group = document.querySelector(
@@ -381,6 +382,41 @@ function renderStudentModal(data) {
     }
 
 
+}
+
+function renderFeeTable(payment) {
+    const tbody = document.getElementById('fee-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const addRow = (label, amount) => {
+        if (!amount || amount <= 0) return;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${label}</td>
+            <td>${formatMoney(amount)}</td>
+        `;
+        tbody.appendChild(tr);
+    };
+
+    // 한자
+    addRow('한자(교육비)', payment.hanFee);
+    addRow('한자(교재비)', payment.hanMaterialPrice);
+
+    // 독서
+    addRow('독서(교육비)', payment.bookFee);
+    addRow('독서(교재비)', payment.bookMaterialPrice);
+
+    // 아무 것도 없을 경우
+    if (tbody.children.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td colspan="2" style="text-align:center;">회비 정보 없음</td>
+        `;
+        tbody.appendChild(tr);
+    }
 }
 
 function formatMoney(value) {

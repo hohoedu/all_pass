@@ -1,4 +1,6 @@
 let unpaidStudents = [];
+let selectedYear = '';
+let selectedMonth = '';
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -52,6 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (monthInput) monthInput.value = `${yy}-${mm}`;
         if (currentMonth) currentMonth.textContent = `${yy}년 ${parseInt(mm)}월`;
+
+        selectedYear = yy;
+        selectedMonth = mm;
+
     }
 
     const handleMonthChange = () => {
@@ -140,10 +146,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const openAddPaymentModal = async () => {
         try {
             closeAllModals();
-
+            const yearMonth = {
+                year: monthInput.value.split("-")[0],
+                month: monthInput.value.split("-")[1]
+            }
             const res = await fetch("/pay/list/students", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"}
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(yearMonth)
             });
 
             if (!res.ok) throw new Error("학생 조회 실패");
@@ -179,13 +189,9 @@ document.addEventListener("DOMContentLoaded", () => {
             year: monthInput.value.split("-")[0],
             month: monthInput.value.split("-")[1],
             eduFee: document.querySelector('input[name="eduFee"]').checked,
-            bookFee: document.querySelector('input[name="bookFee"]').checked,
             eduCard: Number(document.querySelector('.pay-edu-table .border-green')?.value || 0),
             eduCash: Number(document.querySelector('.pay-edu-table .border-blue')?.value || 0),
             eduTransfer: Number(document.querySelector('.pay-edu-table .border-olive')?.value || 0),
-            bookCard: Number(document.querySelectorAll('.pay-edu-table .border-green')[1]?.value || 0),
-            bookCash: Number(document.querySelectorAll('.pay-edu-table .border-blue')[1]?.value || 0),
-            bookTransfer: Number(document.querySelectorAll('.pay-edu-table .border-olive')[1]?.value || 0)
         };
         try {
             const res = await fetch("/pay/manual", {
