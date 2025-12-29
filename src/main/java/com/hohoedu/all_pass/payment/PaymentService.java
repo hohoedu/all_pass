@@ -184,6 +184,8 @@ public class PaymentService {
     // ===================== 결제선생 청구서 발행 ====================== //
     public void sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
 
+
+
         /* =====================================================
          * 1. 타입 정규화
          * ===================================================== */
@@ -195,6 +197,12 @@ public class PaymentService {
         } else {
             throw new IllegalArgumentException("잘못된 타입");
         }
+
+//        int count = paymentRepository.existsBill(req.getStudentIds(), req.getYy(), req.getMm(), billType);
+
+//        if (count > 0) {
+//            throw new RuntimeException("이미 " + req.getMm() + "월의 청구서가 발행되었습니다.");
+//        }
 
         /* =====================================================
          * 2. 결제 설정 조회
@@ -419,7 +427,7 @@ public class PaymentService {
     }
 
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
-
+        String method = "paymint";
         // 콜백 저장
         PaymentCallback paymentCallback = PaymentCallback.builder()
                 .billId(dto.getBill_id())
@@ -471,7 +479,8 @@ public class PaymentService {
                     payment.getPaymentKey(),
                     newStatus,
                     paidDate,
-                    newUnpaidAmount
+                    newUnpaidAmount,
+                    method
             );
 
             logHistory(
@@ -494,76 +503,6 @@ public class PaymentService {
         }
     }
 
-
-    // 수기 결제 입력
-    @Transactional
-    public PaymentRespDTO.ManualPaymentRespDTO processManualPayment(UserRespDTO.LoginRespDTO user, PaymentReqDTO.ManualPaymentReqDTO dto) throws JsonProcessingException {
-
-        // 1. 현재 결제건(payment) 조회
-        Payment payment = paymentRepository.findByStudentAndYm(dto.getStudentId(), dto.getYear(), dto.getMonth());
-        if (payment == null) {
-            throw new IllegalArgumentException("해당 학생의 결제 정보가 없습니다.");
-        }
-
-        // 2. bill 조회
-        List<PaymentBill> eduBill = paymentRepository.findBillsByPaymentKeyAndType(payment.getPaymentKey());
-        if (eduBill.isEmpty()) {
-            throw new IllegalArgumentException("해당 결제의 청구서가 존재하지 않습니다.");
-        }
-
-        PaymentBill sampleBill = eduBill.get(0);
-        String billId = sampleBill.getBillId();
-
-        // 3. 실제 결제된 금액 계산
-        int paidEdu = (dto.getEduCard() == null ? 0 : dto.getEduCard()) +
-                (dto.getEduCash() == null ? 0 : dto.getEduCash()) +
-                (dto.getEduTransfer() == null ? 0 : dto.getEduTransfer());
-
-        int unpaidAmount = payment.getUnpaidAmount() - paidEdu;
-
-        PaymentReqDTO.PayDestroyReqDTO destroyDTO = new PaymentReqDTO.PayDestroyReqDTO();
-        destroyDTO.setBillId(billId);
-        destroyDTO.setDestroyType("EDU_FEE");
-        destroyDTO.setPaymentKey(payment.getPaymentKey());
-        destroyDTO.setStudentId(dto.getStudentId());
-
-        destroyBill(user, destroyDTO);
-
-        // 4. bill 상태 수정(= callback 시 approved와 동일)
-        paymentRepository.updateBillStatus(billId, "approved");
-
-
-        // 5. payment 상태 업데이트
-        String paidDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-        String newStatus = unpaidAmount == 0 ? "paid" : "partial";
-
-        paymentRepository.updatePaymentStatus(payment.getPaymentKey(), newStatus, paidDate, unpaidAmount);
-
-        // 6. HISTORY 작성
-        PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
-                .eventType("manual_paid")
-                .eventSource("manual")
-                .oldStatus(payment.getStatus())
-                .newStatus(newStatus)
-                .amount(paidEdu)
-                .userCode(user.getUserCode())
-                .description("수기 결제 처리")
-                .paymentKey(payment.getPaymentKey())
-                .build();
-
-        paymentRepository.insertPaymentHistory(history);
-
-
-        PaymentRespDTO.ManualPaymentRespDTO resp = new PaymentRespDTO.ManualPaymentRespDTO();
-        resp.setPaymentKey(payment.getPaymentKey());
-        resp.setBillId(billId);
-        resp.setPrice(paidEdu);
-        resp.setStudentId(dto.getStudentId());
-        resp.setMessage("수기 결제가 완료되었습니다.");
-
-        log.info("수기 결제 처리 완료: student={}, paymentKey={}", dto.getStudentId(), payment.getPaymentKey());
-        return resp;
-    }
 
     // 청구서 파기
     @Transactional
@@ -830,7 +769,7 @@ public class PaymentService {
          * ===================================================== */
         int newUnpaidAmount = payment.getUnpaidAmount() + cancelAmount;
 
-        paymentRepository.updatePaymentStatus(
+        paymentRepository.updatePaymentCancel(
                 payment.getPaymentKey(),
                 "canceled",
                 payment.getPaidDate(),
@@ -932,7 +871,86 @@ public class PaymentService {
             paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(), dto.getBookMaterialFee());
         }
     }
+
+    @Transactional
+    public PaymentRespDTO.ManualPaymentRespDTO insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
+
+        Payment payment = paymentRepository.findByStudentAndYm(reqDTO.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
+        if (payment == null) {
+            throw new RuntimeException("해당 학생의 결제 정보가 없습니다.");
+        }
+
+        boolean hasCard = reqDTO.getCardAmount() != 0;
+        boolean hasCash = reqDTO.getCashAmount() != 0;
+        boolean hasTransfer = reqDTO.getTransferAmount() != 0;
+
+        String method;
+
+        if (hasCard && !hasCash && !hasTransfer) {
+            method = "card";
+        } else if (!hasCard && hasCash && !hasTransfer) {
+            method = "cash";
+        } else if (!hasCard && !hasCash && hasTransfer) {
+            method = "transfer";
+        } else {
+            method = "mixed"; // 복합 결제
+        }
+
+        int paidEdu = (!hasCard ? 0 : reqDTO.getCardAmount()) +
+                (!hasCash ? 0 : reqDTO.getCashAmount()) +
+                (!hasTransfer ? 0 : reqDTO.getTransferAmount());
+
+        int unpaidAmount = payment.getUnpaidAmount() - paidEdu;
+
+        PaymentRespDTO.BillRespDTO bill = paymentRepository.existsBillByPaymentKey(reqDTO.getStudentId(), reqDTO.getPaymentKey(), reqDTO.getYy(), reqDTO.getMm());
+
+
+        if (bill.getCount() > 0) {
+            // 빌 있으니까 approved로 업데이트
+        }
+
+
+        String bookBillStatus = paymentRepository.findBookBillStatus(reqDTO.getPaymentKey(), reqDTO.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
+        String newStatus;
+
+        if (bookBillStatus.equals("approved")) {
+            newStatus = "approved";
+        } else {
+            newStatus = "partial";
+        }
+
+        paymentRepository.insertPaymentManual(reqDTO);
+        paymentRepository.updatePaymentStatus(
+                reqDTO.getPaymentKey(),
+                newStatus,
+                reqDTO.getPaidDate(),
+                unpaidAmount,
+                method
+        );
+
+        PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                .eventType("manual_paid")
+                .eventSource("manual")
+                .oldStatus(payment.getStatus())
+                .newStatus(newStatus)
+                .amount(paidEdu)
+                .userCode(reqDTO.getUserCode())
+                .description("수기 결제 처리")
+                .paymentKey(payment.getPaymentKey())
+                .build();
+
+        PaymentRespDTO.ManualPaymentRespDTO resp = new PaymentRespDTO.ManualPaymentRespDTO();
+        resp.setPaymentKey(reqDTO.getPaymentKey());
+        resp.setPrice(paidEdu);
+        resp.setStudentId(reqDTO.getStudentId());
+        resp.setMessage("수기 결제가 완료되었습니다.");
+
+        return resp;
+    }
+
 }
+
+
 
 
 

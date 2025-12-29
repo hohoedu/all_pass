@@ -106,6 +106,7 @@ public class PaymentRespDTO {
     public static class UnpaidStudentDTO {
         private String studentId;
         private String studentName;
+        private String paymentKey;
         private String gradeName;
         private String hanTeacher;
         private String bookTeacher;
@@ -115,9 +116,16 @@ public class PaymentRespDTO {
     public static class ManualPaymentRespDTO {
         private String paymentKey;
         private String studentId;
-        private String billId;
         private Integer price;
         private String message;
+    }
+
+    @Data
+    public static class BillRespDTO {
+        private String billId;
+        private String paymentKey;
+        private String studentId;
+        private int count;
     }
 
 }

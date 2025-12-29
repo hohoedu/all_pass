@@ -69,14 +69,12 @@ public class PaymentController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        try {
-            dto.setCenterCode(user.getCenterCode());
-            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.processManualPayment(user,dto);
+
+            dto.setUserCode(user.getUserCode());
+
+            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
             return ResponseEntity.ok(ApiUtils.success(response));
-        } catch (Exception e) {
-            log.error("수기 결제 실패", e);
-            return ResponseEntity.ok(ApiUtils.error("수기 결제 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
-        }
+
     }
 
     @PostMapping("/destroy/bill")
@@ -199,5 +197,7 @@ public class PaymentController {
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }
+
+
 
 }

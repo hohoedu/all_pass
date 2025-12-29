@@ -21,6 +21,38 @@
           AND status IN ('issued', 'approved', 'partial');
     </select>
 
+    <select id="existsBillByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BillRespDTO">
+        SELECT COUNT(*) as count,
+        payment_key AS paymnetKey,
+        student_id AS studentId,
+        bill_id AS billId
+        FROM erp_payment_bill
+        WHERE student_id = #{studentId}
+          AND payment_key = #{paymentKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND bill_type = 'EDU_FEE'
+        AND status in ('issued')
+        GROUP BY payment_key, student_id, bill_id
+    </select>
+
+    <insert id="insertPaymentManual" parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
+        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, student_id, payment_key, user_code, created_at)
+        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{studentId}, #{paymentKey}, #{userCode}, SYSDATETIME())
+    </insert>
+
+    <select id="findBookBillStatus" resultType="String">
+        SELECT status
+        from erp_payment_bill
+        WHERE payment_key = #{paymentKey}
+          AND student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND status NOT IN ('destroyed')
+          AND bill_type = 'BOOK_FEE'
+    </select>
+
+
     <select id="findPayConfigByCenterCode"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentConfigDTO">
         SELECT *
@@ -121,12 +153,11 @@
 
     <select id="findBillsByBillIdAndType"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentBillDTO">
-        SELECT
-            bill_id      AS billId,
-            payment_key  AS paymentKey,
-            bill_type    AS billType,
-            amount       AS price,
-            status
+        SELECT bill_id     AS billId,
+               payment_key AS paymentKey,
+               bill_type   AS billType,
+               amount      AS price,
+               status
         FROM erp_payment_bill
         WHERE bill_id = #{billId}
           AND bill_type = #{billType}
@@ -334,6 +365,16 @@
         SET status        = #{newStatus},
             paid_date     = #{paidDate},
             unpaid_amount = #{unpaidAmount},
+            method        = #{method},
+            updated_at    = SYSDATETIME()
+        WHERE payment_key = #{paymentKey}
+    </update>
+
+    <update id="updatePaymentCancel">
+        UPDATE erp_payment
+        SET status        = #{newStatus},
+            paid_date     = #{paidDate},
+            unpaid_amount = #{unpaidAmount},
             updated_at    = SYSDATETIME()
         WHERE payment_key = #{paymentKey}
     </update>
@@ -480,6 +521,7 @@
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
         SELECT s.student_id   AS studentId,
                s.student_name AS studentName,
+               p.payment_key  AS paymentKey,
                g.grade_name   AS gradeName,
                hu.user_name   AS hanTeacher,
                bu.user_name   AS bookTeacher
@@ -489,11 +531,10 @@
                  JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
-        where p.status = 'issued'
+        where p.status NOT IN ('approved')
           AND p.center_code = #{centerCode}
-          AND (hu.user_code = #{userCode} OR bu.user_code = #{userCode})
           AND p.yy = #{yy}
-        AND p.mm = #{mm}
+          AND p.mm = #{mm}
     </select>
 
     <select id="findPaymentKeyByStudentAndYm" resultType="java.lang.String">
@@ -566,5 +607,37 @@
         where student_id = #{studentId}
     </update>
 
+
+    <select id="findDuplicatedIssueBills" resultType="com.hohoedu.all_pass.payment.model.PaymentBill">
+        SELECT pb.id,
+               pb.payment_key,
+               pb.bill_id,
+               pb.bill_type,
+               pb.amount,
+               pb.student_id,
+               pb.center_code,
+               pb.status,
+               pb.created_at,
+               pb.issued_date,
+               pb.yy,
+               pb.mm
+        FROM erp_payment_bill pb
+                 JOIN (SELECT payment_key,
+                              bill_type
+                       FROM erp_payment_bill
+                       WHERE status = 'issued'
+                       GROUP BY payment_key, bill_type
+                       HAVING COUNT(*) >= 2) d
+                      ON pb.payment_key = d.payment_key
+                          AND pb.bill_type = d.bill_type
+        WHERE pb.status = 'issued'
+          AND pb.created_at &lt; (SELECT MAX(x.created_at)
+                                  FROM erp_payment_bill x
+                                  WHERE x.payment_key = pb.payment_key
+                                    AND x.bill_type = pb.bill_type)
+        ORDER BY pb.payment_key,
+                 pb.bill_type,
+                 pb.created_at;
+    </select>
 
 </mapper>

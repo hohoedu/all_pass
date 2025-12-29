@@ -117,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-
     // 학생 조회
     async function fetchStudents(year, month, teacherCode) {
         const requestBody = {
@@ -262,9 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function paymentRank(status) {
         switch (status) {
-            case 'approved': return 3;
-            case 'partial': return 2;
-            default: return 1;
+            case 'approved':
+                return 3;
+            case 'partial':
+                return 2;
+            default:
+                return 1;
         }
     }
 
@@ -361,20 +363,24 @@ document.addEventListener('DOMContentLoaded', () => {
             `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
     };
 
-    const getLastDayOfMonth = (year, month) => {
-        return new Date(year, month, 0);
+    const getLastDayOfPrevMonth = (year, month) => {
+        // month는 1~12 기준
+        return new Date(year, month - 1, 0);
     };
 
     const billingMonth = document.querySelector('.hidden-picker')?.value;
-    let baseDate = new Date();
+    let baseDate;
 
     if (billingMonth) {
         const [yy, mm] = billingMonth.split('-').map(Number);
-        baseDate = getLastDayOfMonth(yy, mm);
+        // ✅ 전월 기준 마지막 날
+        baseDate = getLastDayOfPrevMonth(yy, mm);
     } else {
-        baseDate = getLastDayOfMonth(
-            baseDate.getFullYear(),
-            baseDate.getMonth() + 1
+        const today = new Date();
+        // billingMonth가 없을 경우 → 이번 달 기준 전월 마지막 날
+        baseDate = getLastDayOfPrevMonth(
+            today.getFullYear(),
+            today.getMonth() + 1
         );
     }
 

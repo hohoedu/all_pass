@@ -38,8 +38,8 @@
                         <div class="month-title month-today">
                             <span class="current-month"></span>
                             <div style="position: relative;">
-                                <input type="month" class="hidden-date"/>
-                                <button type="button" class="icon-btn calendar-open">
+                                <input type="month" class="hidden-date" id="billing-month">
+                                <button type="button" class="icon-btn calendar-open" data-target="billing-month">
                                     <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                 </button>
                             </div>
@@ -57,14 +57,10 @@
                                     <div class="basic-select" style="flex: 1;">
                                         <select name="stuName" id="stu-name">
                                             <option value="all">이름</option>
-                                            <option value="">김호호</option>
-                                            <option value="">김호호</option>
-                                            <option value="">김호호</option>
-                                            <option value="">김호호</option>
                                         </select>
                                     </div>
                                     <div class="search-box" style="flex: 2;">
-                                        <input type="number" id="search-name" name="searchName">
+                                        <input type="text" id="search-name" name="searchName">
                                     </div>
                                 </div>
                                 <div class="explore common-btn sl4">검색</div>
@@ -156,7 +152,7 @@
                                         </td>
                                         <td>
                                             <div class="td-inputs">
-                                                <input type="number" name="overpayment" value="0" class="td-input">
+                                                <span class="origin">30,000</span>
                                             </div>
                                         </td>
                                         <td>

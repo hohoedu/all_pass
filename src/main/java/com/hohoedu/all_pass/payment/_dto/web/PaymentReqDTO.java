@@ -88,19 +88,15 @@ public class PaymentReqDTO {
     public static class ManualPaymentReqDTO {
 
         private String studentId;
-        private String centerCode;
-        private String year;
-        private String month;
-
-        private boolean eduFee;   // 교육비 체크 여부
-
-        private Integer eduCard;
-        private Integer eduCash;
-        private Integer eduTransfer;
-
-        private Integer prepayMonth;     // 선결제 개월 수
-        private String prepayStartYm;    // 선결제 시작 เดือน
-        private String note;             // 비고
+        private String paymentKey;
+        private Integer cardAmount;
+        private Integer cashAmount;
+        private Integer transferAmount;
+        private String cardName;
+        private String paidDate;
+        private String userCode;
+        private String yy;
+        private String mm;
 
     }
 

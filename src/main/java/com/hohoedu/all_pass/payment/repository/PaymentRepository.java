@@ -26,6 +26,15 @@ public interface PaymentRepository {
             @Param("mm") String mm,
             @Param("billType") String billType);
 
+    PaymentRespDTO.BillRespDTO existsBillByPaymentKey(
+            @Param("studentId") String studentId,
+            @Param("paymentKey") String paymentKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+    void insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO dto);
+
     int existsBillByStudentIds(
             @Param("studentIds") List<String> studentIds,
             @Param("yy") String yy,
@@ -92,7 +101,19 @@ public interface PaymentRepository {
 
     void updateBillStatus(@Param("billId") String billId, @Param("status") String status);
 
-    void updatePaymentStatus(@Param("paymentKey") String paymentKey, @Param("newStatus") String newStatus, @Param("paidDate") String paidDate, @Param("unpaidAmount") Integer unpaidAmount);
+    void updatePaymentStatus(
+            @Param("paymentKey") String paymentKey,
+            @Param("newStatus") String newStatus,
+            @Param("paidDate") String paidDate,
+            @Param("unpaidAmount") Integer unpaidAmount,
+            @Param("method") String method);
+
+    void updatePaymentCancel(
+            @Param("paymentKey") String paymentKey,
+            @Param("newStatus") String newStatus,
+            @Param("paidDate") String paidDate,
+            @Param("unpaidAmount") Integer unpaidAmount
+    );
 
     List<PaymentBill> findBillsByPaymentKey(@Param("paymentKey") String paymentKey);
 
@@ -124,14 +145,14 @@ public interface PaymentRepository {
             @Param("type") String type);
 
     void updateBillStatusByBillIdAndStatus(
-            @Param ("billId") String billId,
-            @Param ("fromStatus") String fromStatus,
-            @Param ("toStatus") String toStatus
+            @Param("billId") String billId,
+            @Param("fromStatus") String fromStatus,
+            @Param("toStatus") String toStatus
     );
 
     List<PaymentRespDTO.PaymentBillDTO> findBillsByBillIdAndType(
-        @Param("billId") String billId,
-        @Param("billType") String billType
+            @Param("billId") String billId,
+            @Param("billType") String billType
     );
 
     List<String> findPaymentKeys(
@@ -162,5 +183,9 @@ public interface PaymentRepository {
     // i-with 납부내역 조회
     List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsByStudentId(@Param("studentId") String studentId, @Param("count") String count);
 
-
+    String findBookBillStatus(
+            @Param("paymentKey") String paymentKey,
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 }
