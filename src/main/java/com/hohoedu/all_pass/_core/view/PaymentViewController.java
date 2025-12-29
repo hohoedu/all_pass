@@ -2,6 +2,7 @@ package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -41,11 +42,14 @@ public class PaymentViewController {
     }
 
     @GetMapping("/pay-list")
-    public String getPayListPage(HttpSession session) {
+    public String getPayListPage(HttpSession session, Model model) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+
+        List<CardCode> cardCode = paymentService.findCardCode();
+        model.addAttribute("cardCode", cardCode);
         return "pay/pay-list";
     }
 

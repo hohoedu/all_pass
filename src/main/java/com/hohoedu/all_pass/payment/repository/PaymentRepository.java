@@ -5,6 +5,7 @@ import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.payment.model.PaymentBill;
 import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
@@ -126,7 +127,7 @@ public interface PaymentRepository {
 
     Payment findPaymentByBillId(String billId);
 
-    List<PaymentBill> findPaymentBill(String billId);
+    List<PaymentRespDTO.PaymentAllBillDTO> findPaymentBill(String billId);
 
     List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(
             @Param("centerCode") String centerCode,
@@ -188,4 +189,7 @@ public interface PaymentRepository {
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    List<CardCode> findUseCardCode();
+
 }

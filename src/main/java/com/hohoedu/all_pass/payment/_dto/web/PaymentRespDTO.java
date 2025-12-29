@@ -1,6 +1,17 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
+import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.payment.Payment;
+import com.hohoedu.all_pass.student.Student;
+import jakarta.persistence.Column;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.sql.Timestamp;
 
 @Data
 public class PaymentRespDTO {
@@ -57,6 +68,24 @@ public class PaymentRespDTO {
         private String paymentKey;
         private Integer price;
         private String status;
+    }
+
+    @Data
+    public static class PaymentAllBillDTO {
+        private Integer id;
+        private String billId;
+        private Integer amount;
+        private String expireDate;
+        private String issuedDate;
+        private String status;
+        private String billType;
+        private String yy;
+        private String mm;
+        private String paymentKey;
+        private String studentId;
+        private String centerCode;
+        private Timestamp createdAt;
+        private Timestamp updatedAt;
     }
 
     @Data
@@ -126,6 +155,21 @@ public class PaymentRespDTO {
         private String paymentKey;
         private String studentId;
         private int count;
+    }
+
+    @Data
+    public static class TempPaymentCallbackDTO {
+
+        private String apiKey;
+        private String billId;
+
+        private String apprPayType;
+        private String apprCardType;
+        private String apprDate;
+        private String apprIssuer;
+        private String apprNum;
+        private String apprPrice;
+        private String apprState;
     }
 
 }

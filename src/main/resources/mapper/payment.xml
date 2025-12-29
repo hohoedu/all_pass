@@ -408,7 +408,7 @@
         WHERE b.bill_id = #{billId}
     </select>
 
-    <select id="findPaymentBill" resultType="com.hohoedu.all_pass.payment.model.PaymentBill">
+    <select id="findPaymentBill" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentAllBillDTO">
         SELECT *
         FROM erp_payment_bill
         WHERE bill_id = #{billId}
@@ -477,6 +477,7 @@
         INSERT INTO erp_payment_refund ()
         VALUES ();
     </insert>
+
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
@@ -639,5 +640,11 @@
                  pb.bill_type,
                  pb.created_at;
     </select>
+    <select id="findUseCardCode" resultType="com.hohoedu.all_pass.payment.model.CardCode">
+        SELECT *
+        FROM erp_card_code
+        where use_yn = '1'
+    </select>
+
 
 </mapper>

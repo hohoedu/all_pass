@@ -222,12 +222,19 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("학생을 선택하세요.");
             return;
         }
+        const cardAmount = Number(document.querySelector('.border-green')?.value || 0);
+        const cardCode = document.getElementById('cardCodeSelect')?.value || '';
+        console.log('card code = ' + cardCode);
+        if (cardAmount > 0 && !cardCode) {
+            alert("카드사를 선택해주세요.");
+            return;
+        }
 
         const dto = {
             studentId: selectedRow.dataset.studentId,
             paymentKey: selectedRow.dataset.paymentKey,
             paidDate: payDateInput.value,
-            cardName: 'kona',
+            cardName: cardCode,
             yy: monthInput.value.split("-")[0],
             mm: monthInput.value.split("-")[1],
             cardAmount: Number(document.querySelector('.pay-edu-table .border-green')?.value || 0),

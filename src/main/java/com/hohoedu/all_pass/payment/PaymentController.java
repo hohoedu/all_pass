@@ -38,14 +38,6 @@ public class PaymentController {
 
         paymentService.sendBill(user, dto);
 
-//        if (!"0000".equals(res.getPaymintCode())) {
-//            return ResponseEntity.ok(ApiUtils.error("청구서 발행 실패: " + res.getPaymintMsg(), HttpStatus.INTERNAL_SERVER_ERROR));
-//        }
-//
-//        if (!res.isDbSaved()) {
-//            return ResponseEntity.ok(ApiUtils.error("청구는 되었지만 ERP 저장에 실패했습니다. 관리자에게 문의하세요.", HttpStatus.INTERNAL_SERVER_ERROR));
-//        }
-
         return ResponseEntity.ok(ApiUtils.success("청구서 발행 완료"));
     }
 
@@ -54,6 +46,7 @@ public class PaymentController {
     public ResponseEntity<?> callback(@RequestBody PaymentReqDTO.PayCallbackDTO dto) {
 
         paymentService.insertPaymentCallback(dto);
+        paymentService.callbackProcess(dto);
 
         return ResponseEntity.ok(Map.of(
                 "code", "0000",

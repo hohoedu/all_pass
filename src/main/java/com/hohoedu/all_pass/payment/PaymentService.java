@@ -10,6 +10,7 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.payment.model.PaymentBill;
 import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
@@ -427,7 +428,7 @@ public class PaymentService {
     }
 
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
-        String method = "paymint";
+
         // 콜백 저장
         PaymentCallback paymentCallback = PaymentCallback.builder()
                 .billId(dto.getBill_id())
@@ -441,8 +442,11 @@ public class PaymentService {
                 .build();
 
         paymentRepository.createPaymentCallback(paymentCallback);
+    }
 
-        List<PaymentBill> bills = paymentRepository.findPaymentBill(dto.getBill_id());
+    public void callbackProcess(PaymentReqDTO.PayCallbackDTO dto) {
+        String method = "paymint";
+        List<PaymentRespDTO.PaymentAllBillDTO> bills = paymentRepository.findPaymentBill(dto.getBill_id());
 
         if (bills == null || bills.isEmpty()) {
             log.error("❌ Callback 처리 실패: payment 또는 bill 정보를 찾을 수 없음. bill_id=" + dto.getBill_id());
@@ -457,15 +461,13 @@ public class PaymentService {
                 rawDate.substring(8, 10) + ":" +
                 rawDate.substring(10, 12);
 
-        //Integer unpaidAmount = payment.getUnpaidAmount() - Integer.parseInt(dto.getAppr_price());
-
         paymentRepository.updateBillStatus(dto.getBill_id(), "approved");
-        for (PaymentBill bill : bills) {
+        for (PaymentRespDTO.PaymentAllBillDTO bill : bills) {
 
-            Payment payment = paymentRepository.findPaymentByKey(bill.getPayment().getPaymentKey());
+            Payment payment = paymentRepository.findPaymentByKey(bill.getPaymentKey());
 
             if (payment == null) {
-                log.error("❌ payment 없음 paymentKey={}", bill.getPayment().getPaymentKey());
+                log.error("❌ payment 없음 paymentKey={}", bill.getPaymentKey());
                 continue;
             }
 
@@ -496,7 +498,7 @@ public class PaymentService {
 
             log.info(
                     "✅ 콜백 처리 완료 paymentKey={}, billId={}, amount={}",
-                    bill.getPayment().getPaymentKey(),
+                    bill.getPaymentKey(),
                     dto.getBill_id(),
                     bill.getAmount()
             );
@@ -948,7 +950,13 @@ public class PaymentService {
         return resp;
     }
 
+    public List<CardCode> findCardCode() {
+        return paymentRepository.findUseCardCode();
+    }
+
 }
+
+
 
 
 

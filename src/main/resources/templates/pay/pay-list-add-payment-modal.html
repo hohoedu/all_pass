@@ -50,9 +50,37 @@
                         <tr>
                             <td>학생명</td>
                             <td>학생을 선택해주세요.</td>
-                            <td>결제일</td>
+                            <td>청구 금액</td>
+
+                        </tr>
+                        </tbody>
+                    </table>
+                    <!-- 청구 종류 -->
+                    <table class="manual-payment-table pay-edu-table">
+                        <colgroup>
+                            <col width="20%">
+                            <col width="30%">
+                            <col width="20%">
+                            <col width="30%">
+                        </colgroup>
+                        <tbody>
+
+                        <tr>
+                            <td class="label-cell">카드사</td>
+                            <td class="content-cell white-bg">
+                                <div class="select-group">
+                                    <select class="basic-input card-select" id="cardCodeSelect" style="width: 200px;">
+                                        <option value="">선택 안함</option>
+                                        <option th:each="c : ${cardCode}"
+                                                th:value="${c.cardCode}"
+                                                th:text="${c.cardName}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="label-cell">결제일</td>
                             <td>
-                                <div>
+                                <div style="margin: 20px">
                                     <span class="current-month" id="pay-date-text">2025년 12월 29일</span>
                                     <input type="date" class="basic-input pay-date hidden-date" id="manual-pay-date">
                                     <button type="button" class="icon-btn calendar-open" data-target="manual-pay-date">
@@ -61,18 +89,9 @@
                                 </div>
                             </td>
                         </tr>
-                        </tbody>
-                    </table>
-                    <!-- 청구 종류 -->
-                    <table class="manual-payment-table pay-edu-table">
-                        <colgroup>
-                            <col width="20%">
-                            <col width="80%">
-                        </colgroup>
-                        <tbody>
                         <tr>
                             <td class="label-cell">결제 방법 및 금액</td>
-                            <td class="content-cell white-bg">
+                            <td class="content-cell white-bg" colspan="3" style="border-right:0px;">
                                 <div class="pay-input-group">
                                     <div class="pay-row">
                                         <span class="pay-label color-green">오프라인 카드</span>
@@ -89,15 +108,6 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td class="label-cell">카드사</td>
-                            <td class="content-cell white-bg">
-                                <div class="checkbox-group round">
-                                    <input type="checkbox" name="eduFee" checked> 교육비
-                                </div>
-                            </td>
-                        </tr>
-
 
                         </tbody>
                     </table>

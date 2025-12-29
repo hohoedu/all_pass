@@ -44,7 +44,7 @@ public class PaymentCallback {
     @Column(name = "appr_num")
     private String apprNum;
 
-    @Column(name = "bill_id ")
+    @Column(name = "bill_id")
     private String billId;
 
     @CreationTimestamp
