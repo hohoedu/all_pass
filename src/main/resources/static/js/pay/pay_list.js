@@ -51,18 +51,47 @@ document.addEventListener("DOMContentLoaded", () => {
         날짜 초기화 + 변경
     ----------------------------- */
 
+    // ===== 1. initMonth 함수를 이렇게 수정하세요 =====
+
+    // ===== 1. initMonth 함수를 이렇게 수정하세요 =====
+
+
     function initMonth() {
-        const now = new Date();
-        const yy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        // URL 파라미터에서 년월 가져오기
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlYear = urlParams.get('year');
+        const urlMonth = urlParams.get('month');
+
+        let yy, mm;
+
+        if (urlYear && urlMonth) {
+            // URL 파라미터가 있으면 그대로 사용
+            yy = urlYear;
+            mm = String(urlMonth).padStart(2, "0");
+        } else {
+            // 없으면 오늘 날짜 +1개월
+            const now = new Date();
+            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            yy = nextMonth.getFullYear();
+            mm = String(nextMonth.getMonth() + 1).padStart(2, "0");
+        }
 
         if (monthInput) monthInput.value = `${yy}-${mm}`;
         if (currentMonth) currentMonth.textContent = `${yy}년 ${parseInt(mm)}월`;
 
         selectedYear = yy;
         selectedMonth = mm;
-
     }
+
+
+    const handleMonthChange = () => {
+        if (!monthInput || !currentMonth) return;
+        const [year, month] = monthInput.value.split("-");
+        currentMonth.textContent = `${year}년 ${parseInt(month)}월`;
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        window.location.href = `${baseUrl}?year=${year}&month=${month}`;
+    };
 
     const initPayDate = () => {
         const input = document.getElementById('manual-pay-date');
@@ -74,12 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         text.textContent = formatKoreanDate(input.value);
-    };
-
-    const handleMonthChange = () => {
-        if (!monthInput || !currentMonth) return;
-        const [year, month] = monthInput.value.split("-");
-        currentMonth.textContent = `${year}년 ${parseInt(month)}월`;
     };
 
     monthInput?.addEventListener("change", handleMonthChange);

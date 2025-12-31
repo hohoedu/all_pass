@@ -26,6 +26,28 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @GetMapping("/access-url")
+    public ResponseEntity<?> getAccessURL(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        try {
+
+//            String url = paymentService.getPaymintAccessURL(user.getCenterCode());
+            String url = "https://manager.payssam.kr/";
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, url)
+                    .build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // 결제선생 청구서 발행
     @PostMapping("/send")
     public ResponseEntity<?> sendBill(HttpSession session, @RequestBody PaymentReqDTO.PaySendReqDTO dto) throws JsonProcessingException {
@@ -63,10 +85,10 @@ public class PaymentController {
                     .build();
         }
 
-            dto.setUserCode(user.getUserCode());
+        dto.setUserCode(user.getUserCode());
 
-            PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
-            return ResponseEntity.ok(ApiUtils.success(response));
+        PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
+        return ResponseEntity.ok(ApiUtils.success(response));
 
     }
 
@@ -190,7 +212,6 @@ public class PaymentController {
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }
-
 
 
 }

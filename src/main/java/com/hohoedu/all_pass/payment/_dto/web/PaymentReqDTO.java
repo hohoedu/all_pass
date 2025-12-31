@@ -85,6 +85,13 @@ public class PaymentReqDTO {
     }
 
     @Data
+    public static class MonthlyPaymentReqDTO {
+        private String centerCode;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class ManualPaymentReqDTO {
 
         private String studentId;

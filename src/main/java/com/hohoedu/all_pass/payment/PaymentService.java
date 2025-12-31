@@ -108,6 +108,11 @@ public class PaymentService {
         return response.getBody();
     }
 
+    // 결제선생 url 가져오기
+    public String getPaymintAccessURL(String centerCode) {
+        return null;
+    }
+
     // ===================== 결제 생성 ====================== //
     public String createPayment(String studentId, String yy, String mm, String centerCode, String userCode) {
 
@@ -199,11 +204,24 @@ public class PaymentService {
             throw new IllegalArgumentException("잘못된 타입");
         }
 
-//        int count = paymentRepository.existsBill(req.getStudentIds(), req.getYy(), req.getMm(), billType);
+        for (String studentId : req.getStudentIds()) {
 
-//        if (count > 0) {
-//            throw new RuntimeException("이미 " + req.getMm() + "월의 청구서가 발행되었습니다.");
-//        }
+            int count = paymentRepository.existsBill(
+                    studentId,
+                    req.getYy(),
+                    req.getMm(),
+                    billType
+            );
+
+            if (count > 0) {
+                throw new RuntimeException(
+                        "이미 "
+                                + req.getMm() + "월 "
+                                + ("EDU_FEE".equals(billType) ? "교육비" : "교재비")
+                                + " 청구서가 발행된 학생이 있습니다."
+                );
+            }
+        }
 
         /* =====================================================
          * 2. 결제 설정 조회
@@ -439,6 +457,7 @@ public class PaymentService {
                 .apprCardType(dto.getAppr_card_type())
                 .apprIssuer(dto.getAppr_issuer())
                 .apprNum(dto.getAppr_num())
+                .apprPrice(dto.getAppr_price())
                 .build();
 
         paymentRepository.createPaymentCallback(paymentCallback);
@@ -905,17 +924,19 @@ public class PaymentService {
         int unpaidAmount = payment.getUnpaidAmount() - paidEdu;
 
         PaymentRespDTO.BillRespDTO bill = paymentRepository.existsBillByPaymentKey(reqDTO.getStudentId(), reqDTO.getPaymentKey(), reqDTO.getYy(), reqDTO.getMm());
-
-
-        if (bill.getCount() > 0) {
-            // 빌 있으니까 approved로 업데이트
-        }
+//
+//
+//        if (bill.getCount() > 0) {
+//            // 빌 있으니까 approved로 업데이트
+//        }
 
 
         String bookBillStatus = paymentRepository.findBookBillStatus(reqDTO.getPaymentKey(), reqDTO.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
         String newStatus;
 
-        if (bookBillStatus.equals("approved")) {
+        if (bookBillStatus == null || bookBillStatus.isEmpty()) {
+            newStatus = "approved";
+        } else if (bookBillStatus.equals("approved")) {
             newStatus = "approved";
         } else {
             newStatus = "partial";
@@ -941,6 +962,8 @@ public class PaymentService {
                 .paymentKey(payment.getPaymentKey())
                 .build();
 
+        paymentRepository.insertPaymentHistory(history);
+
         PaymentRespDTO.ManualPaymentRespDTO resp = new PaymentRespDTO.ManualPaymentRespDTO();
         resp.setPaymentKey(reqDTO.getPaymentKey());
         resp.setPrice(paidEdu);
@@ -953,6 +976,24 @@ public class PaymentService {
     public List<CardCode> findCardCode() {
         return paymentRepository.findUseCardCode();
     }
+
+    public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String centerCode, String yy, String mm) {
+        List<PaymentRespDTO.MonthlyPaymentDTO> resp =
+                paymentRepository.findMonthlyPayments(centerCode, yy, mm);
+
+        return paymentRepository.findMonthlyPayments(centerCode, yy, mm)
+                .stream()
+                .peek(dto -> {
+                    String paidDate = dto.getPaidDate();
+                    dto.setPaidDate(
+                            (paidDate == null || paidDate.isBlank())
+                                    ? "-"
+                                    : paidDate
+                    );
+                })
+                .toList();
+    }
+
 
 }
 

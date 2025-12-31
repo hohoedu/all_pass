@@ -59,7 +59,7 @@
                     <h2>독서클리닉</h2>
                     <p>선생님이 사용하는<br>
                         독서클리닉 프로그램 입니다.</p>
-                    <button>바로가기</button>
+                    <button id="clinic-btn">바로가기</button>
                 </div>
                 <div class="menu-item"
                      th:if="${session.user != null
@@ -113,6 +113,19 @@
             "http://hohoseodang.com/eclass_center_erp.asp"
             + "?user_code=" + encodeURIComponent(userCode)
             + "&center_code=" + encodeURIComponent(centerCode);
+
+        window.open(url, "_blank");
+
+    });
+    document.getElementById('clinic-btn').addEventListener('click', () => {
+        console.log('클릭');
+        const session = document.querySelector('.menu-greet');
+
+        const centerCode = session.dataset.centerCode;
+
+        const url =
+            "https://hohoschool.com/erpbook/booksend.html"
+            + "?center_code=" + encodeURIComponent(centerCode);
 
         window.open(url, "_blank");
 

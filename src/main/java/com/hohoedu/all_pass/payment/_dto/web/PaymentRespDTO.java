@@ -38,6 +38,8 @@ public class PaymentRespDTO {
         private String totalFee;
         private String totalMaterialFee;
         private String parentPhone;
+        private Integer unpaidEduAmount;
+        private Integer unpaidMaterialAmount;
     }
 
     @Data
@@ -158,18 +160,16 @@ public class PaymentRespDTO {
     }
 
     @Data
-    public static class TempPaymentCallbackDTO {
-
-        private String apiKey;
+    public static class MonthlyPaymentDTO{
+        private String studentId;
         private String billId;
-
-        private String apprPayType;
-        private String apprCardType;
-        private String apprDate;
-        private String apprIssuer;
-        private String apprNum;
-        private String apprPrice;
-        private String apprState;
+        private String studentName;
+        private String billType;
+        private String paidDate;
+        private String method;
+        private String paidPrice;
+        private String billAmount;
+        private String unpaidAmount;
     }
 
 }

@@ -41,8 +41,19 @@
                 </div>
                 <div class="left-bottom">
                     <div class="sidebar-line"></div>
-                    <a href="/popbill/access-url" class="ecl-icon"><img th:src="@{/image/popbill.png}" width="30" height="30" alt=""></a>
-                    <a href="#" class="dokcl-icon"><img th:src="@{/image/payTeacher.png}" width="30" height="30" alt=""></a>
+                    <a href="/popbill/access-url"
+                       class="ecl-icon"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <img th:src="@{/image/popbill.png}" width="30" height="30" alt="">
+                    </a>
+
+                    <a href="/pay/access-url"
+                       class="dokcl-icon"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <img th:src="@{/image/payTeacher.png}" width="30" height="30" alt="">
+                    </a>
                 </div>
             </div>
         </div>
@@ -73,7 +84,7 @@
                 </div>
                 <div class="submenu" data-menu="tuition">
                     <a th:href="@{/pay/pay-edu}" id="payEduLink" class="menu-link">수강료 청구</a>
-                    <a th:href="@{/pay/pay-list}" class="menu-link">월별 결제 내역</a>
+                    <a th:href="@{/pay/pay-list}" id="payListLink" class="menu-link">월별 결제 관리</a>
                 </div>
                 <div class="submenu" data-menu="operation">
                     <a th:href="@{/manage/order}" class="menu-link">교재 주문</a>

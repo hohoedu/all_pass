@@ -32,7 +32,7 @@
           AND yy = #{yy}
           AND mm = #{mm}
           AND bill_type = 'EDU_FEE'
-        AND status in ('issued')
+          AND status in ('issued')
         GROUP BY payment_key, student_id, bill_id
     </select>
 
@@ -148,6 +148,7 @@
         SELECT bill_id AS billId
         FROM erp_payment_bill
         WHERE payment_key = #{paymentKey}
+          AND status = 'issued'
           AND bill_type = #{type}
     </select>
 
@@ -193,20 +194,25 @@
 
     <select id="findByAssignStudents"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
+
         SELECT
         s.student_id AS studentId,
         s.student_name AS studentName,
 
         pAgg.paymentKey,
+
         pAgg.hanFee,
         pAgg.bookFee,
         pAgg.hanMaterial,
         pAgg.bookMaterial,
-        pAgg.totalPrice,
+
         pAgg.totalFee,
         pAgg.totalMaterialFee,
+
+        (pAgg.totalFee - ISNULL(paidEdu.paidEduAmount, 0)) AS unpaidEduAmount,
+        (pAgg.totalMaterialFee - ISNULL(paidMat.paidMatAmount, 0)) AS unpaidMaterialAmount,
+
         pAgg.totalStatus,
-        pAgg.unpaidAmount,
 
         hu.user_name AS hanTeacher,
         bu.user_name AS bookTeacher,
@@ -214,50 +220,103 @@
         (a.parent_tel_first + a.parent_tel_middle + a.parent_tel_last) AS parentPhone,
 
         subj.subject,
+
         bill.eduStatus,
         bill.materialStatus,
-
         bill.billId
 
         FROM erp_student s
-        JOIN erp_parent a ON s.student_id = a.student_id
+        JOIN erp_parent a
+        ON s.student_id = a.student_id
 
         JOIN (
         SELECT
         p.student_id,
         p.payment_key AS paymentKey,
         p.status AS totalStatus,
-        p.unpaid_amount AS unpaidAmount,
 
-        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'edu_fee' THEN d.amount END) AS hanFee,
-        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'edu_fee' THEN d.amount END) AS bookFee,
-        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'book_fee' THEN d.amount END) AS hanMaterial,
-        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'book_fee' THEN d.amount END) AS bookMaterial,
+        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'edu_fee'
+        THEN d.amount END) AS hanFee,
+        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'edu_fee'
+        THEN d.amount END) AS bookFee,
+
+        MAX(CASE WHEN d.class_type = 1 AND d.item_type = 'book_fee'
+        THEN d.amount END) AS hanMaterial,
+        MAX(CASE WHEN d.class_type = 2 AND d.item_type = 'book_fee'
+        THEN d.amount END) AS bookMaterial,
 
         MAX(CASE WHEN d.class_type = 1 THEN d.user_code END) AS hanUserCode,
         MAX(CASE WHEN d.class_type = 2 THEN d.user_code END) AS bookUserCode,
 
-        SUM(d.amount) AS totalPrice,
-        SUM(CASE WHEN d.item_type = 'edu_fee' THEN d.amount ELSE 0 END) AS totalFee,
-        SUM(CASE WHEN d.item_type = 'book_fee' THEN d.amount ELSE 0 END) AS totalMaterialFee
+        SUM(CASE WHEN d.item_type = 'EDU_FEE'
+        THEN d.amount ELSE 0 END) AS totalFee,
+        SUM(CASE WHEN d.item_type = 'BOOK_FEE'
+        THEN d.amount ELSE 0 END) AS totalMaterialFee
 
         FROM erp_payment p
-        JOIN erp_payment_detail d ON p.payment_key = d.payment_key
+        JOIN erp_payment_detail d
+        ON p.payment_key = d.payment_key
         WHERE p.yy = #{year}
         AND p.mm = #{month}
-        GROUP BY p.student_id, p.payment_key, p.status, p.unpaid_amount
-        ) pAgg ON pAgg.student_id = s.student_id
+        GROUP BY p.student_id, p.payment_key, p.status
+        ) pAgg
+        ON pAgg.student_id = s.student_id
 
-        LEFT JOIN erp_user hu ON pAgg.hanUserCode = hu.user_code
-        LEFT JOIN erp_user bu ON pAgg.bookUserCode = bu.user_code
+        LEFT JOIN (
+        SELECT
+        payment_key,
+        SUM(amount) AS paidEduAmount
+        FROM (
+        SELECT payment_key, amount
+        FROM erp_payment_bill
+        WHERE status = 'approved'
+        AND bill_type IN ('edu', 'EDU_FEE')
+        )t
+        GROUP BY payment_key
+        ) paidEdu
+        ON paidEdu.payment_key = pAgg.paymentKey
+
+        LEFT JOIN (
+        SELECT
+        payment_key,
+        SUM(amount) AS paidMatAmount
+        FROM (
+        SELECT payment_key, amount
+        FROM erp_payment_bill
+        WHERE status = 'approved'
+        AND bill_type IN ('material', 'BOOK_FEE')
+        ) t
+        GROUP BY payment_key
+        ) paidMat
+        ON paidMat.payment_key = pAgg.paymentKey
+
+        LEFT JOIN erp_user hu
+        ON pAgg.hanUserCode = hu.user_code
+        LEFT JOIN erp_user bu
+        ON pAgg.bookUserCode = bu.user_code
 
         OUTER APPLY (
         SELECT
-        MAX(CASE WHEN pb.bill_type IN ('edu', 'EDU_FEE')THEN pb.status END) AS eduStatus,
-        MAX(CASE WHEN pb.bill_type IN ('material', 'BOOK_FEE')THEN pb.status END) AS materialStatus,
-        MAX(pb.bill_id) AS billId
-        FROM erp_payment_bill pb
-        WHERE pb.payment_key = pAgg.paymentKey
+        edu.status      AS eduStatus,
+        mat.status      AS materialStatus,
+        COALESCE(edu.bill_id, mat.bill_id) AS billId
+        FROM
+        (
+        SELECT TOP 1 bill_id, status
+        FROM erp_payment_bill
+        WHERE payment_key = pAgg.paymentKey
+        AND bill_type IN ('edu', 'EDU_FEE')
+        ORDER BY created_at DESC
+        ) edu
+        FULL OUTER JOIN
+        (
+        SELECT TOP 1 bill_id, status
+        FROM erp_payment_bill
+        WHERE payment_key = pAgg.paymentKey
+        AND bill_type IN ('material', 'BOOK_FEE')
+        ORDER BY created_at DESC
+        ) mat
+        ON 1 = 1
         ) bill
 
         OUTER APPLY (
@@ -265,12 +324,17 @@
         STUFF((
         SELECT ', ' + c.class_name
         FROM erp_time_table_assign ta
-        JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+        JOIN erp_time_table t
+        ON ta.time_table_key = t.time_table_key
         JOIN erp_class_code c
-        ON c.class_key = CASE WHEN t.class_key = 'COM'
-        THEN ta.class_key ELSE t.class_key END
+        ON c.class_key =
+        CASE
+        WHEN t.class_key = 'COM'
+        THEN ta.class_key
+        ELSE t.class_key
+        END
         WHERE ta.student_id = s.student_id
-        AND c.class_type IN (1,2)
+        AND c.class_type IN (1, 2)
         AND t.yy = #{year}
         AND t.mm = #{month}
         <if test="userCode != null and userCode != 'all'">
@@ -283,8 +347,10 @@
         WHERE EXISTS (
         SELECT 1
         FROM erp_time_table_assign ta
-        JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-        JOIN erp_user u ON t.user_code = u.user_code
+        JOIN erp_time_table t
+        ON ta.time_table_key = t.time_table_key
+        JOIN erp_user u
+        ON t.user_code = u.user_code
         WHERE ta.student_id = s.student_id
         AND t.yy = #{year}
         AND t.mm = #{month}
@@ -293,6 +359,7 @@
             AND t.user_code = #{userCode}
         </if>
         )
+
     </select>
 
     <select id="findFeeByClassKey" resultType="int">
@@ -646,5 +713,22 @@
         where use_yn = '1'
     </select>
 
+    <select id="findMonthlyPayments" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
+        select s.student_name                                  as studentName,
+               p.paid_date                                     as paidDate,
+               pb.bill_type                                    as billType,
+               p.method                                        as method,
+               isnull(pc.appr_price, 0)                        as paidPrice,
+               isnull(pb.amount, 0)                            as billAmount,
+               isnull(pb.amount, 0) - isnull(pc.appr_price, 0) as unpaidAmount
+        from erp_payment_bill pb
+                 join erp_payment p on pb.payment_key = p.payment_key
+                 LEFT join erp_payment_callback pc on pb.bill_id = pc.bill_id
+                 join erp_student s on pb.student_id = s.student_id
+        where pb.status = 'approved'
+          and s.center_code = #{centerCode}
+          and pb.yy = #{yy}
+          and pb.mm = #{mm}
+    </select>
 
 </mapper>

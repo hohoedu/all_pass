@@ -42,14 +42,15 @@ public class PaymentViewController {
     }
 
     @GetMapping("/pay-list")
-    public String getPayListPage(HttpSession session, Model model) {
+    public String getPayListPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-
+        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(user.getCenterCode(), year, month);
         List<CardCode> cardCode = paymentService.findCardCode();
         model.addAttribute("cardCode", cardCode);
+        model.addAttribute("payments", payments);
         return "pay/pay-list";
     }
 

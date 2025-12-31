@@ -50,7 +50,16 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateMonthLabel(year, month) {
         currentMonthLabel.textContent = `${year}년 ${month}월`;
     }
+    document.getElementById("teacher-select")
+        ?.addEventListener("change", () => {
+            const selected = new Date(monthInput.value);
+            if (isNaN(selected)) return;
 
+            const year = selected.getFullYear();
+            const month = String(selected.getMonth() + 1).padStart(2, "0");
+
+            loadMonthlyData(year, month);
+        });
     /**
      * 서버에서 월별 데이터 조회
      * (시간표 테이블 전체 + 회원 현황 테이블 HTML 받아서 교체)
@@ -66,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Accept": "application/json"
                 },
                 body: JSON.stringify({
+                    userCode: teacher,
                     year: year,
                     month: month
                 })

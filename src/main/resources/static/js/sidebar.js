@@ -6,175 +6,215 @@
 localStorage.removeItem("activeMenu");
 
 document.addEventListener("DOMContentLoaded", function () {
-  const menu = document.querySelectorAll(".menu-link");
-  const toggles = document.querySelectorAll(".menu-toggle");
-  const submenus = document.querySelectorAll(".submenu");
-  const sidebarRight = document.querySelector(".sidebar-right");
-  const sidebar = document.querySelector(".sidebar"); // 전체 sidebar
-  let isSidebarLocked = false;
-  let hoverTimeout = null;
+    const menu = document.querySelectorAll(".menu-link");
+    const toggles = document.querySelectorAll(".menu-toggle");
+    const submenus = document.querySelectorAll(".submenu");
+    const sidebarRight = document.querySelector(".sidebar-right");
+    const sidebar = document.querySelector(".sidebar"); // 전체 sidebar
+    let isSidebarLocked = false;
+    let hoverTimeout = null;
 
-  // [1] 메뉴 클릭 시 서브메뉴 열기 + 기억하기
-  toggles.forEach(toggle => {
-    toggle.addEventListener("click", function (e) {
-      const href = this.getAttribute("href");
-      if (!href || href === "#") e.preventDefault();
+    // [1] 메뉴 클릭 시 서브메뉴 열기 + 기억하기
+    toggles.forEach(toggle => {
+        toggle.addEventListener("click", function (e) {
+            const href = this.getAttribute("href");
+            if (!href || href === "#") e.preventDefault();
 
-      const target = this.dataset.target;
-      localStorage.setItem("activeMenu", target);
-      isSidebarLocked = true;
+            const target = this.dataset.target;
+            localStorage.setItem("activeMenu", target);
+            isSidebarLocked = true;
 
-      toggles.forEach(el => el.classList.remove("active"));
-      submenus.forEach(el => el.classList.remove("active"));
+            toggles.forEach(el => el.classList.remove("active"));
+            submenus.forEach(el => el.classList.remove("active"));
 
-      this.classList.add("active");
-      const submenu = document.querySelector(`.submenu[data-menu="${target}"]`);
-      if (submenu) submenu.classList.add("active");
+            this.classList.add("active");
+            const submenu = document.querySelector(`.submenu[data-menu="${target}"]`);
+            if (submenu) submenu.classList.add("active");
 
-      sidebarRight.classList.remove("collapsed");
+            sidebarRight.classList.remove("collapsed");
+        });
     });
-  });
 
-  // [2] hover 시 submenu 임시 열기 (sidebar 전체 기준)
-  sidebar.addEventListener("mouseover", function (e) {
-    const hovered = e.target.closest(".menu-toggle");
-    if (!hovered || isSidebarLocked) return;
+    // [2] hover 시 submenu 임시 열기 (sidebar 전체 기준)
+    sidebar.addEventListener("mouseover", function (e) {
+        const hovered = e.target.closest(".menu-toggle");
+        if (!hovered || isSidebarLocked) return;
 
-    clearTimeout(hoverTimeout); // 닫힘 타이머 취소
-    sidebarRight.classList.remove("collapsed");
-    submenus.forEach(el => el.classList.remove("active"));
-    toggles.forEach(el => el.classList.remove("hover"));
+        clearTimeout(hoverTimeout); // 닫힘 타이머 취소
+        sidebarRight.classList.remove("collapsed");
+        submenus.forEach(el => el.classList.remove("active"));
+        toggles.forEach(el => el.classList.remove("hover"));
 
-    const target = hovered.dataset.target;
-    const submenu = document.querySelector(`.submenu[data-menu="${target}"]`);
-    if (submenu) submenu.classList.add("active");
+        const target = hovered.dataset.target;
+        const submenu = document.querySelector(`.submenu[data-menu="${target}"]`);
+        if (submenu) submenu.classList.add("active");
 
-    hovered.classList.add("hover");
-  });
-
-  sidebar.addEventListener("mouseleave", function () {
-    if (isSidebarLocked) return;
-
-    // 일정 시간 뒤에 닫히게 (마우스 순간 이탈 방지)
-    hoverTimeout = setTimeout(() => {
-      sidebarRight.classList.add("collapsed");
-      submenus.forEach(el => el.classList.remove("active"));
-      toggles.forEach(el => el.classList.remove("hover"));
-    }, 200); // ms 단위 (원하면 0으로 해도 됨)
-  });
-
-  // [3] 외부 클릭 시 sidebar 접기 + 잠금 해제
-  document.addEventListener("click", function (e) {
-    const isInsideSidebar = e.target.closest(".sidebar");
-    if (!isInsideSidebar) {
-      sidebarRight.classList.add("collapsed");
-      isSidebarLocked = false;
-      toggles.forEach(el => el.classList.remove("active"));
-      submenus.forEach(el => el.classList.remove("active"));
-      toggles.forEach(el => el.classList.remove("hover"));
-    }
-  });
-
-  // [4] 현재 페이지 링크 활성화
-  const current = window.location.pathname.split("/").pop();
-  menu.forEach(link => {
-    if (link.getAttribute("href") === current) {
-      link.classList.add("active");
-    }
-    link.addEventListener("click", function () {
-      menu.forEach(l => l.classList.remove("active"));
-      this.classList.add("active");
+        hovered.classList.add("hover");
     });
-  });
 
-  // [5] 페이지 로드시 기억된 메뉴만 열기 (없으면 collapsed 유지)
-  const savedTarget = localStorage.getItem("activeMenu");
-  if (savedTarget) {
-    const savedToggle = document.querySelector(`.menu-toggle[data-target="${savedTarget}"]`);
-    const savedSubmenu = document.querySelector(`.submenu[data-menu="${savedTarget}"]`);
-    if (savedToggle && savedSubmenu) {
-      savedToggle.classList.add("active");
-      savedSubmenu.classList.add("active");
-      sidebarRight.classList.remove("collapsed");
-      isSidebarLocked = true;
+    sidebar.addEventListener("mouseleave", function () {
+        if (isSidebarLocked) return;
+
+        // 일정 시간 뒤에 닫히게 (마우스 순간 이탈 방지)
+        hoverTimeout = setTimeout(() => {
+            sidebarRight.classList.add("collapsed");
+            submenus.forEach(el => el.classList.remove("active"));
+            toggles.forEach(el => el.classList.remove("hover"));
+        }, 200); // ms 단위 (원하면 0으로 해도 됨)
+    });
+
+    // [3] 외부 클릭 시 sidebar 접기 + 잠금 해제
+    document.addEventListener("click", function (e) {
+        const isInsideSidebar = e.target.closest(".sidebar");
+        if (!isInsideSidebar) {
+            sidebarRight.classList.add("collapsed");
+            isSidebarLocked = false;
+            toggles.forEach(el => el.classList.remove("active"));
+            submenus.forEach(el => el.classList.remove("active"));
+            toggles.forEach(el => el.classList.remove("hover"));
+        }
+    });
+
+    // [4] 현재 페이지 링크 활성화
+    const current = window.location.pathname.split("/").pop();
+    menu.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+        link.addEventListener("click", function () {
+            menu.forEach(l => l.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+
+    // [5] 페이지 로드시 기억된 메뉴만 열기 (없으면 collapsed 유지)
+    const savedTarget = localStorage.getItem("activeMenu");
+    if (savedTarget) {
+        const savedToggle = document.querySelector(`.menu-toggle[data-target="${savedTarget}"]`);
+        const savedSubmenu = document.querySelector(`.submenu[data-menu="${savedTarget}"]`);
+        if (savedToggle && savedSubmenu) {
+            savedToggle.classList.add("active");
+            savedSubmenu.classList.add("active");
+            sidebarRight.classList.remove("collapsed");
+            isSidebarLocked = true;
+        }
+    } else {
+        sidebarRight.classList.add("collapsed"); // 기억된 메뉴 없으면 기본은 닫힌 상태
     }
-  } else {
-    sidebarRight.classList.add("collapsed"); // 기억된 메뉴 없으면 기본은 닫힌 상태
-  }
 })
 
 //================시간표 등록================//
 document.addEventListener('DOMContentLoaded', function () {
-  const link = document.getElementById('timetableLink');
-  if (!link) return;
+    const link = document.getElementById('timetableLink');
+    if (!link) return;
 
-  link.addEventListener('click', function (e) {
-    e.preventDefault();
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
 
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
 
-    const url = `/class/timetable?year=${year}&month=${month}`;
-    window.location.href = url;
-  });
+        const url = `/class/timetable?year=${year}&month=${month}`;
+        window.location.href = url;
+    });
 });
 
 // //================시간표 조회================//
 document.addEventListener('DOMContentLoaded', function () {
-  const link = document.getElementById('tableViewLink');
-  if (!link) return;
+    const link = document.getElementById('tableViewLink');
+    if (!link) return;
 
-  link.addEventListener('click', function (e) {
+    link.addEventListener('click', function (e) {
 
-    e.preventDefault();
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const user = 2;
+        e.preventDefault();
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const user = 2;
 
-    const url = `/class/timeview?year=${year}&month=${month}&user=${user}`;
-    window.location.href = url;
-  });
+        const url = `/class/timeview?year=${year}&month=${month}&user=${user}`;
+        window.location.href = url;
+    });
 });
 
 document.addEventListener('DOMContentLoaded', function () {
-  const link = document.getElementById('remedial');
-  if (!link) return;
+    const link = document.getElementById('remedial');
+    if (!link) return;
 
-  link.addEventListener('click', function (e) {
+    link.addEventListener('click', function (e) {
 
-    e.preventDefault();
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
- 
-    const url = `/class/remedial?year=${year}&month=${month}`;
-    window.location.href = url;
-  });
+        e.preventDefault();
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+
+        const url = `/class/remedial?year=${year}&month=${month}`;
+        window.location.href = url;
+    });
 });
+
+function getNextYearMonth() {
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth() + 2; // 다음 달
+
+    if (month === 13) {
+        month = 1;
+        year += 1;
+    }
+
+    return {
+        year: String(year),
+        month: String(month).padStart(2, '0')
+    };
+}
 
 // ================ 수강료 청구 ============ //
 document.addEventListener('DOMContentLoaded', function () {
-  const link = document.getElementById('payEduLink');
-  if (!link) return;
+    const link = document.getElementById('payEduLink');
+    if (!link) return;
 
-  link.addEventListener('click', function (e) {
-    e.preventDefault();
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
 
-    const url = new URL(window.location.href);
-    const params = url.searchParams;
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
 
-    let year = params.get('year');
-    let month = params.get('month');
+        let year = params.get('year');
+        let month = params.get('month');
 
-    // URL에 없을 경우만 현재월 fallback
-    if (!year || !month) {
-      const now = new Date();
-      year = String(now.getFullYear());
-      month = String(now.getMonth() + 1).padStart(2, '0');
-    }
+        // URL에 없을 경우만 현재월 fallback
+        if (!year || !month) {
+            const next = getNextYearMonth();
+            year = next.year;
+            month = next.month;
+        }
 
-    window.location.href = `/pay/pay-edu?year=${year}&month=${month}`;
-  });
+        window.location.href = `/pay/pay-edu?year=${year}&month=${month}`;
+    });
+});
+// ================ 월별 결제 내역 ============ //
+document.addEventListener('DOMContentLoaded', function () {
+    const link = document.getElementById('payListLink');
+    if (!link) return;
+
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+
+        let year = params.get('year');
+        let month = params.get('month');
+
+        // URL에 없을 경우만 현재월 fallback
+        if (!year || !month) {
+            const next = getNextYearMonth();
+            year = next.year;
+            month = next.month;
+        }
+
+        window.location.href = `/pay/pay-list?year=${year}&month=${month}`;
+    });
 });

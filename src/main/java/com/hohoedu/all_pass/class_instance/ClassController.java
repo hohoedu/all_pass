@@ -199,7 +199,7 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), user.getUserCode());
+        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), reqDTO.getUserCode());
         return ResponseEntity.ok(ApiUtils.success(timeTableList));
     }
 
