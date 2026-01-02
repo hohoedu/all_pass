@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.center.Center;
+import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
 import com.hohoedu.all_pass.payment.Payment;
@@ -904,6 +905,25 @@ public class ClassService {
     public List<UnitCode> findUnitCodeForPerson() {
         List<UnitCode> unitCodes = classRepository.findUnitCodeForPerson();
         return unitCodes;
+    }
+
+    public List<ClassAppRespDTO.ClinicListRespDTO> findClinicList(ClassAppReqDTO.ClinicBookListReqDTO dto) {
+        return classRepository.findClinicList(dto.getId(), dto.getYm());
+    }
+
+    public List<ClassAppRespDTO.ClinicResultRespDTO> findClinicResult(ClassAppReqDTO.ClinicBookResultReqDTO dto) {
+        String yy = dto.getYm().substring(0, 4);
+        String mm = dto.getYm().substring(4, 6);
+
+        return classRepository.findClinicResult(dto.getId(), yy, mm);
+    }
+
+    public List<ClassAppRespDTO.ClinicTotalRespDTO> findClinicTotal(ClassAppReqDTO.ClinicBookTotalListReqDTO dto) {
+        String sYear = dto.getSym().substring(0, 4);
+        String sMonth = dto.getSym().substring(4, 6);
+        String eYear = dto.getSym().substring(0,4);
+        String eMonth = dto.getSym().substring(4,6);
+        return classRepository.findClinicTotal(dto.getId(), sYear, sMonth, eYear, eMonth);
     }
 }
 

@@ -43,4 +43,23 @@ public class ClassAppReqDTO {
         private String id;
         private int count;
     }
+
+    @Data
+    public static class ClinicBookListReqDTO {
+        private String id;
+        private String ym;
+    }
+
+    @Data
+    public static class ClinicBookResultReqDTO {
+        private String id;
+        private String ym;
+    }
+
+    @Data
+    public static class ClinicBookTotalListReqDTO {
+        private String id;
+        private String sym;
+        private String eym;
+    }
 }

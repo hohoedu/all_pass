@@ -327,4 +327,23 @@ public interface ClassRepository {
     ClassRespDTO.BasicTimeTableInfo findBasicTimeTableInfo(
             @Param("timeTableKey") String timeTableKey,
             @Param("centerCode") String centerCode);
+
+    List<ClassAppRespDTO.ClinicListRespDTO> findClinicList(
+            @Param("studentId") String studentId,
+            @Param("ym") String ym
+    );
+
+    List<ClassAppRespDTO.ClinicResultRespDTO> findClinicResult(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+    List<ClassAppRespDTO.ClinicTotalRespDTO> findClinicTotal(
+            @Param("studentId") String studnetId,
+            @Param("sYear") String sYear,
+            @Param("sMonth") String sMonth,
+            @Param("eYear") String eYear,
+            @Param("eMonth") String eMonth
+    );
 }

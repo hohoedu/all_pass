@@ -1123,4 +1123,80 @@
           AND t.center_code = #{centerCode}
     </select>
 
+
+    <select id="findClinicResult" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicResultRespDTO">
+        --   book_result.html --
+
+        WITH RawData AS (
+            -- 1. 필요한 기본 데이터 필터링 및 점수 계산
+            SELECT it.Qtype,
+                   CASE WHEN sp.is_correct = 'Y' THEN 1 ELSE 0 END AS is_correct_val
+            FROM erp_book_clinic_study_log sl
+                     INNER JOIN erp_book_clinic_study_problem_log sp
+                                ON sl.yy = sp.yy AND sl.mm = sp.mm
+                                    AND sl.student_id = sp.student_id AND sl.bcode = sp.bcode
+                                    AND sl.timetable = sp.timetable
+
+                     INNER JOIN erp_book_clinic_itempool it
+                                ON sl.bcode = it.bcode AND sp.problem_no = it.Qnum
+            WHERE sl.yy = #{yy}
+              AND sl.mm = #{mm} -- 컬럼 분리로 인덱스 최적화
+              AND sl.study_type = 'T'
+              AND sl.student_id = #{studentId}),
+             AggregatedData AS (
+                 -- 2. Qtype별 합계 및 백분율(per) 계산
+                 SELECT Qtype,
+                        SUM(is_correct_val)                                                                  AS jumsu,
+                        COUNT(*)                                                                             AS QtypeCnt,
+                        -- 수식 단순화 및 형변환
+                        CAST(ROUND(CAST(SUM(is_correct_val) AS FLOAT) / COUNT(*) * 100, 0) AS NUMERIC(9, 0)) AS per
+                 FROM RawData
+                 GROUP BY Qtype),
+             RankedData AS (
+                 -- 3. 순위 계산
+                 SELECT *,
+                        RANK() OVER (ORDER BY per DESC) AS ranking
+                 FROM AggregatedData)
+        -- 4. 최종 결과 조인 및 월별 결과 선택
+        SELECT tr.qtypestr,
+               rd.per,
+               rd.ranking,
+               -- 짝수 달(12)이므로 result2를 바로 선택 (원본 로직 반영)
+               CASE
+                   WHEN '12' IN ('02', '04', '06', '08', '10', '12') THEN tr.result2
+                   ELSE tr.result1
+                   END AS result
+        FROM RankedData rd
+                 INNER JOIN erp_book_clinic_type_result tr
+                            ON tr.yy = #{yy} AND rd.Qtype = tr.qtype
+        ORDER BY rd.per DESC;
+    </select>
+
+    <select id="findClinicList" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicListRespDTO">
+        select b.title, a.study_date
+        from (Select *
+              from erp_book_clinic_study_log
+              where yy + mm = #{ym}
+                and study_type = 'T'
+                and student_id = #{studentId}) a
+                 Join erp_book_clinic b On a.bcode = b.bcode
+        Order by a.study_date, b.title
+    </select>
+    
+    <select id="findClinicTotal" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicTotalRespDTO">
+        SELECT yy + mm  AS ym,
+               COUNT(*) AS cnt
+        FROM erp_book_clinic_study_log
+        WHERE yy BETWEEN #{sYear} AND #{eYear}
+          AND (
+            (yy = #{sYear} AND mm &gt;= #{sMonth})
+                OR
+            (yy = #{eYear} AND mm &lt;= #{eMonth})
+            )
+          AND study_type = 'T'
+          AND student_id = #{studentId}
+        GROUP BY yy, mm
+        ORDER BY yy, mm;
+    </select>
+
 </mapper>

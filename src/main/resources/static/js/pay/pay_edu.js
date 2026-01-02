@@ -1,43 +1,59 @@
 /* global CryptoJS */
 
-// 전역 상태
-let currentFeeView = 'edu'; // edu | book
+/* ===============================
+    전역 상태
+=============================== */
+let currentFeeView = 'edu';
 let currentStudents = [];
 let currentSort = {key: null, order: 'asc'};
-
+const PAYMENT_STATUS_ORDER = {
+    issued: 1,
+    destroyed: 2,
+    approved: 2,
+    undefined: 4,
+    null: 5
+};
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    /* ===============================
+        DOM 캐싱
+    =============================== */
+    const tbody = document.getElementById('student-tbody');
     const monthInput = document.querySelector('.hidden-picker');
     const monthBtn = document.querySelector('.calendar-open');
     const monthDisplay = document.querySelector('.current-month');
     const teacherSelect = document.getElementById('student-filter');
-    const tbody = document.getElementById('student-tbody');
+    const selectAll = document.getElementById('pay-edu-select-all');
+    const searchBtn = document.querySelector('.explore');
+    const searchInput = document.getElementById('search-name');
 
+    /* ===============================
+        초기 바인딩
+    =============================== */
     initMonthFromUrl();
+    bindMonthPicker();          // 🔥 누락됐던 핵심
     bindFeeViewRadio();
-    bindMonthPicker();
     bindTeacherChange();
     bindSearch();
-    bindRightButtons();
-    bindExpireDate();
+    bindSelectAllCheckbox();
 
     const [yy, mm] = monthInput.value.split('-');
     fetchStudents(yy, mm, teacherSelect.value);
 
-    function bindFeeViewRadio() {
-        document.querySelectorAll('input[name="feeView"]').forEach(radio => {
-            radio.addEventListener('change', e => {
-                currentFeeView = e.target.value;
-                renderStudentTable(currentStudents);
-                bindSortEvents();
-            });
-        });
-    }
-
+    /* ===============================
+        월 선택 달력
+    =============================== */
     function bindMonthPicker() {
+        if (!monthInput || !monthBtn) return;
+
         monthBtn.addEventListener('click', () => {
-            monthInput.showPicker?.() ?? monthInput.click();
+            if (typeof monthInput.showPicker === 'function') {
+                monthInput.showPicker();       // Chrome
+            } else {
+                monthInput.focus();
+                monthInput.click();            // Safari fallback
+            }
         });
 
         monthInput.addEventListener('change', () => {
@@ -51,28 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function bindTeacherChange() {
-        teacherSelect.addEventListener('change', async () => {
-            const [y, m] = monthInput.value.split('-');
-            await fetchStudents(y, m, teacherSelect.value);
-        });
-    }
-
-    function bindSearch() {
-        const searchBtn = document.querySelector('.explore');
-        const searchInput = document.getElementById('search-name');
-
-        searchBtn.addEventListener('click', () => {
-            const keyword = searchInput.value.trim();
-            document.querySelectorAll('#student-tbody tr').forEach(tr => {
-                const name = tr.dataset.studentName || '';
-                tr.style.display = (!keyword || name.includes(keyword)) ? '' : 'none';
-            });
-        });
-    }
-
+    /* ===============================
+        데이터 조회
+    =============================== */
     async function fetchStudents(year, month, teacherCode) {
         try {
+            tbody.style.visibility = 'hidden';
+
             const res = await fetch('/pay/students', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -83,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            if (!res.ok) throw new Error('조회 실패');
-            const json = await res.json();
+            if (!res.ok) throw new Error();
 
+            const json = await res.json();
             currentStudents = json.response || json;
+
             renderStudentTable(currentStudents);
-            bindSortEvents();
 
         } catch (e) {
             console.error(e);
@@ -97,88 +98,91 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ===============================
-        정렬
-    =============================== */
-    function bindSortEvents() {
-        document.querySelectorAll('th[data-sort]').forEach(th => {
-            th.onclick = () => handleSort(th.dataset.sort);
-        });
-    }
-
-    function handleSort(key) {
-        currentSort.order =
-            currentSort.key === key && currentSort.order === 'asc'
-                ? 'desc' : 'asc';
-        currentSort.key = key;
-
-        const sorted = [...currentStudents].sort((a, b) => {
-            let v1 = 0, v2 = 0;
-
-            if (key === 'eduFee' && currentFeeView === 'edu') {
-                v1 = a.totalFee || 0;
-                v2 = b.totalFee || 0;
-            } else if (key === 'bookFee' && currentFeeView === 'book') {
-                v1 = a.totalMaterialFee || 0;
-                v2 = b.totalMaterialFee || 0;
-            } else if (key === 'name') {
-                v1 = a.studentName || '';
-                v2 = b.studentName || '';
-            }
-
-            return currentSort.order === 'asc'
-                ? v1 > v2 ? 1 : -1
-                : v1 < v2 ? 1 : -1;
-        });
-
-        renderStudentTable(sorted);
-    }
-
-    /* ===============================
         렌더링
     =============================== */
     function renderStudentTable(list) {
+
+        let filteredList = list;
+        if (currentFeeView === 'book') {
+            filteredList = list.filter(s =>
+                Number(s.totalMaterialFee || 0) > 0
+            );
+        }
+        if (currentFeeView === 'edu') {
+            filteredList = list.filter(s =>
+                Number(s.totalFee || 0) > 0
+            );
+        }
+
+        // ✅ 결제 상태 기준 정렬
+        const sortedList = [...filteredList].sort((a, b) => {
+
+            const statusA =
+                currentFeeView === 'edu' ? a.eduStatus : a.materialStatus;
+            const statusB =
+                currentFeeView === 'edu' ? b.eduStatus : b.materialStatus;
+
+            const orderA = PAYMENT_STATUS_ORDER[statusA] ?? 99;
+            const orderB = PAYMENT_STATUS_ORDER[statusB] ?? 99;
+
+            return orderA - orderB;
+        });
+
         tbody.innerHTML = '';
 
-        if (!list.length) {
-            tbody.innerHTML =
-                `<tr><td colspan="10" style="text-align:center;">등록된 학생 데이터가 없습니다.</td></tr>`;
+        if (!sortedList || sortedList.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center;">
+                    등록된 학생 데이터가 없습니다.
+                </td>
+            </tr>`;
+            tbody.style.visibility = 'visible';
             return;
         }
 
-        list.forEach((s, i) => {
-            const tr = document.createElement('tr');
-            tr.dataset.studentId = s.studentId;
-            tr.dataset.studentName = s.studentName;
-            tr.dataset.paymentKey = s.paymentKey;
-            tr.dataset.eduStatus = s.eduStatus;
-            tr.dataset.materialStatus = s.materialStatus;
+        sortedList.forEach((s, i) => {
+            const fee = currentFeeView === 'edu'
+                ? s.totalFee
+                : s.totalMaterialFee;
 
-            const fee =
-                currentFeeView === 'edu'
-                    ? s.totalFee
-                    : s.totalMaterialFee;
-            const unpaidFee = currentFeeView === 'edu'
+            const unpaid = currentFeeView === 'edu'
                 ? s.unpaidEduAmount
                 : s.unpaidMaterialAmount;
 
             const payState = currentFeeView === 'edu'
-                ? s.eduStatus : s.materialStatus
+                ? s.eduStatus
+                : s.materialStatus;
 
-            console.log(payState);
+            const tr = document.createElement('tr');
+
+            /* 🔥 이후 로직에서 반드시 필요한 dataset */
+            tr.dataset.studentId = s.studentId;
+            tr.dataset.studentName = s.studentName;
+            tr.dataset.paymentKey = s.paymentKey;
+            tr.dataset.billId = s.billId;
+            tr.dataset.eduStatus = s.eduStatus;
+            tr.dataset.materialStatus = s.materialStatus;
+
             tr.innerHTML = `
-                <td><input type="checkbox" class="row-checkbox"></td>
+                <td class="checkbox-group">
+                    <input type="checkbox" class="row-checkbox">
+                </td>
                 <td>${i + 1}</td>
                 <td>${s.studentName}</td>
                 <td>${s.subject || '-'}</td>
                 <td>${formatTeacher(s)}</td>
                 <td>${Number(fee || 0).toLocaleString()}</td>
-                <td>${Number(unpaidFee || 0).toLocaleString()}</td>
+                <td>${Number(unpaid || 0).toLocaleString()}</td>
                 <td>${renderIssueStatus(s)}</td>
-                <td>${renderPayStatus(payState)}</td>
+                <td>${renderPayStatus(payState, unpaid)}</td>
             `;
 
             tbody.appendChild(tr);
         });
+
+        selectAll.checked = false;
+        tbody.style.visibility = 'visible';
     }
 
     function formatTeacher(s) {
@@ -188,8 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderIssueStatus(s) {
-        const status =
-            currentFeeView === 'edu' ? s.eduStatus : s.materialStatus;
+        const status = currentFeeView === 'edu'
+            ? s.eduStatus
+            : s.materialStatus;
 
         if (!status) return `<span class="unissued">미발행</span>`;
         if (status === 'issued') return `<span class="issued">발행</span>`;
@@ -197,26 +202,82 @@ document.addEventListener('DOMContentLoaded', () => {
         return '-';
     }
 
-    function renderPayStatus(payState) {
-        if (payState === 'approved') return `<span class="pay-box pay-done">결제완료</span>`;
-        // if (payState === 'destroyed') return `<span class="pay-box pay-partial">파기</span>`;
-        // if (payState === 'canceled') return `<span class="pay-box pay-partial">결제취소</span>`;
-        return `<span class="pay-box pay-late">미결제</span>`;
+    function renderPayStatus(status, unpaid) {
+        if (status === 'approved') {
+            if (unpaid !== 0) {
+                return `<span class="pay-box pay-partial">부분결제</span>`;
+            }
+            return `<span class="pay-box pay-done">결제완료</span>`;
+        }
+        if (status === 'issued') {
+            return `<span class="pay-box pay-late">미결제</span>`;
+        }
+        return '-';
     }
 
     /* ===============================
-        기타 (유효기간 / 버튼)
+        체크박스 전체 선택
     =============================== */
-    function bindExpireDate() {
-        const expireInput = document.querySelector('.expire-input');
-        const expireBtn = document.querySelector('.expire-btn');
-        expireBtn.addEventListener('click', () => expireInput.showPicker?.());
+    function bindSelectAllCheckbox() {
+        selectAll.addEventListener('change', e => {
+            tbody.querySelectorAll('.row-checkbox')
+                .forEach(cb => cb.checked = e.target.checked);
+        });
+
+        tbody.addEventListener('change', e => {
+            if (!e.target.classList.contains('row-checkbox')) return;
+
+            const total = tbody.querySelectorAll('.row-checkbox').length;
+            const checked = tbody.querySelectorAll('.row-checkbox:checked').length;
+
+            selectAll.checked = total > 0 && total === checked;
+        });
     }
 
-    function bindRightButtons() {
-        // 발행 / 취소 / 파기 / 재발행
-        // 👉 기존 로직 그대로 이동만 하면 됩니다
+    /* ===============================
+        필터 / 검색
+    =============================== */
+    function bindFeeViewRadio() {
+        document.querySelectorAll('input[name="feeView"]').forEach(radio => {
+            radio.addEventListener('change', e => {
+                currentFeeView = e.target.value;
+                renderStudentTable(currentStudents);
+            });
+        });
     }
+
+    function bindTeacherChange() {
+        teacherSelect.addEventListener('change', () => {
+            const [y, m] = monthInput.value.split('-');
+            fetchStudents(y, m, teacherSelect.value);
+        });
+    }
+
+    function bindSearch() {
+
+        const doSearch = () => {
+            const keyword = searchInput.value.trim();
+
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const name = tr.dataset.studentName || '';
+                tr.style.display =
+                    !keyword || name.includes(keyword) ? '' : 'none';
+            });
+        };
+
+        searchBtn.addEventListener('click', doSearch);
+
+        searchInput.addEventListener('keydown', e => {
+
+            if (e.isComposing) return;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSearch();
+            }
+        });
+    }
+
 
     /* ===============================
         URL 월 초기화
@@ -224,11 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function initMonthFromUrl() {
         const params = new URL(location.href).searchParams;
         const y = params.get('year') || new Date().getFullYear();
-        const m = params.get('month') || String(new Date().getMonth() + 1).padStart(2, '0');
+        const m = params.get('month')
+            || String(new Date().getMonth() + 1).padStart(2, '0');
 
         monthInput.value = `${y}-${m}`;
         monthDisplay.textContent = `${y}년 ${parseInt(m, 10)}월`;
     }
+
 });
 // ========== 청구서 유효기간 세팅 ========== //
 document.addEventListener('DOMContentLoaded', () => {

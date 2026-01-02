@@ -92,5 +92,24 @@ public class ClassAppRespDTO {
         private String snote;    // content;
     }
 
+    @Data
+    public static class ClinicResultRespDTO {
+        private String qtypestr;
+        private String per;
+        private String ranking;
+        private String result;
+    }
+
+    @Data
+    public static class ClinicListRespDTO {
+        private String title;
+        private String study_date;
+    }
+
+    @Data
+    public static class ClinicTotalRespDTO {
+        private String ym;
+        private String cnt;
+    }
 
 }

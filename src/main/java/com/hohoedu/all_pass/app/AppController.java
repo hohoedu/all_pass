@@ -87,13 +87,6 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successOne(response));
     }
 
-    @PostMapping("/book_list")
-    public ResponseEntity<?> AppBookList(@RequestBody ClassAppReqDTO.ClinicBookReqDTO reqDTO) {
-
-
-        return ResponseEntity.ok(AppApiUtils.successList(null));
-    }
-
     @PostMapping("/before_class_notice")
     public ResponseEntity<?> AppBeforeNotice(@RequestBody ClassAppReqDTO.BeforeClassReqDTO reqDTO) {
 
@@ -138,9 +131,27 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successList(noticeList));
     }
 
-    @PostMapping("notice_view")
+    @PostMapping("/notice_view")
     public ResponseEntity<?> AppNoticeView(@RequestBody Map<String, Integer> idx) {
         NoticeAppRespDTO.NoticeDetailRespDTO noticeDetail = noticeService.findAppNoticeDetail(idx.get("idx"));
         return ResponseEntity.ok(AppApiUtils.successOne(noticeDetail));
+    }
+
+    @PostMapping("/book_list")
+    public ResponseEntity<?> AppBookListView(@RequestBody ClassAppReqDTO.ClinicBookListReqDTO dto) {
+        List<ClassAppRespDTO.ClinicListRespDTO> clinicList = classService.findClinicList(dto);
+        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicList));
+    }
+
+    @PostMapping("/book_result")
+    public ResponseEntity<?> AppBookResult(@RequestBody ClassAppReqDTO.ClinicBookResultReqDTO dto) {
+        List<ClassAppRespDTO.ClinicResultRespDTO> clinicResult = classService.findClinicResult(dto);
+        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicResult));
+    }
+
+    @PostMapping("/book_total_list")
+    public ResponseEntity<?> AppBookTotalList(@RequestBody ClassAppReqDTO.ClinicBookTotalListReqDTO dto) {
+List<ClassAppRespDTO.ClinicTotalRespDTO> clinicTotal = classService.findClinicTotal(dto);
+        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicTotal));
     }
 }

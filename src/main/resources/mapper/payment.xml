@@ -297,8 +297,8 @@
 
         OUTER APPLY (
         SELECT
-        edu.status      AS eduStatus,
-        mat.status      AS materialStatus,
+        edu.status AS eduStatus,
+        mat.status AS materialStatus,
         COALESCE(edu.bill_id, mat.bill_id) AS billId
         FROM
         (
@@ -359,6 +359,7 @@
             AND t.user_code = #{userCode}
         </if>
         )
+        ORDER BY s.student_name ASC
 
     </select>
 
@@ -548,43 +549,43 @@
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
-    <!--    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">-->
-    <!--        SELECT TOP ${count} *-->
-    <!--        FROM (select p.bill_id           AS billId,-->
-    <!--                     (p.yy + '-' + p.mm) AS inym,-->
-    <!--                     'S'                 AS gb,-->
-    <!--                     p.approved_date     AS indate,-->
-    <!--                     p.han_amount        AS inmoney,-->
-    <!--                     CASE-->
-    <!--                         WHEN p.product_name = '교육비' THEN 'S'-->
-    <!--                         WHEN p.product_name = '교재비' THEN 'B'-->
-    <!--                         ELSE null-->
-    <!--                         END             AS gubun,-->
-    <!--                     p.created_at-->
-    <!--              from erp_payment p-->
-    <!--              WHERE p.han_amount IS NOT NULL-->
-    <!--                AND p.student_id = #{studentId}-->
-    <!--                AND P.approved_date IS NOT NULL-->
+        <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
+            SELECT TOP ${count} *
+            FROM (select p.bill_id           AS billId,
+                         (p.yy + '-' + p.mm) AS inym,
+                         'S'                 AS gb,
+                         p.approved_date     AS indate,
+                         p.han_amount        AS inmoney,
+                         CASE
+                             WHEN p.product_name = '교육비' THEN 'S'
+                             WHEN p.product_name = '교재비' THEN 'B'
+                             ELSE null
+                             END             AS gubun,
+                         p.created_at
+                  from erp_payment p
+                  WHERE p.han_amount IS NOT NULL
+                    AND p.student_id = #{studentId}
+                    AND P.approved_date IS NOT NULL
 
-    <!--              UNION ALL-->
+                  UNION ALL
 
-    <!--              select p.bill_id           AS billId,-->
-    <!--                     (p.yy + '-' + p.mm) AS inym,-->
-    <!--                     'I'                 AS gb,-->
-    <!--                     p.approved_date     AS indate,-->
-    <!--                     p.book_amount       AS inmoney,-->
-    <!--                     CASE-->
-    <!--                         WHEN p.product_name = '교육비' THEN 'S'-->
-    <!--                         WHEN p.product_name = '교재비' THEN 'B'-->
-    <!--                         ELSE null-->
-    <!--                         END             AS gubun,-->
-    <!--                     p.created_at-->
-    <!--              from erp_payment p-->
-    <!--              WHERE p.book_amount IS NOT NULL-->
-    <!--                AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL-->
-    <!--        ORDER BY combined.billId ASC;-->
+                  select p.bill_id           AS billId,
+                         (p.yy + '-' + p.mm) AS inym,
+                         'I'                 AS gb,
+                         p.approved_date     AS indate,
+                         p.book_amount       AS inmoney,
+                         CASE
+                             WHEN p.product_name = '교육비' THEN 'S'
+                             WHEN p.product_name = '교재비' THEN 'B'
+                             ELSE null
+                             END             AS gubun,
+                         p.created_at
+                  from erp_payment p
+                  WHERE p.book_amount IS NOT NULL
+                    AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL
+            ORDER BY combined.billId ASC;
 
-    <!--    </select>-->
+        </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
         SELECT s.student_id   AS studentId,
