@@ -211,6 +211,7 @@ public class ClassViewController {
             model.addAttribute("students", bundle.getStudents());
 
             if (bundle.getAfterClass() != null) {
+                log.info(bundle.getAfterClass().toString());
                 model.addAttribute("content", bundle.getAfterClass());
             } else {
 

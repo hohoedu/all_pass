@@ -256,6 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const dto = {
             studentId: selectedRow.dataset.studentId,
             paymentKey: selectedRow.dataset.paymentKey,
+            billId: selectedRow.dataset.billId,
             paidDate: payDateInput.value,
             cardName: cardCode,
             yy: monthInput.value.split("-")[0],

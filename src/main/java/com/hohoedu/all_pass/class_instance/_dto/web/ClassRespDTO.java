@@ -202,6 +202,7 @@ public class ClassRespDTO {
     public static class AfterClassRespDTO {
         private String afterClassKey;
         private String content;
+        private String word;
         private String timeTableKey;
         private String timeTableLabel;
         private String userName;

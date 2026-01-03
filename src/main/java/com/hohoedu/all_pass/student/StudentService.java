@@ -662,4 +662,12 @@ public class StudentService {
     }
 
 
+    public List<StudentAppRespDTO.AttendanceListRespDTO> findAttendanceList(StudentAppReqDTO.AttendanceListReqDTO dto) {
+        String yy = dto.getYm().substring(0, 4);
+        String mm = dto.getYm().substring(4, 6);
+//        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList =
+
+
+        return       studentRepository.findAttendanceList(dto.getId(), yy, mm);
+    }
 }

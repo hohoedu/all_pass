@@ -25,10 +25,17 @@ public class StudentAppReqDTO {
         private String appId;
     }
 
+
     @Data
     public static class AppTokenReqDTO {
         private String token;
         private String id;
         private String state;
+    }
+
+    @Data
+    public static class AttendanceListReqDTO {
+        private String id;
+        private String ym;
     }
 }

@@ -96,6 +96,7 @@ public class PaymentReqDTO {
 
         private String studentId;
         private String paymentKey;
+        private String billId;
         private Integer cardAmount;
         private Integer cashAmount;
         private Integer transferAmount;
@@ -104,6 +105,7 @@ public class PaymentReqDTO {
         private String userCode;
         private String yy;
         private String mm;
+        private String status;
 
     }
 

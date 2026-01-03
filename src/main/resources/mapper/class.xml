@@ -208,7 +208,7 @@
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-        (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
+            (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
@@ -582,6 +582,7 @@
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         SELECT ac.after_class_key  AS afterClassKey,
                ac.content          AS content,
+               ac.word             AS word,
                t.time_table_key    AS timeTableKey,
                tc.time_table_label AS timeTableLabel,
                u.user_name         AS userName
@@ -1054,10 +1055,10 @@
 
     <insert id="insertAfterClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
-        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, year,
-                                           month, class_type, class_label, content, created_at)
-        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, 'EGH0060425', #{week}, #{dayname}, #{year}, #{month},
-                #{classType}, #{classLabel}, #{content}, SYSDATETIME())
+        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, yy,
+                                           mm, class_type, class_label, content, word, created_at)
+        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{week}, #{dayname}, #{year}, #{month},
+                #{classType}, #{classLabel}, #{content}, #{word}, SYSDATETIME())
     </insert>
 
     <select id="findBeforeClassByStudentId"
@@ -1087,10 +1088,39 @@
         SELECT class_type  AS gubun,
                class_label AS title,
                dayname     AS dayname,
-               week        AS ju, [year] AS yyyy, [month] AS mm, content AS snote
+               week        AS ju,
+               yy          AS yyyy,
+               mm          AS mm,
+               content     AS snote
         FROM erp_after_class_notice
         WHERE student_id = #{studentId}
         ORDER BY created_at DESC, id DESC;
+    </select>
+
+    <resultMap id="afterClassDetailMap"
+               type="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassDetailRespDTO">
+
+        <result column="gamok"     property="gamok"/>
+        <result column="title"     property="title"/>
+        <result column="dayname"   property="dayname"/>
+        <result column="ju_note1"  property="ju_note1"/>
+        <result column="ju_note2"  property="ju_note2"/>
+        <result column="review"    property="review"/>
+
+    </resultMap>
+    <select id="findAfterClassDetail" resultMap="afterClassDetailMap">
+        SELECT class_type         AS gamok,
+               class_label        AS title,
+               dayname            AS dayname,
+               word               AS ju_note1,
+               content            AS ju_note2,
+               isnull(review, '') AS review
+        FROM erp_after_class_notice
+        WHERE student_id = #{studentId}
+          AND class_type = #{classType}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND week = #{week}
     </select>
 
 
@@ -1173,7 +1203,7 @@
     </select>
 
     <select id="findClinicList" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicListRespDTO">
-        select b.title, a.study_date
+        select b.title, a.study_date as sdate
         from (Select *
               from erp_book_clinic_study_log
               where yy + mm = #{ym}
@@ -1182,7 +1212,7 @@
                  Join erp_book_clinic b On a.bcode = b.bcode
         Order by a.study_date, b.title
     </select>
-    
+
     <select id="findClinicTotal" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicTotalRespDTO">
         SELECT yy + mm  AS ym,
                COUNT(*) AS cnt

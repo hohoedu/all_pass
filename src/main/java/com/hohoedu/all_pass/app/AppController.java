@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -14,7 +16,10 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,8 +27,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.hohoedu.all_pass._core.utils.AppApiUtils.RESULT_OK;
 
 @Slf4j
 @RestController
@@ -42,7 +50,7 @@ public class AppController {
 
         StudentAppRespDTO.AppLoginRespDTO respDTO = studentService.checkAppIdAndPassword(reqDTO.getId(), reqDTO.getSha_pwd());
 
-        return ResponseEntity.ok(AppApiUtils.successOne(respDTO));
+        return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
     }
 
     @PostMapping("/token")
@@ -61,12 +69,23 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
+    //TODO: 출결 상태 조회
     @PostMapping("/attendance_main")
     public ResponseEntity<?> AppAttendanceMain() {
 
         System.out.println("hello!! attendance main");
 
         return ResponseEntity.ok(AppApiUtils.successOne(null));
+    }
+
+    @PostMapping(value = "/attendance_list", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> AppAttendanceList(@RequestBody StudentAppReqDTO.AttendanceListReqDTO dto) throws JsonProcessingException {
+        List<StudentAppRespDTO.AttendanceListRespDTO> respDTOs = studentService.findAttendanceList(dto);
+
+        Object response = AppApiUtils.successClinicList(respDTOs);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+        return ResponseEntity.ok(json);
     }
 
     // 메인화면
@@ -99,6 +118,18 @@ public class AppController {
     public ResponseEntity<?> AppLearningContents(@RequestBody ClassAppReqDTO.LearningContentsReqDTO reqDTO) {
         List<ClassAppRespDTO.AfterClassRespDTO> respDTOs = classService.getAfterClass(reqDTO.getId(), reqDTO.getCount());
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
+    }
+
+    @PostMapping(value = "/learning_contents_view", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> AppLearningContentDetail(@RequestBody ClassAppReqDTO.LearningContentDetailReqDTO dto) throws JsonProcessingException {
+
+        List<ClassAppRespDTO.AfterClassDetailRespDTO> respDTOs = classService.getAfterClassDetail(dto);
+
+        Object response = AppApiUtils.successClinicList(respDTOs);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+
+        return ResponseEntity.ok(json);
     }
 
     @PostMapping("/monthly_notice")
@@ -137,21 +168,55 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successOne(noticeDetail));
     }
 
-    @PostMapping("/book_list")
-    public ResponseEntity<?> AppBookListView(@RequestBody ClassAppReqDTO.ClinicBookListReqDTO dto) {
-        List<ClassAppRespDTO.ClinicListRespDTO> clinicList = classService.findClinicList(dto);
-        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicList));
+    @PostMapping(value = "/book_list", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> AppBookListView(@RequestBody ClassAppReqDTO.ClinicBookListReqDTO dto) throws JsonProcessingException {
+
+        List<ClassAppRespDTO.ClinicListRespDTO> clinicList =
+                classService.findClinicList(dto);
+
+        Object response =
+                AppApiUtils.successClinicList(clinicList);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+
+        return ResponseEntity.ok(json);
     }
 
-    @PostMapping("/book_result")
-    public ResponseEntity<?> AppBookResult(@RequestBody ClassAppReqDTO.ClinicBookResultReqDTO dto) {
-        List<ClassAppRespDTO.ClinicResultRespDTO> clinicResult = classService.findClinicResult(dto);
-        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicResult));
+    @PostMapping(
+            value = "/book_result",
+            produces = MediaType.TEXT_PLAIN_VALUE
+    )
+    public ResponseEntity<String> AppBookResult(
+            @RequestBody ClassAppReqDTO.ClinicBookResultReqDTO dto
+    ) throws JsonProcessingException {
+
+        List<ClassAppRespDTO.ClinicResultRespDTO> clinicResult =
+                classService.findClinicResult(dto);
+
+        AppApiUtils.ClinicApiEnvelope<List<ClassAppRespDTO.ClinicResultRespDTO>> response =
+                AppApiUtils.successClinicList(clinicResult);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+
+        return ResponseEntity.ok(json);
     }
 
-    @PostMapping("/book_total_list")
-    public ResponseEntity<?> AppBookTotalList(@RequestBody ClassAppReqDTO.ClinicBookTotalListReqDTO dto) {
-List<ClassAppRespDTO.ClinicTotalRespDTO> clinicTotal = classService.findClinicTotal(dto);
-        return ResponseEntity.ok(AppApiUtils.successClinicList(clinicTotal));
+    @PostMapping(
+            value = "/book_total_list",
+            produces = MediaType.TEXT_PLAIN_VALUE
+    )
+    public ResponseEntity<String> AppBookTotalList(
+            @RequestBody ClassAppReqDTO.ClinicBookTotalListReqDTO dto
+    ) throws JsonProcessingException {
+
+        List<ClassAppRespDTO.ClinicTotalRespDTO> clinicTotal =
+                classService.findClinicTotal(dto);
+
+        Object response =
+                AppApiUtils.successClinicList(clinicTotal);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+
+        return ResponseEntity.ok(json);
     }
 }

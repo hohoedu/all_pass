@@ -608,6 +608,26 @@
                  JOIN erp_center c ON s.center_code = c.center_code
         WHERE s.app_id = #{appId}
     </select>
+<!--REPLACE(stime, ':', '') AS stime,
+REPLACE(etime, ':', '') AS etime-->
+    <select id="findAttendanceList" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceListRespDTO">
+        SELECT ISNULL(MAX(sa.attendance_date), '2026-01-03')                             AS ymd,
+               '토요일'                                                                     AS dayname,
+               MIN(ISNULL(REPLACE(sa.in_time, ':', ''), REPLACE(t.start_time, ':', ''))) AS stime,
+               MAX(ISNULL(REPLACE(sa.out_time, ':', ''), REPLACE(t.end_time, ':', ''))) AS etime,
+                   sa.week,
+                   '수업' as gb
+                   FROM erp_student_attendance sa
+                   JOIN erp_time_table t
+                   ON t.time_table_key = sa.time_table_key
+                   WHERE sa.student_id = #{studentId}
+                       AND sa.yy = #{yy}
+                       AND sa.mm = #{mm}
+                   GROUP BY sa.week
+                   ORDER BY sa.week
+
+
+    </select>
 
     <update id="updateAppTokenByStudentId">
         UPDATE erp_student

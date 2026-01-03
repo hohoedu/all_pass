@@ -93,6 +93,16 @@ public class ClassAppRespDTO {
     }
 
     @Data
+    public static class AfterClassDetailRespDTO {
+        private String gamok;
+        private String title;
+        private String dayname;
+        private String ju_note1;
+        private String ju_note2;
+        private String review;
+    }
+
+    @Data
     public static class ClinicResultRespDTO {
         private String qtypestr;
         private String per;
@@ -103,7 +113,7 @@ public class ClassAppRespDTO {
     @Data
     public static class ClinicListRespDTO {
         private String title;
-        private String study_date;
+        private String sdate;
     }
 
     @Data

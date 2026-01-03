@@ -17,6 +17,18 @@ public class ClassAppReqDTO {
         private int count;
     }
 
+    @Data
+    public static class LearningContentDetailReqDTO {
+        private String id;
+        private String gamok;
+        private String dayname;
+        private String gbcd;
+        private String mgubun;
+        private String yyyy;
+        private String mm;
+        private String ju;
+    }
+
     // 메인화면
     @Data
     public static class BookListMainReqDTO {

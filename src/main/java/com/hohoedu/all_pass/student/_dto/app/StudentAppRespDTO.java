@@ -59,4 +59,13 @@ public class StudentAppRespDTO {
         private String name;
         private String token;
     }
+
+    @Data
+    public static class AttendanceListRespDTO {
+        private String ymd;
+        private String dayname;
+        private String stime;
+        private String etime;
+        private String gb;
+    }
 }

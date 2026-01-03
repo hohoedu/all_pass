@@ -578,6 +578,7 @@ public class ClassService {
             insertDTO.setWeek(rawWeek);
             insertDTO.setDayname(time);
             insertDTO.setContent(dto.getContent());
+            insertDTO.setWord(dto.getWord());
             insertDTO.setClassType(typeLabel);
             insertDTO.setClassLabel(classLabel);
             classRepository.insertAfterClassNotice(insertDTO);
@@ -921,9 +922,15 @@ public class ClassService {
     public List<ClassAppRespDTO.ClinicTotalRespDTO> findClinicTotal(ClassAppReqDTO.ClinicBookTotalListReqDTO dto) {
         String sYear = dto.getSym().substring(0, 4);
         String sMonth = dto.getSym().substring(4, 6);
-        String eYear = dto.getSym().substring(0,4);
-        String eMonth = dto.getSym().substring(4,6);
+        String eYear = dto.getSym().substring(0, 4);
+        String eMonth = dto.getSym().substring(4, 6);
         return classRepository.findClinicTotal(dto.getId(), sYear, sMonth, eYear, eMonth);
+    }
+
+    public List<ClassAppRespDTO.AfterClassDetailRespDTO> getAfterClassDetail(ClassAppReqDTO.LearningContentDetailReqDTO dto) {
+        List<ClassAppRespDTO.AfterClassDetailRespDTO> response = classRepository.findAfterClassDetail(dto.getId(), dto.getGamok(), dto.getYyyy(), dto.getMm(), dto.getJu());
+        return response;
+
     }
 }
 

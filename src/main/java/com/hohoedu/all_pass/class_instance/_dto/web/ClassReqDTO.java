@@ -311,6 +311,7 @@ public class ClassReqDTO {
         private String week;
         private String dayname;
         private String content;
+        private String word;
         private String classType;
         private String classLabel;
         private String icon;

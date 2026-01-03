@@ -34,6 +34,13 @@ public interface PaymentRepository {
             @Param("mm") String mm
     );
 
+    int existManualByPaymentKey(
+            @Param("studentId") String studentId,
+            @Param("paymentKey") String paymentKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
     void insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO dto);
 
     int existsBillByStudentIds(
@@ -156,6 +163,10 @@ public interface PaymentRepository {
             @Param("billType") String billType
     );
 
+
+    PaymentDetail findEduPaymentDetailByPaymentKey(
+            @Param("paymentKey") String paymentKey);
+
     List<String> findPaymentKeys(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
@@ -168,7 +179,7 @@ public interface PaymentRepository {
             @Param("bookEduFee") Integer bookEduFee,
             @Param("bookMaterialFee") Integer bookMaterialFee);
 
-    List<String> findPaymentDetailsByPaymentKey(@Param("paymentKey") String paymentKey);
+    List<String> findPaymentDetailByPaymentKey(@Param("paymentKey") String paymentKey);
 
     int updateAmountAndUnpaidAmountByPaymentKey(
             @Param("paymentKey") String paymentKey,

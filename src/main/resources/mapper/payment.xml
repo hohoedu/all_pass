@@ -36,9 +36,18 @@
         GROUP BY payment_key, student_id, bill_id
     </select>
 
+    <select id="findManualByPaymentKey" resultType="int">
+        SELECT count(*)
+        FROM erp_payment_manual
+        where student_id = #{studentId}
+          AND payment_key = #{paymentKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <insert id="insertPaymentManual" parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
-        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, student_id, payment_key, user_code, created_at)
-        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{studentId}, #{paymentKey}, #{userCode}, SYSDATETIME())
+        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id, payment_key, user_code, yy, mm, created_at)
+        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status}, #{studentId}, #{paymentKey}, #{userCode}, #{yy}, #{mm}, SYSDATETIME())
     </insert>
 
     <select id="findBookBillStatus" resultType="String">
@@ -730,6 +739,13 @@
           and s.center_code = #{centerCode}
           and pb.yy = #{yy}
           and pb.mm = #{mm}
+    </select>
+
+    <select id="findEduPaymentDetailByPaymentKey" resultType="com.hohoedu.all_pass.payment.model.PaymentDetail">
+        SELECT SUM(amount)
+        FROM erp_payment_detail
+        where payment_key = #{paymentKey}
+          AND item_type = 'EDU_FEE'
     </select>
 
 </mapper>

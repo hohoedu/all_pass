@@ -356,7 +356,12 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
                 <textarea class="comment-text record-content" placeholder="내용을 입력해주세요.">${content ? content.content.replace(/<br\s*\/?>/gi, "\n") : ""}</textarea>
               </div>
             </div>
+            <input type="hidden"
+               class="record-word"
+               value="${content?.word ?? ''}">
           </td>`;
+
+
 
         // 발송여부
         const beforeSendSrc = s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png';
@@ -506,8 +511,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const requestBody = {
             tokens: tokens,
-            title: "test",
-            body: "test"
+            title: "수업 안내",
+            body: "수업 전 안내가 등록되었습니다."
         };
 
 
@@ -675,13 +680,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 수업 후 문자 전송 후 로그 저장
 async function insertAfterClassNotice(checkedRows) {
+
     const notices = checkedRows.map(row => {
+
         return {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
             content: document.querySelector(".record-content").value,
+            word: document.querySelector(".record-word").value,
         }
     });
 

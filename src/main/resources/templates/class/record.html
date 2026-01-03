@@ -189,6 +189,9 @@
                                                                   ? #strings.replace(#strings.replace(#strings.replace(content.content, '<br />', '\n'),'<br/>','\n'),'<br>','\n')
                                                                   : ''}">
                                                         </textarea>
+                                                        <input type="hidden"
+                                                               class="record-word"
+                                                               th:value="${content != null ? content.word : ''}">
                                                         <!-- 이미지 영역 -->
                                                         <div th:if="${s.appToken == null or s.appToken == ''}" class="comment-image">
                                                             <img th:src="@{/image/send1.png}">

@@ -269,6 +269,13 @@ public interface ClassRepository {
             @Param("studentId") String studentIdm,
             @Param("count") int count);
 
+    List<ClassAppRespDTO.AfterClassDetailRespDTO> findAfterClassDetail(
+            @Param("studentId") String studentId,
+            @Param("classType") String classType,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("week") String week);
+
     public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
     ClassRespDTO.InfantHanDTO findInfantHan(
@@ -346,4 +353,6 @@ public interface ClassRepository {
             @Param("eYear") String eYear,
             @Param("eMonth") String eMonth
     );
+
+
 }

@@ -28,11 +28,11 @@ public class AfterClassNotice {
     @Column(name = "class_type", length = 20)
     private String classType;
 
-    @Column(name = "year", length = 10)
-    private String year;
+    @Column(name = "yy", length = 10)
+    private String yy;
 
-    @Column(name = "month", length = 10)
-    private String month;
+    @Column(name = "mm", length = 10)
+    private String mm;
 
     @Column(name = "week")
     private String week;
@@ -63,11 +63,11 @@ public class AfterClassNotice {
     private Timestamp createdAt;
 
     @Builder
-    public AfterClassNotice(String content, String classType, String year, String month, String week, String dayname, String classLabel, User user, Student student, AfterClass afterClass, TimeTable timeTable, Timestamp createdAt) {
+    public AfterClassNotice(String content, String classType, String yy, String mm, String week, String dayname, String classLabel, User user, Student student, AfterClass afterClass, TimeTable timeTable, Timestamp createdAt) {
         this.content = content;
         this.classType = classType;
-        this.year = year;
-        this.month = month;
+        this.yy = yy;
+        this.mm = mm;
         this.week = week;
         this.dayname = dayname;
         this.classLabel = classLabel;

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class AppApiUtils {
@@ -52,6 +53,15 @@ public final class AppApiUtils {
         String code = (resultCode == null || resultCode.isBlank()) ? "9999" : resultCode;
         String msg = (message == null || message.isBlank()) ? "unknown_error" : message;
         return new ApiEnvelope<>("false", code, Collections.emptyList(), msg);
+    }
+
+
+    public static <T> ClinicApiEnvelope<List<T>> successClinicOne(T item) {
+        List<T> list = new ArrayList<>();
+        if (item != null) {
+            list.add(item);
+        }
+        return new ClinicApiEnvelope<>(RESULT_OK, list);
     }
 
     @Data

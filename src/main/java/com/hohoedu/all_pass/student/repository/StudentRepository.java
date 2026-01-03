@@ -166,4 +166,9 @@ public interface StudentRepository {
     public StudentAppRespDTO.AppLoginViewDTO appLogin(
             @Param("appId") String appId);
 
+    List<StudentAppRespDTO.AttendanceListRespDTO> findAttendanceList(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
 }
