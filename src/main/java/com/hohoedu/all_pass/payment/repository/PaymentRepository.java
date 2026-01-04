@@ -164,7 +164,7 @@ public interface PaymentRepository {
     );
 
 
-    PaymentDetail findEduPaymentDetailByPaymentKey(
+    PaymentRespDTO.PaymentDetailDTO findEduPaymentDetailByPaymentKey(
             @Param("paymentKey") String paymentKey);
 
     List<String> findPaymentKeys(

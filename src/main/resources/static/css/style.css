@@ -6988,6 +6988,29 @@ td.middle {
     height: 80%;
 }
 
+.phone-tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.student-name-cell {
+    cursor: help;
+}
+
+.student-name-cell:hover {
+    text-decoration: underline;
+    color: #2563eb;
+}
+
 /* ======================= manage-tuition page ======================= */
 .lump-sum {
     display: flex;

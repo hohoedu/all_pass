@@ -114,75 +114,158 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }
 
-        // ✅ 결제 상태 기준 정렬
-        const sortedList = [...filteredList].sort((a, b) => {
+        // 🔥 형제 그룹 맵 생성 (전화번호 뒷자리 기준)
+        const siblingGroups = new Map();
 
-            const statusA =
-                currentFeeView === 'edu' ? a.eduStatus : a.materialStatus;
-            const statusB =
-                currentFeeView === 'edu' ? b.eduStatus : b.materialStatus;
+        filteredList.forEach(student => {
+            const phoneKey = student.parentPhone ? student.parentPhone.slice(-4) : `unique_${student.studentId}`;
+
+            if (!siblingGroups.has(phoneKey)) {
+                siblingGroups.set(phoneKey, []);
+            }
+            siblingGroups.get(phoneKey).push(student);
+        });
+
+        // 🔥 각 그룹의 대표 학생 결정 (가나다순 첫 번째)
+        const groupRepresentatives = Array.from(siblingGroups.values()).map(group => {
+            const sorted = group.sort((a, b) =>
+                (a.studentName || '').localeCompare(b.studentName || '')
+            );
+            return {
+                representative: sorted[0],
+                members: sorted
+            };
+        });
+
+        // 🔥 그룹 대표로 정렬 (상태 → 대표 이름)
+        const sortedGroups = groupRepresentatives.sort((a, b) => {
+            const statusA = currentFeeView === 'edu' ? a.representative.eduStatus : a.representative.materialStatus;
+            const statusB = currentFeeView === 'edu' ? b.representative.eduStatus : b.representative.materialStatus;
 
             const orderA = PAYMENT_STATUS_ORDER[statusA] ?? 99;
             const orderB = PAYMENT_STATUS_ORDER[statusB] ?? 99;
 
-            return orderA - orderB;
+            // 1차: 상태별 정렬
+            if (orderA !== orderB) {
+                return orderA - orderB;
+            }
+
+            // 2차: 대표 학생 이름순
+            return (a.representative.studentName || '').localeCompare(b.representative.studentName || '');
+        });
+
+        // 🔥 그룹을 펼쳐서 최종 리스트 생성
+        const sortedList = [];
+        sortedGroups.forEach(group => {
+            sortedList.push(...group.members);
         });
 
         tbody.innerHTML = '';
 
         if (!sortedList || sortedList.length === 0) {
             tbody.innerHTML = `
-            <tr>
-                <td colspan="9" style="text-align:center;">
-                    등록된 학생 데이터가 없습니다.
-                </td>
-            </tr>`;
+        <tr>
+            <td colspan="9" style="text-align:center;">
+                등록된 학생 데이터가 없습니다.
+            </td>
+        </tr>`;
             tbody.style.visibility = 'visible';
             return;
         }
 
+        // 🔥 DocumentFragment 사용
+        const fragment = document.createDocumentFragment();
+
         sortedList.forEach((s, i) => {
-            const fee = currentFeeView === 'edu'
-                ? s.totalFee
-                : s.totalMaterialFee;
-
-            const unpaid = currentFeeView === 'edu'
-                ? s.unpaidEduAmount
-                : s.unpaidMaterialAmount;
-
-            const payState = currentFeeView === 'edu'
-                ? s.eduStatus
-                : s.materialStatus;
+            const fee = currentFeeView === 'edu' ? s.totalFee : s.totalMaterialFee;
+            const unpaid = currentFeeView === 'edu' ? s.unpaidEduAmount : s.unpaidMaterialAmount;
+            const payState = currentFeeView === 'edu' ? s.eduStatus : s.materialStatus;
 
             const tr = document.createElement('tr');
 
-            /* 🔥 이후 로직에서 반드시 필요한 dataset */
             tr.dataset.studentId = s.studentId;
             tr.dataset.studentName = s.studentName;
             tr.dataset.paymentKey = s.paymentKey;
-            tr.dataset.billId = s.billId;
+            tr.dataset.eduBillId = s.eduBillId;
+            tr.dataset.materialBillId = s.materialBillId;
             tr.dataset.eduStatus = s.eduStatus;
             tr.dataset.materialStatus = s.materialStatus;
+            tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
 
             tr.innerHTML = `
-                <td class="checkbox-group">
-                    <input type="checkbox" class="row-checkbox">
-                </td>
-                <td>${i + 1}</td>
-                <td>${s.studentName}</td>
-                <td>${s.subject || '-'}</td>
-                <td>${formatTeacher(s)}</td>
-                <td>${Number(fee || 0).toLocaleString()}</td>
-                <td>${Number(unpaid || 0).toLocaleString()}</td>
-                <td>${renderIssueStatus(s)}</td>
-                <td>${renderPayStatus(payState, unpaid)}</td>
-            `;
+            <td class="checkbox-group">
+                <input type="checkbox" class="row-checkbox">
+            </td>
+            <td>${i + 1}</td>
+            <td class="student-name-cell" style="position: relative;">${s.studentName}</td>
+            <td>${s.subject || '-'}</td>
+            <td>${formatTeacher(s)}</td>
+            <td>${Number(fee || 0).toLocaleString()}</td>
+            <td>${Number(unpaid || 0).toLocaleString()}</td>
+            <td>${renderIssueStatus(s)}</td>
+            <td>${renderPayStatus(payState, unpaid)}</td>
+        `;
 
-            tbody.appendChild(tr);
+            fragment.appendChild(tr);
         });
+
+        tbody.appendChild(fragment);
+        bindStudentNameTooltip();
 
         selectAll.checked = false;
         tbody.style.visibility = 'visible';
+    }
+
+
+    // 형제 이름 보이게 하기
+    function bindStudentNameTooltip() {
+        const nameCells = tbody.querySelectorAll('.student-name-cell');
+
+        nameCells.forEach(cell => {
+            const row = cell.closest('tr');
+            const samePhoneStudents = row.dataset.samePhoneStudents;
+
+            if (!samePhoneStudents ||
+                samePhoneStudents === 'null' ||
+                samePhoneStudents === 'undefined' ||
+                samePhoneStudents.trim() === '') {
+                return;
+            }
+
+            // 호버 가능한 상태임을 표시
+            cell.style.cursor = 'help';
+
+            // 호버 시 툴팁 생성
+            cell.addEventListener('mouseenter', (e) => {
+                // 기존 툴팁 제거
+                const existingTooltip = document.querySelector('.phone-tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'phone-tooltip';
+                tooltip.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">같은 전화번호 형제:</div>
+                ${samePhoneStudents}
+            `;
+
+                document.body.appendChild(tooltip);
+
+                // 툴팁 위치 조정
+                const rect = cell.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+            });
+
+            // 마우스 나가면 툴팁 제거
+            cell.addEventListener('mouseleave', () => {
+                const tooltip = document.querySelector('.phone-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
     }
 
     function formatTeacher(s) {
@@ -197,8 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : s.materialStatus;
 
         if (!status) return `<span class="unissued">미발행</span>`;
-        if (status === 'issued') return `<span class="issued">발행</span>`;
-        if (status === 'destroyed') return `<span class="destroyed">파기</span>`;
+        if (status === 'issued' || status === 'approved') return `<span class="issued">발행</span>`;
         return '-';
     }
 
@@ -912,7 +994,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const destroyType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
 
         const row = checked[0].closest('tr');
-        const billId = row.dataset.billId;
+        const eduBillId = row.dataset.eduBillId;
+        const materialBillId = row.dataset.materialBillId;
+        const billId = eduChecked ? eduBillId : materialBillId;
         const studentId = row.dataset.studentId;
         const paymentKey = row.dataset.paymentKey;
         const studentName = row.dataset.studentName;

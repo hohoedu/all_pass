@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 location.reload();
             } else {
-                alert("수기 결제 실패: " + result.message);
+                alert("수기 결제 실패");
             }
         } catch (err) {
             alert("오류가 발생했습니다.");

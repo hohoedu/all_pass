@@ -493,8 +493,7 @@ public class PaymentService {
             int newUnpaidAmount =
                     payment.getUnpaidAmount() - bill.getAmount();
 
-            String newStatus =
-                    calculatePaymentStatus(payment.getPaymentKey());
+            String newStatus = calculatePaymentStatus(payment.getPaymentKey());
 
             paymentRepository.updatePaymentStatus(
                     payment.getPaymentKey(),
@@ -894,7 +893,7 @@ public class PaymentService {
 //        }
 
         String status;
-        PaymentDetail detail = paymentRepository.findEduPaymentDetailByPaymentKey(reqDTO.getPaymentKey());
+        PaymentRespDTO.PaymentDetailDTO detail = paymentRepository.findEduPaymentDetailByPaymentKey(reqDTO.getPaymentKey());
         int manualPrice = reqDTO.getCashAmount() + reqDTO.getCardAmount() + reqDTO.getTransferAmount();
         if (manualPrice == detail.getAmount()) {
             status = "approved";

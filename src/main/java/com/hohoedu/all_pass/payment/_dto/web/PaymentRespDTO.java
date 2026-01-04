@@ -20,7 +20,8 @@ public class PaymentRespDTO {
     public static class AssignStudentsDTO {
         private String studentId;
         private String paymentKey;
-        private String billId;
+        private String eduBillId;
+        private String materialBillId;
         private String studentName;
         private String subject;
         private String hanTeacher;
@@ -40,6 +41,7 @@ public class PaymentRespDTO {
         private String parentPhone;
         private Integer unpaidEduAmount;
         private Integer unpaidMaterialAmount;
+        private String samePhoneStudents;
     }
 
     @Data
@@ -160,7 +162,7 @@ public class PaymentRespDTO {
     }
 
     @Data
-    public static class MonthlyPaymentDTO{
+    public static class MonthlyPaymentDTO {
         private String studentId;
         private String billId;
         private String studentName;
@@ -170,6 +172,11 @@ public class PaymentRespDTO {
         private String paidPrice;
         private String billAmount;
         private String unpaidAmount;
+    }
+
+    @Data
+    public static class PaymentDetailDTO {
+        private Integer amount;
     }
 
 }
