@@ -52,13 +52,14 @@
         WHERE s.center_code = #{centerCode}
           AND (reg.registeredClassTypes IS NULL
            OR reg.registeredClassTypes IN ('1'
-            , '2', '3'))
+            , '2'
+            , '3'))
           AND s.status_key = 'ACTIVE'
           AND (
             ta.assign_han_teacher = #{userCode}
            OR ta.assign_book_teacher = #{userCode}
            OR (ta.assign_han_teacher IS NULL
-          OR ta.assign_book_teacher IS NULL)
+           OR ta.assign_book_teacher IS NULL)
             );
     </select>
 
@@ -120,6 +121,7 @@
         SELECT
         s.student_id AS studentId,
         s.student_name AS studentName,
+        CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
         sc.status_name AS statusName,
         FORMAT(s.created_at, 'yyyy-MM-dd') AS entryDate,
         g.grade_name AS gradeName,
@@ -185,6 +187,7 @@
         SELECT
         s.id AS id,
         s.student_id AS studentId,
+        CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
         s.student_name AS studentName,
         sc.status_name AS statusName,
         FORMAT(s.created_at, 'yyyy-MM-dd')

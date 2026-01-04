@@ -137,6 +137,13 @@ function renderStudents(tbody, students = []) {
         const tr = document.createElement("tr");
         tr.setAttribute("data-id", s.studentId);
         tr.setAttribute("onclick", "openModal(this)");
+        const appIcon = s.hasApp === "Y"
+            ? `<div class="tooltip-container">
+                 <img src="/image/send2.png" alt="앱 연결" class="app-icon" 
+                 style="width: 25px; height: 25px;">
+                 <div class="tooltip-text">앱 연결됨</div>
+               </div>`
+            : "";
 
         tr.innerHTML = `
       <td>${i + 1}</td>
@@ -152,6 +159,7 @@ function renderStudents(tbody, students = []) {
             <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
         </div>
       </td>
+      <td>${appIcon}</td>
     `;
 
         tbody.appendChild(tr);

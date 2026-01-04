@@ -135,6 +135,7 @@ public class StudentWebRespDTO {
         private String entryDate;
         private String hanClass;
         private String bookClass;
+        private String hasApp;
     }
 
 

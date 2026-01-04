@@ -40,7 +40,8 @@
                                     <select name="teacherNo" id="main-teacher-filter">
                                         <option value="all">전체</option>
                                         <th:block th:each="teacher : ${teachers}">
-                                            <option th:value="${teacher.userCode}" th:text="${teacher.userName + ' 선생님'}"></option>
+                                            <option th:value="${teacher.userCode}"
+                                                    th:text="${teacher.userName + ' 선생님'}"></option>
                                         </th:block>
                                     </select>
                                 </div>
@@ -82,7 +83,8 @@
                                     <col width="15%">
                                     <col width="10%">
                                     <col width="10%">
-                                    <col width="15%">
+                                    <col width="7%">
+                                    <col width="8%">
                                 </colgroup>
                                 <thead id="main-sort-header">
                                 <tr>
@@ -137,6 +139,8 @@
                                     </th>
 
                                     <th style="cursor:default">형제연결</th>
+                                    <th style="cursor:default">앱연결</th>
+
                                 </tr>
                                 </thead>
 
@@ -159,6 +163,13 @@
                                         <!--                                        </div>-->
                                         <!-- <img th:if="${s.isSibling == 'Y'}" th:src="@{/image/link.png}" alt="형제 링크" class="link"> -->
                                         <!-- th:attr="title=${#strings.arrayJoin(#lists.map(s.siblingList, sib -> sib.siblingName + ' (' + sib.grade + ')'), ', ')}" -->
+                                    </td>
+                                    <td>
+                                        <div class="tooltip-container" th:if="${s.hasApp == 'Y'}">
+                                            <img th:src="@{/image/send2.png}" alt="앱 연결" class="app-icon"
+                                                 style="width: 25px; height: 25px;">
+                                            <div class="tooltip-text">앱 연결됨</div>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>
