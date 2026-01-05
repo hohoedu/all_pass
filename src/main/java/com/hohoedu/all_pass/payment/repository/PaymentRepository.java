@@ -210,4 +210,9 @@ public interface PaymentRepository {
 
     );
 
+
+    List<PaymentRespDTO.BillDetailDTO> findBillsByBillIds(@Param("list") List<String> billIds);
+
+    int checkAlreadyReissued(@Param("billId") String billId);
+
 }

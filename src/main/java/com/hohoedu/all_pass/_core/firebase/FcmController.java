@@ -34,6 +34,8 @@ public class FcmController {
 
     @PostMapping("/before")
     public ResponseEntity<?> beforeClass(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+
+        System.out.println(fcmDTO.getTokens().stream().toList());
         if (fcmDTO.getTokens() == null || fcmDTO.getTokens().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }

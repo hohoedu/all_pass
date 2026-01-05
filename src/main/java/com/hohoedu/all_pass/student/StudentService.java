@@ -429,6 +429,7 @@ public class StudentService {
     }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
+        log.info("appId = {}", appId);
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
         return respDTO;
     }
@@ -668,6 +669,6 @@ public class StudentService {
 //        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList =
 
 
-        return       studentRepository.findAttendanceList(dto.getId(), yy, mm);
+        return studentRepository.findAttendanceList(dto.getId(), yy, mm);
     }
 }

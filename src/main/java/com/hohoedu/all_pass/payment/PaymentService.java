@@ -956,6 +956,105 @@ public class PaymentService {
     }
 
 
+    public void reissueBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayReissueReqDTO req) throws JsonProcessingException {
+
+        log.info("🔥 재발행 시작 - billIds: {}", req.getBillIds());
+
+        if (req.getBillIds() == null || req.getBillIds().isEmpty()) {
+            throw new IllegalArgumentException("재발행할 청구서를 선택하세요.");
+        }
+
+        /* =====================================================
+         * 1. 기존 청구서 정보 조회
+         * ===================================================== */
+        List<PaymentRespDTO.BillDetailDTO> existingBills =
+                paymentRepository.findBillsByBillIds(req.getBillIds());
+
+        log.info("🔥 조회된 청구서 개수: {}", existingBills != null ? existingBills.size() : 0);
+
+        if (existingBills == null || existingBills.isEmpty()) {
+            throw new IllegalStateException("청구서를 찾을 수 없습니다.");
+        }
+
+        // 결제 완료된 청구서 체크
+        long paidCount = existingBills.stream()
+                .filter(b -> "PAID".equals(b.getStatus()))
+                .count();
+
+        if (paidCount > 0) {
+            throw new IllegalStateException("이미 결제 완료된 청구서는 재발행할 수 없습니다.");
+        }
+
+        /* =====================================================
+         * 2. billId 기준으로 그룹핑 (가구별)
+         * ===================================================== */
+        Map<String, List<PaymentRespDTO.BillDetailDTO>> groupByBillId =
+                existingBills.stream()
+                        .collect(Collectors.groupingBy(
+                                PaymentRespDTO.BillDetailDTO::getBillId
+                        ));
+
+        log.info("🔥 그룹 개수: {}", groupByBillId.size());
+
+        /* =====================================================
+         * 3. 가구별 재발행 처리 (같은 billId로 재전송)
+         * ===================================================== */
+        for (Map.Entry<String, List<PaymentRespDTO.BillDetailDTO>> entry : groupByBillId.entrySet()) {
+
+            String billId = entry.getKey();
+            List<PaymentRespDTO.BillDetailDTO> bills = entry.getValue();
+
+            log.info("🔥 재발행 처리 - billId: {}, 학생 수: {}", billId, bills.size());
+
+            // 3-1. 대표 청구서 정보
+            PaymentRespDTO.BillDetailDTO representative = bills.get(0);
+            String billType = representative.getBillType();
+            String parentPhone = representative.getPhone();
+
+            log.info("🔥 billType: {}, parentPhone: {}", billType, parentPhone);
+
+            /* =====================================================
+             * 3-2. 결제 설정 조회
+             * ===================================================== */
+            PaymentRespDTO.PaymentConfigDTO conf =
+                    "EDU_FEE".equals(billType)
+                            ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode())
+                            : paymentRepository.findPayConfigByCenterCode("PUS001");
+
+            log.info("🔥 결제 설정 조회 완료: {}", conf != null);
+
+            if (conf == null) {
+                throw new IllegalStateException("결제 설정 없음");
+            }
+
+            log.info("🔥 bill 객체 생성 완료");
+
+            Map<String, Object> body = Map.of(
+                    "apikey", conf.getApiKey() != null ? conf.getApiKey() : "",
+                    "member", conf.getMemberId() != null ? conf.getMemberId() : "",
+                    "merchant", conf.getMerchantId() != null ? conf.getMerchantId() : "",
+                    "bill_id", billId
+            );
+
+            log.info("🔥 Paymint 호출 시작 - URL: {}", conf.getResendUrl());
+
+            PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(
+                    conf.getResendUrl(),  // 🔥 재발행은 resend URL 사용
+                    body
+            );
+
+            log.info("🔥 Paymint 응답: code={}, message={}",
+                    paymintResp.getCode(),
+                    paymintResp.getMsg()
+            );
+
+            if (!"0000".equals(paymintResp.getCode())) {
+                throw new RuntimeException("Paymint 호출 실패: " + paymintResp.getMsg());
+            }
+        }
+
+        log.info("🔥 재발행 완료");
+    }
 }
 
 

@@ -362,7 +362,6 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
           </td>`;
 
 
-
         // 발송여부
         const beforeSendSrc = s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png';
         const afterSendSrc = s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png';
@@ -492,7 +491,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    sendbtn.addEventListener("click", () => {
+    sendbtn.addEventListener("click", async () => {
 
         const checkedRows = Array.from(document.querySelectorAll("#record_tbody tr"))
             .filter(row => {
@@ -506,9 +505,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const tokens = checkedRows
-            .map(row => row.getAttribute("data-app-token"))
-            .filter(token => token);
-
+            .map(row => row.getAttribute("data-app-token") || '')
+            .filter(token => token !== '');
+        console.log(tokens);
         const requestBody = {
             tokens: tokens,
             title: "수업 안내",
@@ -532,15 +531,16 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(async data => {
                 console.log("성공:", data);
                 alert("수업 전 안내가 발송되었습니다.");
-                await insertBeforeClassNotice(checkedRows);
-
                 await insertStudentAttendance();
+
 
             })
             .catch(error => {
                 console.error("실패:", error);
                 alert("발송을 실패했습니다. " + error.message);
             });
+
+        await insertBeforeClassNotice(checkedRows);
     });
 });
 
@@ -570,7 +570,7 @@ async function insertBeforeClassNotice(checkedRows) {
             throw new Error("서버 오류: " + response.status);
         }
 
-        console.log("발송 로그 저장 성공");
+       alert("저장되었습니다.");
     } catch (error) {
         console.error("발송 로그 저장 실패:", error);
     }

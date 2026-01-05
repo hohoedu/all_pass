@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const siblingGroups = new Map();
 
         filteredList.forEach(student => {
-            const phoneKey = student.parentPhone ? student.parentPhone.slice(-4) : `unique_${student.studentId}`;
+            const phoneKey = student.parentPhone ? student.parentPhone.slice(-8) : `unique_${student.studentId}`;
 
             if (!siblingGroups.has(phoneKey)) {
                 siblingGroups.set(phoneKey, []);
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sortedList.forEach((s, i) => {
             const fee = currentFeeView === 'edu' ? s.totalFee : s.totalMaterialFee;
-            const unpaid = currentFeeView === 'edu' ? s.unpaidEduAmount : s.unpaidMaterialAmount;
+            const unpaid = currentFeeView === 'edu' ? s.unpaidEduAmount : s.unpaidBookAmount;
             const payState = currentFeeView === 'edu' ? s.eduStatus : s.materialStatus;
 
             const tr = document.createElement('tr');
@@ -285,6 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderPayStatus(status, unpaid) {
+        console.log(unpaid, status);
         if (status === 'approved') {
             if (unpaid !== 0) {
                 return `<span class="pay-box pay-partial">부분결제</span>`;
@@ -590,6 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach((item, index) => {
             const amount = Number(item.amount || 0).toLocaleString();
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const teachers = [item.hanTeacher, item.bookTeacher].filter(Boolean).join(', ');
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -602,8 +604,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.classDate}</td>
                 <td>${item.studentName}</td>
                 <td>${item.subject}</td>
-                <td>${item.hanTeacher}</td>
+                <td>${teachers}</td>
                 <td>${paidDate}</td>
+                <td>추가</td>
                 <td class="payment">${amount}</td>
                 <td class="middle">
                     <div class="state-box ${getStatusClass(item.status)}">
@@ -1040,25 +1043,57 @@ document.addEventListener("DOMContentLoaded", () => {
 // 🔥 4. 청구서 재발행(재전송)
 // ================================
     payReissue.addEventListener('click', async () => {
+        const checkedBoxes = document.querySelectorAll(
+            '#student-tbody input[type="checkbox"]:checked'
+        );
 
-        const billId = prompt("재발행할 bill_id 입력");
+        if (checkedBoxes.length === 0) {
+            return alert('재발행할 청구서를 선택하세요.');
+        }
 
-        if (!billId) return;
+        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
+        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
+        if (!eduChecked && !bookChecked) {
+            return alert('청구 종류를 선택하세요.');
+        }
+
+        // 🔥 선택된 타입에 맞는 billId 수집
+        const billIds = Array.from(checkedBoxes).map(box => {
+            const row = box.closest('tr');
+
+            if (eduChecked) {
+                return row.dataset.eduBillId;
+            } else {
+                return row.dataset.materialBillId;
+            }
+        }).filter(id => id && id !== 'null' && id !== 'undefined'); // 🔥 유효한 billId만 필터링
+
+        if (billIds.length === 0) {
+            return alert('선택한 학생의 청구서가 발행되지 않았습니다.');
+        }
+
+        console.log('재발행할 billIds:', billIds);
+        
         try {
-            const res = await fetch("/pay/reissue", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({billId})
+            const res = await fetch('/pay/reissue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({billIds})
             });
 
             const data = await res.json();
 
-            if (data.success) alert("재발행 완료");
-            else alert(`재발행 실패: ${data.msg}`);
+            if (!data.success) {
+                return alert(data.msg || '재발행 실패');
+            }
 
-        } catch (err) {
-            console.error("❌ 재발행 오류:", err);
+            alert('재발행이 완료되었습니다.');
+            window.location.reload();
+
+        } catch (e) {
+            console.error(e);
+            alert('재발행 중 오류가 발생했습니다.');
         }
     });
 

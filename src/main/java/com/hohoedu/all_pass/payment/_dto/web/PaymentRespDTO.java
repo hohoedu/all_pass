@@ -7,7 +7,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -40,7 +42,7 @@ public class PaymentRespDTO {
         private String totalMaterialFee;
         private String parentPhone;
         private Integer unpaidEduAmount;
-        private Integer unpaidMaterialAmount;
+        private Integer unpaidBookAmount;
         private String samePhoneStudents;
     }
 
@@ -53,6 +55,7 @@ public class PaymentRespDTO {
         private String preBillId;
         private String callbackUrl;
         private String sendUrl;
+        private String resendUrl;
         private String destroyUrl;
         private String cancelUrl;
     }
@@ -179,4 +182,22 @@ public class PaymentRespDTO {
         private Integer amount;
     }
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BillDetailDTO {
+        private String billId;
+        private String paymentKey;
+        private String studentId;
+        private String studentName;
+        private Integer amount;
+        private String billType;
+        private String phone;
+        private String centerCode;
+        private String expireDate;
+        private String yy;
+        private String mm;
+        private String status;
+        private String message;
+    }
 }

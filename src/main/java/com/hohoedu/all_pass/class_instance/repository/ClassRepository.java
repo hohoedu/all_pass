@@ -7,6 +7,7 @@ import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -195,7 +196,8 @@ public interface ClassRepository {
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("week") String week,
-            @Param("timeTableKey") String timeTableKey);
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy);
 
     public void createAttendance(
             @Param("studentId") String studentId,
@@ -221,10 +223,12 @@ public interface ClassRepository {
             @Param("week") String week);
 
     public ClassRespDTO.AfterClassRespDTO findAfterClass(
+            @Param("userCode") String userCode,
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("week") String week,
-            @Param("timeTableKey") String timeTableKey);
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy);
 
     public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
             @Param("timeTableKey") String timeTableKey);
@@ -353,6 +357,5 @@ public interface ClassRepository {
             @Param("eYear") String eYear,
             @Param("eMonth") String eMonth
     );
-
 
 }

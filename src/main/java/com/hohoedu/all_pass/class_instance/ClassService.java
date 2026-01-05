@@ -501,9 +501,13 @@ public class ClassService {
         return response;
     }
 
-    public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String timeTableKey, String week, String classKey, String unitKey) {
+    public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String week, String classKey, String unitKey) {
         List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
-        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(classKey, unitKey, week, timeTableKey);
+
+        String currentYear = dateConfig.currentYearMonth().get("currentYear");
+        String yy = currentYear.substring(2, 4);
+
+        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
 
         ClassRespDTO.RecordBundleDTO response = new ClassRespDTO.RecordBundleDTO(students, afterClassContent);
 
@@ -511,7 +515,10 @@ public class ClassService {
     }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
-        ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey);
+
+        String currentYear = dateConfig.currentYearMonth().get("currentYear");
+        String yy = currentYear.substring(2, 4);
+        ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey, yy);
         return response;
     }
 

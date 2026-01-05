@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.payment._dto.web;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 import java.util.List;
 
@@ -107,6 +108,11 @@ public class PaymentReqDTO {
         private String mm;
         private String status;
 
+    }
+
+    @Data
+    public static class PayReissueReqDTO {
+        private List<String> billIds;
     }
 
     @Data

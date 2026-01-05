@@ -63,6 +63,29 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success("청구서 발행 완료"));
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissueBill(HttpSession session, @RequestBody PaymentReqDTO.PayReissueReqDTO dto) throws JsonProcessingException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        try {
+            paymentService.reissueBill(user, dto);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "msg", "재발행이 완료되었습니다."
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "msg", e.getMessage()
+            ));
+        }
+    }
+
     // 결제선생 콜백
     @PostMapping("/callback")
     public ResponseEntity<?> callback(@RequestBody PaymentReqDTO.PayCallbackDTO dto) {
@@ -91,6 +114,8 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(response));
 
     }
+
+
 
     @PostMapping("/destroy/bill")
     public ResponseEntity<?> destroyBills(HttpSession session, @RequestBody PaymentReqDTO.PayDestroyReqDTO dto) throws JsonProcessingException {

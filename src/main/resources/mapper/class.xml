@@ -575,6 +575,8 @@
         WHERE t.unit_key = #{unitKey}
           AND t.class_key = #{classKey}
           AND t.time_table_key = #{timeTableKey}
+          AND RIGHT (bc.before_class_key
+            , 2) = #{yy}
     </select>
 
     <!--  수업 후 발송 내용  -->
@@ -590,10 +592,13 @@
                  JOIN erp_time_table t ON ac.class_key = t.class_key AND ac.unit_key = t.unit_key
                  JOIN erp_user u ON t.user_code = u.user_code
                  JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
-        WHERE ac.unit_key = #{unitKey}
+        WHERE u.user_code = #{userCode}
+          AND ac.unit_key = #{unitKey}
           AND t.class_key = #{classKey}
           AND ac.week = #{week}
           AND t.time_table_key = #{timeTableKey}
+          AND RIGHT (ac.after_class_key
+            , 2) = #{yy}
     </select>
 
     <!-- 선생님별 보강 조회 -->
@@ -603,7 +608,7 @@
         FROM erp_remedial r
                  JOIN erp_student s ON r.student_id = s.student_id
                  JOIN erp_user u ON r.user_code = u.user_code
-        WHERE r.user_code = 'DAE001cos'
+        WHERE r.user_code = #{userCode}
           AND substring(r.absence_date, 1, 4) = #{year}
           AND substring(r.absence_date, 6, 2) = #{month}
     </select>
