@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.threeten.bp.LocalDate;
 
 import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
 
@@ -188,7 +190,6 @@ public class ClassViewController {
     // 수업 일지 페이지
     @GetMapping("/record")
     public String getClassRecordPage(Model model, HttpSession session) {
-        String today = dateConfig.currentYearMonth().get("today");
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
@@ -206,6 +207,13 @@ public class ClassViewController {
             String timeTableKey = labels.get(0).getTimeTableKey();
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
+
+
+//            List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
+//
+//            LocalDate today = LocalDate.now();
+//            String currentWeek = findWeekByDate(weeks, today);
+
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, "ju_1", classKey, unitKey);
 
             model.addAttribute("students", bundle.getStudents());
@@ -223,6 +231,46 @@ public class ClassViewController {
         model.addAttribute("labels", labels);
 
         return "class/record";
+    }
+
+    //주차 찾기
+    private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate) {
+        return weeks.stream()
+                .filter(week ->
+                        isDateMatch(week.getMon(), targetDate) ||
+                                isDateMatch(week.getTue(), targetDate) ||
+                                isDateMatch(week.getWed(), targetDate) ||
+                                isDateMatch(week.getThu(), targetDate) ||
+                                isDateMatch(week.getFri(), targetDate) ||
+                                isDateMatch(week.getSat(), targetDate) ||
+                                isDateMatch(week.getSun(), targetDate)
+                )
+                .map(ClassRespDTO.ClassWeekDTO::getWeek)
+                .findFirst()
+                .orElse(weeks.isEmpty() ? "ju_1" : weeks.get(0).getWeek());
+    }
+
+    // 날짜 비교 헬퍼 메서드
+    private boolean isDateMatch(Object dateObj, LocalDate targetDate) {
+        if (dateObj == null) return false;
+
+        if (dateObj instanceof LocalDate) {
+            return targetDate.equals(dateObj);
+        }
+
+        if (dateObj instanceof String) {
+            String dateStr = (String) dateObj;
+            if (dateStr == null || dateStr.trim().isEmpty()) return false;
+
+            try {
+                LocalDate date = LocalDate.parse(dateStr);
+                return targetDate.equals(date);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     // 보강 페이지

@@ -161,6 +161,14 @@
           AND bill_type = #{type}
     </select>
 
+    <select id="findCancelBillIdByPaymentKey" resultType="String">
+        SELECT bill_id AS billId
+        FROM erp_payment_bill
+        WHERE payment_key = #{paymentKey}
+          AND status = 'approved'
+          AND bill_type = #{type}
+    </select>
+
     <select id="findBillsByBillIdAndType"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentBillDTO">
         SELECT bill_id     AS billId,
@@ -173,6 +181,13 @@
           AND bill_type = #{billType}
           AND status IN ('issued', 'approved', 'destroyed')
     </select>
+
+
+<update id="updateBillStatusByBillIdAndStatus">
+    UPDATE erp_payment_bill
+    set status = #{toStatus}
+    where bill_id = #{billId}
+</update>
 
     <select id="existsBillByStudentIds" parameterType="map" resultType="int">
 
@@ -267,16 +282,16 @@
 
                             -- 교육비 상태
                             ISNULL(
-                                    (SELECT TOP 1 pb2.status
-                                     FROM erp_payment_bill pb2
-                                     WHERE pb2.payment_key = p.payment_key
-                                       AND pb2.bill_type = 'EDU_FEE'
-                                     ORDER BY pb2.created_at DESC, pb2.bill_id DESC),
                                     (SELECT TOP 1 pm2.status
                                      FROM erp_payment_manual pm2
                                      WHERE pm2.payment_key = p.payment_key
                                        AND pm2.student_id = p.student_id
-                                     ORDER BY pm2.created_at DESC)
+                                     ORDER BY pm2.created_at DESC),
+                                    (SELECT TOP 1 pb2.status
+                                     FROM erp_payment_bill pb2
+                                     WHERE pb2.payment_key = p.payment_key
+                                       AND pb2.bill_type = 'EDU_FEE'
+                                     ORDER BY pb2.created_at DESC, pb2.bill_id DESC)
                             )                                                                                                 AS eduStatus,
 
                             -- 교재비 상태
@@ -295,7 +310,7 @@
                      GROUP BY p.student_id, p.payment_key)
 
         SELECT s.student_id                                                    as studentId,
-               s.student_name                                                  as studentName,
+               s.student_name + ' ' + pa.parent_tel_last                       as studentName,
 
                pay.paymentKey,
                pay.hanFee,
@@ -627,16 +642,13 @@
                     -- 교육비
                     WHEN item_type = 'EDU_FEE' AND class_type = '1' THEN #{hanEduFee}
                     WHEN item_type = 'EDU_FEE' AND class_type = '2' THEN #{bookEduFee}
-
-                    -- 교재비
                     WHEN item_type = 'BOOK_FEE' AND class_type = '1' THEN #{hanMaterialFee}
                     WHEN item_type = 'BOOK_FEE' AND class_type = '2' THEN #{bookMaterialFee}
                     END
         WHERE payment_key = #{paymentKey}
-          AND item_type IN ('EDU_FEE', 'BOOK_FEE');
     </update>
 
-    <select id="findPaymentDetailsByPaymentKey" resultType="String">
+    <select id="findPaymentDetailByPaymentKey" resultType="String">
         select amount
         from erp_payment_detail
         where payment_key = #{paymentKey}

@@ -152,6 +152,10 @@ public interface PaymentRepository {
             @Param("paymentKey") String paymentKey,
             @Param("type") String type);
 
+    String findCancelBillIdByPaymentKey(
+            @Param("paymentKey") String paymentKey,
+            @Param("type") String type);
+
     void updateBillStatusByBillIdAndStatus(
             @Param("billId") String billId,
             @Param("fromStatus") String fromStatus,

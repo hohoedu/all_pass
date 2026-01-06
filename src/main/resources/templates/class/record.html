@@ -34,7 +34,7 @@
                             <div class="class-btns">
                                 <div class="common-btn class-guide">수업 안내 발송</div>
                                 <div class="common-btn class-comment">수업 후 코멘트 발송</div>
-                                <div class="common-btn record-save">저장</div>
+                                <div class="common-btn record-save class-save">저장</div>
                             </div>
                         </div>
                         <div class="month-header">
@@ -95,7 +95,7 @@
                                     </colgroup>
                                     <thead>
                                     <tr>
-                                        <th class="checkbox-group"><input type="checkbox"/></th>
+                                        <th class="checkbox-group"><input type="checkbox" id="select-all-students"/></th>
                                         <th>No</th>
                                         <th>이름</th>
                                         <th>출결</th>
@@ -115,6 +115,7 @@
                                         <td th:text="${stat.count}"></td>
                                         <td class="studentName" th:text="${s.studentName}"></td>
                                         <td>
+
                                                     <span th:classappend="
                                                     ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
                                                         (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
@@ -140,6 +141,8 @@
                                                                    th:value="${s.outTime}"/>
                                                         </span>
                                             </div>
+
+
                                         </td>
                                         <td th:if="${s.remedialDate == null}">
                                             --
@@ -200,7 +203,6 @@
                                                 </div>
                                             </div>
                                         </td>
-
 
                                         <td class="send-ornot">
                                             <img th:if="${s.appToken == null or s.appToken == ''}" src="/image/no-smartphones.png" alt="">

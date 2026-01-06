@@ -6,11 +6,13 @@ import java.time.format.DateTimeFormatter;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @RequestMapping("/scheduler")
 @RestController
 @RequiredArgsConstructor
@@ -21,15 +23,14 @@ public class AttendancaController {
 
     @PostMapping("/select")
     public ResponseEntity<?> attendanceScheduler() {
-
+        log.info("AttendancaController select");
         String today = dateConfig.currentYearMonth().get("today");
         String yy    = dateConfig.currentYearMonth().get("currentYear");
         String mm    = dateConfig.currentYearMonth().get("currentMonth");
         String day   = dateConfig.currentYearMonth().get("currentDayName");
         String nowHHmm = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
 
-        ScheduleRunResultDTO result =
-                attendanceService.executeScheduledAttendance(nowHHmm, yy, mm, day, today);
+        ScheduleRunResultDTO result = attendanceService.executeScheduledAttendance(nowHHmm, yy, mm, day, today);
 
         return ResponseEntity.ok(ApiUtils.success(result));
     }

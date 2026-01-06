@@ -31,7 +31,7 @@
 
     <!--  센터별 수업 주차 설정  -->
     <select id="getClassWeek"
-            resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassWeekDTO">
         SELECT *
         FROM erp_class_week
         WHERE year = #{year}
@@ -1061,9 +1061,9 @@
     <insert id="insertAfterClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
         INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, yy,
-                                           mm, class_type, class_label, content, word, created_at)
+                                           mm, class_type, class_label, content, word, review, created_at)
         VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{week}, #{dayname}, #{year}, #{month},
-                #{classType}, #{classLabel}, #{content}, #{word}, SYSDATETIME())
+                #{classType}, #{classLabel}, #{content}, #{word}, #{review}, SYSDATETIME())
     </insert>
 
     <select id="findBeforeClassByStudentId"

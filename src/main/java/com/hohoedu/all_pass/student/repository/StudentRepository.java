@@ -171,4 +171,8 @@ public interface StudentRepository {
             @Param("yy") String yy,
             @Param("mm") String mm
     );
+
+    List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(
+            @Param("studentId") String studentId
+    );
 }

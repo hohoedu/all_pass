@@ -283,6 +283,7 @@ public class ClassController {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
+        log.info(dtoList.get(0).getReview());
         classService.insertAfterClassNoticeList(dtoList, user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(true));

@@ -660,7 +660,7 @@ public class PaymentService {
         log.info("cancel request paymentKey={}, cancelType={}",
                 req.getPaymentKey(), req.getCancelType());
 
-        String billId = paymentRepository.findBillIdByPaymentKey(
+        String billId = paymentRepository.findCancelBillIdByPaymentKey(
                 req.getPaymentKey(),
                 req.getCancelType()
         );

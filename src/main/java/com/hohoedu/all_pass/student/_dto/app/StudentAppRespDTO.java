@@ -68,4 +68,13 @@ public class StudentAppRespDTO {
         private String etime;
         private String gb;
     }
+
+    @Data
+    public static class AttendanceMainRespDTO{
+        private String ymd;
+        private String dayname;
+        private String stime;
+        private String etime;
+        private String gb;
+    }
 }

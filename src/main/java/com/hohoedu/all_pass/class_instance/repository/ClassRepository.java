@@ -358,4 +358,5 @@ public interface ClassRepository {
             @Param("eMonth") String eMonth
     );
 
+    AfterClassNotice findByTimeTableKeyAndWeek(String timeTableKey, String week);
 }

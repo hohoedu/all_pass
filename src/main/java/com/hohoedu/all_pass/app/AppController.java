@@ -69,13 +69,16 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
-    //TODO: 출결 상태 조회
-    @PostMapping("/attendance_main")
-    public ResponseEntity<?> AppAttendanceMain() {
 
-        System.out.println("hello!! attendance main");
+    @PostMapping(value = "/attendance_main", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> AppAttendanceMain(@RequestBody StudentAppReqDTO.StudentAttendanceMainDTO reqDTO) throws JsonProcessingException {
 
-        return ResponseEntity.ok(AppApiUtils.successOne(null));
+        List<StudentAppRespDTO.AttendanceMainRespDTO> respDTOs = studentService.findAttendanceMain(reqDTO);
+
+        Object response = AppApiUtils.successClinicList(respDTOs);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+        return ResponseEntity.ok(json);
     }
 
     @PostMapping(value = "/attendance_list", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -137,7 +140,7 @@ public class AppController {
 
         List<ClassAppRespDTO.BeforeClassRespDTO> respDTOs = classService.getBeforeClass(reqDTO.getId(), reqDTO.getCount());
 
-        return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
+        return ResponseEntity.ok(AppApiUtils.successList(null));
     }
 
     @PostMapping("/infant_notice")

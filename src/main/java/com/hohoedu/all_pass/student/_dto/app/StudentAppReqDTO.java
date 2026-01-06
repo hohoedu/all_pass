@@ -38,4 +38,9 @@ public class StudentAppReqDTO {
         private String id;
         private String ym;
     }
+
+    @Data
+    public static class StudentAttendanceMainDTO {
+        private String id;
+    }
 }

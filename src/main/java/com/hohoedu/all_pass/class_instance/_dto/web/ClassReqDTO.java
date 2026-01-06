@@ -312,6 +312,7 @@ public class ClassReqDTO {
         private String dayname;
         private String content;
         private String word;
+        private String review;
         private String classType;
         private String classLabel;
         private String icon;

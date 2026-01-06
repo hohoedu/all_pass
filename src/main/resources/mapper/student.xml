@@ -614,20 +614,44 @@
 <!--REPLACE(stime, ':', '') AS stime,
 REPLACE(etime, ':', '') AS etime-->
     <select id="findAttendanceList" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceListRespDTO">
-        SELECT ISNULL(MAX(sa.attendance_date), '2026-01-03')                             AS ymd,
-               '토요일'                                                                     AS dayname,
-               MIN(ISNULL(REPLACE(sa.in_time, ':', ''), REPLACE(t.start_time, ':', ''))) AS stime,
-               MAX(ISNULL(REPLACE(sa.out_time, ':', ''), REPLACE(t.end_time, ':', ''))) AS etime,
-                   sa.week,
-                   '수업' as gb
-                   FROM erp_student_attendance sa
-                   JOIN erp_time_table t
-                   ON t.time_table_key = sa.time_table_key
-                   WHERE sa.student_id = #{studentId}
-                       AND sa.yy = #{yy}
-                       AND sa.mm = #{mm}
-                   GROUP BY sa.week
-                   ORDER BY sa.week
+        SELECT CASE t.dayname
+                   WHEN 'mon' THEN ecw.mon
+                   WHEN 'tue' THEN ecw.tue
+                   WHEN 'wed' THEN ecw.wed
+                   WHEN 'thu' THEN ecw.thu
+                   WHEN 'fri' THEN ecw.fri
+                   WHEN 'sat' THEN ecw.sat
+                   WHEN 'sun' THEN ecw.sun
+                   END AS ymd,
+               t.dayname,
+               t.start_time,
+               t.end_time,
+               sa.week
+        FROM erp_student_attendance sa
+                 JOIN erp_time_table t ON t.time_table_key = sa.time_table_key
+                JOIN erp_student s ON sa.student_id = s.student_id
+                 JOIN erp_class_week ecw ON ecw.week = sa.week
+            AND ecw.center_code = s.center_code
+            AND ecw.year = #{yy}
+            AND ecw.month = #{mm}
+        WHERE sa.student_id = #{studentId}
+          AND sa.yy = #{yy}
+          AND sa.mm = #{mm}
+        ORDER BY sa.week
+
+
+    </select>
+
+    <select id="findAttendanceMain" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceMainRespDTO">
+        SELECT TOP 1
+            ISNULL(in_time, '0000')                                 as stime, ISNULL(out_time, '0000') as etime,
+               COALESCE(sa.attendance_date, CAST(GETDATE() AS DATE)) AS ymd
+        FROM erp_student_attendance sa
+        WHERE sa.student_id = #{studentId}
+          AND COALESCE(sa.attendance_date, CAST(GETDATE() AS DATE)) = (SELECT MAX(COALESCE(attendance_date, CAST(GETDATE() AS DATE)))
+                                                                       FROM erp_student_attendance
+                                                                       WHERE student_id = #{studentId})
+        ORDER BY sa.in_time DESC
 
 
     </select>

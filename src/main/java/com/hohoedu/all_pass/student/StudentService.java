@@ -671,4 +671,8 @@ public class StudentService {
 
         return studentRepository.findAttendanceList(dto.getId(), yy, mm);
     }
+
+    public List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(StudentAppReqDTO.StudentAttendanceMainDTO dto) {
+        return studentRepository.findAttendanceMain(dto.getId());
+    }
 }

@@ -342,6 +342,8 @@ public class ClassService {
     }
 
     // 학생 수업 등록
+
+    //TODO: 한자, 독서 하나만 들어가도록 수정
     public boolean addStudent(AddStudentDTO dto) {
         int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
         if (count >= 10) return false;
@@ -586,6 +588,7 @@ public class ClassService {
             insertDTO.setDayname(time);
             insertDTO.setContent(dto.getContent());
             insertDTO.setWord(dto.getWord());
+            insertDTO.setReview(dto.getReview());
             insertDTO.setClassType(typeLabel);
             insertDTO.setClassLabel(classLabel);
             classRepository.insertAfterClassNotice(insertDTO);
