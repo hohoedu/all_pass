@@ -1,9 +1,6 @@
 package com.hohoedu.all_pass.student;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -442,7 +439,7 @@ public class StudentService {
 
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
         if (count != null && count > 0) {
-            return false;
+            throw new RuntimeException("오늘은 이미 출석했습니다.");
         }
 
         LocalDate today;
@@ -455,15 +452,24 @@ public class StudentService {
         String year = String.valueOf(today.getYear());
         String month = String.format("%02d", today.getMonthValue());
 
-        ClassRespDTO.TimeRangeDTO timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
+        List<ClassRespDTO.TimeRangeDTO> timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
         if (timeDTO == null) {
             throw new RuntimeException("수업 시간이 설정되지 않았습니다.");
         }
 
-        LocalTime start = LocalTime.parse(timeDTO.getStartTime());
-        LocalTime now = LocalTime.parse(dto.getHhmm());
+        LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
+        String todayDayname = getDayname(today.getDayOfWeek());
+        ClassRespDTO.TimeRangeDTO targetClass = timeDTO.stream()
+                .filter(t -> todayDayname.equals(t.getDayname()))
+                .min((a, b) -> {
+                    long diffA = Math.abs(Duration.between(checkInTime, LocalTime.parse(a.getStartTime())).toMinutes());
+                    long diffB = Math.abs(Duration.between(checkInTime, LocalTime.parse(b.getStartTime())).toMinutes());
+                    return Long.compare(diffA, diffB);
+                })
+                .orElse(timeDTO.get(0)); // 못 찾으면 첫 번째
 
-        String attendanceKey = now.isAfter(start) ? "late" : "present";
+        LocalTime start = LocalTime.parse(targetClass.getStartTime());
+        String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
 
         List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
 
@@ -471,39 +477,87 @@ public class StudentService {
             throw new RuntimeException("이번 달 주차 설정이 없습니다.");
         }
 
-        String week = null;
-
-        for (ClassWeek w : weekList) {
-            if (isSame(today, w.getMon()) ||
-                    isSame(today, w.getTue()) ||
-                    isSame(today, w.getWed()) ||
-                    isSame(today, w.getThu()) ||
-                    isSame(today, w.getFri()) ||
-                    isSame(today, w.getSat()) ||
-                    isSame(today, w.getSun())) {
-
-                week = w.getWeek();
-                break;
-            }
-        }
-
+        String week = findWeekByDate(today, weekList);
         if (week == null) {
             throw new RuntimeException("오늘 날짜는 어떤 주차에도 속하지 않습니다.");
         }
 
-        studentRepository.checkinStudentAttendance(
+        int updated = studentRepository.checkinStudentAttendance(
+                student.getStudentId(),
+                dto.getYmd(),
                 dto.getHhmm(),
-                timeDTO.getEndTime(),
+                targetClass.getEndTime(),
                 attendanceKey,
                 week,
-                student.getStudentId(),
-                dto.getYmd()
+                year,
+                month,
+                targetClass.getTimeTableKey()
         );
+
+        if (updated == 0) {
+            log.error("No attendance record found to update: studentId={}, date={}",
+                    student.getStudentId(), dto.getYmd());
+            throw new RuntimeException("출석 기록을 찾을 수 없습니다. 시간표 배정을 확인해주세요.");
+        }
+
+        log.info("Checkin success: studentId={}, date={}, time={}, status={}",
+                student.getStudentId(), dto.getYmd(), dto.getHhmm(), attendanceKey);
 
         return true;
     }
 
-    private boolean isSame(LocalDate today, String target) {
+
+    public String checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+        List<StudentAttendance> sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
+        if (sa == null) {
+            System.out.println("등원 기록 없음");
+            return "8888";
+        }
+        if (sa.get(0).getOutTime() != null) {
+            System.out.println("이미 처리 됨");
+            return "6666";
+        }
+        System.out.println("이제 업데이트");
+        studentRepository.checkoutStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
+        return "0000";
+    }
+
+    private String getDayname(DayOfWeek dayOfWeek) {
+        return switch (dayOfWeek) {
+            case MONDAY -> "mon";
+            case TUESDAY -> "tue";
+            case WEDNESDAY -> "wed";
+            case THURSDAY -> "thu";
+            case FRIDAY -> "fri";
+            case SATURDAY -> "sat";
+            case SUNDAY -> "sun";
+        };
+    }
+
+    private LocalDateTime endOfMonthDateTime(String ym) {
+        int y = Integer.parseInt(ym.substring(0, 4));
+        int m = Integer.parseInt(ym.substring(4, 6));
+        LocalDate end = YearMonth.of(y, m).atEndOfMonth();
+        return end.atTime(23, 59, 59);
+    }
+
+    private String findWeekByDate(LocalDate today, List<ClassWeek> weekList) {
+        for (ClassWeek w : weekList) {
+            if (isSameDate(today, w.getMon()) ||
+                    isSameDate(today, w.getTue()) ||
+                    isSameDate(today, w.getWed()) ||
+                    isSameDate(today, w.getThu()) ||
+                    isSameDate(today, w.getFri()) ||
+                    isSameDate(today, w.getSat()) ||
+                    isSameDate(today, w.getSun())) {
+
+                return w.getWeek();
+            }
+        }
+        return null;
+    }
+
+    private boolean isSameDate(LocalDate today, String target) {
         if (target == null || target.isBlank()) {
             return false;
         }
@@ -514,28 +568,7 @@ public class StudentService {
         }
     }
 
-    public int checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
-        List<StudentAttendance> sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
-        if (sa == null) {
-            System.out.println("등원 기록 없음");
-            return 8888;
-        }
-        if (sa.get(0).getOutTime() != null) {
-            System.out.println("이미 처리 됨");
-            return 6666;
-        }
-        System.out.println("이제 업데이트");
-        studentRepository.checkoutStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
-        return 0000;
-    }
-
-    // ================================================================================================================
-    private LocalDateTime endOfMonthDateTime(String ym) {
-        int y = Integer.parseInt(ym.substring(0, 4));
-        int m = Integer.parseInt(ym.substring(4, 6));
-        LocalDate end = YearMonth.of(y, m).atEndOfMonth();
-        return end.atTime(23, 59, 59);
-    }
+    //========================================================================================
 
     /**
      * (A) 특정 월 실시간 집계 후 스냅샷 저장/갱신
@@ -636,25 +669,35 @@ public class StudentService {
 
     public StudentAppRespDTO.AppLoginRespDTO checkAppIdAndPassword(String appId, String password) {
         StudentAppRespDTO.AppLoginViewDTO row = studentRepository.appLogin(appId);
-        System.out.println("=================================");
-        System.out.println("== appId: " + appId + " password: " + password);
-        System.out.println("=================================");
 
         if (row == null || !password.equals(row.getAppPassword())) {
             throw new AppRestfulException("아이디 또는 비밀번호가 올바르지 않습니다.", HttpStatus.FORBIDDEN);
         }
 
-        System.out.println("=================================");
-        System.out.println(row.getGradeKey());
-        System.out.println("=================================");
+        // 형제 정보 조회
+        String siblingKey = studentRepository.findSiblingKeyByStudentId(row.getStudentId());
+        String brotherGb = siblingKey != null ? "Y" : "N";
+
+        LocalDate now = LocalDate.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue());
+
+        String ihak = studentRepository.getBookCodeByClassType(
+                row.getStudentId(),
+                year,
+                month
+        );
+
 
         StudentAppRespDTO.AppLoginRespDTO respDTO = StudentAppRespDTO.AppLoginRespDTO.builder()
                 .stuid(row.getStudentId())
                 .name(row.getStudentName())
                 .cid(row.getCenterCode())
+                .brotherGb(brotherGb)
+                .sibling(siblingKey)
                 .cname(row.getCenterName())
                 .hak(row.getGradeKey())
-                .ihak(row.getGradeKey())
+                .ihak(ihak)
                 .profileimg("1")
                 .appid(row.getAppId())
                 .build();
@@ -663,16 +706,107 @@ public class StudentService {
     }
 
 
+    public StudentAppRespDTO.AppLoginRespDTO loginSkip(String appId) {
+        StudentAppRespDTO.AppLoginViewDTO row = studentRepository.appLogin(appId);
+
+
+        // 형제 정보 조회
+        String siblingKey = studentRepository.findSiblingKeyByStudentId(row.getStudentId());
+        String brotherGb = siblingKey != null ? "Y" : "N";
+
+        LocalDate now = LocalDate.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue());
+
+        String ihak = studentRepository.getBookCodeByClassType(
+                row.getStudentId(),
+                year,
+                month
+        );
+
+
+        StudentAppRespDTO.AppLoginRespDTO respDTO = StudentAppRespDTO.AppLoginRespDTO.builder()
+                .stuid(row.getStudentId())
+                .name(row.getStudentName())
+                .cid(row.getCenterCode())
+                .brotherGb(brotherGb)
+                .sibling(siblingKey)
+                .cname(row.getCenterName())
+                .hak(row.getGradeKey())
+                .ihak(ihak)
+                .profileimg("1")
+                .appid(row.getAppId())
+                .build();
+
+        return respDTO;
+    }
+
     public List<StudentAppRespDTO.AttendanceListRespDTO> findAttendanceList(StudentAppReqDTO.AttendanceListReqDTO dto) {
         String yy = dto.getYm().substring(0, 4);
         String mm = dto.getYm().substring(4, 6);
-//        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList =
+        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList =
+                studentRepository.findAttendanceList(dto.getId(), yy, mm);
+        attendanceList.stream()
+                .peek(schedule -> {
+                    schedule.setDayname(convertDaynameToKorean(schedule.getDayname()));
 
+                    // 실제 시간 포맷팅 (콜론 제거)
+                    if (schedule.getStime() != null && !schedule.getStime().isEmpty()) {
+                        schedule.setStime(schedule.getStime().replace(":", ""));
+                    }
+                    if (schedule.getEtime() != null && !schedule.getEtime().isEmpty()) {
+                        schedule.setEtime(schedule.getEtime().replace(":", ""));
+                    }
 
-        return studentRepository.findAttendanceList(dto.getId(), yy, mm);
+                    // 예정 시간 포맷팅 (콜론 제거)
+                    if (schedule.getPlannedStime() != null && !schedule.getPlannedStime().isEmpty()) {
+                        schedule.setPlannedStime(schedule.getPlannedStime().replace(":", ""));
+                    }
+                    if (schedule.getPlannedEtime() != null && !schedule.getPlannedEtime().isEmpty()) {
+                        schedule.setPlannedEtime(schedule.getPlannedEtime().replace(":", ""));
+                    }
+                })
+                .toList();
+        return attendanceList;
+    }
+
+    private String convertDaynameToKorean(String dayname) {
+        return switch (dayname.toLowerCase()) {
+            case "mon" -> "월요일";
+            case "tue" -> "화요일";
+            case "wed" -> "수요일";
+            case "thu" -> "목요일";
+            case "fri" -> "금요일";
+            case "sat" -> "토요일";
+            case "sun" -> "일요일";
+            default -> dayname;
+        };
     }
 
     public List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(StudentAppReqDTO.StudentAttendanceMainDTO dto) {
         return studentRepository.findAttendanceMain(dto.getId());
+    }
+
+
+    public List<StudentAppRespDTO.AppSiblingRespDTO> findSibling(StudentAppReqDTO.SiblingReqDTO reqDTO) {
+
+        List<StudentAppRespDTO.AppSiblingRespDTO> siblings =
+                studentRepository.findSiblingBySiblingKey(reqDTO.getSibling());
+
+        // 각 형제의 ihak(book_code) 조회
+        LocalDate now = LocalDate.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue());
+
+        for (StudentAppRespDTO.AppSiblingRespDTO sibling : siblings) {
+            String ihak = studentRepository.getBookCodeByClassType(
+                    sibling.getStuid(),
+                    year,
+                    month
+            );
+            sibling.setIhak(ihak);
+        }
+
+        return siblings;
     }
 }

@@ -19,11 +19,10 @@ public class Sibling {
     private Integer id; // PK
 
     // 그룹은 비즈니스키(sibling_code)로 참조
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "sibling_key", referencedColumnName = "sibling_key", nullable = false)
-    private SiblingGroup siblingGroup;
 
-    // 학생은 비즈니스키(student_id)로 참조
+    @Column(name = "sibling_key")
+    private String siblingKey;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", referencedColumnName = "student_id", nullable = false)
     private Student student;
@@ -33,8 +32,8 @@ public class Sibling {
     private LocalDateTime createdAt;
 
     @Builder
-    public Sibling(SiblingGroup siblingGroup, Student student) {
-        this.siblingGroup = siblingGroup;
+    public Sibling(String siblingKey, Student student) {
+        this.siblingKey = siblingKey;
         this.student = student;
     }
 }

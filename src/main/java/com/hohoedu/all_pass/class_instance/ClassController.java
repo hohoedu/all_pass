@@ -238,6 +238,7 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
+        log.info("findRecordByClass = {}", dto.getTimeTableKey());
         ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(user.getUserCode(), dto.getTimeTableKey(), dto.getWeek(), dto.getClassKey(), dto.getUnitKey());
 
         return ResponseEntity.ok(ApiUtils.success(response));

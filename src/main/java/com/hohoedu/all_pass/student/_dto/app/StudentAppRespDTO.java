@@ -37,6 +37,21 @@ public class StudentAppRespDTO {
     }
 
     @Data
+    public static class AppSiblingRespDTO{
+        private String stuid;
+        private String name;
+        private String cid;
+        private String cname;
+        private String brotherGb;
+        private String sibling;
+        private String firstlogin;
+        private String profileimg;
+        private String hak;
+        private String ihak;
+        private String appid;
+    }
+
+    @Data
     public static class AppLoginViewDTO {
         private String studentId;   // 학생 아이디
         private String studentName; // 학생 이름
@@ -66,6 +81,9 @@ public class StudentAppRespDTO {
         private String dayname;
         private String stime;
         private String etime;
+        private String plannedStime;
+        private String plannedEtime;
+        private String daytime;
         private String gb;
     }
 

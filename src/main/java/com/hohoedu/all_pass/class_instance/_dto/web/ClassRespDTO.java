@@ -124,6 +124,7 @@ public class ClassRespDTO {
         private String timeTableKey;
         private String startTime;
         private String endTime;
+        private String dayname;
     }
 
     @Data

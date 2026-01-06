@@ -53,6 +53,25 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
     }
 
+    @PostMapping("/login_skip")
+    public ResponseEntity<?> AppLoginSkip(@RequestBody StudentAppReqDTO.LoginSkipReqDTO reqDTO) {
+
+        StudentAppRespDTO.AppLoginRespDTO respDTO = studentService.loginSkip(reqDTO.getId());
+
+        return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
+    }
+
+    @PostMapping(value = "/sibling_select", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> AppSiblingSelect(@RequestBody StudentAppReqDTO.SiblingReqDTO reqDTO) throws JsonProcessingException {
+
+        List<StudentAppRespDTO.AppSiblingRespDTO> respDTOs = studentService.findSibling(reqDTO);
+        Object response = AppApiUtils.successClinicList(respDTOs);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+        return ResponseEntity.ok(json);
+
+    }
+
     @PostMapping("/token")
     public ResponseEntity<?> AppTokenSave(@RequestBody StudentAppReqDTO.AppTokenReqDTO reqDTO) {
 

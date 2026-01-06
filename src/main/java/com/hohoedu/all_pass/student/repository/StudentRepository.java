@@ -116,19 +116,22 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate);
 
-    ClassRespDTO.TimeRangeDTO getStartClassTime(
+    List<ClassRespDTO.TimeRangeDTO> getStartClassTime(
             @Param("studentId") String studentId,
             @Param("year") String year,
             @Param("month") String month);
 
     // 출석 insert
     public int checkinStudentAttendance(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate,
             @Param("inTime") String inTime,
             @Param("endTime") String endTime,
             @Param("attendanceKey") String attendanceKey,
             @Param("week") String week,
-            @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate);
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("timeTableKey") String timeTableKey);
 
     // 하원 여부 체크
     //TODO: 수정 필요
@@ -175,4 +178,13 @@ public interface StudentRepository {
     List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(
             @Param("studentId") String studentId
     );
+
+    String findSiblingKeyByStudentId(String studentId);
+
+    List<StudentAppRespDTO.AppSiblingRespDTO> findSiblingBySiblingKey(String siblingKey);
+
+    String getBookCodeByClassType(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 }

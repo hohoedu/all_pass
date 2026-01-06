@@ -193,7 +193,7 @@ public class StudentController {
                 return ResponseEntity.ok(ApiUtils.success("7777"));
             }
         } else {   // 하원
-            int checkedOut = studentService.checkoutStudent(dto, studentInfo);
+            String checkedOut = studentService.checkoutStudent(dto, studentInfo);
 
             return ResponseEntity.ok(ApiUtils.success("0000"));
 

@@ -209,20 +209,21 @@ public class ClassViewController {
             String unitKey = labels.get(0).getUnitKey();
 
 
-//            List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
-//
-//            LocalDate today = LocalDate.now();
-//            String currentWeek = findWeekByDate(weeks, today);
+            List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
 
-            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, "ju_1", classKey, unitKey);
+            LocalDate today = LocalDate.now();
+            String currentWeek = findWeekByDate(weeks, today);
+            model.addAttribute("activeWeek", currentWeek);
+
+            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, currentWeek, classKey, unitKey);
 
             model.addAttribute("students", bundle.getStudents());
 
+
+
             if (bundle.getAfterClass() != null) {
-                log.info(bundle.getAfterClass().toString());
                 model.addAttribute("content", bundle.getAfterClass());
             } else {
-
                 model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
             }
         }

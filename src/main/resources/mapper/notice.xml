@@ -51,15 +51,17 @@
     <!--  앱 공지사항 리스트 조회  -->
     <select id="findAppNoticeList" resultType="com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO$NoticeListRespDTO">
         SELECT TOP(#{count})
-                             id AS idx, center_notice_key AS noticeKey,
-               title      AS title,
-               sub_title AS subtitle,
-               content    AS content,
-               icon       AS subicon,
-               created_at AS sdate
-        FROM erp_center_notice
+                             cn.id AS idx, center_notice_key AS noticeKey,
+               cn.title      AS title,
+               cn.sub_title AS subtitle,
+               cn.content    AS content,
+               cn.icon       AS subicon,
+               cn.created_at AS sdate
+        FROM erp_center_notice cn
+        JOIN erp_student s ON s.center_code = cn.center_code
+        where s.student_id = #{studentId}
 
-        ORDER BY created_at DESC;
+        ORDER BY cn.created_at DESC;
 
     </select>
 

@@ -10,6 +10,16 @@ public class StudentAppReqDTO {
         private String id;
         private String sha_pwd;
     }
+    @Data
+    public static class LoginSkipReqDTO {
+        private String id;
+        private String sha_pwd;
+    }
+
+    @Data
+    public static class SiblingReqDTO{
+        private String sibling;
+    }
 
     @Data
     public static class StudentAttendanceDTO {
