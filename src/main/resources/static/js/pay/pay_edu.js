@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             tbody.style.visibility = 'hidden';
 
+            console.log(teacherCode);
             const res = await fetch('/pay/students', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -1074,7 +1075,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log('재발행할 billIds:', billIds);
-        
+
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',

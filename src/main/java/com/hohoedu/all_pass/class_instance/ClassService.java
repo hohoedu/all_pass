@@ -591,10 +591,9 @@ public class ClassService {
             insertDTO.setReview(dto.getReview());
             insertDTO.setClassType(typeLabel);
             insertDTO.setClassLabel(classLabel);
-            classRepository.insertAfterClassNotice(insertDTO);
 
+            classRepository.upsertAfterClassNotice(insertDTO);
         }
-
     }
 
     public void updateAfterSend(String studentId, String timeTableKey, String week) {

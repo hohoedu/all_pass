@@ -69,11 +69,10 @@ public class MainViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
-        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(), "all");
+        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(), user.getUserCode());
 
 
-        model.addAttribute("users", users);
+        model.addAttribute("user", user);
         model.addAttribute("classSummary", classSummary);
 
         return "main";

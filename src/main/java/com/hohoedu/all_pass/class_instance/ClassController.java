@@ -225,8 +225,8 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-
-        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), dto.getUserCode(), user.getCenterCode());
+        String userCode = user.getRoleKey().equals("ADMIN") ? dto.getUserCode() : user.getUserCode();
+        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), userCode, user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 

@@ -327,7 +327,7 @@ public interface ClassRepository {
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
 
-    public void insertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
+    public void upsertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
 
     List<UnitCode> findUnitCodeForPerson();
 

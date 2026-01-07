@@ -71,6 +71,7 @@ public class ClassViewController {
         List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
 
         String comclassInfosJson = mapper.writeValueAsString(comclassInfos);
+
         model.addAttribute("comclassInfosJson", comclassInfosJson);
         model.addAttribute("userCode", user.getUserCode());
         model.addAttribute("classCodes", classCodes);
@@ -79,6 +80,7 @@ public class ClassViewController {
         model.addAttribute("grades", grades);
         model.addAttribute("days", DAYS);
         model.addAttribute("students", students);
+
         List<TimeTableDTO> tables = classService.findTimeTableWithStudents(user.getUserCode(), year, month);
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
@@ -112,6 +114,8 @@ public class ClassViewController {
                         Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())
                 ));
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
+
+        model.addAttribute("user", user);
         model.addAttribute("tableMap", tableMap);
 
         // ───────────────────────────────
@@ -167,14 +171,17 @@ public class ClassViewController {
 
     @GetMapping("/print-timeview")
     public String getPrintTimeView(Model model, HttpSession session) {
-
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 //        List<User> users = userService.findByCenterNo(user.getCenterCode());
-        List<User> users = userService.findByCenterCode("DAE001");
+        List<User> users = userService.findByCenterCode(user.getCenterCode());
 
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
-        List<TimeTableDTO> tables = classService.findTableViewWithStudents("2025", "09", "DAE001cos");
+        List<TimeTableDTO> tables = classService.findTableViewWithStudents("2026", "01", user.getUserCode());
 
         Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
                 .collect(Collectors.groupingBy(
@@ -186,6 +193,7 @@ public class ClassViewController {
         model.addAttribute("tableMap", tableMap);
         return "print/print-timeview";
     }
+
 
     // 수업 일지 페이지
     @GetMapping("/record")
@@ -213,12 +221,13 @@ public class ClassViewController {
 
             LocalDate today = LocalDate.now();
             String currentWeek = findWeekByDate(weeks, today);
+String userCode = user.getRoleKey().equals("ADMIN") ? "admin" : "user";
+
             model.addAttribute("activeWeek", currentWeek);
 
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, currentWeek, classKey, unitKey);
 
             model.addAttribute("students", bundle.getStudents());
-
 
 
             if (bundle.getAfterClass() != null) {
@@ -227,7 +236,7 @@ public class ClassViewController {
                 model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
             }
         }
-
+        model.addAttribute("user", user);
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
 

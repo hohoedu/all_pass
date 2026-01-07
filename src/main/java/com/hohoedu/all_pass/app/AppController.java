@@ -114,6 +114,10 @@ public class AppController {
     @PostMapping("/course_book_main")
     public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListMainReqDTO reqDTO) {
 
+        if(reqDTO.getIhak().equals("00")){
+            return ResponseEntity.ok(AppApiUtils.failOne(null, "9999"));
+        }
+
         ClassAppRespDTO.BookListMainRespDTO response = appService.getBookMainInfo(reqDTO);
 
         return ResponseEntity.ok(AppApiUtils.successOne(response));

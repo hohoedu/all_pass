@@ -47,7 +47,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="basic-select">
+                            <div class="basic-select" th:if="${user != null and user.roleKey == 'ADMIN'}">
                                 <select name="teacher" id="teacher-select" style="width: 200px;">
                                     <option value="all">전체</option>
                                     <th:block th:each="u : ${users}">
@@ -86,14 +86,15 @@
                             <div class="table-frame lesson-frame">
                                 <table class="lesson-log-table">
                                     <colgroup>
-                                        <col width="5%">
-                                        <col width="5%">
-                                        <col width="10%">
-                                        <col width="10%">
+                                        <col width="3%">
+                                        <col width="3%">
+                                        <col width="7%">
                                         <col width="15%">
                                         <col width="10%">
+                                        <col width="7%">
+                                        <col width="18%">
                                         <col width="20%">
-                                        <col width="25%">
+                                        <col width="12%">
                                         <col width="5%">
                                     </colgroup>
                                     <thead>
@@ -106,6 +107,7 @@
                                         <th>특이사항</th>
                                         <th>상담기록</th>
                                         <th>수업 후 코멘트</th>
+                                        <th>리뷰</th>
                                         <th>발송여부</th>
                                     </tr>
                                     </thead>
@@ -118,7 +120,7 @@
                                         <td th:text="${stat.count}"></td>
                                         <td class="studentName" th:text="${s.studentName}"></td>
                                         <td>
-
+                                            <div>
                                                     <span th:classappend="
                                                     ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
                                                         (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
@@ -126,26 +128,26 @@
                                                                 'status-badge absent stbox'))"
                                                           th:text="${s.attendanceName}">
                                                     </span>
-                                            <div class="time in stbox">
-                                                등원
-                                                <span class="time-set">
+                                                <div class="time in stbox">
+                                                    등원
+                                                    <span class="time-set">
                                                             <span class="display-time"
                                                                   th:text="${s.inTime != null ? s.inTime : '--:--'}"></span>
                                                             <input type="time" class="timepicker"
                                                                    th:value="${s.inTime}"/>
                                                         </span>
-                                            </div>
-                                            <div class="time out stbox">
-                                                하원
-                                                <span class="time-set">
+                                                </div>
+                                                <div class="time out stbox">
+                                                    하원
+                                                    <span class="time-set">
                                                             <span class="display-time"
                                                                   th:text="${s.outTime != null ? s.outTime : '--:--'}"></span>
                                                             <input type="time" class="timepicker"
                                                                    th:value="${s.outTime}"/>
                                                         </span>
+                                                </div>
+
                                             </div>
-
-
                                         </td>
                                         <td th:if="${s.remedialDate == null}">
                                             --
@@ -174,7 +176,7 @@
                                                 </div>
                                             </ul>
                                         </td>
-                                        </td>
+
                                         <td class="cell-middle">
                                             <div class="counsel-box">
                                                 <div class="counsel-type">
@@ -206,7 +208,25 @@
                                                 </div>
                                             </div>
                                         </td>
-
+                                        <td>
+                                            <div class="cell-middle">
+                                                <div class="after-comment">
+                                                    <div class="comment-wrapper">
+                                                        <!-- textarea 영역 -->
+                                                        <textarea class="comment-text record-content" placeholder="내용을 입력해주세요.">
+                                                            내용을 입력해 주세요.
+                                                        </textarea>
+                                                        <input type="hidden"
+                                                               class="record-review"
+                                                               th:value="${content != null ? content.word : ''}">
+                                                        <!-- 이미지 영역 -->
+                                                        <div th:if="${s.appToken == null or s.appToken == ''}" class="comment-image">
+                                                            <img th:src="@{/image/send1.png}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td class="send-ornot">
                                             <img th:if="${s.appToken == null or s.appToken == ''}" src="/image/no-smartphones.png" alt="">
                                             <span th:if="${s.appToken != null and s.appToken != ''}">

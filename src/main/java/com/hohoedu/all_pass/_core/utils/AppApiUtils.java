@@ -23,6 +23,11 @@ public final class AppApiUtils {
         return new ApiEnvelope<>("true", RESULT_OK, list, "null");
     }
 
+    public static <T> ApiEnvelope<T> failOne(T item, String result) {
+        List<T> list = (item == null) ? Collections.emptyList() : List.of(item);
+        return new ApiEnvelope<>("true", result, list, "null");
+    }
+
     public static <T> ApiEnvelope<T> successList(List<T> items) {
         List<T> list = (items == null) ? Collections.emptyList() : items;
         return new ApiEnvelope<>("true", RESULT_OK, list, "null");

@@ -385,7 +385,7 @@ public class PaymentService {
 
     // 수업료 청구 화면 필터링
     public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode) {
-
+        log.info(userCode);
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode, centerCode);
 
         return students;
@@ -938,11 +938,10 @@ public class PaymentService {
         return paymentRepository.findUseCardCode();
     }
 
-    public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String centerCode, String yy, String mm) {
-        List<PaymentRespDTO.MonthlyPaymentDTO> resp =
-                paymentRepository.findMonthlyPayments(centerCode, yy, mm);
+    public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy, String mm) {
 
-        return paymentRepository.findMonthlyPayments(centerCode, yy, mm)
+
+        return paymentRepository.findMonthlyPayments(userCode, centerCode, yy, mm)
                 .stream()
                 .peek(dto -> {
                     String paidDate = dto.getPaidDate();

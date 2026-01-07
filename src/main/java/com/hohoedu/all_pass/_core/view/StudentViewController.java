@@ -69,10 +69,10 @@ public class StudentViewController {
             return "redirect:/login";
         }
 
-        List<MainStudentDTO> students = studentService.getStudentsByUserCode("all", user.getCenterCode());
+        List<MainStudentDTO> students = studentService.getStudentsByUserCode(user.getUserCode(), user.getCenterCode());
         List<User> teachers = studentService.findTeacher(user.getCenterCode());
-        List<TimeTableLabelDTO> labels = classService.getAllClassLabel("all");
-
+        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(user.getUserCode());
+        model.addAttribute("user", user);
         model.addAttribute("labels", labels);
         model.addAttribute("students", students);
         model.addAttribute("teachers", teachers);

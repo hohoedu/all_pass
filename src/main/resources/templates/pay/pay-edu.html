@@ -58,7 +58,7 @@
                             <div class="info-filters">
                                 <div class="info-arrange">
                                     <div class="stu-left">
-                                        <div class="basic-select sl1">
+                                        <div class="basic-select sl1" th:if="${user != null and user.roleKey == 'ADMIN'}">
                                             <select name="student" id="student-filter">
                                                 <option value="all">선생님 전체</option>
                                                 <th:block th:each="teacher : ${users}">

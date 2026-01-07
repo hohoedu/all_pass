@@ -18,6 +18,7 @@ public class AppService {
 
     // 메인화면
     public ClassAppRespDTO.BookListMainRespDTO getBookMainInfo(ClassAppReqDTO.BookListMainReqDTO dto) {
+
         List<ClassAppRespDTO.BookListMainRawDTO> raws = appRepository.findBookMainInfo(dto.getIhak());
 
         ClassAppRespDTO.BookListMainRespDTO resp = new ClassAppRespDTO.BookListMainRespDTO();

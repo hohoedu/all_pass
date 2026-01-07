@@ -663,7 +663,7 @@
     <select id="getBookCodeByClassType" resultType="String">
         SELECT CASE
                    WHEN MAX(CAST(cc.class_type AS INT)) = 2 THEN s.grade_key
-                   ELSE s.grade_key
+                   ELSE '00'
                    END AS book_code
         FROM erp_time_table t
                  inner JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key

@@ -44,7 +44,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="basic-select">
+                            <div class="basic-select" th:if="${user != null and user.roleKey == 'ADMIN'}">
                                 <select name="teacher" id="teacher-select" style="width: 200px;">
                                     <option value="all">선생님 전체</option>
                                     <option th:each="u : ${users}" th:value="${u.userCode}" th:text="${u.userName}">

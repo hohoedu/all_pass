@@ -43,8 +43,7 @@
                                 </div>
                                 <div class="basic-select">
                                     <select name="teacher" id="main-teacher-select" style="width: 200px;">
-                                        <option value="all">전체</option>
-                                        <th:block th:each="u : ${users}">
+                                        <th:block th:each="u : ${user}">
                                             <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}">
                                             </option>
                                         </th:block>

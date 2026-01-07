@@ -116,7 +116,6 @@ public class PaymentController {
     }
 
 
-
     @PostMapping("/destroy/bill")
     public ResponseEntity<?> destroyBills(HttpSession session, @RequestBody PaymentReqDTO.PayDestroyReqDTO dto) throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -142,7 +141,7 @@ public class PaymentController {
         }
         String year = paymentReqDTO.getYear();
         String month = paymentReqDTO.getMonth();
-        String userCode = paymentReqDTO.getUserCode();
+        String userCode = user.getRoleKey().equals("ADMIN") ? paymentReqDTO.getUserCode() : user.getUserCode();
 
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
         log.info("students = {}", students);

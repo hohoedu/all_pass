@@ -1058,12 +1058,33 @@
                 #{classLabel}, #{content}, #{userCode}, SYSDATETIME())
     </insert>
 
-    <insert id="insertAfterClassNotice"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
-        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, yy,
-                                           mm, class_type, class_label, content, word, review, created_at)
-        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{week}, #{dayname}, #{year}, #{month},
-                #{classType}, #{classLabel}, #{content}, #{word}, #{review}, SYSDATETIME())
+<!--    <insert id="upsertAfterClassNotice"-->
+<!--            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">-->
+<!--        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, yy,-->
+<!--                                           mm, class_type, class_label, content, word, review, created_at)-->
+<!--        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{week}, #{dayname}, #{year}, #{month},-->
+<!--                #{classType}, #{classLabel}, #{content}, #{word}, #{review}, SYSDATETIME())-->
+<!--    </insert>-->
+
+    <insert id="upsertAfterClassNotice">
+        INSERT INTO after_class_notice (student_id, user_code, time_table_key, after_class_key,
+                                        year, month, week, dayname, content, word, review, class_type, class_label)
+        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey},
+                #{year}, #{month}, #{week}, #{dayname}, #{content}, #{word},
+                #{review}, #{classType}, #{classLabel}) ON DUPLICATE KEY
+        UPDATE
+            user_code =
+        VALUES (user_code), time_table_key =
+        VALUES (time_table_key), year =
+        VALUES (year), month =
+        VALUES (month), week =
+        VALUES (week), dayname =
+        VALUES (dayname), content =
+        VALUES (content), word =
+        VALUES (word), review =
+        VALUES (review), class_type =
+        VALUES (class_type), class_label =
+        VALUES (class_label), updated_at = NOW()
     </insert>
 
     <select id="findBeforeClassByStudentId"

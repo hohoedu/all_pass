@@ -9,6 +9,7 @@ import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequestMapping("/pay")
 @RequiredArgsConstructor
@@ -33,9 +35,13 @@ public class PaymentViewController {
         if (user == null) {
             return "redirect:/login";
         }
+        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
+        log.info("userCode: {}", userCode);
+        log.info("userCode: {}", user.getUserCode());
         List<User> users = userService.findByCenterCode(user.getCenterCode());
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode());
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
 
+        model.addAttribute("user", user);
         model.addAttribute("users", users);
         model.addAttribute("students", students);
         return "pay/pay-edu";
@@ -47,7 +53,9 @@ public class PaymentViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(user.getCenterCode(), year, month);
+
+
+        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(user.getUserCode(), user.getCenterCode(), year, month);
         List<CardCode> cardCode = paymentService.findCardCode();
         model.addAttribute("cardCode", cardCode);
         model.addAttribute("payments", payments);

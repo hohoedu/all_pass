@@ -209,6 +209,7 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(
             @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm
 
