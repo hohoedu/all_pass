@@ -5266,7 +5266,7 @@ input[type="time" i] {
 }
 
 .after-comment textarea {
-    height: 120px;
+    height: 100%;
 }
 
 .after-comment {

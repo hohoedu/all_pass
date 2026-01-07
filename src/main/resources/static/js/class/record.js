@@ -202,22 +202,12 @@ async function loadOverviewFromState() {
         const firstUnitKey = list1[0].unitKey;
 
         state.timeTableKey = String(firstTimeTableKey);
-        state.classKey = String(firstClassKey)
-        state.unitKey = String(firstUnitKey)
+        state.classKey = String(firstClassKey);
+        state.unitKey = String(firstUnitKey);
 
-        const body2 = buildByClassBody(firstTimeTableKey, state.week, firstClassKey, firstUnitKey);
-        const res2 = await fetch('/class/api/record/student', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body2),
-            signal
-        });
-        if (!res2.ok) throw new Error('서버 응답 오류(학생)');
-        const data2 = await res2.json();
-        const list2 = Array.isArray(data2?.response?.students) ? data2.response.students : [];
-        const content = data2.response.afterClass
-        console.log(content);
-        renderRecordStudentList(list2, content);
+        // 학생 목록 조회 (한 번만 호출)
+        await loadStudentList(firstTimeTableKey);
+
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error('[loadOverviewFromState] 실패:', e);
@@ -245,15 +235,16 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
         const data = await res.json();
         console.log(data.response);
         const list = Array.isArray(data?.response?.students) ? data.response.students : [];
-        const content = data.response.afterClass;
+        const afterClassList = Array.isArray(data?.response?.afterClass) ? data.response.afterClass : [];
 
-        renderRecordStudentList(list, content);
+        renderRecordStudentList(list, afterClassList);
     } catch (e) {
         if (e.name === 'AbortError') return;
         console.error('[loadStudentList] 실패:', e);
         renderRecordStudentList([]);
     }
 }
+
 
 // 수업리스트 랜더링
 function renderRecordClassList(list) {
@@ -285,8 +276,8 @@ function renderRecordClassList(list) {
     }
 }
 
-// 학생리스트 랜더링
-function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
+// 학생리스트 랜더링 (afterClassList를 배열로 처리)
+function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_tbody') {
     const tbody = typeof tbodySel === 'string' ? document.querySelector(tbodySel) : tbodySel;
     if (!tbody) {
         console.error('[renderStudents] tbody를 찾을 수 없습니다:', tbodySel);
@@ -294,14 +285,18 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
     }
 
     const items = Array.isArray(list) ? list : [];
+    const afterClasses = Array.isArray(afterClassList) ? afterClassList : [];
     const frag = document.createDocumentFragment();
 
     items.forEach((s, idx) => {
+        // 해당 학생의 afterClass 데이터 가져오기 (인덱스 매칭)
+        const afterClass = afterClasses[idx] || {};
+
         const tr = document.createElement('tr');
         tr.dataset.studentId = s.studentId ?? '';
         tr.dataset.appToken = s.appToken ?? '';
         tr.dataset.centerCode = s.centerCode ?? '';
-        tr.dataset.afterClassKey = s.afterClassKey ?? '';
+        tr.dataset.afterClassKey = afterClass.afterClassKey ?? '';
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
@@ -379,8 +374,8 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
             </div>
           </td>`;
 
-        // 수업 후 코멘트
-        const originalContent = content ? content.content.replace(/<br\s*\/?>/gi, "\n") : "";
+        // 수업 후 코멘트 (각 학생별 afterClass 데이터 사용)
+        const originalContent = afterClass?.content ? afterClass.content.replace(/<br\s*\/?>/gi, "\n") : "";
         tr.innerHTML += `
             <td>
                 <div class="cell-middle">
@@ -390,7 +385,18 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
                             data-original-content="${originalContent.replace(/"/g, '&quot;')}">${originalContent}</textarea>
                     </div>
                 </div>
-                <input type="hidden" class="record-word" value="${content?.word ?? ''}">
+                <input type="hidden" class="record-word" value="${afterClass?.homework ?? ''}">
+            </td>`;
+
+        const originalReview = afterClass?.review ? afterClass.review.replace(/<br\s*\/?>/gi, "\n") : "";
+        tr.innerHTML += `
+            <td>
+                <div class="cell-middle">
+                    <div class="after-comment">
+                        <textarea class="comment-text record-review"
+                            placeholder="리뷰를 입력해주세요.">${originalReview}</textarea>
+                    </div>
+                </div>
             </td>`;
 
         // 발송여부
@@ -430,6 +436,9 @@ function renderRecordStudentList(list, content, tbodySel = '#record_tbody') {
     // 렌더링 후 전체 선택 체크박스 상태 업데이트
     updateSelectAllCheckbox();
 }
+
+// 학생리스트 랜더링
+
 
 // 수업 안내 발송 모달 오픈
 document.addEventListener('click', function (e) {
@@ -715,7 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 저장만 수행
 document.addEventListener("DOMContentLoaded", () => {
-    const saveBtn = document.querySelector(".class-save"); // 저장 버튼 클래스명
+    const saveBtn = document.querySelector(".class-save");
 
     if (!saveBtn) return;
 
@@ -745,26 +754,22 @@ document.addEventListener("DOMContentLoaded", () => {
 async function saveAfterClassNotice(checkedRows) {
     const notices = checkedRows.map(row => {
         const contentTextarea = row.querySelector(".record-content");
-        const originalContent = contentTextarea.getAttribute("data-original-content") || "";
-        const currentContent = contentTextarea.value;
+        const reviewTextarea = row.querySelectorAll(".comment-text")[1]; // 두 번째 textarea가 리뷰
+        const counselTextarea = row.querySelector(".counsel-box textarea");
+        const counselType = row.querySelector(".counsel-type button.active")?.textContent || "전화";
 
-        // 기존 내용 이후에 추가된 부분만 추출
-        let review = "";
-        if (currentContent.startsWith(originalContent)) {
-            review = currentContent.substring(originalContent.length).trim();
-        } else {
-            // 기존 내용이 수정된 경우 전체를 review로
-            review = currentContent;
-        }
+        const originalContent = contentTextarea.getAttribute("data-original-content") || "";
 
         return {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
-            content: originalContent, // 기존 content
-            word: row.querySelector(".record-word").value,
-            review: review // 추가로 입력된 부분
+            content: originalContent,
+            word: row.querySelector(".record-word")?.value || "",
+            review: reviewTextarea?.value || "",
+            counselType: counselType,
+            counselContent: counselTextarea?.value || ""
         }
     });
 
@@ -784,29 +789,24 @@ async function saveAfterClassNotice(checkedRows) {
 
 // 수업 후 문자 전송 후 로그 저장
 async function insertAfterClassNotice(checkedRows) {
-
     const notices = checkedRows.map(row => {
         const contentTextarea = row.querySelector(".record-content");
-        const originalContent = contentTextarea.getAttribute("data-original-content") || "";
-        const currentContent = contentTextarea.value;
+        const reviewTextarea = row.querySelectorAll(".comment-text")[1]; // 두 번째 textarea가 리뷰
+        const counselTextarea = row.querySelector(".counsel-box textarea");
+        const counselType = row.querySelector(".counsel-type button.active")?.textContent || "전화";
 
-        // 기존 내용 이후에 추가된 부분만 추출
-        let review = "";
-        if (currentContent.startsWith(originalContent)) {
-            review = currentContent.substring(originalContent.length).trim();
-        } else {
-            // 기존 내용이 수정된 경우 전체를 review로
-            review = currentContent;
-        }
+        const originalContent = contentTextarea.getAttribute("data-original-content") || "";
 
         return {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
-            content: originalContent, // 기존 content
-            word: row.querySelector(".record-word").value,
-            review: review // 추가로 입력된 부분
+            content: originalContent,
+            word: row.querySelector(".record-word")?.value || "",
+            review: reviewTextarea?.value || "",
+            counselType: counselType,
+            counselContent: counselTextarea?.value || ""
         }
     });
 

@@ -221,7 +221,6 @@ public class ClassViewController {
 
             LocalDate today = LocalDate.now();
             String currentWeek = findWeekByDate(weeks, today);
-String userCode = user.getRoleKey().equals("ADMIN") ? "admin" : "user";
 
             model.addAttribute("activeWeek", currentWeek);
 

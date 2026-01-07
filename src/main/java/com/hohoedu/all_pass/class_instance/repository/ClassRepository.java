@@ -230,6 +230,12 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("yy") String yy);
 
+    ClassRespDTO.AfterClassRespDTO findAfterClassNotice(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week
+    );
+
     public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
             @Param("timeTableKey") String timeTableKey);
 

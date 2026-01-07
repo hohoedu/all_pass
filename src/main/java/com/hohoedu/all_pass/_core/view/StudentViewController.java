@@ -68,8 +68,8 @@ public class StudentViewController {
         if (user == null) {
             return "redirect:/login";
         }
-
-        List<MainStudentDTO> students = studentService.getStudentsByUserCode(user.getUserCode(), user.getCenterCode());
+        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
+        List<MainStudentDTO> students = studentService.getStudentsByUserCode(userCode, user.getCenterCode());
         List<User> teachers = studentService.findTeacher(user.getCenterCode());
         List<TimeTableLabelDTO> labels = classService.getAllClassLabel(user.getUserCode());
         model.addAttribute("user", user);

@@ -166,7 +166,7 @@ public class ClassRespDTO {
     @AllArgsConstructor
     public static class RecordBundleDTO {
         private List<RecordStudentDTO> students;
-        private AfterClassRespDTO afterClass;
+        private List<AfterClassRespDTO> afterClass;
     }
 
     @Data
@@ -207,6 +207,7 @@ public class ClassRespDTO {
         private String timeTableKey;
         private String timeTableLabel;
         private String userName;
+        private String review;
     }
 
     @Data

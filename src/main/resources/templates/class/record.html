@@ -92,14 +92,15 @@
                                         <col width="15%">
                                         <col width="10%">
                                         <col width="7%">
-                                        <col width="18%">
-                                        <col width="20%">
-                                        <col width="12%">
+                                        <col width="17%">
+                                        <col width="17%">
+                                        <col width="16%">
                                         <col width="5%">
                                     </colgroup>
                                     <thead>
                                     <tr>
-                                        <th class="checkbox-group"><input type="checkbox" id="select-all-students"/></th>
+                                        <th class="checkbox-group"><input type="checkbox" id="select-all-students"/>
+                                        </th>
                                         <th>No</th>
                                         <th>이름</th>
                                         <th>출결</th>
@@ -112,8 +113,11 @@
                                     </tr>
                                     </thead>
                                     <tbody id="record_tbody">
-                                    <tr th:each="s, stat : ${students}" th:data-student-id="${s.studentId}" th:data-app-token="${s.appToken}"
-                                        th:data-center-code="${s.centerCode}" th:data-after-class-key="${content.afterClassKey}">
+                                    <tr th:each="s, stat : ${students}"
+                                        th:data-student-id="${s.studentId}"
+                                        th:data-app-token="${s.appToken}"
+                                        th:data-center-code="${s.centerCode}"
+                                        th:data-after-class-key="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].afterClassKey : ''}">
                                         <td class="checkbox-group">
                                             <input type="checkbox"/>
                                         </td>
@@ -121,44 +125,42 @@
                                         <td class="studentName" th:text="${s.studentName}"></td>
                                         <td>
                                             <div>
-                                                    <span th:classappend="
-                                                    ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
-                                                        (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
-                                                            (${s.attendanceName == '수업 전'} ? 'status-badge before stbox' :
-                                                                'status-badge absent stbox'))"
-                                                          th:text="${s.attendanceName}">
-                                                    </span>
+                <span th:classappend="
+                    ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
+                        (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
+                            (${s.attendanceName == '수업 전'} ? 'status-badge before stbox' :
+                                'status-badge absent stbox'))"
+                      th:text="${s.attendanceName}">
+                </span>
                                                 <div class="time in stbox">
                                                     등원
                                                     <span class="time-set">
-                                                            <span class="display-time"
-                                                                  th:text="${s.inTime != null ? s.inTime : '--:--'}"></span>
-                                                            <input type="time" class="timepicker"
-                                                                   th:value="${s.inTime}"/>
-                                                        </span>
+                        <span class="display-time"
+                              th:text="${s.inTime != null ? s.inTime : '--:--'}"></span>
+                        <input type="time" class="timepicker"
+                               th:value="${s.inTime}"/>
+                    </span>
                                                 </div>
                                                 <div class="time out stbox">
                                                     하원
                                                     <span class="time-set">
-                                                            <span class="display-time"
-                                                                  th:text="${s.outTime != null ? s.outTime : '--:--'}"></span>
-                                                            <input type="time" class="timepicker"
-                                                                   th:value="${s.outTime}"/>
-                                                        </span>
+                        <span class="display-time"
+                              th:text="${s.outTime != null ? s.outTime : '--:--'}"></span>
+                        <input type="time" class="timepicker"
+                               th:value="${s.outTime}"/>
+                    </span>
                                                 </div>
-
                                             </div>
                                         </td>
                                         <td th:if="${s.remedialDate == null}">
                                             --
                                         </td>
-
                                         <td th:if="${s.remedialDate != null}">
                                             <div class="icon-field time-input cal-adjust"
                                                  style="margin-bottom: 0; text-align: center;">
-                                                        <span class="selected-datetime"
-                                                              th:text="${s.remedialDate == '9999-12-31' ? '날짜를 선택하세요' : s.remedialDate}">
-                                                        </span>
+                <span class="selected-datetime"
+                      th:text="${s.remedialDate == '9999-12-31' ? '날짜를 선택하세요' : s.remedialDate}">
+                </span>
                                                 <input type="date" class="datetime-input hidden-picker"
                                                        th:value="${s.remedialDate == '9999-12-31' ? '' : s.remedialDate}"/>
                                                 <button type="button" class="icon-btn calendar-btn"
@@ -190,49 +192,50 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                                                    <div class="comment-wrapper">
-                                                        <!-- textarea 영역 -->
-                                                        <textarea class="comment-text record-content" placeholder="내용을 입력해주세요."
-                                                                  th:text="${content != null && content.content != null
-                                                                  ? #strings.replace(#strings.replace(#strings.replace(content.content, '<br />', '\n'),'<br/>','\n'),'<br>','\n')
-                                                                  : ''}">
-                                                        </textarea>
-                                                        <input type="hidden"
-                                                               class="record-word"
-                                                               th:value="${content != null ? content.word : ''}">
-                                                        <!-- 이미지 영역 -->
-                                                        <div th:if="${s.appToken == null or s.appToken == ''}" class="comment-image">
-                                                            <img th:src="@{/image/send1.png}">
-                                                        </div>
-                                                    </div>
+                    <textarea class="comment-text record-content"
+                              placeholder="내용을 입력해주세요."
+                              th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].content != null
+                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].content, '<br />', '
+'),'<br/>','
+'),'<br>','
+')
+                                  : ''}"
+                              th:data-original-content="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].content : ''}">
+                    </textarea>
+                                                    <input type="hidden"
+                                                           class="record-word"
+                                                           th:value="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].homework : ''}">
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                                                    <div class="comment-wrapper">
-                                                        <!-- textarea 영역 -->
-                                                        <textarea class="comment-text record-content" placeholder="내용을 입력해주세요.">
-                                                            내용을 입력해 주세요.
-                                                        </textarea>
-                                                        <input type="hidden"
-                                                               class="record-review"
-                                                               th:value="${content != null ? content.word : ''}">
-                                                        <!-- 이미지 영역 -->
-                                                        <div th:if="${s.appToken == null or s.appToken == ''}" class="comment-image">
-                                                            <img th:src="@{/image/send1.png}">
-                                                        </div>
-                                                    </div>
+                    <textarea
+                            class="comment-text record-review"
+                            placeholder="리뷰를 입력해주세요."
+                            th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].review != null
+                            ? #strings.replace(#strings.replace(
+                            #strings.replace(afterClass[stat.index].review, '<br />', '
+'),
+                            '<br/>','
+'),
+                            '<br>','
+')
+                            : ''}">
+                    </textarea>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="send-ornot">
-                                            <img th:if="${s.appToken == null or s.appToken == ''}" src="/image/no-smartphones.png" alt="">
+                                            <img th:if="${s.appToken == null or s.appToken == ''}"
+                                                 src="/image/no-smartphones.png" alt="">
                                             <span th:if="${s.appToken != null and s.appToken != ''}">
-                                                <img th:src="${s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png'}" alt="">
-                                                <img th:src="${s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png'}" alt="">
-                                            </span>
+                <img th:src="${s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png'}"
+                     alt="">
+                <img th:src="${s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png'}"
+                     alt="">
+            </span>
                                         </td>
                                     </tr>
                                     <tr th:if="${#lists.isEmpty(students)}">

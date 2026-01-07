@@ -504,17 +504,48 @@ public class ClassService {
     }
 
     public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String week, String classKey, String unitKey) {
+        // 학생 조회
         List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
+        log.info("week = {}", week);
+        String noticeWeek = week.split("_")[1];
+        List<ClassRespDTO.AfterClassRespDTO> afterClassList = new ArrayList<>();
+
 
         String currentYear = dateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
 
-        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
+//        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
 
-        ClassRespDTO.RecordBundleDTO response = new ClassRespDTO.RecordBundleDTO(students, afterClassContent);
+        for (RecordStudentDTO s : students) {
 
-        return response;
+            ClassRespDTO.AfterClassRespDTO notice =
+                    classRepository.findAfterClassNotice(
+                            s.getStudentId(),
+                            timeTableKey,
+                            noticeWeek
+                    );
+
+            if (notice != null) {
+                afterClassList.add(notice);
+                continue;
+            }
+
+            // 2-2. 없으면 공통 AfterClass 조회
+            ClassRespDTO.AfterClassRespDTO base =
+                    classRepository.findAfterClass(
+                            userCode, classKey, unitKey, week, timeTableKey, yy
+                    );
+
+            afterClassList.add(base);
+        }
+
+        return new ClassRespDTO.RecordBundleDTO(students, afterClassList);
     }
+
+//        ClassRespDTO.RecordBundleDTO response = new ClassRespDTO.RecordBundleDTO(students, afterClassContent);
+//
+//        return response;
+//    }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
 
