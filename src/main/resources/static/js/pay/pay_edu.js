@@ -605,9 +605,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.classDate}</td>
                 <td>${item.studentName}</td>
                 <td>${item.subject}</td>
-                <td>${teachers}</td>
-                <td>${paidDate}</td>
+                <td>${teachers}</td>   
                 <td>추가</td>
+                <td>${paidDate}</td>
+           
                 <td class="payment">${amount}</td>
                 <td class="middle">
                     <div class="state-box ${getStatusClass(item.status)}">

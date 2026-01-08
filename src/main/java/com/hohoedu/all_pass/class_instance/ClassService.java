@@ -18,6 +18,7 @@ import com.hohoedu.all_pass.student.model.StudentClass;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -265,7 +266,7 @@ public class ClassService {
             classRepository.createTimeTableKey(entity);
 
             classReqDTO.setTimeTableKey(timeTableKey);
-            System.out.println("유닛코드" + classReqDTO.getUnitKey());
+
             classRepository.registerClass(classReqDTO);
 
             return "success-register";
@@ -342,9 +343,13 @@ public class ClassService {
     }
 
     // 학생 수업 등록
-
-    //TODO: 한자, 독서 하나만 들어가도록 수정
     public boolean addStudent(AddStudentDTO dto) {
+        int duplicated = classRepository.existsSameClassType(dto);
+
+        if (duplicated > 0) {
+            throw new RuntimeException("이미 동일한 클래스 타입의 수업을 수강 중입니다.");
+        }
+
         int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
         if (count >= 10) return false;
 
@@ -383,6 +388,64 @@ public class ClassService {
 
     }
 
+
+    @Transactional
+    public void copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
+
+        int count = classRepository.existsTimeTable(userCode, year, month);
+        if (count > 0) {
+            throw new RuntimeException("이번 달 시간표 등록 내역이 있습니다.");
+        }
+        Map<String, String> req = Map.of("year", year, "month", month);
+
+        List<TimeTableDTO> lastTables = getLastTimeTable(userCode, req);
+
+        if (lastTables.isEmpty()) return;
+
+        Map<String, String> keyMap = new HashMap<>();
+
+        for (TimeTableDTO old : lastTables) {
+
+            ClassReqDTO.ClassRegisterDTO dto = new ClassReqDTO.ClassRegisterDTO();
+            dto.setYy(year);
+            dto.setMm(month);
+            dto.setDayname(old.getDayname());
+            dto.setPeriodNo(old.getPeriodNo());
+            dto.setStartTime(old.getStartTime());
+            dto.setEndTime(old.getEndTime());
+            dto.setClassKey(old.getClassKey());
+            dto.setUnitKey(old.getUnitKey());
+            dto.setGradeKey(old.getGradeKey());
+            dto.setUserCode(userCode);
+            dto.setCenterCode(centerCode);
+
+            registerClass(dto);
+
+            keyMap.put(old.getTimeTableKey(), dto.getTimeTableKey());
+        }
+
+
+        for (TimeTableDTO old : lastTables) {
+
+            String newTimeTableKey = keyMap.get(old.getTimeTableKey());
+            if (newTimeTableKey == null) continue;
+
+            for (TimeTableDTO.StudentDTO stu : old.getStudents()) {
+
+                ClassReqDTO.AddStudentDTO addDto = new ClassReqDTO.AddStudentDTO();
+                addDto.setTimeTableKey(newTimeTableKey);
+                addDto.setStudentId(stu.getStudentId());
+                addDto.setWeekNo(stu.getWeek());
+                addDto.setYy(year);
+                addDto.setMm(month);
+
+                // ✅ 전체 학생 등록 프로세스 재사용
+                registerStudentFullProcess(addDto, userCode, centerCode);
+            }
+        }
+    }
+
+
     public ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(String timeTableKey, String studentId, String centerCode) {
         ClassRespDTO.ClassInfoDTO classInfo = classRepository.findClassInfoByTimeTableKeyAndStudentId(timeTableKey, studentId, centerCode);
         return classInfo;
@@ -400,14 +463,42 @@ public class ClassService {
                 Integer.parseInt(req.get("month")),
                 1
         );
-
         // 이전 달
         LocalDate prev = selected.minusMonths(1);
 
         String lastYear = String.valueOf(prev.getYear());
         String lastMonth = String.format("%02d", prev.getMonthValue());
-        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, lastYear, lastMonth);
-        return tables;
+//        List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, lastYear, lastMonth);
+        List<TimeTableDTO> rows = classRepository.findTimeTableBasic(userCode, lastYear, lastMonth);
+        if (rows.isEmpty()) {
+            return rows;
+        }
+
+
+        List<String> timeTableKeys = rows.stream()
+                .map(TimeTableDTO::getTimeTableKey)
+                .distinct()
+                .toList();
+
+        List<TimeTableDTO.StudentDTO> students =
+                classRepository.findTimeTableStudents(userCode, timeTableKeys);
+
+        Map<String, List<TimeTableDTO.StudentDTO>> studentMap =
+                students.stream()
+                        .collect(Collectors.groupingBy(
+                                TimeTableDTO.StudentDTO::getTimeTableKey
+                        ));
+
+        rows.forEach(tt ->
+                tt.setStudents(
+                        studentMap.getOrDefault(
+                                tt.getTimeTableKey(),
+                                new ArrayList<>()
+                        )
+                )
+        );
+
+        return rows;
     }
 
     public List<TimeTableCode> findTimeTableCodeByUserCode(String userCode) {
@@ -506,7 +597,7 @@ public class ClassService {
     public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String week, String classKey, String unitKey) {
         // 학생 조회
         List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
-        log.info("week = {}", week);
+
         String noticeWeek = week.split("_")[1];
         List<ClassRespDTO.AfterClassRespDTO> afterClassList = new ArrayList<>();
 
@@ -622,6 +713,8 @@ public class ClassService {
             insertDTO.setReview(dto.getReview());
             insertDTO.setClassType(typeLabel);
             insertDTO.setClassLabel(classLabel);
+            insertDTO.setCounselType(dto.getCounselType());
+            insertDTO.setCounselContent(dto.getCounselContent());
 
             classRepository.upsertAfterClassNotice(insertDTO);
         }

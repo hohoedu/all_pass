@@ -316,6 +316,9 @@ public class ClassReqDTO {
         private String classType;
         private String classLabel;
         private String icon;
+        private String counselContent;
+        private String counselType;
+
     }
 
     // 시간표 조회 Controller 요청 dto

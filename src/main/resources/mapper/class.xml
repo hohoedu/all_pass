@@ -127,6 +127,14 @@
         ORDER BY orderFlag ASC;
     </select>
 
+    <select id="existsTimeTable" resultType="int">
+        SELECT count(*)
+        FROM erp_time_table
+        where user_code = #{userCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <!--시간표 추가-->
     <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
@@ -160,6 +168,27 @@
         SET time_table_label = #{label}
         WHERE time_table_key = #{timeTableKey}
     </update>
+
+    <select id="existsSameClassType"
+            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AddStudentDTO"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM erp_time_table t
+                 JOIN erp_time_table_assign ta
+                      ON t.time_table_key = ta.time_table_key
+                 JOIN erp_class_code cc
+                      ON t.class_key = cc.class_key
+        WHERE ta.student_id = #{studentId}
+          AND t.yy = #{yy}
+          AND t.mm = #{mm}
+          AND cc.class_type = (
+            SELECT cc2.class_type
+            FROM erp_time_table t2
+                     JOIN erp_class_code cc2
+                          ON t2.class_key = cc2.class_key
+            WHERE t2.time_table_key = #{timeTableKey}
+        )
+    </select>
 
     <!-- 시간표 학생 추가 -->
     <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" keyProperty="id"
@@ -316,6 +345,20 @@
         ORDER BY dayname, period_no
     </select>
 
+    <select id="findTimeTableStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+        SELECT
+        ta.time_table_key,
+        s.student_id,
+        s.student_name,
+        ta.week
+        FROM erp_time_table_assign ta
+        JOIN erp_student s ON s.student_id = ta.student_id
+        WHERE ta.time_table_key IN
+        <foreach collection="timeTableKeys" item="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
+    </select>
+
     <!-- 한자: 현재 class/unit 기반 ID 조회 -->
     <select id="findUnitByClassAndUnit" resultType="map">
         SELECT id, class_key, unit_key
@@ -373,6 +416,14 @@
 
         DELETE
         FROM erp_payment_detail
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_before_class_notice
+        WHERE time_table_key = #{timeTableKey}
+
+        DELETE
+        FROM erp_after_class_notice
         WHERE time_table_key = #{timeTableKey}
     </delete>
 
@@ -590,7 +641,9 @@
         time_table_key AS timeTableKey,
         class_label AS timeTableLabel,
         user_code AS userCode,
-        review
+        review AS review,
+        counsel_content AS counselContent,
+        counsel_type AS counselType
         FROM erp_after_class_notice
         WHERE time_table_key = #{timeTableKey}
         AND week = #{week}
@@ -637,7 +690,9 @@
                time_table_key  AS timeTableKey,
                dayname         AS timeTableLabel,
                u.user_name     AS userName,
-               review
+               review AS review,
+               counsel_content AS counselContent,
+               counsel_type AS counselType
         from erp_after_class_notice acn
                  join erp_user u on acn.user_code = u.user_code
         where acn.time_table_key = #{timeTableKey}
@@ -1102,13 +1157,69 @@
                 #{classLabel}, #{content}, #{userCode}, SYSDATETIME())
     </insert>
 
-    <insert id="upsertAfterClassNotice"
+    <update id="upsertAfterClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
-        INSERT INTO erp_after_class_notice(student_id, user_code, time_table_key, after_class_key, week, dayname, yy,
-                                           mm, class_type, class_label, content, word, review, created_at)
-        VALUES (#{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{week}, #{dayname}, #{year}, #{month},
-                #{classType}, #{classLabel}, #{content}, #{word}, #{review}, SYSDATETIME())
-    </insert>
+        MERGE erp_after_class_notice AS T
+            USING (
+            SELECT
+            #{studentId}    AS student_id,
+            #{timeTableKey} AS time_table_key,
+            #{week}         AS week
+            ) AS S
+            ON (
+            T.student_id = S.student_id
+            AND T.time_table_key = S.time_table_key
+            AND T.week = S.week
+            )
+            WHEN MATCHED THEN
+        UPDATE SET
+            T.content     = #{content},
+            T.word        = #{word},
+            T.review      = #{review},
+            T.class_type  = #{classType},
+            T.class_label = #{classLabel},
+            T.dayname     = #{dayname},
+            T.counsel_content=#{counselContent},
+            T.counsel_type=#{counselType},
+            T.updated_at  = GETDATE()
+            WHEN NOT MATCHED THEN
+        INSERT (
+        student_id,
+        user_code,
+        time_table_key,
+        after_class_key,
+        yy,
+        mm,
+        week,
+        dayname,
+        content,
+        word,
+        review,
+        class_type,
+        class_label,
+        counsel_content,
+        counsel_type,
+        created_at
+        )
+        VALUES (
+            #{studentId},
+            #{userCode},
+            #{timeTableKey},
+            #{afterClassKey},
+            #{year},
+            #{month},
+            #{week},
+            #{dayname},
+            #{content},
+            #{word},
+            #{review},
+            #{classType},
+            #{classLabel},
+            #{counselContent},
+            #{counselType},
+            GETDATE()
+            );
+    </update>
 
 
     <select id="findBeforeClassByStudentId"

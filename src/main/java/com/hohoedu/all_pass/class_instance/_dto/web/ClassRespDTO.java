@@ -77,6 +77,7 @@ public class ClassRespDTO {
 
         @Data
         public static class StudentDTO {
+            private String timeTableKey;
             private String studentId;
             private String studentName;
             private String week;
@@ -208,6 +209,8 @@ public class ClassRespDTO {
         private String timeTableLabel;
         private String userName;
         private String review;
+        private String counselContent;
+        private String counselType;
     }
 
     @Data

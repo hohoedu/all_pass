@@ -467,27 +467,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('load-last-time-table');
     if (!btn) return;
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
+        if (!confirm('전월 시간표와 학생을 그대로 복사하시겠습니까?')) return;
 
-        fetch(`/class/api/load_time_table`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({
-                year: year,
-                month: month
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                renderTimeTable(data.response);
-            })
-            .catch(err => {
-                console.log('오류 발생', err);
+        try {
+            const res = await fetch('/class/api/copy/last-timetable', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({year, month})
             });
 
+            const json = await res.json();
+
+            if (!res.ok || json.success === false) {
+                alert(json.msg || '처리 중 오류가 발생했습니다.');
+                return;
+            }
+
+            alert('전월 시간표가 복사되었습니다.');
+            location.reload();
+
+        } catch (e) {
+            alert('서버와 통신 중 오류가 발생했습니다.');
+            console.error(e);
+        }
     });
 });
 
@@ -504,21 +507,74 @@ function renderTimeTable(tables) {
 
         const classSelect = row.querySelector(".class-select");
         const unitSelect = row.querySelector(".unit-select");
-        const gradeSelect = row.querySelector(".grade-select");
+        const gradeSelect = row.querySelector("select[name='gradeKey']");
 
         if (classSelect) classSelect.value = entry.classKey ?? "";
+        if (gradeSelect) gradeSelect.value = entry.gradeKey ?? "";
 
         if (unitSelect && classSelect) {
             const classKey = entry.classKey;
-            const classUnits = getClassUnits(); // 기존 함수 사용
-            fillUnitSelect(unitSelect, classUnits, classKey, entry.unitKey);
+            const classUnits = getClassUnits();
+
+            fillUnitSelect(unitSelect, classUnits, classKey, null);
+
+            // 🔒 무조건 두 번째 옵션 선택 (첫 번째는 "")
+            if (unitSelect.options.length > 1) {
+                unitSelect.selectedIndex = 1;
+            }
         }
 
-        if (gradeSelect) {
-            gradeSelect.value = entry.gradeKey ?? "";
-        }
+        const studentTd = row.querySelector(".student-cell");
+        if (!studentTd) return;
 
+        studentTd.querySelectorAll(".student-badge").forEach(el => el.remove());
+
+        entry.students.forEach(stu => {
+            const div = document.createElement("div");
+            div.className = "student-badge comclass-badge-name";
+            div.dataset.studentId = stu.studentId;
+            div.dataset.timeTableKey = entry.timeTableKey;
+
+            div.innerHTML = `
+                <span class="badge-name">${stu.studentName}</span>
+                ${
+                stu.week && parseInt(stu.week, 10) <= 3
+                    ? `<span class="count-num">(${stu.week})</span>`
+                    : ""
+            }
+                <span class="badge-close"
+                      id="assign_delete"
+                      data-student-id="${stu.studentId}"
+                      data-time-table-key="${entry.timeTableKey}"
+                      title="삭제"></span>
+            `;
+
+            studentTd.appendChild(div);
+        });
+
+        row.dataset.timeTableKey = entry.timeTableKey ?? "";
+        row.dataset.timeTableCode = entry.timeTableKey ?? "";
     });
+}
+
+async function saveStudents(list) {
+    const assignments = list.map(s => ({
+        timeTableKey: s.timeTableKey,
+        studentId: s.studentId,
+        weekNo: s.weekNo,
+        yy: year,
+        mm: month
+    }));
+
+    const res = await fetch('/class/add_student', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({assignments})
+    });
+
+    if (!res.ok) {
+        throw new Error("학생 등록 실패");
+    }
 }
 
 // 시간표 등록 로직
@@ -526,7 +582,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('table_register');
     if (!btn) return;
     const savedPeriod = sessionStorage.getItem('selectedPeriod');
-    console.log('savedPeriod =', savedPeriod);
 
     if (savedPeriod) {
         const activeTab = document.querySelector('.time-tab-content.active');

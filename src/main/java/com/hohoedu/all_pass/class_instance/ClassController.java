@@ -184,10 +184,30 @@ public class ClassController {
                     .build();
         }
 
-
         List<TimeTableDTO> tables = classService.getLastTimeTable(user.getUserCode(), request);
 
         return ResponseEntity.ok(ApiUtils.success(tables));
+    }
+
+
+    @PostMapping("/api/copy/last-timetable")
+    public ResponseEntity<?> copyLastTimetable(@RequestBody Map<String, String> req, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        classService.copyLastMonthTimeTableAndStudents(
+                user.getUserCode(),
+                user.getCenterCode(),
+                req.get("year"),
+                req.get("month")
+        );
+        return ResponseEntity.ok(ApiUtils.success(true));
     }
 
     @PostMapping("/timetable/view")
@@ -238,7 +258,7 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        log.info("findRecordByClass = {}", dto.getTimeTableKey());
+
         ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(user.getUserCode(), dto.getTimeTableKey(), dto.getWeek(), dto.getClassKey(), dto.getUnitKey());
 
         return ResponseEntity.ok(ApiUtils.success(response));

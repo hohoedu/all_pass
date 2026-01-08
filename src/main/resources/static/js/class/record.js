@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 전체 선택 체크박스 설정
     setupSelectAllCheckbox();
-
+    loadInitialData();
     if (teacherSel) {
         teacherSel.addEventListener('change', () => {
             state.teacherId = teacherSel.value || null;
@@ -173,6 +173,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+async function loadInitialData() {
+    const timeTableKey = state.timeTableKey;
+    if (!timeTableKey) {
+        console.warn('초기 timeTableKey가 없습니다.');
+        return;
+    }
+
+    await loadStudentList(timeTableKey);
+}
+
+
 // 수업 리스트 조회 후 학생 리스트 조회
 async function loadOverviewFromState() {
     const signal = abortInFlight();
@@ -214,6 +225,36 @@ async function loadOverviewFromState() {
         renderRecordStudentList([]);
     }
 }
+
+async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
+    const signal = abortInFlight();
+
+    try {
+        if (!timeTableKey) {
+            renderRecordStudentList([]);
+            return;
+        }
+        const body = buildByClassBody(timeTableKey, state.week, state.classKey, state.unitKey);
+        const res = await fetch('/class/api/record/student', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
+            signal
+        });
+        if (!res.ok) throw new Error('서버 응답 오류(학생)');
+        const data = await res.json();
+        console.log(data.response);
+        const list = Array.isArray(data?.response?.students) ? data.response.students : [];
+        const afterClassList = Array.isArray(data?.response?.afterClass) ? data.response.afterClass : [];
+
+        renderRecordStudentList(list, afterClassList);
+    } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.error('[loadStudentList] 실패:', e);
+        renderRecordStudentList([]);
+    }
+}
+
 
 // 학생 리스트 조회
 async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
@@ -362,17 +403,21 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
           </td>`;
 
         // 상담기록
+        const counselType = afterClass?.counselType || '전화';
+        const counselContent = afterClass?.counselContent || '';
+
         tr.innerHTML += `
-          <td class="cell-middle">
-            <div class="counsel-box">
-              <div class="counsel-type">
-                <button class="active">전화</button>
-                <button>문자</button>
-                <button>대면</button>
-              </div>
-              <textarea placeholder="내용을 입력해주세요."></textarea>
-            </div>
-          </td>`;
+  <td class="cell-middle">
+    <div class="counsel-box">
+      <div class="counsel-type">
+        <button class="${counselType === '전화' ? 'active' : ''}">전화</button>
+        <button class="${counselType === '문자' ? 'active' : ''}">문자</button>
+        <button class="${counselType === '대면' ? 'active' : ''}">대면</button>
+      </div>
+      <textarea placeholder="내용을 입력해주세요.">${counselContent}</textarea>
+    </div>
+  </td>
+`;
 
         // 수업 후 코멘트 (각 학생별 afterClass 데이터 사용)
         const originalContent = afterClass?.content ? afterClass.content.replace(/<br\s*\/?>/gi, "\n") : "";
@@ -765,7 +810,7 @@ async function saveAfterClassNotice(checkedRows) {
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
-            content: originalContent,
+            content: contentTextarea?.value,
             word: row.querySelector(".record-word")?.value || "",
             review: reviewTextarea?.value || "",
             counselType: counselType,
@@ -802,7 +847,7 @@ async function insertAfterClassNotice(checkedRows) {
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
-            content: originalContent,
+            content: contentTextarea.value,
             word: row.querySelector(".record-word")?.value || "",
             review: reviewTextarea?.value || "",
             counselType: counselType,

@@ -37,6 +37,13 @@ public interface ClassRepository {
 
     void updateClassWeek(ClassReqDTO.SetWeekDTO dto);
 
+    int existsTimeTable(
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+
     public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
 
     List<ClassRespDTO.ClassUnitDTO> findClassUnitMap();
@@ -75,6 +82,8 @@ public interface ClassRepository {
             @Param("label") String label,
             @Param("timeTableKey") String timeTableKey);
 
+    int existsSameClassType(ClassReqDTO.AddStudentDTO dto);
+
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
     ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(
@@ -92,6 +101,11 @@ public interface ClassRepository {
             @Param("userCode") String userCode,
             @Param("year") String year,
             @Param("month") String month);
+
+    List<ClassRespDTO.TimeTableDTO.StudentDTO> findTimeTableStudents(
+            String userCode,
+            List<String> timeTableKeys
+    );
 
     Map<String, Object> findUnitByClassAndUnit(
             @Param("classKey") String classKey,
@@ -365,4 +379,6 @@ public interface ClassRepository {
     );
 
     AfterClassNotice findByTimeTableKeyAndWeek(String timeTableKey, String week);
+
+
 }
