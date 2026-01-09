@@ -16,10 +16,8 @@
                  JOIN erp_grade_code g ON book.class_key = g.book_class_key
                  LEFT JOIN erp_subject_code sc ON book.subject_key = sc.subject_key
         WHERE g.grade_key = #{gradeKey}
-        AND book.yy = '2026'
-        AND book.mm = '01'
-          -- AND book.yy = FORMAT(GETDATE(), 'yyyy')
-          -- AND book.mm = FORMAT(GETDATE(), 'MM')
+          AND book.yy = FORMAT(GETDATE(), 'yyyy')
+          AND book.mm = FORMAT(GETDATE(), 'MM')
     </select>
 
     <select id="findBookInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListRawDTO">
@@ -35,8 +33,8 @@
                  JOIN erp_book_suggest book ON t.class_key = book.class_key
                  LEFT JOIN erp_subject_code sc ON book.subject_key = sc.subject_key
         WHERE s.student_id = #{studentId}
-          AND t.yy = '2026'
-          AND t.mm = '01'
+          AND t.yy = #{yy}
+          AND t.mm = #{mm}
     </select>
 
 

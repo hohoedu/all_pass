@@ -15,9 +15,25 @@
             <!-- reason -->
             <div class="reason-input">
                 <div class="s_student_no" style="display:none;"></div>
-                <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
-                <button type="button" class="change-btn" id="status-change">변경</button>
+
+                <!-- 날짜 입력칸 + 달력 아이콘 -->
+                <div class="withdraw-date hide-input" style="display: flex; gap: 10px; align-items: center; margin-right: 10px;">
+                    <div style="position: relative;">
+                        <div class="day-display">날짜를 선택해주세요</div>
+                        <input type="date" id="withdraw-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                    </div>
+                    <button type="button" class="icon-btn calendar-open">
+                        <img src="/image/calendar.png" alt="달력 아이콘">
+                    </button>
+                </div>
+
+                <!-- 사유 입력칸 + 변경 버튼 -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
+                    <button type="button" class="change-btn" id="status-change">변경</button>
+                </div>
             </div>
+
 
             <!-- 기본 정보 -->
             <table class="base-info-t">

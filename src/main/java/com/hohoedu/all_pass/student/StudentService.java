@@ -226,6 +226,53 @@ public class StudentService {
 
     }
 
+    public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request) {
+        log.info("수강상태 수정 처리: studentId={}, hanChanged={}, bookChanged={}",
+                request.getStudentId(), request.getHanChanged(), request.getBookChanged());
+
+        // 한자 수강상태 변경
+        if (Boolean.TRUE.equals(request.getHanChanged())) {
+            if (request.getHanState() == 1) {
+                // 수강으로 변경
+                log.info("한자 수강으로 변경: entryHanDate={}", request.getEntryHanDate());
+                studentRepository.updateHanToActive(
+                        request.getStudentId(),
+                        request.getEntryHanDate()
+                );
+            } else {
+                // 미수강으로 변경
+                log.info("한자 미수강으로 변경: inactiveDate={}, reason={}",
+                        request.getInactiveHanDate(), request.getInactiveHanReason());
+                studentRepository.updateHanToInactive(
+                        request.getStudentId(),
+                        request.getInactiveHanDate(),
+                        request.getInactiveHanReason()
+                );
+            }
+        }
+
+        // 독서 수강상태 변경
+        if (Boolean.TRUE.equals(request.getBookChanged())) {
+            if (request.getBookState() == 1) {
+                // 수강으로 변경
+                log.info("독서 수강으로 변경: entryBookDate={}", request.getEntryBookDate());
+                studentRepository.updateBookToActive(
+                        request.getStudentId(),
+                        request.getEntryBookDate()
+                );
+            } else {
+                // 미수강으로 변경
+                log.info("독서 미수강으로 변경: inactiveDate={}, reason={}",
+                        request.getInactiveBookDate(), request.getInactiveBookReason());
+                studentRepository.updateBookToInactive(
+                        request.getStudentId(),
+                        request.getInactiveBookDate(),
+                        request.getInactiveBookReason()
+                );
+            }
+        }
+
+    }
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
         TeacherAssign old = studentRepository.findTeacherAssign(req.getStudentId());
@@ -280,73 +327,69 @@ public class StudentService {
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();
 
-        boolean addHan = isHan && !oldHan;
-        boolean addBook = isBook && !oldBook;
 
-        if (!addHan && !addBook) {
-            return; // 변경 없음
+        if (isHan == oldHan && isBook == oldBook) {
+            return;
         }
-
-        boolean finalHanState = oldHan || addHan;
-        boolean finalBookState = oldBook || addBook;
-
 
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
-
         dto.setStudentId(studentId);
 
-        dto.setHanState(finalHanState);
-        dto.setBookState(finalBookState);
+        dto.setHanState(oldHan || isHan);
+        dto.setBookState(oldBook || isBook);
 
-
-        if (addHan) {
+        if (isHan) {
             dto.setHanTeacher(info.getTeacherCode());
             dto.setHanClass(info.getClassKey());
-            dto.setHanEntryDate(today);
+            if (!oldHan) {
+                dto.setHanEntryDate(today);
+            }
         }
 
-        if (addBook) {
+        if (isBook) {
             dto.setBookTeacher(info.getTeacherCode());
             dto.setBookClass(info.getClassKey());
-            dto.setBookEntryDate(today);
+            if (!oldBook) {
+                dto.setBookEntryDate(today);
+            }
         }
 
         studentRepository.updateTeacherAssign(dto);
     }
 
 
-    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
-        Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
-
-        StudentClass.StudentClassBuilder builder = StudentClass.builder()
-                .student(Student.builder().studentId(studentId).build())
-                .yy(yy)
-                .mm(mm);
-
-        if ("1".equals(dto.getClassType())) {
-            builder
-                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
-                    .hanFee(fee);
-
-        } else if ("2".equals(dto.getClassType())) {
-            builder
-                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
-                    .bookFee(fee);
-        }
-
-        StudentClass studentClass = builder.build();
-
-        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId, yy, mm);
-
-        if (existing != null)
-            studentRepository.updateStudentClass(studentClass);
-        else
-            studentRepository.insertStudentClass(studentClass);
-
-        return "ok";
-    }
+//    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
+//        Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
+//
+//        StudentClass.StudentClassBuilder builder = StudentClass.builder()
+//                .student(Student.builder().studentId(studentId).build())
+//                .yy(yy)
+//                .mm(mm);
+//
+//        if ("1".equals(dto.getClassType())) {
+//            builder
+//                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+//                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
+//                    .hanFee(fee);
+//
+//        } else if ("2".equals(dto.getClassType())) {
+//            builder
+//                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
+//                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
+//                    .bookFee(fee);
+//        }
+//
+//        StudentClass studentClass = builder.build();
+//
+//        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId, yy, mm);
+//
+//        if (existing != null)
+//            studentRepository.updateStudentClass(studentClass);
+//        else
+//            studentRepository.insertStudentClass(studentClass);
+//
+//        return "ok";
+//    }
 
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);
@@ -426,7 +469,7 @@ public class StudentService {
     }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
-        log.info("appId = {}", appId);
+
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
         return respDTO;
     }
@@ -434,7 +477,7 @@ public class StudentService {
     public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
         if (dto == null || student == null) {
-            throw new IllegalArgumentException("잘못된 요청 데이터입니다.");
+            throw new RuntimeException("잘못된 요청 데이터입니다.");
         }
 
         Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
@@ -442,13 +485,7 @@ public class StudentService {
             throw new RuntimeException("오늘은 이미 출석했습니다.");
         }
 
-        LocalDate today;
-        try {
-            today = LocalDate.parse(dto.getYmd());
-        } catch (Exception e) {
-            throw new RuntimeException("출석 날짜 형식이 잘못되었습니다.");
-        }
-
+        LocalDate today = LocalDate.parse(dto.getYmd());
         String year = String.valueOf(today.getYear());
         String month = String.format("%02d", today.getMonthValue());
 
@@ -466,7 +503,7 @@ public class StudentService {
                     long diffB = Math.abs(Duration.between(checkInTime, LocalTime.parse(b.getStartTime())).toMinutes());
                     return Long.compare(diffA, diffB);
                 })
-                .orElse(timeDTO.get(0)); // 못 찾으면 첫 번째
+                .orElse(timeDTO.get(0));
 
         LocalTime start = LocalTime.parse(targetClass.getStartTime());
         String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
@@ -495,13 +532,8 @@ public class StudentService {
         );
 
         if (updated == 0) {
-            log.error("No attendance record found to update: studentId={}, date={}",
-                    student.getStudentId(), dto.getYmd());
-            throw new RuntimeException("출석 기록을 찾을 수 없습니다. 시간표 배정을 확인해주세요.");
+            throw new RuntimeException("시간표 기록을 찾을 수 없습니다. 시간표 배정을 확인해주세요.");
         }
-
-        log.info("Checkin success: studentId={}, date={}, time={}, status={}",
-                student.getStudentId(), dto.getYmd(), dto.getHhmm(), attendanceKey);
 
         return true;
     }

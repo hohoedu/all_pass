@@ -95,4 +95,13 @@ public class StudentAppRespDTO {
         private String etime;
         private String gb;
     }
+
+//    @Data
+//    public static class AttendanceStudentInfoDTO {
+//        private String
+//        private String
+//        private String
+//        private String
+//
+//    }
 }

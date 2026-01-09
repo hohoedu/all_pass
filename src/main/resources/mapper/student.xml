@@ -257,8 +257,8 @@
             useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_status_history
-            (student_id, status_key, reason, user_code, updated_at)
-        values (#{studentId}, #{statusKey}, #{reason}, #{userCode}, SYSDATETIME());
+            (student_id, status_key, reason, user_code, withdraw_date, updated_at)
+        values (#{studentId}, #{statusKey}, #{reason}, #{userCode}, #{withdrawDate}, SYSDATETIME());
     </insert>
 
     <!-- 학생 상태 변경 -->
@@ -308,7 +308,52 @@
         SET entry_han_date    = #{entryHanDate},
             entry_book_date   = #{entryBookDate},
             han_material_fee  = #{hanMaterialFee},
-            book_material_fee = #{bookMaterialFee}
+            book_material_fee = #{bookMaterialFee},
+            updated_at        = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <update id="updateHanToActive">
+        UPDATE erp_teacher_assign
+        SET han_state           = 1,
+            entry_han_date      = #{entryHanDate},
+            inactive_han_date   = NULL,
+            inactive_han_reason = NULL,
+            updated_at          = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <update id="updateHanToInactive">
+        UPDATE erp_teacher_assign
+        SET han_state           = 0,
+            inactive_han_date   = #{inactiveHanDate},
+            inactive_han_reason = #{inactiveHanReason},
+            assign_han_class    = NULL,
+            assign_han_teacher  = NULL,
+            han_material_fee    = NULL,
+            updated_at          = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <update id="updateBookToActive">
+        UPDATE erp_teacher_assign
+        SET book_state           = 1,
+            entry_book_date      = #{entryBookDate},
+            inactive_book_date   = NULL,
+            inactive_book_reason = NULL,
+            updated_at           = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <update id="updateBookToInactive">
+        UPDATE erp_teacher_assign
+        SET book_state           = 0,
+            inactive_book_date   = #{inactiveBookDate},
+            inactive_book_reason = #{inactiveBookReason},
+            assign_book_class    = NULL,
+            assign_book_teacher  = NULL,
+            book_material_fee    = NULL,
+            updated_at           = SYSDATETIME()
         WHERE student_id = #{studentId}
     </update>
 
@@ -504,17 +549,19 @@
     </select>
 
     <select id="getStartClassTime" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeRangeDTO">
-        SELECT MIN(t.start_time)  AS startTime,
+        SELECT MAX(t.start_time)  AS startTime,
                MAX(t.end_time)    AS endTime,
                esa.time_table_key AS timeTableKey,
-               t.dayname          AS dayname
+               t.dayname          AS dayname,
+               t.period_no        AS periodNo
         FROM erp_student_attendance esa
                  JOIN erp_time_table t
                       ON esa.time_table_key = t.time_table_key
         WHERE esa.student_id = #{studentId}
           AND esa.yy = #{year}
           AND esa.mm = #{month}
-        GROUP BY esa.time_table_key, t.dayname
+        GROUP BY esa.time_table_key, t.dayname, t.period_no
+        ORDER BY t.period_no
     </select>
 
     <!-- 등원 update -->
@@ -529,7 +576,7 @@
           AND yy = #{yy}
           AND mm = #{mm}
           AND time_table_key = #{timeTableKey}
-          AND in_time IS NULL
+          AND (in_time IS NULL OR in_time = '')
     </update>
 
     <!-- 하원 여부 확인 -->
@@ -551,7 +598,7 @@
             check_out_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND attendance_date = #{attendanceDate}
-          AND out_time IS NULL
+          AND (out_time IS NULL OR out_time = '')
     </update>
 
 
@@ -568,7 +615,7 @@
         WHERE snapshot_ym = #{ym};
 
         INSERT INTO student_monthly_snapshot
-        (snapshot_ym, active_count, rest_count, withdrawn_count, wait_count, created_at)
+            (snapshot_ym, active_count, rest_count, withdrawn_count, wait_count, created_at)
 
         SELECT #{ym},
                SUM(CASE WHEN sc.status = '재원중' THEN 1 ELSE 0 END),

@@ -3488,12 +3488,13 @@ textarea#consult-memo {
 }
 
 .reason-input {
-    display: flex;
     justify-content: flex-end;
     margin-top: 10px;
     visibility: hidden;
     opacity: 0;
     transition: .3s;
+    align-items: flex-end;
+    display: flex;
 }
 
 .reason-input.active {
@@ -6624,9 +6625,10 @@ input[type="time" i] {
     font-weight: bold;
 }
 
-.material-charge{
+.material-charge {
     color: #c8c8c8;
 }
+
 .pay-amount {
     color: #5C5C5C;
 }

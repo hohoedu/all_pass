@@ -7,6 +7,7 @@ import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/push")
 @RequiredArgsConstructor
@@ -25,11 +27,12 @@ public class FcmController {
 
     @PostMapping("/attendance")
     public ResponseEntity<?> attendance(@RequestBody FcmDTO.SingleFcmDTO fcmDTO) {
+
         if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }
         fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
-        return ResponseEntity.ok(ApiUtils.success("발송 성공"));
+        return ResponseEntity.ok(ApiUtils.success("success"));
     }
 
     @PostMapping("/before")

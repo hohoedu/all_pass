@@ -3,6 +3,12 @@
         <div class="modal-inner">
             <div class="small-title" style="margin-top: 30px;">수강과목(한자)</div>
             <table class="base-info-t">
+                <colgroup>
+                    <col style="width: 10%">
+                    <col style="width: 40%">
+                    <col style="width: 10%">
+                    <col style="width: 40%">
+                </colgroup>
                 <tbody>
                 <tr>
                     <th>한자 단계</th>
@@ -16,7 +22,26 @@
                         <input type="hidden" name="hanStatus" value="inactive"/>
                     </td>
                 </tr>
-                <tr>
+                <!-- 한자 미수강 입력 영역 -->
+                <tr class="course-inactive-input han-inactive hide-input">
+                    <th>미수강 사유</th>
+                    <td>
+                        <input type="text" id="han-inactive-reason" placeholder="미수강 사유를 입력해주세요" style="width: 100%;">
+                    </td>
+                    <th>미수강 날짜</th>
+                    <td>
+                        <div style="position: relative; display: flex; gap: 10px; align-items: center;">
+                            <div style="position: relative;">
+                                <input type="text" class="han-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
+                                <input type="date" id="han-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                            </div>
+                            <button type="button" class="icon-btn han-calendar-open">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="han-course-info">
                     <th>담당 선생님</th>
                     <td>
                         <input type="text" class="styled-input p_han_teacher" readonly>
@@ -36,7 +61,7 @@
                     </td>
 
                 </tr>
-                <tr>
+                <tr class="han-course-info">
                     <th class="tuition-fee">교육비</th>
                     <td>
                         <input type="text" name="hanFee" class="no-spin p_han_fee" id="hanFee" readonly>
@@ -52,6 +77,12 @@
             <!-- 수강과목(독서) -->
             <div class="small-title">수강과목(독서)</div>
             <table class="base-info-t" style="margin-bottom: 5px;">
+                <colgroup>
+                    <col style="width: 10%">
+                    <col style="width: 40%">
+                    <col style="width: 10%">
+                    <col style="width: 40%">
+                </colgroup>
                 <tbody>
                 <tr>
                     <th>독서 단계</th>
@@ -67,7 +98,26 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
+                <!-- 독서 미수강 입력 영역 -->
+                <tr class="course-inactive-input book-inactive hide-input">
+                    <th>미수강 사유</th>
+                    <td>
+                        <input type="text" id="book-inactive-reason" placeholder="미수강 사유를 입력해주세요" style="width: 100%;">
+                    </td>
+                    <th>미수강 날짜</th>
+                    <td>
+                        <div style="position: relative; display: flex; gap: 10px; align-items: center;">
+                            <div style="position: relative;">
+                                <input type="text" class="book-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
+                                <input type="date" id="book-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                            </div>
+                            <button type="button" class="icon-btn book-calendar-open">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="book-course-info">
                     <th>담당 선생님</th>
                     <td>
                         <input type="text" class="styled-input p_book_teacher" readonly>
@@ -85,7 +135,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
+                <tr class="book-course-info">
                     <th class="tuition-fee">교육비</th>
                     <td>
                         <input type="text" name="bookFee" class="no-spin p_book_fee" id="bookFee" readonly>
@@ -98,10 +148,11 @@
                 </tbody>
             </table>
             <div class="dues-sum">
-                <p>회비 합계&nbsp;&nbsp;<span> 0</span>&nbsp;원</p>
+                <p>회비 합계<span> 0</span>원</p>
             </div>
             <div class="save-btn-frame">
-                <button type="submit" class="save-btn" id="pay-info">저장</button>
+                <button type="submit" class="save-btn" id="pay-info">교재비 저장</button>
+                <button type="submit" class="save-btn" id="course-status-save">수강상태 저장</button>
             </div>
         </div>
     </div>

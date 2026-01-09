@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +88,7 @@ public class StudentController {
     // 학생 개별 데이터 불러오기
     @GetMapping("/{studentId}")
     public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
-        
+
         StudentWebRespDTO.StudentDTO student = studentService.getStudentDetailByStudentId(studentId);
 
         return ResponseEntity.ok(ApiUtils.success(student));
@@ -146,6 +147,21 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/update/course-status")
+    public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req) {
+        try {
+            studentService.updateCourseStatus(req);
+
+            return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            
+            log.error("수강상태 수정 실패", e);
+
+            return ResponseEntity.status(500).body("수강상태 변경 중 오류가 발생했습니다.");
+        }
+
+    }
+
     @GetMapping("/gradeCodes")
     public ResponseEntity<?> getGradeCode() {
         List<GradeCode> gradeCodes = studentService.findGrade();
@@ -175,7 +191,6 @@ public class StudentController {
 
     @PostMapping("/app_token")
     public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
-        log.info("attendanceTokenDTO = {}", attendanceTokenDTO);
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());
         return ResponseEntity.ok(ApiUtils.success(respDTO));
     }
@@ -184,6 +199,8 @@ public class StudentController {
     public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
 
         Student studentInfo = studentService.findByStudentId(dto.getStudentId());
+        log.info("studentInfo = {}", studentInfo);
+
         if ("1".equals(dto.getAttendType())) {   // 등원
             boolean checkedIn = studentService.checkinStudent(dto, studentInfo);
             System.out.println("checkedIn = " + checkedIn);

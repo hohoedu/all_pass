@@ -374,12 +374,12 @@ public class ClassService {
         // 기본 수업 정보
         ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
 
-        // 담당 선생님 자동 배정
+        // 담당 선생님 배정 및 수업 변경
         studentService.assignTeacher(dto.getStudentId(), info);
 
         // student_class 생성
         ClassRespDTO.ClassInfoDTO classInfo = findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), centerCode);
-        log.info(classInfo.getClassKey());
+
         if (!classInfo.getClassKey().equals("HL")) {
             // 결제 + 상세
             String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), centerCode, userCode);

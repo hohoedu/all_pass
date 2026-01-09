@@ -354,28 +354,9 @@ function renderStudentModal(data) {
     updateTotalFee(payment);
     renderFeeTable(payment);
 
-    function setCourseState(type, state) {
-        const group = document.querySelector(
-            `#tab3 .choose-group[data-type="${type}"]`
-        );
-        if (!group) return;
-
-        const buttons = group.querySelectorAll(".btn-choose");
-        const hidden = group.querySelector('input[type="hidden"]');
-
-        buttons.forEach(btn => {
-            btn.classList.remove("active");
-            btn.disabled = true; // 클릭 방지
-
-            const isActive =
-                (state === "1" && btn.dataset.value === "active") ||
-                (state === "0" && btn.dataset.value === "inactive");
-
-            if (isActive) {
-                btn.classList.add("active");
-                hidden.value = btn.dataset.value;
-            }
-        });
+    // 8) 초기 수강 상태 저장
+    if (typeof window.saveInitialCourseState === 'function') {
+        window.saveInitialCourseState(payment.hanState, payment.bookState);
     }
 
     const birthInput = document.querySelector("#tab2 #birth-date");
@@ -392,8 +373,31 @@ function renderStudentModal(data) {
     if (bookInput) {
         bookInput.value = info.entryBookDate;
     }
+}
 
+function setCourseState(type, state) {
+    const group = document.querySelector(
+        `#tab3 .choose-group[data-type="${type}"]`
+    );
+    if (!group) return;
 
+    const buttons = group.querySelectorAll(".btn-choose");
+    const hidden = group.querySelector('input[type="hidden"]');
+
+    buttons.forEach(btn => {
+        btn.classList.remove("active");
+
+        const isActive =
+            (state === "1" && btn.dataset.value === "active") ||
+            (state === "0" && btn.dataset.value === "inactive") ||
+            (state === 1 && btn.dataset.value === "active") ||
+            (state === 0 && btn.dataset.value === "inactive");
+
+        if (isActive) {
+            btn.classList.add("active");
+            hidden.value = btn.dataset.value;
+        }
+    });
 }
 
 function renderFeeTable(payment) {
@@ -590,6 +594,7 @@ document.addEventListener("change", (e) => {
     const [y, m, d] = input.value.split("-");
     display.textContent = `${y}년 ${m}월 ${d}일`;
 });
+
 // ===============================
 // 업데이트 (저장 버튼)
 // ===============================
@@ -684,14 +689,41 @@ function updateStatusButton(statusCode) {
     });
 }
 
-// ====== 학생 상태 변경 로직 ====== //
+// ====== 학생 상태 변경 로직 (TAB2) ====== //
 document.addEventListener('DOMContentLoaded', function () {
     const exceptCurrentContainer = document.querySelector('.status-buttons[data-visibility="except-current"]');
     const reasonInputBox = document.querySelector('.reason-input');
-    const reasonField = reasonInputBox?.querySelector('input, textarea'); // 사유 입력 필드
-    const submitBtn = document.getElementById('status-change'); // 상태 변경 버튼
+    const reasonField = document.getElementById('reason');
+    const submitBtn = document.getElementById('status-change');
 
     if (!exceptCurrentContainer) return;
+
+    // 달력 아이콘 클릭 이벤트
+    const calendarBtn = document.querySelector('.withdraw-date .icon-btn.calendar-open');
+    if (calendarBtn) {
+        calendarBtn.addEventListener('click', function () {
+            const dateInput = document.getElementById('withdraw-date');
+            if (dateInput) {
+                if (typeof dateInput.showPicker === 'function') {
+                    dateInput.showPicker();
+                } else {
+                    dateInput.click();
+                }
+            }
+        });
+    }
+
+    // 날짜 선택 시 표시 업데이트
+    const withdrawDateInput = document.getElementById('withdraw-date');
+    if (withdrawDateInput) {
+        withdrawDateInput.addEventListener('change', function () {
+            const display = document.querySelector('.withdraw-date .day-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+    }
 
     exceptCurrentContainer.addEventListener('click', function (e) {
         const btn = e.target.closest('.s_status');
@@ -706,19 +738,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         reasonInputBox.classList.add('active');
 
+        const withdrawDateDiv = document.querySelector('.withdraw-date');
+
         if (status === 'ACTIVE') {
             reasonField.classList.add('hide-input');
             reasonField.value = "";
+            if (withdrawDateDiv) withdrawDateDiv.classList.add('hide-input');
+        } else if (status === 'WITHDRAWN') {
+            reasonField.classList.remove('hide-input');
+            if (withdrawDateDiv) withdrawDateDiv.classList.remove('hide-input');
         } else {
             reasonField.classList.remove('hide-input');
+            if (withdrawDateDiv) withdrawDateDiv.classList.add('hide-input');
         }
     });
 
-    // 변경 버튼 클릭 서버로 전송
     if (submitBtn) {
         submitBtn.addEventListener('click', function (e) {
             e.preventDefault();
-
 
             const selectedBtn = exceptCurrentContainer.querySelector('.s_status.selected');
             if (!selectedBtn) {
@@ -729,11 +766,22 @@ document.addEventListener('DOMContentLoaded', function () {
             const statusKey = selectedBtn.dataset.status;
 
             let reason = "";
+            let withdrawDate = null;
+
             if (statusKey !== "ACTIVE") {
-                const reason = reasonField?.value.trim();
+                reason = reasonField.value.trim();
                 if (!reason) {
                     alert('사유를 입력해주세요.');
                     return;
+                }
+
+                if (statusKey === "WITHDRAWN") {
+                    const dateInput = document.getElementById('withdraw-date');
+                    withdrawDate = dateInput?.value;
+                    if (!withdrawDate) {
+                        alert('탈퇴 날짜를 입력해주세요.');
+                        return;
+                    }
                 }
             }
 
@@ -745,7 +793,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const requestBody = {
                 studentId: currentStudentId,
                 statusKey: statusKey,
-                reason: reason
+                reason: reason,
+                withdrawDate: withdrawDate
             };
 
             fetch('/student/status', {
@@ -776,8 +825,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             tds[2].textContent = s.statusName;
                         }
                     }
+
                     // 입력 초기화
                     reasonField.value = '';
+                    const dateInput = document.getElementById('withdraw-date');
+                    const display = document.querySelector('.withdraw-date .day-display');
+                    if (dateInput) dateInput.value = '';
+                    if (display) display.value = '';
+
                     exceptCurrentContainer.querySelectorAll('.s_status').forEach(b => b.classList.remove('selected'));
                     reasonInputBox.classList.remove('active');
                 })
@@ -788,8 +843,262 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-// ===== 교재비 & 입회날짜 변경 ===== //
+// ====== TAB3 수강상태 변경 로직 ====== //
+document.addEventListener('DOMContentLoaded', function () {
+    // 초기 수강 상태 저장용 변수
+    let initialHanState = null;
+    let initialBookState = null;
 
+    // 한자 달력 아이콘 클릭
+    const hanCalendarBtn = document.querySelector('.han-calendar-open');
+    if (hanCalendarBtn) {
+        hanCalendarBtn.addEventListener('click', function () {
+            const dateInput = document.getElementById('han-inactive-date');
+            if (dateInput) {
+                if (typeof dateInput.showPicker === 'function') {
+                    dateInput.showPicker();
+                } else {
+                    dateInput.click();
+                }
+            }
+        });
+    }
+
+    // 독서 달력 아이콘 클릭
+    const bookCalendarBtn = document.querySelector('.book-calendar-open');
+    if (bookCalendarBtn) {
+        bookCalendarBtn.addEventListener('click', function () {
+            const dateInput = document.getElementById('book-inactive-date');
+            if (dateInput) {
+                if (typeof dateInput.showPicker === 'function') {
+                    dateInput.showPicker();
+                } else {
+                    dateInput.click();
+                }
+            }
+        });
+    }
+
+    // 한자 날짜 선택 시 표시 업데이트
+    const hanDateInput = document.getElementById('han-inactive-date');
+    if (hanDateInput) {
+        hanDateInput.addEventListener('change', function () {
+            const display = document.querySelector('.han-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+    }
+
+    // 독서 날짜 선택 시 표시 업데이트
+    const bookDateInput = document.getElementById('book-inactive-date');
+    if (bookDateInput) {
+        bookDateInput.addEventListener('change', function () {
+            const display = document.querySelector('.book-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+    }
+
+    // 수강상태 버튼 클릭 이벤트
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest("#tab3 .choose-group .btn-choose");
+        if (!btn) return;
+
+        const group = btn.closest(".choose-group");
+        const hidden = group.querySelector('input[type="hidden"]');
+        if (!hidden) return;
+
+        group.querySelectorAll(".btn-choose")
+            .forEach(b => b.classList.remove("active"));
+
+        btn.classList.add("active");
+        hidden.value = btn.dataset.value;
+
+        const type = group.dataset.type; // 'han' or 'book'
+        const status = btn.dataset.value; // 'active' or 'inactive'
+
+        // 미수강 입력창 표시/숨김
+        const inactiveInput = document.querySelector(`.${type}-inactive`);
+        if (inactiveInput) {
+            if (status === 'inactive') {
+                inactiveInput.classList.remove('hide-input');
+            } else {
+                inactiveInput.classList.add('hide-input');
+            }
+        }
+
+        console.log(`[${type}] 상태 변경 →`, status);
+    });
+
+    // 수강상태 저장 버튼
+    const courseStatusBtn = document.getElementById("course-status-save");
+    if (courseStatusBtn) {
+        courseStatusBtn.addEventListener('click', async function (e) {
+            e.preventDefault();
+
+            if (!currentStudentId) {
+                alert('학생 ID를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 현재 상태 확인
+            const hanGroup = document.querySelector('.choose-group[data-type="han"]');
+            const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
+            const currentHanState = hanHidden?.value; // 'active' or 'inactive'
+
+            const bookGroup = document.querySelector('.choose-group[data-type="book"]');
+            const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
+            const currentBookState = bookHidden?.value;
+
+            // 변경 여부 확인
+            const hanChanged = initialHanState !== null && initialHanState !== currentHanState;
+            const bookChanged = initialBookState !== null && initialBookState !== currentBookState;
+
+            if (!hanChanged && !bookChanged) {
+                alert('변경된 수강 상태가 없습니다.');
+                return;
+            }
+
+            let hanInactiveDate = null;
+            let hanInactiveReason = null;
+            let entryHanDate = null;
+
+            // 한자가 변경된 경우만 검증
+            if (hanChanged) {
+                if (currentHanState === 'inactive') {
+                    // 미수강으로 변경: 사유 + 날짜 필수
+                    const hanReasonInput = document.getElementById('han-inactive-reason');
+                    const hanDateInput = document.getElementById('han-inactive-date');
+
+                    hanInactiveReason = hanReasonInput?.value.trim();
+                    hanInactiveDate = hanDateInput?.value;
+
+                    if (!hanInactiveReason) {
+                        alert('한자 미수강 사유를 입력해주세요.');
+                        return;
+                    }
+                    if (!hanInactiveDate) {
+                        alert('한자 미수강 날짜를 선택해주세요.');
+                        return;
+                    }
+                } else if (currentHanState === 'active') {
+                    // 수강으로 변경: 입회날짜 필수
+                    const entryHanInput = document.getElementById('entry-han-date');
+                    entryHanDate = entryHanInput?.value;
+
+                    if (!entryHanDate) {
+                        alert('한자 입회 날짜를 선택해주세요.');
+                        return;
+                    }
+                }
+            }
+
+            let bookInactiveDate = null;
+            let bookInactiveReason = null;
+            let entryBookDate = null;
+
+            // 독서가 변경된 경우만 검증
+            if (bookChanged) {
+                if (currentBookState === 'inactive') {
+                    // 미수강으로 변경: 사유 + 날짜 필수
+                    const bookReasonInput = document.getElementById('book-inactive-reason');
+                    const bookDateInput = document.getElementById('book-inactive-date');
+
+                    bookInactiveReason = bookReasonInput?.value.trim();
+                    bookInactiveDate = bookDateInput?.value;
+
+                    if (!bookInactiveReason) {
+                        alert('독서 미수강 사유를 입력해주세요.');
+                        return;
+                    }
+                    if (!bookInactiveDate) {
+                        alert('독서 미수강 날짜를 선택해주세요.');
+                        return;
+                    }
+                } else if (currentBookState === 'active') {
+                    // 수강으로 변경: 입회날짜 필수
+                    const entryBookInput = document.getElementById('entry-book-date');
+                    entryBookDate = entryBookInput?.value;
+
+                    if (!entryBookDate) {
+                        alert('독서 입회 날짜를 선택해주세요.');
+                        return;
+                    }
+                }
+            }
+
+            const requestBody = {
+                studentId: currentStudentId,
+                hanState: currentHanState === 'active' ? 1 : 0,
+                bookState: currentBookState === 'active' ? 1 : 0,
+                hanChanged: hanChanged,
+                bookChanged: bookChanged,
+                entryHanDate: entryHanDate,
+                entryBookDate: entryBookDate,
+                inactiveHanDate: hanInactiveDate,
+                inactiveBookDate: bookInactiveDate,
+                inactiveHanReason: hanInactiveReason,
+                inactiveBookReason: bookInactiveReason
+            };
+
+            try {
+                const res = await fetch('/student/update/course-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!res.ok) {
+                    throw new Error('수강상태 변경 실패');
+                }
+
+                alert('수강상태가 성공적으로 변경되었습니다.');
+
+                // 초기 상태 업데이트
+                initialHanState = currentHanState;
+                initialBookState = currentBookState;
+
+                // 입력 초기화
+                const hanReasonInput = document.getElementById('han-inactive-reason');
+                const hanDateInput = document.getElementById('han-inactive-date');
+                const hanDisplay = document.querySelector('.han-date-display');
+                const bookReasonInput = document.getElementById('book-inactive-reason');
+                const bookDateInput = document.getElementById('book-inactive-date');
+                const bookDisplay = document.querySelector('.book-date-display');
+
+                if (hanReasonInput) hanReasonInput.value = '';
+                if (hanDateInput) hanDateInput.value = '';
+                if (hanDisplay) hanDisplay.value = '';
+                if (bookReasonInput) bookReasonInput.value = '';
+                if (bookDateInput) bookDateInput.value = '';
+                if (bookDisplay) bookDisplay.value = '';
+
+                document.querySelector('.han-inactive')?.classList.add('hide-input');
+                document.querySelector('.book-inactive')?.classList.add('hide-input');
+
+            } catch (err) {
+                console.error(err);
+                alert('수강상태 변경 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+    // renderStudentModal이 호출될 때 초기 상태 저장
+    window.saveInitialCourseState = function(hanState, bookState) {
+        // 0 또는 1을 'active' 또는 'inactive'로 변환
+        initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
+        initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
+        console.log('초기 수강 상태 저장:', { initialHanState, initialBookState });
+    };
+});
+
+// ===== 교재비 & 입회날짜 변경 ===== //
 document.addEventListener("DOMContentLoaded", () => {
     const payBtn = document.getElementById("pay-info");
     if (!payBtn) return;

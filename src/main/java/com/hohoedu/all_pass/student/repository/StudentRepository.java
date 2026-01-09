@@ -81,6 +81,28 @@ public interface StudentRepository {
     );
 
     int updateStudentPayment(StudentWebReqDTO.StudentPaymentUpdateDTO req);
+    
+    int updateHanToActive(
+            @Param("studentId") String studentId,
+            @Param("entryHanDate") String entryHanDate
+    );
+
+    int updateHanToInactive(
+            @Param("studentId") String studentId,
+            @Param("inactiveHanDate") String inactiveHanDate,
+            @Param("inactiveHanReason") String inactiveHanReason
+    );
+
+    int updateBookToActive(
+            @Param("studentId") String studentId,
+            @Param("entryBookDate") String entryBookDate
+    );
+
+    int updateBookToInactive(
+            @Param("studentId") String studentId,
+            @Param("inactiveBookDate") String inactiveBookDate,
+            @Param("inactiveBookReason") String inactiveBookReason
+    );
 
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
 
