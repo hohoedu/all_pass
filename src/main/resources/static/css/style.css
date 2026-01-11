@@ -2535,7 +2535,7 @@ textarea {
     /* 위치 지정 */
     position: absolute;
     bottom: 0px;
-    left: 400%;
+    left: 50%;
     transform: translateX(-50%);
     z-index: 1;
     /* 애니메이션 */

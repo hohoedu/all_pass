@@ -141,7 +141,7 @@ function renderStudents(tbody, students = []) {
             ? `<div class="tooltip-container">
                  <img src="/image/in_app.png" alt="앱 연결" class="app-icon" 
                  style="width: 25px; height: 25px;">
-                 <div class="tooltip-text">앱 사용</div>
+                 <div class="tooltip-text">${s.appId}</div>
                </div>`
             : `<div class="tooltip-container">
                  <img src="/image/no_app.png" alt="앱 연결" class="app-icon" 

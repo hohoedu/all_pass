@@ -134,6 +134,7 @@
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
+        s.app_id AS appId,
 
         STUFF((
         SELECT DISTINCT ', ' + cc2.class_name
@@ -202,6 +203,7 @@
         g.grade_name AS gradeName,
         s.school AS school,
         c.center_name AS centerName,
+        s.app_id AS appId,
 
         STUFF((
         SELECT DISTINCT ', ' + cc2.class_name

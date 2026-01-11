@@ -136,6 +136,8 @@ public class StudentWebRespDTO {
         private String hanClass;
         private String bookClass;
         private String hasApp;
+        private String appId;
+
     }
 
 

@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             renderLeftTable(data.response);
 
+            // 월 변경 시 마감 여부 체크
+            checkOrderDeadline();
+
         } catch (e) {
             console.error("월 변경 처리 중 오류:", e);
         }
@@ -106,20 +109,47 @@ document.addEventListener('DOMContentLoaded', () => {
             const incBtn = row.querySelector(".increment-button");
             const decBtn = row.querySelector(".decrement-button");
 
-            input?.addEventListener("input", () => {
-                if (input.value === "" || isNaN(input.value)) input.value = 0;
+            if (!input) return;
+
+            // input 직접 입력 시
+            input.addEventListener("input", () => {
+                if (input.value === "" || isNaN(input.value)) {
+                    input.value = 0;
+                }
                 calculateTotal();
             });
 
-            incBtn?.addEventListener("click", () => {
-                input.value = Number(input.value || 0) + 1;
+            // 키보드 입력 후 포커스 해제 시
+            input.addEventListener("change", () => {
+                if (input.value === "" || isNaN(input.value)) {
+                    input.value = 0;
+                }
                 calculateTotal();
             });
 
-            decBtn?.addEventListener("click", () => {
-                input.value = Number(input.value || 0) - 1;
-                calculateTotal();
-            });
+            // 증가 버튼
+            if (incBtn) {
+                incBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const currentValue = parseInt(input.value) || 0;
+                    input.value = currentValue + 1;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    calculateTotal();
+                });
+            }
+
+            // 감소 버튼
+            if (decBtn) {
+                decBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const currentValue = parseInt(input.value) || 0;
+                    input.value = currentValue - 1;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    calculateTotal();
+                });
+            }
         });
     }
 
@@ -130,19 +160,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = 0;
 
         rows.forEach(row => {
-            const base = parseInt(row.querySelector("td:nth-child(3)")?.innerText || 0);
+            const baseTd = row.querySelector("td:nth-child(3)");
             const addInput = row.querySelector("input[type='number']");
-            const add = parseInt(addInput?.value || 0);
-            total += (base + add);
+
+            if (baseTd && addInput) {
+                const baseCount = parseInt(baseTd.innerText) || 0;
+                const addCount = parseInt(addInput.value) || 0;
+                total += (baseCount + addCount);
+            }
         });
 
-        totalSpan.innerText = total;
+        if (totalSpan) {
+            totalSpan.innerText = total;
+        }
     }
 
     if (window.initialBaseList) {
         renderLeftTable(window.initialBaseList);
     } else {
-        calculateTotal(); // 최소한 총합 표시
+        calculateTotal();
     }
 
     /* ======= *
@@ -180,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const opt = document.createElement("option");
             opt.value = y;
             opt.textContent = `${y}년`;
-            if (y === ty) opt.selected = true;  // 현재년 선택
+            if (y === ty) opt.selected = true;
             yearSelect.appendChild(opt);
         }
     }
@@ -207,13 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = `${String(mm).padStart(2, "0")}월`;
 
                 if (yy === ty && mm === tm) {
-                    opt.selected = true; // 현재월 자동 선택
+                    opt.selected = true;
                 }
 
                 monthSelect.appendChild(opt);
             }
 
-            d.setMonth(d.getMonth() + 1); // 다음달로 이동
+            d.setMonth(d.getMonth() + 1);
         }
     }
 
@@ -274,9 +310,107 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /* =============================== *
+     *  주문 마감 기능 (NEW)
+     * =============================== */
     const saveBtn = document.querySelector(".save-btn");
 
+    // 마감 기간 설정 (예: 매월 20일 00:00 ~ 말일 23:59)
+    function checkOrderDeadline() {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth(); // 0~11
+
+        // 마감 시작일: 매월 20일 00:00
+        const deadlineStart = new Date(currentYear, currentMonth, 20, 0, 0, 0);
+
+        // 마감 종료일: 해당 월의 마지막 날 23:59:59
+        const deadlineEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+
+        const isDeadlinePeriod = now >= deadlineStart && now <= deadlineEnd;
+
+        if (isDeadlinePeriod) {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('disabled');
+            saveBtn.style.opacity = '0.5';
+            saveBtn.style.cursor = 'not-allowed';
+        } else {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('disabled');
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+        }
+
+        return isDeadlinePeriod;
+    }
+
+    function showDeadlineModal() {
+        // 모달 HTML 생성
+        const modalHTML = `
+            <div id="deadline-modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            ">
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    text-align: center;
+                    max-width: 400px;
+                ">
+                    <h3 style="margin-bottom: 20px; color: #333;">주문 마감 안내</h3>
+                    <p style="margin-bottom: 25px; line-height: 1.6; color: #666;">
+                        주문이 마감되었습니다.<br>
+                        <strong>추가 주문 / 반품</strong> 탭을 이용해주세요.
+                    </p>
+                    <button id="modal-close-btn" style="
+                        background-color: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 10px 30px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">확인</button>
+                </div>
+            </div>
+        `;
+
+        // 모달을 body에 추가
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // 확인 버튼 클릭 시 모달 제거
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            document.getElementById('deadline-modal').remove();
+        });
+
+        // 배경 클릭 시에도 모달 제거
+        document.getElementById('deadline-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'deadline-modal') {
+                document.getElementById('deadline-modal').remove();
+            }
+        });
+    }
+
+    // 페이지 로드 시 마감 여부 체크
+    checkOrderDeadline();
+
     saveBtn.addEventListener("click", async () => {
+        // 마감 기간인지 체크
+        if (checkOrderDeadline()) {
+            showDeadlineModal();
+            return;
+        }
+
         try {
             const ymRaw = monthInput.value;
             if (!ymRaw) {
