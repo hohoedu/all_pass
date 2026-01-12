@@ -154,7 +154,7 @@ public class StudentController {
 
             return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));
         } catch (Exception e) {
-            
+
             log.error("수강상태 수정 실패", e);
 
             return ResponseEntity.status(500).body("수강상태 변경 중 오류가 발생했습니다.");
@@ -177,13 +177,16 @@ public class StudentController {
 
     @PostMapping("/inout")
     @ResponseBody
-    public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO studentInOutDTO) {
-        // 1. 권한 확인
-        // 2. 유효성 검사
-        // 3-1. studentId를 이용해서 시간표에서 제외
-        // 3-2. erp_student_class의 선생님 코드 업데이트
-        // 3-3. erp_student_transfer_history 인서트
-        studentService.transferStudent(studentInOutDTO);
+    public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO studentInOutDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        log.info("studentInOutDTO = {}", studentInOutDTO);
+
+        studentService.transferStudent(studentInOutDTO, user.getUserCode());
 //        studentService.insertTransferHistory(studentInOutDTO);
 
         return ResponseEntity.ok(ApiUtils.success("okay"));

@@ -854,10 +854,6 @@ public class PaymentService {
 
         int exist = paymentRepository.existManualByPaymentKey(reqDTO.getStudentId(), reqDTO.getPaymentKey(), reqDTO.getYy(), reqDTO.getMm());
 
-        if (exist > 1) {
-            throw new RuntimeException("이미 입력된 청구서입니다.");
-        }
-
         Payment payment = paymentRepository.findByStudentAndYm(reqDTO.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
         if (payment == null) {
             throw new RuntimeException("해당 학생의 결제 정보가 없습니다.");

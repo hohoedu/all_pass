@@ -21,6 +21,19 @@
           AND status IN ('issued', 'approved', 'partial');
     </select>
 
+    <select id="sumBilledAmountByPaymentKey" resultType="int">
+        SELECT COALESCE(SUM(amount), 0) as billed_amount
+        FROM erp_payment_bill
+        WHERE payment_key = #{paymentKey}
+        AND yy = #{yy}
+        AND mm = #{mm}
+        AND bill_type = #{billType}
+        AND status IN
+        <foreach collection="validStatuses" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+    </select>
+
     <select id="existsBillByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BillRespDTO">
         SELECT COUNT(*) as count,
         payment_key AS paymnetKey,
@@ -34,6 +47,17 @@
           AND bill_type = 'EDU_FEE'
           AND status in ('issued')
         GROUP BY payment_key, student_id, bill_id
+    </select>
+
+    <select id="existManualByPaymentKeyCopy" resultType="int">
+        select epd.amount - ISNULL((pm.card_amount +  pm.cash_amount  + pm.transfer_amount),0)
+        from erp_payment_detail epd
+                 join erp_payment p on epd.payment_key  = p.payment_key
+                 LEFT join erp_payment_manual pm on pm.payment_key  = p.payment_key AND p.student_id  = pm.student_id
+        where p.student_id = #{studentId}
+          and p.yy = #{yy}
+          and p.mm = #{mm}
+          and epd.item_type  = 'EDU_FEE'
     </select>
 
     <select id="existManualByPaymentKey" resultType="int">

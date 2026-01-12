@@ -505,13 +505,17 @@
             <!-- class_type이 1이면 한자 관련 컬럼 업데이트 -->
             <when test="classType == 1">
                 UPDATE erp_teacher_assign
-                SET assign_han_teacher = #{userCode}
+                SET assign_han_teacher = #{userCode},
+                assign_han_class = null,
+                han_material_fee = 0
                 WHERE student_id = #{studentId}
             </when>
             <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
             <when test="classType == 2">
                 UPDATE erp_teacher_assign
-                SET assign_book_teacher = #{userCode}
+                SET assign_book_teacher = #{userCode},
+                assign_book_class = null,
+                book_material_fee = 0
                 WHERE student_id = #{studentId}
             </when>
         </choose>

@@ -198,43 +198,43 @@ public class ClassViewController {
     // 수업 일지 페이지
     @GetMapping("/record")
     public String getClassRecordPage(Model model, HttpSession session) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
-        String dayName = dateConfig.currentYearMonth().get("currentDayName");
-
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        String dayName = dateConfig.currentYearMonth().get("currentDayName");
 
         List<User> users = userService.findByCenterCode(user.getCenterCode());
-
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
+
+        // 주차 정보는 항상 계산
+        List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
+        LocalDate today = LocalDate.now();
+        String currentWeek = findWeekByDate(weeks, today);
+        model.addAttribute("activeWeek", currentWeek != null ? currentWeek : "ju_1"); // 기본값 설정
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
 
-
-            List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
-
-            LocalDate today = LocalDate.now();
-            String currentWeek = findWeekByDate(weeks, today);
-
-            model.addAttribute("activeWeek", currentWeek);
-
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, currentWeek, classKey, unitKey);
 
             model.addAttribute("students", bundle.getStudents());
-
 
             if (bundle.getAfterClass() != null) {
                 model.addAttribute("content", bundle.getAfterClass());
             } else {
                 model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
             }
+        } else {
+            // 수업이 없을 때도 빈 리스트 추가
+            model.addAttribute("students", Collections.emptyList());
+            model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
         }
+
         model.addAttribute("user", user);
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);

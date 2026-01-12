@@ -273,6 +273,7 @@ public class StudentService {
         }
 
     }
+
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
         TeacherAssign old = studentRepository.findTeacherAssign(req.getStudentId());
@@ -396,31 +397,35 @@ public class StudentService {
         return responseDTO;
     }
 
-    public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto) {
+    @Transactional
+    public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
 
         String[] parts = reqDto.getMoveAt().split("-");
         String yy = parts[0];
         String mm = parts[1];
 
+        // 한자 과목 선택
         if (reqDto.getSelectedHan() != null) {
             for (String studentId : reqDto.getStudents()) {
-
-                // 시간표 삭제
-                // 타임테이블 키 조회
-//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
-//                if (dto == null) {
-//                    throw new Exception400("전입 월의 시간표가 없습니다.");
-//                }
-//                classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-//                paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
 
                 StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
                 if (teacher.getAssignHanTeacher() == null) {
                     throw new Exception400("등록된 한자 수업이 없습니다.");
                 }
-                // 전입/전출
+
+                // 전입/전출 업데이트
                 studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
 
+                // 시간표 삭제
+                // 시간표 등록 전에 할 수도 있잖아?
+                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
+
+                if (dto != null) {
+                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+                }
+
+                // 전입 전출 히스토리 저장
                 StudentTransferHistory history = StudentTransferHistory.builder()
                         .student(Student.builder().studentId(studentId).build())
                         .fromUser(User.builder().userCode(teacher.getAssignHanTeacher()).build())
@@ -428,29 +433,34 @@ public class StudentService {
                         .classCode(ClassCode.builder().classKey(teacher.getAssignHanClass()).build())
                         .classType(reqDto.getSelectedHan())
                         .transferReason(reqDto.getTransferReason())
+                        .updatedBy(userCode)
                         .moveAt(reqDto.getMoveAt())
                         .build();
+
                 studentRepository.insertTransferHistory(history);
 
             }
         }
+        // 독서 과목 선택
         if (reqDto.getSelectedBook() != null) {
             for (String studentId : reqDto.getStudents()) {
-                // 시간표 삭제
-                // 타임테이블 키 조회
-//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
-//                if (dto == null) {
-//                    throw new Exception400("전입 월의 시간표가 없습니다.");
-//                }
-//                classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-//                paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+
                 StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
                 if (teacher.getAssignBookTeacher() == null) {
                     throw new Exception400("등록된 독서 수업이 없습니다.");
                 }
                 // 전입/전출
                 studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), yy, mm);
-                // history 저장 (누가 변경했는지 없음)
+
+                // 시간표 삭제
+                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
+
+                if (dto != null) {
+                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+                }
+
+                // history 저장
                 StudentTransferHistory history = StudentTransferHistory.builder()
                         .student(Student.builder().studentId(studentId).build())
                         .fromUser(User.builder().userCode(teacher.getAssignBookTeacher()).build())
@@ -458,6 +468,7 @@ public class StudentService {
                         .classCode(ClassCode.builder().classKey(teacher.getAssignBookClass()).build())
                         .classType(reqDto.getSelectedBook())
                         .transferReason(reqDto.getTransferReason())
+                        .updatedBy(userCode)
                         .moveAt(reqDto.getMoveAt())
                         .build();
 

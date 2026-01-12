@@ -49,9 +49,10 @@
                             </div>
                             <div class="basic-select" th:if="${user != null and user.roleKey == 'ADMIN'}">
                                 <select name="teacher" id="teacher-select" style="width: 200px;">
-                                    <option value="all">전체</option>
                                     <th:block th:each="u : ${users}">
-                                        <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}">
+                                        <option th:value="${u.userCode}"
+                                                th:text="${u.userName + ' 선생님'}"
+                                                th:selected="${u.userCode == user.userCode}">
                                         </option>
                                     </th:block>
                                 </select>

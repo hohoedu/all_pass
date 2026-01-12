@@ -57,12 +57,15 @@ public class StudentTransferHistory {
     @Column(name = "move_at", nullable = false, length = 10)
     private String moveAt;
 
+    @Column(name = "updated_by")
+    private String updatedBy;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
     @Builder
-    public StudentTransferHistory(Student student, User fromUser, User toUser, String classType, ClassCode classCode, String transferReason, String moveAt, Timestamp createdAt) {
+    public StudentTransferHistory(Student student, User fromUser, User toUser, String classType, ClassCode classCode, String transferReason, String moveAt, String updatedBy, Timestamp createdAt) {
         this.student = student;
         this.fromUser = fromUser;
         this.toUser = toUser;
@@ -70,6 +73,7 @@ public class StudentTransferHistory {
         this.classCode = classCode;
         this.transferReason = transferReason;
         this.moveAt = moveAt;
+        this.updatedBy = updatedBy;
         this.createdAt = createdAt;
     }
 }

@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             tbody.style.visibility = 'hidden';
 
-            console.log(teacherCode);
             const res = await fetch('/pay/students', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -127,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
             siblingGroups.get(phoneKey).push(student);
         });
 
-        // 🔥 각 그룹의 대표 학생 결정 (가나다순 첫 번째)
         const groupRepresentatives = Array.from(siblingGroups.values()).map(group => {
             const sorted = group.sort((a, b) =>
                 (a.studentName || '').localeCompare(b.studentName || '')
@@ -286,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderPayStatus(status, unpaid) {
-        console.log(unpaid, status);
         if (status === 'approved') {
             if (unpaid !== 0) {
                 return `<span class="pay-box pay-partial">부분결제</span>`;
@@ -409,7 +406,6 @@ document.addEventListener('DOMContentLoaded', () => {
         baseDate = getLastDayOfPrevMonth(yy, mm);
     } else {
         const today = new Date();
-        // billingMonth가 없을 경우 → 이번 달 기준 전월 마지막 날
         baseDate = getLastDayOfPrevMonth(
             today.getFullYear(),
             today.getMonth() + 1
@@ -550,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const firstItem = data[0];
+        console.log(firstItem);
         const modal = document.querySelector(`.${type}-modal`);
         if (!modal) return;
 
@@ -995,7 +992,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
         if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
-        alert('educhecked = ' + eduChecked);
         const destroyType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
 
         const row = checked[0].closest('tr');
@@ -1074,8 +1070,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (billIds.length === 0) {
             return alert('선택한 학생의 청구서가 발행되지 않았습니다.');
         }
-
-        console.log('재발행할 billIds:', billIds);
 
         try {
             const res = await fetch('/pay/reissue', {

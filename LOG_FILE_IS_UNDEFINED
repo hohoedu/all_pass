@@ -10,3 +10,73 @@
 2026-01-10 15:54:04.914 [Thread-5] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-01-10 15:54:04.916 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2026-01-10 15:54:04.917 [Thread-5] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-01-12 11:29:46.588 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 11:29:46.591 [Thread-7] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 11:29:46.592 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 11:29:46.593 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 11:29:46.593 [Thread-7] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 11:29:46.595 [Thread-7] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 11:29:46.596 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+2026-01-12 11:29:46.597 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+2026-01-12 11:34:44.072 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 11:34:44.080 [Thread-11] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 11:34:44.081 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 11:34:44.083 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 11:34:44.083 [Thread-11] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 11:34:44.088 [Thread-11] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 11:34:44.089 [Thread-11] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Shutdown initiated...
+2026-01-12 11:34:44.090 [Thread-11] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-3 - Shutdown completed.
+2026-01-12 14:54:47.283 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 14:54:47.285 [Thread-23] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 14:54:47.286 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 14:54:47.287 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 14:54:47.287 [Thread-23] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 14:54:47.291 [Thread-23] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 14:54:47.292 [Thread-23] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Shutdown initiated...
+2026-01-12 14:54:47.293 [Thread-23] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-6 - Shutdown completed.
+2026-01-12 17:24:05.243 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 17:24:05.247 [Thread-15] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 17:24:05.247 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 17:24:05.248 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 17:24:05.248 [Thread-15] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 17:24:05.250 [Thread-15] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 17:24:05.251 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown initiated...
+2026-01-12 17:24:05.251 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown completed.
+2026-01-12 19:21:20.635 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 19:21:20.639 [Thread-54] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 19:21:20.640 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 19:21:20.643 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 19:21:20.643 [Thread-54] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 19:21:20.647 [Thread-54] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 19:21:20.650 [Thread-54] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-14 - Shutdown initiated...
+2026-01-12 19:21:20.651 [Thread-54] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-14 - Shutdown completed.
+2026-01-12 19:57:25.248 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 19:57:25.251 [Thread-7] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 19:57:25.251 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 19:57:25.252 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 19:57:25.252 [Thread-7] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 19:57:25.253 [Thread-7] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 19:57:25.254 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown initiated...
+2026-01-12 19:57:25.255 [Thread-7] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Shutdown completed.
+2026-01-12 20:51:19.064 [http-nio-8080-exec-7] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.237 [http-nio-8080-exec-2] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.246 [http-nio-8080-exec-4] INFO  c.h.a._.view.PaymentViewController - userCode: all
+2026-01-12 20:51:19.246 [http-nio-8080-exec-4] INFO  c.h.a._.view.PaymentViewController - userCode: PUS001ssar
+2026-01-12 20:51:19.292 [http-nio-8080-exec-2] INFO  c.h.a.payment.PaymentController - students = [PaymentRespDTO.AssignStudentsDTO(studentId=PUS001251202A0DA2, paymentKey=PUS0012601121704022V5, eduBillId=32088000280ag1ckn010, materialBillId=null, studentName=김호호 4886, subject=영재, 새움, hanTeacher=김하나, bookTeacher=김하나, hanFee=12000, hanMaterialFee=2000, bookFee=15000, bookMaterialFee=2000, eduStatus=issued, materialStatus=null, totalStatus=null, totalPrice=null, unpaidAmount=null, amountDue=null, totalFee=27000, totalMaterialFee=4000, parentPhone=01062954886, unpaidEduAmount=27000, unpaidBookAmount=4000, samePhoneStudents=김호이, 김호삼, 김유아, 김호사, 김호오, 안중근, 박세환, 김결제)]
+2026-01-12 20:51:19.332 [http-nio-8080-exec-6] INFO  c.h.a._.view.PaymentViewController - userCode: all
+2026-01-12 20:51:19.332 [http-nio-8080-exec-6] INFO  c.h.a._.view.PaymentViewController - userCode: PUS001ssar
+2026-01-12 20:51:19.335 [http-nio-8080-exec-4] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.395 [http-nio-8080-exec-6] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.501 [http-nio-8080-exec-7] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.554 [http-nio-8080-exec-1] INFO  c.h.a._.view.PaymentViewController - userCode: all
+2026-01-12 20:51:19.554 [http-nio-8080-exec-1] INFO  c.h.a._.view.PaymentViewController - userCode: PUS001ssar
+2026-01-12 20:51:19.554 [http-nio-8080-exec-7] INFO  c.h.a.payment.PaymentController - students = [PaymentRespDTO.AssignStudentsDTO(studentId=PUS001251202A0DA2, paymentKey=PUS0012601121704022V5, eduBillId=32088000280ag1ckn010, materialBillId=null, studentName=김호호 4886, subject=영재, 새움, hanTeacher=김하나, bookTeacher=김하나, hanFee=12000, hanMaterialFee=2000, bookFee=15000, bookMaterialFee=2000, eduStatus=issued, materialStatus=null, totalStatus=null, totalPrice=null, unpaidAmount=null, amountDue=null, totalFee=27000, totalMaterialFee=4000, parentPhone=01062954886, unpaidEduAmount=27000, unpaidBookAmount=4000, samePhoneStudents=김호이, 김호삼, 김유아, 김호사, 김호오, 안중근, 박세환, 김결제)]
+2026-01-12 20:51:19.572 [File Watcher] INFO  o.s.b.d.a.LocalDevToolsAutoConfiguration$RestartingClassPathChangeChangedEventListener - Restarting due to 189 class path changes (0 additions, 0 deletions, 189 modifications)
+2026-01-12 20:51:19.573 [Thread-15] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-12 20:51:19.573 [tomcat-shutdown] INFO  o.a.coyote.http11.Http11NioProtocol - Pausing ProtocolHandler ["http-nio-8080"]
+2026-01-12 20:51:19.621 [http-nio-8080-exec-1] INFO  c.h.all_pass.payment.PaymentService - all
+2026-01-12 20:51:19.680 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-01-12 20:51:19.681 [Thread-15] INFO  o.a.coyote.http11.Http11NioProtocol - Stopping ProtocolHandler ["http-nio-8080"]
+2026-01-12 20:51:19.683 [Thread-15] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 20:51:19.684 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown initiated...
+2026-01-12 20:51:19.684 [Thread-15] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-4 - Shutdown completed.

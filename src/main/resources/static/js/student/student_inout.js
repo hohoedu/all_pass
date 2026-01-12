@@ -62,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     submitBtn.addEventListener("click", async (e) => {
         e.preventDefault();
+        alert("현재 전입/전출은 작업 중입니다!");
+        return;
 
         const selectedStudents = Array.from(
             document.querySelectorAll('.row-checkbox:checked')
@@ -94,8 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (!reason) {
+            alert("사유를 입력해주세요.");
+            return;
+        }
 
-        // ✅ 4. JSON 데이터 생성
         const requestBody = {
             students: selectedStudents,
             selectedHan: selectedHan,
@@ -112,12 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(requestBody)
             });
 
-
             const result = await response.json();
 
             if (!response.ok || result.success === false) {
-                // 서버에서 내려준 메시지 그대로 사용
-                throw new Error(result.message || "처리 중 오류가 발생했습니다.");
+
+                throw new Error(result.error.message || "처리 중 오류가 발생했습니다.");
             }
 
             alert("전입/전출 처리가 완료되었습니다.");

@@ -27,6 +27,14 @@ public interface PaymentRepository {
             @Param("mm") String mm,
             @Param("billType") String billType);
 
+    int sumBilledAmountByPaymentKey(
+            @Param("paymentKey") String paymentKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("billType") String billType,
+            @Param("validStatuses") List<String> validStatuses
+    );
+
     PaymentRespDTO.BillRespDTO existsBillByPaymentKey(
             @Param("studentId") String studentId,
             @Param("paymentKey") String paymentKey,
