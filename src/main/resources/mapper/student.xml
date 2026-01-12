@@ -570,6 +570,14 @@
         ORDER BY t.period_no
     </select>
 
+    <select id="countByStudentAndDateAndTimeTable" resultType="Integer">
+        SELECT COUNT(*)
+        FROM erp_student_attendance
+        WHERE student_id = #{studentId}
+          AND attendance_date = #{ymd}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
     <!-- 등원 update -->
     <update id="checkinStudentAttendance">
         UPDATE erp_student_attendance

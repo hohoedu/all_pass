@@ -205,17 +205,11 @@ public class StudentController {
         log.info("studentInfo = {}", studentInfo);
 
         if ("1".equals(dto.getAttendType())) {   // 등원
-            boolean checkedIn = studentService.checkinStudent(dto, studentInfo);
-            System.out.println("checkedIn = " + checkedIn);
-            if (checkedIn) {
-                return ResponseEntity.ok(ApiUtils.success("0000"));
-            } else {
-                return ResponseEntity.ok(ApiUtils.success("7777"));
-            }
+            String checkedIn = studentService.checkinStudent(dto, studentInfo);
+            return ResponseEntity.ok(ApiUtils.success(checkedIn));
         } else {   // 하원
             String checkedOut = studentService.checkoutStudent(dto, studentInfo);
-
-            return ResponseEntity.ok(ApiUtils.success("0000"));
+            return ResponseEntity.ok(ApiUtils.success(checkedOut));
 
         }
     }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
@@ -485,42 +486,49 @@ public class StudentService {
         return respDTO;
     }
 
-    public boolean checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
+    public String checkinStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
 
         if (dto == null || student == null) {
             throw new RuntimeException("잘못된 요청 데이터입니다.");
         }
 
-        Integer count = studentRepository.countByStudentAndDate(student.getStudentId(), dto.getYmd());
-        if (count != null && count > 0) {
-            throw new RuntimeException("오늘은 이미 출석했습니다.");
+        // 먼저 해당 날짜에 이미 등원 처리된 기록이 있는지 확인
+        List<StudentAttendance> existingAttendance = studentRepository.findByStudentAndDate(
+                student.getStudentId(),
+                dto.getYmd()
+        );
+
+        if (existingAttendance != null && !existingAttendance.isEmpty()) {
+
+            boolean alreadyCheckedIn = existingAttendance.stream()
+                    .anyMatch(att -> att.getInTime() != null || !"before".equals(att.getAttendanceCode()));
+
+            if (alreadyCheckedIn) {
+                return "7777";
+            }
         }
 
         LocalDate today = LocalDate.parse(dto.getYmd());
         String year = String.valueOf(today.getYear());
         String month = String.format("%02d", today.getMonthValue());
+        String todayDayname = getDayname(today.getDayOfWeek());
 
         List<ClassRespDTO.TimeRangeDTO> timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
-        if (timeDTO == null) {
+        if (timeDTO == null || timeDTO.isEmpty()) {
             throw new RuntimeException("수업 시간이 설정되지 않았습니다.");
         }
 
-        LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
-        String todayDayname = getDayname(today.getDayOfWeek());
-        ClassRespDTO.TimeRangeDTO targetClass = timeDTO.stream()
+        List<ClassRespDTO.TimeRangeDTO> todayClasses = timeDTO.stream()
                 .filter(t -> todayDayname.equals(t.getDayname()))
-                .min((a, b) -> {
-                    long diffA = Math.abs(Duration.between(checkInTime, LocalTime.parse(a.getStartTime())).toMinutes());
-                    long diffB = Math.abs(Duration.between(checkInTime, LocalTime.parse(b.getStartTime())).toMinutes());
-                    return Long.compare(diffA, diffB);
-                })
-                .orElse(timeDTO.get(0));
+                .collect(Collectors.toList());
 
-        LocalTime start = LocalTime.parse(targetClass.getStartTime());
-        String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
+        if (todayClasses.isEmpty()) {
+            throw new RuntimeException("오늘은 수업이 없는 날입니다.");
+        }
+
+        LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
 
         List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
-
         if (weekList == null || weekList.isEmpty()) {
             throw new RuntimeException("이번 달 주차 설정이 없습니다.");
         }
@@ -530,38 +538,71 @@ public class StudentService {
             throw new RuntimeException("오늘 날짜는 어떤 주차에도 속하지 않습니다.");
         }
 
-        int updated = studentRepository.checkinStudentAttendance(
-                student.getStudentId(),
-                dto.getYmd(),
-                dto.getHhmm(),
-                targetClass.getEndTime(),
-                attendanceKey,
-                week,
-                year,
-                month,
-                targetClass.getTimeTableKey()
-        );
+        int totalUpdated = 0;
 
-        if (updated == 0) {
-            throw new RuntimeException("시간표 기록을 찾을 수 없습니다. 시간표 배정을 확인해주세요.");
+        for (ClassRespDTO.TimeRangeDTO targetClass : todayClasses) {
+
+            LocalTime start = LocalTime.parse(targetClass.getStartTime());
+
+            String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
+
+            int updated = studentRepository.checkinStudentAttendance(
+                    student.getStudentId(),
+                    dto.getYmd(),
+                    dto.getHhmm(),
+                    targetClass.getEndTime(),
+                    attendanceKey,
+                    week,
+                    year,
+                    month,
+                    targetClass.getTimeTableKey()
+            );
+
+            if (updated > 0) {
+                totalUpdated += updated;
+            }
         }
 
-        return true;
+        return "0000";
     }
 
-
     public String checkoutStudent(StudentAppReqDTO.StudentAttendanceDTO dto, Student student) {
-        List<StudentAttendance> sa = studentRepository.findByStudentAndDate(student.getStudentId(), dto.getYmd());
-        if (sa == null) {
+
+        if (dto == null || student == null) {
+            throw new RuntimeException("잘못된 요청 데이터입니다.");
+        }
+
+        // 오늘 날짜의 모든 출석 기록 조회
+        List<StudentAttendance> attendanceList = studentRepository.findByStudentAndDate(
+                student.getStudentId(),
+                dto.getYmd()
+        );
+
+        if (attendanceList == null || attendanceList.isEmpty()) {
             System.out.println("등원 기록 없음");
             return "8888";
         }
-        if (sa.get(0).getOutTime() != null) {
-            System.out.println("이미 처리 됨");
-            return "6666";
+
+        // 이미 하원 처리된 교시가 있는지 확인
+        boolean alreadyCheckedOut = attendanceList.stream()
+                .anyMatch(attendance -> attendance.getOutTime() != null);
+
+        if (alreadyCheckedOut) {
+            return "6666"; // 이미 하원 처리됨
         }
-        System.out.println("이제 업데이트");
-        studentRepository.checkoutStudentAttendance(student.getStudentId(), dto.getHhmm(), dto.getYmd());
+
+        // 해당 날짜의 모든 교시 하원 처리
+        int totalUpdated = studentRepository.checkoutStudentAttendance(
+                student.getStudentId(),
+                dto.getHhmm(),
+                dto.getYmd()
+        );
+
+        if (totalUpdated == 0) {
+            throw new RuntimeException("하원 처리에 실패했습니다.");
+        }
+
+        System.out.println("총 " + totalUpdated + "개 교시 하원 완료");
         return "0000";
     }
 

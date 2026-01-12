@@ -81,7 +81,7 @@ public interface StudentRepository {
     );
 
     int updateStudentPayment(StudentWebReqDTO.StudentPaymentUpdateDTO req);
-    
+
     int updateHanToActive(
             @Param("studentId") String studentId,
             @Param("entryHanDate") String entryHanDate
@@ -143,6 +143,11 @@ public interface StudentRepository {
             @Param("year") String year,
             @Param("month") String month);
 
+    Integer countByStudentAndDateAndTimeTable(
+            @Param("studentId") String studentId,
+            @Param("ymd") String ymd,
+            @Param("timeTableKey") String timeTableKey);
+
     // 출석 insert
     public int checkinStudentAttendance(
             @Param("studentId") String studentId,
@@ -162,7 +167,7 @@ public interface StudentRepository {
             @Param("attendanceDate") String attendanceDate);
 
     // 하원 update
-    public void checkoutStudentAttendance(
+    public int checkoutStudentAttendance(
             @Param("studentId") String studentId,
             @Param("outTime") String outTime,
             @Param("attendanceDate") String attendanceDate);
