@@ -203,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${Number(unpaid || 0).toLocaleString()}</td>
             <td>${renderIssueStatus(s)}</td>
             <td>${renderPayStatus(payState, unpaid)}</td>
+            <td id="personal-pay-info" style="cursor: pointer;"><span style="font-size: 18px;">🔍</span></td>
         `;
 
             fragment.appendChild(tr);
@@ -392,9 +393,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
     };
 
-    const getLastDayOfPrevMonth = (year, month) => {
+    // 🔥 이번 달 5일 계산 함수
+    const getCurrentMonth5th = (year, month) => {
         // month는 1~12 기준
-        return new Date(year, month - 1, 0);
+        return new Date(year, month - 1, 5);
     };
 
     const billingMonth = document.querySelector('.hidden-picker')?.value;
@@ -402,11 +404,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (billingMonth) {
         const [yy, mm] = billingMonth.split('-').map(Number);
-        // ✅ 전월 기준 마지막 날
-        baseDate = getLastDayOfPrevMonth(yy, mm);
+        // 🔥 청구하는 달 5일
+        baseDate = getCurrentMonth5th(yy, mm);
     } else {
         const today = new Date();
-        baseDate = getLastDayOfPrevMonth(
+        // 🔥 현재 달 5일
+        baseDate = getCurrentMonth5th(
             today.getFullYear(),
             today.getMonth() + 1
         );
@@ -435,6 +438,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setDisplay(selected);
     });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const claimTbody = document.getElementById('claim-detail-tbody');
+
+    if (claimTbody) {
+        claimTbody.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox' && e.target.closest('.claim-frame')) {
+                const clickedCheckbox = e.target;
+
+                claimTbody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb !== clickedCheckbox) {
+                        cb.checked = false;
+                    }
+                });
+            }
+        });
+    }
 });
 
 // ========== 모달 열기 ========== //
@@ -484,13 +505,11 @@ document.addEventListener('DOMContentLoaded', () => {
         개별 조회
     ========================= */
     const tbody = document.querySelector('#student-tbody');
-    if (tbody) {
+    const claimDetailSection = document.querySelector('.claim-frame');
+    const claimDivider = document.getElementById('claim-divider');
+    const claimButtons = document.getElementById('claim-buttons');
 
-        tbody.addEventListener('mouseenter', e => {
-            const row = e.target.closest('tr');
-            if (row) row.style.cursor = 'pointer';
-        }, true);
-
+    if (tbody && claimDetailSection) {
         tbody.addEventListener('click', async (e) => {
             const row = e.target.closest('tr');
             if (!row || !tbody.contains(row)) return;
@@ -498,8 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetCell = e.target.closest('td');
             if (!targetCell) return;
 
-            const index = Array.from(row.children).indexOf(targetCell);
-            if (index === 0) return; // 체크박스 클릭 무시
+            const cellIndex = Array.from(row.children).indexOf(targetCell);
+
+            // 🔥 체크박스 클릭 시 무시
+            if (cellIndex === 0) return;
 
             const studentId = row.dataset.studentId;
             if (!studentId) return;
@@ -508,8 +529,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const yy = url.searchParams.get('year');
             const mm = url.searchParams.get('month');
 
+            // 🔥 아이콘(personal-pay-info) 클릭 시 → 모달 열기
+            if (e.target.closest('#personal-pay-info')) {
+                try {
+                    const response = await fetch('/pay/edu-personal', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({studentId, yy, mm})
+                    });
+
+                    if (!response.ok) throw new Error('데이터 조회 실패');
+
+                    const data = await response.json();
+                    fillModal(data.response, 'personal');
+                    openModal('personal');
+
+                } catch (error) {
+                    console.error('❌ 개인 청구 데이터 조회 오류:', error);
+                    alert('청구 내역을 불러오지 못했습니다.');
+                }
+                return;
+            }
+
+            // 🔥 일반 row 클릭 시 → 하단 테이블 토글
+            if (row.classList.contains('selected-for-detail')) {
+                row.classList.remove('selected-for-detail');
+                claimDetailSection.style.display = 'none';
+                if (claimDivider) claimDivider.style.display = 'none';
+                if (claimButtons) claimButtons.style.display = 'none';
+                return;
+            }
+
+            tbody.querySelectorAll('tr.selected-for-detail').forEach(tr => {
+                tr.classList.remove('selected-for-detail');
+            });
+
+            row.classList.add('selected-for-detail');
+
             try {
-                const response = await fetch('/pay/edu-personal', {
+                const response = await fetch('/pay/detail/bill', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({studentId, yy, mm})
@@ -518,14 +576,130 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('데이터 조회 실패');
 
                 const data = await response.json();
-                fillModal(data.response, 'personal');
-                openModal('personal');
+                console.log(data);
+                fillClaimDetailTable(data.response);
+
+                claimDetailSection.style.display = 'block';
+                if (claimDivider) claimDivider.style.display = 'block';
+                if (claimButtons) claimButtons.style.display = 'flex';
 
             } catch (error) {
-                console.error('❌ 개인 청구 데이터 조회 오류:', error);
+                console.error('❌ 청구 데이터 조회 오류:', error);
                 alert('청구 내역을 불러오지 못했습니다.');
             }
         });
+    }
+
+    /* =========================
+        하단 청구 내역 테이블 채우기
+    ========================= */
+    function fillClaimDetailTable(data) {
+        const claimTbody = document.querySelector('.claim-frame tbody');
+        if (!claimTbody) return;
+
+        claimTbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            claimTbody.innerHTML = `
+        <tr>
+            <td colspan="8" style="text-align:center;">
+                등록된 청구 내역이 없습니다.
+            </td>
+        </tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+
+            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
+
+            const hasCardName = item.type === 'bill' && item.cardName;
+            const tooltipStyle = hasCardName ? 'position: relative;' : '';
+            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
+
+            // 🔥 데이터 속성 추가
+            tr.dataset.billId = item.billId || '';
+            tr.dataset.studentId = item.studentId || '';
+            tr.dataset.paymentKey = item.paymentKey || '';
+            tr.dataset.billType = item.billType || '';
+            tr.dataset.status = item.status || '';
+
+            tr.innerHTML = `
+        <td class="checkbox-group">
+            <input type="checkbox" class="claim-checkbox">
+        </td>
+        <td>${item.studentName || '-'}</td>
+        <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+        <td>${item.expireDate || '-'}</td>
+        <td>${paidDate}</td>
+        <td class="payment-method-cell" style="${tooltipStyle}" ${tooltipAttr}>
+            ${paymentMethodText}
+        </td>
+        <td>${amount}</td>
+        <td>${getStatusText(item.status)}</td>
+    `;
+
+            claimTbody.appendChild(tr);
+        });
+
+        bindPaymentMethodTooltip();
+    }
+
+    function bindPaymentMethodTooltip() {
+        const paymentCells = document.querySelectorAll('.payment-method-cell[data-card-name]');
+
+        paymentCells.forEach(cell => {
+            const cardName = cell.getAttribute('data-card-name');
+
+            if (!cardName) return;
+
+            cell.addEventListener('mouseenter', (e) => {
+                const existingTooltip = document.querySelector('.payment-tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'payment-tooltip';
+                tooltip.textContent = cardName;
+
+                document.body.appendChild(tooltip);
+
+                const rect = cell.getBoundingClientRect();
+                const tooltipWidth = tooltip.offsetWidth;
+
+                const leftPosition = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+                tooltip.style.left = leftPosition + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+            });
+
+            // 마우스 벗어났을 때
+            cell.addEventListener('mouseleave', () => {
+                const tooltip = document.querySelector('.payment-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+    }
+
+    function getStatusText(status) {
+        switch (status) {
+            case 'issued':
+                return '결제대기';
+            case 'approved':
+                return '결제완료';
+            case 'canceled':
+                return '결제취소';
+            case 'destroyed':
+                return '청구서파기';
+            default:
+                return '-';
+        }
     }
 
     /* =========================
@@ -797,10 +971,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const payIssue = document.querySelector('#pay-issue');
     const payCancel = document.querySelector('#pay-cancel');
     const payDestroy = document.querySelector('#pay-destory');
-    const payReissue = document.querySelector('#pay-reissue')
+    const payReissue = document.querySelector('#pay-reissue');
 
-
-    // 청구서 발행 버튼
+    // ================================
+    // 🔥 1. 청구서 발행 (상단 테이블 체크박스 사용)
+    // ================================
     payIssue.addEventListener('click', async () => {
         const checkedBoxes = document.querySelectorAll(
             '#student-tbody input[type="checkbox"]:checked'
@@ -817,22 +992,17 @@ document.addEventListener("DOMContentLoaded", () => {
             return alert('청구 종류를 선택하세요.');
         }
 
-        const selectedMonth =
-            document.querySelector('.hidden-date.hidden-picker').value;
+        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [yy, mm] = selectedMonth.split('-');
-
         const expireDt = document.querySelector('.expire-input').value;
 
-        // ✅ 선택된 학생 ID만 수집
         const studentIds = Array.from(checkedBoxes).map(
             box => box.closest('tr').dataset.studentId
         );
 
-        const includeSibling =
-            document.querySelector('input[name = "includeSibling"]').checked;
+        const includeSibling = document.querySelector('input[name="includeSibling"]').checked;
 
         try {
-            // EDU
             if (eduChecked) {
                 await sendBills({
                     studentIds,
@@ -845,7 +1015,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
-            // MATERIAL
             if (bookChecked) {
                 await sendBills({
                     studentIds,
@@ -883,48 +1052,31 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('✓ 발행 결과:', data.response);
     }
 
-// 결제 취소 버튼
+    // ================================
+    // 🔥 2. 결제 취소 (하단 테이블 체크박스 사용)
+    // ================================
     payCancel.addEventListener('click', async () => {
+        const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        const checkedBoxes = document.querySelectorAll(
-            '#student-tbody input[type="checkbox"]:checked'
-        );
-
-        if (checkedBoxes.length === 0) {
-            alert('결제 취소할 학생을 선택하세요.');
+        if (!checkedBox) {
+            alert('취소할 청구서를 선택하세요.');
             return;
         }
 
-        if (checkedBoxes.length !== 1) {
-            alert('결제 취소는 한 명씩만 가능합니다.');
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
+        const studentId = row.dataset.studentId;
+        const paymentKey = row.dataset.paymentKey;
+        const billType = row.dataset.billType;
+        const status = row.dataset.status;
+
+        if (status !== 'approved') {
+            alert('결제 완료된 청구서만 취소할 수 있습니다.');
             return;
         }
 
-        const row = checkedBoxes[0].closest('tr');
-
-        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
-        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-
-        const cancelType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
-
-        if (!eduChecked && !bookChecked) {
-            alert('취소할 결제 종류를 선택하세요.');
-            return;
-        }
-
-        if (cancelType === 'EDU_FEE' && row.dataset.eduStatus !== 'approved') {
-            alert('교육비 결제 완료 건만 취소할 수 있습니다.');
-            return;
-        }
-
-        if (cancelType === 'BOOK_FEE' && row.dataset.materialStatus !== 'approved') {
-            alert('교재비 결제 완료 건만 취소할 수 있습니다.');
-            return;
-        }
-
-        const cancelReason = prompt(
-            `${row.dataset.studentName} 학생의 취소 사유를 입력해주세요.`
-        );
+        const studentName = row.querySelector('td:nth-child(2)').textContent;
+        const cancelReason = prompt(`${studentName} 학생의 취소 사유를 입력해주세요.`);
 
         if (!cancelReason || cancelReason.trim() === '') {
             alert('취소 사유는 필수입니다.');
@@ -932,19 +1084,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!confirm(
-            `${row.dataset.studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n` +
+            `${studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n` +
             `※ 이 작업은 되돌릴 수 없습니다.`
         )) {
             return;
         }
 
-        const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm] = selectedMonth.split('-');
-
-
         const body = {
-            paymentKey: row.dataset.paymentKey,
-            cancelType: cancelType,
+            paymentKey: paymentKey,
+            cancelType: billType,
             cancelReason: cancelReason.trim()
         };
 
@@ -970,39 +1118,25 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-// ================================
-// 🔥 3. 청구서 파기
-// ================================
+    // ================================
+    // 🔥 3. 청구서 파기 (하단 테이블 체크박스 사용)
+    // ================================
     payDestroy.addEventListener('click', async () => {
+        const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        const checked = document.querySelectorAll(
-            '#student-tbody .row-checkbox:checked'
-        );
-
-        if (checked.length === 0) {
-            alert('청구서를 파기할 학생을 선택하세요.');
+        if (!checkedBox) {
+            alert('파기할 청구서를 선택하세요.');
             return;
         }
 
-        if (checked.length > 1) {
-            alert('청구서 파기는 한 명씩만 가능합니다.');
-            return;
-        }
-
-        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
-        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
-        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
-        const destroyType = eduChecked ? 'EDU_FEE' : 'BOOK_FEE';
-
-        const row = checked[0].closest('tr');
-        const eduBillId = row.dataset.eduBillId;
-        const materialBillId = row.dataset.materialBillId;
-        const billId = eduChecked ? eduBillId : materialBillId;
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
         const studentId = row.dataset.studentId;
         const paymentKey = row.dataset.paymentKey;
-        const studentName = row.dataset.studentName;
+        const billType = row.dataset.billType;
+        const studentName = row.querySelector('td:nth-child(2)').textContent;
 
-        if (!studentId || !paymentKey) {
+        if (!billId || !paymentKey) {
             alert('파기 정보를 확인할 수 없습니다.');
             return;
         }
@@ -1012,14 +1146,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
+            console.log("billId"+billId, "billType"+billType )
             const res = await fetch('/pay/destroy/bill', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    billId,
-                    studentId,
-                    paymentKey,
-                    destroyType
+                    billId: billId,
+                    studentId: studentId,
+                    paymentKey: paymentKey,
+                    destroyType: billType
                 })
             });
 
@@ -1028,6 +1163,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) {
                 throw new Error(data.msg || '청구서 파기에 실패했습니다.');
             }
+
             alert(data.data || '청구서가 파기되었습니다.');
             location.reload();
 
@@ -1037,45 +1173,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-// ================================
-// 🔥 4. 청구서 재발행(재전송)
-// ================================
+    // ================================
+    // 🔥 4. 청구서 재발행 (하단 테이블 체크박스 사용)
+    // ================================
     payReissue.addEventListener('click', async () => {
-        const checkedBoxes = document.querySelectorAll(
-            '#student-tbody input[type="checkbox"]:checked'
-        );
+        const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (checkedBoxes.length === 0) {
-            return alert('재발행할 청구서를 선택하세요.');
+        if (!checkedBox) {
+            alert('재발행할 청구서를 선택하세요.');
+            return;
         }
 
-        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
-        const bookChecked = document.querySelector('input[name="bookFee"]').checked;
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
 
-        if (!eduChecked && !bookChecked) {
-            return alert('청구 종류를 선택하세요.');
-        }
-
-        // 🔥 선택된 타입에 맞는 billId 수집
-        const billIds = Array.from(checkedBoxes).map(box => {
-            const row = box.closest('tr');
-
-            if (eduChecked) {
-                return row.dataset.eduBillId;
-            } else {
-                return row.dataset.materialBillId;
-            }
-        }).filter(id => id && id !== 'null' && id !== 'undefined'); // 🔥 유효한 billId만 필터링
-
-        if (billIds.length === 0) {
-            return alert('선택한 학생의 청구서가 발행되지 않았습니다.');
+        if (!billId || billId === 'null' || billId === 'undefined') {
+            alert('재발행할 수 있는 청구서가 아닙니다.');
+            return;
         }
 
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({billIds})
+                body: JSON.stringify({billIds: [billId]})
             });
 
             const data = await res.json();
@@ -1092,5 +1213,4 @@ document.addEventListener("DOMContentLoaded", () => {
             alert('재발행 중 오류가 발생했습니다.');
         }
     });
-
 });

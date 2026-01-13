@@ -96,6 +96,23 @@ public class PaymentRespDTO {
     }
 
     @Data
+    public static class DetailPaymentBillDTO {
+        private String billId;
+        private String paymentKey;
+        private String studentId;
+        private String studentName;
+        private String type;
+        private String billType;
+        private Integer amount;
+        private String expireDate;
+        private String paidDate;
+        private String cardName;
+        private String status;
+        private String createdAt;
+
+    }
+
+    @Data
     public static class PaySendRespDTO {
         private String billId;
         private String paymintCode;     // Paymint 응답코드
@@ -146,6 +163,7 @@ public class PaymentRespDTO {
         private String gradeName;
         private String hanTeacher;
         private String bookTeacher;
+        private String amount;
     }
 
     @Data

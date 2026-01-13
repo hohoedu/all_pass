@@ -501,7 +501,7 @@ public class StudentService {
         if (existingAttendance != null && !existingAttendance.isEmpty()) {
 
             boolean alreadyCheckedIn = existingAttendance.stream()
-                    .anyMatch(att -> att.getInTime() != null || !"before".equals(att.getAttendanceCode()));
+                    .anyMatch(att -> att.getInTime() != null);
 
             if (alreadyCheckedIn) {
                 return "7777";

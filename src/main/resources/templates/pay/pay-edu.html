@@ -97,6 +97,7 @@
                                     <col width="10%">
                                     <col width="10%">
                                     <col width="10%">
+                                    <col width="5%">
                                 </colgroup>
                                 <thead>
                                 <tr>
@@ -127,6 +128,7 @@
                                     <th data-sort="payment" class="sortable">
                                         <img src="/image/sort.svg" class="svg-sort">결제
                                     </th>
+                                    <th>상세정보</th>
                                 </tr>
                                 </thead>
 
@@ -146,7 +148,9 @@
                             <h2>청구서 발행</h2>
                         </div>
                     </div>
+
                     <p class="issue-sub">반드시 왼쪽의 최종 금액을 확인 후 청구서를 발행해 주세요. </p>
+
                     <table class="member-status-table pay-edu-table bt">
                         <colgroup>
                             <col width="20%">
@@ -218,11 +222,42 @@
                     </table>
                     <div class="btn-groups">
                         <button id="pay-issue" class="btn-basic btn-issue">발행</button>
+                    </div>
+                    <div class="section-divider" id="claim-divider" style="display: none;"></div>
+                    <div class="table-frame claim-frame" style="height: 23vh; display: none;">
+                        <table class="basic-table yh" style="border: 1px solid #ddd; height: 10vh">
+                            <colgroup>
+                                <col width="5%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>이름</th>
+                                <th>청구종류</th>
+                                <th>유효기간</th>
+                                <th>결제일자</th>
+                                <th>결제방법</th>
+                                <th>결제금액</th>
+                                <th>상태</th>
+                            </tr>
+                            </thead>
+                            <tbody id="claim-detail-tbody" class="stripe">
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="btn-groups" id="claim-buttons" style="display: none;">
                         <button id="pay-cancel" class="btn-basic btn-cancel">결제 취소</button>
                         <button id="pay-destory" class="btn-basic btn-destroy">청구서 파기</button>
                         <button id="pay-reissue" class="btn-basic btn-reissue">재발행</button>
                     </div>
-
                 </section>
 
                 <!-- section: modal(수강료 상세 내역) -->

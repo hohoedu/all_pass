@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.user;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final PaymentService paymentService;
     private final HttpSession session;
 
     @GetMapping("/ping")
@@ -58,6 +60,8 @@ public class UserController {
             securityContext.setAuthentication(authentication);
 
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
+//            paymentService.destroyExpiredBills();
 
             return "redirect:/";
 

@@ -19,6 +19,8 @@ import java.util.List;
 @Mapper
 public interface PaymentRepository {
 
+    int updateExpiredBillsToDestroyed();
+
     int insertPaymentHistory(PaymentReqDTO.PaymentHistoryRecordDTO dto);
 
     int existsBill(
@@ -160,6 +162,9 @@ public interface PaymentRepository {
             @Param("paymentKey") String paymentKey,
             @Param("type") String type);
 
+    List<PaymentRespDTO.DetailPaymentBillDTO> findDetailPaymentBillByStudentId(
+            @Param("studentId") String studentId
+    );
     String findCancelBillIdByPaymentKey(
             @Param("paymentKey") String paymentKey,
             @Param("type") String type);

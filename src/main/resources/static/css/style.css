@@ -6749,6 +6749,14 @@ input[type="time" i] {
     width: 100%;
     gap: 10px;
     margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.section-divider {
+    width: 100%;
+    height: 2px;
+    background-color: #ddd;
+    margin: 12px 0;
 }
 
 .btn-basic {
@@ -6836,6 +6844,19 @@ input[type="time" i] {
 
 .pay-edu-frame {
     height: 400px;
+}
+
+.payment-tooltip {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    z-index: 10000;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .pay-edu-frame td {

@@ -7,6 +7,7 @@ import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +37,7 @@ public class PaymentViewController {
             return "redirect:/login";
         }
         String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
-        log.info("userCode: {}", userCode);
-        log.info("userCode: {}", user.getUserCode());
+
         List<User> users = userService.findByCenterCode(user.getCenterCode());
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
 
@@ -49,7 +49,7 @@ public class PaymentViewController {
 
     @GetMapping("/pay-list")
     public String getPayListPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }

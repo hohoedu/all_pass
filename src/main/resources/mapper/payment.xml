@@ -50,14 +50,14 @@
     </select>
 
     <select id="existManualByPaymentKeyCopy" resultType="int">
-        select epd.amount - ISNULL((pm.card_amount +  pm.cash_amount  + pm.transfer_amount),0)
+        select epd.amount - ISNULL((pm.card_amount + pm.cash_amount + pm.transfer_amount), 0)
         from erp_payment_detail epd
-                 join erp_payment p on epd.payment_key  = p.payment_key
-                 LEFT join erp_payment_manual pm on pm.payment_key  = p.payment_key AND p.student_id  = pm.student_id
+                 join erp_payment p on epd.payment_key = p.payment_key
+                 LEFT join erp_payment_manual pm on pm.payment_key = p.payment_key AND p.student_id = pm.student_id
         where p.student_id = #{studentId}
           and p.yy = #{yy}
           and p.mm = #{mm}
-          and epd.item_type  = 'EDU_FEE'
+          and epd.item_type = 'EDU_FEE'
     </select>
 
     <select id="existManualByPaymentKey" resultType="int">
@@ -177,10 +177,10 @@
     </select>
 
 
-    <select id="findBillIdByPaymentKey" resultType="String">
+    <select id="findBillIdByBillId" resultType="String">
         SELECT bill_id AS billId
         FROM erp_payment_bill
-        WHERE payment_key = #{paymentKey}
+        WHERE bill_id = #{billId}
           AND status = 'issued'
           AND bill_type = #{type}
     </select>
@@ -207,11 +207,11 @@
     </select>
 
 
-<update id="updateBillStatusByBillIdAndStatus">
-    UPDATE erp_payment_bill
-    set status = #{toStatus}
-    where bill_id = #{billId}
-</update>
+    <update id="updateBillStatusByBillIdAndStatus">
+        UPDATE erp_payment_bill
+        set status = #{toStatus}
+        where bill_id = #{billId}
+    </update>
 
     <select id="existsBillByStudentIds" parameterType="map" resultType="int">
 
@@ -370,9 +370,8 @@
                                                 ) AS total_amount
                                          FROM erp_payment_manual pm
                                          WHERE pm.yy = #{year}
-                                         AND pm.mm = #{month}
+                                           AND pm.mm = #{month}
                                          GROUP BY student_id) pm
-
                                         ON pm.student_id = p.student_id
                      WHERE p.yy = #{year}
                        AND p.mm = #{month}
@@ -602,6 +601,8 @@
         LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
         LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
         WHERE s.center_code = #{centerCode}
+        AND p.yy = #{yy}
+        AND p.mm = #{mm}
         <if test="studentId!= null and studentId != 'all'">
             AND p.student_id = #{studentId}
         </if>
@@ -616,43 +617,43 @@
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
-        <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
-            SELECT TOP ${count} *
-            FROM (select p.bill_id           AS billId,
-                         (p.yy + '-' + p.mm) AS inym,
-                         'S'                 AS gb,
-                         p.approved_date     AS indate,
-                         p.han_amount        AS inmoney,
-                         CASE
-                             WHEN p.product_name = '교육비' THEN 'S'
-                             WHEN p.product_name = '교재비' THEN 'B'
-                             ELSE null
-                             END             AS gubun,
-                         p.created_at
-                  from erp_payment p
-                  WHERE p.han_amount IS NOT NULL
-                    AND p.student_id = #{studentId}
-                    AND P.approved_date IS NOT NULL
+    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
+        SELECT TOP ${count} *
+        FROM (select p.bill_id           AS billId,
+                     (p.yy + '-' + p.mm) AS inym,
+                     'S'                 AS gb,
+                     p.approved_date     AS indate,
+                     p.han_amount        AS inmoney,
+                     CASE
+                         WHEN p.product_name = '교육비' THEN 'S'
+                         WHEN p.product_name = '교재비' THEN 'B'
+                         ELSE null
+                         END             AS gubun,
+                     p.created_at
+              from erp_payment p
+              WHERE p.han_amount IS NOT NULL
+                AND p.student_id = #{studentId}
+                AND P.approved_date IS NOT NULL
 
-                  UNION ALL
+              UNION ALL
 
-                  select p.bill_id           AS billId,
-                         (p.yy + '-' + p.mm) AS inym,
-                         'I'                 AS gb,
-                         p.approved_date     AS indate,
-                         p.book_amount       AS inmoney,
-                         CASE
-                             WHEN p.product_name = '교육비' THEN 'S'
-                             WHEN p.product_name = '교재비' THEN 'B'
-                             ELSE null
-                             END             AS gubun,
-                         p.created_at
-                  from erp_payment p
-                  WHERE p.book_amount IS NOT NULL
-                    AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL
-            ORDER BY combined.billId ASC;
+              select p.bill_id           AS billId,
+                     (p.yy + '-' + p.mm) AS inym,
+                     'I'                 AS gb,
+                     p.approved_date     AS indate,
+                     p.book_amount       AS inmoney,
+                     CASE
+                         WHEN p.product_name = '교육비' THEN 'S'
+                         WHEN p.product_name = '교재비' THEN 'B'
+                         ELSE null
+                         END             AS gubun,
+                     p.created_at
+              from erp_payment p
+              WHERE p.book_amount IS NOT NULL
+                AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL
+        ORDER BY combined.billId ASC;
 
-        </select>
+    </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
         SELECT s.student_id   AS studentId,
@@ -660,17 +661,75 @@
                p.payment_key  AS paymentKey,
                g.grade_name   AS gradeName,
                hu.user_name   AS hanTeacher,
-               bu.user_name   AS bookTeacher
+               bu.user_name   AS bookTeacher,
+               SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) AS amount
         FROM erp_payment p
+                 JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
                  JOIN erp_student s ON p.student_id = s.student_id
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
-                 JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
-        where p.status NOT IN ('approved')
-          AND p.center_code = #{centerCode}
+        WHERE p.center_code = #{centerCode}
           AND p.yy = #{yy}
           AND p.mm = #{mm}
+          AND NOT EXISTS (
+            SELECT 1
+            FROM erp_payment_bill pb
+            WHERE pb.payment_key = p.payment_key
+              AND pb.student_id = p.student_id
+              AND pb.bill_type = 'EDU_FEE'
+              AND pb.status = 'approved'
+        )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM erp_payment_manual pm
+            WHERE pm.payment_key = p.payment_key
+              AND pm.student_id = p.student_id
+              AND pm.status = 'approved'
+        )
+        GROUP BY s.student_id, s.student_name, p.payment_key, g.grade_name, hu.user_name, bu.user_name
+        HAVING SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) > 0;
+    </select>
+
+    <select id="findDetailPaymentBillByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$DetailPaymentBillDTO">
+        SELECT pb.bill_id                                                as billId,
+               'bill'                                                    as type,
+               pb.payment_key,
+               pb.student_id,
+               s.student_name                                            as studentName,
+               pb.bill_type                                              as billType,
+               pb.expire_date                                            as expireDate,
+               STUFF(STUFF(LEFT(pc.appr_date, 8), 5, 0, '-'), 8, 0, '-') as paidDate,
+               pb.amount,
+               card.card_name                                            as cardName,
+               pb.status,
+               pb.created_at                                             as createdAt
+        FROM erp_payment_bill pb
+                 JOIN erp_student s on pb.student_id = s.student_id
+                 LEFT JOIN erp_payment_callback pc on pb.bill_id = pc.bill_id
+                 LEFT JOIN erp_card_code card on pc.appr_issuer = card.card_code
+        WHERE pb.student_id = #{studentId}
+
+        UNION ALL
+
+        SELECT pm.bill_id                                           as billId,
+               'manual'                                             as type,
+               pm.payment_key,
+               pm.student_id                                        as student_id,
+               s.student_name                                       as studentName,
+               'EDU_FEE'                                            as billType,
+               null                                                 as expireDate,
+               pm.paid_date                                         as paidDate,
+               pm.card_amount + pm.cash_amount + pm.transfer_amount as amount,
+               card.card_name                                       as cardName,
+               pm.status,
+               pm.created_at                                        as createdAt
+        FROM erp_payment_manual pm
+                 JOIN erp_student s on pm.student_id = s.student_id
+                 JOIN erp_card_code card on pm.card_name = card.card_code
+        WHERE pm.student_id = #{studentId}
+        ORDER BY createdAt DESC;
     </select>
 
     <select id="findPaymentKeyByStudentAndYm" resultType="java.lang.String">

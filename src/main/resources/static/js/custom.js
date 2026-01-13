@@ -6,6 +6,7 @@ setInterval(() => {
         method: 'GET',
         credentials: 'same-origin'
     }).then(res => {
+        console.log(res);
         if (res.status === 401) {
             alert('세션이 만료되었습니다. 다시 로그인해주세요.');
             location.href = '/login';

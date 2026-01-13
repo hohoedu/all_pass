@@ -149,7 +149,7 @@ public class PaymentController {
     }
 
 
-    @PostMapping("edu-personal")
+    @PostMapping("/edu-personal")
     public ResponseEntity<?> getPersonalModal(HttpSession session, @RequestBody PaymentReqDTO.PersonalDTO reqDTO) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -162,6 +162,18 @@ public class PaymentController {
 
         List<PaymentRespDTO.PaymentModalDTO> response = paymentService.findPaymentByStudentId(reqDTO);
 
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/detail/bill")
+    public ResponseEntity<?> getDetailPaymnetBill(HttpSession session, @RequestBody PaymentReqDTO.PersonalDTO reqDTO) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<PaymentRespDTO.DetailPaymentBillDTO> response = paymentService.findPaymentDetailsByStudentId(reqDTO);
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 

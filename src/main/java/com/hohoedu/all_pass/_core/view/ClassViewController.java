@@ -205,7 +205,7 @@ public class ClassViewController {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
-
+        log.info("dayName = {}", dayName);
         List<User> users = userService.findByCenterCode(user.getCenterCode());
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
 

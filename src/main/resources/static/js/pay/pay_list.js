@@ -163,6 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 // 우측 학생명 변경
                 const nameCell = document.querySelector("#paid-student td:nth-child(2)");
                 if (nameCell) nameCell.textContent = s.studentName;
+                const amountCell = document.querySelector("#paid-student td:nth-child(4)");
+                if (amountCell) amountCell.textContent = s.amount;
             });
 
             studentTableBody.appendChild(tr);
