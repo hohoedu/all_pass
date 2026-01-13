@@ -45,7 +45,8 @@
     </insert>
 
     <select id="findReorderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$ReorderListDTO">
-        SELECT reorder_type AS reorderType,
+        SELECT r.id         AS id,
+               reorder_type AS reorderType,
                r.class_key  AS classKey,
                c.class_name AS className,
                r.unit_key   AS unitKey,

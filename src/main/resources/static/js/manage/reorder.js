@@ -37,10 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const old = display.querySelector(".month-text");
             if (old) old.remove();
 
-            display.insertAdjacentHTML(
-                "afterbegin",
-                `<span class="month-text">${year}년 ${month}월</span>`
-            );
+            display.insertAdjacentHTML("afterbegin", `<span class="month-text">${year}년 ${month}월</span>`);
 
         } catch (e) {
             console.log('initCurrentMonth Error', e);
@@ -52,19 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(date.getTime())) return;
 
         const year = date.getFullYear();
-        const month = date.getMonth() + 1;
+        const month = String(date.getMonth() + 1).padStart(2, '0');
 
         const span = display.querySelector(".month-text");
         if (span) {
-            span.textContent = `${year}년 ${month}월`;
+            span.textContent = `${year}년 ${Number(month)}월`;
         }
 
-        // ✅ 조회용 달력인 경우에만 목록 조회
         if (display.closest(".search-calendar")) {
             loadReorderList(year, month);
         }
-
-        // ❌ 저장용 달력은 여기서 아무 것도 하지 않음
     }
 
     const addView = document.querySelector(".add-order-view");
@@ -127,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="basic-select" >
                     <select name="bookChoice">
-                        <option value="">권수 선택</option>
+                        <option value="">호수 선택</option>
                     </select>
                 </div>
                 <div class="custom-spinner">
@@ -179,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 총합
     function updateTotals() {
         const orderType = document.querySelector('input[name="orderType"]:checked').value;
 
@@ -204,10 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!stepSelect || !choiceSelect) return;
 
-        // 단계 목록 초기화
         fillStepSelect(stepSelect, classCodes);
 
-        // 단계 변경 → 권수 목록 로딩
         stepSelect.addEventListener("change", () => {
             const classKey = stepSelect.value;
             fillChoiceSelect(choiceSelect, classUnits, classKey);
@@ -225,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fillChoiceSelect(choiceSelect, classUnits, classKey) {
         choiceSelect.options.length = 0;
-        choiceSelect.add(new Option("권수 선택", ""));
+        choiceSelect.add(new Option("호수 선택", ""));
 
         if (!classKey || !classUnits[classKey]) return;
 
@@ -242,15 +235,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======================== 오른쪽 주문 내역 불러오기 ======================== //
     async function loadReorderList(year, month) {
         const body = {
-            yy: year,
-            mm: month
+            yy: year, mm: month
         };
 
         try {
             const res = await fetch("/manage/reorder/list", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body)
+                method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
             });
 
             const data = await res.json();
@@ -266,20 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.querySelector("#reorder-tbody");
         tbody.innerHTML = "";
         const confirmedTextMap = {
-            checked: '승인',
-            unchecked: '미승인',
-            admin_cancel: '관리자 취소',
-            user_cancel: '사용자 취소'
+            checked: '승인', unchecked: '미승인', admin_cancel: '관리자 취소', user_cancel: '사용자 취소'
         };
         const confirmedCancelMap = {
-            unchecked: '취소',
-            checked: '-',
-            admin_cancel: '-',
-            user_cancel: '-'
+            unchecked: '취소', checked: '-', admin_cancel: '-', user_cancel: '-'
         };
-
-        const canCancel = item.confirmed === 'unchecked';
-
 
         if (!list || list.length === 0) {
             tbody.innerHTML = `
@@ -293,6 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         list.forEach(item => {
+            const canCancel = item.confirmed === 'unchecked';
+
             const html = `
             <tr data-class-key="${item.classKey}" data-unit-key="${item.unitKey}">
                 <td>${item.reorderType === 'ADD' ? '추가주문' : '반품'}</td>
@@ -313,10 +296,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector("#saveReorderBtn").addEventListener("click", async () => {
 
         const saveCalendar = document.querySelector(".save-calendar .hidden-picker");
+        if (!saveCalendar.value) {
+            alert("년월을 선택해 주세요.");
+            return;
+        }
         const [yy, mmRaw] = saveCalendar.value.split("-");
         const mm = mmRaw.padStart(2, "0");
-        const orderType = document.querySelector('input[name="orderType"]:checked').value;
 
+        const orderType = document.querySelector('input[name="orderType"]:checked').value;
+        if (!orderType) {
+            alert("주문 유형을 선택해 주세요.");
+            return;
+        }
         const extras = Array.from(document.querySelectorAll(".all-add .add-extra")).map(box => ({
             classKey: box.querySelector("select[name='bookStep']").value,
             unitKey: box.querySelector("select[name='bookChoice']").value,
@@ -324,18 +315,47 @@ document.addEventListener('DOMContentLoaded', () => {
             reason: box.querySelector("input[type='text']").value
         }));
 
-        const body = {
-            yy: Number(yy),
-            mm: mm,
-            reorderType: orderType,
-            items: extras
-        };
+        if (extras.length === 0) {
+            alert("추가/반품 항목을 하나 이상 입력해 주세요.");
+            return;
+        }
 
+        for (let i = 0; i < extras.length; i++) {
+            const item = extras[i];
+
+            if (!item.classKey) {
+                alert(`(${i + 1}번째 항목) 단계가 선택되지 않았습니다.`);
+                return;
+            }
+            if (!item.unitKey) {
+                alert(`(${i + 1}번째 항목) 호수가 선택되지 않았습니다.`);
+                return;
+            }
+
+            if (!item.reason) {
+                alert(`(${i + 1}번째 항목) 사유를 입력해 주세요.`);
+                return;
+            }
+
+            if (!Number.isInteger(item.count) || item.count <= 0) {
+                alert(`(${i + 1}번째 항목) 권수는 1권 이상이어야 합니다.`);
+                return;
+            }
+        }
+
+        const totalCount = extras.reduce((sum, item) => sum + item.count, 0);
+        if (totalCount === 0) {
+            alert("총 권수는 0이 될 수 없습니다.");
+            return;
+        }
+
+        const body = {
+            yy: Number(yy), mm: mm, reorderType: orderType, items: extras
+        };
+        alert(JSON.stringify(body));
         try {
             const res = await fetch("/manage/reorder/save", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(body)
+                method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
             });
 
             const data = await res.json();

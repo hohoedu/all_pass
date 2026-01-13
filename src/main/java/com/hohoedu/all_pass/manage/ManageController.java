@@ -104,7 +104,7 @@ public class ManageController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-
+        log.info("reqDTO = {}", reqDTO);
         List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
 
         return ResponseEntity.ok(ApiUtils.success(reorderList));

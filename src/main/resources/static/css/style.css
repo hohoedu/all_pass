@@ -6592,6 +6592,7 @@ input[type="time" i] {
 .reason-box {
     display: flex;
     align-items: center;
+    white-space: nowrap;
 
 }
 
