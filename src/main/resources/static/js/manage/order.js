@@ -315,14 +315,13 @@ document.addEventListener('DOMContentLoaded', () => {
      * =============================== */
     const saveBtn = document.querySelector(".save-btn");
 
-    // 마감 기간 설정 (예: 매월 20일 00:00 ~ 말일 23:59)
     function checkOrderDeadline() {
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth(); // 0~11
 
         // 마감 시작일: 매월 20일 00:00
-        const deadlineStart = new Date(currentYear, currentMonth, 20, 0, 0, 0);
+        const deadlineStart = new Date(currentYear, currentMonth, 14, 0, 0, 0);
 
         // 마감 종료일: 해당 월의 마지막 날 23:59:59
         const deadlineEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);

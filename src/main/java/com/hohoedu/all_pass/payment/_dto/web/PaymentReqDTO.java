@@ -46,6 +46,8 @@ public class PaymentReqDTO {
 
         private boolean includeSibling;
 
+        private Integer customPrice;
+
     }
 
     @Data

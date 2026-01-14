@@ -3,6 +3,16 @@
 
 <mapper namespace="com.hohoedu.all_pass.payment.repository.PaymentRepository">
 
+    <select id="sumManualAmountByPaymentKey" resultType="int">
+        SELECT COALESCE(SUM(
+                                COALESCE(card_amount, 0) +
+                                COALESCE(cash_amount, 0) +
+                                COALESCE(transfer_amount, 0)
+                        ), 0) as total_amount
+        FROM erp_payment_manual
+        WHERE payment_key = #{paymentKey}
+    </select>
+
     <insert id="insertPaymentHistory"
             parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$PaymentHistoryRecordDTO">
         INSERT INTO erp_payment_history (event_type, event_source, old_status, new_status, amount, description,
@@ -656,12 +666,12 @@
     </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
-        SELECT s.student_id   AS studentId,
-               s.student_name AS studentName,
-               p.payment_key  AS paymentKey,
-               g.grade_name   AS gradeName,
-               hu.user_name   AS hanTeacher,
-               bu.user_name   AS bookTeacher,
+        SELECT s.student_id                                               AS studentId,
+               s.student_name                                             AS studentName,
+               p.payment_key                                              AS paymentKey,
+               g.grade_name                                               AS gradeName,
+               hu.user_name                                               AS hanTeacher,
+               bu.user_name                                               AS bookTeacher,
                SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) AS amount
         FROM erp_payment p
                  JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
@@ -673,21 +683,7 @@
         WHERE p.center_code = #{centerCode}
           AND p.yy = #{yy}
           AND p.mm = #{mm}
-          AND NOT EXISTS (
-            SELECT 1
-            FROM erp_payment_bill pb
-            WHERE pb.payment_key = p.payment_key
-              AND pb.student_id = p.student_id
-              AND pb.bill_type = 'EDU_FEE'
-              AND pb.status = 'approved'
-        )
-          AND NOT EXISTS (
-            SELECT 1
-            FROM erp_payment_manual pm
-            WHERE pm.payment_key = p.payment_key
-              AND pm.student_id = p.student_id
-              AND pm.status = 'approved'
-        )
+          AND p.status NOT IN ('approved')
         GROUP BY s.student_id, s.student_name, p.payment_key, g.grade_name, hu.user_name, bu.user_name
         HAVING SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) > 0;
     </select>

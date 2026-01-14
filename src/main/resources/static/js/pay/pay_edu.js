@@ -232,7 +232,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 호버 가능한 상태임을 표시
             cell.style.cursor = 'help';
 
             // 호버 시 툴팁 생성
@@ -940,10 +939,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (eduFee.checked) {
             priceDiv.classList.add("disabled");
             priceDiv.classList.remove("enabled");
-            priceInput.value = "";
         } else {
             priceDiv.classList.remove("disabled");
             priceDiv.classList.add("enabled");
+            priceInput.value = "";
         }
     }
 
@@ -1002,8 +1001,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const includeSibling = document.querySelector('input[name="includeSibling"]').checked;
 
+        const customPriceInput = document.querySelector('.edu-input').value;
+        const customPrice = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
+
+
         try {
             if (eduChecked) {
+
+                if (customPrice !== null && customPrice <= 0) {
+                    return alert('올바른 금액을 입력하세요.');
+                }
+
                 await sendBills({
                     studentIds,
                     type: 'edu',
@@ -1011,7 +1019,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     expireDt,
                     yy,
                     mm,
-                    includeSibling
+                    includeSibling,
+                    customPrice
                 });
             }
 
@@ -1146,7 +1155,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            console.log("billId"+billId, "billType"+billType )
+            console.log("billId" + billId, "billType" + billType)
             const res = await fetch('/pay/destroy/bill', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},

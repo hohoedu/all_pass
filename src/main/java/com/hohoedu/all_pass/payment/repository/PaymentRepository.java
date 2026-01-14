@@ -19,7 +19,10 @@ import java.util.List;
 @Mapper
 public interface PaymentRepository {
 
+
     int updateExpiredBillsToDestroyed();
+
+    int sumManualAmountByPaymentKey(@Param("paymentKey") String paymentKey);
 
     int insertPaymentHistory(PaymentReqDTO.PaymentHistoryRecordDTO dto);
 
@@ -78,19 +81,6 @@ public interface PaymentRepository {
             @Param("type") String type
     );
 
-//    int insertPaymentBill(
-//            @Param("bill") PaymentReqDTO.InsertBillDTO bill,
-//            @Param("userCode") String userCode
-//    );
-
-//    int insertPaymentBillMap(
-//            @Param("billId") String billId,
-//            @Param("studentId") String studentId,
-//            @Param("paymentKey") String paymentKey,
-//            @Param("amount") Integer amount
-//    );
-
-
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 
     String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
@@ -107,7 +97,10 @@ public interface PaymentRepository {
     // 학생 등록 후 결제 상세내용 생성
     int createPaymentDetail(PaymentDetail paymentDetail);
 
-    String findLatestPaymentKeyByStudent(@Param("studentId") String studentId, @Param("yy") String yy, @Param("mm") String mm);
+    String findLatestPaymentKeyByStudent(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     void updateAmount(@Param("paymentKey") String paymentKey);
 
@@ -117,7 +110,9 @@ public interface PaymentRepository {
 
     void updatePaymentStatusOnIssue(@Param("paymentKey") String paymentKey);
 
-    void updateBillStatus(@Param("billId") String billId, @Param("status") String status);
+    void updateBillStatus(
+            @Param("billId") String billId,
+            @Param("status") String status);
 
     void updatePaymentStatus(
             @Param("paymentKey") String paymentKey,
