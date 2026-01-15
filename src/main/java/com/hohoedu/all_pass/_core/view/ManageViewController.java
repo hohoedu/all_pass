@@ -121,7 +121,11 @@ public class ManageViewController {
     }
 
     @GetMapping("/teacher")
-    public String getManageTeacherPage() {
+    public String getManageTeacherPage(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
         return "manage/teacher";
     }
 

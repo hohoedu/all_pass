@@ -54,4 +54,15 @@
         where center_code = #{centerCode}
     </select>
 
+    <select id="findByUserCode" resultType="com.hohoedu.all_pass.user.User">
+        SELECT salt FROM ERP_user
+        where user_code = #{userCode}
+    </select>
+
+    <update id="updatePassword">
+        update erp_user
+        set password_hash = #{hashedPassword}
+        where user_code = #{userCode}
+    </update>
+
 </mapper>

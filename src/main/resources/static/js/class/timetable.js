@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(apiResult => {
                         return showAlert({
                             icon: apiResult.response ? 'success' : 'error',
-                            title: apiResult.response ? '삭제되었습니다.' : '삭제 실패',
+                            title: apiResult.response ? '삭제되었습니다.\n교재 주문 수량을 확인해주세요.' : '삭제 실패',
                             text: apiResult.error?.message,
                             showConfirmButton: true,
                             allowOutsideClick: false

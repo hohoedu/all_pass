@@ -62,8 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     submitBtn.addEventListener("click", async (e) => {
         e.preventDefault();
-        alert("현재 전입/전출은 작업 중입니다!");
-        return;
+        // alert("현재 전입/전출은 작업 중입니다!");
+        // return;
 
         const selectedStudents = Array.from(
             document.querySelectorAll('.row-checkbox:checked')
@@ -120,9 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
 
             if (!response.ok || result.success === false) {
-
-                throw new Error(result.error.message || "처리 중 오류가 발생했습니다.");
+                throw new Error(result.msg || "처리 중 오류가 발생했습니다.");
             }
+
 
             alert("전입/전출 처리가 완료되었습니다.");
             location.reload();

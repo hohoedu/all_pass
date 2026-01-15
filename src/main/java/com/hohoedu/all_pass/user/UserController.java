@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Controller
@@ -100,5 +101,29 @@ public class UserController {
 
         return ResponseEntity.ok(ApiUtils.success(users));
 
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestBody UserReqDTO.PasswordChangeRequest request, HttpSession session) {
+        try {
+            log.info("!");
+            LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+
+            log.info("!!");
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("success", false, "message", "로그인이 필요합니다."));
+            }
+            log.info("!!!!");
+            request.setUserCode(user.getUserCode());
+            log.info("!!!!!");
+            userService.changePassword(request);
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 변경되었습니다."));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "비밀번호 변경에 실패했습니다."));
+        }
     }
 }

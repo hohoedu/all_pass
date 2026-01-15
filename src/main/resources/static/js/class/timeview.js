@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const monthInput = document.getElementById("monthPickerInput");
     const openBtn = document.getElementById("openMonthPicker");
     const currentMonthLabel = document.getElementById("currentMonth");
-
+    const printBtn = document.getElementById("time-view-print");
     if (!monthInput || !openBtn || !currentMonthLabel) return;
 
     initCurrentMonth();
@@ -23,6 +23,27 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("initCurrentMonth error:", err);
         }
+    }
+
+
+    printBtn.addEventListener("click", () => {
+        const ym = document.getElementById('monthPickerInput').value.replace('-', '');
+        const userCode = document.getElementById('teacher-select')?.value;
+        const centerCode = document.getElementById('')
+        // window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}&centerCode`);
+        printTimeView(ym, userCode);
+    });
+
+    function printTimeView(ym, userCode) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/class/print-timeview?ym=${ym}&userCode=${userCode}`;
+
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
+
+        document.body.appendChild(iframe);
     }
 
     /** 이벤트 바인딩 */
@@ -50,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateMonthLabel(year, month) {
         currentMonthLabel.textContent = `${year}년 ${month}월`;
     }
+
     document.getElementById("teacher-select")
         ?.addEventListener("change", () => {
             const selected = new Date(monthInput.value);
@@ -60,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             loadMonthlyData(year, month);
         });
+
     /**
      * 서버에서 월별 데이터 조회
      * (시간표 테이블 전체 + 회원 현황 테이블 HTML 받아서 교체)
@@ -209,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
             timeTableKey: targetTimeTableKey
         }));
 
-        console.log('assignments='+assignments);
+        console.log('assignments=' + assignments);
         await fetch('/class/add_student', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

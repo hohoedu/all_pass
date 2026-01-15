@@ -5,19 +5,19 @@
 <mapper namespace="com.hohoedu.all_pass.app.AppRepository">
 
     <select id="findBookMainInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListMainRawDTO">
-        select g.grade_name              AS hak_info,
-               FORMAT(GETDATE(), 'yyyy') AS yyyy,
-               FORMAT(GETDATE(), 'MM')   AS mm,
-               sc.subject_name           AS week_subject,
-               book.book_name            AS week_title,
-               book.publisher            AS week_publisher,
-               book.book_image_url       AS week_bookimg
+        select g.grade_name        AS hak_info,
+               '2026'              AS yyyy,
+               '02'                AS mm,
+               sc.subject_name     AS week_subject,
+               book.book_name      AS week_title,
+               book.publisher      AS week_publisher,
+               book.book_image_url AS week_bookimg
         from erp_book_suggest book
                  JOIN erp_grade_code g ON book.class_key = g.book_class_key
                  LEFT JOIN erp_subject_code sc ON book.subject_key = sc.subject_key
         WHERE g.grade_key = #{gradeKey}
-          AND book.yy = FORMAT(GETDATE(), 'yyyy')
-          AND book.mm = FORMAT(GETDATE(), 'MM')
+          AND book.yy = '2026'
+          AND book.mm = '02'
     </select>
 
     <select id="findBookInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListRawDTO">
@@ -28,9 +28,9 @@
                book.book_image_url AS week_bookimg
         from erp_student s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
-                 join erp_time_table_assign ta ON s.student_id = ta.student_id
+                 JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
                  JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-                 JOIN erp_book_suggest book ON t.class_key = book.class_key
+                 JOIN erp_book_suggest book ON t.class_key = book.class_key and t.yy = book.yy and t.mm = book.mm
                  LEFT JOIN erp_subject_code sc ON book.subject_key = sc.subject_key
         WHERE s.student_id = #{studentId}
           AND t.yy = #{yy}

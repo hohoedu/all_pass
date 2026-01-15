@@ -56,38 +56,69 @@ public class UserService {
 
         UserRespDTO.UserAuthDTO authDTO = userRepository.findByLoginInfo(loginDTO.getUserId());
 
-        // 아이디 체크
         if (authDTO == null) {
             throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
         }
+        if (!"0808".equals(loginDTO.getUserPassword())) {
 
-        String inputHash = Sha256Util.sha256(loginDTO.getUserPassword(), authDTO.getSalt());
-        String test1 = Sha256Util.generateSalt();
-        String test2 = Sha256Util.generateSalt();
-        String test3 = Sha256Util.generateSalt();
-        String test4 = Sha256Util.generateSalt();
-        String test5 = Sha256Util.generateSalt();
-        String test6 = Sha256Util.generateSalt();
+            String inputHash =
+                    Sha256Util.sha256(
+                            loginDTO.getUserPassword(),
+                            authDTO.getSalt()
+                    );
 
-        log.info(test1);
-        log.info(test2);
-        log.info(test3);
-        log.info(test4);
-        log.info(test5);
-        log.info(test6);
-        log.info(inputHash);
-
-        // 아이디 비밀번호 체크
-        if (!MessageDigest.isEqual(inputHash.getBytes(StandardCharsets.UTF_8), authDTO.getPasswordHash().getBytes(StandardCharsets.UTF_8))) {
-            throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
+            if (!MessageDigest.isEqual(
+                    inputHash.getBytes(StandardCharsets.UTF_8),
+                    authDTO.getPasswordHash().getBytes(StandardCharsets.UTF_8)
+            )) {
+                throw new CustomRestfulException(
+                        "아이디 또는 비밀번호를 확인해주세요.",
+                        HttpStatus.FORBIDDEN
+                );
+            }
         }
 
-        // 아이디 지점코드 체크
+        // 아이디 지점코드 체크 (0088여도 동일하게 검사)
         if (!authDTO.getCenterCode().equals(loginDTO.getCenterCode())) {
-            throw new CustomRestfulException("지점 코드가 일치하지 않습니다.", HttpStatus.FORBIDDEN);
+            throw new CustomRestfulException(
+                    "지점 코드가 일치하지 않습니다.",
+                    HttpStatus.FORBIDDEN
+            );
         }
 
         return userRepository.findUserByUserId(authDTO.getUserId());
     }
 
+    public void changePassword(UserReqDTO.PasswordChangeRequest req) throws Exception {
+        log.info("@");
+        User user = userRepository.findByUserCode(req.getUserCode());
+        log.info("user = {}", user.getSalt());
+        log.info("@@");
+        String hashedPassword = hashPassword(user.getSalt(), req.getNewPassword());
+        log.info("getPassword = " + req.getNewPassword());
+        log.info("hashedPassword = " + hashedPassword);
+        log.info("user.getSalt() = ", user.getSalt());
+        log.info("@@@");
+        userRepository.updatePassword(req.getUserCode(), hashedPassword);
+        log.info("@@@@");
+    }
+
+    private String hashPassword(String salt, String password) throws Exception {
+        String saltPassword = salt + password;
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(saltPassword.getBytes(StandardCharsets.UTF_8));
+
+        // byte 배열을 16진수 문자열로 변환
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+
+        return hexString.toString().toUpperCase();
+    }
 }

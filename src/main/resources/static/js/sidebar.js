@@ -131,9 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
-        const user = 2;
 
-        const url = `/class/timeview?year=${year}&month=${month}&user=${user}`;
+        const url = `/class/timeview?year=${year}&month=${month}`;
         window.location.href = url;
     });
 });

@@ -17,6 +17,9 @@ public class AppService {
     private final AppRepository appRepository;
 
     // 메인화면
+    /* TODO: 월 설정 다시 해야함 지금 하드코딩 되어있음 2월로
+        새로운 책이 올라오면 그 달로 아직 안올라오면 그대로
+     */
     public ClassAppRespDTO.BookListMainRespDTO getBookMainInfo(ClassAppReqDTO.BookListMainReqDTO dto) {
 
         List<ClassAppRespDTO.BookListMainRawDTO> raws = appRepository.findBookMainInfo(dto.getIhak());

@@ -46,12 +46,12 @@ public class PaymentService {
 
     /**
      * payment 상태 재계산 (교육비 기준)
-     *
+     * <p>
      * 🎯 핵심 로직:
      * - payment 상태는 교육비(EDU_FEE)만 고려
      * - 교육비 = bill(EDU_FEE) + manual 모두 포함
      * - 교재비(BOOK_FEE)는 독립적 (bill 상태로만 관리)
-     *
+     * <p>
      * 상태 결정:
      * - pending: 청구된 금액이 없음
      * - issued: 청구는 되었으나 결제 금액이 없음
@@ -59,7 +59,7 @@ public class PaymentService {
      * - approved: 전액 결제
      *
      * @param paymentKey - payment 키
-     * @param userCode - 작업자 코드
+     * @param userCode   - 작업자 코드
      */
     @Transactional
     public void recalculatePaymentStatus(String paymentKey, String userCode) {
@@ -72,99 +72,160 @@ public class PaymentService {
 
         String oldStatus = payment.getStatus();
 
-        // 1️⃣ 교육비(EDU_FEE) detail 총 금액 조회
-        PaymentRespDTO.PaymentDetailDTO eduDetail = paymentRepository.findEduPaymentDetailByPaymentKey(paymentKey);
-        int totalEduAmount = eduDetail != null && eduDetail.getAmount() != null ? eduDetail.getAmount() : 0;
-
-        // 2️⃣ 교육비(EDU_FEE) bill 조회
-        List<PaymentBill> allBills = paymentRepository.findBillsByPaymentKey(paymentKey);
-
-        // 교육비 bill만 필터링 (destroyed, canceled 제외)
-        List<PaymentBill> eduBills = allBills.stream()
-                .filter(b -> "EDU_FEE".equals(b.getBillType()))
-                .filter(b -> !b.getStatus().equals("destroyed") && !b.getStatus().equals("canceled"))
-                .toList();
-
-        // 교육비 청구 금액
-        int eduBilledAmount = eduBills.stream()
-                .mapToInt(PaymentBill::getAmount)
+        /* =========================================================
+         * 1️⃣ 전체 detail 금액 (교육비 + 교재비) → payment.amount 용
+         * ========================================================= */
+        List<String> allDetails = paymentRepository.findPaymentDetailByPaymentKey(paymentKey);
+        int totalDetailAmount = allDetails.stream()
+                .mapToInt(v -> {
+                    if (v == null || v.isBlank()) return 0;
+                    try {
+                        return Integer.parseInt(v);
+                    } catch (NumberFormatException e) {
+                        return 0;
+                    }
+                })
                 .sum();
 
-        // 교육비 bill 결제 완료 금액
-        int eduBillPaidAmount = eduBills.stream()
+        /* =========================================================
+         * 2️⃣ 교육비 detail 총액 (상태 판단 기준)
+         * ========================================================= */
+        PaymentRespDTO.PaymentDetailDTO eduDetail =
+                paymentRepository.findEduPaymentDetailByPaymentKey(paymentKey);
+
+        int eduDetailTotal =
+                (eduDetail != null && eduDetail.getAmount() != null)
+                        ? eduDetail.getAmount()
+                        : 0;
+
+        /* =========================================================
+         * 3️⃣ 교육비 bill 승인 금액 (approved 만)
+         * ========================================================= */
+        List<PaymentBill> bills = paymentRepository.findBillsByPaymentKey(paymentKey);
+
+        int eduBillApprovedAmount = bills.stream()
+                .filter(b -> "EDU_FEE".equals(b.getBillType()))
                 .filter(b -> "approved".equals(b.getStatus()))
                 .mapToInt(PaymentBill::getAmount)
                 .sum();
 
-        // 3️⃣ 교육비 manual 결제 금액 조회 ✅ 수정됨
-        int eduManualPaidAmount = 0;
+        /* =========================================================
+         * 4️⃣ manual 결제 금액 (교육비만)
+         * ========================================================= */
+        int manualPaidAmount;
         try {
-            // ✅ Repository에서 직접 합계 조회 (unpaid 역산 방식 제거)
-            eduManualPaidAmount = paymentRepository.sumManualAmountByPaymentKey(paymentKey);
+            manualPaidAmount = paymentRepository.sumManualAmountByPaymentKey(paymentKey);
         } catch (Exception e) {
-            log.warn("manual 금액 조회 실패: {}", e.getMessage());
-            eduManualPaidAmount = 0;
+            log.warn("manual 금액 조회 실패 paymentKey={}, msg={}", paymentKey, e.getMessage());
+            manualPaidAmount = 0;
         }
 
-        // 4️⃣ 교육비 총 결제 완료 금액 (bill + manual)
-        int totalEduPaidAmount = eduBillPaidAmount + eduManualPaidAmount;
+        /* =========================================================
+         * 5️⃣ 교육비 실제 납부 금액
+         * ========================================================= */
+        int eduPaidTotal = eduBillApprovedAmount + manualPaidAmount;
 
-        // 5️⃣ 교육비 미납 금액
-        int unpaidAmount = totalEduAmount - totalEduPaidAmount;
-        if (unpaidAmount < 0) unpaidAmount = 0;
+        /* =========================================================
+         * 6️⃣ 교육비 미납 금액 (핵심 공식)
+         * ========================================================= */
+        int eduUnpaidAmount = eduDetailTotal - eduPaidTotal;
+        if (eduUnpaidAmount < 0) eduUnpaidAmount = 0;
 
-        // 6️⃣ payment 상태 결정 (교육비 기준)
-        String newStatus = determinePaymentStatus(eduBilledAmount, totalEduPaidAmount, totalEduAmount);
+        /* =========================================================
+         * 7️⃣ payment 상태 결정 (교육비 기준 ONLY)
+         * ========================================================= */
+        String newStatus;
 
-        // 7️⃣ payment 업데이트 (금액)
+        if (eduDetailTotal == 0) {
+            newStatus = "pending";
+        } else if (eduPaidTotal == 0) {
+            newStatus = "issued";
+        } else if (eduUnpaidAmount == 0) {
+            newStatus = "approved";
+        } else {
+            newStatus = "partial";
+        }
+
+        /* =========================================================
+         * 8️⃣ payment.amount / unpaid_amount 업데이트
+         * - amount        : 전체(detail) 금액
+         * - unpaid_amount : 전체 미납 (교육비 + 교재비 기준)
+         * ========================================================= */
+        int totalPaidAmount =
+                eduBillApprovedAmount
+                        + manualPaidAmount
+                        + bills.stream()
+                        .filter(b -> "BOOK_FEE".equals(b.getBillType()))
+                        .filter(b -> "approved".equals(b.getStatus()))
+                        .mapToInt(PaymentBill::getAmount)
+                        .sum();
+
+        int totalUnpaidAmount = totalDetailAmount - totalPaidAmount;
+        if (totalUnpaidAmount < 0) totalUnpaidAmount = 0;
+
         paymentRepository.updateAmountAndUnpaidAmountByPaymentKey(
                 paymentKey,
-                totalEduAmount,
-                unpaidAmount
+                totalDetailAmount,
+                totalUnpaidAmount
         );
 
-        // 8️⃣ payment 상태가 변경된 경우에만 업데이트
-        if (!oldStatus.equals(newStatus)) {
+        /* =========================================================
+         * 9️⃣ 상태 변경 시 payment 업데이트
+         * ========================================================= */
+        if (!Objects.equals(oldStatus, newStatus)) {
+
             String paidDate = payment.getPaidDate();
-            if (totalEduPaidAmount > 0 && (paidDate == null || paidDate.isBlank())) {
+            if (eduPaidTotal > 0 && (paidDate == null || paidDate.isBlank())) {
                 paidDate = dateConfig.currentYearMonth().get("today");
             }
 
-            String method = payment.getMethod();
-            if (eduManualPaidAmount > 0 && eduBillPaidAmount > 0) {
-                method = "mixed";  // bill + manual 둘 다
-            } else if (eduManualPaidAmount > 0) {
-                method = "manual";  // manual만
-            } else if (eduBillPaidAmount > 0) {
-                method = "paymint";  // bill만
-            } else if (method == null || method.isBlank()) {
-                method = "paymint";  // 기본값
+            String method;
+            if (manualPaidAmount > 0 && eduBillApprovedAmount > 0) {
+                method = "mixed";
+            } else if (manualPaidAmount > 0) {
+                method = "manual";
+            } else if (eduBillApprovedAmount > 0) {
+                method = "paymint";
+            } else {
+                method = payment.getMethod();
             }
 
             paymentRepository.updatePaymentStatus(
                     paymentKey,
                     newStatus,
                     paidDate,
-                    unpaidAmount,
+                    totalUnpaidAmount,
                     method
             );
 
-            // 9️⃣ 로그 기록
             logHistory(
                     "status_recalculated",
                     "system",
                     oldStatus,
                     newStatus,
-                    totalEduPaidAmount,
-                    String.format("교육비 상태 재계산 (total:%d, bill:%d, manual:%d, paid:%d, unpaid:%d)",
-                            totalEduAmount, eduBillPaidAmount, eduManualPaidAmount, totalEduPaidAmount, unpaidAmount),
+                    eduPaidTotal,
+                    String.format(
+                            "교육비 재계산 (detail:%d, bill:%d, manual:%d, unpaid:%d)",
+                            eduDetailTotal,
+                            eduBillApprovedAmount,
+                            manualPaidAmount,
+                            eduUnpaidAmount
+                    ),
                     paymentKey,
                     userCode
             );
         }
 
-        log.info("✅ Payment 상태 업데이트 완료 paymentKey={}, status: {} → {}, eduTotal={}, billPaid={}, manualPaid={}, totalPaid={}, unpaid={}",
-                paymentKey, oldStatus, newStatus, totalEduAmount, eduBillPaidAmount, eduManualPaidAmount, totalEduPaidAmount, unpaidAmount);
+        log.info(
+                "✅ payment 재계산 완료 paymentKey={}, status:{}→{}, eduDetail={}, eduPaid={}, eduUnpaid={}, totalUnpaid={}",
+                paymentKey,
+                oldStatus,
+                newStatus,
+                eduDetailTotal,
+                eduPaidTotal,
+                eduUnpaidAmount,
+                totalUnpaidAmount
+        );
     }
 
     /**
@@ -176,23 +237,19 @@ public class PaymentService {
      * @return 상태 (pending/issued/partial/approved)
      */
     private String determinePaymentStatus(int billedAmount, int paidAmount, int totalAmount) {
-        // 청구된 금액이 없으면 pending
-        if (billedAmount == 0) {
-            return "pending";
-        }
-
-        // 결제 금액이 없으면 issued
-        if (paidAmount == 0) {
-            return "issued";
-        }
-
-        // 전액 결제 완료
-        if (paidAmount >= totalAmount) {
+        if (paidAmount >= totalAmount && totalAmount > 0) {
             return "approved";
         }
 
-        // 부분 결제
-        return "partial";
+        if (paidAmount > 0) {
+            return "partial";
+        }
+
+        if (billedAmount > 0) {
+            return "issued";
+        }
+
+        return "pending";
     }
 
     /**
@@ -439,31 +496,36 @@ public class PaymentService {
      * <p>
      * 테이블: erp_payment_bill
      */
-    public void sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+    // ========== sendBill 메서드 수정 부분 ==========
 
+    // ========== sendBill 메서드 수정 (개별 형제 체크) ==========
+
+    // ========== sendBill 메서드 최종 버전 (과목 추가 대응) ==========
+    public void sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+        log.info("req = {}", req.toString());
+
+        // 1. 청구 타입 결정
         String billType;
         if ("edu".equals(req.getType())) {
             billType = "EDU_FEE";
         } else if ("material".equals(req.getType())) {
             billType = "BOOK_FEE";
         } else {
-            throw new IllegalArgumentException("잘못된 타입");
+            throw new IllegalArgumentException("잘못된 타입: " + req.getType());
         }
 
-        PaymentRespDTO.PaymentConfigDTO conf =
-                "EDU_FEE".equals(billType)
-                        ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode())
-                        : paymentRepository.findPayConfigByCenterCode("PUS001");
+        // 2. 결제 설정 조회
+        String configCenterCode = "EDU_FEE".equals(billType) ? user.getCenterCode() : "PUS001";
+        PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(configCenterCode);
 
         if (conf == null) {
-            throw new IllegalStateException("결제선생 설정이 없습니다.");
+            throw new IllegalStateException("결제 설정이 없습니다.");
         }
 
+        // 3. 청구 대상 조회
         List<PaymentRespDTO.PayTargetDTO> targets;
         if (req.isIncludeSibling()) {
-
-            List<String> parentPhones =
-                    paymentRepository.findParentPhonesByStudentIds(req.getStudentIds());
+            List<String> parentPhones = paymentRepository.findParentPhonesByStudentIds(req.getStudentIds());
 
             if (parentPhones.isEmpty()) {
                 throw new RuntimeException("청구서를 발행할 번호가 없습니다.");
@@ -475,132 +537,249 @@ public class PaymentService {
                     req.getMm(),
                     billType
             );
-
         } else {
-
             targets = paymentRepository.findTargetsByStudentIds(
                     req.getStudentIds(),
                     req.getYy(),
                     req.getMm(),
                     billType
             );
+        }
 
-            if (req.getCustomPrice() != null) {
-                for (PaymentRespDTO.PayTargetDTO target : targets) {
-                    target.setAmount(req.getCustomPrice());
+        if (targets.isEmpty()) {
+            throw new IllegalStateException("청구 대상이 없습니다.");
+        }
+
+        // 4. ✅ 청구 가능 여부 체크 및 금액 계산
+        List<PaymentRespDTO.PayTargetDTO> finalTargets = new ArrayList<>();
+
+        for (PaymentRespDTO.PayTargetDTO target : targets) {
+            String paymentKey = target.getPaymentKey();
+            String studentId = target.getStudentId();
+
+            // ✅ 1) payment 상태 확인 (approved면 제외)
+            Payment payment = paymentRepository.findPaymentByKey(paymentKey);
+            if (payment == null) {
+                log.warn("payment 없음 - paymentKey: {}", paymentKey);
+                continue;
+            }
+
+            if ("approved".equals(payment.getStatus())) {
+                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 이미 전액 결제 완료 (status: approved)",
+                        studentId, paymentKey);
+                continue;
+            }
+
+            // ✅ 2) detail 총 금액 (현재 청구해야 할 총 금액)
+            int totalDetailAmount = target.getAmount();
+
+            // 직접입력 금액이 있으면 사용
+            int requestAmount = req.getCustomPrice() != null ? req.getCustomPrice() : totalDetailAmount;
+
+            // detail보다 큰 금액은 청구 불가
+            if (requestAmount > totalDetailAmount) {
+                log.warn("청구 불가 - paymentKey: {}, 요청 금액({})이 detail 총액({})보다 큼",
+                        paymentKey, requestAmount, totalDetailAmount);
+                continue;
+            }
+
+            // ✅ 3) 이미 청구된 bill 금액 조회 (destroyed, canceled 제외)
+            int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(
+                    paymentKey,
+                    req.getYy(),
+                    req.getMm(),
+                    billType,
+                    Arrays.asList("issued", "approved")
+            );
+
+            // ✅ 4) manual 결제 금액 조회 (교육비만 해당)
+            int manualPaidAmount = 0;
+            if ("EDU_FEE".equals(billType)) {
+                try {
+                    manualPaidAmount = paymentRepository.sumManualAmountByPaymentKey(paymentKey);
+                } catch (Exception e) {
+                    log.warn("manual 금액 조회 실패: {}", e.getMessage());
+                    manualPaidAmount = 0;
                 }
             }
 
-            if (targets.isEmpty()) {
-                throw new IllegalStateException("청구 대상 없음");
+            // ✅ 5) 청구 가능 금액 계산
+            // 요청금액 - (이미 청구된 bill) - (manual 결제)
+            int availableAmount = requestAmount - billedAmount - manualPaidAmount;
+
+            // ✅ 6) 과목 추가 케이스 판단
+            boolean isAdditionalCharge = false;
+            String chargeReason = "";
+
+            if (billedAmount > 0 && availableAmount > 0) {
+                // 이미 청구서가 있지만, detail 금액이 더 크다 = 과목 추가!
+                isAdditionalCharge = true;
+                chargeReason = String.format("과목 추가로 인한 추가 청구 (기존: %d원, 현재: %d원, 추가: %d원)",
+                        billedAmount, requestAmount, availableAmount);
+
+                log.info("✅ 추가 청구 - studentId: {}, paymentKey: {}, {}",
+                        studentId, paymentKey, chargeReason);
             }
-        }
 
-        List<PaymentRespDTO.PayTargetDTO> adjustedTargets = new ArrayList<>();
-        if (req.getCustomPrice() != null) {
-            for (PaymentRespDTO.PayTargetDTO target : targets) {
-
-                int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(
-                        target.getPaymentKey(),
-                        req.getYy(),
-                        req.getMm(),
-                        billType,
-                        Arrays.asList("issued", "approved", "partial")
-                );
-
-                int availableAmount = target.getAmount() - billedAmount;
-
-                if (availableAmount > 0) {
-                    target.setAmount(availableAmount);
-                    adjustedTargets.add(target);
+            if (availableAmount <= 0) {
+                if (billedAmount > 0) {
+                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 이미 전액 청구됨 (요청: {}, bill: {}, manual: {})",
+                            studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
+                } else {
+                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 추가 청구 금액 없음 (요청: {}, bill: {}, manual: {})",
+                            studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
                 }
+                continue;
+            }
+
+            // ✅ 7) 청구 가능한 금액으로 설정
+            target.setAmount(availableAmount);
+            target.setAdditionalCharge(isAdditionalCharge);  // 추가 청구 여부 표시 (DTO에 필드 추가 필요)
+            finalTargets.add(target);
+
+            if (isAdditionalCharge) {
+                log.info("✅✅ 추가 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 추가 금액: {} (기존 bill: {}, 현재 total: {})",
+                        studentId, target.getStudentName(), paymentKey, availableAmount, billedAmount, requestAmount);
+            } else {
+                log.info("✅ 신규 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 청구 금액: {} (요청: {}, bill: {}, manual: {})",
+                        studentId, target.getStudentName(), paymentKey, availableAmount, requestAmount, billedAmount, manualPaidAmount);
             }
         }
 
-        if (adjustedTargets.isEmpty()) {
-            throw new RuntimeException("추가 청구할 금액이 없습니다.");
+        if (finalTargets.isEmpty()) {
+            throw new RuntimeException("추가 청구할 대상이 없습니다. 모든 대상이 이미 청구 완료되었거나 청구 조건을 만족하지 않습니다.");
         }
 
-        Map<String, List<PaymentRespDTO.PayTargetDTO>> groupByParent =
-                adjustedTargets.stream()
-                        .collect(Collectors.groupingBy(
-                                PaymentRespDTO.PayTargetDTO::getParentPhone
-                        ));
+        // 추가 청구 건수 로깅
+        long additionalChargeCount = finalTargets.stream()
+                .filter(t -> t.isAdditionalCharge())
+                .count();
+        long newChargeCount = finalTargets.size() - additionalChargeCount;
 
+        log.info("✅ 청구 대상 분류 - 신규 청구: {}건, 추가 청구: {}건", newChargeCount, additionalChargeCount);
+
+        // 5. 부모별로 그룹화
+        Map<String, List<PaymentRespDTO.PayTargetDTO>> groupByParent = finalTargets.stream()
+                .collect(Collectors.groupingBy(PaymentRespDTO.PayTargetDTO::getParentPhone));
+
+        log.info("✅ 부모별 그룹 수: {}", groupByParent.size());
+
+        // 6. 각 부모별로 청구서 발행
         int seq = 1;
+        int successCount = 0;
+        int failCount = 0;
 
         for (Map.Entry<String, List<PaymentRespDTO.PayTargetDTO>> entry : groupByParent.entrySet()) {
-
             String parentPhone = entry.getKey();
             List<PaymentRespDTO.PayTargetDTO> group = entry.getValue();
 
+            // 총 청구 금액 계산
             int totalPrice = group.stream()
                     .mapToInt(PaymentRespDTO.PayTargetDTO::getAmount)
                     .sum();
 
             if (totalPrice <= 0) {
+                log.warn("청구 금액이 0 이하 - 부모 번호: {}", parentPhone);
                 continue;
             }
 
-            String indexStr = String.format("%02d", seq++);
-            String billId = generateBillId(
-                    conf.getPreBillId(),
-                    Integer.parseInt(indexStr),
-                    billType
-            );
+            // 추가 청구 여부 확인
+            boolean hasAdditionalCharge = group.stream()
+                    .anyMatch(PaymentRespDTO.PayTargetDTO::isAdditionalCharge);
 
-            String raw = billId + "," + parentPhone + "," + totalPrice;
-            String hash = DigestUtils.sha256Hex(raw);
+            try {
+                // 청구서 ID 생성
+                String indexStr = String.format("%02d", seq++);
+                String billId = generateBillId(conf.getPreBillId(), Integer.parseInt(indexStr), billType);
 
-            String memberName =
-                    group.size() == 1
-                            ? group.get(0).getStudentName()
-                            : group.get(0).getStudentName() + " 외 " + (group.size() - 1) + "명";
+                // 해시 생성
+                String raw = billId + "," + parentPhone + "," + totalPrice;
+                String hash = DigestUtils.sha256Hex(raw);
 
-            Map<String, Object> bill = Map.of(
-                    "bill_id", billId,
-                    "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
-                    "message", "EDU_FEE".equals(billType)
-                            ? req.getMessage()
-                            : "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, 2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.",
-                    "member_nm", memberName,
-                    "phone", parentPhone,
-                    "price", totalPrice,
-                    "hash", hash,
-                    "expire_dt", req.getExpireDt(),
-                    "callbackURL", conf.getCallbackUrl()
-            );
+                // 회원명 생성
+                String memberName = group.size() == 1
+                        ? group.get(0).getStudentName()
+                        : group.get(0).getStudentName() + " 외 " + (group.size() - 1) + "명";
 
-            Map<String, Object> body = Map.of(
-                    "apikey", conf.getApiKey(),
-                    "member", conf.getMemberId(),
-                    "merchant", conf.getMerchantId(),
-                    "bill", bill
-            );
+                // ✅ 메시지 생성 (추가 청구 시 안내 추가)
+                String message;
+                if ("EDU_FEE".equals(billType)) {
+                    if (hasAdditionalCharge) {
+                        message = req.getMessage() + "\n※ 과목 추가로 인한 추가 청구서가 포함되어 있습니다.";
+                    } else {
+                        message = req.getMessage();
+                    }
+                } else {
+                    message = "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, " +
+                            "2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.";
+                }
 
-            PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+                // 청구서 정보
+                Map<String, Object> bill = Map.of(
+                        "bill_id", billId,
+                        "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
+                        "message", message,
+                        "member_nm", memberName,
+                        "phone", parentPhone,
+                        "price", totalPrice,
+                        "hash", hash,
+                        "expire_dt", req.getExpireDt(),
+                        "callbackURL", conf.getCallbackUrl()
+                );
 
-            if (!"0000".equals(paymintResp.getCode())) {
-                continue;
-            }
+                // API 요청 바디
+                Map<String, Object> body = Map.of(
+                        "apikey", conf.getApiKey(),
+                        "member", conf.getMemberId(),
+                        "merchant", conf.getMerchantId(),
+                        "bill", bill
+                );
 
-            for (PaymentRespDTO.PayTargetDTO t : group) {
+                log.info("✅ 결제 API 호출 - billId: {}, phone: {}, amount: {}, 형제 수: {}, 추가청구: {}",
+                        billId, parentPhone, totalPrice, group.size(), hasAdditionalCharge ? "Yes" : "No");
 
-                PaymentReqDTO.InsertBillDTO billDTO = new PaymentReqDTO.InsertBillDTO();
-                billDTO.setBillId(billId);
-                billDTO.setPaymentKey(t.getPaymentKey());
-                billDTO.setStudentId(t.getStudentId());
-                billDTO.setAmount(t.getAmount());
-                billDTO.setBillType(billType);
-                billDTO.setPhone(parentPhone);
-                billDTO.setCenterCode(user.getCenterCode());
-                billDTO.setExpireDate(req.getExpireDt());
-                billDTO.setYy(req.getYy());
-                billDTO.setMm(req.getMm());
+                // 외부 결제 API 호출
+                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
 
-                insertPaymentBill(billDTO, user.getUserCode());
+                if (!"0000".equals(paymintResp.getCode())) {
+                    log.error("결제 API 실패 - billId: {}, code: {}, message: {}",
+                            billId, paymintResp.getCode(), paymintResp.getMsg());
+                    failCount++;
+                    continue;
+                }
+
+                log.info("✅ 결제 API 성공 - billId: {}", billId);
+
+                // DB에 청구 내역 저장
+                for (PaymentRespDTO.PayTargetDTO target : group) {
+                    PaymentReqDTO.InsertBillDTO billDTO = new PaymentReqDTO.InsertBillDTO();
+                    billDTO.setBillId(billId);
+                    billDTO.setPaymentKey(target.getPaymentKey());
+                    billDTO.setStudentId(target.getStudentId());
+                    billDTO.setAmount(target.getAmount());
+                    billDTO.setBillType(billType);
+                    billDTO.setPhone(parentPhone);
+                    billDTO.setCenterCode(user.getCenterCode());
+                    billDTO.setExpireDate(req.getExpireDt());
+                    billDTO.setYy(req.getYy());
+                    billDTO.setMm(req.getMm());
+
+                    insertPaymentBill(billDTO, user.getUserCode());
+
+                    String chargeType = target.isAdditionalCharge() ? "추가 청구" : "신규 청구";
+                    log.info("✅ Bill 저장 완료 - studentId: {}, paymentKey: {}, amount: {}, type: {}",
+                            target.getStudentId(), target.getPaymentKey(), target.getAmount(), chargeType);
+                }
+
+                successCount++;
+
+            } catch (Exception e) {
+                log.error("청구서 발행 실패 - 부모 번호: {}, 오류: {}", parentPhone, e.getMessage(), e);
+                failCount++;
             }
         }
+
+        log.info("✅ 청구서 발행 완료 - 성공: {}건, 실패: {}건", successCount, failCount);
     }
 
     /**
@@ -639,11 +818,9 @@ public class PaymentService {
 
         paymentRepository.createPaymentBill(paymentBill);
 
-        // 🔥 개선: 교육비 bill인 경우에만 payment 상태 재계산
         if ("EDU_FEE".equals(dto.getBillType())) {
             recalculatePaymentStatus(dto.getPaymentKey(), userCode);
         }
-        // 교재비(BOOK_FEE)는 독립적이므로 bill.status로만 관리
 
         logHistory(
                 "bill_issued",
@@ -929,7 +1106,7 @@ public class PaymentService {
 
     /**
      * Detail 삭제
-     *
+     * <p>
      * 🔥 개선: detail 삭제 후 payment 상태 재계산
      */
     public void deleteDetail(String timeTableKey, String studentId) {

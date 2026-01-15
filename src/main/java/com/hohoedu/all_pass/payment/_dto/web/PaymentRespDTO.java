@@ -67,6 +67,8 @@ public class PaymentRespDTO {
         private String parentPhone;   // 01012345678
         private String paymentKey;
         private Integer amount;
+
+        private boolean additionalCharge;
     }
 
     @Data
@@ -164,6 +166,12 @@ public class PaymentRespDTO {
         private String hanTeacher;
         private String bookTeacher;
         private String amount;
+        // ✅ 추가된 필드들
+        private Integer eduFeeTotal;      // 교육비 detail 총액
+        private Integer eduBillPaid;      // 교육비 bill 결제 금액 (approved)
+        private Integer eduManualPaid;    // 교육비 manual 결제 금액
+        private Integer eduUnpaidAmount;  // 교육비 미납 금액 = total - bill - manual
+        private String paymentStatus;
     }
 
     @Data

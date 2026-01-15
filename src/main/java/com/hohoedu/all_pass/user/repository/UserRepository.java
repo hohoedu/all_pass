@@ -21,4 +21,9 @@ public interface UserRepository {
     UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);
 
     public Center findCenterByCenterCode(@Param("centerCode") String centerCode);
+
+    User findByUserCode(String userCode);
+
+
+    void updatePassword(String userCode, String hashedPassword);
 }

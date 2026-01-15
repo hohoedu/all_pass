@@ -187,9 +187,8 @@ public class StudentController {
         log.info("studentInOutDTO = {}", studentInOutDTO);
 
         studentService.transferStudent(studentInOutDTO, user.getUserCode());
-//        studentService.insertTransferHistory(studentInOutDTO);
 
-        return ResponseEntity.ok(ApiUtils.success("okay"));
+        return ResponseEntity.ok(ApiUtils.success("success"));
     }
 
     @PostMapping("/app_token")

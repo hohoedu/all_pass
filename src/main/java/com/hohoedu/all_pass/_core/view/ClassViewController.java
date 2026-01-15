@@ -164,33 +164,50 @@ public class ClassViewController {
         memberStats.put("oneToThreeWeeks", oneToThreeWeeks);
         memberStats.put("oneToThreeWeekNames", oneToThreeWeekNames);
         memberStats.put("total", total);
+        model.addAttribute("selectedUserCode", user.getUserCode());
         model.addAttribute("memberStats", memberStats);
 
         return "class/timeview";
     }
 
     @GetMapping("/print-timeview")
-    public String getPrintTimeView(Model model, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-//        List<User> users = userService.findByCenterNo(user.getCenterCode());
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model) {
+        String yy = ym.substring(0, 4);
+        String mm = ym.substring(4, 6);
+        String centerCode = userCode.substring(0, 6);
+        // 센터 선생님 목록
+        List<User> users = userService.findByCenterCode(centerCode);
 
-        model.addAttribute("users", users);
-        model.addAttribute("days", DAYS);
+        // 선택된 선생님
+        User selectedUser = users.stream()
+                .filter(u -> userCode.equals(u.getUserCode()))
+                .findFirst()
+                .orElse(null);
 
-        List<TimeTableDTO> tables = classService.findTableViewWithStudents("2026", "01", user.getUserCode());
+        // 시간표 조회
+        List<TimeTableDTO> tables =
+                classService.findTableViewWithStudents(yy, mm, userCode);
 
-        Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
-                .collect(Collectors.groupingBy(
-                        TimeTableDTO::getDayname,
-                        Collectors.toMap(
-                                TimeTableDTO::getPeriodNo,
-                                Function.identity())));
+        Map<String, Map<String, TimeTableDTO>> tableMap =
+                tables.stream()
+                        .collect(Collectors.groupingBy(
+                                TimeTableDTO::getDayname,
+                                Collectors.toMap(
+                                        TimeTableDTO::getPeriodNo,
+                                        Function.identity()
+                                )
+                        ));
+
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
+
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+        model.addAttribute("users", users);
+        model.addAttribute("selectedUserCode", userCode);
+        model.addAttribute("selectedUser", selectedUser);
+        model.addAttribute("days", DAYS);
         model.addAttribute("tableMap", tableMap);
+
         return "print/print-timeview";
     }
 

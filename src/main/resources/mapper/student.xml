@@ -122,6 +122,7 @@
                            ON ta.assign_book_class = bf.class_key AND s.center_code = bf.center_code
         WHERE ta.student_id = #{studentId}
     </select>
+
     <!-- 메인화면 선생님별 학생 조회 -->
     <select id="selectStudentByUserCode"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
@@ -187,7 +188,7 @@
             )
         </if>
 
-        ORDER BY s.id
+        ORDER BY sc.status_name, s.student_name
     </select>
 
     <!-- 메인화면 수업별 학생 조회 -->
@@ -250,7 +251,7 @@
                 t.time_table_key = #{timeTableKey}
             </where>
         </if>
-        ORDER BY s.id
+        ORDER BY s.status, s.student_name
     </select>
 
     <!-- 학생 상태 기록 -->
@@ -466,6 +467,12 @@
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
         WHERE s.center_code = #{centerCode}
+          AND (#{userCode} = 'all'
+            OR ta.assign_han_teacher = #{userCode}
+            OR ta.assign_book_teacher = #{userCode}
+            )
+        order by s.student_name asc;
+
     </select>
 
     <select id="findInOutByStudentId" parameterType="int"

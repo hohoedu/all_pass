@@ -146,7 +146,7 @@ function renderStudents(tbody, students = []) {
             : `<div class="tooltip-container">
                  <img src="/image/no_app.png" alt="앱 연결" class="app-icon" 
                  style="width: 25px; height: 25px;">
-                 <div class="tooltip-text">앱 미사용</div>
+                 <div class="tooltip-text">${s.appId}</div>
                </div>`;
 
         tr.innerHTML = `
@@ -855,11 +855,8 @@ document.addEventListener('DOMContentLoaded', function () {
         hanCalendarBtn.addEventListener('click', function () {
             const dateInput = document.getElementById('han-inactive-date');
             if (dateInput) {
-                if (typeof dateInput.showPicker === 'function') {
-                    dateInput.showPicker();
-                } else {
-                    dateInput.click();
-                }
+                dateInput.focus();
+                dateInput.click();
             }
         });
     }
@@ -870,11 +867,8 @@ document.addEventListener('DOMContentLoaded', function () {
         bookCalendarBtn.addEventListener('click', function () {
             const dateInput = document.getElementById('book-inactive-date');
             if (dateInput) {
-                if (typeof dateInput.showPicker === 'function') {
-                    dateInput.showPicker();
-                } else {
-                    dateInput.click();
-                }
+                dateInput.focus();
+                dateInput.click();
             }
         });
     }
@@ -930,8 +924,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 inactiveInput.classList.add('hide-input');
             }
         }
-
-        console.log(`[${type}] 상태 변경 →`, status);
     });
 
     // 수강상태 저장 버튼
@@ -1030,7 +1022,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             }
-
             const requestBody = {
                 studentId: currentStudentId,
                 hanState: currentHanState === 'active' ? 1 : 0,
@@ -1044,6 +1035,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 inactiveHanReason: hanInactiveReason,
                 inactiveBookReason: bookInactiveReason
             };
+
+            if (currentHanState === 'inactive' && currentBookState === 'inactive') {
+                console.log('모달 호출 전');
+
+                const shouldChangeStudentStatus = await showStudentStatusModal();
+
+                console.log('모달 결과:', shouldChangeStudentStatus); // 이게 출력되는지 확인!
+
+                if (!shouldChangeStudentStatus) {
+                    console.log('취소됨 - 리턴');
+                    return;
+                }
+
+                console.log('확인됨 - 계속 진행');
+                requestBody.changeStudentStatus = true;
+            }
+
+            console.log('fetch 요청 전', requestBody); // 이게 출력되는지 확인!
+
+
+
 
             try {
                 const res = await fetch('/student/update/course-status', {
@@ -1089,12 +1101,86 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function showStudentStatusModal() {
+        return new Promise((resolve) => {
+            const modalId = 'status-change-modal-' + Date.now(); // 고유 ID
+
+            const modal = `
+            <div class="modal-overlay" id="${modalId}" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    max-width: 400px;
+                    text-align: center;
+                ">
+                    <h3 style="margin-bottom: 15px;">학생 상태 변경</h3>
+                    <p style="margin-bottom: 20px; line-height: 1.6;">
+                        한자와 독서 모두 미수강으로 변경됩니다.<br>
+                        학생 상태도 함께 변경하시겠습니까?
+                    </p>
+                    <button class="confirm-btn" style="
+                        padding: 10px 20px;
+                        margin: 0 5px;
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">확인</button>
+                    <button class="cancel-btn" style="
+                        padding: 10px 20px;
+                        margin: 0 5px;
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">취소</button>
+                </div>
+            </div>
+        `;
+
+            document.body.insertAdjacentHTML('beforeend', modal);
+
+            const modalElement = document.getElementById(modalId);
+            console.log('모달 생성됨:', modalElement);
+
+            // 이벤트 위임 방식으로 변경
+            modalElement.addEventListener('click', (e) => {
+                console.log('클릭됨:', e.target);
+
+                if (e.target.classList.contains('confirm-btn')) {
+                    console.log('확인 버튼 클릭');
+                    modalElement.remove();
+                    resolve(true);
+                } else if (e.target.classList.contains('cancel-btn')) {
+                    console.log('취소 버튼 클릭');
+                    modalElement.remove();
+                    resolve(false);
+                }
+            });
+        });
+    }
+
     // renderStudentModal이 호출될 때 초기 상태 저장
-    window.saveInitialCourseState = function(hanState, bookState) {
+    window.saveInitialCourseState = function (hanState, bookState) {
         // 0 또는 1을 'active' 또는 'inactive'로 변환
         initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
         initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
-        console.log('초기 수강 상태 저장:', { initialHanState, initialBookState });
+        console.log('초기 수강 상태 저장:', {initialHanState, initialBookState});
     };
 });
 

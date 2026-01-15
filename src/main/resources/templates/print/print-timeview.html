@@ -12,29 +12,32 @@
     <script th:src="@{/js/custom.js}"></script>
     <title>시간표 조회</title>
 </head>
-<body>
+<body style="height: 297mm">
 <div class="a4-print">
     <div class="month-header month-today">
         <div class="month-title">
+            <div class="empty-area" style="width: 200px"></div>
             <span class="current-month" id="currentMonth"></span>
             <div style="position: relative;">
                 <div class="calendar-wrapper">
-                    <input type="month" id="monthPickerInput" style="position:absolute; opacity:0; width:0; height:0;">
-                    <button type="button" class="icon-btn calendar-open" id="openMonthPicker">
-                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                    </button>
+                    <span class="current-month"
+                          th:text="${yy + '년 ' + mm + '월'}"></span>
                 </div>
             </div>
         </div>
-        <div class="basic-select">
-            <select name="teacher" id="teacher-select" style="width: 200px;">
-                <option value="all">전체</option>
-                <th:block th:each="u : ${users}">
-                    <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}">
-                    </option>
-                </th:block>
-            </select>
-        </div>
+        <span>
+        담당 선생님 : <span th:text="${selectedUser.userName}"></span>
+        </span>
+
+        <!--        <div class="basic-select">-->
+        <!--            <select name="teacher" id="teacher-select" style="width: 200px;">-->
+        <!--                <th:block th:each="u : ${users}">-->
+        <!--                    <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"-->
+        <!--                            th:selected="${u.userCode == selectedUserCode}">-->
+        <!--                    </option>-->
+        <!--                </th:block>-->
+        <!--            </select>-->
+        <!--        </div>-->
     </div>
     <!-- table -->
     <table class="timetable-lookup-table">
@@ -45,7 +48,6 @@
         </tr>
         </thead>
         <tbody>
-        <!-- 1교시 -->
         <tr th:each="periodNo : ${#numbers.sequence(1,6)}">
             <td th:text="${periodNo}">1</td>
             <td th:each="day : ${days}" th:with="dayMap=${tableMap[day.id]}" style="height: 150px;">
@@ -64,184 +66,9 @@
                 </div>
             </td>
         </tr>
-        <!-- 2교시 -->
-<!--        <tr>-->
-<!--            <td>2</td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box pink">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>초등박사 3호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box blue">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>새봄 1호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--        </tr>-->
-        <!-- 3교시 -->
-<!--        <tr>-->
-<!--            <td>3</td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box blue">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>새봄 1호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box pink">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>한스쿨 2호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div><span class="dot red"></span>송하윤</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div><span class="dot orange"></span>김희수</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--        </tr>-->
-        <!-- 4교시 -->
-<!--        <tr>-->
-<!--            <td>4</td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box blue">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>새봄 1호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--        </tr>-->
-<!--        &lt;!&ndash; 5교시 &ndash;&gt;-->
-<!--        <tr>-->
-<!--            <td>5</td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box blue">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>새봄 1호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div><p class="blue-count">이지현<span>(3)</span></p></div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box pink">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>초등박사 3호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--        </tr>-->
-<!--        &lt;!&ndash; 6교시 &ndash;&gt;-->
-<!--        <tr>-->
-<!--            <td>6</td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box blue">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>새봄 1호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--            <td></td>-->
-<!--            <td>-->
-<!--                <div class="timetable-lookup-box pink">-->
-<!--                    <div class="header">14:00 ~ 14:50<br><strong>초등박사 3호</strong></div>-->
-<!--                    <div class="inner-grid">-->
-<!--                        <div>이도현</div>-->
-<!--                        <div>박지환</div>-->
-<!--                        <div>정서윤</div>-->
-<!--                        <div>이도혁</div>-->
-<!--                        <div>이지현</div>-->
-<!--                        <div>이재준</div>-->
-<!--                        <div>양찬희</div>-->
-<!--                        <div></div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </td>-->
-<!--            <td></td>-->
-<!--        </tr>-->
         </tbody>
     </table>
 </div>
 </body>
+
 </html>

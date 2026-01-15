@@ -313,21 +313,37 @@
                              MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END))        AS totalMaterialFee,
 
                             -- 교육비 미납금액
-                            (MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END)) -
-                            (CASE
-                                 WHEN pm.total_amount IS NOT NULL
-                                     THEN pm.total_amount
-                                 ELSE ISNULL(
-                                         MAX(CASE
-                                                 WHEN pb.bill_type = 'EDU_FEE'
-                                                     AND pb.status = 'approved'
-                                                     THEN pb.amount
-                                             END),
-                                         0
-                                      )
-                                END)
-                                                                                                                              AS unpaidEduAmount,
+                            CASE
+                                WHEN (
+                                         (MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount ELSE 0 END) +
+                                          MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount ELSE 0 END))
+                                             -
+                                         (
+                                             ISNULL(pm.total_amount, 0)
+                                                 +
+                                             ISNULL((SELECT SUM(pb2.amount)
+                                                     FROM erp_payment_bill pb2
+                                                     WHERE pb2.payment_key = p.payment_key
+                                                       AND pb2.bill_type = 'EDU_FEE'
+                                                       AND pb2.status = 'approved'), 0)
+                                             )
+                                         ) &lt; 0
+                                    THEN 0
+                                ELSE (
+                                    (MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount ELSE 0 END) +
+                                     MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount ELSE 0 END))
+                                        -
+                                    (
+                                        ISNULL(pm.total_amount, 0)
+                                            +
+                                        ISNULL((SELECT SUM(pb2.amount)
+                                                FROM erp_payment_bill pb2
+                                                WHERE pb2.payment_key = p.payment_key
+                                                  AND pb2.bill_type = 'EDU_FEE'
+                                                  AND pb2.status = 'approved'), 0)
+                                        )
+                                    )
+                                END                                                                                           AS unpaidEduAmount,
 
                             -- 교재비 미납금액
                             (MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
@@ -479,6 +495,20 @@
         SELECT *
         from erp_payment
         where payment_key = #{paymentKey}
+    </select>
+
+    <!-- 전화번호 기준 기존 청구서 개수 조회 (형제 중복 청구 방지) -->
+    <select id="countExistingBillsByStudent" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_payment_bill
+        WHERE payment_key = #{paymentKey}
+        AND yy = #{yy}
+        AND mm = #{mm}
+        AND bill_type = #{billType}
+        AND status IN
+        <foreach collection="validStatuses" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
     </select>
 
     <insert id="createPaymentBill">
@@ -683,7 +713,7 @@
         WHERE p.center_code = #{centerCode}
           AND p.yy = #{yy}
           AND p.mm = #{mm}
-          AND p.status NOT IN ('approved')
+          AND p.status IN ('issued')
         GROUP BY s.student_id, s.student_name, p.payment_key, g.grade_name, hu.user_name, bu.user_name
         HAVING SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) > 0;
     </select>
@@ -723,7 +753,7 @@
                pm.created_at                                        as createdAt
         FROM erp_payment_manual pm
                  JOIN erp_student s on pm.student_id = s.student_id
-                 JOIN erp_card_code card on pm.card_name = card.card_code
+                 LEFT JOIN erp_card_code card on pm.card_name = card.card_code
         WHERE pm.student_id = #{studentId}
         ORDER BY createdAt DESC;
     </select>

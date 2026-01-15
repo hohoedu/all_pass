@@ -106,6 +106,13 @@ public interface PaymentRepository {
 
     Payment findPaymentByKey(String paymentKey);
 
+    int countExistingBillsByStudent(
+            @Param("paymentKey") String paymentKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("billType") String billType,
+            @Param("validStatuses") List<String> validStatuses
+    );
     void createPaymentBill(PaymentBill paymentBill);
 
     void updatePaymentStatusOnIssue(@Param("paymentKey") String paymentKey);

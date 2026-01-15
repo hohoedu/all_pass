@@ -163,11 +163,18 @@ public class StudentService {
         return relationCodes;
     }
 
-    public List<StudentInOutDTO> findAllInOut(String centerCode) {
+    public List<StudentInOutDTO> findAllInOut(String centerCode, String userCode) {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
-        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, yy, mm);
+        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, userCode, yy, mm);
         return students;
+    }
+
+    public List<StudentInOutDTO> findStudentByUserCode(String userCode) {
+        String yy = dateConfig.currentYearMonth().get("currentYear");
+        String mm = dateConfig.currentYearMonth().get("currentMonth");
+
+        return null;
     }
 
     public List<User> findTeacher(String centerCode) {
@@ -405,6 +412,16 @@ public class StudentService {
         String yy = parts[0];
         String mm = parts[1];
 
+        for (String studentId : reqDto.getStudents()) {
+            StudentWebRespDTO.TeacherDTO student = studentRepository.findTeacherAssignByStudentId(studentId);
+            if (student.getAssignHanTeacher().equals(reqDto.getUserCode())) {
+                throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+            }
+            if (student.getAssignBookTeacher().equals(reqDto.getUserCode())) {
+                throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+            }
+        }
+
         // 한자 과목 선택
         if (reqDto.getSelectedHan() != null) {
             for (String studentId : reqDto.getStudents()) {
@@ -418,7 +435,6 @@ public class StudentService {
                 studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
 
                 // 시간표 삭제
-                // 시간표 등록 전에 할 수도 있잖아?
                 StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
 
                 if (dto != null) {

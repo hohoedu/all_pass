@@ -90,11 +90,13 @@ public class StudentViewController {
             return "redirect:/login";
         }
 
-        List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode());
-        List<User> teachers = studentService.findTeacher(user.getCenterCode());
-        List<TimeTableLabelDTO> labels = classService.getAllClassLabel("all");
+        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
 
-        model.addAttribute("labels", labels);
+        List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), userCode);
+//        List<StudentInOutDTO> students = studentService.findStudentByUserCode(userCode);
+        List<User> teachers = studentService.findTeacher(user.getCenterCode());
+//        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);
+//        model.addAttribute("labels", labels);
         model.addAttribute("students", students);
         model.addAttribute("teachers", teachers);
         return "student/student-inout";

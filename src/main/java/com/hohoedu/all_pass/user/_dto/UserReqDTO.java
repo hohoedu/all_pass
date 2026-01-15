@@ -10,4 +10,10 @@ public class UserReqDTO {
         private String userId;
         private String userPassword;
     }
+
+    @Data
+    public static class PasswordChangeRequest {
+        private String userCode;
+        private String newPassword;
+    }
 }

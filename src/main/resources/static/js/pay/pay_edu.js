@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!sortedList || sortedList.length === 0) {
             tbody.innerHTML = `
         <tr>
-            <td colspan="9" style="text-align:center;">
+            <td colspan="10" style="text-align:center;">
                 등록된 학생 데이터가 없습니다.
             </td>
         </tr>`;
@@ -179,17 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const fee = currentFeeView === 'edu' ? s.totalFee : s.totalMaterialFee;
             const unpaid = currentFeeView === 'edu' ? s.unpaidEduAmount : s.unpaidBookAmount;
             const payState = currentFeeView === 'edu' ? s.eduStatus : s.materialStatus;
-
+            const lastPhone4 = s.parentPhone
+                ? s.parentPhone.replace(/[^0-9]/g, '').slice(-4)
+                : '';
             const tr = document.createElement('tr');
 
             tr.dataset.studentId = s.studentId;
             tr.dataset.studentName = s.studentName;
             tr.dataset.paymentKey = s.paymentKey;
-            tr.dataset.eduBillId = s.eduBillId;
-            tr.dataset.materialBillId = s.materialBillId;
             tr.dataset.eduStatus = s.eduStatus;
             tr.dataset.materialStatus = s.materialStatus;
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
+            tr.dataset.lastPhone4 = lastPhone4;
 
             tr.innerHTML = `
             <td class="checkbox-group">
@@ -338,18 +339,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const doSearch = () => {
             const keyword = searchInput.value.trim();
+            const searchType = document.getElementById('stu-name').value;
 
             tbody.querySelectorAll('tr').forEach(tr => {
-                const name = tr.dataset.studentName || '';
-                tr.style.display =
-                    !keyword || name.includes(keyword) ? '' : 'none';
+                let targetValue = '';
+
+                if (searchType === 'name') {
+                    targetValue = tr.dataset.studentName || '';
+                } else if (searchType === 'phone') {
+                    targetValue = tr.dataset.lastPhone4 || '';
+                }
+
+                const matched =
+                    !keyword || targetValue.includes(keyword);
+
+                tr.style.display = matched ? '' : 'none';
             });
         };
-
+        document.getElementById('stu-name').addEventListener('change', () => {
+            searchInput.value = '';
+        });
         searchBtn.addEventListener('click', doSearch);
 
         searchInput.addEventListener('keydown', e => {
-
             if (e.isComposing) return;
 
             if (e.key === 'Enter') {
@@ -358,7 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
 
     /* ===============================
         URL 월 초기화

@@ -171,7 +171,7 @@ public class ClassController {
         String timeTableKey = request.get("timeTableKey");
         String studentId = request.get("studentId");
         classService.deleteStudent(timeTableKey, studentId);
-        return ResponseEntity.ok(ApiUtils.success(true));
+        return ResponseEntity.ok(ApiUtils.success("삭제되었습니다. 교재 주문 수량을 수정해주세요."));
     }
 
     @PostMapping("/api/load_time_table")
