@@ -77,7 +77,8 @@
                                     <td>
                                         <div class="image-row">
                                             <div class="left-wrapper">
-                                                <input type="file" id="imageInput" accept="image/*" style="display: none"/>
+                                                <input type="file" id="imageInput" accept="image/*"
+                                                       style="display: none"/>
                                                 <div class="image-name" id="imageNameWrapper" style="display: none;">
                                                     <span id="fileName">image.png</span>
                                                     <button class="retract-btn" id="removeImage">
@@ -138,93 +139,43 @@
                                         <thead>
                                         <tr>
                                             <th class="checkbox-group">
-                                                <input type="checkbox">
+                                                <input type="checkbox" id="selectAll">
                                             </th>
-                                            <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강 과목</th>
-                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                            <th class="sortable" data-column="name">
+                                                <img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름
+                                            </th>
+                                            <th class="sortable" data-column="subject">
+                                                <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강 과목
+                                            </th>
+                                            <th class="sortable" data-column="grade">
+                                                <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년
+                                            </th>
+                                            <th>앱 알림</th>
                                         </tr>
                                         </thead>
                                         <tbody id="student-tbody" class="stripe">
-                                        <tr>
+                                        <tr th:each="student : ${studentList}">
                                             <td class="checkbox-group">
-                                                <input type="checkbox">
+                                                <input type="checkbox"
+                                                       th:value="${student.studentId}"
+                                                       th:attr="data-token=${student.appToken}"
+                                                       th:disabled="${student.appToken == null}">
                                             </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
+                                            <td th:text="${student.studentName}"></td>
+                                            <td th:text="${student.subject}"></td>
+                                            <td th:text="${student.grade}"></td>
+                                            <td>
+                                                <img th:if="${student.appToken != null}"
+                                                     th:src="@{/image/in_app.png}"
+                                                     style="width: 20px;">
+                                                <img th:if="${student.appToken == null}"
+                                                     th:src="@{/image/no_app.png}"
+                                                     style="width: 20px;">
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group">
-                                                <input type="checkbox">
-                                            </td>
-                                            <td>김호일</td>
-                                            <td>초등수재, 새움</td>
-                                            <td>초1</td>
+
+                                        <tr th:if="${#lists.isEmpty(studentList)}">
+                                            <td colspan="5" style="text-align: center;">조회된 학생이 없습니다.</td>
                                         </tr>
                                         </tbody>
                                     </table>

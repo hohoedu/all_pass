@@ -2,6 +2,8 @@ package com.hohoedu.all_pass.notice._dto.web;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class NoticeReqDTO {
 
@@ -17,6 +19,7 @@ public class NoticeReqDTO {
         private Integer viewCount;
         private String userCode;
         private String centerCode;
+        private List<String> tokens;
     }
 
 }

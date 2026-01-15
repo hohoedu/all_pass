@@ -139,13 +139,10 @@ public class ClassViewController {
                         }
                 ));
 
-// 고유 학생 목록
         List<TimeTableDTO.StudentDTO> displayedStudents = new ArrayList<>(uniqueStudents.values());
 
-// 총원 계산
         long total = displayedStudents.size();
 
-// 1–3주 학생 필터링
         List<TimeTableDTO.StudentDTO> oneToThreeWeekStudents = displayedStudents.stream()
                 .filter(s -> s.getWeek() != null && s.getWeek().matches("\\d+"))
                 .filter(s -> {

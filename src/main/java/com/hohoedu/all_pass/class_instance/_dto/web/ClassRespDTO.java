@@ -81,6 +81,9 @@ public class ClassRespDTO {
             private String studentId;
             private String studentName;
             private String week;
+            private String status;
+            private String transferType;
+            private String transferDate;
         }
     }
 

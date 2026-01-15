@@ -51,4 +51,13 @@ public class NoticeRespDTO {
             return html.replaceAll("<[^>]*>", " ");
         }
     }
+
+    @Data
+    public static class NoticeStudentDTO {
+        private String studentId;
+        private String studentName;
+        private String appToken;
+        private String subject;
+        private String grade;
+    }
 }

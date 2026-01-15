@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass.class_instance;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -380,6 +382,17 @@ public class ClassService {
         // student_class 생성
         ClassRespDTO.ClassInfoDTO classInfo = findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), centerCode);
 
+        Integer baseFee = classInfo.getClassFee();
+        if (baseFee == null) {
+            throw new IllegalArgumentException("classFee가 null 입니다.");
+        }
+        int weekNo = Integer.parseInt(dto.getWeekNo());
+        BigDecimal result = BigDecimal.valueOf(baseFee)
+                .multiply(BigDecimal.valueOf(weekNo))
+                .divide(BigDecimal.valueOf(4), 0, RoundingMode.DOWN);
+
+        classInfo.setClassFee(result.intValue());
+
         if (!classInfo.getClassKey().equals("HL")) {
             // 결제 + 상세
             String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), centerCode, userCode);
@@ -435,7 +448,7 @@ public class ClassService {
                 ClassReqDTO.AddStudentDTO addDto = new ClassReqDTO.AddStudentDTO();
                 addDto.setTimeTableKey(newTimeTableKey);
                 addDto.setStudentId(stu.getStudentId());
-                addDto.setWeekNo(stu.getWeek());
+                addDto.setWeekNo("4");
                 addDto.setYy(year);
                 addDto.setMm(month);
 
@@ -632,11 +645,6 @@ public class ClassService {
 
         return new ClassRespDTO.RecordBundleDTO(students, afterClassList);
     }
-
-//        ClassRespDTO.RecordBundleDTO response = new ClassRespDTO.RecordBundleDTO(students, afterClassContent);
-//
-//        return response;
-//    }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
 

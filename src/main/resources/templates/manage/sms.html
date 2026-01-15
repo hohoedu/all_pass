@@ -55,31 +55,33 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="app-style app-con1" th:each="notice, iterStat : ${noticeList}"
-                             th:attr="data-id=${notice.id}, data-key=${notice.centerNoticeKey}">
-                            <div class="acon-divide" onclick="loadNoticeDetail(this)">
-                                <div class="acon-left">
-                                    <div class="acon-inner">
-                                        <h2 class="acon-title" th:text="${notice.title}">공지 제목</h2>
-                                        <span class="acon-sub" th:text="${notice.subTitle}">공지 부제목</span>
-                                        <p class="acon-info" th:utext="${notice.cleanContent}">
-                                            공지 내용
-                                        </p>
-                                        <div class="acon-desc">
-                                            <span class="acon-teacher" th:text="${notice.userName + ' 선생님'}">작성자</span>
-                                            <span class="clock-day"
-                                                  th:text="${#dates.format(notice.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
-                                            <span class="view-eyes" th:text="${notice.viewCount}">0</span>
+                        <div style="margin-top: 20px; height: 83vh; overflow-y: auto">
+                            <div class="app-style app-con1" th:each="notice, iterStat : ${noticeList}"
+                                 th:attr="data-id=${notice.id}, data-key=${notice.centerNoticeKey}">
+                                <div class="acon-divide" onclick="loadNoticeDetail(this)">
+                                    <div class="acon-left">
+                                        <div class="acon-inner">
+                                            <h2 class="acon-title" th:text="${notice.title}">공지 제목</h2>
+                                            <span class="acon-sub" th:text="${notice.subTitle}">공지 부제목</span>
+                                            <p class="acon-info" th:utext="${notice.cleanContent}">
+                                                공지 내용
+                                            </p>
+                                            <div class="acon-desc">
+                                                <span class="acon-teacher"
+                                                      th:text="${notice.userName + ' 선생님'}">작성자</span>
+                                                <span class="clock-day"
+                                                      th:text="${#dates.format(notice.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
+                                                <span class="view-eyes" th:text="${notice.viewCount}">0</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="acon-right">
-                                    <img th:src="@{|/image/notice0${notice.icon}.png|}"
-                                         alt="공지 썸네일">
+                                    <div class="acon-right">
+                                        <img th:src="@{|/image/notice0${notice.icon}.png|}"
+                                             alt="공지 썸네일">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </section>
                 <!-- gray line -->

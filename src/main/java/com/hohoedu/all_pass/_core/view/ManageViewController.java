@@ -106,8 +106,11 @@ public class ManageViewController {
 
 
         List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeService.findCenterNoticeByCenterCode(user);
+        List<NoticeRespDTO.NoticeStudentDTO> studentList = noticeService.findStudentByUserCode(user);
+
 
         model.addAttribute("noticeList", noticeList);
+        model.addAttribute("studentList", studentList);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -116,7 +119,6 @@ public class ManageViewController {
             model.addAttribute("firstNotice", noticeList.get(0));
         }
 
-        System.out.println(mapper.writeValueAsString(noticeList));
         return "manage/sms";
     }
 

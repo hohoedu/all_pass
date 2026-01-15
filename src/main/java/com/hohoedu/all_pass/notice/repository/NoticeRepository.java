@@ -23,4 +23,6 @@ public interface NoticeRepository {
             @Param("count") Integer count);
 
     NoticeAppRespDTO.NoticeDetailRespDTO findAppNoticeDetail(@Param("id") Integer id);
+
+    List<NoticeRespDTO.NoticeStudentDTO> findStudentByUserCode(String userCode, String centerCode);
 }
