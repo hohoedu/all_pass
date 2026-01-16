@@ -186,6 +186,7 @@ public class ClassRespDTO {
         private String inTime;
         private String outTime;
         private String attendanceName;
+        private String attendanceKey;
         private String absenceDate;
         private String remedialDate;
         private String centerCode;

@@ -118,4 +118,18 @@ public class StudentWebReqDTO {
         private String transferReason;
 
     }
+
+    @Data
+    public static class StudentAttendanceUpdateDTO {
+
+        private String attendanceKey;
+        private String studentId;
+        private String timeTableKey;
+        private String week;
+        private String centerCode;
+        private String attendanceName;
+        private String inTime;
+        private String outTime;
+
+    }
 }

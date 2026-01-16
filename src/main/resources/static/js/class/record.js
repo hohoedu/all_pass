@@ -317,7 +317,20 @@ function renderRecordClassList(list) {
     }
 }
 
-// 학생리스트 랜더링 (afterClassList를 배열로 처리)
+document.addEventListener('DOMContentLoaded', () => {
+
+    document.body.addEventListener('input', e => {
+        if (!e.target.matches('.time_input')) return;
+
+        const input = e.target;
+        let v = input.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) {
+            v = v.slice(0, 2) + ':' + v.slice(2, 4);
+        }
+        input.value = v;
+    });
+});
+
 function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_tbody') {
     const tbody = typeof tbodySel === 'string' ? document.querySelector(tbodySel) : tbodySel;
     if (!tbody) {
@@ -338,6 +351,8 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
         tr.dataset.appToken = s.appToken ?? '';
         tr.dataset.centerCode = s.centerCode ?? '';
         tr.dataset.afterClassKey = afterClass.afterClassKey ?? '';
+        tr.dataset.attendanceKey = s.attendanceKey ?? '';
+
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
@@ -357,40 +372,71 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
             default:
                 statusClass = 'absent';
         }
-        // 출석
+
+// 출석 - 드롭다운과 변경 버튼 추가
         tr.innerHTML += `
-            <td>
-                <span class="status-badge ${statusClass} stbox">${attendance}</span>
-                <div class="time in stbox">
+    <td>
+        <div>
+            <!-- 출석 상태 드롭다운 -->
+            <select class="status-badge ${statusClass} stbox" 
+                    data-student-id="${s.studentId}" 
+                     data-attendance-key="${statusClass ?? ''}"
+                    data-original="${attendance}"
+                    style="width: 100%; text-align: center; cursor: pointer;">
+                <option value="present" ${attendance === '출석 완료' ? 'selected' : ''}>출석 완료</option>
+                <option value="late" ${attendance === '지각' ? 'selected' : ''}>지각</option>
+                <option value="absent" ${attendance === '결석' ? 'selected' : ''}>결석</option>
+                <option value="before" ${attendance === '수업 전' ? 'selected' : ''}>수업 전</option>
+            </select>
+
+            <div class="time-boxes">
+                <div class="time-start">
                     등원
-                    <span class="time-set">
-                        <span class="display-time">${s.inTime ?? '--:--'}</span>
-                        <input type="time" class="timepicker" value="${s.inTime ?? ''}">
-                    </span>
+                    <input type="text" 
+                           class="time_input start-time"
+                           value="${s.inTime ?? ''}"
+                           data-original="${s.inTime ?? ''}"
+                           placeholder="00:00"
+                           inputmode="numeric" 
+                           maxlength="5"/>
                 </div>
-                <div class="time out stbox">
+                <div class="time-end">
                     하원
-                    <span class="time-set">
-                        <span class="display-time">${s.outTime ?? '--:--'}</span>
-                        <input type="time" class="timepicker" value="${s.outTime ?? ''}">
-                    </span>
+                    <input type="text" 
+                           class="time_input end-time"
+                           value="${s.outTime ?? ''}"
+                           data-original="${s.outTime ?? ''}"
+                           placeholder="00:00"
+                           inputmode="numeric" 
+                           maxlength="5"/>
                 </div>
-            </td>`;
+            </div>
+            
+            <!-- 변경 버튼 -->
+            <button type="button" 
+                    class="btn-update-attendance stbox"
+                    data-student-id="${s.studentId}"
+                    data-attendance-key="${s.attendanceKey ?? ''}"
+                    style="width: 100%; margin-top: 8px; padding: 6px; background: #c8c8c8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                변경
+            </button>
+        </div>
+    </td>`;
 
         // 보강일자
         tr.innerHTML += `
           <td>
-            ${!s.remedialDate || s.remedialDate === '9999-12-31'
+            ${!s.remedialDate
             ? '--'
             : `<div class="icon-field time-input cal-adjust" style="margin-bottom: 0; text-align:center;">
-                   <span class="selected-datetime">${s.remedialDate}</span>
-                   <input type="date" class="datetime-input hidden-picker" value="${s.remedialDate}">
+                   <span class="selected-datetime">${s.remedialDate === '9999-12-31' ? '날짜를 선택하세요' : s.remedialDate}</span>
+                   <input type="date" class="datetime-input hidden-picker" value="${s.remedialDate === '9999-12-31' ? '' : s.remedialDate}">
                    <button type="button" class="icon-btn calendar-btn" style="background:transparent;">
                      <img src="/image/calendar.png" alt="달력 아이콘">
                    </button>
                  </div>`
         }
-          </td>`;
+          </td>`;                                                                 
 
         // 특이사항
         tr.innerHTML += `
@@ -482,8 +528,180 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
     updateSelectAllCheckbox();
 }
 
-// 학생리스트 랜더링
+// 출석 변경
+async function updateAttendance(button) {
+    const studentId = button.getAttribute('data-student-id');
+    const attendanceKey = button.getAttribute('data-attendance-key');
+    const row = button.closest('tr');
 
+    const statusDropdown = row.querySelector('.status-badge'); // select 요소
+    const startTimeInput = row.querySelector('.start-time');
+    const endTimeInput = row.querySelector('.end-time');
+
+    const newStatus = statusDropdown.value;
+    const newStartTime = startTimeInput.value.trim();
+    const newEndTime = endTimeInput.value.trim();
+
+    // 시간 형식 검증
+    const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+    if (newStartTime && !timePattern.test(newStartTime)) {
+        alert('시작 시간 형식이 올바르지 않습니다. (예: 09:00)');
+        startTimeInput.focus();
+        return;
+    }
+
+    if (newEndTime && !timePattern.test(newEndTime)) {
+        alert('종료 시간 형식이 올바르지 않습니다. (예: 18:00)');
+        endTimeInput.focus();
+        return;
+    }
+
+    // 변경 사항 확인
+    const originalStatus = statusDropdown.getAttribute('data-original');
+    const originalStartTime = startTimeInput.getAttribute('data-original') || '';
+    const originalEndTime = endTimeInput.getAttribute('data-original') || '';
+
+    if (newStatus === originalStatus &&
+        newStartTime === originalStartTime &&
+        newEndTime === originalEndTime) {
+        alert('변경된 내용이 없습니다.');
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = '처리중...';
+
+    const data = {
+        attendanceKey: newStatus,
+        studentId: studentId,
+        timeTableKey: state.timeTableKey,
+        week: state.week,
+        centerCode: row.dataset.centerCode,
+        attendanceName: newStatus,
+        inTime: newStartTime || null,
+        outTime: newEndTime || null
+    };
+
+    try {
+        const res = await fetch('/student/update/attendance', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (!res.ok) throw new Error('서버 오류');
+
+        const result = await res.json();
+        console.log('서버 응답:', result);
+
+        alert('출석 정보가 변경되었습니다.');
+
+        // 원본 값 업데이트
+        statusDropdown.setAttribute('data-original', newStatus);
+        startTimeInput.setAttribute('data-original', newStartTime);
+        endTimeInput.setAttribute('data-original', newEndTime);
+
+        // 드롭다운 클래스 업데이트 (색상 변경)
+        statusDropdown.className = 'status-badge stbox';
+        if (newStatus === '출석 완료') {
+            statusDropdown.classList.add('attend');
+        } else if (newStatus === '지각') {
+            statusDropdown.classList.add('late');
+        } else if (newStatus === '수업 전') {
+            statusDropdown.classList.add('before');
+        } else {
+            statusDropdown.classList.add('absent');
+        }
+
+    } catch (error) {
+        console.error('출석 정보 변경 실패:', error);
+        alert('출석 정보 변경에 실패했습니다: ' + error.message);
+    } finally {
+        button.disabled = false;
+        button.textContent = '변경';
+    }
+}
+
+// 변경 버튼 이벤트 위임
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.btn-update-attendance')) {
+        const button = e.target.closest('.btn-update-attendance');
+        updateAttendance(button);
+    }
+});
+
+// 시간 입력 필드 포커스 아웃 시 검증 및 자동 포맷팅
+document.addEventListener('blur', function (e) {
+    if (e.target.matches('.start-time') || e.target.matches('.end-time')) {
+        const value = e.target.value.trim();
+
+        // 빈 값은 허용
+        if (!value) return;
+
+        // 숫자만 입력된 경우 자동 포맷팅
+        if (/^\d{3,4}$/.test(value)) {
+            const digits = value.padStart(4, '0');
+            const hours = digits.substring(0, 2);
+            const minutes = digits.substring(2, 4);
+
+            if (parseInt(hours) <= 23 && parseInt(minutes) <= 59) {
+                e.target.value = `${hours}:${minutes}`;
+                return;
+            }
+        }
+
+        // HH:MM 형식 검증
+        const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+        if (!timePattern.test(value)) {
+            alert('올바른 시간 형식이 아닙니다. (예: 09:00)');
+            e.target.value = e.target.getAttribute('data-original') || '';
+            return;
+        }
+
+        // 자동으로 2자리 포맷팅
+        const parts = value.split(':');
+        if (parts.length === 2) {
+            const hours = parts[0].padStart(2, '0');
+            const minutes = parts[1].padStart(2, '0');
+            e.target.value = `${hours}:${minutes}`;
+        }
+    }
+}, true);
+
+// Enter 키로 변경 버튼 클릭
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.target.matches('.start-time') || e.target.matches('.end-time'))) {
+        const row = e.target.closest('tr');
+        const updateBtn = row.querySelector('.btn-update-attendance');
+        if (updateBtn) {
+            updateBtn.click();
+        }
+    }
+});
+
+// 출석 상태 드롭다운 변경 시 클래스 업데이트
+document.addEventListener('change', function (e) {
+    if (e.target.matches('.status-badge')) {
+        const select = e.target;
+        const value = select.value;
+
+        // 기존 상태 클래스 제거
+        select.classList.remove('attend', 'late', 'before', 'absent');
+
+        // 새 상태 클래스 추가
+        if (value === '출석 완료') {
+            select.classList.add('attend');
+        } else if (value === '지각') {
+            select.classList.add('late');
+        } else if (value === '수업 전') {
+            select.classList.add('before');
+        } else {
+            select.classList.add('absent');
+        }
+    }
+});
 
 // 수업 안내 발송 모달 오픈
 document.addEventListener('click', function (e) {

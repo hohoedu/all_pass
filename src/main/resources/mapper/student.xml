@@ -706,7 +706,8 @@
                c.center_name  as centerName,
                s.grade_key    as gradeKey,
                s.app_id       as appId,
-               s.app_password as appPassword
+               s.app_password as appPassword,
+               s.grade_key    as ihak
         FROM ERP_STUDENT s
                  JOIN erp_center c ON s.center_code = c.center_code
         WHERE s.app_id = #{appId}
@@ -739,7 +740,6 @@
                  inner JOIN erp_class_code cc ON t.class_key = cc.class_key
         WHERE ta.student_id = #{studentId}
           AND t.yy = #{yy}
-          AND t.mm = #{mm}
           AND cc.class_type IN ('1', '2')
         GROUP BY s.grade_key
     </select>
@@ -806,5 +806,30 @@
         SET app_token = #{appToken}
         WHERE student_id = #{studentId}
     </update>
+
+    <update id="updateAttendance" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StudentAttendanceUpdateDTO">
+        UPDATE erp_student_attendance
+        SET
+        attendance_key = #{attendanceKey},
+        in_time = #{inTime},
+        out_time = #{outTime}
+        <if test="inTime != null and inTime != ''">
+            , check_in_updated_at = SYSDATETIME()
+        </if>
+        <if test="outTime != null and outTime != ''">
+            , check_out_updated_at = SYSDATETIME()
+        </if>
+        WHERE student_id = #{studentId}
+        AND time_table_key = #{timeTableKey}
+        AND week = #{week}
+    </update>
+
+    <select id="findAttendanceKey" resultType="string">
+        SELECT attendance_key
+        FROM erp_student_attendance
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND week = #{week}
+    </select>
 
 </mapper>

@@ -55,7 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then((data) => {
                     if (data.success) {
                         console.log(data.response);
-                        renderTables(data.response);
+                        // renderTables(data.response);
+                        window.location.reload();
                     } else {
                         alert("저장 실패");
                         e.target.checked = !action;

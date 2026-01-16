@@ -244,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-            console.log(data.response);
             renderReorderRows(data.response);
 
         } catch (e) {
@@ -352,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = {
             yy: Number(yy), mm: mm, reorderType: orderType, items: extras
         };
-        alert(JSON.stringify(body));
         try {
             const res = await fetch("/manage/reorder/save", {
                 method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)

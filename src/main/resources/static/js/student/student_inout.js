@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
+            console.log(JSON.stringify(requestBody));
             const response = await fetch("/student/inout", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -118,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const result = await response.json();
-
+            console.log(result);
             if (!response.ok || result.success === false) {
                 throw new Error(result.msg || "처리 중 오류가 발생했습니다.");
             }

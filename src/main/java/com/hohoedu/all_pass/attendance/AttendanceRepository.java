@@ -6,6 +6,7 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.hohoedu.all_pass.class_instance.TimeTable;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.data.repository.query.Param;
 
 @Mapper
@@ -35,4 +36,18 @@ public interface AttendanceRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("absenceDate") String absenceDate,
             @Param("week") String week);
+
+    @Update("EXEC sp_set_session_context @key = #{key}, @value = #{value}")
+    void setSessionContext(@Param("key") String key, @Param("value") String value);
+
+    int insertRemedialForStudent(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week,
+            @Param("userCode") String userCode);
+
+    int deleteRemedialForStudent(@Param("studentId") String studentId,
+                                 @Param("timeTableKey") String timeTableKey,
+                                 @Param("week") String week);
+
 }

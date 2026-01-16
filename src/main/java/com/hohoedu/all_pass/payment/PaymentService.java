@@ -557,16 +557,28 @@ public class PaymentService {
             String paymentKey = target.getPaymentKey();
             String studentId = target.getStudentId();
 
-            // ✅ 1) payment 상태 확인 (approved면 제외)
             Payment payment = paymentRepository.findPaymentByKey(paymentKey);
             if (payment == null) {
                 log.warn("payment 없음 - paymentKey: {}", paymentKey);
                 continue;
             }
 
-            if ("approved".equals(payment.getStatus())) {
-                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 이미 전액 결제 완료 (status: approved)",
-                        studentId, paymentKey);
+            boolean isApproved;
+
+            if ("EDU_FEE".equals(billType)) {
+                // 교육비 → payment.status 기준
+                isApproved = "approved".equals(payment.getStatus());
+            } else {
+                // 교재비 → bill 기준
+                isApproved = paymentRepository.existsApprovedBill(
+                        paymentKey,
+                        "BOOK_FEE"
+                );
+            }
+
+            if (isApproved) {
+                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, billType: {}, 이미 승인 완료",
+                        studentId, paymentKey, billType);
                 continue;
             }
 

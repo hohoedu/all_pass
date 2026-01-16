@@ -176,7 +176,9 @@ public interface ClassRepository {
 
     public List<ClassRespDTO.RemedialDTO> findRemedialByUserNo(
             @Param("year") String year,
-            @Param("month") String month);
+            @Param("month") String month,
+            @Param("userCode") String userCode
+    );
 
     public int updateRemedialAction(
             @Param("remedialKey") String remedialKey,

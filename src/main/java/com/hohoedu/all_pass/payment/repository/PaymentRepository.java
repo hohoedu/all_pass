@@ -106,6 +106,10 @@ public interface PaymentRepository {
 
     Payment findPaymentByKey(String paymentKey);
 
+    boolean existsApprovedBill(
+            @Param("paymentKey") String paymentKey,
+            @Param("billType") String billType);
+
     int countExistingBillsByStudent(
             @Param("paymentKey") String paymentKey,
             @Param("yy") String yy,
@@ -113,6 +117,7 @@ public interface PaymentRepository {
             @Param("billType") String billType,
             @Param("validStatuses") List<String> validStatuses
     );
+
     void createPaymentBill(PaymentBill paymentBill);
 
     void updatePaymentStatusOnIssue(@Param("paymentKey") String paymentKey);
@@ -167,6 +172,7 @@ public interface PaymentRepository {
     List<PaymentRespDTO.DetailPaymentBillDTO> findDetailPaymentBillByStudentId(
             @Param("studentId") String studentId
     );
+
     String findCancelBillIdByPaymentKey(
             @Param("paymentKey") String paymentKey,
             @Param("type") String type);

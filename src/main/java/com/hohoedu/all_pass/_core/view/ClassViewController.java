@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.Http;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
@@ -298,9 +299,14 @@ public class ClassViewController {
 
     // 보강 페이지
     @GetMapping("/remedial")
-    public String getClassRemedialPage(Model model, @RequestParam("year") String year, @RequestParam("month") String month) {
+    public String getClassRemedialPage(Model model, @RequestParam("year") String year, @RequestParam("month") String month, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month);
+
+        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month,user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)
                 .toList();

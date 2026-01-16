@@ -18,19 +18,19 @@ public class StudentNoticeMap {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "send_yn", nullable = false)
-    private boolean sendYn = false;
+    @Column(name = "send_yn")
+    private char sendYn;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false, referencedColumnName = "student_id")
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "notice_id", nullable = false)
+    @JoinColumn(name = "notice_key", nullable = false, referencedColumnName = "center_notice_key")
     private CenterNotice centerNotice;
 
     @Builder
-    public StudentNoticeMap(boolean sendYn, Student student, CenterNotice centerNotice) {
+    public StudentNoticeMap(char sendYn, Student student, CenterNotice centerNotice) {
         this.sendYn = sendYn;
         this.student = student;
         this.centerNotice = centerNotice;

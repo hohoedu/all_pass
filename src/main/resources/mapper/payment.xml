@@ -497,6 +497,17 @@
         where payment_key = #{paymentKey}
     </select>
 
+    <select id="existsApprovedBill" resultType="boolean">
+        SELECT CASE
+                   WHEN COUNT(1) > 0 THEN 1
+                   ELSE 0
+                   END
+        FROM erp_payment_bill
+        WHERE payment_key = #{paymentKey}
+          AND bill_type = #{billType}
+          AND status = 'approved'
+    </select>
+
     <!-- 전화번호 기준 기존 청구서 개수 조회 (형제 중복 청구 방지) -->
     <select id="countExistingBillsByStudent" resultType="int">
         SELECT COUNT(*)

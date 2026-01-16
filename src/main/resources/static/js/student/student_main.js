@@ -182,11 +182,47 @@ function formatPhone(phone) {
 }
 
 function formatBirthDisplay(birth) {
-    if (!birth) return "";
+    if (!birth || typeof birth !== 'string') return "";
 
-    const [year, month, day] = birth.split("-");
+    let year, month, day;
+
+    // 1️⃣ yyyy년 mm월 dd일
+    let match = birth.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일$/);
+    if (match) {
+        [, year, month, day] = match;
+    }
+
+    // 2️⃣ yyyy-mm-dd | yyyy/mm/dd | yyyy.mm.dd
+    if (!year) {
+        match = birth.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+        if (match) {
+            [, year, month, day] = match;
+        }
+    }
+
+    // 3️⃣ yyyymmdd
+    if (!year) {
+        match = birth.match(/^(\d{4})(\d{2})(\d{2})$/);
+        if (match) {
+            [, year, month, day] = match;
+        }
+    }
+
+    // 4️⃣ yymmdd → 20yy 기준 (필요 시 기준 변경 가능)
+    if (!year) {
+        match = birth.match(/^(\d{2})(\d{2})(\d{2})$/);
+        if (match) {
+            const yy = parseInt(match[1], 10);
+            year = yy >= 30 ? `19${match[1]}` : `20${match[1]}`;
+            month = match[2];
+            day = match[3];
+        }
+    }
 
     if (!year || !month || !day) return "";
+
+    month = month.padStart(2, "0");
+    day = day.padStart(2, "0");
 
     return `${year}년 ${month}월 ${day}일`;
 }
@@ -326,8 +362,7 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_address_detail", info.addressDetail);
     setValue("#tab2 .s_phone", formatPhone(info.parentPhone));
     setValue("#tab2 .s_birth", formatBirthDisplay(info.birth)); // 텍스트 영역
-    setValue("#tab2 .s_entry_han_date", info.entryHanDate);
-    setValue("#tab2 .s_entry_book_date", info.entryBookDate);
+
 
     // ---------------- TAB3: 수업 정보 ----------------
     setValue("#tab3 .s_han_class", payment.hanClassName);
@@ -341,6 +376,9 @@ function renderStudentModal(data) {
 
     setValue("#tab3 .p_han_material_fee", formatMoney(payment.hanMaterialPrice));
     setValue("#tab3 .p_book_material_fee", formatMoney(payment.bookMaterialPrice));
+
+    setValue("#tab3 .s_entry_han_date", formatDate(payment.entryHanDate) ?? '날짜를 선택해주세요.');
+    setValue("#tab3 .s_entry_book_date", formatDate(payment.entryBookDate) ?? '날짜를 선택해주세요.');
 
     // 5) 수강 상태 버튼 표시 + 비활성화
     setCourseState("han", payment.hanState);
@@ -448,6 +486,23 @@ function formatMoney(value) {
     return num.toLocaleString('ko-KR');
 }
 
+function formatDate(value) {
+    if (!value || typeof value !== 'string') return '';
+
+    // 이미 "yyyy년 MM월 dd일" 형식이면 그대로 반환
+    if (/^\d{4}년\s?\d{1,2}월\s?\d{1,2}일$/.test(value)) {
+        return value;
+    }
+
+    // "yyyy-MM-dd" 형식이면 변환
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+        const [, y, m, d] = match;
+        return `${y}년 ${m}월 ${d}일`;
+    }
+
+    return '';
+}
 function updateTotalFee() {
     function removeComma(value) {
         if (!value) return '0';
@@ -937,32 +992,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // 현재 상태 확인
             const hanGroup = document.querySelector('.choose-group[data-type="han"]');
             const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
-            const currentHanState = hanHidden?.value; // 'active' or 'inactive'
+            const currentHanState = hanHidden?.value;
 
             const bookGroup = document.querySelector('.choose-group[data-type="book"]');
             const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
             const currentBookState = bookHidden?.value;
 
-            // 변경 여부 확인
             const hanChanged = initialHanState !== null && initialHanState !== currentHanState;
             const bookChanged = initialBookState !== null && initialBookState !== currentBookState;
 
-            if (!hanChanged && !bookChanged) {
-                alert('변경된 수강 상태가 없습니다.');
-                return;
-            }
+            const entryHanInput = document.getElementById('entry-han-date');
+            const entryBookInput = document.getElementById('entry-book-date');
+            // if (!hanChanged && !bookChanged) {
+            //     alert('변경된 수강 상태가 없습니다.');
+            //     return;
+            // }
 
             let hanInactiveDate = null;
             let hanInactiveReason = null;
             let entryHanDate = null;
 
-            // 한자가 변경된 경우만 검증
+            console.log(hanChanged)
+            console.log(currentHanState);
             if (hanChanged) {
                 if (currentHanState === 'inactive') {
-                    // 미수강으로 변경: 사유 + 날짜 필수
                     const hanReasonInput = document.getElementById('han-inactive-reason');
                     const hanDateInput = document.getElementById('han-inactive-date');
 
@@ -978,14 +1033,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                 } else if (currentHanState === 'active') {
-                    // 수강으로 변경: 입회날짜 필수
-                    const entryHanInput = document.getElementById('entry-han-date');
                     entryHanDate = entryHanInput?.value;
-
+                    console.log(entryHanDate);
                     if (!entryHanDate) {
                         alert('한자 입회 날짜를 선택해주세요.');
                         return;
                     }
+                }
+            } else if (currentHanState === 'active') {
+                entryHanDate = entryHanInput?.value;
+                console.log(entryHanDate);
+                if (!entryHanDate) {
+                    alert('한자 입회 날짜를 선택해주세요.');
+                    return;
                 }
             }
 
@@ -993,10 +1053,8 @@ document.addEventListener('DOMContentLoaded', function () {
             let bookInactiveReason = null;
             let entryBookDate = null;
 
-            // 독서가 변경된 경우만 검증
             if (bookChanged) {
                 if (currentBookState === 'inactive') {
-                    // 미수강으로 변경: 사유 + 날짜 필수
                     const bookReasonInput = document.getElementById('book-inactive-reason');
                     const bookDateInput = document.getElementById('book-inactive-date');
 
@@ -1012,8 +1070,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                 } else if (currentBookState === 'active') {
-                    // 수강으로 변경: 입회날짜 필수
-                    const entryBookInput = document.getElementById('entry-book-date');
+
                     entryBookDate = entryBookInput?.value;
 
                     if (!entryBookDate) {
@@ -1021,7 +1078,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                 }
+            } else if (currentBookState === 'active') {
+                entryBookDate = entryBookInput?.value;
+                console.log(entryBookDate);
+                if (!entryBookDate) {
+                    alert('독서 입회 날짜를 선택해주세요.');
+                    return;
+                }
             }
+
             const requestBody = {
                 studentId: currentStudentId,
                 hanState: currentHanState === 'active' ? 1 : 0,
@@ -1037,25 +1102,17 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {
-                console.log('모달 호출 전');
+
 
                 const shouldChangeStudentStatus = await showStudentStatusModal();
 
-                console.log('모달 결과:', shouldChangeStudentStatus); // 이게 출력되는지 확인!
 
                 if (!shouldChangeStudentStatus) {
-                    console.log('취소됨 - 리턴');
                     return;
                 }
 
-                console.log('확인됨 - 계속 진행');
                 requestBody.changeStudentStatus = true;
             }
-
-            console.log('fetch 요청 전', requestBody); // 이게 출력되는지 확인!
-
-
-
 
             try {
                 const res = await fetch('/student/update/course-status', {

@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
+import com.hohoedu.all_pass.attendance.AttendanceRepository;
+import com.hohoedu.all_pass.attendance.AttendanceService;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
@@ -29,6 +31,8 @@ import com.hohoedu.all_pass.student.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +69,7 @@ public class StudentService {
     private final FamilyService familyService;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final AttendanceRepository attendanceRepository;
 
     public List<Student> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
@@ -238,17 +243,15 @@ public class StudentService {
         log.info("수강상태 수정 처리: studentId={}, hanChanged={}, bookChanged={}",
                 request.getStudentId(), request.getHanChanged(), request.getBookChanged());
 
-        // 한자 수강상태 변경
         if (Boolean.TRUE.equals(request.getHanChanged())) {
             if (request.getHanState() == 1) {
-                // 수강으로 변경
+
                 log.info("한자 수강으로 변경: entryHanDate={}", request.getEntryHanDate());
                 studentRepository.updateHanToActive(
                         request.getStudentId(),
                         request.getEntryHanDate()
                 );
             } else {
-                // 미수강으로 변경
                 log.info("한자 미수강으로 변경: inactiveDate={}, reason={}",
                         request.getInactiveHanDate(), request.getInactiveHanReason());
                 studentRepository.updateHanToInactive(
@@ -257,19 +260,20 @@ public class StudentService {
                         request.getInactiveHanReason()
                 );
             }
+        } else {
+            log.info(request.getHanChanged().toString());
+            studentRepository.updateHanToActive(request.getStudentId(), request.getEntryHanDate());
         }
 
         // 독서 수강상태 변경
         if (Boolean.TRUE.equals(request.getBookChanged())) {
             if (request.getBookState() == 1) {
-                // 수강으로 변경
                 log.info("독서 수강으로 변경: entryBookDate={}", request.getEntryBookDate());
                 studentRepository.updateBookToActive(
                         request.getStudentId(),
                         request.getEntryBookDate()
                 );
             } else {
-                // 미수강으로 변경
                 log.info("독서 미수강으로 변경: inactiveDate={}, reason={}",
                         request.getInactiveBookDate(), request.getInactiveBookReason());
                 studentRepository.updateBookToInactive(
@@ -413,20 +417,17 @@ public class StudentService {
         String mm = parts[1];
 
         for (String studentId : reqDto.getStudents()) {
-            StudentWebRespDTO.TeacherDTO student = studentRepository.findTeacherAssignByStudentId(studentId);
-            if (student.getAssignHanTeacher().equals(reqDto.getUserCode())) {
-                throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-            }
-            if (student.getAssignBookTeacher().equals(reqDto.getUserCode())) {
-                throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-            }
+
+
         }
 
         // 한자 과목 선택
         if (reqDto.getSelectedHan() != null) {
             for (String studentId : reqDto.getStudents()) {
-
                 StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+                if (teacher.getAssignHanTeacher().equals(reqDto.getUserCode())) {
+                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+                }
                 if (teacher.getAssignHanTeacher() == null) {
                     throw new Exception400("등록된 한자 수업이 없습니다.");
                 }
@@ -461,8 +462,12 @@ public class StudentService {
         // 독서 과목 선택
         if (reqDto.getSelectedBook() != null) {
             for (String studentId : reqDto.getStudents()) {
-
                 StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+
+                if (teacher.getAssignBookTeacher().equals(reqDto.getUserCode())) {
+                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+                }
+
                 if (teacher.getAssignBookTeacher() == null) {
                     throw new Exception400("등록된 독서 수업이 없습니다.");
                 }
@@ -908,5 +913,56 @@ public class StudentService {
         }
 
         return siblings;
+    }
+
+    @Transactional
+    public void updateAttendance(StudentWebReqDTO.StudentAttendanceUpdateDTO dto, String userCode) {
+
+        String userId = getCurrentUserId();
+        attendanceRepository.setSessionContext("user_id", userId);
+
+        // 1. 이전 출결 상태 조회
+        String prevKey = studentRepository.findAttendanceKey(
+                dto.getStudentId(),
+                dto.getTimeTableKey(),
+                dto.getWeek()
+        );
+
+        // 2. 출결 업데이트
+        int updated = studentRepository.updateAttendance(dto);
+        if (updated == 0) {
+            throw new RuntimeException("출석 정보를 찾을 수 없거나 업데이트에 실패했습니다.");
+        }
+
+        String newKey = dto.getAttendanceKey();
+
+        // 3. 결석 → 보강 생성
+        if (!"absent".equals(prevKey) && "absent".equals(newKey)) {
+            attendanceRepository.insertRemedialForStudent(
+                    dto.getStudentId(),
+                    dto.getTimeTableKey(),
+                    dto.getWeek(),
+                    userCode
+            );
+
+        }
+
+        // 4. 결석 해제 → 보강 삭제 (하드 딜리트)
+        if ("absent".equals(prevKey) && !"absent".equals(newKey)) {
+            attendanceRepository.deleteRemedialForStudent(
+                    dto.getStudentId(),
+                    dto.getTimeTableKey(),
+                    dto.getWeek()
+            );
+        }
+    }
+
+    private String getCurrentUserId() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            return auth != null ? auth.getName() : "SYSTEM";
+        } catch (Exception e) {
+            return "SYSTEM";
+        }
     }
 }

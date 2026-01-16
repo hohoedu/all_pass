@@ -280,6 +280,12 @@ public class ClassController {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
         classService.insertBeforeClassNoticeList(dtoList, user.getUserCode());
 
         return ResponseEntity.ok("ok");
@@ -303,6 +309,11 @@ public class ClassController {
     public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
 
         log.info(dtoList.get(0).getReview());
         classService.insertAfterClassNoticeList(dtoList, user.getUserCode());
@@ -328,9 +339,19 @@ public class ClassController {
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
                                             @RequestParam(value = "year") String year,
-                                            @RequestParam(value = "month") String month) {
+                                            @RequestParam(value = "month") String month,
+                                            HttpSession session) {
+
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
         int response = classService.updateRemedialAction(dto);
-        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month);
+        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month, user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)
                 .toList();

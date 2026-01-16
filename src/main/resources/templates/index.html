@@ -42,7 +42,7 @@
                     <h2>학원 관리</h2>
                     <p>학생, 수업, 상담, 운영 관리<br>
                         프로그램 입니다.</p>
-                    <button><a th:href="@{/main}">바로가기</a></button>
+                    <button id="center-btn">바로가기</button>
                 </div>
                 <div class="menu-item">
                     <img th:src="@{/image/e-class.png}" alt="">
@@ -59,7 +59,9 @@
                     <h2>독서클리닉</h2>
                     <p>선생님이 사용하는<br>
                         독서클리닉 프로그램 입니다.</p>
-                    <button id="clinic-btn">바로가기</button>
+                    <button type="button" onclick="location.href='/main'">
+                        바로가기
+                    </button>
                 </div>
                 <div class="menu-item"
                      th:if="${session.user != null
@@ -85,6 +87,10 @@
     </div>
 </div>
 <script th:inline="javascript">
+    document.getElementById('center-btn').addEventListener('click', () => {
+        window.location.href = '/main';
+    });
+
     document.addEventListener("DOMContentLoaded", () => {
         const btn = document.getElementById("assessment-btn");
         const centerCode = btn.dataset.centerCode;

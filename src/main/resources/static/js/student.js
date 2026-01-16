@@ -307,10 +307,110 @@ function applyTfootStripe() {
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("joinForm");
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault(); // 기본 제출 막기
+    function isEmpty(value) {
+        return !value || value.trim() === "";
+    }
 
-        // 1) 먼저 가입 요청 전송
+    function isValidBirth(birth) {
+        return /^[0-9]{6}$/.test(birth);
+    }
+
+    function isValidPhone(p1, p2, p3) {
+        return p1.length === 3 && p2.length === 4 && p3.length === 4;
+    }
+
+    function isSignatureEmpty(canvas) {
+        const blank = document.createElement("canvas");
+        blank.width = canvas.width;
+        blank.height = canvas.height;
+        return canvas.toDataURL() === blank.toDataURL();
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const studentName = form.studentName.value;
+        const birth = form.birth.value;
+        const school = form.school.value;
+        const gradeKey = form.gradeKey.value;
+        const address = form.address.value;
+
+        const parentName = form.parentName.value;
+        const phone1 = form.parentTelFirst.value;
+        const phone2 = form.parentTelMiddle.value;
+        const phone3 = form.parentTelLast.value;
+        const relationKey = form.relationKey.value;
+
+        const privacyAgree = form.studentPrivacyAgree.checked;
+        const parentAgree = form.parentPrivacyAgree.checked;
+
+        const canvas = document.getElementById("signature-pad");
+
+        // 학생 정보
+        if (isEmpty(studentName)) {
+            alert("학생 이름을 입력해 주세요.");
+            form.studentName.focus();
+            return;
+        }
+
+        if (!isValidBirth(birth)) {
+            alert("생년월일은 숫자 6자리로 입력해 주세요.");
+            form.birth.focus();
+            return;
+        }
+
+        if (isEmpty(school)) {
+            alert("학교/유치원명을 입력해 주세요.");
+            form.school.focus();
+            return;
+        }
+
+        if (isEmpty(gradeKey)) {
+            alert("연령/학년을 선택해 주세요.");
+            form.gradeKey.focus();
+            return;
+        }
+
+        if (isEmpty(address)) {
+            alert("주소를 입력해 주세요.");
+            form.address.focus();
+            return;
+        }
+
+        if (!privacyAgree) {
+            alert("학생 개인정보 수집 및 활용에 동의해 주세요.");
+            return;
+        }
+
+        // 보호자 정보
+        if (isEmpty(parentName)) {
+            alert("법정대리인 성명을 입력해 주세요.");
+            form.parentName.focus();
+            return;
+        }
+
+        if (!isValidPhone(phone1, phone2, phone3)) {
+            alert("법정대리인 연락처를 정확히 입력해 주세요.");
+            form.parentTelFirst.focus();
+            return;
+        }
+
+        if (isEmpty(relationKey)) {
+            alert("법정대리인과의 관계를 선택해 주세요.");
+            form.relationKey.focus();
+            return;
+        }
+
+        if (!parentAgree) {
+            alert("법정대리인 개인정보 수집 및 활용에 동의해 주세요.");
+            return;
+        }
+
+        // 서명 체크
+        if (isSignatureEmpty(canvas)) {
+            alert("서명을 입력해 주세요.");
+            return;
+        }
         const formData = new FormData(form);
 
         let studentId = null;
@@ -350,7 +450,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // ---------------------------------------------------------
         // 2) 서명 PNG 변환 (Canvas -> PNG Blob)
         // ---------------------------------------------------------
-        const canvas = document.getElementById("signature-pad");
         const dataURL = canvas.toDataURL("image/png");
         const blob = await (await fetch(dataURL)).blob();
 

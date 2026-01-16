@@ -586,23 +586,28 @@
                sa.in_time         AS inTime,
                sa.out_time        AS outTime,
                ac.attendance_name AS attendanceName,
+               ac.attendance_key  AS attendanceKey,
                sa.is_before_send  AS isBeforeSend,
                sa.is_after_send   AS isAfterSend,
                r.absence_date     AS absenceDate,
                r.remedial_date    AS remedialDate,
                r.updated_at       AS updatedAt,
                s.center_code      AS centerCode
-
-        FROM ERP_TIME_TABLE t
-                 JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
-                 JOIN ERP_TIME_TABLE_ASSIGN ta ON t.time_table_key = ta.time_table_key
-                 JOIN ERP_STUDENT s ON ta.student_id = s.student_id
-                 LEFT JOIN ERP_STUDENT_ATTENDANCE sa ON s.student_id = sa.student_id
-                 LEFT JOIN ERP_ATTENDANCE_CODE ac ON sa.attendance_key = ac.attendance_key
-                 LEFT JOIN ERP_REMEDIAL r ON s.student_id = r.student_id AND t.time_table_key = r.time_table_key
-        WHERE t.time_table_key = #{timeTableKey}
-          AND sa.time_table_key = #{timeTableKey}
-          AND sa.week = #{week}
+        FROM erp_student s
+                 JOIN erp_time_table_assign tta ON s.student_id = tta.student_id
+                 JOIN erp_time_table t ON tta.time_table_key = t.time_table_key
+                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+                 LEFT JOIN erp_student_attendance sa
+                           ON s.student_id = sa.student_id
+                               AND sa.time_table_key = #{timeTableKey}
+                               AND sa.week = #{week}
+                 join erp_attendance_code ac
+                      ON sa.attendance_key = ac.attendance_key
+                 LEFT JOIN erp_remedial r
+                           ON s.student_id = r.student_id
+                               AND r.time_table_key = #{timeTableKey}
+                               AND r.week = #{week}
+        WHERE tta.time_table_key = #{timeTableKey}
 
     </select>
 

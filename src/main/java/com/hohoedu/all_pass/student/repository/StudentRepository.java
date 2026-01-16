@@ -133,7 +133,12 @@ public interface StudentRepository {
 
     public boolean existsByYm(String ym);
 
+    int updateAttendance(StudentWebReqDTO.StudentAttendanceUpdateDTO dto);
 
+    String findAttendanceKey(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week);
     // 출석 여부 체크
     public Integer countByStudentAndDate(
             @Param("studentId") String studentId,

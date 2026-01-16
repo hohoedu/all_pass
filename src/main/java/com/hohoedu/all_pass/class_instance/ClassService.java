@@ -733,10 +733,10 @@ public class ClassService {
     }
 
     // ================ 보강 관리 서비스 =====================//
-    public List<RemedialDTO> findRemedialByUserNo(String year, String month) {
+    public List<RemedialDTO> findRemedialByUserNo(String year, String month, String userCode) {
         System.out.println(year);
         System.out.println(month);
-        List<RemedialDTO> remedials = classRepository.findRemedialByUserNo(year, month);
+        List<RemedialDTO> remedials = classRepository.findRemedialByUserNo(year, month, userCode);
         return remedials;
     }
 

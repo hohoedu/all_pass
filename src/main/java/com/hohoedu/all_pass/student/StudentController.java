@@ -254,5 +254,23 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/update/attendance")
+    public ResponseEntity<?> updateStudentAttendance(HttpSession session, @RequestBody StudentWebReqDTO.StudentAttendanceUpdateDTO requestDTO) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        try {
+            studentService.updateAttendance(requestDTO, user.getUserCode());
+            return ResponseEntity.ok(Map.of("success", true, "message", "출석 정보가 업데이트되었습니다."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "출석 정보 업데이트 실패: " + e.getMessage()));
+        }
+    }
+
 
 }
