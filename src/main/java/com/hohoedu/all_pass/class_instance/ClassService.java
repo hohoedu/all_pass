@@ -751,9 +751,9 @@ public class ClassService {
 
 
     // ================ 월간 평가 서비스 =====================//
-    public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname) {
+    public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname, String centerCode) {
 
-        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname)
+        List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname, centerCode)
                 .stream()
                 .map(c -> {
                     String label = c.getClassLabel();
@@ -867,6 +867,10 @@ public class ClassService {
         resp.setDifficultly(difficultly);
 
         return resp;
+    }
+
+    public ClassAppRespDTO.MonthlyReportRespDTO getMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO reqDTO){
+        return  classRepository.findMonthlyReport(reqDTO);
     }
 
 

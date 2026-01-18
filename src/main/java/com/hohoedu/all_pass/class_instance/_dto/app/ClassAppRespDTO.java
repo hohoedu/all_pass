@@ -103,6 +103,43 @@ public class ClassAppRespDTO {
     }
 
     @Data
+    public static class MonthlyReportRespDTO {
+        private String part1 = "";
+        private String part2 = "";
+        private String part3 = "";
+        private String part4 = "";
+        private String part5 = "";
+        private String part6 = "";
+        private String part7 = "";
+        private String part8 = "";
+
+        private String part1Title = "";
+        private String part2Title = "";
+        private String part3Title = "";
+        private String part4Title = "";
+        private String part5Title = "";
+        private String part6Title = "";
+        private String part7Title = "";
+        private String part8Title = "";
+
+        private String part1Level = "";
+        private String part2Level = "";
+        private String part3Level = "";
+        private String part4Level = "";
+        private String part5Level = "";
+        private String part6Level = "";
+        private String part7Level = "";
+        private String part8Level = "";
+
+        private String review = "";
+        private String classContents = "";
+        private String resultContents = "";
+        private String partnote = "";
+        private String sdate = "";
+
+    }
+
+    @Data
     public static class ClinicResultRespDTO {
         private String qtypestr;
         private String per;
@@ -120,6 +157,40 @@ public class ClassAppRespDTO {
     public static class ClinicTotalRespDTO {
         private String ym;
         private String cnt;
+    }
+
+    @Data
+    public static class MonthlyReportDTO {
+        private String part1;
+        private String part2;
+        private String part3;
+        private String part4;
+        private String part5;
+        private String part6;
+        private String part7;
+        private String part8;
+        private String part1_title;
+        private String part2_title;
+        private String part3_title;
+        private String part4_title;
+        private String part5_title;
+        private String part6_title;
+        private String part7_title;
+        private String part8_title;
+        private String part1_level;
+        private String part2_level;
+        private String part3_level;
+        private String part4_level;
+        private String part5_level;
+        private String part6_level;
+        private String part7_level;
+        private String part8_level;
+        private String review;
+        private String class_contents;
+        private String result_contents;
+        private String partnote;
+        private String sdate;
+
     }
 
 }

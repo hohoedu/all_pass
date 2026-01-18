@@ -57,6 +57,13 @@ public class ClassAppReqDTO {
     }
 
     @Data
+    public static class MonthlyResultReqDTO {
+        private String id;
+        private String ym;
+        private String gb;
+    }
+
+    @Data
     public static class ClinicBookListReqDTO {
         private String id;
         private String ym;

@@ -376,9 +376,15 @@ public class ClassController {
     // 월간 평가 (초등)
     // 월별 / 선생님 별 테이블 라벨 가져오기
     @PostMapping("/api/monthly/classes")
-    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassReqDTO.ClassMonthlyDTO dto) {
+    public ResponseEntity<?> findTimeTableLabel(@RequestBody ClassReqDTO.ClassMonthlyDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
-        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(), dto.getDayname());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(), dto.getDayname(), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(label));
     }
@@ -401,11 +407,17 @@ public class ClassController {
     }
 
     @PostMapping("/api/monthly/preview")
-    public ResponseEntity<?> MonthlyPreview(@RequestBody ClassReqDTO.MonthlyPreviewDTO dto) {
+    public ResponseEntity<?> getMonthlyPreview(@RequestBody ClassReqDTO.MonthlyPreviewDTO dto) {
 
         ClassRespDTO.MonthlyPreviewRespDTO response = classService.getMonthlyPreview(dto);
 
         return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/api/monthly/send")
+    public ResponseEntity<?> sendMonthlyReport(@RequestBody ClassReqDTO.MonthlySendDTO dto) {
+        log.info(dto.toString());
+        return ResponseEntity.ok(ApiUtils.success("hello"));
     }
 
     // 월간 평가 (유아)

@@ -224,6 +224,14 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class MonthlySendDTO {
+        private List<String> studentIds;
+        private String yy;
+        private String mm;
+
+    }
+
+    @Data
     public static class InfantClassLabelsDTO {
         private String yy;
         private String mm;

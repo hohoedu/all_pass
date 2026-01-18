@@ -484,3 +484,88 @@ function renderPreviewModal(data) {
             data.bottomComment ?? "코멘트를 불러올 수 없습니다.";
     }
 }
+
+
+// FCM 발송
+document.addEventListener("DOMContentLoaded", () => {
+    const sendBtn = document.getElementById("monthly-send-btn");
+
+    if (!sendBtn) return;
+
+    sendBtn.addEventListener("click", () => {
+        const checkedRows = [];
+        const checkboxes = document.querySelectorAll("#monthly_student_tbody input[type='checkbox']:checked");
+
+        if (checkboxes.length === 0) {
+            alert("발송할 학생을 선택해주세요.");
+            return;
+        }
+
+        checkboxes.forEach(checkbox => {
+            const row = checkbox.closest("tr");
+            if (row && row.dataset.studentId) {
+                checkedRows.push({
+                    studentId: row.dataset.studentId,
+                    studentName: row.querySelector("td:nth-child(3)").textContent,
+                    timeTableKey: row.dataset.timeTableKey
+                });
+            }
+        });
+
+        sendMonthlyFCM(checkedRows);
+    });
+});
+
+// FCM 발송 함수
+function sendMonthlyFCM(students) {
+    const monthValue = document.getElementById("monthly_calendar").value;
+    let yy, mm;
+
+    if (monthValue) {
+        [yy, mm] = monthValue.split("-");
+    } else {
+        const today = new Date();
+        yy = today.getFullYear().toString();
+        mm = String(today.getMonth() + 1).padStart(2, "0");
+    }
+
+    const requestBody = {
+        students: students,
+        yy: yy,
+        mm: mm
+    };
+
+    fetch("/class/api/monthly/send", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    })
+        .then(res => res.json())
+        .then(data => {
+            console.log("✅ FCM 발송 완료:", data);
+            alert(`${students.length}명의 학생에게 월간평가가 발송되었습니다.`);
+
+            // 발송 상태 업데이트 (이미지 변경)
+            students.forEach(stu => {
+                const row = document.querySelector(`tr[data-student-id="${stu.studentId}"]`);
+                if (row) {
+                    const sendImg = row.querySelector(".send-ornot img");
+                    if (sendImg) {
+                        sendImg.src = "/image/send2.png";
+                    }
+                }
+            });
+
+            // 체크박스 해제
+            document.querySelectorAll("#monthly_student_tbody input[type='checkbox']").forEach(cb => {
+                cb.checked = false;
+            });
+        })
+        .catch(err => {
+            console.error("❌ FCM 발송 오류:", err);
+            alert("발송 중 오류가 발생했습니다.");
+        });
+}

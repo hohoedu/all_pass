@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.class_instance.repository;
 import java.util.List;
 import java.util.Map;
 
+import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -200,7 +201,8 @@ public interface ClassRepository {
             @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm,
-            @Param("dayname") String dayname);
+            @Param("dayname") String dayname,
+            @Param("centerCode") String centerCode);
 
     List<ClassRespDTO.TimeTableLabelDTO> findInfantClassLabel(
             @Param("userCode") String userCode,
@@ -281,6 +283,8 @@ public interface ClassRepository {
     void updateMonthlyResult(MonthlyResult monthlyResult);
 
     List<Map<String, Object>> findMonthlyPreview(ClassReqDTO.MonthlyPreviewDTO dto);
+
+    ClassAppRespDTO.MonthlyReportRespDTO findMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO dto);
 
     public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
             @Param("studentId") String studentId,

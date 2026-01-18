@@ -114,7 +114,7 @@ public class AppController {
     @PostMapping("/course_book_main")
     public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListMainReqDTO reqDTO) {
 
-        if(reqDTO.getIhak().equals("00")){
+        if (reqDTO.getIhak().equals("00")) {
             return ResponseEntity.ok(AppApiUtils.failOne(null, "9999"));
         }
 
@@ -132,6 +132,7 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successOne(response));
     }
 
+    // 수업 전 안내
     @PostMapping("/before_class_notice")
     public ResponseEntity<?> AppBeforeNotice(@RequestBody ClassAppReqDTO.BeforeClassReqDTO reqDTO) {
 
@@ -140,12 +141,14 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
+    // 학습 내용
     @PostMapping("/learning_contents")
     public ResponseEntity<?> AppLearningContents(@RequestBody ClassAppReqDTO.LearningContentsReqDTO reqDTO) {
         List<ClassAppRespDTO.AfterClassRespDTO> respDTOs = classService.getAfterClass(reqDTO.getId(), reqDTO.getCount());
         return ResponseEntity.ok(AppApiUtils.successList(respDTOs));
     }
 
+    // 학습 내용 상세보기
     @PostMapping(value = "/learning_contents_view", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> AppLearningContentDetail(@RequestBody ClassAppReqDTO.LearningContentDetailReqDTO dto) throws JsonProcessingException {
 
@@ -164,6 +167,17 @@ public class AppController {
         List<ClassAppRespDTO.BeforeClassRespDTO> respDTOs = classService.getBeforeClass(reqDTO.getId(), reqDTO.getCount());
 
         return ResponseEntity.ok(AppApiUtils.successList(null));
+    }
+
+    @PostMapping("/evaluation_copy")
+    public ResponseEntity<?> AppMonthlyResult(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) throws JsonProcessingException {
+        ClassAppRespDTO.MonthlyReportRespDTO respDTO = classService.getMonthlyReport(reqDTO);
+
+        Object response = AppApiUtils.successClinicOne(respDTO);
+
+        String json = new ObjectMapper().writeValueAsString(response);
+        log.info(json.toString());
+        return ResponseEntity.ok(json);
     }
 
     @PostMapping("/infant_notice")

@@ -306,7 +306,7 @@ public class ClassViewController {
         }
 
 
-        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month,user.getUserCode());
+        List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month, user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)
                 .toList();
@@ -331,18 +331,19 @@ public class ClassViewController {
 
         // 센터별 선생님 목록
         List<User> users = userService.findByCenterCode(user.getCenterCode());
+        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getCenterCode();
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
-                "all",
+                userCode,
                 dateConfig.currentYearMonth().get("currentYear"),
                 dateConfig.currentYearMonth().get("currentMonth"),
-                dateConfig.currentYearMonth().get("currentDayName"));
-
+                dateConfig.currentYearMonth().get("currentDayName"),
+                user.getCenterCode());
+        log.info(labels.toString());
         // 첫번째 수업에 대한 학생 목록 가져오기
         if (!labels.isEmpty()) {
-            List<MonthlyStudentDTO> students = classService
-                    .getMonthlyClassDetail(labels.get(0).getTimeTableKey());
+            List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(labels.get(0).getTimeTableKey());
             model.addAttribute("students", students);
         }
 
