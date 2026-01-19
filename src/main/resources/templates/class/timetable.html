@@ -125,7 +125,6 @@
                         </div>
                     </section>
                     <div th:replace="~{class/timetable-right :: studentPickRight} "></div>
-                    <!-- 📦 종합반 일괄 등록 모달 -->
                     <div th:fragment="comclassModal"
                          id="comclassModal"
                          class="comclass-overlay"
@@ -173,6 +172,7 @@
                                                     <option th:each="cc : ${classCodes}"
                                                             th:value="${cc.classKey}"
                                                             th:text="${cc.className}"
+                                                            th:data-class-type = "${cc.classType}"
                                                             th:selected="${entry != null and cc.classKey == entry.classKey}">
                                                     </option>
                                                 </select>

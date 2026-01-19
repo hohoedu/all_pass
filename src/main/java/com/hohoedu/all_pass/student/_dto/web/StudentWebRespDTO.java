@@ -149,6 +149,7 @@ public class StudentWebRespDTO {
         private String bookClass;
         private String gradeName;
         private String moveAt;
+        private String phone;
         private String transferReson;
         private String hanTeacher;
         private String bookTeacher;

@@ -398,81 +398,33 @@
         WHERE student_id = #{studentId}
     </update>
 
-    <select id="findStudentClassByStudentId" parameterType="string"
-            resultType="com.hohoedu.all_pass.student.model.StudentClass">
-        SELECT *
-        FROM erp_student_class
-        WHERE student_id = #{studentId}
-          AND yy = #{yy}
-          AND mm = #{mm}
-    </select>
-
-    <update id="updateStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
-        UPDATE erp_student_class
-        <set>
-            <if test="hanClassCode != null">han_class_key = #{hanClassCode.classKey},</if>
-            <if test="hanUser != null">han_user_code = #{hanUser.userCode},</if>
-            <if test="hanFee != null">han_fee = #{hanFee},</if>
-            <if test="bookClassCode != null">book_class_key = #{bookClassCode.classKey},</if>
-            <if test="bookUser != null">book_user_code = #{bookUser.userCode},</if>
-            <if test="bookFee != null">book_fee = #{bookFee},</if>
-
-
-            updated_at = SYSDATETIME()
-        </set>
-        WHERE student_id = #{student.studentId}
-    </update>
-
-    <!--  학생 수강정보 여부 확인  -->
-    <select id="existsStudentClass" resultType="int">
-        SELECT COUNT(*)
-        FROM erp_student_class
-        WHERE student_id = #{studentId}
-          AND yy = #{yy}
-          AND mm = #{mm}
-    </select>
-
-    <!-- 학생 수강정보 입력 -->
-    <insert id="insertStudentClass" parameterType="com.hohoedu.all_pass.student.model.StudentClass">
-        INSERT INTO erp_student_class
-        (student_id, han_class_key, han_user_code, han_status, entry_han_date, han_fee,
-         book_class_key, book_user_code, book_status, entry_book_date, book_fee, yy, mm, created_at)
-        VALUES (#{student.studentId}, #{hanClassCode.classKey}, #{hanUser.userCode}, #{hanStatus}, #{entryHanDate},
-                #{hanFee},
-                #{bookClassCode.classKey}, #{bookUser.userCode}, #{bookStatus}, #{entryBookDate}, #{bookFee}, #{yy},
-                #{mm}, SYSDATETIME())
-    </insert>
-
-
     <!-- 전입/전출 화면 전체 학생 조회 -->
     <select id="selectTransferStudents"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">
-
         SELECT s.student_id,
                s.student_name,
                g.grade_name,
-               hc.class_name                         AS hanClass,
-               bc.class_name                         AS bookClass,
-               hu.user_name                          AS hanTeacher,
-               bu.user_name                          AS bookTeacher,
+               hc.class_name                             AS hanClass,
+               bc.class_name                             AS bookClass,
+               hu.user_name                              AS hanTeacher,
+               bu.user_name                              AS bookTeacher,
                (SELECT MAX(sth.move_at)
                 FROM erp_student_transfer_history sth
-                WHERE sth.student_id = s.student_id) AS moveAt,
+                WHERE sth.student_id = s.student_id)     AS moveAt,
+               pa.parent_tel_middle + pa.parent_tel_last AS phone,
                s.created_at
         FROM erp_student s
                  JOIN erp_grade_code g ON s.grade_key = g.grade_key
                  JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 JOIN erp_parent pa ON s.student_id = pa.student_id
                  LEFT JOIN erp_class_code hc ON ta.assign_han_class = hc.class_key
                  LEFT JOIN erp_class_code bc ON ta.assign_book_class = bc.class_key
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
         WHERE s.center_code = #{centerCode}
-          AND (#{userCode} = 'all'
-            OR ta.assign_han_teacher = #{userCode}
-            OR ta.assign_book_teacher = #{userCode}
-            )
+          AND (#{userCode} = 'all' OR hu.user_code = #{userCode}or bu.user_code = #{userCode})
+          AND (ta.han_state = 1 or ta.book_state = 1)
         order by s.student_name asc;
-
     </select>
 
     <select id="findInOutByStudentId" parameterType="int"
@@ -528,12 +480,31 @@
         </choose>
     </update>
 
+    <insert id="insertTransferSchedule">
+        INSERT INTO erp_student_transfer_schedule (student_id, class_type, from_user, to_user, move_at, status, reason, created_by, created_at)
+        VALUES (#{studentId}, #{classType}, #{fromUser}, #{toUser}, #{moveAt}, 'SCHEDULED', #{reason}, #{createdBy}, SYSDATETIME())
+    </insert>
+
+    <!-- 오늘 처리 대상 조회 (크론용) -->
+    <select id="findTodaySchedules" resultType="com.hohoedu.all_pass.student.model.StudentTransferSchedule">
+        SELECT *
+        FROM erp_student_transfer_schedule
+        WHERE move_at = #{today}
+          AND status = 'SCHEDULED'
+        ORDER BY id
+    </select>
+
+    <!-- 적용 완료 처리 -->
+    <update id="markAsApplied">
+        UPDATE erp_student_transfer_schedule
+        SET status     = 'APPLIED',
+            applied_at = SYSDATETIME()
+        WHERE id = #{id}
+    </update>
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
-        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, class_type, transfer_reason,
-                                                  class_key, move_at, created_at)
-        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{classType}, #{transferReason},
-                #{classCode.classKey}, #{moveAt}, SYSDATETIME());
+        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, class_type, transfer_reason, class_key, move_at, created_at)
+        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{classType}, #{transferReason}, #{classCode.classKey}, #{moveAt}, SYSDATETIME());
     </insert>
 
     <!-- 출석 관련 -->

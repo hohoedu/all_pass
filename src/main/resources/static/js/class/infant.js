@@ -593,7 +593,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 students: students,
                 classKey: document.querySelector(".class-btn.active")?.dataset.classKey,
                 unitKey: document.querySelector(".class-btn.active")?.dataset.unitKey,
-                timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey
+                timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
+                yy: document.querySelector(".hidden-date").value.split("-")[0],
+                mm: document.querySelector(".hidden-date").value.split("-")[1]
             };
 
             let sendSuccess = false;
@@ -635,7 +637,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const saveData = await saveRes.json();
-                console.log("📥 SAVE:", saveData);
 
                 if (saveRes.ok && saveData.response === "success") {
                     saveSuccess = true;

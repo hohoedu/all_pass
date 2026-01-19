@@ -56,6 +56,7 @@ public class ClassReqDTO {
         @Data
         public static class StudentInfo {
             private String studentId;
+            private String classType;
             private String classKey;
             private String unitKey;
             private String yy;
@@ -258,6 +259,8 @@ public class ClassReqDTO {
         private String classKey;
         private String unitKey;
         private String timeTableKey;
+        private String yy;
+        private String mm;
 
         private List<StudentDTO> students;
 

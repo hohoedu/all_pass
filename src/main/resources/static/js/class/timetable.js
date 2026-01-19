@@ -1031,17 +1031,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById("comclassModal");
 
     btn.addEventListener("click", async function () {
+        alert("종합반 추가 기능 수정 중입니다.")
         const rows = modal.querySelectorAll(".comclass-table tbody tr");
         const updateList = [];
 
         rows.forEach(tr => {
             const studentId = tr.dataset.studentId;
-            const classKey = tr.querySelector("select[name='classKey']").value;
+            const classSelect = tr.querySelector("select[name='classKey']");
             const unitKey = tr.querySelector("select[name='unitKey']").value;
+            const classKey = classSelect.value;
+            const selectedOption = classSelect.selectedOptions[0];
+            const classType = selectedOption?.dataset.classType || null;
 
             updateList.push({
                 studentId: studentId || null,
                 classKey: classKey || null,
+                classType: classType || null,
                 unitKey: unitKey || null,
                 yy: modal.dataset.yy,
                 mm: modal.dataset.mm

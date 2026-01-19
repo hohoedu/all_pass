@@ -90,9 +90,7 @@ public class StudentViewController {
             return "redirect:/login";
         }
 
-        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
-
-        List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), userCode);
+        List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), user.getUserCode());
 //        List<StudentInOutDTO> students = studentService.findStudentByUserCode(userCode);
         List<User> teachers = studentService.findTeacher(user.getCenterCode());
 //        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);

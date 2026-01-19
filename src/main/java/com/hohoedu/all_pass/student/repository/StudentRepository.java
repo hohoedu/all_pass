@@ -8,7 +8,8 @@ import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
-import com.hohoedu.all_pass.student.model.StudentClass;
+
+import com.hohoedu.all_pass.student.model.StudentTransferSchedule;
 import com.hohoedu.all_pass.student.model.TeacherAssign;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -55,20 +56,15 @@ public interface StudentRepository {
 
     public int studentStatusUpdate(StatusHistoryDTO historyDTO);
 
-    public StudentClass findStudentClassByStudentId(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
     int existsStudentClass(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm
     );
 
-    int insertStudentClass(StudentClass studentClass);
+    int insertStudentClass(TeacherAssign studentClass);
 
-    int updateStudentClass(StudentClass studentClass);
+    int updateStudentClass(TeacherAssign studentClass);
 
     int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req);
 
@@ -116,9 +112,9 @@ public interface StudentRepository {
 
     List<StudentInOutDTO> selectTransferStudents(
             @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
+            @Param("userCode") String userCode);
+
+    void findTransferStudentListByUserCode();
 
     List<StudentTransferDTO> findInOutByStudentId(@Param("studentId") Integer studentId);
 
@@ -128,6 +124,20 @@ public interface StudentRepository {
             @Param("classType") String classType,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    void insertTransferSchedule(
+            @Param("studentId") String studentId,
+            @Param("classType") String classType,
+            @Param("fromUser") String fromUser,
+            @Param("toUser") String toUser,
+            @Param("moveAt") String moveAt,
+            @Param("reason") String reason,
+            @Param("createdBy") String createdBy
+    );
+
+    List<StudentTransferSchedule> findTodaySchedules(String today);
+
+    void markAsApplied(Integer id);
 
     public void insertTransferHistory(StudentTransferHistory dto);
 
@@ -139,6 +149,7 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
             @Param("week") String week);
+
     // 출석 여부 체크
     public Integer countByStudentAndDate(
             @Param("studentId") String studentId,

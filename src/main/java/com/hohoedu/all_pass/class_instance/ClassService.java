@@ -16,7 +16,7 @@ import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.StudentService;
-import com.hohoedu.all_pass.student.model.StudentClass;
+import com.hohoedu.all_pass.student.model.TeacherAssign;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import lombok.extern.slf4j.Slf4j;
@@ -537,68 +537,66 @@ public class ClassService {
         return students;
     }
 
-    public int updateTimeTableAssign(ClassReqDTO.AssignUpdateDTO dto, String userCode, String centerCode) {
-
-        String timeTableKey = dto.getTimeTableKey();
-        int result = 0;
-
-        for (ClassReqDTO.AssignUpdateDTO.StudentInfo info : dto.getStudentInfos()) {
-
-            int updated = classRepository.updateTimeTableAssign(
-                    timeTableKey,
-                    info.getStudentId(),
-                    info.getClassKey(),
-                    info.getUnitKey()
-            );
-            Integer hanFee = paymentRepository.findFeeByClassKey(info.getClassKey(), centerCode);
-
-            boolean existsClass = studentRepository.existsStudentClass(info.getStudentId(), info.getYy(), info.getMm()) > 0;
-
-            StudentClass studentClass = StudentClass.builder()
-                    .student(Student.builder().studentId(info.getStudentId()).build())
-                    .yy(info.getYy())
-                    .mm(info.getMm())
-                    .hanClassCode(ClassCode.builder().classKey(info.getClassKey()).build())
-                    .hanUser(User.builder().userCode(userCode).build())
-                    .hanFee(hanFee)
-                    .build();
-
-            if (!existsClass) {
-                studentRepository.insertStudentClass(studentClass);
-            } else {
-                studentRepository.updateStudentClass(studentClass);
-            }
-
-            String paymentKey = paymentRepository.findLatestPaymentKeyByStudent(info.getStudentId(), info.getYy(), info.getMm());
-
-            if (paymentKey != null) {
-                PaymentDetail eduDetail = PaymentDetail.builder()
-                        .payment(Payment.builder().paymentKey(paymentKey).build())
-                        .amount(hanFee)
-                        .classType("1") // 한자 수업
-                        .itemType("edu")
-                        .user(User.builder().userCode(userCode).build())
-                        .build();
-                paymentRepository.createPaymentDetail(eduDetail);
-
-                PaymentDetail bookDetail = PaymentDetail.builder()
-                        .payment(Payment.builder().paymentKey(paymentKey).build())
-                        .classType("1")
-                        .itemType("book")
-                        .user(User.builder().userCode(userCode).build())
-                        .build();
-                paymentRepository.createPaymentDetail(bookDetail);
-
-                paymentRepository.updateAmount(paymentKey);
-            }
-            if (updated > 0) {
-                result += updated;
-            }
-
-        }
-
-        return result;
-    }
+    // TODO:종합반 수업 추가
+//    public int updateTimeTableAssign(ClassReqDTO.AssignUpdateDTO dto, String userCode, String centerCode) {
+//
+//        String timeTableKey = dto.getTimeTableKey();
+//        int result = 0;
+//
+//        for (ClassReqDTO.AssignUpdateDTO.StudentInfo info : dto.getStudentInfos()) {
+//
+//            int updated = classRepository.updateTimeTableAssign(
+//                    timeTableKey,
+//                    info.getStudentId(),
+//                    info.getClassKey(),
+//                    info.getUnitKey()
+//            );
+//            Integer hanFee = paymentRepository.findFeeByClassKey(info.getClassKey(), centerCode);
+//
+//            boolean existsClass = studentRepository.existsStudentClass(info.getStudentId(), info.getYy(), info.getMm()) > 0;
+//
+//            TeacherAssign studentClass = TeacherAssign.builder()
+//                    .student(Student.builder().studentId(info.getStudentId()).build())
+//                    .assignHanClass(ClassCode.builder().classKey(info.getClassKey()).build())
+//                    .assignHanTeacher(User.builder().userCode(userCode).build())
+//                    .build();
+//
+//            if (!existsClass) {
+//                studentRepository.insertStudentClass(studentClass);
+//            } else {
+//                studentRepository.updateStudentClass(studentClass);
+//            }
+//
+//            String paymentKey = paymentRepository.findLatestPaymentKeyByStudent(info.getStudentId(), info.getYy(), info.getMm());
+//
+//            if (paymentKey != null) {
+//                PaymentDetail eduDetail = PaymentDetail.builder()
+//                        .payment(Payment.builder().paymentKey(paymentKey).build())
+//                        .amount(hanFee)
+//                        .classType("1") // 한자 수업
+//                        .itemType("edu")
+//                        .user(User.builder().userCode(userCode).build())
+//                        .build();
+//                paymentRepository.createPaymentDetail(eduDetail);
+//
+//                PaymentDetail bookDetail = PaymentDetail.builder()
+//                        .payment(Payment.builder().paymentKey(paymentKey).build())
+//                        .classType("1")
+//                        .itemType("book")
+//                        .user(User.builder().userCode(userCode).build())
+//                        .build();
+//                paymentRepository.createPaymentDetail(bookDetail);
+//
+//                paymentRepository.updateAmount(paymentKey);
+//            }
+//            if (updated > 0) {
+//                result += updated;
+//            }
+//
+//        }
+//
+//        return result;
+//    }
 
 
     // ================ 수업 일지 서비스 =====================//
@@ -869,8 +867,18 @@ public class ClassService {
         return resp;
     }
 
-    public ClassAppRespDTO.MonthlyReportRespDTO getMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO reqDTO){
-        return  classRepository.findMonthlyReport(reqDTO);
+    public ClassAppRespDTO.MonthlyReportRespDTO getMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+        return classRepository.findMonthlyReport(reqDTO);
+    }
+
+    public ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+        String studentId = reqDTO.getId();
+        String yy = reqDTO.getYm().substring(0, 4);
+        String mm = reqDTO.getYm().substring(4, 6);
+
+
+        return classRepository.findAppInfantHani(studentId, yy, mm);
+
     }
 
 

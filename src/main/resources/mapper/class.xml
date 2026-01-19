@@ -928,47 +928,57 @@
     </select>
 
     <select id="findMonthlyReport" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyReportRespDTO">
-        SELECT
-            CASE WHEN ms.question1 = 1 THEN 'Y' ELSE '' END AS part1,
-            CASE WHEN ms.question2 = 1 THEN 'Y' ELSE '' END AS part2,
-            CASE WHEN ms.question3 = 1 THEN 'Y' ELSE '' END AS part3,
-            CASE WHEN ms.question4 = 1 THEN 'Y' ELSE '' END AS part4,
-            CASE WHEN ms.question5 = 1 THEN 'Y' ELSE '' END AS part5,
-            CASE WHEN ms.question6 = 1 THEN 'Y' ELSE '' END AS part6,
-            CASE WHEN ms.question7 = 1 THEN 'Y' ELSE '' END AS part7,
-            CASE WHEN ms.question8 = 1 THEN 'Y' ELSE '' END AS part8,
-            ISNULL(MAX(CASE WHEN mf.number = 1 THEN mf.competency END), '') AS part1_title,
-            ISNULL(MAX(CASE WHEN mf.number = 2 THEN mf.competency END), '') AS part2_title,
-            ISNULL(MAX(CASE WHEN mf.number = 3 THEN mf.competency END), '') AS part3_title,
-            ISNULL(MAX(CASE WHEN mf.number = 4 THEN mf.competency END), '') AS part4_title,
-            ISNULL(MAX(CASE WHEN mf.number = 5 THEN mf.competency END), '') AS part5_title,
-            ISNULL(MAX(CASE WHEN mf.number = 6 THEN mf.competency END), '') AS part6_title,
-            ISNULL(MAX(CASE WHEN mf.number = 7 THEN mf.competency END), '') AS part7_title,
-            ISNULL(MAX(CASE WHEN mf.number = 8 THEN mf.competency END), '') AS part8_title,
-            ISNULL(MAX(CASE WHEN mf.number = 1 THEN mf.difficultly END), '') AS part1_level,
-            ISNULL(MAX(CASE WHEN mf.number = 2 THEN mf.difficultly END), '') AS part2_level,
-            ISNULL(MAX(CASE WHEN mf.number = 3 THEN mf.difficultly END), '') AS part3_level,
-            ISNULL(MAX(CASE WHEN mf.number = 4 THEN mf.difficultly END), '') AS part4_level,
-            ISNULL(MAX(CASE WHEN mf.number = 5 THEN mf.difficultly END), '') AS part5_level,
-            ISNULL(MAX(CASE WHEN mf.number = 6 THEN mf.difficultly END), '') AS part6_level,
-            ISNULL(MAX(CASE WHEN mf.number = 7 THEN mf.difficultly END), '') AS part7_level,
-            ISNULL(MAX(CASE WHEN mf.number = 8 THEN mf.difficultly END), '') AS part8_level,
-            ISNULL(MAX(mr.bottom_comment), '') AS review,
-            ISNULL(MAX(mr.feedback), '') AS partnote,
-            ISNULL(MAX(mr.top_comment), '') AS class_contents,
-            ISNULL(MAX(mr.bottom_comment),'') AS result_contents,
-            '' as sdate,
-            '' as partnote
+        SELECT CASE WHEN ms.question1 = 1 THEN 'Y' ELSE '' END                  AS part1,
+               CASE WHEN ms.question2 = 1 THEN 'Y' ELSE '' END                  AS part2,
+               CASE WHEN ms.question3 = 1 THEN 'Y' ELSE '' END                  AS part3,
+               CASE WHEN ms.question4 = 1 THEN 'Y' ELSE '' END                  AS part4,
+               CASE WHEN ms.question5 = 1 THEN 'Y' ELSE '' END                  AS part5,
+               CASE WHEN ms.question6 = 1 THEN 'Y' ELSE '' END                  AS part6,
+               CASE WHEN ms.question7 = 1 THEN 'Y' ELSE '' END                  AS part7,
+               CASE WHEN ms.question8 = 1 THEN 'Y' ELSE '' END                  AS part8,
+               ISNULL(MAX(CASE WHEN mf.number = 1 THEN mf.competency END), '')  AS part1_title,
+               ISNULL(MAX(CASE WHEN mf.number = 2 THEN mf.competency END), '')  AS part2_title,
+               ISNULL(MAX(CASE WHEN mf.number = 3 THEN mf.competency END), '')  AS part3_title,
+               ISNULL(MAX(CASE WHEN mf.number = 4 THEN mf.competency END), '')  AS part4_title,
+               ISNULL(MAX(CASE WHEN mf.number = 5 THEN mf.competency END), '')  AS part5_title,
+               ISNULL(MAX(CASE WHEN mf.number = 6 THEN mf.competency END), '')  AS part6_title,
+               ISNULL(MAX(CASE WHEN mf.number = 7 THEN mf.competency END), '')  AS part7_title,
+               ISNULL(MAX(CASE WHEN mf.number = 8 THEN mf.competency END), '')  AS part8_title,
+               ISNULL(MAX(CASE WHEN mf.number = 1 THEN mf.difficultly END), '') AS part1_level,
+               ISNULL(MAX(CASE WHEN mf.number = 2 THEN mf.difficultly END), '') AS part2_level,
+               ISNULL(MAX(CASE WHEN mf.number = 3 THEN mf.difficultly END), '') AS part3_level,
+               ISNULL(MAX(CASE WHEN mf.number = 4 THEN mf.difficultly END), '') AS part4_level,
+               ISNULL(MAX(CASE WHEN mf.number = 5 THEN mf.difficultly END), '') AS part5_level,
+               ISNULL(MAX(CASE WHEN mf.number = 6 THEN mf.difficultly END), '') AS part6_level,
+               ISNULL(MAX(CASE WHEN mf.number = 7 THEN mf.difficultly END), '') AS part7_level,
+               ISNULL(MAX(CASE WHEN mf.number = 8 THEN mf.difficultly END), '') AS part8_level,
+               ISNULL(MAX(mr.bottom_comment), '')                               AS review,
+               ISNULL(MAX(mr.feedback), '')                                     AS partnote,
+               ISNULL(MAX(mr.top_comment), '')                                  AS class_contents,
+               ISNULL(MAX(mr.bottom_comment), '')                               AS result_contents,
+               ''                                                               as sdate
         FROM erp_monthly_result mr
                  JOIN erp_time_table t ON mr.time_table_key = t.time_table_key
                  JOIN erp_monthly_score ms ON mr.student_id = ms.student_id AND mr.time_table_key = ms.time_table_key
                  JOIN erp_monthly_feedback mf ON mf.class_key = t.class_key AND mf.yy = mr.yy
                  JOIN erp_class_code cc ON t.class_key = cc.class_key AND mf.class_key = cc.class_key
         WHERE mr.student_id = #{id}
-          AND mr.yy = LEFT(#{ym}, 4)
-          AND mr.mm = RIGHT(#{ym}, 2)
-          AND cc.class_type = CASE #{gb} WHEN 'S' THEN '1' WHEN 'I' THEN '2' END
+          AND mr.yy = LEFT (#{ym}
+            , 4)
+          AND mr.mm = RIGHT (#{ym}
+            , 2)
+          AND cc.class_type = CASE #{gb} WHEN 'S' THEN '1' WHEN 'I' THEN '2'
+        END
 GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, ms.question6, ms.question7, ms.question8;
+    </select>
+
+
+    <select id="findAppInfantHani" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
+        SELECT *
+        FROM erp_infant_han_notice
+        where student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
     </select>
 
     <select id="findClassInfoByStudentId"
@@ -1024,19 +1034,16 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
 
     <select id="findInfantClassLabel"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
-        SELECT
-        tc.time_table_key AS timeTableKey,
-        tc.time_table_label AS classLabel,
-        t.class_key AS classKey,
-        t.unit_key AS unitKey
+        SELECT tc.time_table_key   AS timeTableKey,
+               tc.time_table_label AS classLabel,
+               t.class_key         AS classKey,
+               t.unit_key          AS unitKey
         FROM ERP_TIME_TABLE t
-        JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
+                 JOIN ERP_TIME_TABLE_CODE tc ON t.time_table_key = tc.time_table_key
         WHERE t.yy = #{yy}
-        AND t.mm = #{mm}
-        AND LEN(t.class_key) = 1
-        <if test="userCode != null and userCode != 'all'">
-            AND t.user_code = #{userCode}
-        </if>
+          AND t.mm = #{mm}
+          AND LEN(t.class_key) = 1
+          AND t.user_code = #{userCode}
         ORDER BY tc.time_table_key;
     </select>
 
@@ -1143,7 +1150,7 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
                                            part4_tag_1, part4_tag_2, part4_tag_3,
                                            part5_tag_1, part5_tag_2, part5_tag_3,
                                            created_at, updated_at, update_user,
-                                           student_id, time_table_key, center_code, user_code, send_id)
+                                           student_id, time_table_key, center_code, user_code, send_id, yy, mm)
         VALUES (#{dto.detail.classLabel},
                 #{dto.detail.subject},
                 #{dto.detail.storyComment},
@@ -1162,7 +1169,7 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
                 NULL, NULL, NULL,
                 NULL, NULL, NULL,
                 SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId})
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm})
     </insert>
 
     <insert id="insertInfantBookNotice">
@@ -1176,7 +1183,7 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
                                             part4_tag_1, part4_tag_2, part4_tag_3,
                                             part5_tag_1, part5_tag_2, part5_tag_3,
                                             created_at, updated_at, update_user,
-                                            student_id, time_table_key, center_code, user_code, send_id)
+                                            student_id, time_table_key, center_code, user_code, send_id, yy, mm)
         VALUES (#{dto.detail.classLabel},
                 #{dto.detail.subject},
                 #{dto.detail.story},
@@ -1195,7 +1202,7 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
                 NULL, NULL, NULL,
                 NULL, NULL, NULL,
                 SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId})
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm})
     </insert>
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->

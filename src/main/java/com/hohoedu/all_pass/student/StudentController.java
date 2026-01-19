@@ -8,6 +8,7 @@ import java.util.Map;
 
 
 import com.google.protobuf.Api;
+import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
@@ -44,6 +45,7 @@ public class StudentController {
     final private StudentService studentService;
     final private ClassService classService;
     final private FileUploadService fileUploadService;
+    final private DateConfig dateConfig;
 
 
     @GetMapping("/api/label")
@@ -168,6 +170,23 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(gradeCodes));
     }
 
+    @PostMapping("/api/transfer/list")
+    public ResponseEntity<?> getTransferStudentList(@RequestBody StudentWebReqDTO.TransferStudentListReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        log.info("reqDTO = {}", reqDTO);
+
+
+        List<StudentWebRespDTO.StudentInOutDTO> studentList = studentService.findAllInOut(user.getCenterCode(), reqDTO.getUserCode());
+
+        return ResponseEntity.ok(ApiUtils.success(studentList));
+    }
+
     @GetMapping("/transfer/{studentId}")
     public ResponseEntity<?> getTransferByStudentId(@PathVariable("studentId") Integer studentId) {
 
@@ -177,18 +196,26 @@ public class StudentController {
 
     @PostMapping("/inout")
     @ResponseBody
-    public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO studentInOutDTO, HttpSession session) {
+    public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        log.info("studentInOutDTO = {}", studentInOutDTO);
 
-        studentService.transferStudent(studentInOutDTO, user.getUserCode());
+        studentService.reserveTransfer(dto, user.getUserCode());
 
-        return ResponseEntity.ok(ApiUtils.success("success"));
+        return ResponseEntity.ok(ApiUtils.success("RESERVED"));
+    }
+
+    @PostMapping("/apply-today")
+    public ResponseEntity<?> applyTodayTransfers(@RequestHeader("X-CRON-TOKEN") String token) {
+        token.equals("hohoedu");
+        log.info("token = {}", token);
+        log.info(LocalDate.now().toString());
+        studentService.applyTodayTransfers(LocalDate.now());
+
+        return ResponseEntity.ok(ApiUtils.success("TODAY_TRANSFER_APPLIED")
+        );
     }
 
     @PostMapping("/app_token")

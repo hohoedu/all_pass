@@ -180,12 +180,21 @@ public class AppController {
         return ResponseEntity.ok(json);
     }
 
-    @PostMapping("/infant_notice")
-    public ResponseEntity<?> AppInfantNotice(@RequestBody ClassAppReqDTO.BeforeClassReqDTO reqDTO) {
+    @PostMapping("/evaluation_u_copy_")
+    public ResponseEntity<?> AppInfantHani(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+        ClassAppRespDTO.MonthlyHaniRespDTO respDTO = classService.findAppInfantHani(reqDTO);
+        log.info(respDTO.toString());
+        return ResponseEntity.ok(AppApiUtils.successOne(respDTO));
+    }
 
+    @PostMapping("/evaluation_u_copy")
+    public ResponseEntity<?> AppInfantBuki(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+        log.info("copy");
+        log.info(reqDTO.toString());
 
         return ResponseEntity.ok(AppApiUtils.successList(null));
     }
+
 
     @PostMapping("/payment_details")
     public ResponseEntity<?> AppPaymentDetails(@RequestBody PaymentAppReqDTO.PaymentDetailsReqDTO reqDTO) {

@@ -355,6 +355,7 @@ public class ClassViewController {
 
     @GetMapping("/infant")
     public String getMonthlyInfantPage(HttpSession session, Model model) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "login";
@@ -367,7 +368,7 @@ public class ClassViewController {
         model.addAttribute("users", users);
 
         ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();
-        classInfantDTO.setUserCode("all");
+        classInfantDTO.setUserCode(user.getUserCode());
         classInfantDTO.setYy(yy);
         classInfantDTO.setMm(mm);
 

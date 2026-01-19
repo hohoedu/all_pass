@@ -132,4 +132,10 @@ public class StudentWebReqDTO {
         private String outTime;
 
     }
+
+    @Data
+    public static class TransferStudentListReqDTO {
+        private String userCode;
+        private String centerCode;
+    }
 }

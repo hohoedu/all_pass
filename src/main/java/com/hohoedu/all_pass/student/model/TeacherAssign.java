@@ -33,6 +33,12 @@ public class TeacherAssign {
     @Column
     private String entryBookDate;
 
+    @Column
+    private Integer hanMaterialFee;
+
+    @Column
+    private Integer bookMaterialFee;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assign_han_teacher", referencedColumnName = "user_code")
     private User assignHanTeacher;
@@ -52,15 +58,17 @@ public class TeacherAssign {
 
 
     @Builder
-    public TeacherAssign(Student student, Boolean hanState, User assignHanTeacher, ClassCode assignHanClass, String entryHanDate, Boolean bookState, User assignBookTeacher, ClassCode assignBookClass, String entryBookDate) {
+    public TeacherAssign(Student student, Boolean hanState, User assignHanTeacher, ClassCode assignHanClass, String entryHanDate, Integer hanMaterialFee, Boolean bookState, User assignBookTeacher, ClassCode assignBookClass, String entryBookDate, Integer bookMaterialFee) {
         this.student = student;
         this.hanState = hanState;
         this.assignHanTeacher = assignHanTeacher;
         this.assignHanClass = assignHanClass;
         this.entryHanDate = entryHanDate;
+        this.hanMaterialFee = hanMaterialFee;
         this.bookState = bookState;
         this.assignBookTeacher = assignBookTeacher;
         this.assignBookClass = assignBookClass;
+        this.bookMaterialFee = bookMaterialFee;
         this.entryBookDate = entryBookDate;
     }
 

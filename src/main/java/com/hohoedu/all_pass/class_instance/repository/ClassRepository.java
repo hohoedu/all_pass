@@ -286,6 +286,11 @@ public interface ClassRepository {
 
     ClassAppRespDTO.MonthlyReportRespDTO findMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO dto);
 
+    ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
     public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
             @Param("studentId") String studentId,
             @Param("yy") String yy,

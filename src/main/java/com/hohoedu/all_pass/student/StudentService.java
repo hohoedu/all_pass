@@ -162,6 +162,7 @@ public class StudentService {
         return gradeCodes;
     }
 
+
     public List<RelationCode> findRelation() {
 
         List<RelationCode> relationCodes = relationJpaRepository.findAll();
@@ -169,9 +170,9 @@ public class StudentService {
     }
 
     public List<StudentInOutDTO> findAllInOut(String centerCode, String userCode) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
-        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, userCode, yy, mm);
+
+        List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, userCode);
+
         return students;
     }
 
@@ -499,6 +500,111 @@ public class StudentService {
             }
         }
 
+    }
+
+
+    @Transactional
+    public void reserveTransfer(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
+        LocalDate moveDate = LocalDate.parse(reqDto.getMoveAt());
+
+        if (moveDate.isBefore(LocalDate.now())) {
+            throw new Exception400("과거 날짜로는 전입/전출할 수 없습니다.");
+        }
+
+        for (String studentId : reqDto.getStudents()) {
+
+            StudentWebRespDTO.TeacherDTO teacher =
+                    studentRepository.findTeacherAssignByStudentId(studentId);
+
+            if (reqDto.getSelectedHan() != null) {
+                if (teacher.getAssignHanTeacher() == null) {
+                    throw new Exception400("등록된 한자 수업이 없습니다.");
+                }
+                if (teacher.getAssignHanTeacher().equals(reqDto.getUserCode())) {
+                    throw new Exception400("본인에게 전입/전출 할 수는 없습니다.");
+                }
+
+                studentRepository.insertTransferSchedule(
+                        studentId,
+                        "1",
+                        teacher.getAssignHanTeacher(),
+                        reqDto.getUserCode(),
+                        reqDto.getMoveAt(),
+                        reqDto.getTransferReason(),
+                        userCode
+                );
+            }
+
+            if (reqDto.getSelectedBook() != null) {
+                if (teacher.getAssignBookTeacher() == null) {
+                    throw new Exception400("등록된 독서 수업이 없습니다.");
+                }
+                if (teacher.getAssignBookTeacher().equals(reqDto.getUserCode())) {
+                    throw new Exception400("본인에게 전입/전출 할 수는 없습니다.");
+                }
+
+                studentRepository.insertTransferSchedule(
+                        studentId,
+                        "2",
+                        teacher.getAssignBookTeacher(),
+                        reqDto.getUserCode(),
+                        reqDto.getMoveAt(),
+                        reqDto.getTransferReason(),
+                        userCode
+                );
+            }
+        }
+    }
+
+    @Transactional
+    public void applyTodayTransfers(LocalDate today) {
+
+        String yy = String.valueOf(today.getYear());
+        String mm = String.format("%02d", today.getMonthValue());
+
+        List<StudentTransferSchedule> schedules = studentRepository.findTodaySchedules(today.toString());
+
+        for (StudentTransferSchedule t : schedules) {
+
+            // 1. 학생 전입/전출 반영
+            studentRepository.updateTransfer(
+                    t.getStudentId(),
+                    t.getToUser(),
+                    t.getClassType(),
+                    yy,
+                    mm
+            );
+
+            // 2. 시간표 / 결제 정리
+            StudentWebRespDTO.TransferTimeTableInfoDTO dto =
+                    classRepository.findTimeTableKeyByStudentId(
+                            t.getStudentId(),
+                            t.getClassType(),
+                            yy,
+                            mm
+                    );
+
+            if (dto != null) {
+                classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), t.getStudentId());
+                paymentService.deleteDetail(dto.getTimeTableKey(), t.getStudentId());
+            }
+
+            // 3. 히스토리 저장
+            StudentTransferHistory history = StudentTransferHistory.builder()
+                    .student(Student.builder().studentId(t.getStudentId()).build())
+                    .fromUser(User.builder().userCode(t.getFromUser()).build())
+                    .toUser(User.builder().userCode(t.getToUser()).build())
+                    .classType(t.getClassType())
+                    .transferReason(t.getReason())
+                    .updatedBy("SYSTEM")
+                    .moveAt(today.toString())
+                    .build();
+
+            studentRepository.insertTransferHistory(history);
+
+            // 4. 예약 완료 처리
+            studentRepository.markAsApplied(t.getId());
+        }
     }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {

@@ -151,19 +151,19 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-    @PostMapping("/comclass/updateAssign")
-    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-
-        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
-
-        return ResponseEntity.ok(ApiUtils.success(response + "건"));
-    }
+//    @PostMapping("/comclass/updateAssign")
+//    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
+//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+//                    .header(HttpHeaders.LOCATION, "/login")
+//                    .build();
+//        }
+//
+//        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
+//
+//        return ResponseEntity.ok(ApiUtils.success(response + "건"));
+//    }
 
 
     @PostMapping("/delete/student")

@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.class_instance._dto.app;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -112,29 +113,47 @@ public class ClassAppRespDTO {
         private String part6 = "";
         private String part7 = "";
         private String part8 = "";
-
-        private String part1Title = "";
-        private String part2Title = "";
-        private String part3Title = "";
-        private String part4Title = "";
-        private String part5Title = "";
-        private String part6Title = "";
-        private String part7Title = "";
-        private String part8Title = "";
-
-        private String part1Level = "";
-        private String part2Level = "";
-        private String part3Level = "";
-        private String part4Level = "";
-        private String part5Level = "";
-        private String part6Level = "";
-        private String part7Level = "";
-        private String part8Level = "";
-
+        @JsonProperty("part1_title")
+        private String part1Title;
+        @JsonProperty("part2_title")
+        private String part2Title;
+        @JsonProperty("part3_title")
+        private String part3Title;
+        @JsonProperty("part4_title")
+        private String part4Title;
+        @JsonProperty("part5_title")
+        private String part5Title;
+        @JsonProperty("part6_title")
+        private String part6Title;
+        @JsonProperty("part7_title")
+        private String part7Title;
+        @JsonProperty("part8_title")
+        private String part8Title;
+        @JsonProperty("part1_level")
+        private String part1Level;
+        @JsonProperty("part2_level")
+        private String part2Level;
+        @JsonProperty("part3_level")
+        private String part3Level;
+        @JsonProperty("part4_level")
+        private String part4Level;
+        @JsonProperty("part5_level")
+        private String part5Level;
+        @JsonProperty("part6_level")
+        private String part6Level;
+        @JsonProperty("part7_level")
+        private String part7Level;
+        @JsonProperty("part8_level")
+        private String part8Level;
+        @JsonProperty("review")
         private String review = "";
+        @JsonProperty("class_contents")
         private String classContents = "";
+        @JsonProperty("result_contents")
         private String resultContents = "";
+        @JsonProperty("partnote")
         private String partnote = "";
+        @JsonProperty("sdate")
         private String sdate = "";
 
     }
@@ -160,37 +179,96 @@ public class ClassAppRespDTO {
     }
 
     @Data
-    public static class MonthlyReportDTO {
-        private String part1;
-        private String part2;
-        private String part3;
-        private String part4;
-        private String part5;
-        private String part6;
-        private String part7;
-        private String part8;
-        private String part1_title;
-        private String part2_title;
-        private String part3_title;
-        private String part4_title;
-        private String part5_title;
-        private String part6_title;
-        private String part7_title;
-        private String part8_title;
-        private String part1_level;
-        private String part2_level;
-        private String part3_level;
-        private String part4_level;
-        private String part5_level;
-        private String part6_level;
-        private String part7_level;
-        private String part8_level;
-        private String review;
-        private String class_contents;
-        private String result_contents;
-        private String partnote;
-        private String sdate;
+    public static class MonthlyHaniRespDTO {
 
+        @JsonProperty("main_title")
+        private String mainTitle;
+
+        private String subtitle;
+
+        private String title1;
+        private String title2;
+        private String title3;
+
+        private String img;
+
+        @JsonProperty("part1_title")
+        private String part1Title;
+
+        @JsonProperty("part2_title")
+        private String part2Title;
+
+        @JsonProperty("part3_title")
+        private String part3Title;
+
+        @JsonProperty("part4_title")
+        private String part4Title;
+
+        @JsonProperty("part5_title")
+        private String part5Title;
+
+        @JsonProperty("part1_note")
+        private String part1Note;
+
+        @JsonProperty("part2_note")
+        private String part2Note;
+
+        @JsonProperty("part3_note")
+        private String part3Note;
+
+        @JsonProperty("part4_note")
+        private String part4Note;
+
+        @JsonProperty("part5_note")
+        private String part5Note;
+
+        @JsonProperty("part1_tag_1")
+        private String part1Tag1;
+
+        @JsonProperty("part1_tag_2")
+        private String part1Tag2;
+
+        @JsonProperty("part1_tag_3")
+        private String part1Tag3;
+
+        @JsonProperty("part2_tag_1")
+        private String part2Tag1;
+
+        @JsonProperty("part2_tag_2")
+        private String part2Tag2;
+
+        @JsonProperty("part2_tag_3")
+        private String part2Tag3;
+
+        @JsonProperty("part3_tag_1")
+        private String part3Tag1;
+
+        @JsonProperty("part3_tag_2")
+        private String part3Tag2;
+
+        @JsonProperty("part3_tag_3")
+        private String part3Tag3;
+
+        @JsonProperty("part4_tag_1")
+        private String part4Tag1;
+
+        @JsonProperty("part4_tag_2")
+        private String part4Tag2;
+
+        @JsonProperty("part4_tag_3")
+        private String part4Tag3;
+
+        @JsonProperty("part5_tag_1")
+        private String part5Tag1;
+
+        @JsonProperty("part5_tag_2")
+        private String part5Tag2;
+
+        @JsonProperty("part5_tag_3")
+        private String part5Tag3;
+
+        private String sdate;
     }
+
 
 }
