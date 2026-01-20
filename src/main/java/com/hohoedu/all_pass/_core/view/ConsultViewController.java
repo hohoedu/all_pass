@@ -34,7 +34,7 @@ public class ConsultViewController {
 
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
-        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode());
+        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode(), user.getUserCode());
         model.addAttribute("grades", grades);
         model.addAttribute("routes", routes);
         model.addAttribute("consults", consults);

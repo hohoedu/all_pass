@@ -221,6 +221,7 @@ public class ClassRespDTO {
     public static class MonthlyStudentDTO {
         private String studentId;
         private String studentName;
+        private String appToken;
         private String timeTableKey;
         private String feedback;
         private String bottomComment;
@@ -252,6 +253,7 @@ public class ClassRespDTO {
         private String studentId;
         private String studentName;
         private String scoreResult;
+        private String bottomComment;
     }
 
     @Data

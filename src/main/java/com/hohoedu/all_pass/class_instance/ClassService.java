@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.hohoedu.all_pass._core.firebase.FcmDTO;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -19,6 +20,8 @@ import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.TeacherAssign;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
@@ -61,6 +64,8 @@ public class ClassService {
     private final PaymentRepository paymentRepository;
     private final StudentService studentService;
     private final PaymentService paymentService;
+    private final HttpServletResponse httpServletResponse;
+    private final UserRepository userRepository;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -750,7 +755,11 @@ public class ClassService {
 
     // ================ 월간 평가 서비스 =====================//
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname, String centerCode) {
-
+        log.info("userCode={}", userCode);
+        log.info("yy={}", yy);
+        log.info("mm={}", mm);
+        log.info("dayname={}", dayname);
+        log.info("centerCode={}", centerCode);
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname, centerCode)
                 .stream()
                 .map(c -> {
@@ -797,7 +806,9 @@ public class ClassService {
         response.setStudentId(dto.getStudentId());
         response.setStudentName(monthlyFeedback.get("studentName"));
         response.setScoreResult(feedback);
+        response.setBottomComment(monthlyFeedback.get("bottomComment"));
 
+        log.info("response={}", response);
         MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
         if (exist == null) {
@@ -869,6 +880,45 @@ public class ClassService {
 
     public ClassAppRespDTO.MonthlyReportRespDTO getMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
         return classRepository.findMonthlyReport(reqDTO);
+    }
+
+    @Transactional
+    public void updateMonthlySendStatus(
+            List<String> successStudentIds,
+            List<FcmDTO.MonthlyFcmDTO.StudentDTO> students,
+            String yy,
+            String mm
+    ) {
+        for (FcmDTO.MonthlyFcmDTO.StudentDTO student : students) {
+            // 발송 성공한 학생만 업데이트
+            if (successStudentIds.contains(student.getStudentId())) {
+                int updatedRows = classRepository.updateMonthlySendStatus(
+                        student.getStudentId(),
+                        student.getTimeTableKey(),
+                        yy,
+                        mm
+                );
+
+                if (updatedRows > 0) {
+                    log.info("is_send 업데이트 성공. studentId: {}", student.getStudentId());
+                }
+            }
+        }
+    }
+
+    @Transactional
+    public void saveMonthlyComments(List<ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO> students) {
+        for (ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO student : students) {
+
+            int updatedRows = classRepository.updateMonthlyComment(student);
+
+            if (updatedRows == 0) {
+                log.warn("업데이트된 행이 없습니다. studentId: {}, timeTableKey: {}, yy: {}, mm: {}",
+                        student.getStudentId(), student.getTimeTableKey(), student.getYy(), student.getMm());
+            }
+        }
+
+        log.info("{}명의 월간평가 코멘트 저장 완료", students.size());
     }
 
     public ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {

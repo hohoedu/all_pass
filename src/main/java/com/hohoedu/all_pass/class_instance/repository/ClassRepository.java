@@ -286,6 +286,15 @@ public interface ClassRepository {
 
     ClassAppRespDTO.MonthlyReportRespDTO findMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO dto);
 
+    int updateMonthlySendStatus(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+    
+    int updateMonthlyComment(ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO dto);
+
     ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(
             @Param("studentId") String studentId,
             @Param("yy") String yy,

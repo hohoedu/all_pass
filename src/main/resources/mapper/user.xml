@@ -21,14 +21,15 @@
                u.user_id     as userId,
                u.user_name   as userName,
                u.role_key    as roleKey,
-               c.center_code  as centerCode,
+               u.type        as type,
+               c.center_code as centerCode,
                c.center_name as centerName,
-               r.region_name     as regionName
+               r.region_name as regionName,
+               role.role_num as roleNum
         FROM ERP_USER u
-                 JOIN ERP_CENTER c
-                      ON u.center_code = c.center_code
-                 JOIN ERP_REGION_CODE r
-                      ON c.region_key = r.region_key
+                 JOIN ERP_CENTER c ON u.center_code = c.center_code
+                 JOIN ERP_REGION_CODE r ON c.region_key = r.region_key
+                 JOIN ERP_USER_ROLE_CODE role ON role.role_key = u.role_key
         WHERE u.user_id = #{userId}
     </select>
 
@@ -42,10 +43,13 @@
         WHERE u.user_id = #{userId}
     </select>
 
-    <select id="findUserByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.user.User">
-        select id, created_at, user_code, user_id, user_name, center_code, role_key
+    <select id="findUserByCenterCode" resultType="com.hohoedu.all_pass.user.User">
+        select u.id, u.created_at, u.user_code, u.user_id, u.user_name, u.center_code, u.role_key
         from ERP_USER u
+                 JOIN erp_user_role_code r ON u.role_key = r.role_key
         where center_code = #{centerCode}
+          AND r.role_num &lt;= #{roleNum}
+          AND (#{type} = 'all' OR u.type = #{type})
     </select>
 
     <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.center.Center">

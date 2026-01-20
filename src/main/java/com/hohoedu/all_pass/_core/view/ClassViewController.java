@@ -103,7 +103,7 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user);
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
@@ -169,12 +169,16 @@ public class ClassViewController {
     }
 
     @GetMapping("/print-timeview")
-    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model) {
+    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
         String yy = ym.substring(0, 4);
         String mm = ym.substring(4, 6);
         String centerCode = userCode.substring(0, 6);
         // 센터 선생님 목록
-        List<User> users = userService.findByCenterCode(centerCode);
+        List<User> users = userService.findByCenterCode(user);
 
         // 선택된 선생님
         User selectedUser = users.stream()
@@ -221,7 +225,7 @@ public class ClassViewController {
         String mm = dateConfig.currentYearMonth().get("currentMonth");
         String dayName = dateConfig.currentYearMonth().get("currentDayName");
         log.info("dayName = {}", dayName);
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user);
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
 
         // 주차 정보는 항상 계산
@@ -330,26 +334,25 @@ public class ClassViewController {
         }
 
         // 센터별 선생님 목록
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
-        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getCenterCode();
+        List<User> users = userService.findByCenterCode(user);
+
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
-                userCode,
+                user.getUserCode(),
                 dateConfig.currentYearMonth().get("currentYear"),
                 dateConfig.currentYearMonth().get("currentMonth"),
                 dateConfig.currentYearMonth().get("currentDayName"),
                 user.getCenterCode());
-        log.info(labels.toString());
         // 첫번째 수업에 대한 학생 목록 가져오기
         if (!labels.isEmpty()) {
             List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(labels.get(0).getTimeTableKey());
+            log.info(students.toString());
             model.addAttribute("students", students);
         }
 
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
-
         return "class/monthly";
     }
 
@@ -364,7 +367,7 @@ public class ClassViewController {
         String yy = dateConfig.currentYearMonth().get("currentYear");
         String mm = dateConfig.currentYearMonth().get("currentMonth");
 
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user);
         model.addAttribute("users", users);
 
         ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();

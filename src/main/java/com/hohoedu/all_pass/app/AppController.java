@@ -176,7 +176,7 @@ public class AppController {
         Object response = AppApiUtils.successClinicOne(respDTO);
 
         String json = new ObjectMapper().writeValueAsString(response);
-        log.info(json.toString());
+        
         return ResponseEntity.ok(json);
     }
 

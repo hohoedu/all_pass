@@ -68,9 +68,8 @@ public class StudentViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
-        List<MainStudentDTO> students = studentService.getStudentsByUserCode(userCode, user.getCenterCode());
-        List<User> teachers = studentService.findTeacher(user.getCenterCode());
+        List<MainStudentDTO> students = studentService.getStudentsByUserCode(user.getUserCode(), user.getCenterCode());
+        List<User> teachers = studentService.findTeacher(user);
         List<TimeTableLabelDTO> labels = classService.getAllClassLabel(user.getUserCode());
         model.addAttribute("user", user);
         model.addAttribute("labels", labels);
@@ -92,7 +91,7 @@ public class StudentViewController {
 
         List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), user.getUserCode());
 //        List<StudentInOutDTO> students = studentService.findStudentByUserCode(userCode);
-        List<User> teachers = studentService.findTeacher(user.getCenterCode());
+        List<User> teachers = studentService.findTeacher(user);
 //        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);
 //        model.addAttribute("labels", labels);
         model.addAttribute("students", students);

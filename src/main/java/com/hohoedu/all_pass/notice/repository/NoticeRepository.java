@@ -13,7 +13,9 @@ import java.util.List;
 public interface NoticeRepository {
     int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto);
 
-    List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(@Param("centerCode") String centerCode);
+    List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode);
 
     NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(
             @Param("centerCode") String centerCode, Integer id);

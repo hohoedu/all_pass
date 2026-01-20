@@ -38,7 +38,7 @@ public class PaymentViewController {
         }
         String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
 
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user);
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
 
         model.addAttribute("user", user);

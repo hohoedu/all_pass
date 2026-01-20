@@ -22,6 +22,25 @@ public class FcmDTO {
         private String body;
     }
 
+
+    @Data
+    public static class MonthlyFcmDTO {
+        private List<String> tokens;
+        private String title;
+        private String body;
+        private List<StudentDTO> students;  // 추가
+        private String yy;                  // 추가
+        private String mm;                  // 추가
+
+        @Data
+        public static class StudentDTO {
+            private String studentId;
+            private String studentName;
+            private String timeTableKey;
+        }
+    }
+
+
     @Data
     public static class InfantFcmDTO {
 

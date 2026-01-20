@@ -16,7 +16,7 @@
                n.title             AS title,
                n.sub_title         AS subTitle,
                n.content           AS rawContent,
-               n.created_at         AS createdAt,
+               n.created_at        AS createdAt,
                n.icon              AS icon,
                n.link_url          AS linkUrl,
                n.view_count        AS viewCount,
@@ -24,6 +24,7 @@
         FROM erp_center_notice n
                  JOIN erp_user u ON n.user_code = u.user_code
         WHERE n.center_code = #{centerCode}
+          AND n.user_code = #{userCode}
         ORDER BY n.created_at DESC;
 
     </select>

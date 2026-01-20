@@ -72,6 +72,8 @@ public class PaymentService {
 
         String oldStatus = payment.getStatus();
 
+        log.info("oldStatus={}", oldStatus);
+
         /* =========================================================
          * 1️⃣ 전체 detail 금액 (교육비 + 교재비) → payment.amount 용
          * ========================================================= */
@@ -145,6 +147,8 @@ public class PaymentService {
         } else {
             newStatus = "partial";
         }
+
+        log.info("newStatus={}", newStatus);
 
         /* =========================================================
          * 8️⃣ payment.amount / unpaid_amount 업데이트
@@ -226,30 +230,6 @@ public class PaymentService {
                 eduUnpaidAmount,
                 totalUnpaidAmount
         );
-    }
-
-    /**
-     * payment 상태 결정 (교육비 기준)
-     *
-     * @param billedAmount - 청구된 금액
-     * @param paidAmount   - 결제 완료 금액 (bill + manual)
-     * @param totalAmount  - 총 금액
-     * @return 상태 (pending/issued/partial/approved)
-     */
-    private String determinePaymentStatus(int billedAmount, int paidAmount, int totalAmount) {
-        if (paidAmount >= totalAmount && totalAmount > 0) {
-            return "approved";
-        }
-
-        if (paidAmount > 0) {
-            return "partial";
-        }
-
-        if (billedAmount > 0) {
-            return "issued";
-        }
-
-        return "pending";
     }
 
     /**

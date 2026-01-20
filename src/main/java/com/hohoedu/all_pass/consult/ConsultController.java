@@ -56,7 +56,7 @@ public class ConsultController {
         String startYm = req.get("startYm");
         String endYm = req.get("endYm");
 
-        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(startYm, endYm, user.getCenterCode());
+        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(startYm, endYm, user.getCenterCode(), user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }

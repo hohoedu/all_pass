@@ -27,19 +27,23 @@ public class UserRespDTO {
         private String userId;
         private String userName;
         private String roleKey;
+        private String type;
         private String centerCode;
         private String centerName;
         private String regionName;
+        private Integer roleNum;
 
         @Builder
-        public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String centerCode, String centerName, String regionName) {
+        public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String type, String centerCode, String centerName, String regionName, Integer roleNum) {
             this.userCode = userCode;
             this.userId = userId;
             this.userName = userName;
             this.roleKey = roleKey;
+            this.type = type;
             this.centerCode = centerCode;
             this.centerName = centerName;
             this.regionName = regionName;
+            this.roleNum = roleNum;
         }
 
     }

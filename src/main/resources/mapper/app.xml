@@ -18,6 +18,7 @@
         WHERE g.grade_key = #{gradeKey}
           AND book.yy = '2026'
           AND book.mm = '02'
+        order by book.yy, book.mm, book.week
     </select>
 
     <select id="findBookInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListRawDTO">
@@ -35,6 +36,7 @@
         WHERE s.student_id = #{studentId}
           AND t.yy = #{yy}
           AND t.mm = #{mm}
+        order by t.yy, t.mm, book.week
     </select>
 
 

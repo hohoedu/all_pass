@@ -60,10 +60,28 @@ public class FcmController {
     }
 
     @PostMapping("/monthly")
-    public ResponseEntity<?> monthly(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
+    public ResponseEntity<?> monthly(@RequestBody FcmDTO.MonthlyFcmDTO fcmDTO) {
 
-        for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+        List<String> successStudentIds = new ArrayList<>();
+
+        // FCM 발송
+        for (int i = 0; i < fcmDTO.getTokens().size(); i++) {
+            String token = fcmDTO.getTokens().get(i);
+            boolean success = fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+
+            if (success && i < fcmDTO.getStudents().size()) {
+                successStudentIds.add(fcmDTO.getStudents().get(i).getStudentId());
+            }
+        }
+
+        // is_send 업데이트
+        if (!successStudentIds.isEmpty()) {
+            classService.updateMonthlySendStatus(
+                    successStudentIds,
+                    fcmDTO.getStudents(),
+                    fcmDTO.getYy(),
+                    fcmDTO.getMm()
+            );
         }
 
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));

@@ -141,7 +141,7 @@ public class PaymentController {
         }
         String year = paymentReqDTO.getYear();
         String month = paymentReqDTO.getMonth();
-        String userCode = user.getRoleKey().equals("ADMIN") ? paymentReqDTO.getUserCode() : user.getUserCode();
+        String userCode = user.getRoleKey().equals("ADMIN") || user.getRoleKey().equals("MANAGER") ? paymentReqDTO.getUserCode() : user.getUserCode();
 
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode());
         log.info("students = {}", students);

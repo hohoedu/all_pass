@@ -245,8 +245,8 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        String userCode = user.getRoleKey().equals("ADMIN") ? dto.getUserCode() : user.getUserCode();
-        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), userCode, user.getCenterCode());
+
+        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), user.getUserCode(), user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
@@ -414,10 +414,26 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-    @PostMapping("/api/monthly/send")
-    public ResponseEntity<?> sendMonthlyReport(@RequestBody ClassReqDTO.MonthlySendDTO dto) {
-        log.info(dto.toString());
-        return ResponseEntity.ok(ApiUtils.success("hello"));
+
+    @PostMapping("/api/monthly/save")
+    public ResponseEntity<?> saveMonthlyReport(@RequestBody ClassReqDTO.MonthlySaveRequestDTO dto) {
+        try {
+            List<ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO> students = dto.getStudents();
+
+            students.forEach(s -> log.info("학생: {}", s));
+
+            classService.saveMonthlyComments(students);
+
+            return ResponseEntity.ok(ApiUtils.success(Map.of(
+                    "message", students.size() + "명의 코멘트가 저장되었습니다."
+            )));
+
+        } catch (Exception e) {
+            log.error("월간평가 코멘트 저장 오류", e);
+            return ResponseEntity.badRequest().body(ApiUtils.error(
+                    "저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST
+            ));
+        }
     }
 
     // 월간 평가 (유아)

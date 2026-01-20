@@ -28,6 +28,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
@@ -183,9 +184,8 @@ public class StudentService {
         return null;
     }
 
-    public List<User> findTeacher(String centerCode) {
-        List<User> users = userRepository.findUserByCenterCode(centerCode);
-        System.out.println(users);
+    public List<User> findTeacher(UserRespDTO.LoginRespDTO dto) {
+        List<User> users = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType());
         return users;
     }
 

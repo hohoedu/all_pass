@@ -181,13 +181,11 @@
         WHERE ta.student_id = #{studentId}
           AND t.yy = #{yy}
           AND t.mm = #{mm}
-          AND cc.class_type = (
-            SELECT cc2.class_type
-            FROM erp_time_table t2
-                     JOIN erp_class_code cc2
-                          ON t2.class_key = cc2.class_key
-            WHERE t2.time_table_key = #{timeTableKey}
-        )
+          AND cc.class_type = (SELECT cc2.class_type
+                               FROM erp_time_table t2
+                                        JOIN erp_class_code cc2
+                                             ON t2.class_key = cc2.class_key
+                               WHERE t2.time_table_key = #{timeTableKey})
     </select>
 
     <!-- 시간표 학생 추가 -->
@@ -238,7 +236,7 @@
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-        (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
+            (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
@@ -696,9 +694,9 @@
                time_table_key  AS timeTableKey,
                dayname         AS timeTableLabel,
                u.user_name     AS userName,
-               review AS review,
+               review          AS review,
                counsel_content AS counselContent,
-               counsel_type AS counselType
+               counsel_type    AS counselType
         from erp_after_class_notice acn
                  join erp_user u on acn.user_code = u.user_code
         where acn.time_table_key = #{timeTableKey}
@@ -739,6 +737,7 @@
                type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO">
         <id property="studentId" column="student_id"/>
         <result property="studentName" column="student_name"/>
+        <result property="appToken" column="app_token"/>
         <result property="timeTableKey" column="time_table_key"/>
         <result property="feedback" column="feedback"/>
         <result property="bottomComment" column="bottom_comment"/>
@@ -759,6 +758,7 @@
     <select id="findStudentByClassCode" resultMap="MonthlyStudentMap">
         SELECT s.student_id,
                s.student_name,
+               s.app_token,
                t.time_table_key,
                mr.feedback,
                mr.bottom_comment,
@@ -962,15 +962,36 @@
                  JOIN erp_monthly_score ms ON mr.student_id = ms.student_id AND mr.time_table_key = ms.time_table_key
                  JOIN erp_monthly_feedback mf ON mf.class_key = t.class_key AND mf.yy = mr.yy
                  JOIN erp_class_code cc ON t.class_key = cc.class_key AND mf.class_key = cc.class_key
-        WHERE mr.student_id = #{id}
+        WHERE mr.is_send = '1'
+          AND mr.student_id = #{id}
           AND mr.yy = LEFT (#{ym}
             , 4)
           AND mr.mm = RIGHT (#{ym}
             , 2)
           AND cc.class_type = CASE #{gb} WHEN 'S' THEN '1' WHEN 'I' THEN '2'
         END
-GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, ms.question6, ms.question7, ms.question8;
+        GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, ms.question6, ms.question7, ms.question8;
     </select>
+
+    <update id="updateMonthlySendStatus">
+        UPDATE erp_monthly_result
+        SET is_send    = '1',
+            updated_at = SYSDATETIME()
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </update>
+
+    <update id="updateMonthlyComment" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$MonthlySaveRequestDTO$MonthlySaveDTO">
+        UPDATE erp_monthly_result
+        SET bottom_comment = #{bottomComment},
+            updated_at     = SYSDATETIME()
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </update>
 
 
     <select id="findAppInfantHani" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
@@ -1219,9 +1240,9 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
         MERGE erp_after_class_notice AS T
             USING (
             SELECT
-            #{studentId}    AS student_id,
+            #{studentId} AS student_id,
             #{timeTableKey} AS time_table_key,
-            #{week}         AS week
+            #{week} AS week
             ) AS S
             ON (
             T.student_id = S.student_id
@@ -1230,51 +1251,52 @@ GROUP BY ms.question1, ms.question2, ms.question3, ms.question4, ms.question5, m
             )
             WHEN MATCHED THEN
         UPDATE SET
-            T.content     = #{content},
-            T.word        = #{word},
-            T.review      = #{review},
-            T.class_type  = #{classType},
+            T.content = #{content},
+            T.word = #{word},
+            T.review = #{review},
+            T.class_type = #{classType},
             T.class_label = #{classLabel},
-            T.dayname     = #{dayname},
+            T.dayname = #{dayname},
             T.counsel_content=#{counselContent},
             T.counsel_type=#{counselType},
-            T.updated_at  = GETDATE()
+            T.updated_at = GETDATE()
             WHEN NOT MATCHED THEN
-        INSERT (
-        student_id,
-        user_code,
-        time_table_key,
-        after_class_key,
-        yy,
-        mm,
-        week,
-        dayname,
-        content,
-        word,
-        review,
-        class_type,
-        class_label,
-        counsel_content,
-        counsel_type,
+        INSERT
+        (
+        student_id
+        ,
+        user_code
+        ,
+        time_table_key
+        ,
+        after_class_key
+        ,
+        yy
+        ,
+        mm
+        ,
+        week
+        ,
+        dayname
+        ,
+        content
+        ,
+        word
+        ,
+        review
+        ,
+        class_type
+        ,
+        class_label
+        ,
+        counsel_content
+        ,
+        counsel_type
+        ,
         created_at
         )
         VALUES (
-            #{studentId},
-            #{userCode},
-            #{timeTableKey},
-            #{afterClassKey},
-            #{year},
-            #{month},
-            #{week},
-            #{dayname},
-            #{content},
-            #{word},
-            #{review},
-            #{classType},
-            #{classLabel},
-            #{counselContent},
-            #{counselType},
-            GETDATE()
+            #{studentId}, #{userCode}, #{timeTableKey}, #{afterClassKey}, #{year}, #{month}, #{week}, #{dayname}, #{content}, #{word}, #{review}, #{classType}, #{classLabel}, #{counselContent}, #{counselType}, GETDATE()
             );
     </update>
 

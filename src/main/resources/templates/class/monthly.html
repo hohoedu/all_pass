@@ -34,7 +34,7 @@
                             </div>
                             <div class="class-btns">
                                 <div class="common-btn class-comment" id="monthly-send-btn">월간평가 발송</div>
-                                <div class="common-btn record-save">저장</div>
+                                <div class="common-btn record-save" id="monthly-save-btn">저장</div>
                             </div>
                         </div>
                         <div class="month-header">
@@ -47,10 +47,10 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="basic-select">
-                                <!-- th:if="${session.user.userRoleNo == '1' or session.user.userRoleNo == '2'}"> -->
+                            <div class="basic-select"
+                                 th:style="${!(session.user.roleKey == 'ADMIN' or session.user.roleKey == 'MANAGER')} ? 'display: none;' : ''">
                                 <select name="teacher" id="monthly-teacher-select" style="width: 200px;">
-                                    <option value="all">전체</option>
+                                    <!--                                    <option value="all" th:if="${session.user.roleKey == 'ADMIN'}">전체</option>-->
                                     <th:block th:each="u : ${users}">
                                         <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"></option>
                                     </th:block>
@@ -111,7 +111,8 @@
                                     </thead>
                                     <tbody id="monthly_student_tbody">
                                     <tr th:each="stu, stat : ${students}" th:data-student-id="${stu.studentId}"
-                                        th:data-time-table-key="${stu.timeTableKey}">
+                                        th:data-time-table-key="${stu.timeTableKey}"
+                                        th:data-app-token="${stu.appToken}">
                                         <td class="checkbox-group"><input type="checkbox"/></td>
                                         <td th:text="${stat.index + 1}"></td>
                                         <td th:text="${stu.studentName}"></td>
@@ -121,7 +122,7 @@
                                                     <button class="btn-number" th:each="i : ${#numbers.sequence(1,8)}"
                                                             th:classappend="${!#lists.isEmpty(stu.scores) and (stu.scores[0]['question' + i])} ? 'active' : ''"
                                                             th:value="${!#lists.isEmpty(stu.scores) and (stu.scores[0]['question' + i])} ? 'true' : 'false'"
-                                                            th:text="${i} + '번'" checked>
+                                                            th:text="${i} + '번'">
                                                     </button>
                                                 </div>
                                                 <div class="action-buttons">
@@ -133,6 +134,7 @@
                                         <td class="cell-middle">
                                             <div class="after-comment">
                                                     <textarea class="comment-text" placeholder="내용을 입력해주세요."
+                                                              readonly
                                                               th:text="${(stu.feedback == null)
                                                               ? '점수를 선택하고 결과보기를 눌러주세요'
                                                               : (stu.studentName + ' 학생은 ' + stu.feedback)}">
@@ -142,7 +144,7 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                                                    <textarea class="comment-text" placeholder="내용을 입력해주세요."
+                                                    <textarea class="comment-text bottom-comment" placeholder="내용을 입력해주세요."
                                                               th:text="${(stu.bottomComment == null)
                                                               ? '점수를 선택하고 결과보기를 눌러주세요'
                                                               : stu.bottomComment}">
@@ -151,7 +153,9 @@
                                             </div>
                                         </td>
                                         <td class="send-ornot">
-                                            <img th:src="${(stu.isSend == 1 or stu.isSend == true) ? '/image/send2.png' : '/image/send1.png'}" alt="">
+                                            <img th:src="${(stu.appToken == null or stu.appToken == '')
+                                            ? '/image/no_app.png'
+                                            : ((stu.isSend == 1 or stu.isSend == true) ? '/image/send2.png' : '/image/send1.png')}" alt="">
                                         </td>
                                         <td class="pre-search">
                                             <img th:src="@{/image/pre-search.png}" alt="">

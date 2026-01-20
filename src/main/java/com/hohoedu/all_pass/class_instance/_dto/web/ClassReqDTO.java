@@ -225,11 +225,31 @@ public class ClassReqDTO {
     }
 
     @Data
-    public static class MonthlySendDTO {
-        private List<String> studentIds;
+    public static class MonthlySendRequestDTO {
+        private List<MonthlySendDTO> students;
         private String yy;
         private String mm;
 
+        @Data
+        public static class MonthlySendDTO {
+            private String studentId;
+            private String studentName;
+            private String timeTableKey;
+        }
+    }
+
+    @Data
+    public static class MonthlySaveRequestDTO {
+        private List<MonthlySaveDTO> students;
+
+        @Data
+        public static class MonthlySaveDTO {
+            private String studentId;
+            private String timeTableKey;
+            private String yy;
+            private String mm;
+            private String bottomComment;
+        }
     }
 
     @Data

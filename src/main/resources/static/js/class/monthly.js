@@ -193,12 +193,13 @@ function renderMonthlyStudentList(students) {
         const tr = document.createElement("tr");
         tr.dataset.studentId = stu.studentId ?? "";
         tr.dataset.timeTableKey = stu.timeTableKey ?? "";
-
+        tr.dataset.appToken = stu.appToken ?? "";
         const scores = (stu.scores && stu.scores.length > 0) ? stu.scores[0] : {};
 
-        const sendImg = (stu.isSend === 1 || stu.isSend === true)
-            ? "/image/send2.png"
-            : "/image/send1.png";
+        const appToken = stu.appToken ?? "";
+        const sendImg = (appToken === "" || appToken === "null")
+            ? "/image/no_app.svg"
+            : ((stu.isSend === 1 || stu.isSend === true) ? "/image/send2.png" : "/image/send1.png");
 
         const feedbackText = (stu.feedback == null)
             ? "점수를 선택하고 결과보기를 눌러주세요"
@@ -209,60 +210,79 @@ function renderMonthlyStudentList(students) {
             : stu.bottomComment;
 
         tr.innerHTML = `
-      <td class="checkbox-group"><input type="checkbox" /></td>
-    <td>${idx + 1}</td>
-    <td>${stu.studentName}</td>
-    <td>
-      <div class="evaluation">
-        <div class="number-grid">
-          ${Array.from({length: 8}, (_, i) => {
+            <td class="checkbox-group"><input type="checkbox" /></td>
+            <td>${idx + 1}</td>
+            <td>${stu.studentName}</td>
+            <td>
+                <div class="evaluation">
+                    <div class="number-grid">
+                        ${Array.from({length: 8}, (_, i) => {
             const qKey = "question" + (i + 1);
             const isActive = scores[qKey] === true ? "active" : "";
             const value = scores[qKey] === true ? "true" : "false";
             return `<button class="btn-number ${isActive}" value="${value}">${i + 1}번</button>`;
         }).join("")}
-        </div>
-        <div class="action-buttons">
-          <button class="btn-reset">초기화</button>
-          <button class="btn-result" id="monthly-result-btn">결과보기</button>
-        </div>
-      </div>
-    </td>
-    <td class="cell-middle">
-      <div class="after-comment">
-        <textarea class="comment-text" placeholder="내용을 입력해주세요.">${feedbackText}
-        </textarea>
-      </div>
-    </td>
-    <td>
-      <div class="cell-middle">
-        <div class="after-comment">
-          <textarea class="comment-text" placeholder="내용을 입력해주세요.">${bottomCommentText}</textarea>
-        </div>
-      </div>
-    </td>
-     <td class="send-ornot">
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-reset">초기화</button>
+                        <button class="btn-result" id="monthly-result-btn">결과보기</button>
+                    </div>
+                </div>
+            </td>
+            <td class="cell-middle">
+                <div class="after-comment">
+                    <textarea class="comment-text" readonly placeholder="내용을 입력해주세요.">${feedbackText}</textarea>
+                </div>
+            </td>
+            <td>
+                <div class="cell-middle">
+                    <div class="after-comment">
+                        <textarea class="comment-text bottom-comment" placeholder="내용을 입력해주세요.">${bottomCommentText}</textarea>
+                    </div>
+                </div>
+            </td>
+            <td class="send-ornot">
                 <img src="${sendImg}" alt="">
             </td>
-    <td class="pre-search"><img src="/image/pre-search.png" alt=""></td>
-  `;
+            <td class="pre-search"><img src="/image/pre-search.png" alt=""></td>
+        `;
 
         tbody.appendChild(tr);
     });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    const theadCheckbox = document.querySelector("thead .checkbox-group input[type='checkbox']");
+    const tbody = document.getElementById("monthly_student_tbody");
+
+    if (!theadCheckbox || !tbody) return;
+
+    theadCheckbox.addEventListener("change", () => {
+        const checkboxes = tbody.querySelectorAll("input[type='checkbox']");
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = theadCheckbox.checked;
+        });
+    });
+
+    tbody.addEventListener("change", (e) => {
+        if (e.target.type === "checkbox") {
+            const allCheckboxes = tbody.querySelectorAll("input[type='checkbox']");
+            const checkedCount = tbody.querySelectorAll("input[type='checkbox']:checked").length;
+
+            theadCheckbox.checked = (checkedCount === allCheckboxes.length && allCheckboxes.length > 0);
+        }
+    });
+});
+
+// 버튼 클릭 이벤트
+document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.getElementById("monthly_student_tbody");
     if (!tbody) return;
-
-    tbody.querySelectorAll(".btn-number").forEach(btn => {
-        btn.classList.add("active");
-        btn.value = "true";
-    });
 
     tbody.addEventListener("click", (e) => {
         const target = e.target;
 
+        // 번호 버튼 토글
         if (target.classList.contains("btn-number")) {
             target.classList.toggle("active");
 
@@ -275,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(`${target.textContent} 상태:`, target.value);
         }
 
+        // 초기화 버튼
         if (target.classList.contains("btn-reset")) {
             const row = target.closest("tr");
             if (!row) return;
@@ -339,8 +360,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     const newFeedback = data.response?.scoreResult
                         ? `${data.response.studentName} 학생은 ${data.response.scoreResult}`
                         : "점수를 선택하고 결과보기를 눌러주세요";
-
-                    updateFeedbackOnly(row, newFeedback);
+                    const newBottomComment = data.response?.bottomComment ? `${data.response.bottomComment}`
+                        : "점수를 선택하고 결과보기를 눌러주세요";
+                    updateFeedbackOnly(row, newFeedback, newBottomComment);
 
                 })
                 .catch(err => {
@@ -351,11 +373,15 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // 월간평가 총평 변경
-function updateFeedbackOnly(row, feedbackText) {
-    const textarea = row.querySelector("td:nth-child(5) .comment-text");
+function updateFeedbackOnly(row, feedbackText, comment) {
+    const feedbackTextarea = row.querySelector("td:nth-child(5) .comment-text");
+    const commentTextarea = row.querySelector("td:nth-child(6) .comment-text");
 
-    if (textarea) {
-        textarea.value = feedbackText ?? "점수를 선택하고 결과보기를 눌러주세요";
+    if (feedbackTextarea) {
+        feedbackTextarea.value = feedbackText ?? "점수를 선택하고 결과보기를 눌러주세요";
+    }
+    if (commentTextarea) {
+        commentTextarea.value = comment ?? "점수를 선택하고 결과보기를 눌러주세요";
     }
 }
 
@@ -432,7 +458,7 @@ function renderPreviewModal(data) {
 
     const converted = convertStrong(data.topComment);
 
-// 문장을 <li> 단위로 자르고 strong 적용
+    // 문장을 <li> 단위로 자르고 strong 적용
     converted.split("\n").forEach(line => {
         if (line.trim() !== "") {
             const li = document.createElement("li");
@@ -494,6 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sendBtn.addEventListener("click", () => {
         const checkedRows = [];
+        const tokens = [];
         const checkboxes = document.querySelectorAll("#monthly_student_tbody input[type='checkbox']:checked");
 
         if (checkboxes.length === 0) {
@@ -501,41 +528,55 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const monthValue = document.getElementById("monthly_calendar").value;
+        let yy, mm;
+
+        if (monthValue) {
+            [yy, mm] = monthValue.split("-");
+        } else {
+            const today = new Date();
+            yy = today.getFullYear().toString();
+            mm = String(today.getMonth() + 1).padStart(2, "0");
+        }
+
         checkboxes.forEach(checkbox => {
             const row = checkbox.closest("tr");
             if (row && row.dataset.studentId) {
-                checkedRows.push({
-                    studentId: row.dataset.studentId,
-                    studentName: row.querySelector("td:nth-child(3)").textContent,
-                    timeTableKey: row.dataset.timeTableKey
-                });
+                const appToken = row.dataset.appToken;
+
+                if (appToken && appToken !== "null" && appToken !== "") {
+                    tokens.push(appToken);
+                    checkedRows.push({
+                        studentId: row.dataset.studentId,
+                        studentName: row.querySelector("td:nth-child(3)").textContent,
+                        timeTableKey: row.dataset.timeTableKey
+                    });
+                }
             }
         });
 
-        sendMonthlyFCM(checkedRows);
+        if (tokens.length === 0) {
+            alert("발송할 학부모가 없습니다. (FCM 토큰 없음)");
+            return;
+        }
+
+        sendMonthlyFCM(tokens, checkedRows, yy, mm);
     });
 });
 
 // FCM 발송 함수
-function sendMonthlyFCM(students) {
-    const monthValue = document.getElementById("monthly_calendar").value;
-    let yy, mm;
-
-    if (monthValue) {
-        [yy, mm] = monthValue.split("-");
-    } else {
-        const today = new Date();
-        yy = today.getFullYear().toString();
-        mm = String(today.getMonth() + 1).padStart(2, "0");
-    }
+function sendMonthlyFCM(tokens, students, yy, mm) {
 
     const requestBody = {
-        students: students,
-        yy: yy,
-        mm: mm
+        tokens: tokens,
+        title: "월간평가 발송",
+        body: `${yy}년 ${mm}월 월간평가가 발송되었습니다.`,
+        students: students,  // 추가
+        yy: yy,              // 추가
+        mm: mm               // 추가
     };
 
-    fetch("/class/api/monthly/send", {
+    fetch("/api/push/monthly", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -545,10 +586,10 @@ function sendMonthlyFCM(students) {
     })
         .then(res => res.json())
         .then(data => {
-            console.log("✅ FCM 발송 완료:", data);
+            console.log("✅ FCM 발송 성공:", data);
+
             alert(`${students.length}명의 학생에게 월간평가가 발송되었습니다.`);
 
-            // 발송 상태 업데이트 (이미지 변경)
             students.forEach(stu => {
                 const row = document.querySelector(`tr[data-student-id="${stu.studentId}"]`);
                 if (row) {
@@ -559,13 +600,101 @@ function sendMonthlyFCM(students) {
                 }
             });
 
-            // 체크박스 해제
             document.querySelectorAll("#monthly_student_tbody input[type='checkbox']").forEach(cb => {
                 cb.checked = false;
             });
+
+            // thead 체크박스도 해제
+            const theadCheckbox = document.querySelector("thead .checkbox-group input[type='checkbox']");
+            if (theadCheckbox) {
+                theadCheckbox.checked = false;
+            }
         })
         .catch(err => {
             console.error("❌ FCM 발송 오류:", err);
             alert("발송 중 오류가 발생했습니다.");
         });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("monthly-save-btn");
+
+    if (!saveBtn) return;
+
+    saveBtn.addEventListener("click", () => {
+        const checkedRows = [];
+        const checkboxes = document.querySelectorAll("#monthly_student_tbody input[type='checkbox']:checked");
+
+        if (checkboxes.length === 0) {
+            alert("저장할 학생을 선택해주세요.");
+            return;
+        }
+
+        const monthValue = document.getElementById("monthly_calendar").value;
+        let yy, mm;
+
+        if (monthValue) {
+            [yy, mm] = monthValue.split("-");
+        } else {
+            const today = new Date();
+            yy = today.getFullYear().toString();
+            mm = String(today.getMonth() + 1).padStart(2, "0");
+        }
+
+        checkboxes.forEach(checkbox => {
+            const row = checkbox.closest("tr");
+            if (row && row.dataset.studentId) {
+                const bottomComment = row.querySelector(".bottom-comment").value;
+
+                checkedRows.push({
+                    studentId: row.dataset.studentId,
+                    timeTableKey: row.dataset.timeTableKey,
+                    bottomComment: bottomComment,
+                    yy: yy,
+                    mm: mm
+                });
+            }
+        });
+
+        saveMonthlyData(checkedRows);
+    });
+});
+
+// 저장 함수
+function saveMonthlyData(students) {
+    const requestBody = {
+        students: students
+    };
+
+    fetch("/class/api/monthly/save", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(requestBody)
+    })
+        .then(res => res.json())
+        .then(data => {
+            console.log("✅ 저장 성공:", data);
+            alert(`${students.length}명의 코멘트가 저장되었습니다.`);
+
+            // 체크박스 해제
+            document.querySelectorAll("#monthly_student_tbody input[type='checkbox']").forEach(cb => {
+                cb.checked = false;
+            });
+
+            // thead 체크박스도 해제
+            const theadCheckbox = document.querySelector("thead .checkbox-group input[type='checkbox']");
+            if (theadCheckbox) {
+                theadCheckbox.checked = false;
+            }
+        })
+        .catch(err => {
+            console.error("❌ 저장 오류:", err);
+            alert("저장 중 오류가 발생했습니다.");
+        });
+}
+
+
+// FCM 발송 함수

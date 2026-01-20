@@ -67,7 +67,7 @@ public class NoticeService {
     public List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(UserRespDTO.LoginRespDTO user) {
 
 
-        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeRepository.findCenterNoticeByCenterCode(user.getCenterCode())
+        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeRepository.findCenterNoticeByCenterCode(user.getCenterCode(), user.getUserCode())
                 .stream()
                 .peek(dto -> dto.setCleanContent(sanitizeHtml(dto.getRawContent())))
                 .toList();

@@ -14,7 +14,12 @@ public interface UserRepository {
 
     public void insert(User user);
 
-    public List<User> findUserByCenterCode(@Param("centerCode") String centerCode);
+    public List<User> findUserByCenterCode(
+            @Param("centerCode") String centerCode,
+            @Param("roleNum") Integer roleNum,
+            @Param("type") String type
+
+    );
 
     UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
 

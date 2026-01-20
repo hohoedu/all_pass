@@ -14,7 +14,10 @@ public interface ConsultRepository {
 
     public void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
-    public List<ConsultRespDTO.ConsultDTO> findAll(@Param("centerCode") String centerCode);
+    public List<ConsultRespDTO.ConsultDTO> findAll(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode
+    );
 
     public List<ConsultRespDTO.ConsultDTO> findByPeriod(Map<String, Object> params);
 

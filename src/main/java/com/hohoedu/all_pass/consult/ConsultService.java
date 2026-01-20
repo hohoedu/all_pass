@@ -35,8 +35,8 @@ public class ConsultService {
         consultRepository.registerConsult(reqDTO);
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findConsult(String centerCode) {
-        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findAll(centerCode);
+    public List<ConsultRespDTO.ConsultDTO> findConsult(String centerCode, String userCode) {
+        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findAll(centerCode, userCode);
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
 
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
@@ -52,11 +52,12 @@ public class ConsultService {
         return response;
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm, String centerCode) {
+    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm, String centerCode, String userCode) {
         Map<String, Object> params = new HashMap<>();
         params.put("startYm", startYm);
         params.put("endYm", endYm);
         params.put("centerCode", centerCode);
+        params.put("userCode", userCode);
         List<ConsultRespDTO.ConsultDTO> response = consultRepository.findByPeriod(params);
         DateTimeFormatter inputFormatter =
                 DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");

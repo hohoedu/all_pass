@@ -97,7 +97,7 @@ public class UserController {
     @GetMapping("/users")
     public ResponseEntity<?> getUsers(HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        List<User> users = userService.findByCenterCode(user.getCenterCode());
+        List<User> users = userService.findByCenterCode(user);
 
         return ResponseEntity.ok(ApiUtils.success(users));
 

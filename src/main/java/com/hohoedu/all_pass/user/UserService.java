@@ -38,8 +38,8 @@ public class UserService {
         return user;
     }
 
-    public List<User> findByCenterCode(String centerNo) {
-        List<User> user = userRepository.findUserByCenterCode(centerNo);
+    public List<User> findByCenterCode(LoginRespDTO dto) {
+        List<User> user = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType());
         return user;
     }
 

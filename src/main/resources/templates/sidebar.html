@@ -90,8 +90,10 @@
                     <a th:href="@{/manage/order}" class="menu-link">교재 주문</a>
                     <a th:href="@{/manage/reorder}" class="menu-link">교재 추가/반품</a>
                     <a th:href="@{/manage/sms}" class="menu-link">앱 공지 관리</a>
-                    <a th:href="@{/manage/teacher}" class="menu-link">선생님 관리</a>
-                    <a th:href="@{/manage/tuition}" class="menu-link">수강료 관리</a>
+                    <a th:href="@{/manage/teacher}" th:if="${session.user.roleKey == 'ADMIN'}"
+                       class="menu-link">선생님 관리</a>
+                    <a th:href="@{/manage/tuition}" th:if="${session.user.roleKey == 'ADMIN'}"
+                       class="menu-link">수강료 관리</a>
                     <!--          <a th:href="@{/manage/notice}" class="menu-link">공지사항</a>-->
                 </div>
             </div>

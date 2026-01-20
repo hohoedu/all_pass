@@ -48,9 +48,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="basic-select">
-                                <select name="teacher" id="teacher-select" style="width: 200px;">
-                                    <option value="all">전체</option>
+                            <div class="basic-select" th:style="${!(session.user.roleKey == 'ADMIN' or session.user.roleKey == 'MANAGER')} ? 'display: none;' : ''">
+                                <select name="teacher" id="monthly-teacher-select" style="width: 200px;">
+                                    <option value="all" th:if="${session.user.roleKey == 'ADMIN'}">전체</option>
                                     <th:block th:each="u : ${users}">
                                         <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"></option>
                                     </th:block>
