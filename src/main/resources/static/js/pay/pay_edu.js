@@ -1036,6 +1036,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (bookChecked) {
+                if (customPrice !== null && customPrice <= 0) {
+                    return alert('올바른 금액을 입력하세요.');
+                }
                 await sendBills({
                     studentIds,
                     type: 'material',
@@ -1043,7 +1046,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     expireDt,
                     yy,
                     mm,
-                    includeSibling
+                    includeSibling,
+                    customPrice
                 });
             }
 

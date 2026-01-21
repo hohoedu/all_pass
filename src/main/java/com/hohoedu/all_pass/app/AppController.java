@@ -47,10 +47,15 @@ public class AppController {
 
     @PostMapping("/login")
     public ResponseEntity<?> AppLogin(@RequestBody StudentAppReqDTO.LoginReqDTO reqDTO) {
+        try {
+            StudentAppRespDTO.AppLoginRespDTO respDTO = studentService.checkAppIdAndPassword(reqDTO.getId(), reqDTO.getSha_pwd());
+            return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
+        } catch (Exception e) {
 
-        StudentAppRespDTO.AppLoginRespDTO respDTO = studentService.checkAppIdAndPassword(reqDTO.getId(), reqDTO.getSha_pwd());
+            return ResponseEntity.ok(AppApiUtils.loginError("9999", e.getMessage()));
+        }
 
-        return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
+
     }
 
     @PostMapping("/login_skip")
@@ -115,7 +120,7 @@ public class AppController {
     public ResponseEntity<?> AppCourseBookMain(@RequestBody ClassAppReqDTO.BookListMainReqDTO reqDTO) {
 
         if (reqDTO.getIhak().equals("00")) {
-            return ResponseEntity.ok(AppApiUtils.failOne(null, "9999"));
+            return ResponseEntity.ok(AppApiUtils.failOne("9999", null));
         }
 
         ClassAppRespDTO.BookListMainRespDTO response = appService.getBookMainInfo(reqDTO);
@@ -176,7 +181,7 @@ public class AppController {
         Object response = AppApiUtils.successClinicOne(respDTO);
 
         String json = new ObjectMapper().writeValueAsString(response);
-        
+
         return ResponseEntity.ok(json);
     }
 

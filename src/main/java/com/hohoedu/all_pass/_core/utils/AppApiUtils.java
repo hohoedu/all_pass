@@ -60,6 +60,10 @@ public final class AppApiUtils {
         return new ApiEnvelope<>("false", code, Collections.emptyList(), msg);
     }
 
+    public static LoginApiEnvelope<String> loginError(String result, String message) {
+        return new LoginApiEnvelope<>(result, message);
+    }
+
 
     public static <T> ClinicApiEnvelope<List<T>> successClinicOne(T item) {
         List<T> list = new ArrayList<>();
@@ -85,6 +89,14 @@ public final class AppApiUtils {
     public static class ClinicApiEnvelope<T> {
         private String result;
         private T data;
+
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class LoginApiEnvelope<String> {
+        private String result;
+        private String message;
 
     }
 
