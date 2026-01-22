@@ -23,7 +23,7 @@
                c.progress_key      AS progressKey
             FROM ERP_CONSULT c
                  JOIN erp_grade_code g ON c.grade_key = g.grade_key
-                 JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+                 LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         WHERE c.center_code = #{centerCode}
         AND c.user_code = #{userCode}
     </select>
@@ -41,10 +41,10 @@
         c.progress_key AS progressKey
         FROM ERP_CONSULT c
         JOIN erp_grade_code g ON c.grade_key = g.grade_key
-        JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+        LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         <where>
             c.center_code = #{centerCode}
-            c.user_code = #{userCode}
+            AND c.user_code = #{userCode}
             <if test="startYm != null and endYm != null">
                 AND c.consult_date BETWEEN CONCAT(#{startYm}, '-01')
                 AND EOMONTH(CONCAT(#{endYm}, '-01'))

@@ -614,10 +614,12 @@ public class ClassService {
         List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
 
         String noticeWeek = week.split("_")[1];
+
         List<ClassRespDTO.AfterClassRespDTO> afterClassList = new ArrayList<>();
 
 
         String currentYear = DateConfig.currentYearMonth().get("currentYear");
+
         String yy = currentYear.substring(2, 4);
 
 //        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
@@ -633,18 +635,17 @@ public class ClassService {
 
             if (notice != null) {
                 afterClassList.add(notice);
-                continue;
+            } else {
+
+                // 2-2. 없으면 공통 AfterClass 조회
+                ClassRespDTO.AfterClassRespDTO base =
+                        classRepository.findAfterClass(
+                                userCode, classKey, unitKey, week, timeTableKey, yy
+                        );
+
+                afterClassList.add(base);
             }
-
-            // 2-2. 없으면 공통 AfterClass 조회
-            ClassRespDTO.AfterClassRespDTO base =
-                    classRepository.findAfterClass(
-                            userCode, classKey, unitKey, week, timeTableKey, yy
-                    );
-
-            afterClassList.add(base);
         }
-
         return new ClassRespDTO.RecordBundleDTO(students, afterClassList);
     }
 
@@ -986,7 +987,7 @@ public class ClassService {
                     classRepository.findInfantBook(dto.getClassKey(), dto.getUnitKey(), dto.getYy());
 
             if (infantBookDTO == null) {
-                log.warn("InfantBookTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
+                log.warn("InfantBookDTO 조회 결과 없음. classKey={}, unitKey={}, year={}",
                         dto.getClassKey(), dto.getUnitKey(), dto.getYy());
                 return null;
             }

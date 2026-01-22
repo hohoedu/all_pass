@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const monthInput = document.querySelector(".hidden-date");
     const monthDisplay = document.querySelector(".current-month");
     const monthBtn = document.querySelector(".calendar-open");
-    const teacherSelect = document.getElementById("teacher-select");
+    const teacherSelect = document.getElementById("infant-teacher-select");
     const classButtons = document.querySelectorAll(".class-btn");
 
     infantSelectAllCheckbox();
@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requestClassLabels(year, month, teacherSelect.value);
 
     });
+    if (!teacherSelect) alert("선생님 선택 없음 돌아가");
 
     teacherSelect.addEventListener("change", (e) => {
         const teacher = e.target.value;
@@ -68,11 +69,11 @@ function infantSelectAllCheckbox() {
 
     if (!selectAll || checkboxes.length === 0) return;
 
-    // 🔥 appToken 없는 학생 비활성화
+
     checkboxes.forEach(cb => {
         if (!cb.dataset.token) {
             cb.disabled = true;
-            cb.closest("tr").classList.add("disabled-row"); // optional UI
+            cb.closest("tr").classList.add("disabled-row");
         }
     });
 
@@ -199,6 +200,8 @@ function requestInfantDetail(label, year) {
         yy: year
     };
 
+    console.log("body = ", body);
+
     fetch(`/class/infant/details`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -264,7 +267,7 @@ function renderStudents(students) {
         tbody.insertAdjacentHTML("beforeend", row);
     });
 
-    infantSelectAllCheckbox();   // 🔥 다시 비활성화/선택 로직 적용
+    infantSelectAllCheckbox();
 }
 
 function renderIntroSection(type, detail) {

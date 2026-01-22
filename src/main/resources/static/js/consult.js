@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}`;
     }
 
+
     function getMonthRange(monthsAgo) {
         const today = new Date();
         const past = new Date(today);
@@ -32,10 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getProgressText(progressKey) {
         switch (progressKey) {
-            case 'waiting': return '수업대기';
-            case 'confirmed': return '수업확정';
-            case 'ended': return '종료';
-            default: return '상담진행';
+            case 'waiting':
+                return '수업대기';
+            case 'confirmed':
+                return '수업확정';
+            case 'ended':
+                return '종료';
+            default:
+                return '상담진행';
         }
     }
 
@@ -46,6 +51,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const consultAddBtn = document.querySelector('.consult-add');
     const closeBtn = modal?.querySelector('.btn-close');
     const saveBtn = modal?.querySelector('.save-btn');
+    const modalContent = modal?.querySelector('.consult-record');
+    modal?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    });
+
+    modalContent?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
 
     let isEditMode = false;
     let editingId = null;
@@ -111,12 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal();
     });
 
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
     // 날짜 선택
     const dateInput = modal?.querySelector('input[name="consultDate"]');
     const dateDisplay = modal?.querySelector('.day-display');
@@ -160,16 +169,67 @@ document.addEventListener('DOMContentLoaded', () => {
     // 상담 기록 저장/수정
     saveBtn?.addEventListener('click', async () => {
         try {
-            const data = {
-                studentName: modal.querySelector('[name="studentName"]')?.value.trim(),
-                consultDate: modal.querySelector('[name="consultDate"]')?.value,
-                school: modal.querySelector('[name="school"]')?.value.trim(),
-                gradeKey: modal.querySelector('[name="gradeKey"]')?.value,
-                phone: modal.querySelector('[name="parentPhone"]').value.replace(/-/g, ''),
-                inflowRouteKey: modal.querySelector('[name="inflowRouteKey"]')?.value,
-                content: modal.querySelector('[name="content"]')?.value.trim()
-            };
+            const studentName = modal.querySelector('[name="studentName"]')?.value.trim();
+            const consultDate = modal.querySelector('[name="consultDate"]')?.value;
+            const school = modal.querySelector('[name="school"]')?.value.trim();
+            const gradeKey = modal.querySelector('[name="gradeKey"]')?.value;
+            const phone = modal.querySelector('[name="parentPhone"]')?.value.replace(/-/g, '');
+            const inflowRouteKey = modal.querySelector('[name="inflowRouteKey"]')?.value;
+            const content = modal.querySelector('[name="content"]')?.value.trim();
 
+            if (!studentName) {
+                alert('학생명을 입력해주세요.');
+                modal.querySelector('[name="studentName"]')?.focus();
+                return;
+            }
+
+            if (!consultDate) {
+                alert('상담일을 선택해주세요.');
+                modal.querySelector('[name="consultDate"]')?.focus();
+                return;
+            }
+
+            if (!school) {
+                alert('학교명을 입력해주세요.');
+                modal.querySelector('[name="school"]')?.focus();
+                return;
+            }
+
+            if (!gradeKey) {
+                alert('학년을 선택해주세요.');
+                modal.querySelector('[name="gradeKey"]')?.focus();
+                return;
+            }
+
+            if (!phone) {
+                alert('전화번호를 입력해주세요.');
+                modal.querySelector('[name="parentPhone"]')?.focus();
+                return;
+            }
+
+            // 전화번호 형식 검증 (숫자만, 10-11자리)
+            const phoneRegex = /^[0-9]{10,11}$/;
+            if (!phoneRegex.test(phone)) {
+                alert('올바른 전화번호 형식이 아닙니다. (10-11자리 숫자)');
+                modal.querySelector('[name="parentPhone"]')?.focus();
+                return;
+            }
+
+            if (!content) {
+                alert('상담 내용을 입력해주세요.');
+                modal.querySelector('[name="content"]')?.focus();
+                return;
+            }
+
+            const data = {
+                studentName,
+                consultDate,
+                school,
+                gradeKey,
+                phone,
+                inflowRouteKey,
+                content
+            };
             // 수정 모드일 경우 id 추가
             if (isEditMode && editingId) {
                 data.id = editingId;
@@ -271,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 행 클릭 이벤트
     function attachRowClickEvents() {
         document.querySelectorAll('.consult-row').forEach(row => {
-            row.addEventListener('click', function() {
+            row.addEventListener('click', function () {
                 const data = {
                     id: this.dataset.studentId,
                     studentName: this.dataset.studentName,

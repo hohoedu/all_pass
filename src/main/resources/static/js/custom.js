@@ -46,7 +46,7 @@ $(document).ready(function () {
         $('.modal').fadeOut();
     });
     $('.modal').click(function (event) {
-        if ($(event.target).is('.modal')) {
+        if ($(event.target).is('.modal') && !$(event.target).hasClass('consult-modal')) {
             $('.modal').fadeOut();
         }
     });

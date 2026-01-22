@@ -20,8 +20,9 @@ function buildByDateBody(dateStr, teacherId) {
     };
 }
 
-function buildByClassBody(timeTableKey, week, classKey, unitKey) {
+function buildByClassBody(userCode, timeTableKey, week, classKey, unitKey) {
     return {
+        userCode: userCode ?? null,
         timeTableKey: timeTableKey ?? null,
         week: week ?? null,
         classKey: classKey ?? null,
@@ -226,35 +227,6 @@ async function loadOverviewFromState() {
     }
 }
 
-async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
-    const signal = abortInFlight();
-
-    try {
-        if (!timeTableKey) {
-            renderRecordStudentList([]);
-            return;
-        }
-        const body = buildByClassBody(timeTableKey, state.week, state.classKey, state.unitKey);
-        const res = await fetch('/class/api/record/student', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body),
-            signal
-        });
-        if (!res.ok) throw new Error('서버 응답 오류(학생)');
-        const data = await res.json();
-        console.log(data.response);
-        const list = Array.isArray(data?.response?.students) ? data.response.students : [];
-        const afterClassList = Array.isArray(data?.response?.afterClass) ? data.response.afterClass : [];
-
-        renderRecordStudentList(list, afterClassList);
-    } catch (e) {
-        if (e.name === 'AbortError') return;
-        console.error('[loadStudentList] 실패:', e);
-        renderRecordStudentList([]);
-    }
-}
-
 
 // 학생 리스트 조회
 async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
@@ -265,7 +237,7 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
             renderRecordStudentList([]);
             return;
         }
-        const body = buildByClassBody(timeTableKey, state.week, state.classKey, state.unitKey);
+        const body = buildByClassBody(state.teacherId, timeTableKey, state.week, state.classKey, state.unitKey);
         const res = await fetch('/class/api/record/student', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -436,7 +408,7 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
                    </button>
                  </div>`
         }
-          </td>`;                                                                 
+          </td>`;
 
         // 특이사항
         tr.innerHTML += `

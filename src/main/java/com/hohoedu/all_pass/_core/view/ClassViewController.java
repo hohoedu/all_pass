@@ -241,7 +241,6 @@ public class ClassViewController {
             String unitKey = labels.get(0).getUnitKey();
 
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, currentWeek, classKey, unitKey);
-
             model.addAttribute("students", bundle.getStudents());
 
             if (bundle.getAfterClass() != null) {

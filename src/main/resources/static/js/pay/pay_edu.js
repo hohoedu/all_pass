@@ -102,23 +102,16 @@ document.addEventListener('DOMContentLoaded', () => {
     =============================== */
     function renderStudentTable(list) {
 
+        // 🔥 금액 기준 필터 제거 (0원도 포함)
         let filteredList = list;
-        if (currentFeeView === 'book') {
-            filteredList = list.filter(s =>
-                Number(s.totalMaterialFee || 0) > 0
-            );
-        }
-        if (currentFeeView === 'edu') {
-            filteredList = list.filter(s =>
-                Number(s.totalFee || 0) > 0
-            );
-        }
 
         // 🔥 형제 그룹 맵 생성 (전화번호 뒷자리 기준)
         const siblingGroups = new Map();
 
         filteredList.forEach(student => {
-            const phoneKey = student.parentPhone ? student.parentPhone.slice(-8) : `unique_${student.studentId}`;
+            const phoneKey = student.parentPhone
+                ? student.parentPhone.slice(-8)
+                : `unique_${student.studentId}`;
 
             if (!siblingGroups.has(phoneKey)) {
                 siblingGroups.set(phoneKey, []);
@@ -136,24 +129,43 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
 
-        // 🔥 그룹 대표로 정렬 (상태 → 대표 이름)
+        // 🔥 그룹 대표 기준 정렬
+        // 1순위: 금액 있음 → 0원은 맨 아래
+        // 2순위: 결제 상태
+        // 3순위: 대표 학생 이름
         const sortedGroups = groupRepresentatives.sort((a, b) => {
-            const statusA = currentFeeView === 'edu' ? a.representative.eduStatus : a.representative.materialStatus;
-            const statusB = currentFeeView === 'edu' ? b.representative.eduStatus : b.representative.materialStatus;
+            const feeA = currentFeeView === 'edu'
+                ? Number(a.representative.totalFee || 0)
+                : Number(a.representative.totalMaterialFee || 0);
+
+            const feeB = currentFeeView === 'edu'
+                ? Number(b.representative.totalFee || 0)
+                : Number(b.representative.totalMaterialFee || 0);
+
+            // 0원은 항상 마지막
+            if (feeA === 0 && feeB > 0) return 1;
+            if (feeA > 0 && feeB === 0) return -1;
+
+            const statusA = currentFeeView === 'edu'
+                ? a.representative.eduStatus
+                : a.representative.materialStatus;
+
+            const statusB = currentFeeView === 'edu'
+                ? b.representative.eduStatus
+                : b.representative.materialStatus;
 
             const orderA = PAYMENT_STATUS_ORDER[statusA] ?? 99;
             const orderB = PAYMENT_STATUS_ORDER[statusB] ?? 99;
 
-            // 1차: 상태별 정렬
             if (orderA !== orderB) {
                 return orderA - orderB;
             }
 
-            // 2차: 대표 학생 이름순
-            return (a.representative.studentName || '').localeCompare(b.representative.studentName || '');
+            return (a.representative.studentName || '')
+                .localeCompare(b.representative.studentName || '');
         });
 
-        // 🔥 그룹을 펼쳐서 최종 리스트 생성
+        // 🔥 그룹 펼쳐서 최종 리스트 생성
         const sortedList = [];
         sortedGroups.forEach(group => {
             sortedList.push(...group.members);
@@ -163,11 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!sortedList || sortedList.length === 0) {
             tbody.innerHTML = `
-        <tr>
-            <td colspan="10" style="text-align:center;">
-                등록된 학생 데이터가 없습니다.
-            </td>
-        </tr>`;
+            <tr>
+                <td colspan="10" style="text-align:center;">
+                    등록된 학생 데이터가 없습니다.
+                </td>
+            </tr>`;
             tbody.style.visibility = 'visible';
             return;
         }
@@ -176,19 +188,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const fragment = document.createDocumentFragment();
 
         sortedList.forEach((s, i) => {
-            const fee = currentFeeView === 'edu' ? s.totalFee : s.totalMaterialFee;
-            const unpaid = currentFeeView === 'edu' ? s.unpaidEduAmount : s.unpaidBookAmount;
-            const payState = currentFeeView === 'edu' ? s.eduStatus : s.materialStatus;
+            const fee = currentFeeView === 'edu'
+                ? s.totalFee
+                : s.totalMaterialFee;
+
+            const unpaid = currentFeeView === 'edu'
+                ? s.unpaidEduAmount
+                : s.unpaidBookAmount;
+
+            const payState = currentFeeView === 'edu'
+                ? s.eduStatus
+                : s.materialStatus;
+
             const lastPhone4 = s.parentPhone
                 ? s.parentPhone.replace(/[^0-9]/g, '').slice(-4)
                 : '';
+
             const tr = document.createElement('tr');
 
             tr.dataset.studentId = s.studentId;
             tr.dataset.studentName = s.studentName;
-            tr.dataset.paymentKey = s.paymentKey;
-            tr.dataset.eduStatus = s.eduStatus;
-            tr.dataset.materialStatus = s.materialStatus;
+            tr.dataset.paymentKey = s.paymentKey || '';
+            tr.dataset.eduStatus = s.eduStatus || '';
+            tr.dataset.materialStatus = s.materialStatus || '';
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
             tr.dataset.lastPhone4 = lastPhone4;
 
@@ -197,14 +219,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="checkbox" class="row-checkbox">
             </td>
             <td>${i + 1}</td>
-            <td class="student-name-cell" style="position: relative;">${s.studentName}</td>
+            <td class="student-name-cell" style="position: relative;">
+                ${s.studentName}
+            </td>
             <td>${s.subject || '-'}</td>
             <td>${formatTeacher(s)}</td>
             <td>${Number(fee || 0).toLocaleString()}</td>
             <td>${Number(unpaid || 0).toLocaleString()}</td>
             <td>${renderIssueStatus(s)}</td>
             <td>${renderPayStatus(payState, unpaid)}</td>
-            <td id="personal-pay-info" style="cursor: pointer;"><span style="font-size: 18px;">🔍</span></td>
+            <td id="personal-pay-info" style="cursor:pointer;">
+                <span style="font-size:18px;">🔍</span>
+            </td>
         `;
 
             fragment.appendChild(tr);

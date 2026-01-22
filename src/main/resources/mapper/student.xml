@@ -126,69 +126,44 @@
     <!-- 메인화면 선생님별 학생 조회 -->
     <select id="selectStudentByUserCode"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
-        SELECT
-        s.student_id AS studentId,
-        s.student_name AS studentName,
-        CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
-        sc.status_name AS statusName,
-        FORMAT(s.created_at, 'yyyy-MM-dd') AS entryDate,
-        g.grade_name AS gradeName,
-        s.school AS school,
-        c.center_name AS centerName,
-        s.app_id AS appId,
+        SELECT s.student_id                                                                  AS studentId,
+               s.student_name                                                                AS studentName,
+               CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
+               sc.status_name                                                                AS statusName,
+               FORMAT(s.created_at, 'yyyy-MM-dd')                                            AS entryDate,
+               g.grade_name                                                                  AS gradeName,
+               s.school                                                                      AS school,
+               c.center_name                                                                 AS centerName,
+               s.app_id                                                                      AS appId,
+               hc.class_name                                                                 AS hanClass,
+               bc.class_name                                                                 AS bookClass
 
-        STUFF((
-        SELECT DISTINCT ', ' + cc2.class_name
-        FROM erp_time_table_assign ta2
-        JOIN erp_time_table t2 ON t2.time_table_key = ta2.time_table_key
-        LEFT JOIN erp_class_code cc2 ON cc2.class_key =
-        CASE
-        WHEN t2.class_key = 'COM' THEN ta2.class_key
-        ELSE t2.class_key
-        END
-        WHERE ta2.student_id = s.student_id
-        AND cc2.class_type = 1
-        AND t2.yy = FORMAT(GETDATE(),'yyyy')
-        AND t2.mm = FORMAT(GETDATE(),'MM')
-        <if test="userCode != null and userCode != 'all'">
-            AND t2.user_code = #{userCode}
-        </if>
-        FOR XML PATH(''), TYPE
-        ).value('.', 'nvarchar(max)'), 1, 2, '') AS hanClass,
-
-        STUFF((
-        SELECT DISTINCT ', ' + cc2.class_name
-        FROM erp_time_table_assign ta2
-        JOIN erp_time_table t2 ON t2.time_table_key = ta2.time_table_key
-        JOIN erp_class_code cc2 ON cc2.class_key = t2.class_key
-        WHERE ta2.student_id = s.student_id
-        AND cc2.class_type = 2
-        AND t2.yy = FORMAT(GETDATE(),'yyyy')
-        AND t2.mm = FORMAT(GETDATE(),'MM')
-        <if test="userCode != null and userCode != 'all'">
-            AND t2.user_code = #{userCode}
-        </if>
-        FOR XML PATH(''), TYPE
-        ).value('.', 'nvarchar(max)'), 1, 2, '') AS bookClass
 
         FROM ERP_STUDENT s
-        LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
-        LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
-        LEFT JOIN ERP_center c ON c.center_code = s.center_code
+                 LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
+                 LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
+                 LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_user hu on ta.assign_han_teacher = hu.user_code
+                 LEFT JOIN erp_user bu on ta.assign_book_teacher = bu.user_code
+                 LEFT JOIN erp_center c ON c.center_code = s.center_code
+                 LEFT JOIN erp_teacher_assign eta on s.student_id = eta.student_id
+                 LEFT JOIN erp_class_code hc on eta.assign_han_class = hc.class_key
+                 LEFT JOIN erp_class_code bc on eta.assign_book_class = bc.class_key
 
-        WHERE 1 = 1
-        AND s.center_code = #{centerCode}
-        <if test="userCode != null and userCode != 'all'">
-            AND EXISTS (
-            SELECT 1
-            FROM erp_time_table_assign ta
-            JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
-            WHERE ta.student_id = s.student_id
-            AND t.user_code = #{userCode}
+        WHERE s.center_code = #{centerCode}
+          AND ISNULL(s.status_key, '') &lt; &gt; 'WITHDRAWN'
+          AND ((#{userCode} = 'all' OR hu.user_code = #{userCode} OR bu.user_code = #{userCode})
+            OR
+               ((ta.han_state is null or ta.han_state = 0) AND (ta.book_state is null or ta.book_state = 0))
             )
-        </if>
-
-        ORDER BY sc.status_name, s.student_name
+        ORDER BY CASE
+                     WHEN sc.status_name IS NULL THEN 0
+                     WHEN sc.status_name = 'ACTIVE' THEN 1
+                     WHEN sc.status_name = 'PAUSE' THEN 2
+                     WHEN sc.status_name = 'CANCELED' THEN 3
+                     WHEN sc.status_name = 'WITHDRAWN' THEN 4
+                     ELSE 5
+                     END, s.student_name
     </select>
 
     <!-- 메인화면 수업별 학생 조회 -->
