@@ -46,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClassController {
 
-    private final DateConfig dateConfig;
     private final ClassService classService;
 
     @GetMapping("/classCodes")
@@ -219,7 +218,8 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), reqDTO.getUserCode());
+        String userCode = reqDTO.getUserCode() == null ? user.getUserCode() : reqDTO.getUserCode();
+        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), userCode);
         return ResponseEntity.ok(ApiUtils.success(timeTableList));
     }
 
@@ -246,7 +246,7 @@ public class ClassController {
                     .build();
         }
 
-        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), user.getUserCode(), user.getCenterCode());
+        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), dto.getUserCode(), user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
@@ -259,7 +259,7 @@ public class ClassController {
                     .build();
         }
 
-        ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(user.getUserCode(), dto.getTimeTableKey(), dto.getWeek(), dto.getClassKey(), dto.getUnitKey());
+        ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(dto.getUserCode(), dto.getTimeTableKey(), dto.getWeek(), dto.getClassKey(), dto.getUnitKey());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }
@@ -384,6 +384,7 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
+
         List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(), dto.getDayname(), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(label));

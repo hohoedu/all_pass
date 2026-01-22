@@ -66,7 +66,6 @@ public class StudentService {
     private final SnapshotRepository snapshotRepository;
     private final SnapshotJpaRepository snapshotJpaRepository;
     private final CenterRepository centerRepository;
-    private final DateConfig dateConfig;
     private final FamilyService familyService;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
@@ -109,7 +108,7 @@ public class StudentService {
     }
 
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
-        String today = dateConfig.currentYearMonth().get("today");
+        String today = DateConfig.currentYearMonth().get("today");
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
         String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
@@ -178,19 +177,19 @@ public class StudentService {
     }
 
     public List<StudentInOutDTO> findStudentByUserCode(String userCode) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
 
         return null;
     }
 
     public List<User> findTeacher(UserRespDTO.LoginRespDTO dto) {
-        List<User> users = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType());
+        List<User> users = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType(), dto.getUserCode());
         return users;
     }
 
     public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO, String userCode) {
-        String today = dateConfig.currentYearMonth().get("today");
+        String today = DateConfig.currentYearMonth().get("today");
         historyDTO.setUserCode(userCode);
         if (historyDTO.getStatusKey().equals("ACTIVE")) {
             historyDTO.setReason(today + " 재원중으로 변경");

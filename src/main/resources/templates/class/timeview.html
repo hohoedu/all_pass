@@ -44,7 +44,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="basic-select" th:if="${session.user.roleKey == 'ADMIN' or session.user.roleKey == 'MANAGER'}">
+                            <div class="basic-select">
                                 <select name="teacher" id="teacher-select" style="width: 200px;">
                                     <option th:each="u : ${users}"
                                             th:value="${u.userCode}"

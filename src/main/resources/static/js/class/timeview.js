@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const ym = document.getElementById('monthPickerInput').value.replace('-', '');
         const userCode = document.getElementById('teacher-select')?.value;
         const centerCode = document.getElementById('')
-        // window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}&centerCode`);
+        // window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}`);
         printTimeView(ym, userCode);
     });
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     async function loadMonthlyData(year, month) {
         try {
-            const teacher = document.getElementById("teacher-select")?.value || "all";
+            const teacher = document.getElementById("teacher-select")?.value;
 
             const res = await fetch(`/class/timetable/view`, {
                 method: "POST",

@@ -4809,6 +4809,7 @@ input[type="time" i] {
     background-color: #60c0d4;
     color: white;
     padding: 6px;
+    border-radius: 5px 5px 0 0;
     font-weight: bold;
     text-align: center;
     border-bottom: 1px dashed #60c0d4;
@@ -4823,6 +4824,7 @@ input[type="time" i] {
     background-color: #eb8baf;
     color: white;
     padding: 6px;
+    border-radius: 5px 5px 0 0;
     font-weight: bold;
     text-align: center;
     border-bottom: 1px dashed #eb8baf;

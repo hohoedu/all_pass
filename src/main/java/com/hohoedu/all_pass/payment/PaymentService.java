@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final DateConfig dateConfig;
 
     /**
      * payment 상태 재계산 (교육비 기준)
@@ -180,7 +179,7 @@ public class PaymentService {
 
             String paidDate = payment.getPaidDate();
             if (eduPaidTotal > 0 && (paidDate == null || paidDate.isBlank())) {
-                paidDate = dateConfig.currentYearMonth().get("today");
+                paidDate = DateConfig.currentYearMonth().get("today");
             }
 
             String method;
@@ -789,7 +788,7 @@ public class PaymentService {
      * - 교재비(BOOK_FEE) bill → 독립적 (payment 영향 없음)
      */
     public void insertPaymentBill(PaymentReqDTO.InsertBillDTO dto, String userCode) {
-        String today = dateConfig.currentYearMonth().get("today");
+        String today = DateConfig.currentYearMonth().get("today");
         String status = "issued";
 
         Payment oldPayment = paymentRepository.findPaymentByKey(dto.getPaymentKey());

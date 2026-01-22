@@ -38,7 +38,7 @@
                u.user_id       as userId,
                u.password_hash as passwordHash,
                u.center_code   as centerCode,
-               u.salt as salt
+               u.salt          as salt
         FROM ERP_USER u
         WHERE u.user_id = #{userId}
     </select>
@@ -48,9 +48,12 @@
         from ERP_USER u
                  JOIN erp_user_role_code r ON u.role_key = r.role_key
         where center_code = #{centerCode}
-          AND r.role_num &lt;= #{roleNum}
-          AND (#{type} = 'all' OR u.type = #{type})
+          AND (#{roleNum} = 4
+            OR (#{roleNum} = 3 AND (#{type} = 'all' OR u.type = #{type}))
+            OR (#{roleNum} = 2 AND u.user_code = #{userCode})
+            )
     </select>
+
 
     <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.center.Center">
         select *
@@ -59,7 +62,8 @@
     </select>
 
     <select id="findByUserCode" resultType="com.hohoedu.all_pass.user.User">
-        SELECT salt FROM ERP_user
+        SELECT salt
+        FROM ERP_user
         where user_code = #{userCode}
     </select>
 

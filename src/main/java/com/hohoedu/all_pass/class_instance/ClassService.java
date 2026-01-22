@@ -59,7 +59,6 @@ public class ClassService {
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
-    private final DateConfig dateConfig;
     private final StudentRepository studentRepository;
     private final PaymentRepository paymentRepository;
     private final StudentService studentService;
@@ -69,10 +68,10 @@ public class ClassService {
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
-        String today = dateConfig.currentYearMonth().get("today");
-        String year = dateConfig.currentYearMonth().get("currentYear");
-        String month = dateConfig.currentYearMonth().get("currentMonth");
-        String dayname = dateConfig.currentYearMonth().get("currentDayName");
+        String today = DateConfig.currentYearMonth().get("today");
+        String year = DateConfig.currentYearMonth().get("currentYear");
+        String month = DateConfig.currentYearMonth().get("currentMonth");
+        String dayname = DateConfig.currentYearMonth().get("currentDayName");
 
         log.info(today);
         List<ClassRespDTO.MainClassSummaryDTO> responseDTO =
@@ -232,16 +231,16 @@ public class ClassService {
     }
 
     public List<TimeTableLabelDTO> getAllClassLabel(String userCode) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm, "0");
         return labels;
     }
 
     // 클래스 라벨 테이블 조회 (학생 정보 메인, 전입 전출 메인)
     public List<TimeTableLabelDTO> getClassLabel(String userCode) {
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCode(userCode, yy, mm, "1");
         return labels;
     }
@@ -618,7 +617,7 @@ public class ClassService {
         List<ClassRespDTO.AfterClassRespDTO> afterClassList = new ArrayList<>();
 
 
-        String currentYear = dateConfig.currentYearMonth().get("currentYear");
+        String currentYear = DateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
 
 //        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
@@ -651,7 +650,7 @@ public class ClassService {
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
 
-        String currentYear = dateConfig.currentYearMonth().get("currentYear");
+        String currentYear = DateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
         ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week, timeTableKey, yy);
         return response;
@@ -755,11 +754,6 @@ public class ClassService {
 
     // ================ 월간 평가 서비스 =====================//
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname, String centerCode) {
-        log.info("userCode={}", userCode);
-        log.info("yy={}", yy);
-        log.info("mm={}", mm);
-        log.info("dayname={}", dayname);
-        log.info("centerCode={}", centerCode);
         List<TimeTableLabelDTO> labels = classRepository.findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname, centerCode)
                 .stream()
                 .map(c -> {

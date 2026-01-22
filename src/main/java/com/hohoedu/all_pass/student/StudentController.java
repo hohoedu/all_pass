@@ -45,7 +45,7 @@ public class StudentController {
     final private StudentService studentService;
     final private ClassService classService;
     final private FileUploadService fileUploadService;
-    final private DateConfig dateConfig;
+
 
 
     @GetMapping("/api/label")

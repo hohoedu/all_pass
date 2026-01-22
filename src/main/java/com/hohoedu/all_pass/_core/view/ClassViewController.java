@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,7 +51,6 @@ public class ClassViewController {
     private final UserService userService;
     private final ClassService classService;
     private final StudentService studentService;
-    private final DateConfig dateConfig;
     private final ClassRepository classRepository;
 
     // 시간표 등록
@@ -221,9 +222,9 @@ public class ClassViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
-        String dayName = dateConfig.currentYearMonth().get("currentDayName");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
+        String dayName = DateConfig.currentYearMonth().get("currentDayName");
         log.info("dayName = {}", dayName);
         List<User> users = userService.findByCenterCode(user);
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
@@ -333,16 +334,16 @@ public class ClassViewController {
             return "login";
         }
 
+        log.info(user.getUserName());
         // 센터별 선생님 목록
         List<User> users = userService.findByCenterCode(user);
-
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
                 user.getUserCode(),
-                dateConfig.currentYearMonth().get("currentYear"),
-                dateConfig.currentYearMonth().get("currentMonth"),
-                dateConfig.currentYearMonth().get("currentDayName"),
+                DateConfig.currentYearMonth().get("currentYear"),
+                DateConfig.currentYearMonth().get("currentMonth"),
+                DateConfig.currentYearMonth().get("currentDayName"),
                 user.getCenterCode());
         // 첫번째 수업에 대한 학생 목록 가져오기
         if (!labels.isEmpty()) {
@@ -364,8 +365,8 @@ public class ClassViewController {
             return "login";
         }
 
-        String yy = dateConfig.currentYearMonth().get("currentYear");
-        String mm = dateConfig.currentYearMonth().get("currentMonth");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
 
         List<User> users = userService.findByCenterCode(user);
         model.addAttribute("users", users);

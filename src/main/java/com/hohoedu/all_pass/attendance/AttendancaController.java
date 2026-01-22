@@ -19,15 +19,14 @@ import lombok.RequiredArgsConstructor;
 public class AttendancaController {
 
     private final AttendanceService attendanceService;
-    private final DateConfig dateConfig;
 
     @PostMapping("/select")
     public ResponseEntity<?> attendanceScheduler() {
         log.info("AttendancaController select");
-        String today = dateConfig.currentYearMonth().get("today");
-        String yy    = dateConfig.currentYearMonth().get("currentYear");
-        String mm    = dateConfig.currentYearMonth().get("currentMonth");
-        String day   = dateConfig.currentYearMonth().get("currentDayName");
+        String today = DateConfig.currentYearMonth().get("today");
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
+        String day = DateConfig.currentYearMonth().get("currentDayName");
         String nowHHmm = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
 
         ScheduleRunResultDTO result = attendanceService.executeScheduledAttendance(nowHHmm, yy, mm, day, today);

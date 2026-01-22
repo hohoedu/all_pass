@@ -10,13 +10,9 @@ import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.manage.ManageService;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
-import com.hohoedu.all_pass.notice.CenterNotice;
 import com.hohoedu.all_pass.notice.NoticeService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
-import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
-import com.hohoedu.all_pass.student.model.GradeCode;
-import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +37,6 @@ public class ManageViewController {
     private final ClassService classService;
     private final NoticeService noticeService;
     private final ManageService manageService;
-    private final DateConfig dateConfig;
 
     @GetMapping("/order")
     public String getManageOrderPage(HttpSession session, Model model) {
@@ -52,8 +47,8 @@ public class ManageViewController {
 
         String userCode = user.getUserCode();
         String cneterCode = user.getCenterCode();
-        String year = dateConfig.currentYearMonth().get("currentYear");
-        String month = dateConfig.currentYearMonth().get("currentMonth");
+        String year = DateConfig.currentYearMonth().get("currentYear");
+        String month = DateConfig.currentYearMonth().get("currentMonth");
 
         List<ManageRespDTO.BasicOrderListDTO> baseOrderList = manageService.getBasicOrderList(userCode, cneterCode, year, month);
         List<ManageRespDTO.SavedOrderListDTO> savedOrderList = manageService.getSavedOrderList(userCode, cneterCode, year, month);

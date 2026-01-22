@@ -17,7 +17,8 @@ public interface UserRepository {
     public List<User> findUserByCenterCode(
             @Param("centerCode") String centerCode,
             @Param("roleNum") Integer roleNum,
-            @Param("type") String type
+            @Param("type") String type,
+            @Param("userCode") String userCode
 
     );
 

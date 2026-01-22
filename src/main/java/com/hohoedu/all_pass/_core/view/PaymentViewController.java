@@ -27,7 +27,6 @@ public class PaymentViewController {
 
     private final UserService userService;
     private final PaymentService paymentService;
-    private final DateConfig dateConfig;
 
     @GetMapping("/pay-edu")
     public String getPayEduPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
