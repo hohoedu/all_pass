@@ -791,6 +791,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const searchBtn = document.getElementById('search-main-student');
+    const searchInput = document.getElementById('search-name');
+    const searchTypeSelect = document.getElementById('stu-name');
+    const studentRows = document.querySelectorAll('.timetable-pending-list');
+
+    if (!searchBtn || !searchInput || !searchTypeSelect) return;
+
+    function performSearch() {
+        const searchType = searchTypeSelect.value;
+        const searchTerm = searchInput.value.trim().toLowerCase();
+
+        // 검색어가 없으면 전체 표시
+        if (searchTerm === '') {
+            studentRows.forEach(row => row.style.display = '');
+            return;
+        }
+
+        studentRows.forEach(row => {
+            let shouldShow = false;
+
+            // 이름으로 검색
+            if (searchType === 'name') {
+                const nameSpan = row.querySelector('.names');
+                const studentName = nameSpan?.textContent.trim().toLowerCase() || '';
+
+                if (studentName.includes(searchTerm)) {
+                    shouldShow = true;
+                }
+            }
+
+            // 전화번호로 검색 (data-phone 속성에서 가져옴)
+            if (searchType === 'phone') {
+                const phoneNumber = row.dataset.phone || '';
+                const cleanPhone = phoneNumber.replace(/[^0-9]/g, ''); // 숫자만 추출
+                const cleanSearchTerm = searchTerm.replace(/[^0-9]/g, '');
+
+                if (cleanPhone.includes(cleanSearchTerm)) {
+                    shouldShow = true;
+                }
+            }
+
+            row.style.display = shouldShow ? '' : 'none';
+        });
+
+        // 검색 결과 개수
+        const visibleCount = Array.from(studentRows).filter(row => row.style.display !== 'none').length;
+        console.log(`검색 결과: ${visibleCount}명`);
+    }
+
+    // 검색 버튼 클릭
+    searchBtn.addEventListener('click', performSearch);
+
+    // 엔터키로 검색
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    // 검색 타입 변경 시 입력창 초기화
+    searchTypeSelect.addEventListener('change', () => {
+        searchInput.value = '';
+        studentRows.forEach(row => row.style.display = '');
+    });
+
+    // 검색어 초기화 시 전체 목록 보기
+    searchInput.addEventListener('input', (e) => {
+        if (e.target.value.trim() === '') {
+            studentRows.forEach(row => row.style.display = '');
+        }
+    });
+});
+
 // 학생 삭제 로직
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#assign_delete').forEach(btn => {

@@ -28,6 +28,7 @@ public class StudentWebRespDTO {
         private String birth;
         private String address;
         private String addressDetail;
+        private String phone;
         private String center;
         private String status;
         private String statusName;

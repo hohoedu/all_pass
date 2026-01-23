@@ -6,13 +6,7 @@
 let currentFeeView = 'edu';
 let currentStudents = [];
 let currentSort = {key: null, order: 'asc'};
-const PAYMENT_STATUS_ORDER = {
-    issued: 1,
-    destroyed: 2,
-    approved: 2,
-    undefined: 4,
-    null: 5
-};
+
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -146,21 +140,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (feeA === 0 && feeB > 0) return 1;
             if (feeA > 0 && feeB === 0) return -1;
 
-            const statusA = currentFeeView === 'edu'
-                ? a.representative.eduStatus
-                : a.representative.materialStatus;
+            // 🔥 새로운 우선순위 함수 사용
+            const priorityA = getPaymentPriority(a.representative, currentFeeView);
+            const priorityB = getPaymentPriority(b.representative, currentFeeView);
 
-            const statusB = currentFeeView === 'edu'
-                ? b.representative.eduStatus
-                : b.representative.materialStatus;
-
-            const orderA = PAYMENT_STATUS_ORDER[statusA] ?? 99;
-            const orderB = PAYMENT_STATUS_ORDER[statusB] ?? 99;
-
-            if (orderA !== orderB) {
-                return orderA - orderB;
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;  // 숫자가 작을수록 먼저
             }
 
+            // 우선순위가 같으면 이름순
             return (a.representative.studentName || '')
                 .localeCompare(b.representative.studentName || '');
         });
@@ -243,7 +231,33 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.style.visibility = 'visible';
     }
 
+    function getPaymentPriority(student, feeView) {
+        const status = feeView === 'edu' ? student.eduStatus : student.materialStatus;
+        const unpaid = feeView === 'edu' ? student.unpaidEduAmount : student.unpaidBookAmount;
 
+        // 미발행
+        if (!status || status === 'undefined' || status === 'null') {
+            return 1;
+        }
+
+        // 미결제 (발행됨)
+        if (status === 'issued') {
+            return 2;
+        }
+
+        // 부분결제
+        if (status === 'approved' && Number(unpaid || 0) !== 0) {
+            return 3;
+        }
+
+        // 결제완료
+        if (status === 'approved' && Number(unpaid || 0) === 0) {
+            return 4;
+        }
+
+        // destroyed 등 기타
+        return 5;
+    }
     // 형제 이름 보이게 하기
     function bindStudentNameTooltip() {
         const nameCells = tbody.querySelectorAll('.student-name-cell');
@@ -813,9 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.studentName}</td>
                 <td>${item.subject}</td>
                 <td>${teachers}</td>   
-                <td>추가</td>
                 <td>${paidDate}</td>
-           
                 <td class="payment">${amount}</td>
                 <td class="middle">
                     <div class="state-box ${getStatusClass(item.status)}">

@@ -473,12 +473,10 @@
         VALUES (#{payment.paymentKey}, ISNULL(#{amount}, 0), #{classType}, #{itemType}, #{timeTableKey}, #{user.userCode}, SYSDATETIME());
     </insert>
 
-    <select id="findLatestPaymentKeyByStudent" resultType="string">
+    <select id="findLatestPaymentKeyByStudentId" resultType="string">
         SELECT TOP 1 payment_key
         FROM erp_payment
         WHERE student_id = #{studentId}
-          AND yy = #{yy}
-          AND mm = #{mm}
         ORDER BY created_at DESC
     </select>
 
@@ -489,6 +487,28 @@
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
+    </update>
+
+    <select id="findMaterialFeeByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MaterialFeeDTO">
+        SELECT p.student_id,
+               MAX(CASE WHEN pd.class_type = 1 AND pd.item_type = 'BOOK_FEE' THEN pd.amount end) as hanMaterialFee,
+               MAX(CASE WHEN pd.class_type = 2 AND pd.item_type = 'BOOK_FEE' THEN pd.amount end) as bookMaterialFee,
+               MAX(p.payment_key)                                                                as payment_key
+        FROM erp_payment_detail pd
+                 JOIN erp_payment p ON pd.payment_key = p.payment_key
+        where student_id = #{studentId}
+        GROUP BY p.student_id
+    </select>
+
+    <update id="updatePaymentDetailBookFee">
+        UPDATE pd
+        SET pd.amount = #{materialFee} FROM erp_payment_detail pd
+    INNER JOIN erp_payment p
+        ON pd.payment_key = p.payment_key
+        WHERE p.student_id = #{studentId}
+          AND pd.class_type = #{classType}
+          AND pd.item_type = 'BOOK_FEE'
+          AND pd.payment_key = #{paymentKey}
     </update>
 
     <select id="findPaymentByKey" resultType="com.hohoedu.all_pass.payment.Payment">

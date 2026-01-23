@@ -16,6 +16,7 @@ import com.hohoedu.all_pass.payment.model.PaymentCallback;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.RequiredArgsConstructor;
@@ -454,6 +455,7 @@ public class PaymentService {
         // 🔥 개선: payment 상태 재계산
         recalculatePaymentStatus(paymentKey, userCode);
     }
+
 
     /**
      * 결제선생 청구서 발행 (핵심 메서드)
@@ -1260,7 +1262,7 @@ public class PaymentService {
      * 🔥 개선: detail 수정 후 payment 상태 재계산
      */
     public void updateEduFeeAndRecalculate(PaymentReqDTO.EduFeeUpdateReqDTO dto) {
-        if (dto.getStudentId() == null || dto.getYy() == null || dto.getMm() == null) {
+        if (dto.getStudentId() == null) {
             throw new IllegalArgumentException("필수 값 누락");
         }
 
@@ -1294,6 +1296,33 @@ public class PaymentService {
             );
         }
     }
+
+    public void updateMaterialFeeAndRecalculate(StudentWebReqDTO.StudentPaymentUpdateDTO dto) {
+        if (dto.getStudentId() == null || dto.getPaymentKey() == null) {
+            throw new IllegalArgumentException("필수 값 누락");
+        }
+
+        int hanEduFee = dto.getHanEduFee() != null ? dto.getHanEduFee() : 0;
+        int hanMaterialFee = dto.getHanMaterialFee() != null ? dto.getHanMaterialFee() : 0;
+        int bookEduFee = dto.getBookEduFee() != null ? dto.getBookEduFee() : 0;
+        int bookMaterialFee = dto.getBookMaterialFee() != null ? dto.getBookMaterialFee() : 0;
+
+        paymentRepository.updateEduFeeDetailByPaymentKey(
+                dto.getPaymentKey(),
+                hanEduFee,
+                hanMaterialFee,
+                bookEduFee,
+                bookMaterialFee
+        );
+        recalculatePaymentStatus(dto.getPaymentKey(), null);
+
+        paymentRepository.updateTeacherAssiginMaterialFee(
+                dto.getStudentId(),
+                dto.getHanMaterialFee(),
+                dto.getBookMaterialFee()
+        );
+    }
+
 
     /**
      * 수기 결제 입력 (현장 결제)

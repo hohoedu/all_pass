@@ -85,6 +85,9 @@ public class StudentWebReqDTO {
         private String entryBookDate;
         private Integer hanMaterialFee;
         private Integer bookMaterialFee;
+        private Integer hanEduFee;
+        private Integer bookEduFee;
+        private String paymentKey;
     }
 
     @Data

@@ -908,6 +908,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const checkbox = row.querySelector("input[type=checkbox]");
                 return checkbox && checkbox.checked;
             });
+        if (!confirm(`${checkedRows.length}명의 학생에게 알림을 발송하시겠습니까?`)) {
+            return;
+        }
+
 
         if (checkedRows.length === 0) {
             alert("학생을 선택해주세요.");
@@ -929,7 +933,6 @@ document.addEventListener("DOMContentLoaded", () => {
             body: "오늘 수업 후 코멘트가 등록되었습니다."
         };
 
-        console.log("after-class tokens = ", tokens);
 
         fetch("/api/push/after", {
             method: "POST",

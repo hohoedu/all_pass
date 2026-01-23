@@ -403,7 +403,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         return;
                     }
 
-                    console.log("✅ 진행상황 업데이트 성공");
                 } catch (err) {
                     console.error("🚨 통신 오류:", err);
                     alert('서버 통신 오류가 발생했습니다.');
@@ -420,12 +419,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 데이터 조회
-    async function fetchConsults(startYm, endYm) {
+    async function fetchConsults(startYm, endYm, userCode) {
         try {
+
+            const requestBody = {
+                startYm: startYm,
+                endYm: endYm,
+                userCode: userCode
+            };
+
             const res = await fetch('/consult/search', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({startYm, endYm})
+                body: JSON.stringify(requestBody)
             });
 
             if (!res.ok) {
@@ -447,15 +453,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const periodDisplay = document.getElementById('period-display');
     const calendarFilterBtn = document.getElementById('calendar-btn');
     const calendarInput = document.getElementById('calendar-input');
+    const teacherFilter = document.getElementById('consult-teacher-filter');
 
-    // 초기 로드 시 기본 기간으로 조회 (예: 3개월)
+    // 초기 로드 시 기본 기간으로 조회
     async function initPeriodFilter() {
         const defaultRadio = document.querySelector('input[name="period"][value="3m"]');
+        const userCode = teacherFilter.value;
+
         if (defaultRadio) {
             defaultRadio.checked = true;
             const range = getMonthRange(3);
             periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
-            await fetchConsults(range.startYm, range.endYm);
+            await fetchConsults(range.startYm, range.endYm, userCode);
         }
     }
 
@@ -463,6 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     radios.forEach(radio => {
         radio.addEventListener("change", async (e) => {
             const val = e.target.value;
+            const userCode = teacherFilter.value;
             let range;
 
             if (val === "1y") {
@@ -477,12 +487,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
-            await fetchConsults(range.startYm, range.endYm);
+            await fetchConsults(range.startYm, range.endYm, userCode);
         });
     });
 
     // 일자지정 버튼
-    calendarFilterBtn?.addEventListener("click", () => {
+    calendarFilterBtn?.addEventListener("click", async () => {
         const customRadio = document.getElementById("period-custom");
         if (!customRadio.checked) {
             customRadio.checked = true;
@@ -494,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 달력 입력
     calendarInput?.addEventListener("change", async (e) => {
         const selectedMonth = e.target.value;
+        const userCode = teacherFilter.value;
         if (!selectedMonth) return;
 
         const today = new Date();
@@ -501,9 +512,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const startYm = selectedMonth;
 
         periodDisplay.textContent = `${startYm} ~ ${endYm}`;
-        await fetchConsults(startYm, endYm);
+        await fetchConsults(startYm, endYm, userCode);
     });
 
+
+    teacherFilter?.addEventListener('change', async () => {
+        const userCode = teacherFilter.value;
+
+        // 현재 선택된 기간 가져오기
+        const checkedRadio = document.querySelector('input[name="period"]:checked');
+        if (!checkedRadio) return;
+
+        const val = checkedRadio.value;
+        let range;
+
+        if (val === "1y") {
+            range = getMonthRange(12);
+        } else if (val === "6m") {
+            range = getMonthRange(6);
+        } else if (val === "3m") {
+            range = getMonthRange(3);
+        } else if (val === "custom") {
+            // 커스텀 기간인 경우 periodDisplay에서 파싱
+            const displayText = periodDisplay.textContent;
+            const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
+            if (matches) {
+                range = {
+                    startYm: matches[1],
+                    endYm: matches[2]
+                };
+            } else {
+                return;
+            }
+        }
+
+        await fetchConsults(range.startYm, range.endYm, userCode);
+    });
     // 초기 데이터 로드
     initPeriodFilter();
 

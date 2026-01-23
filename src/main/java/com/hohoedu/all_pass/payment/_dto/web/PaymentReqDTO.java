@@ -144,6 +144,7 @@ public class PaymentReqDTO {
     @Data
     public static class EduFeeUpdateReqDTO {
         private String studentId;
+        private String paymentKey;
         private String yy;
         private String mm;
         private Integer hanEduFee;

@@ -2,6 +2,8 @@ package com.hohoedu.all_pass._core.view;
 
 import java.util.List;
 
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,7 @@ public class ConsultViewController {
 
     private final StudentService studentService;
     private final ConsultService consultService;
+    private final UserService userService;
 
     @GetMapping("/main")
     public String getConsultMainPase(Model model, HttpSession session) {
@@ -32,12 +35,17 @@ public class ConsultViewController {
             return "redirect:/login";
         }
 
+        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
+
+        List<User> teachers = userService.findByCenterCode(user);
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
-        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode(), user.getUserCode());
+//        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode(), userCode);
+        model.addAttribute("user", user);
+        model.addAttribute("teachers", teachers);
         model.addAttribute("grades", grades);
         model.addAttribute("routes", routes);
-        model.addAttribute("consults", consults);
+//        model.addAttribute("consults", consults);
         return "consult/consult";
     }
 

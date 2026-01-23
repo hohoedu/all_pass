@@ -22,6 +22,8 @@ import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.family.FamilyService;
 import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -71,9 +73,9 @@ public class StudentService {
     private final PaymentService paymentService;
     private final AttendanceRepository attendanceRepository;
 
-    public List<Student> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
+    public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
-        List<Student> student = studentRepository.findStudentByCenterCode(year, month, centerCode, userCode);
+        List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month, centerCode, userCode);
 
         return student;
     }
@@ -232,11 +234,32 @@ public class StudentService {
         return 1;
     }
 
+
+    @Transactional
     public int updatePaymentInfo(StudentWebReqDTO.StudentPaymentUpdateDTO dto) {
+        // 학생 정보의 교재비 수정
         studentRepository.updateStudentPayment(dto);
+        String paymentKey = paymentRepository.findLatestPaymentKeyByStudentId(dto.getStudentId());
+        dto.setPaymentKey(paymentKey);
+        if (dto.getHanMaterialFee() != null) {
+            paymentRepository.updatePaymentDetailBookFee(
+                    dto.getStudentId(),
+                    "1",  // 한자
+                    dto.getHanMaterialFee(),
+                    dto.getPaymentKey()
+            );
+        }
 
+        // 3. payment_detail BOOK_FEE 수정 - 독서
+        if (dto.getBookMaterialFee() != null) {
+            paymentRepository.updatePaymentDetailBookFee(
+                    dto.getStudentId(),
+                    "2",  // 독서
+                    dto.getBookMaterialFee(),
+                    dto.getPaymentKey()
+            );
+        }
         return 1;
-
     }
 
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request) {

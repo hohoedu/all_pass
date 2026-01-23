@@ -17,5 +17,13 @@ public class ConsultReqDTO {
         private String centerCode;
         private String userCode;
     }
+
+    @Data
+    public static class GetConsultReqDTO {
+        private String userCode;
+        private String startYm;
+        private String endYm;
+
+    }
     
 }

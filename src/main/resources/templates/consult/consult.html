@@ -33,7 +33,7 @@
                             <div class="class-btns">
                                 <a th:href="@{/print/print-consult}" class="print">인쇄</a>
                                 <div class="common-btn select-del">선택 삭제</div>
-<!--                                <div class="common-btn overlap">중복 문의 검색</div>-->
+                                <!--                                <div class="common-btn overlap">중복 문의 검색</div>-->
                                 <div class="common-btn consult-add">+ 상담기록 추가</div>
                             </div>
                         </div>
@@ -59,20 +59,30 @@
                                     <input type="month" id="calendar-input" style="position:absolute; opacity:0; width:0; height:0;">
                                 </div>
                             </div>
-                            <!-- 우측: 선택 필터 + 버튼 -->
-                            <div class="teacher-search">
-                                <div class="sl3">
-                                    <div class="basic-select" style="flex: 1;">
-                                        <select name="stuName" id="stu-name">
-                                            <option value="all">이름</option>
-                                            <option value="">학교/유치원</option>
-                                        </select>
-                                    </div>
-                                    <div class="search-box" style="flex: 2;">
-                                        <input type="text" id="search-name" name="searchName">
-                                    </div>
+                            <div class="stu-left">
+                                <div class="basic-select sl1">
+                                    <select name="teacherNo" id="consult-teacher-filter">
+                                        <th:block th:each="teacher : ${teachers}">
+                                            <option th:value="${teacher.userCode}"
+                                                    th:text="${teacher.userName + ' 선생님'}" th:selected="${teacher.userCode == user.userCode}"></option>
+
+                                        </th:block>
+                                    </select>
                                 </div>
-                                <div class="explore common-btn">검색</div>
+                                <div class="teacher-search">
+                                    <div class="sl3">
+                                        <div class="basic-select" style="flex: 1;">
+                                            <select name="stuName" id="stu-name">
+                                                <option value="all">이름</option>
+                                                <option value="">학교/유치원</option>
+                                            </select>
+                                        </div>
+                                        <div class="search-box" style="flex: 2;">
+                                            <input type="text" id="search-name" name="searchName">
+                                        </div>
+                                    </div>
+                                    <div class="explore common-btn">검색</div>
+                                </div>
                             </div>
                         </div>
                         <!-- main-content -->

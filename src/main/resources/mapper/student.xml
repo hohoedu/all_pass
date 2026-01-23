@@ -28,11 +28,14 @@
         SELECT s.*
              , g.*
              , reg.registeredClassTypes AS classType
+             , pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last as phone
+
         FROM erp_student s
                  JOIN erp_grade_code g
                       ON s.grade_key = g.grade_key
                  LEFT JOIN erp_teacher_assign ta
                            ON s.student_id = ta.student_id
+                 JOIN erp_parent pa ON s.student_id = pa.student_id
             OUTER APPLY (
     SELECT STUFF((
         SELECT ',' + cc.class_type
@@ -62,8 +65,17 @@
             ta.assign_han_teacher = #{userCode}
            OR ta.assign_book_teacher = #{userCode}
            OR (ta.assign_han_teacher IS NULL
-           OR ta.assign_book_teacher IS NULL)
-            );
+          AND ta.assign_book_teacher IS NULL)
+            )
+        ORDER BY
+            CASE
+            WHEN ta.assign_han_teacher = #{userCode}
+            OR ta.assign_book_teacher = #{userCode}
+            THEN 0
+            ELSE 1
+        END
+        ,
+    s.student_name;
     </select>
 
     <select id="findStudentInfoByStudentId" parameterType="String"

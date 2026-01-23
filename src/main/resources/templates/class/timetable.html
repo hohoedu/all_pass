@@ -62,9 +62,26 @@
                             <h4>학생 선택</h4>
                             <div class="add-inform">
                                 <p>선택한 학생을 <span id="current-selected-class"></span><br>클래스에 추가합니다.</p>
-                                <button class="add-btn" id="add_student_timetable">
-                                    추가
-                                </button>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                                    <button class="add-btn" style="margin: 10px 0 10px 10px" id="add_student_timetable">
+                                        추가
+                                    </button>
+                                    <div class="stu-right">
+                                        <div class="sl3">
+                                            <div class="basic-select" style="flex: 1;">
+                                                <select name="stuName" id="stu-name">
+                                                    <option value="name">이름</option>
+                                                    <option value="phone">전화번호</option>
+                                                </select>
+                                            </div>
+                                            <div class="search-box" style="flex: 2;">
+                                                <input type="text" id="search-name" name="searchName">
+                                            </div>
+                                        </div>
+                                        <div class="explore common-btn sl4" id="search-main-student">검색</div>
+                                    </div>
+
+                                </div>
                             </div>
                             <div class="mt">
                                 <div class="table-frame stu-chocie-frame">
@@ -85,7 +102,9 @@
                                             <col width="15%">
                                             <col width="40%">
                                         </colgroup>
-                                        <tr th:each="s, stat : ${students}" class="timetable-pending-list">
+                                        <tr th:each="s, stat : ${students}"
+                                            class="timetable-pending-list"
+                                            th:attr="data-phone=${s.phone != null ? s.phone : ''}">
                                             <td class="checkbox-group">
                                                 <input type="checkbox" th:value="${s.studentId}">
                                             </td>
@@ -172,7 +191,7 @@
                                                     <option th:each="cc : ${classCodes}"
                                                             th:value="${cc.classKey}"
                                                             th:text="${cc.className}"
-                                                            th:data-class-type = "${cc.classType}"
+                                                            th:data-class-type="${cc.classType}"
                                                             th:selected="${entry != null and cc.classKey == entry.classKey}">
                                                     </option>
                                                 </select>

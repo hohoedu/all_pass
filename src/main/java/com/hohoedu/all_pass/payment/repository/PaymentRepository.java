@@ -97,12 +97,15 @@ public interface PaymentRepository {
     // 학생 등록 후 결제 상세내용 생성
     int createPaymentDetail(PaymentDetail paymentDetail);
 
-    String findLatestPaymentKeyByStudent(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
+    String findLatestPaymentKeyByStudentId(@Param("studentId") String studentId);
 
     void updateAmount(@Param("paymentKey") String paymentKey);
+
+    int updatePaymentDetailBookFee(
+            @Param("studentId") String studentId,
+            @Param("classType") String classType,
+            @Param("materialFee") Integer materialFee,
+            @Param("paymentKey") String paymentKey);
 
     Payment findPaymentByKey(String paymentKey);
 
@@ -233,7 +236,6 @@ public interface PaymentRepository {
             @Param("userCode") String userCode,
             @Param("yy") String yy,
             @Param("mm") String mm
-
     );
 
 

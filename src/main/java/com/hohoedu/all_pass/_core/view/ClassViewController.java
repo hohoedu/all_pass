@@ -13,6 +13,7 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -68,7 +69,7 @@ public class ClassViewController {
         String classUnits = mapper.writeValueAsString(classUnitMap);
         String classCodesJson = mapper.writeValueAsString(classCodes);
 
-        List<Student> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
+        List<StudentWebRespDTO.StudentsListDTO> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
 
         List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
 

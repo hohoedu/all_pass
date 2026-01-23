@@ -44,7 +44,7 @@ public class ConsultController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<?> searchByPeriod(@RequestBody Map<String, String> req, HttpSession session) {
+    public ResponseEntity<?> searchByPeriod(@RequestBody ConsultReqDTO.GetConsultReqDTO req, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -53,10 +53,10 @@ public class ConsultController {
                     .build();
         }
 
-        String startYm = req.get("startYm");
-        String endYm = req.get("endYm");
+        String startYm = req.getStartYm();
+        String endYm = req.getEndYm();
 
-        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(startYm, endYm, user.getCenterCode(), user.getUserCode());
+        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(startYm, endYm, user.getCenterCode(), req.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }
