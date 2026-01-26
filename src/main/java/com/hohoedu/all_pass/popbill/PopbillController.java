@@ -32,6 +32,7 @@ public class PopbillController {
         try {
 
             popbillService.createPopbillConfig(dto);
+
             return ResponseEntity.ok(ApiUtils.success("입력 성공"));
 
         } catch (IllegalStateException e) {
@@ -42,6 +43,7 @@ public class PopbillController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiUtils.error("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
+
 
     @GetMapping("/access-url")
     public ResponseEntity<?> getAccessURL(HttpSession session) {
@@ -67,7 +69,8 @@ public class PopbillController {
     @PostMapping("/send-join")
     public ResponseEntity<?> sendJoinAlimtalk(@RequestBody Map<String, String> request, HttpSession session) {
         try {
-            // 1️⃣ 세션 체크
+
+            // 세션 체크
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.FOUND)
@@ -75,7 +78,7 @@ public class PopbillController {
                         .build();
             }
 
-            // 2️⃣ 전화번호 검증
+            // 전화번호 검증
             String phone = request.get("phone");
             if (phone == null || phone.trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -83,19 +86,17 @@ public class PopbillController {
             }
 
 
-            // 3️⃣ PopbillService에 위임 🔥
+            // PopbillService에 위임
             String receiptNum = popbillService.sendJoinAlimtalk(
                     user.getCenterCode(),
                     phone,
                     user.getRegionName(),
-                    user.getCenterName()
+                    user.getCenterName(),
+                    user.getUserCode()
             );
 
 
-            log.info("신규회원 알림톡 발송 성공 - centerCode: {}, phone: {}, receiptNum: {}",
-                    user.getCenterCode(), phone, receiptNum);
-
-            // 4️⃣ 성공 응답
+            // 성공 응답
             return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));
 
         } catch (Exception e) {
@@ -104,4 +105,5 @@ public class PopbillController {
                     .body(ApiUtils.error("알림톡 발송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
+
 }

@@ -25,12 +25,14 @@ import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
+import com.hohoedu.all_pass.popbill.PopbillConfig;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.popbill.api.KakaoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
@@ -140,8 +142,14 @@ public class StudentService {
         parentDTO.setSignature(studentDTO.getStudentId() + "signature.png");
         familyService.parentInsert(parentDTO);
 
+        String inviteCode = studentDTO.getInviteCode();
+        if (inviteCode != null && !inviteCode.isEmpty()) {
+            log.info("inviteCode : {}", inviteCode);
+        }
+
         return studentDTO.getStudentId();
     }
+
 
     private String convertBirthToFullDate(String birth) {
         if (birth == null || birth.length() != 6) return null;
@@ -263,50 +271,34 @@ public class StudentService {
     }
 
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request) {
-        log.info("수강상태 수정 처리: studentId={}, hanChanged={}, bookChanged={}",
-                request.getStudentId(), request.getHanChanged(), request.getBookChanged());
 
-        if (Boolean.TRUE.equals(request.getHanChanged())) {
-            if (request.getHanState() == 1) {
-
-                log.info("한자 수강으로 변경: entryHanDate={}", request.getEntryHanDate());
-                studentRepository.updateHanToActive(
-                        request.getStudentId(),
-                        request.getEntryHanDate()
-                );
-            } else {
-                log.info("한자 미수강으로 변경: inactiveDate={}, reason={}",
-                        request.getInactiveHanDate(), request.getInactiveHanReason());
-                studentRepository.updateHanToInactive(
-                        request.getStudentId(),
-                        request.getInactiveHanDate(),
-                        request.getInactiveHanReason()
-                );
-            }
+        // 한자 상태 업데이트
+        if (request.getHanState() == 1) {
+            studentRepository.updateHanToActive(
+                    request.getStudentId(),
+                    request.getEntryHanDate()
+            );
         } else {
-            log.info(request.getHanChanged().toString());
-            studentRepository.updateHanToActive(request.getStudentId(), request.getEntryHanDate());
+            studentRepository.updateHanToInactive(
+                    request.getStudentId(),
+                    request.getInactiveHanDate(),
+                    request.getInactiveHanReason()
+            );
         }
 
-        // 독서 수강상태 변경
-        if (Boolean.TRUE.equals(request.getBookChanged())) {
-            if (request.getBookState() == 1) {
-                log.info("독서 수강으로 변경: entryBookDate={}", request.getEntryBookDate());
-                studentRepository.updateBookToActive(
-                        request.getStudentId(),
-                        request.getEntryBookDate()
-                );
-            } else {
-                log.info("독서 미수강으로 변경: inactiveDate={}, reason={}",
-                        request.getInactiveBookDate(), request.getInactiveBookReason());
-                studentRepository.updateBookToInactive(
-                        request.getStudentId(),
-                        request.getInactiveBookDate(),
-                        request.getInactiveBookReason()
-                );
-            }
+        // 독서 상태 업데이트
+        if (request.getBookState() == 1) {
+            studentRepository.updateBookToActive(
+                    request.getStudentId(),
+                    request.getEntryBookDate()
+            );
+        } else {
+            studentRepository.updateBookToInactive(
+                    request.getStudentId(),
+                    request.getInactiveBookDate(),
+                    request.getInactiveBookReason()
+            );
         }
-
     }
 
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {

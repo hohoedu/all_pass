@@ -12,6 +12,7 @@ public class StudentWebReqDTO {
         private String studentId;
         private String studentName;
         private String birth;
+        private String inviteCode;
         private boolean gender;
         private String school;
         private String address;

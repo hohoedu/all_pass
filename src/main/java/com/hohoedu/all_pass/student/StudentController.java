@@ -47,7 +47,6 @@ public class StudentController {
     final private FileUploadService fileUploadService;
 
 
-
     @GetMapping("/api/label")
     public ResponseEntity<?> getLabels(@RequestParam("userCode") String userCode) {
 
@@ -152,6 +151,7 @@ public class StudentController {
     @PostMapping("/update/course-status")
     public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req) {
         try {
+            log.info(req.getEntryBookDate());
             studentService.updateCourseStatus(req);
 
             return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));

@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.popbill._dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,5 +41,29 @@ public class PopbillReqDTO {
             private String u1;   // 링크1 (모바일)
             private String u2;   // 링크2 (PC)
         }
+    }
+
+    @Data
+    @Builder
+    public static class PopbillSendLogReqDTO {
+        private String sendKey;
+        private String userCode;
+        private String centerCode;
+        private String receiverPhone;
+        private String sendType;
+        private String templateCode;
+        private String content;
+        private String sendStatus;
+    }
+
+    @Data
+    @Builder
+    public static class InviteTrackingReqDTO {
+        private String sendKey;
+        private String inviteCode;
+        private String userCode;
+        private String receiverPhone;
+        private String centerCode;
+        private String inviteStatus;
     }
 }

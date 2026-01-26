@@ -14,4 +14,19 @@
         FROM erp_popbill_config
         WHERE center_code = #{centerCode}
     </select>
+
+    <select id="findPopbillTemplate" resultType="com.hohoedu.all_pass.popbill._dto.PopbillRespDTO$PopbillTemplateRespDTO">
+        SELECT *
+        FROM erp_popbill_template
+        WHERE center_code = #{centerCode}
+    </select>
+
+    <insert id="insertSendLog" parameterType="com.hohoedu.all_pass.popbill._dto.PopbillReqDTO$PopbillSendLogReqDTO">
+        INSERT INTO erp_popbill_send_log (send_key, user_code, receiver_phone, center_code, send_type, template_code, content, send_status, created_at)
+        VALUES (#{sendKey}, #{userCode}, #{receiverPhone}, #{centerCode}, #{sendType}, #{templateCode}, #{content}, #{sendStatus}, SYSDATETIME());
+    </insert>
+    <insert id="insertInviteTracking" parameterType="com.hohoedu.all_pass.popbill._dto.PopbillReqDTO$InviteTrackingReqDTO">
+        INSERT INTO erp_invite_tracking (send_key, invite_code, user_code, receiver_phone, center_code, invite_status, created_at)
+        VALUES (#{sendKey}, #{inviteCode}, #{userCode}, #{receiverPhone}, #{centerCode}, 'PENDING', SYSDATETIME());
+    </insert>
 </mapper>

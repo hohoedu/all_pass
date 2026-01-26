@@ -392,24 +392,25 @@ function renderStudentModal(data) {
     updateTotalFee(payment);
     renderFeeTable(payment);
 
-    // 8) 초기 수강 상태 저장
+    // 8) 초기 수강 상태 저장 - 날짜도 함께 전달
     if (typeof window.saveInitialCourseState === 'function') {
         window.saveInitialCourseState(payment.hanState, payment.bookState);
     }
 
     const birthInput = document.querySelector("#tab2 #birth-date");
     if (birthInput) {
-        birthInput.value = formatBirthInput(info.birth); // date input용
+        birthInput.value = formatBirthInput(info.birth);
     }
 
+    // 날짜 input에 payment에서 가져온 값 넣기
     const hanInput = document.querySelector("#entry-han-date");
     if (hanInput) {
-        hanInput.value = info.entryHanDate;
+        hanInput.value = payment.entryHanDate || '';  // info가 아니라 payment!
     }
 
     const bookInput = document.querySelector("#entry-book-date");
     if (bookInput) {
-        bookInput.value = info.entryBookDate;
+        bookInput.value = payment.entryBookDate || '';  // info가 아니라 payment!
     }
 }
 
@@ -503,6 +504,7 @@ function formatDate(value) {
 
     return '';
 }
+
 function updateTotalFee() {
     function removeComma(value) {
         if (!value) return '0';
@@ -903,6 +905,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // 초기 수강 상태 저장용 변수
     let initialHanState = null;
     let initialBookState = null;
+    let initialEntryHanDate = null;
+    let initialEntryBookDate = null;
 
     // 한자 달력 아이콘 클릭
     const hanCalendarBtn = document.querySelector('.han-calendar-open');
@@ -1000,92 +1004,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
             const currentBookState = bookHidden?.value;
 
-            const hanChanged = initialHanState !== null && initialHanState !== currentHanState;
-            const bookChanged = initialBookState !== null && initialBookState !== currentBookState;
-
             const entryHanInput = document.getElementById('entry-han-date');
             const entryBookInput = document.getElementById('entry-book-date');
-            // if (!hanChanged && !bookChanged) {
-            //     alert('변경된 수강 상태가 없습니다.');
-            //     return;
-            // }
+            const hanReasonInput = document.getElementById('han-inactive-reason');
+            const hanDateInput = document.getElementById('han-inactive-date');
+            const bookReasonInput = document.getElementById('book-inactive-reason');
+            const bookDateInput = document.getElementById('book-inactive-date');
 
-            let hanInactiveDate = null;
-            let hanInactiveReason = null;
-            let entryHanDate = null;
+            // 상태 변경 또는 날짜 변경 감지
+            const hanStateChanged = initialHanState !== null && initialHanState !== currentHanState;
+            const hanDateChanged = initialEntryHanDate !== entryHanInput?.value;
+            const hanChanged = hanStateChanged || hanDateChanged;
 
-            console.log(hanChanged)
-            console.log(currentHanState);
-            if (hanChanged) {
-                if (currentHanState === 'inactive') {
-                    const hanReasonInput = document.getElementById('han-inactive-reason');
-                    const hanDateInput = document.getElementById('han-inactive-date');
+            const bookStateChanged = initialBookState !== null && initialBookState !== currentBookState;
+            const bookDateChanged = initialEntryBookDate !== entryBookInput?.value;
+            const bookChanged = bookStateChanged || bookDateChanged;
 
-                    hanInactiveReason = hanReasonInput?.value.trim();
-                    hanInactiveDate = hanDateInput?.value;
-
-                    if (!hanInactiveReason) {
-                        alert('한자 미수강 사유를 입력해주세요.');
-                        return;
-                    }
-                    if (!hanInactiveDate) {
-                        alert('한자 미수강 날짜를 선택해주세요.');
-                        return;
-                    }
-                } else if (currentHanState === 'active') {
-                    entryHanDate = entryHanInput?.value;
-                    console.log(entryHanDate);
-                    if (!entryHanDate) {
-                        alert('한자 입회 날짜를 선택해주세요.');
-                        return;
-                    }
-                }
-            } else if (currentHanState === 'active') {
-                entryHanDate = entryHanInput?.value;
-                console.log(entryHanDate);
-                if (!entryHanDate) {
-                    alert('한자 입회 날짜를 선택해주세요.');
-                    return;
-                }
-            }
-
-            let bookInactiveDate = null;
-            let bookInactiveReason = null;
-            let entryBookDate = null;
-
-            if (bookChanged) {
-                if (currentBookState === 'inactive') {
-                    const bookReasonInput = document.getElementById('book-inactive-reason');
-                    const bookDateInput = document.getElementById('book-inactive-date');
-
-                    bookInactiveReason = bookReasonInput?.value.trim();
-                    bookInactiveDate = bookDateInput?.value;
-
-                    if (!bookInactiveReason) {
-                        alert('독서 미수강 사유를 입력해주세요.');
-                        return;
-                    }
-                    if (!bookInactiveDate) {
-                        alert('독서 미수강 날짜를 선택해주세요.');
-                        return;
-                    }
-                } else if (currentBookState === 'active') {
-
-                    entryBookDate = entryBookInput?.value;
-
-                    if (!entryBookDate) {
-                        alert('독서 입회 날짜를 선택해주세요.');
-                        return;
-                    }
-                }
-            } else if (currentBookState === 'active') {
-                entryBookDate = entryBookInput?.value;
-                console.log(entryBookDate);
-                if (!entryBookDate) {
-                    alert('독서 입회 날짜를 선택해주세요.');
-                    return;
-                }
-            }
+            console.log('initialHanState:', initialHanState, 'currentHanState:', currentHanState);
+            console.log('initialBookState:', initialBookState, 'currentBookState:', currentBookState);
+            console.log('initialEntryHanDate:', initialEntryHanDate, 'currentEntryHanDate:', entryHanInput?.value);
+            console.log('initialEntryBookDate:', initialEntryBookDate, 'currentEntryBookDate:', entryBookInput?.value);
+            console.log('hanChanged:', hanChanged, 'bookChanged:', bookChanged);
 
             const requestBody = {
                 studentId: currentStudentId,
@@ -1093,24 +1032,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 bookState: currentBookState === 'active' ? 1 : 0,
                 hanChanged: hanChanged,
                 bookChanged: bookChanged,
-                entryHanDate: entryHanDate,
-                entryBookDate: entryBookDate,
-                inactiveHanDate: hanInactiveDate,
-                inactiveBookDate: bookInactiveDate,
-                inactiveHanReason: hanInactiveReason,
-                inactiveBookReason: bookInactiveReason
+                entryHanDate: entryHanInput?.value || null,
+                entryBookDate: entryBookInput?.value || null,
+                inactiveHanDate: hanDateInput?.value || null,
+                inactiveBookDate: bookDateInput?.value || null,
+                inactiveHanReason: hanReasonInput?.value?.trim() || null,
+                inactiveBookReason: bookReasonInput?.value?.trim() || null
             };
 
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {
-
-
                 const shouldChangeStudentStatus = await showStudentStatusModal();
-
-
                 if (!shouldChangeStudentStatus) {
                     return;
                 }
-
                 requestBody.changeStudentStatus = true;
             }
 
@@ -1132,13 +1066,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 // 초기 상태 업데이트
                 initialHanState = currentHanState;
                 initialBookState = currentBookState;
+                initialEntryHanDate = entryHanInput?.value;
+                initialEntryBookDate = entryBookInput?.value;
 
                 // 입력 초기화
-                const hanReasonInput = document.getElementById('han-inactive-reason');
-                const hanDateInput = document.getElementById('han-inactive-date');
                 const hanDisplay = document.querySelector('.han-date-display');
-                const bookReasonInput = document.getElementById('book-inactive-reason');
-                const bookDateInput = document.getElementById('book-inactive-date');
                 const bookDisplay = document.querySelector('.book-date-display');
 
                 if (hanReasonInput) hanReasonInput.value = '';
@@ -1237,7 +1169,19 @@ document.addEventListener('DOMContentLoaded', function () {
         // 0 또는 1을 'active' 또는 'inactive'로 변환
         initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
         initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
-        console.log('초기 수강 상태 저장:', {initialHanState, initialBookState});
+
+        // input에서 직접 읽어오기
+        const hanInput = document.getElementById('entry-han-date');
+        const bookInput = document.getElementById('entry-book-date');
+        initialEntryHanDate = hanInput?.value || null;
+        initialEntryBookDate = bookInput?.value || null;
+
+        console.log('초기 수강 상태 저장:', {
+            initialHanState,
+            initialBookState,
+            initialEntryHanDate,
+            initialEntryBookDate
+        });
     };
 });
 

@@ -46,12 +46,13 @@ public class StudentViewController {
     }
 
     @GetMapping("/mobile/join")
-    public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode, Model model, HttpSession session) {
+    public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode, @RequestParam(required = false) String invite, Model model, HttpSession session) {
 
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
 
         model.addAttribute("centerCode", centerCode);
+        model.addAttribute("inviteCode", invite);
         model.addAttribute("gradeCodes", gradeCodes);
         model.addAttribute("relationCodes", relationCodes);
 

@@ -25,6 +25,7 @@
     </div>
     <form id="joinForm" class="join-form" method="post" th:action="@{/student/join}">
         <input type="hidden" name="centerCode" th:value="${centerCode}">
+        <input type="hidden" name="inviteCode" th:value="${inviteCode}">
         <div class="join-group">
             <label for="student-name">학생 이름</label>
             <input type="text" id="student-name" name="studentName" placeholder="학생 이름을 입력해 주세요.">
