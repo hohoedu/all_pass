@@ -271,4 +271,93 @@ public class ClassAppRespDTO {
     }
 
 
+    @Data
+    public static class MonthlyBukiRespDTO {
+
+        @JsonProperty("title")
+        private String title;
+
+        @JsonProperty("title_sub")
+        private String titleSub;
+
+        private String img;
+
+        @JsonProperty("part1_title")
+        private String part1Title;
+
+        @JsonProperty("part2_title")
+        private String part2Title;
+
+        @JsonProperty("part3_title")
+        private String part3Title;
+
+        @JsonProperty("part4_title")
+        private String part4Title;
+
+        @JsonProperty("part5_title")
+        private String part5Title;
+
+        @JsonProperty("part1_note")
+        private String part1Note;
+
+        @JsonProperty("part2_note")
+        private String part2Note;
+
+        @JsonProperty("part3_note")
+        private String part3Note;
+
+        @JsonProperty("part4_note")
+        private String part4Note;
+
+        @JsonProperty("part5_note")
+        private String part5Note;
+
+        @JsonProperty("part1_tag_1")
+        private String part1Tag1;
+
+        @JsonProperty("part1_tag_2")
+        private String part1Tag2;
+
+        @JsonProperty("part1_tag_3")
+        private String part1Tag3;
+
+        @JsonProperty("part2_tag_1")
+        private String part2Tag1;
+
+        @JsonProperty("part2_tag_2")
+        private String part2Tag2;
+
+        @JsonProperty("part2_tag_3")
+        private String part2Tag3;
+
+        @JsonProperty("part3_tag_1")
+        private String part3Tag1;
+
+        @JsonProperty("part3_tag_2")
+        private String part3Tag2;
+
+        @JsonProperty("part3_tag_3")
+        private String part3Tag3;
+
+        @JsonProperty("part4_tag_1")
+        private String part4Tag1;
+
+        @JsonProperty("part4_tag_2")
+        private String part4Tag2;
+
+        @JsonProperty("part4_tag_3")
+        private String part4Tag3;
+
+        @JsonProperty("part5_tag_1")
+        private String part5Tag1;
+
+        @JsonProperty("part5_tag_2")
+        private String part5Tag2;
+
+        @JsonProperty("part5_tag_3")
+        private String part5Tag3;
+
+        private String sdate;
+    }
+
 }

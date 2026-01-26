@@ -292,10 +292,15 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm
     );
-    
+
     int updateMonthlyComment(ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO dto);
 
     ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(
+            @Param("studentId") String studentId,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    ClassAppRespDTO.MonthlyBukiRespDTO findAppInfantBuki(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm);

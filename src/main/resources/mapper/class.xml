@@ -995,9 +995,22 @@
 
 
     <select id="findAppInfantHani" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
-        SELECT *
+        SELECT *,
+               CONCAT('https://sunandtree2.cafe24.com/report/haniimg/rimg/', img_url) AS img
+
         FROM erp_infant_han_notice
         where student_id = #{studentId}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
+    <select id="findAppInfantBuki" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyBukiRespDTO">
+        SELECT *,
+               subject AS title,
+               content AS titleSub,
+               img_url AS img
+        FROM erp_infant_book_notice
+        WHERE student_id = #{studentId}
           AND yy = #{yy}
           AND mm = #{mm}
     </select>
@@ -1205,8 +1218,8 @@
                                             part5_tag_1, part5_tag_2, part5_tag_3,
                                             created_at, updated_at, update_user,
                                             student_id, time_table_key, center_code, user_code, send_id, yy, mm)
-        VALUES (#{dto.detail.classLabel},
-                #{dto.detail.subject},
+        VALUES (#{dto.detail.subject},
+                #{dto.detail.content},
                 #{dto.detail.story},
                 #{dto.detail.knowledgeBoard},
                 #{dto.detail.thinkTalk},

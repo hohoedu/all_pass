@@ -185,19 +185,23 @@ public class AppController {
         return ResponseEntity.ok(json);
     }
 
+    //호호하니 월말평가
     @PostMapping("/evaluation_u_copy_")
-    public ResponseEntity<?> AppInfantHani(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+    public ResponseEntity<?> AppInfantHani(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) throws JsonProcessingException {
         ClassAppRespDTO.MonthlyHaniRespDTO respDTO = classService.findAppInfantHani(reqDTO);
-        log.info(respDTO.toString());
-        return ResponseEntity.ok(AppApiUtils.successOne(respDTO));
+        Object response = AppApiUtils.successClinicOne(respDTO);
+        String json = new ObjectMapper().writeValueAsString(response);
+        return ResponseEntity.ok(json);
     }
 
+    //호호부키 월말평가
     @PostMapping("/evaluation_u_copy")
-    public ResponseEntity<?> AppInfantBuki(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
-        log.info("copy");
-        log.info(reqDTO.toString());
-
-        return ResponseEntity.ok(AppApiUtils.successList(null));
+    public ResponseEntity<?> AppInfantBuki(@RequestBody ClassAppReqDTO.MonthlyResultReqDTO reqDTO) throws JsonProcessingException {
+        ClassAppRespDTO.MonthlyBukiRespDTO respDTO = classService.findAppInfantBuki(reqDTO);
+        Object response = AppApiUtils.successClinicOne(respDTO);
+        String json = new ObjectMapper().writeValueAsString(response);
+        log.info(json);
+        return ResponseEntity.ok(json);
     }
 
 

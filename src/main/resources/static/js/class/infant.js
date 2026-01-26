@@ -577,6 +577,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("학생을 선택하세요.");
                 return;
             }
+            if (!confirm(students.length + '명의 학생에게 알림을 발송하시겠습니까?')) {
+                return;
+            }
 
             const sendRequestBody = {
                 students: selectedStudents.map(s => ({

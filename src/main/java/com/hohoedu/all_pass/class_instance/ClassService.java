@@ -920,12 +920,19 @@ public class ClassService {
         String studentId = reqDTO.getId();
         String yy = reqDTO.getYm().substring(0, 4);
         String mm = reqDTO.getYm().substring(4, 6);
-
+        ClassAppRespDTO.MonthlyHaniRespDTO resp = classRepository.findAppInfantHani(studentId, yy, mm);
 
         return classRepository.findAppInfantHani(studentId, yy, mm);
 
     }
 
+    public ClassAppRespDTO.MonthlyBukiRespDTO findAppInfantBuki(ClassAppReqDTO.MonthlyResultReqDTO reqDTO) {
+        String studentId = reqDTO.getId();
+        String yy = reqDTO.getYm().substring(0, 4);
+        String mm = reqDTO.getYm().substring(4, 6);
+
+        return classRepository.findAppInfantBuki(studentId, yy, mm);
+    }
 
     public List<TimeTableLabelDTO> findInfantClassLabel(ClassReqDTO.InfantClassLabelsDTO dto) {
 
@@ -1063,6 +1070,7 @@ public class ClassService {
                         reqDTO, centerCode, userCode, s.getStudentId(), sendId
                 );
             } else {
+                log.info(reqDTO.getDetail().getContent());
                 classRepository.insertInfantBookNotice(
                         reqDTO, centerCode, userCode, s.getStudentId(), sendId
                 );
