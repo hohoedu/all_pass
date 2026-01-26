@@ -110,12 +110,23 @@
                                                            class="infant-row-checkbox"
                                                            th:data-id="${s.studentId}"
                                                            th:data-name="${s.studentName}"
-                                                           th:data-token="${s.appToken}"/>
+                                                           th:data-token="${s.appToken}"
+                                                           th:data-is-send="${s.isSend}"
+                                                           th:disabled="${s.appToken == null}"
+                                                    />
                                                 </td>
                                                 <td th:text="${s.studentName}"></td>
                                                 <td class="send-ornot">
-                                                    <img th:if="${s.appToken == null}" th:src="@{/image/no-smartphones.png}">
-                                                    <img th:if="${s.appToken != null}" th:src="@{/image/send1.png}">
+                                                    <!-- ✅ 3가지 상태 이미지 -->
+                                                    <img th:if="${s.appToken == null}"
+                                                         th:src="@{/image/no-smartphones.png}"
+                                                         title="앱 미등록">
+                                                    <img th:if="${s.appToken != null and (s.isSend == true or s.isSend == 1)}"
+                                                         th:src="@{/image/send2.png}"
+                                                         title="발행완료">
+                                                    <img th:if="${s.appToken != null and (s.isSend == false or s.isSend == 0 or s.isSend == null)}"
+                                                         th:src="@{/image/send1.png}"
+                                                         title="미발행">
                                                 </td>
                                             </tr>
                                         </th:block>
@@ -128,12 +139,21 @@
                                                            class="infant-row-checkbox"
                                                            th:data-id="${s.studentId}"
                                                            th:data-name="${s.studentName}"
-                                                           th:data-token="${s.appToken}"/>
+                                                           th:data-token="${s.appToken}"
+                                                           th:data-is-send="${s.isSend}"
+                                                           th:disabled="${s.appToken == null}"/>
                                                 </td>
                                                 <td th:text="${s.studentName}"></td>
                                                 <td class="send-ornot">
-                                                    <img th:if="${s.appToken == null}" th:src="@{/image/no-smartphones.png}">
-                                                    <img th:if="${s.appToken != null}" th:src="@{/image/send1.png}">
+                                                    <img th:if="${s.appToken == null}"
+                                                         th:src="@{/image/no-smartphones.png}"
+                                                         title="앱 미등록">
+                                                    <img th:if="${s.appToken != null and (s.isSend == true or s.isSend == 1)}"
+                                                         th:src="@{/image/send2.png}"
+                                                         title="발행완료">
+                                                    <img th:if="${s.appToken != null and (s.isSend == false or s.isSend == 0 or s.isSend == null)}"
+                                                         th:src="@{/image/send1.png}"
+                                                         title="미발행">
                                                 </td>
                                             </tr>
                                         </th:block>

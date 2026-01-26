@@ -236,7 +236,7 @@
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-            (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
+        (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
@@ -343,7 +343,8 @@
         ORDER BY dayname, period_no
     </select>
 
-    <select id="findTimeTableStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+    <select id="findTimeTableStudents"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT
         ta.time_table_key,
         s.student_id,
@@ -687,7 +688,8 @@
             , 2) = #{yy}
     </select>
 
-    <select id="findAfterClassNotice" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+    <select id="findAfterClassNotice"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         select after_class_key AS afterClassKey,
                content,
                word,
@@ -927,7 +929,8 @@
         ORDER BY f.number ASC;
     </select>
 
-    <select id="findMonthlyReport" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyReportRespDTO">
+    <select id="findMonthlyReport"
+            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyReportRespDTO">
         SELECT CASE WHEN ms.question1 = 1 THEN 'Y' ELSE '' END                  AS part1,
                CASE WHEN ms.question2 = 1 THEN 'Y' ELSE '' END                  AS part2,
                CASE WHEN ms.question3 = 1 THEN 'Y' ELSE '' END                  AS part3,
@@ -983,7 +986,8 @@
           AND mm = #{mm}
     </update>
 
-    <update id="updateMonthlyComment" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$MonthlySaveRequestDTO$MonthlySaveDTO">
+    <update id="updateMonthlyComment"
+            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$MonthlySaveRequestDTO$MonthlySaveDTO">
         UPDATE erp_monthly_result
         SET bottom_comment = #{bottomComment},
             updated_at     = SYSDATETIME()
@@ -994,7 +998,8 @@
     </update>
 
 
-    <select id="findAppInfantHani" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
+    <select id="findAppInfantHani"
+            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
         SELECT *,
                CONCAT('https://sunandtree2.cafe24.com/report/haniimg/rimg/', img_url) AS img
 
@@ -1002,17 +1007,20 @@
         where student_id = #{studentId}
           AND yy = #{yy}
           AND mm = #{mm}
+          AND is_send = '1'
     </select>
 
-    <select id="findAppInfantBuki" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyBukiRespDTO">
+    <select id="findAppInfantBuki"
+            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyBukiRespDTO">
         SELECT *,
-               subject AS title,
-               content AS titleSub,
-               img_url AS img
+               main_title                                                          AS title,
+               subtitle                                                            AS titleSub,
+               CONCAT('https://sunandtree2.cafe24.com/report/bukiimg/J/', img_url) AS img
         FROM erp_infant_book_notice
         WHERE student_id = #{studentId}
           AND yy = #{yy}
           AND mm = #{mm}
+          AND is_send = '1'
     </select>
 
     <select id="findClassInfoByStudentId"
@@ -1102,12 +1110,14 @@
 
     <select id="findInfantHanStudents"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO$StudentInfo">
-        SELECT s.student_id   AS studentId,
-               s.student_name AS studentName,
-               s.app_id       AS appId,
-               s.app_token    AS appToken
+        SELECT s.student_id         AS studentId,
+               s.student_name       AS studentName,
+               s.app_id             AS appId,
+               s.app_token          AS appToken,
+               ISNULL(h.is_send, 0) AS isSend
         FROM erp_student s
                  JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_infant_han_notice h ON s.student_id = h.student_id AND h.time_table_key = #{timeTableKey}
         WHERE ta.time_table_key = #{timeTableKey}
     </select>
 
@@ -1128,12 +1138,14 @@
 
     <select id="findInfantBookStudents"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO$StudentInfo">
-        SELECT s.student_id   AS studentId,
-               s.student_name AS studentName,
-               s.app_id       AS appId,
-               s.app_token    AS appToken
+        SELECT s.student_id         AS studentId,
+               s.student_name       AS studentName,
+               s.app_id             AS appId,
+               s.app_token          AS appToken,
+               ISNULL(b.is_send, 0) AS isSend
         FROM erp_student s
                  JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_infant_book_notice b ON s.student_id = b.student_id AND b.time_table_key = #{timeTableKey}
         WHERE ta.time_table_key = #{timeTableKey}
     </select>
 
@@ -1173,6 +1185,65 @@
           AND time_table_key = #{timeTableKey}
     </select>
 
+    <select id="findInfantHanIsSend" resultType="java.lang.Boolean">
+        SELECT is_send
+        FROM erp_infant_han_notice
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
+    <select id="findInfantBookIsSend" resultType="java.lang.Boolean">
+        SELECT is_send
+        FROM erp_infant_book_notice
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+    </select>
+
+    <update id="updateInfantHanNotice">
+        UPDATE erp_infant_han_notice
+        SET main_title  = #{dto.detail.classLabel},
+            subtitle    = #{dto.detail.subject},
+            title1      = #{dto.detail.storyComment},
+            title2      = #{dto.detail.workBook},
+            title3      = #{dto.detail.hanjaSong},
+            img_url     = #{dto.detail.imagePath},
+            part2_title = #{dto.detail.story},
+            part1_note  = #{dto.detail.newWord},
+            part2_note  = #{dto.detail.story} + '(' + #{dto.detail.subStory} + ')',
+            part3_note  = #{dto.detail.idiom} + '(' + #{dto.detail.subIdiom} + ')',
+            part4_note  = #{dto.detail.clean},
+            part5_note  = #{dto.detail.insung},
+
+            updated_at  = SYSDATETIME(),
+            update_user = #{userCode},
+            is_send     = #{finalIsSend}
+
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{dto.timeTableKey}
+    </update>
+
+    <update id="updateInfantBookNotice">
+        UPDATE erp_infant_book_notice
+        SET main_title  = #{dto.detail.subject},
+            subtitle    = #{dto.detail.content},
+            title1      = #{dto.detail.story},
+            title2      = #{dto.detail.knowledgeBoard},
+            title3      = #{dto.detail.thinkTalk},
+            img_url     = #{dto.detail.imagePath},
+            part1_note  = #{dto.detail.story},
+            part2_note  = #{dto.detail.knowledgeBoard},
+            part3_note  = #{dto.detail.thinkTalk},
+            part4_note  = #{dto.detail.goldenbell},
+            part5_note  = #{dto.detail.findDiff},
+
+            updated_at  = SYSDATETIME(),
+            update_user = #{userCode},
+            is_send     = #{finalIsSend}
+
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{dto.timeTableKey}
+    </update>
+
     <insert id="insertInfantHanNotice">
         INSERT INTO erp_infant_han_notice (main_title, subtitle, title1, title2, title3,
                                            img_url,
@@ -1184,7 +1255,7 @@
                                            part4_tag_1, part4_tag_2, part4_tag_3,
                                            part5_tag_1, part5_tag_2, part5_tag_3,
                                            created_at, updated_at, update_user,
-                                           student_id, time_table_key, center_code, user_code, send_id, yy, mm)
+                                           student_id, time_table_key, center_code, user_code, send_id, yy, mm, is_send)
         VALUES (#{dto.detail.classLabel},
                 #{dto.detail.subject},
                 #{dto.detail.storyComment},
@@ -1203,7 +1274,8 @@
                 NULL, NULL, NULL,
                 NULL, NULL, NULL,
                 SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm})
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
+                #{dto.isSend})
     </insert>
 
     <insert id="insertInfantBookNotice">
@@ -1217,7 +1289,8 @@
                                             part4_tag_1, part4_tag_2, part4_tag_3,
                                             part5_tag_1, part5_tag_2, part5_tag_3,
                                             created_at, updated_at, update_user,
-                                            student_id, time_table_key, center_code, user_code, send_id, yy, mm)
+                                            student_id, time_table_key, center_code, user_code, send_id, yy, mm,
+                                            is_send)
         VALUES (#{dto.detail.subject},
                 #{dto.detail.content},
                 #{dto.detail.story},
@@ -1236,7 +1309,8 @@
                 NULL, NULL, NULL,
                 NULL, NULL, NULL,
                 SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm})
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
+                #{dto.isSend})
     </insert>
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->

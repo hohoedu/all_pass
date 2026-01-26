@@ -354,10 +354,16 @@ public interface ClassRepository {
     int countInfantBook(@Param("studentId") String studentId,
                         @Param("timeTableKey") String timeTableKey);
 
-    int findInfantSendId(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey);
+    Integer findInfantSendId(@Param("studentId") String studentId,
+                             @Param("timeTableKey") String timeTableKey);
 
+    Boolean findInfantHanIsSend(@Param("studentId") String studentId,
+                                @Param("timeTableKey") String timeTableKey);
+
+    Boolean findInfantBookIsSend(@Param("studentId") String studentId,
+                                 @Param("timeTableKey") String timeTableKey);
+
+    // INSERT 메서드
     void insertInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
                                @Param("centerCode") String centerCode,
                                @Param("userCode") String userCode,
@@ -369,6 +375,22 @@ public interface ClassRepository {
                                 @Param("userCode") String userCode,
                                 @Param("studentId") String studentId,
                                 @Param("sendId") Integer sendId);
+
+    // ✅ UPDATE 메서드 (finalIsSend 파라미터 추가!)
+    void updateInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                               @Param("centerCode") String centerCode,
+                               @Param("userCode") String userCode,
+                               @Param("studentId") String studentId,
+                               @Param("sendId") Integer sendId,
+                               @Param("finalIsSend") Boolean finalIsSend);
+
+    void updateInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                                @Param("centerCode") String centerCode,
+                                @Param("userCode") String userCode,
+                                @Param("studentId") String studentId,
+                                @Param("sendId") Integer sendId,
+                                @Param("finalIsSend") Boolean finalIsSend);
+
 
     public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
 

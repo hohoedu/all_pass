@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requestClassLabels(year, month, teacherSelect.value);
 
     });
-    if (!teacherSelect) alert("선생님 선택 없음 돌아가");
+    if (!teacherSelect) alert("선택된 선생님이 없습니다.");
 
     teacherSelect.addEventListener("change", (e) => {
         const teacher = e.target.value;
@@ -183,6 +183,8 @@ function bindClassClickEvents() {
                 timeTableKey: btn.dataset.timeTableKey,
                 classSubject: btn.dataset.classSubject
             };
+
+            const monthInput = document.querySelector(".hidden-date");
             const [yy, mm] = monthInput.value.split("-");
             requestInfantDetail(label, yy);
 
@@ -245,6 +247,18 @@ function renderStudents(students) {
         const disabled = s.appToken == null ? "disabled" : "";
         const disabledRowClass = s.appToken == null ? "disabled-row" : "";
 
+        let statusImg;
+        if (s.appToken == null) {
+            // 1. 앱 미등록
+            statusImg = `<img src="/image/no-smartphones.png" title="앱 미등록">`;
+        } else if (s.isSend === true || s.isSend === 1) {
+            // 2. 발행됨
+            statusImg = `<img src="/image/send2.png" title="발행완료">`;
+        } else {
+            // 3. 미발행 (저장만 함 or 아직 저장 안함)
+            statusImg = `<img src="/image/send1.png" title="미발행">`;
+        }
+
         const row = `
             <tr class="${disabledRowClass}">
                 <td class="checkbox-group">
@@ -257,10 +271,7 @@ function renderStudents(students) {
                 </td>
                 <td>${s.studentName}</td>
                 <td class="send-ornot">
-                    ${s.appToken == null
-            ? `<img src="/image/no-smartphones.png">`
-            : `<img src="/image/send1.png">`
-        }
+                    ${statusImg}
                 </td>
             </tr>
         `;
@@ -533,7 +544,7 @@ function collectBookData() {
 }
 
 function collectLessonData() {
-    const type = getLessonType(); // HAN 또는 BOOK 리턴하는 기존 함수
+    const type = getLessonType();
     if (!type) return null;
 
     return {
@@ -557,14 +568,61 @@ function collectSelectedStudents() {
     return list;
 }
 
-// 발행버튼 클릭
+// ✅ 공통 저장 함수 (is_send 파라미터로 구분)
+async function saveInfantContent(isSend) {
+    try {
+        const lesson = collectLessonData();
+        const students = collectSelectedStudents();
+
+        if (!lesson) {
+            alert("수업 정보가 없습니다.");
+            return;
+        }
+
+        if (students.length === 0) {
+            alert("학생을 선택하세요.");
+            return;
+        }
+
+        const saveRequestBody = {
+            type: lesson.type,
+            detail: lesson.detail,
+            students: students,
+            classKey: document.querySelector(".class-btn.active")?.dataset.classKey,
+            unitKey: document.querySelector(".class-btn.active")?.dataset.unitKey,
+            timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
+            yy: document.querySelector(".hidden-date").value.split("-")[0],
+            mm: document.querySelector(".hidden-date").value.split("-")[1],
+            isSend: isSend  // ✅ 발행 여부 플래그
+        };
+
+        const saveRes = await fetch("/class/infant/save", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(saveRequestBody)
+        });
+
+        const saveData = await saveRes.json();
+
+        if (saveRes.ok && saveData.response === "success") {
+            return true;
+        } else {
+            return false;
+        }
+
+    } catch (err) {
+        console.error("❌ 저장 오류:", err);
+        return false;
+    }
+}
+
+// ✅ 발행 버튼 클릭 (앱 푸시 + 저장 with isSend=true)
 document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = document.getElementById("send-infant-btn");
     if (!sendBtn) return;
 
     sendBtn.addEventListener("click", async () => {
         try {
-
             const lesson = collectLessonData();
             const students = collectSelectedStudents();
 
@@ -577,6 +635,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("학생을 선택하세요.");
                 return;
             }
+
             if (!confirm(students.length + '명의 학생에게 알림을 발송하시겠습니까?')) {
                 return;
             }
@@ -590,27 +649,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
                 title: "학습 내용",
                 body: "내용이 입력되었습니다."
-            }
-
-
-            const saveRequestBody = {
-                type: lesson.type,
-                detail: lesson.detail,
-                students: students,
-                classKey: document.querySelector(".class-btn.active")?.dataset.classKey,
-                unitKey: document.querySelector(".class-btn.active")?.dataset.unitKey,
-                timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
-                yy: document.querySelector(".hidden-date").value.split("-")[0],
-                mm: document.querySelector(".hidden-date").value.split("-")[1]
             };
 
             let sendSuccess = false;
-
             const appTargets = sendRequestBody.students.filter(s => s.token);
 
-            if (appTargets.length === 0) {
-                sendSuccess = false;
-            } else {
+            if (appTargets.length > 0) {
                 try {
                     const sendRes = await fetch("/api/push/infant", {
                         method: "POST",
@@ -630,35 +674,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!sendSuccess) {
                 alert("알림 전송에 실패했습니다.");
-                return; // ❗ save 실행 안 함
+                return;
             }
 
-            let saveSuccess = false;
-
-            try {
-                const saveRes = await fetch("/class/infant/save", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(saveRequestBody)
-                });
-
-                const saveData = await saveRes.json();
-
-                if (saveRes.ok && saveData.response === "success") {
-                    saveSuccess = true;
-                }
-            } catch (e) {
-                console.error("❌ SAVE ERROR:", e);
-            }
+            const saveSuccess = await saveInfantContent(true);
 
             if (saveSuccess) {
                 alert("알림이 정상적으로 전송되었습니다.");
+                updateStudentImages();
             } else {
                 alert("알림은 전송되었으나 저장에 실패했습니다.");
             }
 
         } catch (err) {
             console.error("❌ 전체 오류:", err);
+            alert("오류가 발생했습니다.");
+        }
+    });
+});
+
+function updateStudentImages() {
+    const checkedCheckboxes = document.querySelectorAll(".infant-row-checkbox:checked");
+
+    checkedCheckboxes.forEach(checkbox => {
+        // data-is-send를 1로 변경
+        checkbox.dataset.isSend = "1";
+
+        // 해당 행의 이미지 찾기
+        const row = checkbox.closest("tr");
+        const imgCell = row.querySelector(".send-ornot");
+
+        if (imgCell) {
+            // 이미지를 발행완료 아이콘으로 변경
+            imgCell.innerHTML = `<img src="/image/send2.png" title="발행완료">`;
+        }
+    });
+
+    console.log("✅ 학생 이미지 업데이트 완료");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const saveBtn = document.getElementById("save-infant-btn");
+    if (!saveBtn) return;
+
+    saveBtn.addEventListener("click", async () => {
+        try {
+            const lesson = collectLessonData();
+            const students = collectSelectedStudents();
+
+            if (!lesson) {
+                alert("수업 정보가 없습니다.");
+                return;
+            }
+
+            if (students.length === 0) {
+                alert("학생을 선택하세요.");
+                return;
+            }
+
+            if (!confirm('내용을 저장하시겠습니까?')) {
+                return;
+            }
+
+            // ✅ 저장 (isSend = false)
+            const saveSuccess = await saveInfantContent(false);
+
+            if (saveSuccess) {
+                alert("저장되었습니다.");
+            } else {
+                alert("저장에 실패했습니다.");
+            }
+
+        } catch (err) {
+            console.error("❌ 저장 오류:", err);
             alert("오류가 발생했습니다.");
         }
     });

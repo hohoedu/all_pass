@@ -1040,40 +1040,71 @@ public class ClassService {
     public void saveInfantNotice(ClassReqDTO.InfantSaveReqDTO reqDTO, String centerCode, String userCode) {
 
         for (ClassReqDTO.InfantSaveReqDTO.StudentDTO s : reqDTO.getStudents()) {
+
+            // 기존 데이터 존재 여부 확인
             int cnt = 0;
             if (reqDTO.getType().equals("HAN")) {
-                cnt = classRepository.countInfantHan(
-                        s.getStudentId(),
-                        reqDTO.getTimeTableKey());
+                cnt = classRepository.countInfantHan(s.getStudentId(), reqDTO.getTimeTableKey());
             }
             if (reqDTO.getType().equals("BOOK")) {
-                cnt = classRepository.countInfantBook(
-                        s.getStudentId(),
-                        reqDTO.getTimeTableKey());
+                cnt = classRepository.countInfantBook(s.getStudentId(), reqDTO.getTimeTableKey());
             }
 
-            log.info("cnt={}", cnt);
-            if (cnt > 0) continue;
-
-            Integer sendId = classRepository.findInfantSendId(
-                    s.getStudentId(),
-                    reqDTO.getTimeTableKey()
-            );
-
+            Integer sendId = classRepository.findInfantSendId(s.getStudentId(), reqDTO.getTimeTableKey());
             if (sendId == null) {
                 throw new IllegalStateException("sendHistory가 없습니다.");
             }
 
-            // HAN or BOOK 분기하여 insert
-            if ("HAN".equals(reqDTO.getType())) {
-                classRepository.insertInfantHanNotice(
-                        reqDTO, centerCode, userCode, s.getStudentId(), sendId
-                );
+            // ✅ 데이터 존재 여부에 따라 INSERT or UPDATE
+            if (cnt > 0) {
+                // 이미 존재 → UPDATE
+
+                // ✅ 1단계: 기존 is_send 값 조회
+                Boolean existingIsSend = null;
+                if ("HAN".equals(reqDTO.getType())) {
+                    existingIsSend = classRepository.findInfantHanIsSend(
+                            s.getStudentId(),
+                            reqDTO.getTimeTableKey()
+                    );
+                } else {
+                    existingIsSend = classRepository.findInfantBookIsSend(
+                            s.getStudentId(),
+                            reqDTO.getTimeTableKey()
+                    );
+                }
+
+                // ✅ 2단계: finalIsSend 계산
+                Boolean finalIsSend;
+                if (reqDTO.getIsSend()) {
+                    // 발행 버튼 → 무조건 true
+                    finalIsSend = true;
+                } else {
+                    // 저장 버튼 → 기존 값 유지
+                    finalIsSend = (existingIsSend != null && existingIsSend);
+                }
+
+                // ✅ 3단계: UPDATE 실행 (finalIsSend를 파라미터로 전달)
+                if ("HAN".equals(reqDTO.getType())) {
+                    classRepository.updateInfantHanNotice(
+                            reqDTO, centerCode, userCode, s.getStudentId(), sendId, finalIsSend
+                    );
+                } else {
+                    classRepository.updateInfantBookNotice(
+                            reqDTO, centerCode, userCode, s.getStudentId(), sendId, finalIsSend
+                    );
+                }
+
             } else {
-                log.info(reqDTO.getDetail().getContent());
-                classRepository.insertInfantBookNotice(
-                        reqDTO, centerCode, userCode, s.getStudentId(), sendId
-                );
+                // 존재하지 않음 → INSERT (reqDTO.isSend 그대로 사용)
+                if ("HAN".equals(reqDTO.getType())) {
+                    classRepository.insertInfantHanNotice(
+                            reqDTO, centerCode, userCode, s.getStudentId(), sendId
+                    );
+                } else {
+                    classRepository.insertInfantBookNotice(
+                            reqDTO, centerCode, userCode, s.getStudentId(), sendId
+                    );
+                }
             }
         }
     }

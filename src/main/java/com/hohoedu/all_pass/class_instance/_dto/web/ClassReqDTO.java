@@ -281,6 +281,7 @@ public class ClassReqDTO {
         private String timeTableKey;
         private String yy;
         private String mm;
+        private Boolean isSend;
 
         private List<StudentDTO> students;
 

@@ -306,6 +306,7 @@ public class ClassRespDTO {
             private String studentName;
             private String appId;
             private String appToken;
+            private Boolean isSend;
 
         }
     }
@@ -330,6 +331,7 @@ public class ClassRespDTO {
             private String studentName;
             private String appId;
             private String appToken;
+            private Boolean isSend;
 
         }
     }
