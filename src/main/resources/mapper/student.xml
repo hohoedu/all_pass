@@ -142,7 +142,11 @@
                s.student_name                                                                AS studentName,
                CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
                sc.status_name                                                                AS statusName,
-               FORMAT(s.created_at, 'yyyy-MM-dd')                                            AS entryDate,
+               COALESCE(
+                       (SELECT MIN(v) FROM (VALUES (eta.entry_book_date), (eta.entry_han_date)) AS value (v) WHERE
+                       v IS NOT NULL),
+    FORMAT(s.created_at, 'yyyy-MM-dd')
+)                                                        AS entryDate,
                g.grade_name                                                                  AS gradeName,
                s.school                                                                      AS school,
                c.center_name                                                                 AS centerName,
@@ -150,10 +154,9 @@
                hc.class_name                                                                 AS hanClass,
                bc.class_name                                                                 AS bookClass
 
-
         FROM ERP_STUDENT s
-                 LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
-                 LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
+                 LEFT JOIN erp_status_code sc ON sc.status_key = s.status_key
+                 LEFT JOIN erp_grade_code g ON g.grade_key = s.grade_key
                  LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_user hu on ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu on ta.assign_book_teacher = bu.user_code

@@ -1083,11 +1083,52 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.querySelector('.han-inactive')?.classList.add('hide-input');
                 document.querySelector('.book-inactive')?.classList.add('hide-input');
 
+                await refreshStudentList();
+
             } catch (err) {
                 console.error(err);
                 alert('수강상태 변경 중 오류가 발생했습니다.');
             }
         });
+    }
+
+    async function refreshStudentList() {
+        try {
+            const teacherFilter = document.getElementById("main-teacher-filter");
+            const subjectFilter = document.getElementById("main-subject-filter");
+            const tbody = document.getElementById("main-student-tbody");
+
+            if (!tbody) return;
+
+            // 현재 선택된 필터 값 가져오기
+            const userCode = teacherFilter?.value || 'all';
+            const timeTableKey = subjectFilter?.value || 'all';
+
+            // API 호출
+            let url = '/student/api/students?';
+
+            if (timeTableKey !== 'all') {
+                url += `timeTableKey=${encodeURIComponent(timeTableKey)}&`;
+            }
+
+            url += `userCode=${encodeURIComponent(userCode)}`;
+
+            const res = await fetch(url);
+
+            if (!res.ok) {
+                throw new Error('학생 목록 조회 실패');
+            }
+
+            const data = await res.json();
+
+            // 학생 목록 다시 렌더링
+            renderStudents(tbody, data.response);
+
+            console.log('학생 목록 최신화 완료');
+
+        } catch (err) {
+            console.error('학생 목록 최신화 실패:', err);
+        }
     }
 
     function showStudentStatusModal() {
