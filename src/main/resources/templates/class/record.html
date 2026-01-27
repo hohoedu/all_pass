@@ -108,8 +108,8 @@
                                         <th>보강일자</th>
                                         <th>특이사항</th>
                                         <th>상담기록</th>
-                                        <th>수업 후 코멘트</th>
-                                        <th>리뷰</th>
+                                        <th>수업지도</th>
+                                        <th>선생님의 코멘트</th>
                                         <th>발송여부</th>
                                     </tr>
                                     </thead>
@@ -196,10 +196,7 @@
                     <textarea class="comment-text record-content"
                               placeholder="내용을 입력해주세요."
                               th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].content != null
-                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].content, '<br />', '
-'),'<br/>','
-'),'<br>','
-')
+                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].content, '<br />', ''),'<br/>',''),'<br>','')
                                   : ''}"
                               th:data-original-content="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].content : ''}">
                     </textarea>

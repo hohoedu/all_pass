@@ -100,8 +100,8 @@ public class PopbillService {
 
             String inviteCode = KeyGenerator.generateInviteCode();
             String sendKey = KeyGenerator.generateSendKey();
-//            String joinUrl = "https://hohocenter.co.kr/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
-            String joinUrl = "http://192.168.0.8:8080/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
+            String joinUrl = "https://hohocenter.co.kr/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
+//            String joinUrl = "http://192.168.0.8:8080/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
             String androidUrl = "https://play.google.com/store/apps/details?id=com.hohoedu.app";
             String iosUrl = "https://apps.apple.com/us/app/id6504266908";
 

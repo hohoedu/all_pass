@@ -318,6 +318,85 @@
 
     </delete>
 
+    <select id="findStudentStat">
+        Select a.*
+        from (
+                 -- 입회
+                 Select 'entry' as gb, es.student_name, a.*
+                 from (Select student_id,
+                              Case
+                                  WHEN han_state = 1 Then
+                                          (Select c.class_name + ',' from erp_class_code c where c.class_key = t.assign_han_class)
+                                  else ''
+                                  end +
+                              Case
+                                  WHEN book_state = 1 Then
+                                          (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
+                                  else ' '
+                                  end class
+                       from erp_teacher_assign t
+                       where (assign_han_teacher = #{userCode} and substring(entry_han_date, 1, 7) = #{ym})
+                          or (assign_book_teacher = #{userCode} and substring(entry_book_date, 1, 7) = #{ym})) a
+                          Join erp_student es On a.student_id = es.student_id
+
+                 UNION ALL
+
+                 -- 탈퇴
+                 Select 'inactive' as gb, es.student_name, a.*
+                 from (Select student_id,
+                              Case
+                                  WHEN han_state = 1 Then
+                                          (Select c.class_name + ',' from erp_class_code c where c.class_key = t.assign_han_class)
+                                  else ''
+                                  end +
+                              Case
+                                  WHEN book_state = 1 Then
+                                          (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
+                                  else ' '
+                                  end class
+                       from erp_teacher_assign t
+                       where (assign_han_teacher = #{userCode} and substring(inactive_han_date, 1, 7) = #{ym})
+                          or (assign_book_teacher = #{userCode} and substring(inactive_book_date, 1, 7) = #{ym})) a
+                          Join erp_student es On a.student_id = es.student_id
+
+                 UNION ALL
+
+                 -- 전입
+                 Select 'move_in' as gb, es.student_name, a.*
+                 from (Select student_id,
+                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key)
+                       from erp_student_transfer_history t
+                       where to_user_code = #{userCode}
+                         and substring(move_at, 1, 7) = #{ym}) a
+                          Join erp_student es On a.student_id = es.student_id
+
+                 UNION ALL
+
+                 -- 전출
+                 Select 'move_out' as gb, es.student_name, a.*
+                 from (Select student_id,
+                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key)
+                       from erp_student_transfer_history t
+                       where from_user_code = #{userCode}
+                         and substring(move_at, 1, 7) = #{ym}) a
+                          Join erp_student es On a.student_id = es.student_id
+
+                 UNION ALL
+                 -- 주(1,2,3)
+                 Select 'week' as gb, es.student_name, a.*
+                 from (Select etta.student_id,
+                              class = (Select c.class_name from erp_class_code c where c.class_key = a.class_key) + '(' + etta.week + '주)'
+                       from (Select class_key, time_table_key
+                             from erp_time_table
+                             where yy + '-' + mm = #{ym}
+                               and user_code = #{userCode}) a
+                                Join erp_time_table_assign etta On a.time_table_key = etta.time_table_key
+                       where etta.week in (1, 2, 3)) a
+                          Join erp_student es On a.student_id = es.student_id) a
+        Order by a.gb, a.student_name
+
+    </select>
+
     <select id="findTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
         SELECT time_table_key AS timeTableKey,
                period_no      AS periodNo,

@@ -14,12 +14,31 @@ document.addEventListener("DOMContentLoaded", () => {
     /** 초기 월 세팅 */
     function initCurrentMonth() {
         try {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, "0");
+            // URL 파라미터 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlYear = urlParams.get('year');
+            const urlMonth = urlParams.get('month');
+
+            let year, month;
+
+            if (urlYear && urlMonth) {
+                // URL에 파라미터가 있으면 사용
+                year = urlYear;
+                month = String(urlMonth).padStart(2, "0");
+            } else {
+                // 없으면 현재 날짜 사용
+                const now = new Date();
+                year = now.getFullYear();
+                month = String(now.getMonth() + 1).padStart(2, "0");
+            }
 
             monthInput.value = `${year}-${month}`;
             updateMonthLabel(year, month);
+
+            // 초기 데이터 로드 (URL 파라미터가 있는 경우에만)
+            if (urlYear && urlMonth) {
+                loadMonthlyData(year, month);
+            }
         } catch (err) {
             console.error("initCurrentMonth error:", err);
         }
@@ -64,12 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             updateMonthLabel(year, month);
 
+            // URL 파라미터 업데이트
+            updateURLParams(year, month);
+
             await loadMonthlyData(year, month);
         });
     }
 
     function updateMonthLabel(year, month) {
         currentMonthLabel.textContent = `${year}년 ${month}월`;
+    }
+
+    /**
+     * URL 파라미터 업데이트
+     */
+    function updateURLParams(year, month) {
+        const url = new URL(window.location);
+        url.searchParams.set('year', year);
+        url.searchParams.set('month', month);
+
+        // 브라우저 히스토리에 추가 (뒤로가기 가능)
+        window.history.pushState({year, month}, '', url);
+
+        // 또는 히스토리에 추가하지 않고 URL만 변경하려면:
+        // window.history.replaceState({year, month}, '', url);
     }
 
     document.getElementById("teacher-select")
@@ -110,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await res.json();
-            const tables = data.response; // ApiUtils.success(data) 구조
+            const tables = data.response;
 
             console.log(tables);
             renderTimetableTable(tables);
@@ -242,5 +279,15 @@ document.addEventListener("DOMContentLoaded", () => {
         dragAssignments = null;
 
         // window.location.reload();
+    });
+
+    // 브라우저 뒤로가기/앞으로가기 처리
+    window.addEventListener('popstate', (event) => {
+        if (event.state && event.state.year && event.state.month) {
+            const {year, month} = event.state;
+            monthInput.value = `${year}-${month}`;
+            updateMonthLabel(year, month);
+            loadMonthlyData(year, month);
+        }
     });
 });

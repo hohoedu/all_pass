@@ -112,6 +112,13 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class StudentStatRespDTO {
+        private String gb;
+        private String studentName;
+        private String studentId;
+    }
+
+    @Data
     public static class RemedialDTO {
         private String remedialKey;
         private String studentName;

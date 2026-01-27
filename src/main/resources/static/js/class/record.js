@@ -457,7 +457,7 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
                 <div class="cell-middle">
                     <div class="after-comment">
                         <textarea class="comment-text record-review"
-                            placeholder="리뷰를 입력해주세요.">${originalReview}</textarea>
+                            placeholder="선생님의 코멘트를 입력해주세요.">${originalReview}</textarea>
                     </div>
                 </div>
             </td>`;
