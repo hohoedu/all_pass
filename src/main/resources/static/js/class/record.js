@@ -20,11 +20,11 @@ function buildByDateBody(dateStr, teacherId) {
     };
 }
 
-function buildByClassBody(userCode, timeTableKey, week, classKey, unitKey) {
+function buildByClassBody(userCode, timeTableKey, date, classKey, unitKey) {
     return {
         userCode: userCode ?? null,
         timeTableKey: timeTableKey ?? null,
-        week: week ?? null,
+        date: date ?? null,
         classKey: classKey ?? null,
         unitKey: unitKey ?? null,
     };
@@ -237,16 +237,25 @@ async function loadStudentList(timeTableKey = getActiveTimeTableKey()) {
             renderRecordStudentList([]);
             return;
         }
-        const body = buildByClassBody(state.teacherId, timeTableKey, state.week, state.classKey, state.unitKey);
+
+        // date 전달
+        const body = buildByClassBody(state.teacherId, timeTableKey, state.date, state.classKey, state.unitKey);
+        console.log(JSON.stringify(body));
         const res = await fetch('/class/api/record/student', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(body),
             signal
         });
+
         if (!res.ok) throw new Error('서버 응답 오류(학생)');
         const data = await res.json();
-        console.log(data.response);
+
+        // 서버에서 계산한 week를 state에 저장
+        if (data.response?.week) {
+            state.week = data.response.week;
+        }
+
         const list = Array.isArray(data?.response?.students) ? data.response.students : [];
         const afterClassList = Array.isArray(data?.response?.afterClass) ? data.response.afterClass : [];
 

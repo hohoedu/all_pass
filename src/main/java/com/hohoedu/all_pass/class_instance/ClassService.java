@@ -609,20 +609,19 @@ public class ClassService {
         return response;
     }
 
-    public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String week, String classKey, String unitKey) {
-        // 학생 조회
+    public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String date, String classKey, String unitKey, String centerCode) {
+
+
+        String week = calculateWeekFromDate(date, centerCode);
+
         List<RecordStudentDTO> students = classRepository.findRecordStudentByKey(timeTableKey, week);
 
         String noticeWeek = week.split("_")[1];
 
         List<ClassRespDTO.AfterClassRespDTO> afterClassList = new ArrayList<>();
 
-
         String currentYear = DateConfig.currentYearMonth().get("currentYear");
-
         String yy = currentYear.substring(2, 4);
-
-//        ClassRespDTO.AfterClassRespDTO afterClassContent = classRepository.findAfterClass(userCode, classKey, unitKey, week, timeTableKey, yy);
 
         for (RecordStudentDTO s : students) {
 
@@ -636,8 +635,6 @@ public class ClassService {
             if (notice != null) {
                 afterClassList.add(notice);
             } else {
-
-                // 2-2. 없으면 공통 AfterClass 조회
                 ClassRespDTO.AfterClassRespDTO base =
                         classRepository.findAfterClass(
                                 userCode, classKey, unitKey, week, timeTableKey, yy
@@ -646,7 +643,69 @@ public class ClassService {
                 afterClassList.add(base);
             }
         }
-        return new ClassRespDTO.RecordBundleDTO(students, afterClassList);
+
+        // 계산된 주차 정보도 함께 반환
+        ClassRespDTO.RecordBundleDTO bundle = new ClassRespDTO.RecordBundleDTO();
+        bundle.setStudents(students);
+        bundle.setAfterClass(afterClassList);
+        bundle.setWeek(week);  // 계산된 주차 반환
+
+        return bundle;
+    }
+
+    // 날짜로부터 주차 계산 메서드
+    private String calculateWeekFromDate(String dateStr, String centerCode) {
+        try {
+
+            java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+            String year = String.valueOf(date.getYear());
+            String month = String.format("%02d", date.getMonthValue());
+            List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(year, month, centerCode);
+            if (weeks.isEmpty()) {
+                return "ju_1";
+            }
+
+            for (ClassRespDTO.ClassWeekDTO week : weeks) {
+                log.info("주차 확인: {}", week.getWeek());
+                log.info("  월: {}, 화: {}, 수: {}, 목: {}, 금: {}, 토: {}, 일: {}",
+                        week.getMon(), week.getTue(), week.getWed(),
+                        week.getThu(), week.getFri(), week.getSat(), week.getSun());
+
+                // 모든 요일 날짜를 리스트로 만들기
+                List<Object> dates = Arrays.asList(
+                        week.getMon(), week.getTue(), week.getWed(),
+                        week.getThu(), week.getFri(), week.getSat(), week.getSun()
+                );
+
+                // 날짜 매칭
+                for (Object dateObj : dates) {
+                    if (dateObj == null) continue;
+
+                    String weekDateStr = null;
+
+                    // 타입별로 문자열 변환
+                    if (dateObj instanceof java.time.LocalDate) {
+                        weekDateStr = dateObj.toString();
+                    } else if (dateObj instanceof org.threeten.bp.LocalDate) {
+                        weekDateStr = dateObj.toString();
+                    } else if (dateObj instanceof String) {
+                        weekDateStr = (String) dateObj;
+                    } else {
+                        weekDateStr = String.valueOf(dateObj);
+                    }
+
+
+                    if (dateStr.equals(weekDateStr)) {
+                        return week.getWeek();
+                    }
+                }
+            }
+
+            return weeks.get(0).getWeek();
+
+        } catch (Exception e) {
+            return "ju_1";
+        }
     }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {
@@ -809,7 +868,7 @@ public class ClassService {
                     dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
             if (correctComments.size() >= 2) {
-                Collections.shuffle(correctComments);  // 랜덤 섞기
+                Collections.shuffle(correctComments);
                 feedback = correctComments.get(0) + "\n또한 " + correctComments.get(1);
             } else {
                 feedback = String.join("\n", correctComments);

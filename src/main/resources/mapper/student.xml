@@ -5,6 +5,15 @@
 <mapper
         namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
+    <select id="checkDuplicateStudent" resultType="int">
+        select count(*)
+        from erp_student s
+                 join erp_parent p on s.student_id = p.student_id
+        where s.student_name = #{studentName}
+          AND p.parent_tel_middle = #{parentTelMiddle}
+          AND p.parent_tel_last = #{parentTelLast}
+    </select>
+
     <!-- 회원가입 -->
     <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true"
             keyProperty="id" keyColumn="id">
@@ -167,10 +176,8 @@
 
         WHERE s.center_code = #{centerCode}
           AND ISNULL(s.status_key, '') &lt; &gt; 'WITHDRAWN'
-          AND ((#{userCode} = 'all' OR hu.user_code = #{userCode} OR bu.user_code = #{userCode})
-            OR
-               ((ta.han_state is null or ta.han_state = 0) AND (ta.book_state is null or ta.book_state = 0))
-            )
+          AND (#{userCode} = 'all' OR hu.user_code = #{userCode} OR bu.user_code = #{userCode})
+
         ORDER BY CASE
                      WHEN sc.status_name IS NULL THEN 0
                      WHEN sc.status_name = 'ACTIVE' THEN 1

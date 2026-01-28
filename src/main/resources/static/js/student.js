@@ -421,19 +421,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
+            const result = await joinResponse.json();
+            console.log(JSON.stringify(result, null, 2));
             if (!joinResponse.ok) {
-                alert("가입 요청 중 서버 오류가 발생했습니다.");
+                alert(result.msg || "가입 요청 중 오류가 발생했습니다.");
                 return;
             }
 
-            const joinResult = await joinResponse.json();
-            console.log(joinResult);
-            if (!joinResult.success) {
-                alert("가입 처리 중 오류가 발생했습니다.");
+            if (!result.success) {
+                alert(result.msg || "가입 처리 중 오류가 발생했습니다.");
                 return;
             }
 
-            studentId = joinResult.response.studentId;
+            studentId = result.response.studentId;
 
         } catch (err) {
             console.error("가입 요청 실패:", err);

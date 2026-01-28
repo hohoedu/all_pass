@@ -254,12 +254,21 @@ public class ClassController {
     public ResponseEntity<?> findRecordByClass(@RequestBody ClassRecordReqDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+            return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
+        log.info(dto.getDate());
 
-        ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(dto.getUserCode(), dto.getTimeTableKey(), dto.getWeek(), dto.getClassKey(), dto.getUnitKey());
+        // date를 사용하여 백엔드에서 week 계산
+        ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(
+                dto.getUserCode(),
+                dto.getTimeTableKey(),
+                dto.getDate(),  // week 대신 date 사용
+                dto.getClassKey(),
+                dto.getUnitKey(),
+                user.getCenterCode()  // centerCode 추가
+        );
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }

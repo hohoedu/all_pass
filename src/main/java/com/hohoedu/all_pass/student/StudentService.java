@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
+import com.hohoedu.all_pass._core.handler.exception.DuplicateStudentException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.attendance.AttendanceRepository;
 import com.hohoedu.all_pass.attendance.AttendanceService;
@@ -111,11 +112,23 @@ public class StudentService {
         return studentDetailRespDTO;
     }
 
+    public boolean checkDuplicateStudent() {
+
+
+        return false;
+    }
+
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
+        int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(), parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
+        if (dupStudent > 0) {
+            throw new DuplicateStudentException("이미 등록된 학생입니다.");
+        }
+
         String today = DateConfig.currentYearMonth().get("today");
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
         String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
+
 
         studentDTO.setStudentId(code);
 

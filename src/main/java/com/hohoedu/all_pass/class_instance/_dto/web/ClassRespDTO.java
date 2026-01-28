@@ -175,10 +175,10 @@ public class ClassRespDTO {
 
 
     @Data
-    @AllArgsConstructor
     public static class RecordBundleDTO {
         private List<RecordStudentDTO> students;
         private List<AfterClassRespDTO> afterClass;
+        private String week;
     }
 
     @Data

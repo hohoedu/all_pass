@@ -38,6 +38,10 @@ public interface StudentRepository {
 
     public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
 
+    int checkDuplicateStudent(
+            @Param("studentName") String studentName,
+            @Param("parentTelMiddle") String parentTelMiddle,
+            @Param("parentTelLast") String parentTelLast);
 
     public List<MainStudentDTO> selectStudentByUserCode(
             @Param("userCode") String userCode,

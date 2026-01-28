@@ -244,13 +244,27 @@ public class ClassViewController {
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
 
-            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, activeWeek, classKey, unitKey);
+            // 수정: week 대신 date 전달
+            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(
+                    user.getUserCode(),
+                    timeTableKey,
+                    currentDate,  // week 대신 현재 날짜 전달
+                    classKey,
+                    unitKey,
+                    user.getCenterCode()
+            );
+
             model.addAttribute("students", bundle.getStudents());
 
             if (bundle.getAfterClass() != null) {
                 model.addAttribute("content", bundle.getAfterClass());
             } else {
                 model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
+            }
+
+            // 백엔드에서 계산된 주차를 activeWeek로 사용
+            if (bundle.getWeek() != null) {
+                activeWeek = bundle.getWeek();
             }
         } else {
             // 수업이 없을 때도 빈 리스트 추가
@@ -262,9 +276,10 @@ public class ClassViewController {
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
         model.addAttribute("activeWeek", activeWeek);
-        
+
         return "class/record";
     }
+
 
     //주차 찾기
     private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate) {
