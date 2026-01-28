@@ -368,13 +368,15 @@ public interface ClassRepository {
                                @Param("centerCode") String centerCode,
                                @Param("userCode") String userCode,
                                @Param("studentId") String studentId,
-                               @Param("sendId") Integer sendId);
+                               @Param("sendId") Integer sendId,
+                               @Param("isSend") Boolean isSend);
 
     void insertInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
                                 @Param("centerCode") String centerCode,
                                 @Param("userCode") String userCode,
                                 @Param("studentId") String studentId,
-                                @Param("sendId") Integer sendId);
+                                @Param("sendId") Integer sendId,
+                                @Param("isSend") Boolean isSend);
 
     // ✅ UPDATE 메서드 (finalIsSend 파라미터 추가!)
     void updateInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
