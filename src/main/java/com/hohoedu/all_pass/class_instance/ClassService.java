@@ -783,18 +783,44 @@ public class ClassService {
     }
 
     public ClassRespDTO.ScoreResultDTO updateMonthlyScore(ClassMonthlyScoreDTO dto) {
-//        if (dto.getScores() == null || dto.getScores().isEmpty()) {
-//            return false;
-//        }
         ClassMonthlyScoreDTO.MonthlyScoreDTO score = dto.getScores().get(0);
 
         classRepository.updateMonthlyScore(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm(), score);
-        Map<String, String> monthlyFeedback = classRepository.getMonthlyFeedback(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
-        String feedback =
-                Optional.ofNullable(monthlyFeedback.get("topCorrectMent")).orElse("")
-                        + "\n" +
-                        Optional.ofNullable(monthlyFeedback.get("topWrongMent")).orElse("");
+        // 오답 개수 확인
+        int wrongCount = 0;
+        wrongCount += (score.isQuestion1()) ? 0 : 1;  // false면 오답
+        wrongCount += (score.isQuestion2()) ? 0 : 1;
+        wrongCount += (score.isQuestion3()) ? 0 : 1;
+        wrongCount += (score.isQuestion4()) ? 0 : 1;
+        wrongCount += (score.isQuestion5()) ? 0 : 1;
+        wrongCount += (score.isQuestion6()) ? 0 : 1;
+        wrongCount += (score.isQuestion7()) ? 0 : 1;
+        wrongCount += (score.isQuestion8()) ? 0 : 1;
+
+        Map<String, String> monthlyFeedback = classRepository.getMonthlyFeedback(
+                dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+
+        String feedback;
+
+        if (wrongCount == 0) {
+            // 모두 정답일 경우: 정답 코멘트 리스트에서 랜덤 2개 선택
+            List<String> correctComments = classRepository.getMonthlyAllCorrectFeedback(
+                    dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+
+            if (correctComments.size() >= 2) {
+                Collections.shuffle(correctComments);  // 랜덤 섞기
+                feedback = correctComments.get(0) + "\n또한 " + correctComments.get(1);
+            } else {
+                feedback = String.join("\n", correctComments);
+            }
+
+        } else {
+            // 오답이 있을 경우: 기존 로직 (정답 1개 + 오답 1개)
+            feedback = Optional.ofNullable(monthlyFeedback.get("topCorrectMent")).orElse("")
+                    + "\n" +
+                    Optional.ofNullable(monthlyFeedback.get("topWrongMent")).orElse("");
+        }
 
         ClassRespDTO.ScoreResultDTO response = new ClassRespDTO.ScoreResultDTO();
         response.setTimeTableKey(dto.getTimeTableKey());
@@ -804,6 +830,7 @@ public class ClassService {
         response.setBottomComment(monthlyFeedback.get("bottomComment"));
 
         log.info("response={}", response);
+
         MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
         if (exist == null) {

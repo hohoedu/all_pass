@@ -477,11 +477,7 @@ public class PaymentService {
      * <p>
      * 테이블: erp_payment_bill
      */
-    // ========== sendBill 메서드 수정 부분 ==========
-
-    // ========== sendBill 메서드 수정 (개별 형제 체크) ==========
-
-    // ========== sendBill 메서드 최종 버전 (과목 추가 대응) ==========
+    @Transactional
     public void sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
         log.info("req = {}", req.toString());
 
@@ -544,21 +540,9 @@ public class PaymentService {
                 continue;
             }
 
-            boolean isApproved;
-
-            if ("EDU_FEE".equals(billType)) {
-                // 교육비 → payment.status 기준
-                isApproved = "approved".equals(payment.getStatus());
-            } else {
-                // 교재비 → bill 기준
-                isApproved = paymentRepository.existsApprovedBill(
-                        paymentKey,
-                        "BOOK_FEE"
-                );
-            }
-
-            if (isApproved) {
-                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, billType: {}, 이미 승인 완료",
+            // ✅ 교육비만 payment.status로 승인 완료 체크
+            if ("EDU_FEE".equals(billType) && "approved".equals(payment.getStatus())) {
+                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, billType: {}, payment.status가 approved",
                         studentId, paymentKey, billType);
                 continue;
             }
@@ -694,7 +678,6 @@ public class PaymentService {
                         ? group.get(0).getStudentName()
                         : group.get(0).getStudentName() + " 외 " + (group.size() - 1) + "명";
 
-                // ✅ 메시지 생성 (추가 청구 시 안내 추가)
                 String message;
                 if ("EDU_FEE".equals(billType)) {
                     if (hasAdditionalCharge) {
@@ -703,8 +686,15 @@ public class PaymentService {
                         message = req.getMessage();
                     }
                 } else {
-                    message = "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, " +
-                            "2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.";
+                    // ✅ 교재비도 추가 청구 메시지 지원
+                    if (hasAdditionalCharge) {
+                        message = "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, " +
+                                "2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다." +
+                                "\n※ 교재 추가로 인한 추가 청구서가 포함되어 있습니다.";
+                    } else {
+                        message = "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, " +
+                                "2026년부터 이용 가능하도록 준비하고 있습니다. 학부모님의 양해 부탁드립니다.";
+                    }
                 }
 
                 // 청구서 정보
@@ -1361,14 +1351,18 @@ public class PaymentService {
 
         int paidAmount = reqDTO.getCardAmount() + reqDTO.getCashAmount() + reqDTO.getTransferAmount();
 
+        Integer eduFee = paymentRepository.findPaymentDetailEduFee(reqDTO.getPaymentKey(), reqDTO.getStudentId());
+
         String oldStatus = payment.getStatus();
 
-        reqDTO.setStatus("partial");
+        if (eduFee == paidAmount) {
+            reqDTO.setStatus("approved");
+        } else {
+            reqDTO.setStatus("partial");
+        }
 
-        // manual 데이터 저장
         paymentRepository.insertPaymentManual(reqDTO);
 
-        // 🔥 개선: payment 상태 재계산 (교육비 bill + manual 고려)
         recalculatePaymentStatus(reqDTO.getPaymentKey(), reqDTO.getUserCode());
 
         Payment updatedPayment = paymentRepository.findPaymentByKey(reqDTO.getPaymentKey());

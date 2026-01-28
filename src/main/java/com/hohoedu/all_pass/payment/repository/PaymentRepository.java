@@ -83,6 +83,8 @@ public interface PaymentRepository {
 
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 
+    Integer findPaymentDetailEduFee(@Param("paymentKey") String paymentKey, @Param("studentId") String studentId);
+
     String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 
     // 수강료 청구 화면 데이터 필터링

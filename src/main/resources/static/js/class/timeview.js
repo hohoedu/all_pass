@@ -209,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="inner-grid" draggable="true">
                             ${tt.students.map(s => `
                                 <div data-name="${s.studentName}">
-                                    ${s.studentName}
+                                    ${s.studentName} ${s.gradeName ? `(${s.gradeName})` : ``}
                                 </div>
                             `).join("")}
                         </div>

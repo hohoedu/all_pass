@@ -80,6 +80,7 @@ public class ClassRespDTO {
             private String timeTableKey;
             private String studentId;
             private String studentName;
+            private String gradeName;
             private String week;
             private String status;
             private String transferType;

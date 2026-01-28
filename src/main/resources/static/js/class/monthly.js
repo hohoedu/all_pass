@@ -190,16 +190,24 @@ function renderMonthlyStudentList(students) {
     }
 
     students.forEach((stu, idx) => {
+
         const tr = document.createElement("tr");
         tr.dataset.studentId = stu.studentId ?? "";
         tr.dataset.timeTableKey = stu.timeTableKey ?? "";
         tr.dataset.appToken = stu.appToken ?? "";
         const scores = (stu.scores && stu.scores.length > 0) ? stu.scores[0] : {};
-
-        const appToken = stu.appToken ?? "";
-        const sendImg = (appToken === "" || appToken === "null")
-            ? "/image/no_app.svg"
-            : ((stu.isSend === 1 || stu.isSend === true) ? "/image/send2.png" : "/image/send1.png");
+        console.log(stu.send);
+        let statusImg;
+        if (stu.appToken == null || stu.appToken === '') {
+            // 1. 앱 미등록
+            statusImg = `<img src="/image/no-smartphones.png" title="앱 미등록">`;
+        } else if (stu.send === true || stu.send === 1) {
+            // 2. 발행됨
+            statusImg = `<img src="/image/send2.png" title="발행완료">`;
+        } else {
+            // 3. 미발행 (저장만 함 or 아직 저장 안함)
+            statusImg = `<img src="/image/send1.png" title="미발행">`;
+        }
 
         const feedbackText = (stu.feedback == null)
             ? "점수를 선택하고 결과보기를 눌러주세요"
@@ -242,7 +250,7 @@ function renderMonthlyStudentList(students) {
                 </div>
             </td>
             <td class="send-ornot">
-                <img src="${sendImg}" alt="">
+                ${statusImg}
             </td>
             <td class="pre-search"><img src="/image/pre-search.png" alt=""></td>
         `;
@@ -301,8 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!row) return;
 
             row.querySelectorAll(".btn-number").forEach(btn => {
-                btn.classList.remove("active");
-                btn.value = "false";
+                btn.classList.add("active");
+                btn.value = "true";
             });
         }
     });

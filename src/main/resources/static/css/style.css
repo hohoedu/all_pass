@@ -4759,7 +4759,7 @@ input[type="time" i] {
 .timetable-lookup-table th {
     border-top: 1px solid #494470;
     border-bottom: 1px solid #494770;
-    padding: 15px;
+    padding: 8px;
 }
 
 .timetable-lookup-table tbody {
@@ -4787,7 +4787,7 @@ input[type="time" i] {
 }
 
 .timetable-lookup-table thead tr th:nth-child(1) {
-    width: 7%;
+    width: 4%;
 }
 
 .timetable-lookup-table thead tr th:nth-child(n+2):nth-child(-n+7) {

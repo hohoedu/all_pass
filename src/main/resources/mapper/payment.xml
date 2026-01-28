@@ -111,6 +111,15 @@
           AND mm = #{month}
     </select>
 
+    <select id="findPaymentDetailEduFee" resultType="int">
+        SELECT sum(pd.amount)
+        FROM erp_payment_detail pd
+                 join erp_payment p on p.payment_key = pd.payment_key
+        where pd.payment_key = #{paymentKey}
+          AND p.student_id = #{studentId}
+          AND pd.item_type = 'EDU_FEE'
+    </select>
+
     <select id="findParentPhonesByStudentIds" resultType="String">
         SELECT DISTINCT
         (p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last) AS householdKey

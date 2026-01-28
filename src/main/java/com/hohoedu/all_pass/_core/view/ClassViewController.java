@@ -226,22 +226,25 @@ public class ClassViewController {
         String yy = DateConfig.currentYearMonth().get("currentYear");
         String mm = DateConfig.currentYearMonth().get("currentMonth");
         String dayName = DateConfig.currentYearMonth().get("currentDayName");
-        log.info("dayName = {}", dayName);
+
         List<User> users = userService.findByCenterCode(user);
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
 
-        // 주차 정보는 항상 계산
+        // 주차 정보 계산
         List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
         LocalDate today = LocalDate.now();
         String currentWeek = findWeekByDate(weeks, today);
-        model.addAttribute("activeWeek", currentWeek != null ? currentWeek : "ju_1"); // 기본값 설정
+        String activeWeek = currentWeek != null ? currentWeek : "ju_1";
+
+        // 현재 날짜 문자열 (yyyy-MM-dd 형식)
+        String currentDate = today.toString();
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
 
-            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, currentWeek, classKey, unitKey);
+            ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(user.getUserCode(), timeTableKey, activeWeek, classKey, unitKey);
             model.addAttribute("students", bundle.getStudents());
 
             if (bundle.getAfterClass() != null) {
@@ -258,7 +261,8 @@ public class ClassViewController {
         model.addAttribute("user", user);
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
-
+        model.addAttribute("activeWeek", activeWeek);
+        
         return "class/record";
     }
 

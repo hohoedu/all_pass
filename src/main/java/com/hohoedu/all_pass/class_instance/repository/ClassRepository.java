@@ -264,6 +264,13 @@ public interface ClassRepository {
             @Param("mm") String mm,
             @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
 
+    List<String> getMonthlyAllCorrectFeedback(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+
     Map<String, String> getMonthlyFeedback(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,

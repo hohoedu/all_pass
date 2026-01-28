@@ -236,7 +236,7 @@
     <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
-        (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
+            (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
                'before'          AS attendance_key,
                #{timeTableKey}   AS time_table_key,
@@ -547,9 +547,11 @@
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT st.student_id   AS studentId,
                st.student_name AS studentName,
-               tta.week        AS week
+               tta.week        AS week,
+               gc.grade_name   AS gradeName
         FROM erp_time_table_assign tta
                  JOIN erp_student st ON tta.student_id = st.student_id
+                 JOIN erp_grade_code gc ON st.grade_key = gc.grade_key
         WHERE tta.time_table_key = #{timeTableKey}
         ORDER BY st.student_name
     </select>
@@ -879,6 +881,49 @@
           AND mm = #{mm}
     </update>
 
+    <select id="getMonthlyAllCorrectFeedback" resultType="String">
+        WITH base AS (SELECT s.student_id,
+                             s.yy,
+                             s.mm,
+                             s.time_table_key,
+                             t.class_key,
+                             t.unit_key,
+                             question1,
+                             question2,
+                             question3,
+                             question4,
+                             question5,
+                             question6,
+                             question7,
+                             question8
+                      FROM erp_monthly_score s
+                               JOIN erp_time_table t
+                                    ON s.time_table_key = t.time_table_key
+                      WHERE s.student_id = #{studentId}
+                        AND s.yy = #{yy}
+                        AND s.mm = #{mm}
+                        AND s.time_table_key = #{timeTableKey}),
+             merged AS (SELECT f.correct_ment,
+                               CASE
+                                   WHEN f.number = 1 THEN b.question1
+                                   WHEN f.number = 2 THEN b.question2
+                                   WHEN f.number = 3 THEN b.question3
+                                   WHEN f.number = 4 THEN b.question4
+                                   WHEN f.number = 5 THEN b.question5
+                                   WHEN f.number = 6 THEN b.question6
+                                   WHEN f.number = 7 THEN b.question7
+                                   WHEN f.number = 8 THEN b.question8
+                                   END AS score
+                        FROM base b
+                                 JOIN erp_monthly_feedback f
+                                      ON f.yy = b.yy
+                                          AND f.class_key = b.class_key
+                                          AND f.unit_key = b.unit_key)
+        SELECT correct_ment
+        FROM merged
+        WHERE score = 1
+    </select>
+
     <select id="getMonthlyFeedback" resultType="map">
         WITH base AS (SELECT s.student_id,
                              s.yy,
@@ -1169,18 +1214,18 @@
     </select>
 
     <select id="findInfantHan" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO">
-        SELECT image_path    AS imagePath,
-               subject       AS subject,
-               new_word      AS newWord,
-               story         AS story,
-               sub_story     AS subStory,
-               idiom         AS idiom,
-               sub_idiom     AS subIdiom,
-               hanja_song    AS hanjaSong,
-               workbook      AS workBook,
-               story_comment AS storyComment,
-               clean         AS clean,
-               insung        AS insung
+        SELECT image_path        AS imagePath,
+               subject           AS subject,
+               new_word          AS newWord,
+               story             AS story,
+               sub_story         AS subStory,
+               idiom             AS idiom,
+               sub_idiom         AS subIdiom,
+               hanja_song        AS hanjaSong,
+               workbook          AS workBook,
+               story_comment     AS storyComment,
+               hangul_playground AS clean,
+               insung            AS insung
         FROM erp_infant_han
         WHERE class_key = #{classKey}
           AND unit_key = #{unitKey}

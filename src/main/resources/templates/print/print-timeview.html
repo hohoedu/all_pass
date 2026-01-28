@@ -43,14 +43,14 @@
     <table class="timetable-lookup-table">
         <thead>
         <tr>
-            <th style="padding: 0;">교시</th>
-            <th th:each="day : ${days}" th:text="${day.label}"></th>
+            <th style="padding: 0;font-size: 14px">교시</th>
+            <th th:each="day : ${days}" th:text="${day.label}" style="font-size: 14px"></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="periodNo : ${#numbers.sequence(1,6)}">
-            <td th:text="${periodNo}">1</td>
-            <td th:each="day : ${days}" th:with="dayMap=${tableMap[day.id]}" style="height: 150px;">
+            <td th:text="${periodNo}" style="font-size: 14px">1</td>
+            <td th:each="day : ${days}" th:with="dayMap=${tableMap[day.id]}" style="vertical-align: top; height: 150px; padding: 2px">
                 <div th:if="${dayMap != null and dayMap[periodNo.toString()] != null}"
                      th:with="tt=${dayMap[periodNo.toString()]}">
                     <div th:class="timetable-lookup-box" th:classappend="${tt.classType eq '1'} ? ' pink' : ' blue'">
@@ -58,8 +58,9 @@
                             <strong>' + ${tt.className} + ' ' + ${tt.unitName} + '</strong>'">
                         </div>
                         <div class="inner-grid">
-                            <div th:each="stu : ${tt.students}" th:text="${stu.studentName}"
-                                 th:attr="data-name=${stu.studentName}">
+                            <div th:each="stu : ${tt.students}"
+                                 th:with="name=${stu.studentName != null ? stu.studentName : ''}, grade=${stu.gradeName}" style="padding: 1px; white-space: nowrap">
+                                <span th:text="${name}" style="font-size: 11px"></span><span th:if="${grade}" th:text="'(' + ${grade} + ')'" style="font-size: 9px"></span>
                             </div>
                         </div>
                     </div>
