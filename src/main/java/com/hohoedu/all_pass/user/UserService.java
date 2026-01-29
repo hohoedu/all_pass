@@ -43,6 +43,11 @@ public class UserService {
         return user;
     }
 
+    public List<User> findAllUserCode(LoginRespDTO dto) {
+        List<User> user = userRepository.findAllUserCode(dto.getCenterCode());
+        return user;
+    }
+
     public void insert(User user) {
         userRepository.insert(user);
     }

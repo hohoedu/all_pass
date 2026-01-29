@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.checkerframework.checker.units.qual.A;
 
 public class ClassRespDTO {
 
@@ -53,6 +54,28 @@ public class ClassRespDTO {
         private String classTime;
         private String classSubject;
         private String yy;
+    }
+
+    @Data
+    public static class TimeTableViewRespDTO {
+        private List<TimeTableDTO> tables;
+        private List<StudentStatRespDTO> stats;
+        private Long totalStudents;
+
+        public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudents) {
+            this.tables = tables;
+            this.stats = stats;
+            this.totalStudents = totalStudents;
+        }
+    }
+
+    @Data
+    public static class StudentStatRespDTO {
+        private String gb;
+        private String studentName;
+        private String studentId;
+        private String className;
+        private String week;
     }
 
     @Data
@@ -110,13 +133,6 @@ public class ClassRespDTO {
         private Integer bookFee;
         private String centerCode;
         private String userCode;
-    }
-
-    @Data
-    public static class StudentStatRespDTO {
-        private String gb;
-        private String studentName;
-        private String studentId;
     }
 
     @Data

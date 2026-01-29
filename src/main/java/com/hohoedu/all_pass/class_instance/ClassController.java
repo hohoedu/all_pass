@@ -219,8 +219,9 @@ public class ClassController {
                     .build();
         }
         String userCode = reqDTO.getUserCode() == null ? user.getUserCode() : reqDTO.getUserCode();
-        List<TimeTableDTO> timeTableList = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), userCode);
-        return ResponseEntity.ok(ApiUtils.success(timeTableList));
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), userCode);
+
+        return ResponseEntity.ok(ApiUtils.success(viewData));
     }
 
     @PostMapping("/api/delete/timetable/row")

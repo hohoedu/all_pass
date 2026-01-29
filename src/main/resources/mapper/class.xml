@@ -318,7 +318,7 @@
 
     </delete>
 
-    <select id="findStudentStat">
+    <select id="findStudentStat" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$StudentStatRespDTO">
         Select a.*
         from (
                  -- 입회
@@ -333,7 +333,8 @@
                                   WHEN book_state = 1 Then
                                           (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
                                   else ' '
-                                  end class
+                                  end className,
+                              null as 'week'
                        from erp_teacher_assign t
                        where (assign_han_teacher = #{userCode} and substring(entry_han_date, 1, 7) = #{ym})
                           or (assign_book_teacher = #{userCode} and substring(entry_book_date, 1, 7) = #{ym})) a
@@ -353,7 +354,8 @@
                                   WHEN book_state = 1 Then
                                           (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
                                   else ' '
-                                  end class
+                                  end className,
+                              null as 'week'
                        from erp_teacher_assign t
                        where (assign_han_teacher = #{userCode} and substring(inactive_han_date, 1, 7) = #{ym})
                           or (assign_book_teacher = #{userCode} and substring(inactive_book_date, 1, 7) = #{ym})) a
@@ -364,28 +366,52 @@
                  -- 전입
                  Select 'move_in' as gb, es.student_name, a.*
                  from (Select student_id,
-                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key)
+                              class_name = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
+                              null as 'week'
                        from erp_student_transfer_history t
                        where to_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}) a
+                         and substring(move_at, 1, 7) = #{ym}
+                         and from_user_code != #{userCode} -- 같은 센터 내 이동 제외
+                         and not exists (                  -- 같은 기간에 전출 기록이 없는 경우만
+                           Select 1
+                           from erp_student_transfer_history t2
+                           where t2.student_id = t.student_id
+                         and t2.from_user_code = #{userCode}
+                         and substring (t2.move_at
+                           , 1
+                           , 7) = #{ym}
+                           )) a
                           Join erp_student es On a.student_id = es.student_id
 
                  UNION ALL
 
-                 -- 전출
+-- 전출 (전입이 없는 경우만)
                  Select 'move_out' as gb, es.student_name, a.*
                  from (Select student_id,
-                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key)
+                              class_name = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
+                              null as 'week'
                        from erp_student_transfer_history t
                        where from_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}) a
+                         and substring(move_at, 1, 7) = #{ym}
+                         and to_user_code != #{userCode} -- 같은 센터 내 이동 제외
+                         and not exists (                -- 같은 기간에 전입 기록이 없는 경우만
+                           Select 1
+                           from erp_student_transfer_history t2
+                           where t2.student_id = t.student_id
+                         and t2.to_user_code = #{userCode}
+                         and substring (t2.move_at
+                           , 1
+                           , 7) = #{ym}
+                           )) a
                           Join erp_student es On a.student_id = es.student_id
 
                  UNION ALL
                  -- 주(1,2,3)
                  Select 'week' as gb, es.student_name, a.*
                  from (Select etta.student_id,
-                              class = (Select c.class_name from erp_class_code c where c.class_key = a.class_key) + '(' + etta.week + '주)'
+                              className = (Select c.class_name from erp_class_code c where c.class_key = a.class_key),
+                              '(' + etta.week + '주)' as 'week'
+
                        from (Select class_key, time_table_key
                              from erp_time_table
                              where yy + '-' + mm = #{ym}

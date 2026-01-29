@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.Http;
+import com.google.api.client.json.Json;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
@@ -105,67 +106,27 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findAllUserCode(user);
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
-        List<TimeTableDTO> tables = classService.findTableViewWithStudents(year, month, user.getUserCode());
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(year, month, user.getUserCode());
 
-        Map<String, Map<String, TimeTableDTO>> tableMap = tables.stream()
+        Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
                 .collect(Collectors.groupingBy(
                         TimeTableDTO::getDayname,
                         Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())
                 ));
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
 
+        Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.StudentStatRespDTO::getGb));
+
         model.addAttribute("user", user);
         model.addAttribute("tableMap", tableMap);
-
-        // ───────────────────────────────
-        // 🔹 현재 조회된 시간표 안의 학생들만 기준
-        Map<String, TimeTableDTO.StudentDTO> uniqueStudents = tables.stream()
-                .filter(t -> t.getStudents() != null)
-                .flatMap(t -> t.getStudents().stream())
-                .filter(s -> s.getStudentId() != null)
-                .collect(Collectors.toMap(
-                        TimeTableDTO.StudentDTO::getStudentId,
-                        Function.identity(),
-                        // 동일 학생이 여러 수업에 있을 경우 week 값이 더 작은 쪽으로 유지
-                        (s1, s2) -> {
-                            try {
-                                int w1 = s1.getWeek() != null && s1.getWeek().matches("\\d+") ? Integer.parseInt(s1.getWeek()) : 99;
-                                int w2 = s2.getWeek() != null && s2.getWeek().matches("\\d+") ? Integer.parseInt(s2.getWeek()) : 99;
-                                return w1 <= w2 ? s1 : s2;
-                            } catch (Exception e) {
-                                return s1;
-                            }
-                        }
-                ));
-
-        List<TimeTableDTO.StudentDTO> displayedStudents = new ArrayList<>(uniqueStudents.values());
-
-        long total = displayedStudents.size();
-
-        List<TimeTableDTO.StudentDTO> oneToThreeWeekStudents = displayedStudents.stream()
-                .filter(s -> s.getWeek() != null && s.getWeek().matches("\\d+"))
-                .filter(s -> {
-                    int week = Integer.parseInt(s.getWeek());
-                    return week >= 1 && week <= 3;
-                })
-                .collect(Collectors.toList());
-
-        long oneToThreeWeeks = oneToThreeWeekStudents.size();
-
-        String oneToThreeWeekNames = oneToThreeWeekStudents.stream()
-                .map(s -> s.getStudentName() + "(" + s.getWeek() + "주)")
-                .collect(Collectors.joining(", "));
-
-        Map<String, Object> memberStats = new HashMap<>();
-        memberStats.put("oneToThreeWeeks", oneToThreeWeeks);
-        memberStats.put("oneToThreeWeekNames", oneToThreeWeekNames);
-        memberStats.put("total", total);
+        model.addAttribute("statsMap", statsMap);
+        model.addAttribute("totalStudents", viewData.getTotalStudents());
         model.addAttribute("selectedUserCode", user.getUserCode());
-        model.addAttribute("memberStats", memberStats);
 
         return "class/timeview";
     }
@@ -180,7 +141,8 @@ public class ClassViewController {
         String mm = ym.substring(4, 6);
         String centerCode = userCode.substring(0, 6);
         // 센터 선생님 목록
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findAllUserCode(user);
+//        List<User> users = userService.findByCenterCodeDev();
 
         // 선택된 선생님
         User selectedUser = users.stream()
@@ -189,11 +151,10 @@ public class ClassViewController {
                 .orElse(null);
 
         // 시간표 조회
-        List<TimeTableDTO> tables =
-                classService.findTableViewWithStudents(yy, mm, userCode);
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(yy, mm, userCode);
 
         Map<String, Map<String, TimeTableDTO>> tableMap =
-                tables.stream()
+                viewData.getTables().stream()
                         .collect(Collectors.groupingBy(
                                 TimeTableDTO::getDayname,
                                 Collectors.toMap(
@@ -203,7 +164,8 @@ public class ClassViewController {
                         ));
 
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
-
+        Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.StudentStatRespDTO::getGb));
         model.addAttribute("yy", yy);
         model.addAttribute("mm", mm);
         model.addAttribute("users", users);
@@ -211,6 +173,8 @@ public class ClassViewController {
         model.addAttribute("selectedUser", selectedUser);
         model.addAttribute("days", DAYS);
         model.addAttribute("tableMap", tableMap);
+        model.addAttribute("statsMap", statsMap);
+
 
         return "print/print-timeview";
     }

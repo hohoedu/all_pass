@@ -203,4 +203,15 @@ public class StudentWebRespDTO {
         private int waitCount;      // 대기
     }
 
+    @Data
+    public static class StudentOverviewDTO {
+        private String ym;
+        private String classKey;
+        private String entryCount;
+        private String withdrawCount;
+        private String moveInCount;
+        private String moveOutCount;
+
+    }
+
 }

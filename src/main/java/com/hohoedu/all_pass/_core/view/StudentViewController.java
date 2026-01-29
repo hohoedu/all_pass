@@ -3,6 +3,7 @@ package com.hohoedu.all_pass._core.view;
 import java.time.YearMonth;
 import java.util.List;
 
+import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class StudentViewController {
 
     private final StudentService studentService;
     private final ClassService classService;
+    private final UserService userService;
 
     // 학생 등록
     @GetMapping("/web/join")
@@ -112,26 +114,8 @@ public class StudentViewController {
         var user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) return "redirect:/login";
 
-        final String centerCode = user.getCenterCode();
-
-        // 최근 12개월(포함) 범위
-        YearMonth nowYm = YearMonth.now();
-        YearMonth startYm = nowYm.minusMonths(11);
-        String currentYm = nowYm.toString().replace("-", "");   // yyyyMM
-        String yearAgoYm = startYm.toString().replace("-", ""); // yyyyMM
-
-        // 월별 스냅샷 업서트
-        for (YearMonth ym = startYm; !ym.isAfter(nowYm); ym = ym.plusMonths(1)) {
-            studentService.upsertSnapshot(centerCode, ym.toString().replace("-", ""));
-        }
-
-        // 범위 조회
-        List<StudentSnapshotRespDTO> snapshot = studentService.getSnapshotRange(centerCode, yearAgoYm, currentYm);
-
-        model.addAttribute("snapshot", snapshot);
-        model.addAttribute("centerCode", centerCode);
-        model.addAttribute("currentYm", currentYm);
-        model.addAttribute("startYm", yearAgoYm);
+        List<User> users = userService.findByCenterCode(user);
+        model.addAttribute("users", users);
 
         return "/student/student-overview";
     }

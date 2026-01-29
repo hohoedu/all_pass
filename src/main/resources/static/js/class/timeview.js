@@ -49,8 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const ym = document.getElementById('monthPickerInput').value.replace('-', '');
         const userCode = document.getElementById('teacher-select')?.value;
         const centerCode = document.getElementById('')
-        // window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}`);
-        printTimeView(ym, userCode);
+        window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}`);
+        // printTimeView(ym, userCode);
     });
 
     function printTimeView(ym, userCode) {
@@ -147,16 +147,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const data = await res.json();
-            const tables = data.response;
+            const viewData = data.response;
 
-            console.log(tables);
-            renderTimetableTable(tables);
+            console.log(viewData);
+            renderTimetableTable(viewData.tables);
+            renderMemberStatus(viewData.stats, viewData.totalStudents);
         } catch (err) {
             console.error("loadMonthlyData error:", err);
         }
 
         function renderTimetableTable(tables) {
-
             // 요일을 항상 고정으로 렌더링
             const dayOrder = ["mon", "tue", "wed", "thu", "fri", "sat"];
             const dayLabel = {
@@ -174,8 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
             let html = `
         <thead>
             <tr>
-                <th style="padding:0;">교시</th>
-                ${dayOrder.map(d => `<th>${dayLabel[d]}</th>`).join("")}
+                <th style="padding:0; font-size: 14px; position: static;">교시</th>
+                ${dayOrder.map(d => `<th style="font-size: 14px;">${dayLabel[d]}</th>`).join("")}
             </tr>
         </thead>
         <tbody>
@@ -185,9 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 html += `<tr>`;
                 html += `<td>${period}</td>`;
 
-                // 요일 칸 7개 모두 렌더링
+                // 요일 칸 모두 렌더링
                 dayOrder.forEach(day => {
-
                     // 해당 요일 + 교시 데이터 찾기
                     const tt = tables.find(t => t.dayname === day && Number(t.periodNo) === period);
 
@@ -206,10 +205,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${tt.startTime} ~ ${tt.endTime}<br>
                             <strong>${tt.className} ${tt.unitName ?? ""}</strong>
                         </div>
-                        <div class="inner-grid" draggable="true">
+                        <div class="inner-grid" draggable="true" data-time-table-key="${tt.timeTableKey}">
                             ${tt.students.map(s => `
-                                <div data-name="${s.studentName}">
-                                    ${s.studentName} ${s.gradeName ? `(${s.gradeName})` : ``}
+                                <div data-name="${s.studentName}" 
+                                     data-student-id="${s.studentId}" 
+                                     data-week-no="${s.week}">
+                                    ${s.studentName}
                                 </div>
                             `).join("")}
                         </div>
@@ -224,6 +225,74 @@ document.addEventListener("DOMContentLoaded", () => {
             html += `</tbody>`;
 
             document.querySelector(".timetable-lookup-table").innerHTML = html;
+        }
+
+        /**
+         * 회원 현황 테이블 렌더링
+         */
+        function renderMemberStatus(stats, totalStudents) {
+            // gb별로 그룹핑
+            const statsMap = stats.reduce((acc, stat) => {
+                if (!acc[stat.gb]) acc[stat.gb] = [];
+                acc[stat.gb].push(stat);
+                return acc;
+            }, {});
+
+            const getStatHtml = (gb) => {
+                const list = statsMap[gb] || [];
+                const count = list.length;
+                const names = list.map(s => {
+                    if (gb === 'week') {
+                        return `${s.studentName} ${s.week}`;
+                    }
+                    return s.studentName;
+                }).join(', ');
+
+                return {count, names};
+            };
+
+            const entry = getStatHtml('entry');
+            const withdraw = getStatHtml('withdraw');
+            const moveIn = getStatHtml('move_in');
+            const moveOut = getStatHtml('move_out');
+            const week = getStatHtml('week');
+
+            const memberTable = document.querySelector('.member-status-table tbody');
+            if (memberTable) {
+                memberTable.innerHTML = `
+                <tr>
+                    <td>입회</td>
+                    <td>${entry.count}명</td>
+                    <td>${entry.names}</td>
+                </tr>
+                <tr>
+                    <td>탈퇴</td>
+                    <td>${withdraw.count}명</td>
+                    <td>${withdraw.names}</td>
+                </tr>
+                <tr>
+                    <td>전입</td>
+                    <td>${moveIn.count}명</td>
+                    <td>${moveIn.names}</td>
+                </tr>
+                <tr>
+                    <td>전출</td>
+                    <td>${moveOut.count}명</td>
+                    <td>${moveOut.names}</td>
+                </tr>
+                <tr>
+                    <td>1-3주</td>
+                    <td>${week.count}명</td>
+                    <td>${week.names}</td>
+                </tr>
+            `;
+            }
+
+            // 총원 업데이트
+            const totalElement = document.querySelector('.pax-people');
+            if (totalElement) {
+                totalElement.textContent = `${totalStudents}명`;
+            }
         }
     }
 

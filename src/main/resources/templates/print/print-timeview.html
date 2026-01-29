@@ -43,23 +43,23 @@
     <table class="timetable-lookup-table">
         <thead>
         <tr>
-            <th style="padding: 0;font-size: 14px">교시</th>
-            <th th:each="day : ${days}" th:text="${day.label}" style="font-size: 14px"></th>
+            <th style="padding: 0;font-size: 14px; position: static">교시</th>
+            <th th:each="day : ${days}" th:text="${day.label}" style="font-size: 14px;position: static;"></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="periodNo : ${#numbers.sequence(1,6)}">
             <td th:text="${periodNo}" style="font-size: 14px">1</td>
-            <td th:each="day : ${days}" th:with="dayMap=${tableMap[day.id]}" style="vertical-align: top; height: 150px; padding: 2px">
+            <td th:each="day : ${days}" th:with="dayMap=${tableMap[day.id]}" style="vertical-align: top; height: 125px; padding: 2px">
                 <div th:if="${dayMap != null and dayMap[periodNo.toString()] != null}"
                      th:with="tt=${dayMap[periodNo.toString()]}">
                     <div th:class="timetable-lookup-box" th:classappend="${tt.classType eq '1'} ? ' pink' : ' blue'">
-                        <div class="header" th:utext="${tt.startTime} + ' ~ ' + ${tt.endTime} + '<br>
+                        <div class="print-timetable-header" th:utext="${tt.startTime} + ' ~ ' + ${tt.endTime} + '<br>
                             <strong>' + ${tt.className} + ' ' + ${tt.unitName} + '</strong>'">
                         </div>
                         <div class="inner-grid">
                             <div th:each="stu : ${tt.students}"
-                                 th:with="name=${stu.studentName != null ? stu.studentName : ''}, grade=${stu.gradeName}" style="padding: 1px; white-space: nowrap">
+                                 th:with="name=${stu.studentName != null ? stu.studentName : ''}, grade=${stu.gradeName}" style="padding: 1px; line-height: 1.3">
                                 <span th:text="${name}" style="font-size: 11px"></span><span th:if="${grade}" th:text="'(' + ${grade} + ')'" style="font-size: 9px"></span>
                             </div>
                         </div>
@@ -69,6 +69,43 @@
         </tr>
         </tbody>
     </table>
+    <section>
+        <table class="timetable-lookup-table">
+            <thead>
+            <tr>
+                <th style="padding: 0"></th>
+                <th th:text="'입회 ('+ ${statsMap['entry'] != null ? statsMap['entry'].size() : 0} +'명)'">0</th>
+                <th th:text="'탈퇴 ('+ ${statsMap['withdraw'] != null ? statsMap['withdraw'].size() : 0} +'명)'">0</th>
+                <th th:text="'전입 ('+ ${statsMap['move_in'] != null ? statsMap['move_in'].size() : 0} +'명)'">0</th>
+                <th th:text="'전출 ('+ ${statsMap['move_out'] != null ? statsMap['move_out'].size() : 0} +'명)'">0</th>
+                <th th:text="'1-3주 ('+ ${statsMap['week'] != null ? statsMap['week'].size() : 0} +'명)'">0</th>
+                <th th:text="'주의필요 ('+ ${statsMap['null'] != null ? statsMap['null'].size() : 0} +'명)'">0</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td></td>
+                <td><span th:each="stat, iterStat : ${statsMap['entry']}" th:if="${statsMap['entry'] != null}">
+                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
+                                </span>
+                </td>
+                <td><span th:each="stat, iterStat : ${statsMap['withdraw']}" th:if="${statsMap['withdraw'] != null}">
+                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
+                                </span></td>
+                <td><span th:each="stat, iterStat : ${statsMap['move_in']}" th:if="${statsMap['move_in'] != null}">
+                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
+                                </span></td>
+                <td><span th:each="stat, iterStat : ${statsMap['move_out']}" th:if="${statsMap['move_out'] != null}">
+                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
+                                </span></td>
+                <td><span th:each="stat, iterStat : ${statsMap['week']}" th:if="${statsMap['week'] != null}">
+                                    <span th:text="${stat.studentName} +' '+ ${stat.week}"></span><span th:if="${!iterStat.last}">, </span>
+                                </span></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
 </div>
 </body>
 

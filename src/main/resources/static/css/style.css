@@ -621,6 +621,7 @@ table .checkbox-group {
     background: #AAAAAA;
 }
 
+.student-stat,
 .new-regist,
 .class-comment,
 .consult-add,
@@ -3929,9 +3930,6 @@ input:checked + .slider::before {
     margin-left: 10px;
 }
 
-.stats-frame {
-    min-height: 550px;
-}
 
 .table-foot tfoot td {
     border-top: 1px solid #494470;
@@ -4759,7 +4757,6 @@ input[type="time" i] {
 .timetable-lookup-table th {
     border-top: 1px solid #494470;
     border-bottom: 1px solid #494770;
-    padding: 8px;
 }
 
 .timetable-lookup-table tbody {
@@ -4815,6 +4812,15 @@ input[type="time" i] {
     border-bottom: 1px dashed #60c0d4;
 }
 
+.timetable-lookup-box.blue .print-timetable-header {
+    background-color: #60c0d4;
+    color: white;
+    border-radius: 5px 5px 0 0;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px dashed #60c0d4;
+}
+
 .timetable-lookup-box.pink {
     border: 2px solid #eb8baf;
     background-color: #fff2f7;
@@ -4824,6 +4830,15 @@ input[type="time" i] {
     background-color: #eb8baf;
     color: white;
     padding: 6px;
+    border-radius: 5px 5px 0 0;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px dashed #eb8baf;
+}
+
+.timetable-lookup-box.pink .print-timetable-header {
+    background-color: #eb8baf;
+    color: white;
     border-radius: 5px 5px 0 0;
     font-weight: bold;
     text-align: center;

@@ -36,7 +36,7 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
         SELECT s.*
              , g.*
-             , reg.registeredClassTypes AS classType
+             , reg.registeredClassTypes                                        AS classType
              , pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last as phone
 
         FROM erp_student s
@@ -70,12 +70,8 @@
             , '2'
             , '3'))
           AND s.status_key = 'ACTIVE'
-          AND (
-            ta.assign_han_teacher = #{userCode}
-           OR ta.assign_book_teacher = #{userCode}
-           OR (ta.assign_han_teacher IS NULL
-          AND ta.assign_book_teacher IS NULL)
-            )
+          AND (ta.assign_han_teacher = #{userCode}
+           OR ta.assign_book_teacher = #{userCode})
         ORDER BY
             CASE
             WHEN ta.assign_han_teacher = #{userCode}
@@ -640,31 +636,6 @@
         ORDER BY s.snapshot_ym
     </select>
 
-    <select id="findStudentOverview"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotRespDTO">
-        SELECT s.snapshot_ym AS snapshotYm,
-               s.active_count,
-               s.rest_count,
-               s.withdrawn_count,
-               s.wait_count,
-
-               (SELECT COUNT(*)
-                FROM STUDENT_TRANSFER_HISTORY
-                WHERE TO_USER_NO = #{userNo}
-                  AND CONCAT(YEAR(move_at), '-', LPAD(MONTH(move_at), 2, '0')) = s.snapshot_ym)
-                             AS moveInCount,
-
-               (SELECT COUNT(*)
-                FROM STUDENT_TRANSFER_HISTORY
-                WHERE FROM_USER_NO = #{userNo}
-                  AND CONCAT(YEAR(move_at), '-', LPAD(MONTH(move_at), 2, '0')) = s.snapshot_ym)
-                             AS moveOutCount
-
-        FROM student_monthly_snapshot s
-        WHERE s.snapshot_ym BETWEEN #{startYm} AND #{endYm}
-        ORDER BY s.snapshot_ym
-    </select>
-
     <select id="appLogin" parameterType="String"
             resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppLoginViewDTO">
         SELECT s.student_id   as studentId,
@@ -795,9 +766,81 @@
     <select id="findAttendanceKey" resultType="string">
         SELECT attendance_key
         FROM erp_student_attendance
-        WHERE student_id = #{studentId}
+        WHERE student_id = #{studentId}]
           AND time_table_key = #{timeTableKey}
           AND week = #{week}
+    </select>
+
+    <select id="findStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentOverviewDTO">
+        SELECT
+            COALESCE(e.ym, i.ym, mi.ym, mo.ym) AS ym,
+            ISNULL(e.cnt, 0) AS entry_count,
+            ISNULL(i.cnt, 0) AS inactive_count,
+            ISNULL(mi.cnt, 0) AS move_in_count,
+            ISNULL(mo.cnt, 0) AS move_out_count
+        FROM (
+                 -- 입회
+                 SELECT substring(entry_date, 1, 7) AS ym, COUNT(DISTINCT student_id) AS cnt
+                 FROM (
+                          SELECT student_id, entry_han_date AS entry_date
+                          FROM erp_teacher_assign
+                          WHERE (#{teacherCode} = 'all' OR assign_han_teacher = #{teacherCode})
+                            AND substring(entry_han_date, 1, 7) BETWEEN #{startYm} AND #{endYm}
+                          UNION ALL
+                          SELECT student_id, entry_book_date
+                          FROM erp_teacher_assign
+                          WHERE (#{teacherCode} = 'all' OR assign_book_teacher = #{teacherCode})
+                            AND substring(entry_book_date, 1, 7) BETWEEN #{startYm} AND #{endYm}
+                      ) t WHERE entry_date IS NOT NULL
+                 GROUP BY substring(entry_date, 1, 7)
+             ) e
+                 FULL OUTER JOIN (
+            -- 탈퇴
+            SELECT substring(inactive_date, 1, 7) AS ym, COUNT(DISTINCT student_id) AS cnt
+            FROM (
+                     SELECT student_id, inactive_han_date AS inactive_date
+                     FROM erp_teacher_assign
+                     WHERE (#{teacherCode} = 'all' OR assign_han_teacher = #{teacherCode})
+                       AND substring(inactive_han_date, 1, 7) BETWEEN #{startYm} AND #{endYm}
+                     UNION ALL
+                     SELECT student_id, inactive_book_date
+                     FROM erp_teacher_assign
+                     WHERE (#{teacherCode} = 'all' OR assign_book_teacher = #{teacherCode})
+                       AND substring(inactive_book_date, 1, 7) BETWEEN #{startYm} AND #{endYm}
+                 ) t WHERE inactive_date IS NOT NULL
+            GROUP BY substring(inactive_date, 1, 7)
+        ) i ON e.ym = i.ym
+                 FULL OUTER JOIN (
+            -- 전입
+            SELECT substring(move_at, 1, 7) AS ym, COUNT(DISTINCT student_id) AS cnt
+            FROM erp_student_transfer_history
+            WHERE (#{teacherCode} = 'all' OR to_user_code = #{teacherCode})
+              AND substring(move_at, 1, 7) BETWEEN #{startYm} AND #{endYm}
+              AND (#{teacherCode} = 'all' OR from_user_code != #{teacherCode})
+              AND NOT EXISTS (
+                SELECT 1 FROM erp_student_transfer_history t2
+                WHERE t2.student_id = erp_student_transfer_history.student_id
+                  AND (#{teacherCode} = 'all' OR t2.from_user_code = #{teacherCode})
+                  AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7)
+            )
+            GROUP BY substring(move_at, 1, 7)
+        ) mi ON COALESCE(e.ym, i.ym) = mi.ym
+                 FULL OUTER JOIN (
+            -- 전출
+            SELECT substring(move_at, 1, 7) AS ym, COUNT(DISTINCT student_id) AS cnt
+            FROM erp_student_transfer_history
+            WHERE (#{teacherCode} = 'all' OR from_user_code = #{teacherCode})
+              AND substring(move_at, 1, 7) BETWEEN #{startYm} AND #{endYm}
+              AND (#{teacherCode} = 'all' OR to_user_code != #{teacherCode})
+              AND NOT EXISTS (
+                SELECT 1 FROM erp_student_transfer_history t2
+                WHERE t2.student_id = erp_student_transfer_history.student_id
+                  AND (#{teacherCode} = 'all' OR t2.to_user_code = #{teacherCode})
+                  AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7)
+            )
+            GROUP BY substring(move_at, 1, 7)
+        ) mo ON COALESCE(e.ym, i.ym, mi.ym) = mo.ym
+        ORDER BY COALESCE(e.ym, i.ym, mi.ym, mo.ym)
     </select>
 
 </mapper>

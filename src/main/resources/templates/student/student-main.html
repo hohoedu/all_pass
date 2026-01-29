@@ -30,7 +30,9 @@
                         <div class="header-btns">
                             <!--                            <div class="grade-up common-btn">학년 내리기</div>-->
                             <!--                            <div class="grade-down common-btn">학년 올리기</div>-->
+                            <div class="student-stat common-btn">입회/탈퇴 목록</div>
                             <div class="new-regist common-btn">+ 신규 등록</div>
+
                         </div>
                     </div>
                     <div class="info-filters">
@@ -43,8 +45,8 @@
                                         <th:block th:each="teacher : ${teachers}">
                                             <option th:value="${teacher.userCode}"
                                                     th:text="${teacher.userName + ' 선생님'}"
-                                                    th:selected="${teacher.userCode == user.userCode}"></option>
-                                            ></option>
+                                                    th:selected="${teacher.userCode == user.userCode}">
+                                            </option>
                                         </th:block>
                                     </select>
                                 </div>

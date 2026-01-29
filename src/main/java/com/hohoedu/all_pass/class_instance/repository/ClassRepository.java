@@ -92,13 +92,17 @@ public interface ClassRepository {
             @Param("studentId") String studentId,
             @Param("centerCode") String centerCode);
 
-    public void insertMonthlyScore(
+    List<ClassRespDTO.StudentStatRespDTO> findStudentStat(
+            @Param("userCode") String userCode,
+            @Param("ym") String ym);
+
+    void insertMonthlyScore(
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("timeTableKey") String timeTableKey);
 
-    public List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
+    List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
             @Param("userCode") String userCode,
             @Param("year") String year,
             @Param("month") String month);
@@ -122,7 +126,7 @@ public interface ClassRepository {
             @Param("mm") String mm
     );
 
-    public List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
+    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
@@ -132,19 +136,19 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    public int deleteByKeyAndStudentId(
+    int deleteByKeyAndStudentId(
             @Param("timeTableKey") String timeTableKey,
             @Param("studentId") String studentId);
 
     int deleteTimeTableRow(
             @Param("timeTableKey") String timeTableKey);
 
-    public List<TimeTable> findTimeTable(
+    List<TimeTable> findTimeTable(
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("userNo") String userNo);
 
-    public List<TimeTableCode> findTimeTableCodeByUserCode(
+    List<TimeTableCode> findTimeTableCodeByUserCode(
             @Param("userCode") String userCode);
 
     List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(
@@ -164,7 +168,7 @@ public interface ClassRepository {
             @Param("unitKey") String unitKey);
 
     // 날짜별 선생님별 수업 조회
-    public List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
+    List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("dayName") String dayName,

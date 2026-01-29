@@ -19,7 +19,10 @@ public interface UserRepository {
             @Param("roleNum") Integer roleNum,
             @Param("type") String type,
             @Param("userCode") String userCode
+    );
 
+    List<User> findAllUserCode(
+            @Param("centerCode") String centerCode
     );
 
     UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);

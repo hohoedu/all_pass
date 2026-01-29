@@ -59,12 +59,8 @@ public class ClassService {
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
-    private final StudentRepository studentRepository;
-    private final PaymentRepository paymentRepository;
     private final StudentService studentService;
     private final PaymentService paymentService;
-    private final HttpServletResponse httpServletResponse;
-    private final UserRepository userRepository;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -329,7 +325,7 @@ public class ClassService {
         return tables;
     }
 
-    public List<TimeTableDTO> findTableViewWithStudents(String year, String month, String userCode) {
+    public ClassRespDTO.TimeTableViewRespDTO findTableViewWithStudents(String year, String month, String userCode) {
 
         List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, year, month);
 
@@ -345,7 +341,17 @@ public class ClassService {
 
             tt.setStudents(students);
         }
-        return tables;
+
+        String ym = year + "-" + month;
+        List<ClassRespDTO.StudentStatRespDTO> studentStat = classRepository.findStudentStat(userCode, ym);
+        Long totalStudents = tables.stream()
+                .flatMap(table -> table.getStudents().stream())
+                .filter(student -> student.getStudentId() != null && !student.getStudentId().isEmpty())
+                .filter(student -> !"\u00A0".equals(student.getStudentName()))
+                .map(TimeTableDTO.StudentDTO::getStudentId)
+                .distinct()
+                .count();
+        return new ClassRespDTO.TimeTableViewRespDTO(tables, studentStat, totalStudents);
     }
 
     // 학생 수업 등록

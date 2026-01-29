@@ -54,6 +54,12 @@
             )
     </select>
 
+    <select id="findAllUserCode" resultType="com.hohoedu.all_pass.user.User">
+        select u.id, u.created_at, u.user_code, u.user_id, u.user_name, u.center_code, u.role_key
+        from ERP_USER u
+        where center_code = #{centerCode}
+    </select>
+
 
     <select id="findCenterByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.center.Center">
         select *
