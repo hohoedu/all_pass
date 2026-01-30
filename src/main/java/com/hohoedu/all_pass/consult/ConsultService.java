@@ -85,7 +85,16 @@ public class ConsultService {
         consultRepository.updateProgress(id, progressKey);
     }
 
-    public void updateConsult (ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
+    @Transactional
+    public int updateConsultContent(Integer id, String content) {
+        int result = consultRepository.updateConsultContent(id, content);
+//        if(result > 0) {
+//            return consultRepository.
+//        }
+        return result;
+    }
+
+    public void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
         consultRepository.updateConsult(reqDTO);
     }
 }

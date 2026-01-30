@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const progressText = getProgressText(progressKey);
 
             consultTableBody.insertAdjacentHTML('beforeend', `
-                <tr data-student-id="${item.id || ""}" 
+                <tr data-id="${item.id || ""}" 
                     data-student-name="${item.studentName || ""}"
                     data-consult-date="${item.consultDate || ""}"
                     data-school="${item.school || ""}"
@@ -300,9 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${item.gradeName || ""}</td>
                     <td>${item.phone || ""}</td>
                     <td onclick="event.stopPropagation()">
-                        <div class="memo-etc text-middle">
+                        <div class="memo-etc text-middle consult-memo">
                             <textarea class="comment-text">${item.content || ""}</textarea>
+                            <div class="common-btn consult-fix" style="display:none;">수정</div>
                         </div>
+                        
                     </td>
                     <td onclick="event.stopPropagation()">
                         <div class="select-arrow">
@@ -326,6 +328,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
         attachRowClickEvents();
         attachDropdownEvents();
+        attachTextareaEvents(); // 새로 추가
+    }
+
+// textarea 변경 감지 함수 추가
+    function attachTextareaEvents() {
+        const textareas = consultTableBody.querySelectorAll('.comment-text');
+
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function () {
+                const originalValue = this.getAttribute('data-original');
+                const currentValue = this.value;
+                const updateBtn = this.nextElementSibling;
+
+                if (originalValue !== currentValue) {
+                    updateBtn.style.display = 'inline-block';
+                } else {
+                    updateBtn.style.display = 'none';
+                }
+            });
+
+            // 수정 버튼 클릭 이벤트
+            const updateBtn = textarea.nextElementSibling;
+            updateBtn.addEventListener('click', function () {
+                const row = this.closest('.consult-row');
+                const consultId = row.getAttribute('data-id');
+                const consultDate = row.getAttribute('data-consult-date');
+                const newContent = textarea.value;
+
+                if (!confirm('변경된 상담내용을 저장하시겠습니까?')) {
+                    return;
+                }
+                updateConsultContent(consultId, consultDate, newContent, textarea, this);
+            });
+        });
+    }
+
+// 상담 내용 업데이트 함수
+    async function updateConsultContent(consultId, consultDate, content, textarea, button) {
+        try {
+            const response = await fetch('/consult/content-update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    consultId: consultId,
+                    consultDate: consultDate,
+                    content: content
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                if (result.success) {
+                    textarea.setAttribute('data-original', content);
+                    button.style.display = 'none';
+                    alert('수정되었습니다.');
+                } else {
+                    alert('수정에 실패했습니다.');
+                }
+            } else {
+                alert('수정에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다.');
+        }
     }
 
     // 행 클릭 이벤트
@@ -586,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const ids = Array.from(checked)
-            .map(chk => chk.closest('tr')?.dataset.studentId)
+            .map(chk => chk.closest('tr')?.dataset.id)
             .filter(Boolean);
 
         if (ids.length === 0) {

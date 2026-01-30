@@ -84,7 +84,8 @@ public interface StudentRepository {
 
     int updateHanToActive(
             @Param("studentId") String studentId,
-            @Param("entryHanDate") String entryHanDate
+            @Param("entryHanDate") String entryHanDate,
+            @Param("userCode") String userCode
     );
 
     int updateHanToInactive(
@@ -95,7 +96,8 @@ public interface StudentRepository {
 
     int updateBookToActive(
             @Param("studentId") String studentId,
-            @Param("entryBookDate") String entryBookDate
+            @Param("entryBookDate") String entryBookDate,
+            @Param("userCode") String userCode
     );
 
     int updateBookToInactive(

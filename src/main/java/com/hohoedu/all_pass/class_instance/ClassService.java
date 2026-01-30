@@ -344,14 +344,38 @@ public class ClassService {
 
         String ym = year + "-" + month;
         List<ClassRespDTO.StudentStatRespDTO> studentStat = classRepository.findStudentStat(userCode, ym);
-        Long totalStudents = tables.stream()
+        Long totalStudentsLong = tables.stream()
                 .flatMap(table -> table.getStudents().stream())
                 .filter(student -> student.getStudentId() != null && !student.getStudentId().isEmpty())
                 .filter(student -> !"\u00A0".equals(student.getStudentName()))
                 .map(TimeTableDTO.StudentDTO::getStudentId)
                 .distinct()
                 .count();
-        return new ClassRespDTO.TimeTableViewRespDTO(tables, studentStat, totalStudents);
+        double totalStudentsDouble =
+                tables.stream()
+                        .flatMap(table -> table.getStudents().stream())
+                        .filter(student ->
+                                student.getStudentId() != null &&
+                                        !student.getStudentId().isEmpty() &&
+                                        !"\u00A0".equals(student.getStudentName())
+                        )
+                        .collect(
+                                Collectors.groupingBy(
+                                        TimeTableDTO.StudentDTO::getStudentId,
+                                        Collectors.summingInt(student -> {
+                                            try {
+                                                return Integer.parseInt(student.getWeek());
+                                            } catch (Exception e) {
+                                                return 0; // week 값이 이상하면 0주 처리
+                                            }
+                                        })
+                                )
+                        )
+                        .values()
+                        .stream()
+                        .mapToDouble(weekSum -> weekSum * 0.25)
+                        .sum();
+        return new ClassRespDTO.TimeTableViewRespDTO(tables, studentStat, totalStudentsLong, totalStudentsDouble);
     }
 
     // 학생 수업 등록

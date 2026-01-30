@@ -125,7 +125,8 @@ public class ClassViewController {
         model.addAttribute("user", user);
         model.addAttribute("tableMap", tableMap);
         model.addAttribute("statsMap", statsMap);
-        model.addAttribute("totalStudents", viewData.getTotalStudents());
+        model.addAttribute("totalStudentsLong", viewData.getTotalStudentsLong());
+        model.addAttribute("totalStudentsDouble", viewData.getTotalStudentsDouble());
         model.addAttribute("selectedUserCode", user.getUserCode());
 
         return "class/timeview";

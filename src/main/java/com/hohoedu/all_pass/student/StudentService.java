@@ -283,13 +283,14 @@ public class StudentService {
         return 1;
     }
 
-    public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request) {
+    public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
 
         // 한자 상태 업데이트
         if (request.getHanState() == 1) {
             studentRepository.updateHanToActive(
                     request.getStudentId(),
-                    request.getEntryHanDate()
+                    request.getEntryHanDate(),
+                    userCode
             );
         } else {
             studentRepository.updateHanToInactive(
@@ -303,7 +304,8 @@ public class StudentService {
         if (request.getBookState() == 1) {
             studentRepository.updateBookToActive(
                     request.getStudentId(),
-                    request.getEntryBookDate()
+                    request.getEntryBookDate(),
+                    userCode
             );
         } else {
             studentRepository.updateBookToInactive(

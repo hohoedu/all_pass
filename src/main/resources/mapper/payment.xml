@@ -456,7 +456,6 @@
                  JOIN erp_parent pa ON s.student_id = pa.student_id
 
         WHERE s.center_code = #{centerCode}
-          AND s.status_key NOT IN ('WITHDRAWN')
           AND (#{userCode} = 'all'
             OR c.assign_han_teacher = #{userCode}
             OR c.assign_book_teacher = #{userCode})

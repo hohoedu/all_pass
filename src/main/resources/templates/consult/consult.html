@@ -118,20 +118,19 @@
                                     <tbody>
                                     <tr th:each="c, stat : ${consults}" th:attr="data-student-id=${c.id}">
                                         <td class="checkbox-group"><input type="checkbox"/></td>
-                                        <td th:text="${stat.count}">1</td>
-                                        <td th:text="${c.consultDate}">2026-06-10</td>
-                                        <td th:text="${c.studentName}">김호일</td>
-                                        <td th:text="${c.school}">호호부설유치원</td>
-                                        <td th:text="${c.gradeName}">7세</td>
-                                        <td th:text="${c.phone}">010-1234-5678</td>
+                                        <td th:text="${stat.count}"></td>
+                                        <td th:text="${c.consultDate}"></td>
+                                        <td th:text="${c.studentName}"></td>
+                                        <td th:text="${c.school}"></td>
+                                        <td th:text="${c.gradeName}"></td>
+                                        <td th:text="${c.phone}"></td>
 
                                         <!-- 메모사항 -->
                                         <td>
                                             <div class="memo-etc text-middle">
-            <textarea class="comment-text"
-                      placeholder="내용을 입력해주세요."
-                      th:text="${c.content}">상담내용</textarea>
+                                                <textarea class="comment-text" th:text="${c.content}"></textarea>
                                             </div>
+                                            <div class="common-btn consult-add">+ 상담기록 추가</div>
                                         </td>
 
                                         <!-- 진행상황 -->

@@ -49,6 +49,7 @@
                                     <option th:each="u : ${users}"
                                             th:value="${u.userCode}"
                                             th:text="${u.userName}"
+                                            th:attr="data-group-type=${u.type}"
                                             th:selected="${u.userCode == selectedUserCode}">
                                     </option>
                                 </select>
@@ -90,6 +91,12 @@
                 </section>
                 <!-- 회원현황 -->
                 <section class="member">
+                    <div id="session-data"
+                         th:attr="data-user-code=${session.user.getUserCode()},
+                         data-role-key=${session.user.getRoleKey()},
+                         data-type=${session.user.getType()}"
+                         style="display:none;">
+                    </div>
                     <div class="common-title" style="margin-bottom: 30px;">
                         <h2>회원 현황</h2>
                     </div>
@@ -149,7 +156,7 @@
                         <tfoot>
                         <tr>
                             <td colspan="2">총원</td>
-                            <td><span class="pax-people" th:text="${totalStudents} + '명'"></span></td>
+                            <td><span class="pax-people" th:text="${totalStudentsLong} + '명 ('+${totalStudentsDouble}+'명)'"></span></td>
                         </tr>
                         </tfoot>
                     </table>

@@ -149,10 +149,17 @@ public class StudentController {
     }
 
     @PostMapping("/update/course-status")
-    public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req) {
+    public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
         try {
             log.info(req.getEntryBookDate());
-            studentService.updateCourseStatus(req);
+            studentService.updateCourseStatus(req, user.getUserCode());
 
             return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));
         } catch (Exception e) {

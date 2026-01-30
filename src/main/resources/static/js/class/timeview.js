@@ -49,8 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const ym = document.getElementById('monthPickerInput').value.replace('-', '');
         const userCode = document.getElementById('teacher-select')?.value;
         const centerCode = document.getElementById('')
-        window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}`);
-        // printTimeView(ym, userCode);
+        // window.open(`/class/print-timeview?ym=${ym}&userCode=${userCode}`);
+        printTimeView(ym, userCode);
     });
 
     function printTimeView(ym, userCode) {
@@ -73,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
             monthInput.showPicker();
         });
 
-        // 월 변경 → 서버에서 해당 월 시간표 + 회원현황 다시 가져오기
         monthInput.addEventListener("change", async () => {
             const selected = new Date(monthInput.value);
             if (isNaN(selected)) return;
@@ -102,11 +101,9 @@ document.addEventListener("DOMContentLoaded", () => {
         url.searchParams.set('year', year);
         url.searchParams.set('month', month);
 
-        // 브라우저 히스토리에 추가 (뒤로가기 가능)
+
         window.history.pushState({year, month}, '', url);
 
-        // 또는 히스토리에 추가하지 않고 URL만 변경하려면:
-        // window.history.replaceState({year, month}, '', url);
     }
 
     document.getElementById("teacher-select")
@@ -151,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             console.log(viewData);
             renderTimetableTable(viewData.tables);
-            renderMemberStatus(viewData.stats, viewData.totalStudents);
+            renderMemberStatus(viewData.stats, viewData.totalStudentsLong, viewData.totalStudentsDouble);
         } catch (err) {
             console.error("loadMonthlyData error:", err);
         }
@@ -230,7 +227,53 @@ document.addEventListener("DOMContentLoaded", () => {
         /**
          * 회원 현황 테이블 렌더링
          */
-        function renderMemberStatus(stats, totalStudents) {
+        function renderMemberStatus(stats, totalStudentsLong, totalStudentsDouble) {
+            const memberTable = document.querySelector('.member-status-table tbody');
+            const totalElement = document.querySelector('.pax-people');
+
+            // HTML의 data 속성에서 세션 정보 읽기
+            const sessionData = document.getElementById('session-data');
+            const sessionUserCode = sessionData?.dataset.userCode;
+            const sessionRoleKey = sessionData?.dataset.roleKey;
+            const sessionType = sessionData?.dataset.type;
+
+            const selectedUserCode = document.getElementById("teacher-select")?.value;
+            const selectedUserGroup = document.getElementById("teacher-select")?.selectedOptions[0]?.dataset.groupType;
+
+            // 권한 체크
+            let hasPermission = false;
+
+            if (sessionRoleKey === 'ADMIN') {
+                hasPermission = true;
+            } else if (sessionRoleKey === 'MANAGER') {
+                if (sessionType === 'ALL') {
+                    hasPermission = true;
+                } else if (sessionType === 'BOOK' && selectedUserGroup === 'BOOK') {
+                    hasPermission = true;
+                } else if (sessionType === 'HAN' && selectedUserGroup === 'HAN') {
+                    hasPermission = true;
+                }
+            } else if (sessionUserCode === selectedUserCode) {
+                hasPermission = true;
+            }
+
+            if (!hasPermission) {
+                if (memberTable) {
+                    memberTable.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #999;">
+                        회원 현황 조회 권한이 없습니다.
+                    </td>
+                </tr>
+            `;
+                }
+                if (totalElement) {
+                    totalElement.textContent = '-';
+                }
+                return;
+            }
+
+            // 기존 렌더링 로직 시작
             // gb별로 그룹핑
             const statsMap = stats.reduce((acc, stat) => {
                 if (!acc[stat.gb]) acc[stat.gb] = [];
@@ -257,41 +300,43 @@ document.addEventListener("DOMContentLoaded", () => {
             const moveOut = getStatHtml('move_out');
             const week = getStatHtml('week');
 
-            const memberTable = document.querySelector('.member-status-table tbody');
             if (memberTable) {
                 memberTable.innerHTML = `
-                <tr>
-                    <td>입회</td>
-                    <td>${entry.count}명</td>
-                    <td>${entry.names}</td>
-                </tr>
-                <tr>
-                    <td>탈퇴</td>
-                    <td>${withdraw.count}명</td>
-                    <td>${withdraw.names}</td>
-                </tr>
-                <tr>
-                    <td>전입</td>
-                    <td>${moveIn.count}명</td>
-                    <td>${moveIn.names}</td>
-                </tr>
-                <tr>
-                    <td>전출</td>
-                    <td>${moveOut.count}명</td>
-                    <td>${moveOut.names}</td>
-                </tr>
-                <tr>
-                    <td>1-3주</td>
-                    <td>${week.count}명</td>
-                    <td>${week.names}</td>
-                </tr>
-            `;
+            <tr>
+                <td>입회</td>
+                <td>${entry.count}명</td>
+                <td>${entry.names}</td>
+            </tr>
+            <tr>
+                <td>탈퇴</td>
+                <td>${withdraw.count}명</td>
+                <td>${withdraw.names}</td>
+            </tr>
+            <tr>
+                <td>전입</td>
+                <td>${moveIn.count}명</td>
+                <td>${moveIn.names}</td>
+            </tr>
+            <tr>
+                <td>전출</td>
+                <td>${moveOut.count}명</td>
+                <td>${moveOut.names}</td>
+            </tr>
+            <tr>
+                <td>1-3주</td>
+                <td>${week.count}명</td>
+                <td>${week.names}</td>
+            </tr>
+        `;
             }
 
-            // 총원 업데이트
-            const totalElement = document.querySelector('.pax-people');
             if (totalElement) {
-                totalElement.textContent = `${totalStudents}명`;
+                if (totalStudentsDouble === totalStudentsLong) {
+                    totalElement.textContent = `${totalStudentsLong}명`;
+                } else {
+                    totalElement.textContent = `${totalStudentsLong}명 (${totalStudentsDouble}명)`;
+                }
+
             }
         }
     }

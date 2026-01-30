@@ -60,12 +60,14 @@ public class ClassRespDTO {
     public static class TimeTableViewRespDTO {
         private List<TimeTableDTO> tables;
         private List<StudentStatRespDTO> stats;
-        private Long totalStudents;
+        private Long totalStudentsLong;
+        private Double totalStudentsDouble;
 
-        public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudents) {
+        public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudentsLong, double totalStudentsDouble) {
             this.tables = tables;
             this.stats = stats;
-            this.totalStudents = totalStudents;
+            this.totalStudentsLong = totalStudentsLong;
+            this.totalStudentsDouble = totalStudentsDouble;
         }
     }
 

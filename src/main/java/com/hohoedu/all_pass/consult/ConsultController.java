@@ -86,6 +86,15 @@ public class ConsultController {
         }
     }
 
+    @PostMapping("/content-update")
+    public ResponseEntity<?> updateConsultContent(@RequestBody ConsultReqDTO.ConsultUpdateContentDTO dto) {
+
+        int result = consultService.updateConsultContent(dto.getConsultId(), dto.getContent());
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+
+    }
+
     @PostMapping("/update")
     public ResponseEntity<?> findConsultDetail(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO req) {
         consultService.updateConsult(req);

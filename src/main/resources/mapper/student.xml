@@ -313,6 +313,7 @@
         UPDATE erp_teacher_assign
         SET han_state           = 1,
             entry_han_date      = #{entryHanDate},
+            assign_han_teacher    = #{userCode},
             inactive_han_date   = NULL,
             inactive_han_reason = NULL,
             updated_at          = SYSDATETIME()
@@ -335,6 +336,7 @@
         UPDATE erp_teacher_assign
         SET book_state           = 1,
             entry_book_date      = #{entryBookDate},
+            assign_book_teacher    = #{userCode},
             inactive_book_date   = NULL,
             inactive_book_reason = NULL,
             updated_at           = SYSDATETIME()

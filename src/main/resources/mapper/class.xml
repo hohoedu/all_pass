@@ -363,46 +363,25 @@
 
                  UNION ALL
 
-                 -- 전입
                  Select 'move_in' as gb, es.student_name, a.*
                  from (Select student_id,
-                              class_name = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
+                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
                               null as 'week'
                        from erp_student_transfer_history t
                        where to_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}
-                         and from_user_code != #{userCode} -- 같은 센터 내 이동 제외
-                         and not exists (                  -- 같은 기간에 전출 기록이 없는 경우만
-                           Select 1
-                           from erp_student_transfer_history t2
-                           where t2.student_id = t.student_id
-                         and t2.from_user_code = #{userCode}
-                         and substring (t2.move_at
-                           , 1
-                           , 7) = #{ym}
-                           )) a
+                         and substring(move_at, 1, 7) = #{ym}) a
                           Join erp_student es On a.student_id = es.student_id
 
                  UNION ALL
 
--- 전출 (전입이 없는 경우만)
+                 -- 전출
                  Select 'move_out' as gb, es.student_name, a.*
                  from (Select student_id,
-                              class_name = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
+                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
                               null as 'week'
                        from erp_student_transfer_history t
                        where from_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}
-                         and to_user_code != #{userCode} -- 같은 센터 내 이동 제외
-                         and not exists (                -- 같은 기간에 전입 기록이 없는 경우만
-                           Select 1
-                           from erp_student_transfer_history t2
-                           where t2.student_id = t.student_id
-                         and t2.to_user_code = #{userCode}
-                         and substring (t2.move_at
-                           , 1
-                           , 7) = #{ym}
-                           )) a
+                         and substring(move_at, 1, 7) = #{ym}) a
                           Join erp_student es On a.student_id = es.student_id
 
                  UNION ALL

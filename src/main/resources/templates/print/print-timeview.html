@@ -69,7 +69,12 @@
         </tr>
         </tbody>
     </table>
-    <section>
+
+    <section th:if="${session.user.roleKey == 'ADMIN' or
+                  (session.user.roleKey == 'MANAGER' and session.user.type == 'ALL') or
+                  (session.user.roleKey == 'MANAGER' and session.user.type == 'BOOK' and selectedUser.type == 'BOOK') or
+                  (session.user.roleKey == 'MANAGER' and session.user.type == 'HAN' and selectedUser.type == 'HAN') or
+                  session.user.userCode == selectedUser.userCode}">
         <table class="timetable-lookup-table">
             <thead>
             <tr>
@@ -86,21 +91,21 @@
             <tr>
                 <td></td>
                 <td><span th:each="stat, iterStat : ${statsMap['entry']}" th:if="${statsMap['entry'] != null}">
-                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
-                                </span>
+                <span th:text="${stat.studentName}" style="font-size: 10px"></span><span th:if="${!iterStat.last}">, </span>
+            </span>
                 </td>
                 <td><span th:each="stat, iterStat : ${statsMap['withdraw']}" th:if="${statsMap['withdraw'] != null}">
-                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
-                                </span></td>
+                <span th:text="${stat.studentName}" style="font-size: 10px"></span><span th:if="${!iterStat.last}">, </span>
+            </span></td>
                 <td><span th:each="stat, iterStat : ${statsMap['move_in']}" th:if="${statsMap['move_in'] != null}">
-                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
-                                </span></td>
+                <span th:text="${stat.studentName}" style="font-size: 10px"></span><span th:if="${!iterStat.last}">, </span>
+            </span></td>
                 <td><span th:each="stat, iterStat : ${statsMap['move_out']}" th:if="${statsMap['move_out'] != null}">
-                                    <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
-                                </span></td>
+                <span th:text="${stat.studentName}" style="font-size: 10px"></span><span th:if="${!iterStat.last}">, </span>
+            </span></td>
                 <td><span th:each="stat, iterStat : ${statsMap['week']}" th:if="${statsMap['week'] != null}">
-                                    <span th:text="${stat.studentName} +' '+ ${stat.week}"></span><span th:if="${!iterStat.last}">, </span>
-                                </span></td>
+                <span th:text="${stat.studentName} +' '+ ${stat.week}" style="font-size: 10px"></span><span th:if="${!iterStat.last}">, </span>
+            </span></td>
                 <td></td>
             </tr>
             </tbody>

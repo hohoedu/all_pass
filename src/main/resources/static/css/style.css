@@ -625,6 +625,7 @@ table .checkbox-group {
 .new-regist,
 .class-comment,
 .consult-add,
+.consult-fix,
 .pay-desc,
 .add-payment,
 .notice-regist,
@@ -3204,6 +3205,8 @@ button.select-status::after {
 }
 
 .memo-etc {
+    display: flex;
+    flex-direction: column;
     width: 330px;
     height: 155px;
 }

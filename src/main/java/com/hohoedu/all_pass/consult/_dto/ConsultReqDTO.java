@@ -25,5 +25,12 @@ public class ConsultReqDTO {
         private String endYm;
 
     }
-    
+
+
+    @Data
+    public static class ConsultUpdateContentDTO {
+        private Integer consultId;
+        private String consultDate;
+        private String content;
+    }
 }

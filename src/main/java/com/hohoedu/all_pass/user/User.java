@@ -47,6 +47,9 @@ public class User {
     @Column(name = "salt")
     private String salt;
 
+    @Column(name = "type")
+    private String type;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_key", referencedColumnName = "role_key", nullable = false)
     private UserRoleCode role;
@@ -60,13 +63,14 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String userCode, String userId, String userName, String passwordHash, String salt,
+    public User(String userCode, String userId, String userName, String passwordHash, String salt, String type,
                 UserRoleCode role, Center center) {
         this.userCode = userCode;
         this.userId = userId;
         this.userName = userName;
         this.passwordHash = passwordHash;
         this.salt = salt;
+        this.type = type;
         this.role = role;
         this.center = center;
     }

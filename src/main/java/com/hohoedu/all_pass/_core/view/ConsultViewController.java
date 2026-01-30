@@ -35,9 +35,8 @@ public class ConsultViewController {
             return "redirect:/login";
         }
 
-        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
-
-        List<User> teachers = userService.findByCenterCode(user);
+//        List<User> teachers = userService.findByCenterCode(user);
+        List<User> teachers = userService.findAllUserCode(user);
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
 //        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode(), userCode);

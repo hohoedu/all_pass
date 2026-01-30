@@ -67,6 +67,12 @@
         WHERE id = #{id}
     </update>
 
+    <update id="updateConsultContent">
+        UPDATE ERP_CONSULT
+        SET content = #{content}
+        WHERE id = #{id}
+    </update>
+
     <update id="updateConsult">
         UPDATE erp_consult
         SET student_name     = #{studentName},
