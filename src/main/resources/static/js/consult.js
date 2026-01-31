@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.consult-row').forEach(row => {
             row.addEventListener('click', function () {
                 const data = {
-                    id: this.dataset.studentId,
+                    id: this.dataset.id,
                     studentName: this.dataset.studentName,
                     consultDate: this.dataset.consultDate,
                     school: this.dataset.school,
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const text = this.textContent;
 
                 const tr = this.closest('tr');
-                const id = tr?.dataset.studentId;
+                const id = tr?.dataset.id;
 
                 if (!id) {
                     console.warn("⚠️ data-student-id가 없습니다.");

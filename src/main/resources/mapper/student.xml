@@ -768,7 +768,7 @@
     <select id="findAttendanceKey" resultType="string">
         SELECT attendance_key
         FROM erp_student_attendance
-        WHERE student_id = #{studentId}]
+        WHERE student_id = #{studentId}
           AND time_table_key = #{timeTableKey}
           AND week = #{week}
     </select>
