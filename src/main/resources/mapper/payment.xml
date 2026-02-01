@@ -608,10 +608,10 @@
     </select>
 
     <insert id="createPaymentCallback">
-        INSERT INTO erp_payment_callback (bill_id, api_key, appr_state, appr_date, appr_price, appr_pay_type,
-                                          appr_card_type, appr_issuer, appr_num, created_at)
-        VALUES (#{billId}, #{apiKey}, #{apprState}, #{apprDate}, #{apprPrice}, #{apprPayType},
-                #{apprCardType}, #{apprIssuer}, #{apprNum}, SYSDATETIME());
+        INSERT INTO erp_payment_callback (bill_id, api_key, appr_cat_id, appr_pay_type, appr_card_type, appr_date, appr_issuer, appr_issuer_code, appr_issuer_num, appr_num,
+                                          appr_price, appr_state, appr_monthly, appr_acquirer_code, appr_acquirer_name, appr_origin_date, appr_origin_num, created_at)
+        VALUES (#{billId}, #{apiKey}, #{apprCatId}, #{apprPayType}, #{apprCardType}, #{apprDate}, #{apprIssuer}, #{apprIssuerCode}, #{apprIssuerNum}, #{apprNum}, #{apprPrice},
+                #{apprState}, #{apprMonthly}, #{apprAcquirerCode}, #{apprAcquirerName}, #{apprOriginDate}, #{apprOriginNum}, SYSDATETIME());
     </insert>
 
     <select id="findPaymentByBillId" resultType="com.hohoedu.all_pass.payment.Payment">
@@ -959,5 +959,21 @@
         WHERE bill_id = #{billId}
           AND status = 'REISSUED'
     </select>
+
+    <select id="findExpriedBill" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ExpiredBillDTO">
+        SELECT *
+        FROM erp_payment_bill
+        WHERE expire_date = #{ymd}
+          AND status = 'issued'
+    </select>
+
+    <update id="updateStatusToDestroyed">
+        UPDATE erp_payment_bill
+        SET status = 'destroyed'
+        WHERE bill_id = #{billId}
+          AND expire_date = #{ymd}
+          AND status = 'issued';
+    </update>
+
 
 </mapper>

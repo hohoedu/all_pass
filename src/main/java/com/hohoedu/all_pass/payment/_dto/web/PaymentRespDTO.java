@@ -227,12 +227,18 @@ public class PaymentRespDTO {
         private String message;
     }
 
-
     @Data
     public static class MaterialFeeDTO {
         private String studentId;
         private String paymentKey;
         private Integer hanMaterialFee;
         private Integer bookMaterialFee;
+    }
+
+    @Data
+    public static class ExpiredBillDTO {
+        private String studentId;
+        private String paymentKey;
+        private String billId;
     }
 }

@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.user;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class UserController {
 
     private final UserService userService;
     private final PaymentService paymentService;
+    private final StudentService studentService;
     private final HttpSession session;
 
     @GetMapping("/ping")
@@ -125,5 +128,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("success", false, "message", "비밀번호 변경에 실패했습니다."));
         }
+    }
+
+    @PostMapping("/apply-today")
+    public ResponseEntity<?> applyTodayTransfers(@RequestHeader("X-CRON-TOKEN") String token) {
+        token.equals("hohoedu");
+        log.info("token = {}", token);
+        log.info(LocalDate.now().toString());
+        studentService.applyTodayTransfers(LocalDate.now());
+        paymentService.paymentBillStatusChange();
+        return ResponseEntity.ok(ApiUtils.success("TODAY_TRANSFER_APPLIED")
+        );
     }
 }

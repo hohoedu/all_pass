@@ -214,17 +214,6 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success("RESERVED"));
     }
 
-    @PostMapping("/apply-today")
-    public ResponseEntity<?> applyTodayTransfers(@RequestHeader("X-CRON-TOKEN") String token) {
-        token.equals("hohoedu");
-        log.info("token = {}", token);
-        log.info(LocalDate.now().toString());
-        studentService.applyTodayTransfers(LocalDate.now());
-
-        return ResponseEntity.ok(ApiUtils.success("TODAY_TRANSFER_APPLIED")
-        );
-    }
-
     @PostMapping("/app_token")
     public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
         StudentAppRespDTO.AppTokenRespDTO respDTO = studentService.findAppTokenByAppId(attendanceTokenDTO.getAppId());

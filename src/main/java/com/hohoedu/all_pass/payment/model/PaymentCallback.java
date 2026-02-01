@@ -23,44 +23,91 @@ public class PaymentCallback {
     @Column(name = "api_key")
     private String apiKey;
 
-    @Column(name = "appr_state", nullable = false)
-    private String apprState;
+    @Column(name = "bill_id")
+    private String billId;
 
-    @Column(name = "appr_date")
-    private String apprDate;
+    @Column(name = "appr_cat_id")
+    private String apprCatId;
 
-    @Column(name = "appr_price")
-    private String apprPrice;
 
+
+    // 결제수단
     @Column(name = "appr_pay_type")
     private String apprPayType;
 
+    // 결제 카드 종류
     @Column(name = "appr_card_type")
     private String apprCardType;
 
+    // 승인 일시
+    @Column(name = "appr_date")
+    private String apprDate;
+
+    // 결제은행 / 카드명
     @Column(name = "appr_issuer")
     private String apprIssuer;
 
+    // 은행 코드
+    @Column(name = "appr_issuer_code")
+    private String apprIssuerCode;
+
+    // 결제 카드 번호
+    @Column(name = "appr_issuer_num")
+    private String apprIssuerNum;
+
+    // 승인번호
     @Column(name = "appr_num")
     private String apprNum;
 
-    @Column(name = "bill_id")
-    private String billId;
+    // 승인 금액
+    @Column(name = "appr_price")
+    private String apprPrice;
+
+    // 결제 상태
+    @Column(name = "appr_state", nullable = false)
+    private String apprState;
+
+    // 결제 할부 개월 수
+    @Column(name = "appr_monthly")
+    private String apprMonthly;
+
+    // 매입사 코드
+    @Column(name = "appr_acquirer_code")
+    private String apprAcquirerCode;
+
+    // 매입사 명
+    @Column(name = "appr_acquirer_name")
+    private String apprAcquirerName;
+
+    // 원거래 일시
+    @Column(name = "appr_origin_date")
+    private String apprOriginDate;
+
+    // 원거래 승인버호
+    @Column(name = "appr_origin_num")
+    private String apprOriginNum;
 
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
-    public PaymentCallback(String apiKey, String apprState, String apprDate, String apprPrice, String apprPayType,
-                           String apprCardType, String apprIssuer, String apprNum, String billId) {
+    public PaymentCallback(String apiKey, String billId, String apprCatId, String apprPayType, String apprCardType, String apprDate, String apprIssuer, String apprIssuerCode, String apprIssuerNum, String apprNum, String apprPrice, String apprState, String apprMonthly, String apprAcquirerCode, String apprAcquirerName, String apprOriginDate, String apprOriginNum) {
         this.apiKey = apiKey;
-        this.apprState = apprState;
-        this.apprDate = apprDate;
-        this.apprPrice = apprPrice;
+        this.billId = billId;
+        this.apprCatId = apprCatId;
         this.apprPayType = apprPayType;
         this.apprCardType = apprCardType;
+        this.apprDate = apprDate;
         this.apprIssuer = apprIssuer;
+        this.apprIssuerCode = apprIssuerCode;
+        this.apprIssuerNum = apprIssuerNum;
         this.apprNum = apprNum;
-        this.billId = billId;
+        this.apprPrice = apprPrice;
+        this.apprState = apprState;
+        this.apprMonthly = apprMonthly;
+        this.apprAcquirerCode = apprAcquirerCode;
+        this.apprAcquirerName = apprAcquirerName;
+        this.apprOriginDate = apprOriginDate;
+        this.apprOriginNum = apprOriginNum;
     }
 }

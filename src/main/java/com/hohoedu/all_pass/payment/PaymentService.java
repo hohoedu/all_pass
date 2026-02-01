@@ -708,13 +708,17 @@ public class PaymentService {
                         "hash", hash,
                         "expire_dt", req.getExpireDt(),
                         "callbackURL", conf.getCallbackUrl()
+//                        "callbackURL", "https://7988cdaad556.ngrok-free.app/pay/callback"
                 );
 
                 // API 요청 바디
                 Map<String, Object> body = Map.of(
                         "apikey", conf.getApiKey(),
+//                        "apikey", "TEST-API-KEY-TALK",
                         "member", conf.getMemberId(),
+//                        "member", "TEST-MEMBER-FOR-API",
                         "merchant", conf.getMerchantId(),
+//                        "merchant", "TEST-MERCHANT-FOR-API",
                         "bill", bill
                 );
 
@@ -723,6 +727,7 @@ public class PaymentService {
 
                 // 외부 결제 API 호출
                 PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+//                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
 
                 if (!"0000".equals(paymintResp.getCode())) {
                     log.error("결제 API 실패 - billId: {}, code: {}, message: {}",
@@ -858,16 +863,25 @@ public class PaymentService {
      */
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
 
+        log.info("paymentCallBack = {}", dto.toString());
         PaymentCallback paymentCallback = PaymentCallback.builder()
-                .billId(dto.getBill_id())
-                .apiKey(dto.getApikey())
-                .apprState(dto.getAppr_state())
-                .apprDate(dto.getAppr_dt())
-                .apprPayType(dto.getAppr_pay_type())
-                .apprCardType(dto.getAppr_card_type())
-                .apprIssuer(dto.getAppr_issuer())
-                .apprNum(dto.getAppr_num())
-                .apprPrice(dto.getAppr_price())
+                .apiKey(dto.getApikey())                        // 연동코드
+                .billId(dto.getBill_id())                       // 청구서 ID
+                .apprCatId(dto.getAppr_cat_id())
+                .apprPayType(dto.getAppr_pay_type())            // 결제수단
+                .apprCardType(dto.getAppr_card_type())          // 결제카드 종류
+                .apprDate(dto.getAppr_dt())                     // 승인일시
+                .apprIssuer(dto.getAppr_issuer())               // 결제은행 / 카드명
+                .apprIssuerCode(dto.getAppr_issuer_cd())        // 은행코드
+                .apprIssuerNum(dto.getAppr_issuer_num())        // 결제 카드번호
+                .apprNum(dto.getAppr_num())                     // 승인번호
+                .apprPrice(dto.getAppr_price())                 // 승인금액
+                .apprState(dto.getAppr_state())                 // 결제상태
+                .apprMonthly(dto.getAppr_monthly())             // 결제 할부 개월 수
+                .apprAcquirerCode(dto.getAppr_acquirer_cd())    // 매입사 코드
+                .apprAcquirerName(dto.getAppr_acquirer_nm())    // 매입사 명
+                .apprOriginDate(dto.getAppr_origin_dt())        // 원거래 일시
+                .apprOriginNum(dto.getAppr_origin_num())        // 원거래 승인번호
                 .build();
 
         paymentRepository.createPaymentCallback(paymentCallback);
@@ -1496,4 +1510,18 @@ public class PaymentService {
 
         log.info("🔥 재발행 완료");
     }
+
+    public void paymentBillStatusChange() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime yesterday = now.minusDays(1);
+        String ymd = yesterday.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        List<PaymentRespDTO.ExpiredBillDTO> result = paymentRepository.findExpriedBill(ymd);
+
+        for (PaymentRespDTO.ExpiredBillDTO dto : result) {
+            paymentRepository.updateStatusToDestroyed(dto.getBillId());
+        }
+
+    }
+
 }

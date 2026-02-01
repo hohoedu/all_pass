@@ -77,21 +77,22 @@ public class PaymentReqDTO {
     @Data
     public static class PayCallbackDTO {
         private String apikey;
-        private String bill_id;
-        private String appr_pay_type;
-        private String appr_card_type;
-        private String appr_dt;
-        private String appr_issuer;
-        private String appr_num;
-        private String appr_price;
-        private String appr_state;
-    }
-
-    @Data
-    public static class MonthlyPaymentReqDTO {
-        private String centerCode;
-        private String yy;
-        private String mm;
+        private String bill_id;             // 청구서 ID
+        private String appr_cat_id;         // ??
+        private String appr_pay_type;       // 결제수단
+        private String appr_card_type;      // 결제카드 종류
+        private String appr_dt;             // 승인일시
+        private String appr_issuer;         // 결제은행/카드명
+        private String appr_issuer_cd;      // 은행 코드
+        private String appr_issuer_num;     // 결제 카드 번호
+        private String appr_num;            // 승인번호
+        private String appr_price;          // 승인금액
+        private String appr_state;          // 결제상태
+        private String appr_monthly;        // 결제 할부 개월 수
+        private String appr_acquirer_cd;    // 매입사 코드
+        private String appr_acquirer_nm;    // 매입사 명
+        private String appr_origin_dt;      // 원거래 승인일시
+        private String appr_origin_num;     // 원거래 승인번호
     }
 
     @Data

@@ -243,6 +243,9 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.BillDetailDTO> findBillsByBillIds(@Param("list") List<String> billIds);
 
-    int checkAlreadyReissued(@Param("billId") String billId);
+    List<PaymentRespDTO.ExpiredBillDTO> findExpriedBill(@Param("ymd") String ymd);
+
+    int updateStatusToDestroyed(@Param("billId") String billId);
+
 
 }
