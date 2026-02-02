@@ -752,7 +752,7 @@
         WHERE p.center_code = #{centerCode}
           AND p.yy = #{yy}
           AND p.mm = #{mm}
-          AND p.status IN ('issued', 'pending')
+          AND p.status IN ('issued', 'pending', 'partial')
         GROUP BY s.student_id, s.student_name, p.payment_key, g.grade_name, hu.user_name, bu.user_name
         HAVING SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) > 0;
     </select>

@@ -828,7 +828,7 @@ public class ClassService {
     public List<RemedialDTO> findRemedialByUserNo(String year, String month, String userCode) {
         System.out.println(year);
         System.out.println(month);
-        List<RemedialDTO> remedials = classRepository.findRemedialByUserNo(year, month, userCode);
+        List<RemedialDTO> remedials = classRepository.findRemedialByUserCode(year, month, userCode);
         return remedials;
     }
 

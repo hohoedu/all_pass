@@ -179,7 +179,7 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("week") String week);
 
-    public List<ClassRespDTO.RemedialDTO> findRemedialByUserNo(
+    public List<ClassRespDTO.RemedialDTO> findRemedialByUserCode(
             @Param("year") String year,
             @Param("month") String month,
             @Param("userCode") String userCode

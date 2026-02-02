@@ -43,6 +43,7 @@ public interface AttendanceRepository {
     int insertRemedialForStudent(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
+            @Param("absenseDate") String absenceDate,
             @Param("week") String week,
             @Param("userCode") String userCode);
 

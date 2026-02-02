@@ -346,6 +346,22 @@ public class ClassController {
 
 
     // ================ 보강 관리 컨트롤러 =====================//
+    @PostMapping("/remedial/list")
+    public ResponseEntity<?> getRemedialList(HttpSession session, @RequestBody ClassReqDTO.GetRemedialDTO dto) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<?> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), user.getUserCode());
+        
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
                                             @RequestParam(value = "year") String year,

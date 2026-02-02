@@ -107,26 +107,27 @@
         SELECT #{studentId},
                tt.time_table_key,
                cc.class_name,
-               CONVERT(DATE, GETDATE()),
+               #{absenceDate},
                '9999-12-31',
                0,
                #{week},
                SYSDATETIME(),
                tt.user_code,
                CONCAT(
-                       REPLACE(CONVERT(char (10), CONVERT(DATE, GETDATE()), 23), '-', ''),
+                       REPLACE(CONVERT(char (10), #{absenceDate}, 23), '-', ''),
                    LEFT(tt.time_table_key, 4), #{studentId},
                        #{week}
                )
         FROM erp_time_table tt
-                 JOIN erp_class_code cc ON tt.class_key = cc.class_key
+                 JOIN erp_class_code cc
+                      ON tt.class_key = cc.class_key
         WHERE tt.time_table_key = #{timeTableKey}
           AND NOT EXISTS (SELECT 1
                           FROM erp_remedial r
                           WHERE r.student_id = #{studentId}
                             AND r.time_table_key = #{timeTableKey}
                             AND r.week = #{week}
-                            AND r.absence_date = CONVERT(DATE, GETDATE()))
+                            AND r.absence_date = #{absenceDate});
     </insert>
 
     <delete id="deleteRemedialForStudent">

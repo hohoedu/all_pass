@@ -1,312 +1,265 @@
 <div class="modal add-cashbill-modal" th:fragment="addCashbillModal">
-    <div class="pay-m-list">
+    <div class="pay-list">
         <div class="pay-m-frame">
-            <div class="m-t-line " style="margin: 10px 10px 40px 10px;">
-                <div>
-                    <div class="title">현금영수증 발행</div>
+            <div class="m-t-line" style="margin-bottom: 10px;">
+                <div class="title">
+                    현금영수증 관리
                 </div>
                 <a href="#" class="btn-close"></a>
             </div>
-            <div class="plt-m-inner bt">
-                <div class="m-scroll table-frame">
-                    <table class="basic-table plt-m-table yh">
-                        <colgroup>
-                            <col width="10%">
-                            <col width="10%">
-                            <col width="15%">
-                            <col width="35%">
-                            <col width="20%">
-                            <col width="10%">
-                        </colgroup>
-                        <thead class="mb">
-                        <tr>
-                            <th>No</th>
-                            <th>이름</th>
-                            <th>현금/계좌이체 내역</th>
-                            <th>발급구분</th>
-                            <th>발급번호</th>
-                            <th>금액</th>
-                        </tr>
-                        </thead>
-                        <tbody class="stripe">
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>김호일</td>
-                            <td>220,000</td>
-                            <td class="cash-check">
-                                <div class="checkbox-group round">
-                                    <label><input type="checkbox" checked> 개인 소득공제용</label>
-                                    <label><input type="checkbox"> 사업자 지출증빙용</label>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="td-inputs">
-                                    <input type="text" name="overpayment" class="td-input" placeholder="01012345678">
-                                </div>
-                            </td>
-                            <td class="payment">220,000</td>
-                        </tr>
-                        </tbody>
-                    </table>
+            <div class="info-tab-inner">
+                <div class="info-tab-btn">
+                    <a href="#tab1" data-tab="tab1" class="active">발행</a>
+                    <a href="#tab2" data-tab="tab2">발행내역 조회</a>
                 </div>
-            </div>
-            <div class="save-btn-frame" style="padding: 20px;">
-                <div class="common-btn pay-issue">발행</div>
+                <div class="info-tab-content">
+                    <!-- ##### tab1 - 발행 ##### -->
+                    <div id="tab1" class="tab active">
+                        <div class="second-frame" style="padding: 30px 40px;">
+                            <!-- 왼쪽: 학생 리스트 -->
+                            <div class="add-m-left" style="overflow: clip">
+                                <div class="student-content">
+                                    <div class="pay-list-scroll" style="border-bottom: 1px solid #ddd">
+                                        <h4>학생 선택</h4>
+                                        <div class="add-inform">
+                                            <input type="text" class="basic-input" style="max-width: 75%;" placeholder="학생명 검색">
+                                            <div class="common-btn stu-explore" id="search-cashbill-student">검색</div>
+                                        </div>
+                                    </div>
+                                    <div class="mt add-m-left table-frame" style="border: 0px; height: 50vh">
+                                        <div class="table-frame pay-add-t">
+                                            <table class="basic-table pay-add-t stripe yh">
+                                                <colgroup>
+                                                    <col width="30%">
+                                                    <col width="30%">
+                                                    <col width="40%">
+                                                </colgroup>
+                                                <thead>
+                                                <tr>
+                                                    <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
+                                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="cashbill-student-list" class="stripe">
+                                                <!-- 예시 데이터 -->
+                                                <tr>
+                                                    <td>김호일</td>
+                                                    <td>중1</td>
+                                                    <td>홍길동</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>이영희</td>
+                                                    <td>중2</td>
+                                                    <td>김철수</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>박철수</td>
+                                                    <td>중3</td>
+                                                    <td>이민정</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 오른쪽: 현금영수증 발행 정보 -->
+                            <div class="add-m-right table-frame">
+                                <!-- 학생명 및 청구 금액 -->
+                                <table class="stu-m-tbl bt">
+                                    <colgroup>
+                                        <col style="width:20%">
+                                        <col style="width:30%">
+                                        <col style="width:20%">
+                                        <col style="width:30%">
+                                    </colgroup>
+                                    <tbody id="selected-student-info">
+                                    <tr>
+                                        <td>학생명</td>
+                                        <td id="student-name-cell">학생을 선택해주세요.</td>
+                                        <td>현금/이체 금액</td>
+                                        <td id="cash-amount-cell">-</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- 현금영수증 발행 정보 -->
+                                <table class="manual-payment-table pay-edu-table">
+                                    <colgroup>
+                                        <col width="20%">
+                                        <col width="40%">
+                                        <col width="20%">
+                                        <col width="40%">
+                                    </colgroup>
+                                    <tbody>
+                                    <tr>
+                                        <td class="label-cell">발급번호</td>
+                                        <td class="content-cell white-bg">
+                                            <input type="text" class="basic-input" id="receipt-number" placeholder="휴대폰번호(01012345678) 또는 사업자번호"
+                                                   style="width: 100%; max-width: 400px;">
+                                            <p style="font-size: 12px; color: #666; margin-top: 5px;">* 개인: 휴대폰번호 / 사업자: 사업자등록번호 입력</p>
+                                        </td>
+                                        <td class="label-cell">발급구분</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="checkbox-group round" style="display: flex; gap: 20px; padding: 10px 0;">
+                                                <label><input type="radio" name="receipt-type" value="personal" checked> 개인 소득공제용</label>
+                                                <label><input type="radio" name="receipt-type" value="business"> 사업자 지출증빙용</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label-cell">거래금액</td>
+                                        <td class="content-cell white-bg" colspan="3">
+                                            <div class="amount-grid">
+                                                <div class="amount-label">총 금액</div>
+                                                <div class="amount-input">
+                                                    <input type="text" class="basic-input" id="cash-price">
+                                                    <span>원</span>
+                                                </div>
+
+                                                <div class="amount-label">공급가액</div>
+                                                <div class="amount-input">
+                                                    <input type="text" class="basic-input" id="supply-price">
+                                                    <span>원</span>
+                                                </div>
+
+                                                <div class="amount-label">세금</div>
+                                                <div class="amount-input">
+                                                    <input type="text" class="basic-input" id="tax-price">
+                                                    <span>원</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label-cell">발행일자</td>
+                                        <td class="content-cell white-bg">
+                                            <div style="padding: 10px 0;">
+                                                <span class="current-month" id="receipt-date-text">2025년 2월 2일</span>
+                                                <input type="date" class="basic-input pay-date hidden-date" id="receipt-date">
+                                                <button type="button" class="icon-btn calendar-open" data-target="receipt-date">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="save-btn-frame" style="padding: 20px;">
+                            <div class="common-btn pay-issue" id="issue-cashbill">발행</div>
+                        </div>
+                    </div>
+
+                    <!-- ##### tab2 - 발행내역 조회 ##### -->
+                    <div id="tab2" class="tab">
+                        <div class="claim-m-inner">
+                            <div class="">
+                                <div class="claim-list">
+                                    <h3 class="claim-sub">발행내역 조회</h3>
+                                </div>
+                                <!-- 검색 필터 -->
+                                <div style="padding: 15px 10px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+                                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                        <input type="date" class="basic-input" style="width: 150px;">
+                                        <span>~</span>
+                                        <input type="date" class="basic-input" style="width: 150px;">
+                                        <select class="basic-input" style="width: 140px;">
+                                            <option>전체</option>
+                                            <option>개인소득공제</option>
+                                            <option>사업자지출증빙</option>
+                                        </select>
+                                        <input type="text" class="basic-input" placeholder="이름 검색" style="width: 150px;">
+                                        <button class="save-btn">조회</button>
+                                    </div>
+                                </div>
+
+                                <div class="modal-scroll bt">
+                                    <div class="table-frame claim-frame">
+                                        <table class="basic-table yh">
+                                            <colgroup>
+                                                <col width="7%">
+                                                <col width="8%">
+                                                <col width="12%">
+                                                <col width="10%">
+                                                <col width="15%">
+                                                <col width="18%">
+                                                <col width="15%">
+                                                <col width="10%">
+                                                <col width="10%">
+                                            </colgroup>
+                                            <thead>
+                                            <tr>
+                                                <th class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </th>
+                                                <th>No</th>
+                                                <th>발행일시</th>
+                                                <th>이름</th>
+                                                <th>발급구분</th>
+                                                <th>발급번호</th>
+                                                <th>승인번호</th>
+                                                <th>금액</th>
+                                                <th>상태</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="cashbill-history-tbody" class="stripe">
+                                            <!-- 예시 데이터 -->
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>3</td>
+                                                <td>2024-01-15 14:30</td>
+                                                <td>김호일</td>
+                                                <td>개인 소득공제용</td>
+                                                <td>010-1234-5678</td>
+                                                <td>2024011512345</td>
+                                                <td class="payment">220,000</td>
+                                                <td><span style="color: #28a745; font-weight: 500;">발행완료</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>2</td>
+                                                <td>2024-01-14 11:20</td>
+                                                <td>이영희</td>
+                                                <td>사업자 지출증빙용</td>
+                                                <td>123-45-67890</td>
+                                                <td>2024011412345</td>
+                                                <td class="payment">150,000</td>
+                                                <td><span style="color: #28a745; font-weight: 500;">발행완료</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                                <td>1</td>
+                                                <td>2024-01-13 09:15</td>
+                                                <td>박철수</td>
+                                                <td>개인 소득공제용</td>
+                                                <td>010-9876-5432</td>
+                                                <td>2024011312345</td>
+                                                <td class="payment">300,000</td>
+                                                <td><span style="color: #dc3545; font-weight: 500;">취소</span></td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="invoice-btn-wrap">
+                                <p class="invoice-label-text">선택한 내역</p>
+                                <button class="invoice-btn invoice-btn-red">선택 취소</button>
+                                <button class="invoice-btn">엑셀 다운로드</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

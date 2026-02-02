@@ -4,19 +4,51 @@
 // ==                               == //
 // =================================== //
 
+// URL에서 year, month 파라미터 가져오기
+function getYearMonthFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        year: params.get('year'),
+        month: params.get('month')
+    };
+}
+
+// URL에 year, month 파라미터 설정
+function setYearMonthToURL(year, month) {
+    const url = new URL(window.location);
+    url.searchParams.set('year', year);
+    url.searchParams.set('month', month);
+    window.history.pushState({}, '', url);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const monthInput = document.getElementById("remedial_calender");
     const monthDisplay = document.getElementById("remedial_current");
-    // const teacherSelect = document.getElementById("remedial-teacher-select");
     const calendarBtn = document.querySelector(".remedial-calendar-open");
 
     if (!monthInput) return;
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    monthInput.value = `${yyyy}-${mm}`;
-    monthDisplay.textContent = `${yyyy}년 ${mm}월`;
+    // URL에서 year, month 먼저 확인
+    const urlParams = getYearMonthFromURL();
+    let year, month;
+
+    if (urlParams.year && urlParams.month) {
+        year = urlParams.year;
+        month = urlParams.month;
+    } else {
+        // URL에 없으면 현재 날짜 사용
+        const today = new Date();
+        year = today.getFullYear();
+        month = String(today.getMonth() + 1).padStart(2, "0");
+        // 초기 URL 설정
+        setYearMonthToURL(year, month);
+    }
+
+    monthInput.value = `${year}-${month}`;
+    monthDisplay.textContent = `${year}년 ${month}월`;
+
+    // 초기 데이터 로드
+    loadRemedialData(year, month);
 
     calendarBtn.addEventListener("click", () => {
         monthInput.showPicker?.();
@@ -28,11 +60,113 @@ document.addEventListener("DOMContentLoaded", () => {
         if (monthInput.value) {
             const [year, month] = monthInput.value.split("-");
             monthDisplay.textContent = `${year}년 ${month}월`;
+
+            // URL 업데이트
+            setYearMonthToURL(year, month);
+
             // 데이터 호출 함수
+            loadRemedialData(year, month);
         }
     });
-})
+});
 
+async function loadRemedialData(year, month) {
+    try {
+        const response = await fetch('/class/remedial/list', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                year: year,
+                month: month
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('데이터 로드 실패');
+        }
+
+        const data = await response.json();
+
+        // response 배열에서 데이터 가져오기
+        const remedials = data.response || [];
+
+        // action 값에 따라 좌측/우측 데이터 분리
+        const leftRemedials = remedials.filter(item => !item.action);  // action이 false인 것 (보강 대기)
+        const rightRemedials = remedials.filter(item => item.action);  // action이 true인 것 (보강 완료)
+
+        // 좌측 테이블 렌더링 (보강 대기)
+        renderLeftTable(leftRemedials);
+        // 우측 테이블 렌더링 (보강 완료)
+        renderRightTable(rightRemedials);
+
+    } catch (error) {
+        console.error('데이터 로드 실패:', error);
+        alert('데이터를 불러오는데 실패했습니다.');
+    }
+}
+
+// 좌측 테이블 렌더링
+function renderLeftTable(data) {
+    const tbody = document.getElementById('student-tbody-left');
+    tbody.innerHTML = '';
+
+    data.forEach((item, index) => {
+        const displayDate = item.remedialDate === '9999-12-31' ? '날짜를 선택하세요' : item.remedialDate;
+
+        const row = document.createElement('tr');
+        row.setAttribute('data-id', item.remedialKey);
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.studentName}</td>
+            <td>${item.absenceDate}</td>
+            <td>${item.remedialSubject}</td>
+            <td class="cal-content">
+                <div class="icon-field time-input cal-adjust" style="margin-bottom: 0;">
+                    <span class="selected-datetime">${displayDate}</span>
+                    <input type="date" class="datetime-input hidden-picker"/>
+                    <button type="button" class="icon-btn calendar-btn" style="background: transparent;">
+                        <img src="/image/calendar.png" alt="달력 아이콘"/>
+                    </button>
+                </div>
+            </td>
+            <td>${item.userName}</td>
+            <td class="checkbox-group">
+                <input type="checkbox"/>
+            </td>
+        `;
+        tbody.appendChild(row);
+
+        // 렌더링 후 이벤트 바인딩
+        bindDatePickerEvents(row);
+    });
+}
+
+// 우측 테이블 렌더링
+function renderRightTable(data) {
+    const tbody = document.getElementById('student-tbody-right');
+    tbody.innerHTML = '';
+
+    data.forEach((item, index) => {
+        const displayDate = item.remedialDate === '9999-12-31' ? '날짜를 선택하세요.' : item.remedialDate;
+
+        const row = document.createElement('tr');
+        row.setAttribute('data-id', item.remedialKey);
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.studentName}</td>
+            <td>${item.absenceDate}</td>
+            <td>${item.remedialSubject}</td>
+            <td class="cal-content">${displayDate}</td>
+            <td>${item.userName}</td>
+            <td class="checkbox-group">
+                <input type="checkbox" checked/>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
 
 // 보강 여부 수정
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,8 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = e.target.closest("tr");
             const remedialKey = row.dataset.id;
             const action = e.target.checked;
-            const m = document.getElementById('currentMonth')?.textContent.trim().match(/(\d{4})\D+(\d{1,2})/);
-            const year = m?.[1], month = m ? m[2].padStart(2, '0') : null;
+
+            // URL에서 year, month 가져오기
+            const { year, month } = getYearMonthFromURL();
+
             fetch(`/class/remedial/update?year=${year}&month=${month}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -55,8 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then((data) => {
                     if (data.success) {
                         console.log(data.response);
-                        // renderTables(data.response);
-                        window.location.reload();
+                        // 데이터 다시 로드 (새로고침 대신)
+                        loadRemedialData(year, month);
                     } else {
                         alert("저장 실패");
                         e.target.checked = !action;
@@ -70,61 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function renderTables(data) {
-    const $left = $(".sup-left tbody");
-    $left.empty();
-    data.leftRemedials.forEach((item, idx) => {
-        const html = `
-          <tr data-id="${item.remedialKey}">
-            <td>${idx + 1}</td>
-            <td>${item.studentName}</td>
-            <td>${item.absenceDate}</td>
-            <td>${item.remedialSubject}</td>
-            <td class="cal-content">
-                <div class="icon-field time-input cal-adjust" style="margin-bottom: 0;">
-                    <span class="selected-datetime"> ${item.remedialDate === '9999-12-31' ? "날짜를 선택하세요" : item.remedialDate} </span>
-                    <input type="date" class="datetime-input hidden-picker" />
-                    <button type="button" class="icon-btn calendar-btn" style="background: transparent;">
-                        <img src="/image/calendar.png" alt="달력 아이콘" />
-                    </button>
-                </div>
-            </td>
-            <td>${item.userName}</td>
-            <td class="checkbox-group">
-              <input type="checkbox" />
-            </td>
-          </tr>
-        `;
-        $left.append(html);
-        // 추가된 행에 이벤트 바인딩
-        const newRow = $left.find("tr").last()[0];
-        bindDatePickerEvents(newRow);
-    });
-
-    const $right = $(".sup-right tbody");
-    $right.empty();
-    data.rightRemedials.forEach((item, idx) => {
-        $right.append(`
-          <tr data-id="${item.remedialKey}">
-            <td>${idx + 1}</td>
-            <td>${item.studentName}</td>
-            <td>${item.absenceDate}</td>
-            <td>${item.remedialSubject}</td>
-            <td class="cal-content">${item.remedialDate === '9999-12-31' ? "날짜를 선택하세요" : item.remedialDate}</td>
-            <td>${item.userName}</td>
-            <td class="checkbox-group">
-              <input type="checkbox" checked />
-            </td>
-          </tr>
-        `);
-    });
-}
-
-// 보강 날짜 변경
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("tr[data-id]").forEach(bindDatePickerEvents);
-});
-
+// 보강 날짜 변경 이벤트 바인딩
 function bindDatePickerEvents(row) {
     const calendarBtn = row.querySelector(".calendar-btn");
     const dateInput = row.querySelector(".datetime-input");
@@ -138,12 +220,12 @@ function bindDatePickerEvents(row) {
         dateInput.addEventListener("change", () => {
             if (dateInput.value) {
                 selectedSpan.textContent = dateInput.value;
-                console.log(selectedSpan.closest('tr').dataset.id);
+
                 fetch("/class/remedial/updateDate", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({
-                        remedialKey: selectedSpan.closest("tr").dataset.id,
+                        remedialKey: row.dataset.id,
                         remedialDate: dateInput.value
                     })
                 })

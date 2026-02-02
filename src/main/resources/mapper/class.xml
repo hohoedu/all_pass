@@ -793,7 +793,7 @@
     </select>
 
     <!-- 선생님별 보강 조회 -->
-    <select id="findRemedialByUserNo"
+    <select id="findRemedialByUserCode"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemedialDTO">
         SELECT *
         FROM erp_remedial r

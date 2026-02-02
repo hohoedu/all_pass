@@ -129,6 +129,7 @@ public class StudentWebReqDTO {
         private String attendanceKey;
         private String studentId;
         private String timeTableKey;
+        private String absenceDate;
         private String week;
         private String centerCode;
         private String attendanceName;

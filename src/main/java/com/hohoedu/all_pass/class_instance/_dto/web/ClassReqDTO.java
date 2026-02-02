@@ -136,8 +136,11 @@ public class ClassReqDTO {
         private String centerCode;
         private String attendanceDate;
     }
-
-
+    @Data
+    public static class GetRemedialDTO{
+        private String year;
+        private String month;
+    }
     @Data
     public static class BeforeClassDTO {
         private String classKey;

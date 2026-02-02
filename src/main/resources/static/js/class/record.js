@@ -523,6 +523,7 @@ async function updateAttendance(button) {
     const newStartTime = startTimeInput.value.trim();
     const newEndTime = endTimeInput.value.trim();
 
+
     // 시간 형식 검증
     const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
@@ -561,7 +562,8 @@ async function updateAttendance(button) {
         centerCode: row.dataset.centerCode,
         attendanceName: newStatus,
         inTime: newStartTime || null,
-        outTime: newEndTime || null
+        outTime: newEndTime || null,
+        absenceDate: state.date
     };
 
     try {
