@@ -45,10 +45,10 @@
     </select>
 
     <select id="existsBillByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BillRespDTO">
-        SELECT COUNT(*) as count,
-        payment_key AS paymnetKey,
-        student_id AS studentId,
-        bill_id AS billId
+        SELECT COUNT(*)    as count,
+               payment_key AS paymnetKey,
+               student_id  AS studentId,
+               bill_id     AS billId
         FROM erp_payment_bill
         WHERE student_id = #{studentId}
           AND payment_key = #{paymentKey}
@@ -79,9 +79,12 @@
           AND mm = #{mm}
     </select>
 
-    <insert id="insertPaymentManual" parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
-        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id, payment_key, user_code, yy, mm, created_at)
-        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status}, #{studentId}, #{paymentKey}, #{userCode}, #{yy}, #{mm}, SYSDATETIME())
+    <insert id="insertPaymentManual"
+            parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
+        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status,
+                                       student_id, payment_key, user_code, yy, mm, created_at)
+        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status}, #{studentId},
+                #{paymentKey}, #{userCode}, #{yy}, #{mm}, SYSDATETIME())
     </insert>
 
     <select id="findBookBillStatus" resultType="String">
@@ -132,7 +135,8 @@
         </foreach>
     </select>
 
-    <select id="findTargetsByParentPhones" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayTargetDTO">
+    <select id="findTargetsByParentPhones"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayTargetDTO">
         SELECT
         s.student_id AS studentId,
         s.student_name AS studentName,
@@ -153,7 +157,8 @@
         AND p.yy = #{yy}
         AND p.mm = #{mm}
         AND pd.item_type = #{type}
-        GROUP BY s.student_id, s.student_name, (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last), p.payment_key
+        GROUP BY s.student_id, s.student_name, (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last),
+        p.payment_key
     </select>
 
     <select id="findTargetsByStudentIds"
@@ -254,7 +259,8 @@
                                       yy,
                                       mm,
                                       created_at)
-        VALUES (#{bill.billId}, #{bill.paymentKey}, #{bill.studentId}, #{bill.amount}, #{bill.billType}, 'issued', #{bill.expireDate}, SYSDATETIME(),
+        VALUES (#{bill.billId}, #{bill.paymentKey}, #{bill.studentId}, #{bill.amount}, #{bill.billType}, 'issued',
+                #{bill.expireDate}, SYSDATETIME(),
                 #{bill.centerCode}, #{bill.yy}, #{bill.mm}, SYSDATETIME(), #{userCode})
     </insert>
 
@@ -276,9 +282,9 @@
                                          AND t2.yy = #{year}
                                          AND t2.mm = #{month}
                                          AND cc2.class_type IN ('1', '2')
-                                          FOR XML PATH ('') ),
-        1, 2, ''
-    )                                                                                 AS subject,
+                                       FOR XML PATH ('')),
+                                      1, 2, ''
+                              )                                                       AS subject,
 
                               -- 한자 선생님
                               MAX(CASE WHEN cc.class_type = '1' THEN u.user_name END) AS hanTeacher,
@@ -307,25 +313,41 @@
 
                        GROUP BY ta.student_id),
              pay AS (SELECT p.student_id,
-                            p.payment_key                                                                                     AS paymentKey,
+                            p.payment_key                  AS paymentKey,
 
-                            MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END)           AS hanFee,
-                            MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END)           AS bookFee,
+                            MAX(CASE
+                                    WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount
+                                    ELSE 0 END)            AS hanFee,
+                            MAX(CASE
+                                    WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount
+                                    ELSE 0 END)            AS bookFee,
 
-                            MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END)          AS hanMaterialFee,
-                            MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END)          AS bookMaterialFee,
+                            MAX(CASE
+                                    WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount
+                                    ELSE 0 END)            AS hanMaterialFee,
+                            MAX(CASE
+                                    WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount
+                                    ELSE 0 END)            AS bookMaterialFee,
 
                             (MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END))         AS totalFee,
+                             MAX(CASE
+                                     WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount
+                                     ELSE 0 END))          AS totalFee,
 
                             (MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END))        AS totalMaterialFee,
+                             MAX(CASE
+                                     WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount
+                                     ELSE 0 END))          AS totalMaterialFee,
 
                             -- 교육비 미납금액
                             CASE
                                 WHEN (
-                                         (MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount ELSE 0 END) +
-                                          MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount ELSE 0 END))
+                                         (MAX(CASE
+                                                  WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount
+                                                  ELSE 0 END) +
+                                          MAX(CASE
+                                                  WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount
+                                                  ELSE 0 END))
                                              -
                                          (
                                              ISNULL(pm.total_amount, 0)
@@ -339,8 +361,12 @@
                                          ) &lt; 0
                                     THEN 0
                                 ELSE (
-                                    (MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount ELSE 0 END) +
-                                     MAX(CASE WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount ELSE 0 END))
+                                    (MAX(CASE
+                                             WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount
+                                             ELSE 0 END) +
+                                     MAX(CASE
+                                             WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount
+                                             ELSE 0 END))
                                         -
                                     (
                                         ISNULL(pm.total_amount, 0)
@@ -352,26 +378,31 @@
                                                   AND pb2.status = 'approved'), 0)
                                         )
                                     )
-                                END                                                                                           AS unpaidEduAmount,
+                                END                        AS unpaidEduAmount,
 
                             -- 교재비 미납금액
                             (MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
                              MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END)) -
-                            ISNULL(MAX(CASE WHEN pb.bill_type = 'BOOK_FEE' AND pb.status = 'approved' THEN pb.amount END), 0) AS unpaidBookAmount,
+                            ISNULL(MAX(CASE
+                                           WHEN pb.bill_type = 'BOOK_FEE' AND pb.status = 'approved'
+                                               THEN pb.amount END),
+                                   0)                      AS unpaidBookAmount,
 
                             -- 교육비 billId
                             (SELECT TOP 1 pb2.bill_id
                              FROM erp_payment_bill pb2
                              WHERE pb2.payment_key = p.payment_key
                                AND pb2.bill_type = 'EDU_FEE'
-                             ORDER BY pb2.created_at DESC, pb2.bill_id DESC)                                                  AS eduBillId,
+                             ORDER BY pb2.created_at DESC, pb2.bill_id
+                                                     DESC) AS eduBillId,
 
                             -- 교재비 billId
                             (SELECT TOP 1 pb3.bill_id
                              FROM erp_payment_bill pb3
                              WHERE pb3.payment_key = p.payment_key
                                AND pb3.bill_type = 'BOOK_FEE'
-                             ORDER BY pb3.created_at DESC, pb3.bill_id DESC)                                                  AS materialBillId,
+                             ORDER BY pb3.created_at DESC, pb3.bill_id
+                                                     DESC) AS materialBillId,
 
                             -- 교육비 상태
                             ISNULL(
@@ -385,14 +416,15 @@
                                      WHERE pb2.payment_key = p.payment_key
                                        AND pb2.bill_type = 'EDU_FEE'
                                      ORDER BY pb2.created_at DESC, pb2.bill_id DESC)
-                            )                                                                                                 AS eduStatus,
+                            )                              AS eduStatus,
 
                             -- 교재비 상태
                             (SELECT TOP 1 pb3.status
                              FROM erp_payment_bill pb3
                              WHERE pb3.payment_key = p.payment_key
                                AND pb3.bill_type = 'BOOK_FEE'
-                             ORDER BY pb3.created_at DESC, pb3.bill_id DESC)                                                  AS materialStatus
+                             ORDER BY pb3.created_at DESC, pb3.bill_id
+                                                     DESC) AS materialStatus
 
                      FROM erp_payment p
                               JOIN erp_payment_detail pd ON pd.payment_key = p.payment_key
@@ -443,9 +475,9 @@
                               WHERE pa2.parent_tel_middle = pa.parent_tel_middle
                                 AND pa2.parent_tel_last = pa.parent_tel_last
                                 AND s2.student_id != s.student_id
-                                 AND s2.center_code = #{centerCode}
-                                 AND s2.status_key NOT IN ('WITHDRAWN')
-                                 FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
+                                AND s2.center_code = #{centerCode}
+                                AND s2.status_key NOT IN ('WITHDRAWN')
+                              FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
                        ''
                )                                                               AS samePhoneStudents
 
@@ -477,8 +509,10 @@
     </insert>
 
     <insert id="createPaymentDetail">
-        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, time_table_key, user_code, created_at)
-        VALUES (#{payment.paymentKey}, ISNULL(#{amount}, 0), #{classType}, #{itemType}, #{timeTableKey}, #{user.userCode}, SYSDATETIME());
+        INSERT INTO erp_payment_detail (payment_key, amount, class_type, item_type, time_table_key, user_code,
+                                        created_at)
+        VALUES (#{payment.paymentKey}, ISNULL(#{amount}, 0), #{classType}, #{itemType}, #{timeTableKey},
+                #{user.userCode}, SYSDATETIME());
     </insert>
 
     <select id="findLatestPaymentKeyByStudentId" resultType="string">
@@ -491,13 +525,15 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount
+        FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
     </update>
 
-    <select id="findMaterialFeeByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MaterialFeeDTO">
+    <select id="findMaterialFeeByStudentId"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MaterialFeeDTO">
         SELECT p.student_id,
                MAX(CASE WHEN pd.class_type = 1 AND pd.item_type = 'BOOK_FEE' THEN pd.amount end) as hanMaterialFee,
                MAX(CASE WHEN pd.class_type = 2 AND pd.item_type = 'BOOK_FEE' THEN pd.amount end) as bookMaterialFee,
@@ -510,9 +546,10 @@
 
     <update id="updatePaymentDetailBookFee">
         UPDATE pd
-        SET pd.amount = #{materialFee} FROM erp_payment_detail pd
-    INNER JOIN erp_payment p
-        ON pd.payment_key = p.payment_key
+        SET pd.amount = #{materialFee}
+        FROM erp_payment_detail pd
+                 INNER JOIN erp_payment p
+                            ON pd.payment_key = p.payment_key
         WHERE p.student_id = #{studentId}
           AND pd.class_type = #{classType}
           AND pd.item_type = 'BOOK_FEE'
@@ -608,10 +645,14 @@
     </select>
 
     <insert id="createPaymentCallback">
-        INSERT INTO erp_payment_callback (bill_id, api_key, appr_cat_id, appr_pay_type, appr_card_type, appr_date, appr_issuer, appr_issuer_code, appr_issuer_num, appr_num,
-                                          appr_price, appr_state, appr_monthly, appr_acquirer_code, appr_acquirer_name, appr_origin_date, appr_origin_num, created_at)
-        VALUES (#{billId}, #{apiKey}, #{apprCatId}, #{apprPayType}, #{apprCardType}, #{apprDate}, #{apprIssuer}, #{apprIssuerCode}, #{apprIssuerNum}, #{apprNum}, #{apprPrice},
-                #{apprState}, #{apprMonthly}, #{apprAcquirerCode}, #{apprAcquirerName}, #{apprOriginDate}, #{apprOriginNum}, SYSDATETIME());
+        INSERT INTO erp_payment_callback (bill_id, api_key, appr_cat_id, appr_pay_type, appr_card_type, appr_date,
+                                          appr_issuer, appr_issuer_code, appr_issuer_num, appr_num,
+                                          appr_price, appr_state, appr_monthly, appr_acquirer_code, appr_acquirer_name,
+                                          appr_origin_date, appr_origin_num, created_at)
+        VALUES (#{billId}, #{apiKey}, #{apprCatId}, #{apprPayType}, #{apprCardType}, #{apprDate}, #{apprIssuer},
+                #{apprIssuerCode}, #{apprIssuerNum}, #{apprNum}, #{apprPrice},
+                #{apprState}, #{apprMonthly}, #{apprAcquirerCode}, #{apprAcquirerName}, #{apprOriginDate},
+                #{apprOriginNum}, SYSDATETIME());
     </insert>
 
     <select id="findPaymentByBillId" resultType="com.hohoedu.all_pass.payment.Payment">
@@ -629,7 +670,8 @@
 
 
     <!--  수강료 청구 화면 모달 데이터  -->
-    <select id="findPaymentByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentModalDTO">
+    <select id="findPaymentByStudentId"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentModalDTO">
         SELECT s.student_id AS studentId,
         (p.yy + '-' + p.mm) AS classDate,
         s.student_name AS studentName,
@@ -696,7 +738,8 @@
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
-    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
+    <select id="findPaymentDetailsByStudentId"
+            resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
         SELECT TOP ${count} *
         FROM (select p.bill_id           AS billId,
                      (p.yy + '-' + p.mm) AS inym,
@@ -757,7 +800,8 @@
         HAVING SUM(CASE WHEN pd.item_type = 'EDU_FEE' THEN pd.amount END) > 0;
     </select>
 
-    <select id="findDetailPaymentBillByStudentId" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$DetailPaymentBillDTO">
+    <select id="findDetailPaymentBillByStudentId"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$DetailPaymentBillDTO">
         SELECT pb.bill_id                                                as billId,
                'bill'                                                    as type,
                pb.payment_key,
@@ -902,7 +946,8 @@
         where use_yn = '1'
     </select>
 
-    <select id="findMonthlyPayments" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
+    <select id="findMonthlyPayments"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
         select s.student_name                                  as studentName,
                p.paid_date                                     as paidDate,
                pb.bill_type                                    as billType,
@@ -920,7 +965,8 @@
           and pb.mm = #{mm}
     </select>
 
-    <select id="findEduPaymentDetailByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentDetailDTO">
+    <select id="findEduPaymentDetailByPaymentKey"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PaymentDetailDTO">
         SELECT SUM(amount) as amount
         FROM erp_payment_detail
         where payment_key = #{paymentKey}
@@ -966,6 +1012,30 @@
         WHERE expire_date = #{ymd}
           AND status = 'issued'
     </select>
+    <select id="findCashbillStudents"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CashbillStudentRespDTO">
+        SELECT s.student_id                                                      AS studentId,
+               pm.payment_key                                                    AS paymentKey,
+               s.student_name                                                    AS studentName,
+               g.grade_name                                                      AS gradeName,
+               hu.user_name                                                      AS hanTeacher,
+               bu.user_name                                                      AS bookTeacher,
+               (pm.cash_amount + pm.transfer_amount)                             as amount,
+               (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last) as phoneNumber
+        FROM erp_payment_manual pm
+                 JOIN erp_student s ON pm.student_id = s.student_id
+                 LEFT JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 LEFT JOIN erp_teacher_assign eta ON s.student_id = eta.student_id
+                 LEFT JOIN erp_user hu ON eta.assign_han_teacher = hu.user_code
+                 LEFT JOIN erp_user bu ON eta.assign_book_teacher = bu.user_code
+                 LEFT JOIN erp_parent pa ON s.student_id = pa.student_id
+        WHERE pm.yy = #{yy}
+          AND pm.mm = #{mm}
+          AND s.center_code = #{centerCode}
+          AND (pm.cash_amount > 0 OR pm.transfer_amount > 0)
+          AND pm.cashbill_bill_id is null
+        ORDER BY s.student_name;
+    </select>
 
     <update id="updateStatusToDestroyed">
         UPDATE erp_payment_bill
@@ -973,6 +1043,23 @@
         WHERE bill_id = #{billId}
           AND expire_date = #{ymd}
           AND status = 'issued';
+    </update>
+
+    <insert id="insertCashbill" parameterType="com.hohoedu.all_pass.payment.model.PaymentCashbill">
+        INSERT INTO erp_payment_cashbill (bill_id, payment_key, student_id, receipt_type, receipt_number, trader, price,
+                                  supply_price, tax, tax_type, appr_cash_num, hash_value, status, issue_date,
+                                  created_at)
+        VALUES (#{billId}, #{paymentKey}, #{studentId}, #{receiptType}, #{receiptNumber}, #{trader}, #{price},
+                #{supplyPrice}, #{tax}, #{taxType}, #{apprCashNum}, #{hashValue}, #{status}, #{issueDate},
+                SYSDATETIME())
+    </insert>
+
+    <update id="updateCashbillInfo">
+        UPDATE erp_payment_manual
+        SET cashbill_bill_id = #{billId},
+            cashbill_issued_at = SYSDATETIME()
+        WHERE student_id = #{studentId}
+          AND payment_key = #{paymentKey}
     </update>
 
 

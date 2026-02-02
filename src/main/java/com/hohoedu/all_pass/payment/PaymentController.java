@@ -249,5 +249,35 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/api/cashbill/students")
+    public ResponseEntity<?> getCashPaymentStudents(HttpSession session, @RequestBody PaymentReqDTO.CashbillStudentReqDTO reqDTO) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
 
+        List<PaymentRespDTO.CashbillStudentRespDTO> students = paymentService.getCashPaymentStudents(
+                reqDTO.getYear(), reqDTO.getMonth(), user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(students));
+
+    }
+
+    @PostMapping("/api/cashbill/issue")
+    public ResponseEntity<?> cashbillIssue(HttpSession session, @RequestBody PaymentReqDTO.CashbillIssueReqDTO reqDTO) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        try {
+            paymentService.issueCashbill(user, reqDTO);
+            return ResponseEntity.ok(ApiUtils.success(null));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
 }

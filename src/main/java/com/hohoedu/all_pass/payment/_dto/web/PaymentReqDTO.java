@@ -153,4 +153,24 @@ public class PaymentReqDTO {
         private Integer bookEduFee;
         private Integer bookMaterialFee;
     }
+
+    @Data
+    public static class CashbillIssueReqDTO {
+        private String studentId;       // 학생 아이디
+        private String paymentKey;      // 결제한 페이먼트 키
+        private String receiptNumber;   // 발급 번호
+        private String issueDate;       // 발급 일자
+        private String price;           // 승인 금액
+        private String receiptType;     // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
+        private String supplyPrice;     // 공급가액
+        private String tax;             // 세금
+        private String taxType;         // 과세구분
+        private String trader;          // 발급 구분 (0: 개인, 1: 사업자, 2: 자진발급)
+    }
+
+    @Data
+    public static class CashbillStudentReqDTO {
+        private String year;
+        private String month;
+    }
 }

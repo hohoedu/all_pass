@@ -1,4 +1,5 @@
 let unpaidStudents = [];
+let cashPaymentStudents = [];
 let selectedYear = '';
 let selectedMonth = '';
 
@@ -18,6 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalCashbill = document.querySelector(".add-cashbill-modal");
 
     const studentTableBody = document.querySelector("#unpaid-student-list");
+
+    const cashbillStudentTableBody = document.querySelector("#cashbill-student-list");
+    const cashbillSearchInput = document.querySelector(".add-cashbill-modal .add-inform .basic-input");
+    const cashbillSearchBtn = document.querySelector("#search-cashbill-student");
 
     const prepayAddBtn = document.querySelector(".charge-add");
     const manualTableBody = document.querySelector(".manual-payment-table tbody");
@@ -195,6 +200,108 @@ document.addEventListener("DOMContentLoaded", () => {
 
     searchBtn.addEventListener("click", () => filterStudents(searchInput.value));
 
+    /* -----------------------------
+          현금영수증 학생 목록 렌더링
+    ----------------------------- */
+    const renderCashbillStudentList = list => {
+        if (!cashbillStudentTableBody) return;
+        cashbillStudentTableBody.innerHTML = "";
+
+        if (!list.length) {
+            cashbillStudentTableBody.innerHTML =
+                `<tr><td colspan="3" style="text-align: center; padding: 20px;">현금/계좌이체 결제 내역이 없습니다.</td></tr>`;
+            return;
+        }
+
+        list.forEach((s, index) => {
+            const tr = document.createElement("tr");
+            tr.style.cursor = "pointer";
+            tr.dataset.index = index;
+            tr.dataset.studentId = s.studentId;
+            tr.dataset.paymentKey = s.paymentKey;
+            tr.dataset.amount = s.amount;
+            tr.dataset.phoneNumber = s.phoneNumber || '';
+
+            tr.innerHTML = `
+                <td>${s.studentName}</td>
+                <td>${s.gradeName || "-"}</td>
+                <td>${[s.hanTeacher, s.bookTeacher].filter(v => v?.trim()).join(",") || "-"}</td>
+            `;
+
+            // 클릭 이벤트
+            tr.addEventListener("click", () => {
+                // 기존 선택 해제
+                document.querySelectorAll("#cashbill-student-list tr").forEach(r => {
+                    r.classList.remove("selected");
+                    r.style.backgroundColor = "";
+                });
+
+                // 현재 선택
+                tr.classList.add("selected");
+                tr.style.backgroundColor = "#e3f2fd";
+
+                // 선택된 학생 정보 저장 (전역 변수에)
+                window.selectedCashbillStudent = {
+                    studentId: s.studentId,
+                    paymentKey: s.paymentKey,
+                    name: s.studentName,
+                    grade: s.gradeName,
+                    teacher: [s.hanTeacher, s.bookTeacher].filter(v => v?.trim()).join(","),
+                    amount: s.amount,
+                    phoneNumber: s.phoneNumber || '' // 전화번호 저장
+                };
+
+                // 우측 정보 표시
+                const nameCell = document.getElementById("student-name-cell");
+                const amountCell = document.getElementById("cash-amount-cell");
+                if (nameCell) nameCell.textContent = s.studentName;
+                if (amountCell) amountCell.textContent = parseInt(s.amount).toLocaleString() + "원";
+
+                // 총금액에 자동 입력
+                const cashPriceInput = document.getElementById("cash-price");
+                if (cashPriceInput) {
+                    cashPriceInput.value = parseInt(s.amount).toLocaleString();
+                    cashPriceInput.dispatchEvent(new Event('input'));
+                }
+
+                // 발급번호에 전화번호 자동 입력 (개인 선택 시)
+                const receiptNumberInput = document.getElementById("receipt-number");
+                const receiptType = document.querySelector('input[name="receipt-type"]:checked').value;
+
+                if (receiptNumberInput && s.phoneNumber && receiptType === 'personal') {
+                    // 전화번호 포맷팅 (하이픈 제거)
+                    const cleanPhone = s.phoneNumber.replace(/[^0-9]/g, '');
+                    receiptNumberInput.value = cleanPhone;
+                }
+            });
+
+            cashbillStudentTableBody.appendChild(tr);
+        });
+    };
+
+    const filterCashbillStudents = keyword => {
+        keyword = keyword.trim();
+
+        if (!keyword) {
+            renderCashbillStudentList(cashPaymentStudents);
+            return;
+        }
+
+        const filtered = cashPaymentStudents.filter(s =>
+            s.studentName.includes(keyword) ||
+            s.gradeName?.includes(keyword) ||
+            s.hanTeacher?.includes(keyword) ||
+            s.bookTeacher?.includes(keyword)
+        );
+
+        renderCashbillStudentList(filtered);
+    };
+
+    cashbillSearchInput?.addEventListener("keydown", e => {
+        if (e.key === "Enter") filterCashbillStudents(cashbillSearchInput.value);
+    });
+
+    cashbillSearchBtn?.addEventListener("click", () => filterCashbillStudents(cashbillSearchInput.value));
 
     /* -----------------------------
         모달 열기: 수기 결제 추가
@@ -292,10 +399,41 @@ document.addEventListener("DOMContentLoaded", () => {
     /* -----------------------------
         모달 열기: 현금영수증
     ----------------------------- */
+    const openCashbillModal = async () => {
+        try {
+            closeAllModals();
 
-    const openCashbillModal = () => {
-        closeAllModals();
-        modalCashbill.style.display = "block";
+            // 현금/계좌이체 결제 학생 목록 조회
+            const yearMonth = {
+                year: monthInput.value.split("-")[0],
+                month: monthInput.value.split("-")[1]
+            };
+
+            const res = await fetch("/pay/api/cashbill/students", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(yearMonth)
+            });
+
+            if (!res.ok) throw new Error("현금영수증 발급 대상 학생 조회 실패");
+
+            const result = await res.json();
+            cashPaymentStudents = result.response || [];
+
+            // 학생 목록 렌더링
+            renderCashbillStudentList(cashPaymentStudents);
+
+            // 검색 입력 초기화
+            if (cashbillSearchInput) {
+                cashbillSearchInput.value = '';
+            }
+
+            modalCashbill.style.display = "block";
+
+        } catch (err) {
+            console.error(err);
+            alert("현금영수증 모달을 여는 중 오류가 발생했습니다.");
+        }
     };
 
     btnAddCashbill?.addEventListener("click", openCashbillModal);
@@ -342,4 +480,292 @@ document.addEventListener("DOMContentLoaded", () => {
     // prepayAddBtn?.addEventListener("click", togglePrepayRow);
 
 
+});
+
+
+///////////////
+// 현금영수증  //
+//////////////
+// 과세/비과세 구분 및 금액 자동 계산
+document.addEventListener('DOMContentLoaded', function () {
+    const taxRadios = document.querySelectorAll('input[name="tax-type"]');
+    const receiptTypeRadios = document.querySelectorAll('input[name="receipt-type"]');
+    const cashPriceInput = document.getElementById('cash-price');
+    const supplyPriceInput = document.getElementById('supply-price');
+    const taxPriceInput = document.getElementById('tax-price');
+    const receiptNumberInput = document.getElementById('receipt-number');
+    const receiptDateInput = document.getElementById('receipt-date');
+    const receiptDateText = document.getElementById('receipt-date-text');
+    const calendarBtn = document.querySelector('.calendar-open[data-target="receipt-date"]');
+    const issueCashbillBtn = document.getElementById('issue-cashbill');
+
+    // 자진발급 이전의 발급번호 저장용 변수
+    let savedReceiptNumber = '';
+
+    // 달력 아이콘 클릭 시 date input 열기
+    if (calendarBtn) {
+        calendarBtn.addEventListener('click', function () {
+            receiptDateInput.showPicker();
+        });
+    }
+
+    // 날짜 선택 시 텍스트 업데이트
+    receiptDateInput.addEventListener('change', function () {
+        if (this.value) {
+            const date = new Date(this.value);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            receiptDateText.textContent = `${year}년 ${month}월 ${day}일`;
+        }
+    });
+
+    // 페이지 로드 시 오늘 날짜로 초기화
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    receiptDateInput.value = `${yyyy}-${mm}-${dd}`;
+    receiptDateText.textContent = `${yyyy}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+
+    // 발급구분 변경 시 발급번호 처리
+    receiptTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            if (this.value === 'self') {
+                if (receiptNumberInput.value !== '0100001234') {
+                    savedReceiptNumber = receiptNumberInput.value;
+                }
+                receiptNumberInput.value = '0100001234';
+                receiptNumberInput.readOnly = true;
+                receiptNumberInput.style.backgroundColor = '#f5f5f5';
+            } else {
+                if (receiptNumberInput.value === '0100001234') {
+                    receiptNumberInput.value = savedReceiptNumber;
+                }
+                receiptNumberInput.readOnly = false;
+                receiptNumberInput.style.backgroundColor = '';
+                receiptNumberInput.placeholder = '휴대폰번호(01012345678) 또는 사업자번호';
+            }
+        });
+    });
+
+    // 발급번호 입력 시 유효성 검사
+    receiptNumberInput.addEventListener('blur', function () {
+        validateReceiptNumber();
+    });
+
+    function validateReceiptNumber() {
+        const receiptType = document.querySelector('input[name="receipt-type"]:checked').value;
+        const receiptNumber = receiptNumberInput.value.replace(/[^0-9]/g, '');
+
+        if (receiptType === 'self' || !receiptNumber) {
+            return true;
+        }
+
+        const isPhoneNumber = /^010\d{7,8}$/.test(receiptNumber);
+        const isBusinessNumber = /^\d{10}$/.test(receiptNumber) && !receiptNumber.startsWith('010');
+
+        if (receiptType === 'personal' && !isPhoneNumber) {
+            return false;
+        }
+
+        if (receiptType === 'business' && !isBusinessNumber) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // 총금액 입력 시 천단위 콤마 + 자동 계산
+    cashPriceInput.addEventListener('input', function (e) {
+        let value = this.value.replace(/[^0-9]/g, '');
+
+        if (value) {
+            this.value = parseInt(value).toLocaleString();
+        } else {
+            this.value = '';
+        }
+
+        calculateAmounts();
+    });
+
+    // 과세구분 변경 시 자동 재계산
+    taxRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            calculateAmounts();
+        });
+    });
+
+    function calculateAmounts() {
+        const totalAmount = parseInt(cashPriceInput.value.replace(/,/g, '')) || 0;
+
+        if (totalAmount === 0) {
+            supplyPriceInput.value = '';
+            taxPriceInput.value = '';
+            return;
+        }
+
+        const isTaxable = document.querySelector('input[name="tax-type"]:checked').value === 'taxable';
+        let supplyPrice, tax;
+
+        if (isTaxable) {
+            supplyPrice = Math.round(totalAmount / 1.1);
+            tax = totalAmount - supplyPrice;
+        } else {
+            supplyPrice = totalAmount;
+            tax = 0;
+        }
+
+        supplyPriceInput.value = supplyPrice.toLocaleString();
+        taxPriceInput.value = tax.toLocaleString();
+    }
+
+    // 발행 버튼 클릭 이벤트
+    issueCashbillBtn.addEventListener('click', function () {
+        if (!validateAllFields()) {
+            return;
+        }
+
+        const requestData = collectFormData();
+        sendCashbillRequest(requestData);
+    });
+
+    // 전체 필드 유효성 검사
+    function validateAllFields() {
+        // window.selectedCashbillStudent 사용
+        if (!window.selectedCashbillStudent) {
+            alert('학생을 선택해주세요.');
+            return false;
+        }
+
+        const receiptNumber = receiptNumberInput.value.trim();
+        if (!receiptNumber) {
+            alert('발급번호를 입력해주세요.');
+            receiptNumberInput.focus();
+            return false;
+        }
+
+        const receiptType = document.querySelector('input[name="receipt-type"]:checked').value;
+        const receiptNumberOnly = receiptNumber.replace(/[^0-9]/g, '');
+
+        if (receiptType === 'personal') {
+            const isPhoneNumber = /^010\d{7,8}$/.test(receiptNumberOnly);
+            if (!isPhoneNumber) {
+                alert('개인 소득공제용은 올바른 휴대폰번호(010-XXXX-XXXX)를 입력해주세요.');
+                receiptNumberInput.focus();
+                return false;
+            }
+        } else if (receiptType === 'business') {
+            const isBusinessNumber = /^\d{10}$/.test(receiptNumberOnly) && !receiptNumberOnly.startsWith('010');
+            if (!isBusinessNumber) {
+                alert('사업자 지출증빙용은 올바른 사업자등록번호(10자리)를 입력해주세요.');
+                receiptNumberInput.focus();
+                return false;
+            }
+        }
+
+        const cashPrice = cashPriceInput.value.replace(/,/g, '').trim();
+        if (!cashPrice || parseInt(cashPrice) <= 0) {
+            alert('총 금액을 입력해주세요.');
+            cashPriceInput.focus();
+            return false;
+        }
+
+        const supplyPrice = supplyPriceInput.value.replace(/,/g, '').trim();
+        if (!supplyPrice) {
+            alert('공급가액이 계산되지 않았습니다.');
+            return false;
+        }
+
+        const taxPrice = taxPriceInput.value.replace(/,/g, '').trim();
+        if (taxPrice === '') {
+            alert('세금이 계산되지 않았습니다.');
+            return false;
+        }
+
+        if (!receiptDateInput.value) {
+            alert('발행일자를 선택해주세요.');
+            return false;
+        }
+
+        return true;
+    }
+
+    // 폼 데이터 수집
+    function collectFormData() {
+        const receiptType = document.querySelector('input[name="receipt-type"]:checked').value;
+        const taxType = document.querySelector('input[name="tax-type"]:checked').value;
+
+        let traderValue = '0';
+        if (receiptType === 'business') {
+            traderValue = '1';
+        } else if (receiptType === 'self') {
+            traderValue = '2';
+        }
+
+        return {
+            studentId: window.selectedCashbillStudent.studentId,
+            paymentKey: window.selectedCashbillStudent.paymentKey,
+            studentInfo: {
+                name: window.selectedCashbillStudent.name,
+                grade: window.selectedCashbillStudent.grade,
+                teacher: window.selectedCashbillStudent.teacher
+            },
+            receiptNumber: receiptNumberInput.value.replace(/[^0-9]/g, ''),
+            receiptType: receiptType,
+            taxType: taxType,
+            trader: traderValue,
+            price: cashPriceInput.value.replace(/,/g, ''),
+            supplyPrice: supplyPriceInput.value.replace(/,/g, ''),
+            tax: taxPriceInput.value.replace(/,/g, ''),
+            issueDate: receiptDateInput.value
+        };
+    }
+
+    // 서버로 POST 요청
+    function sendCashbillRequest(data) {
+        console.log(data);
+        fetch('/pay/api/cashbill/issue', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('서버 응답 오류');
+                }
+                return response.json();
+            })
+            .then(result => {
+                alert('현금영수증이 발행되었습니다.');
+                resetForm();
+                // 모달 닫기
+                document.querySelector('.add-cashbill-modal').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('현금영수증 발행 중 오류가 발생했습니다.');
+            });
+    }
+
+    // 폼 초기화
+    function resetForm() {
+        window.selectedCashbillStudent = null;
+        document.getElementById('student-name-cell').textContent = '학생을 선택해주세요.';
+        document.getElementById('cash-amount-cell').textContent = '-';
+        receiptNumberInput.value = '';
+        cashPriceInput.value = '';
+        supplyPriceInput.value = '';
+        taxPriceInput.value = '';
+        document.querySelector('input[name="receipt-type"][value="personal"]').checked = true;
+        document.querySelector('input[name="tax-type"][value="taxable"]').checked = true;
+
+        // 선택 해제
+        document.querySelectorAll('#cashbill-student-list tr').forEach(tr => {
+            tr.classList.remove('selected');
+            tr.style.backgroundColor = '';
+        });
+    }
 });

@@ -5,10 +5,7 @@ import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
-import com.hohoedu.all_pass.payment.model.CardCode;
-import com.hohoedu.all_pass.payment.model.PaymentBill;
-import com.hohoedu.all_pass.payment.model.PaymentCallback;
-import com.hohoedu.all_pass.payment.model.PaymentDetail;
+import com.hohoedu.all_pass.payment.model.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.hibernate.annotations.Parent;
@@ -247,5 +244,14 @@ public interface PaymentRepository {
 
     int updateStatusToDestroyed(@Param("billId") String billId);
 
+    List<PaymentRespDTO.CashbillStudentRespDTO> findCashbillStudents(
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("centerCode") String centerCode);
 
+    void insertCashbill(PaymentCashbill cashbill);
+
+    int updateCashbillInfo(@Param("studentId") String studentId,
+                           @Param("paymentKey") String paymentKey,
+                           @Param("billId") String billId);
 }

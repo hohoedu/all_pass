@@ -58,6 +58,7 @@ public class PaymentRespDTO {
         private String resendUrl;
         private String destroyUrl;
         private String cancelUrl;
+        private String cashbillIssueUrl;
     }
 
     @Data
@@ -124,6 +125,15 @@ public class PaymentRespDTO {
 
     @Data
     public static class PaymintRespDTO {
+        private String code;
+        private String msg;
+    }
+
+    @Data
+    public static class CashBillRespDTO {
+        private String bill_id;
+        private String trader;
+        private String appr_cash_num;
         private String code;
         private String msg;
     }
@@ -240,5 +250,17 @@ public class PaymentRespDTO {
         private String studentId;
         private String paymentKey;
         private String billId;
+    }
+
+    @Data
+    public static class CashbillStudentRespDTO {
+        private String studentId;
+        private String paymentKey;
+        private String studentName;
+        private String gradeName;
+        private String hanTeacher;
+        private String bookTeacher;
+        private String amount;
+        private String phoneNumber;
     }
 }
