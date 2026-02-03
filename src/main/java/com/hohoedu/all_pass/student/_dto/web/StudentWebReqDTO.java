@@ -25,6 +25,7 @@ public class StudentWebReqDTO {
         private String centerCode;
         private String statusKey;
         private String gradeKey;
+        private String gradeName;
         private String levelKey;
     }
 

@@ -19,6 +19,7 @@
         SELECT *
         FROM erp_popbill_template
         WHERE center_code = #{centerCode}
+          and category = #{category}
     </select>
 
     <insert id="insertSendLog" parameterType="com.hohoedu.all_pass.popbill._dto.PopbillReqDTO$PopbillSendLogReqDTO">

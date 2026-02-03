@@ -240,4 +240,6 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    String findByGradeKey(String gradeKey);
 }

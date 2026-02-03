@@ -247,6 +247,12 @@
         ORDER BY s.status, s.student_name
     </select>
 
+    <select id="findByInviteCode" resultType="com.hohoedu.all_pass.student.model.InviteTracking">
+        SELECT *
+        FROM erp_invite_tracking
+        WHERE invite_code = #{inviteCode}
+    </select>
+
     <!-- 학생 상태 기록 -->
     <insert id="statusHistoryInsert"
             parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO"
@@ -843,6 +849,12 @@
             GROUP BY substring(move_at, 1, 7)
         ) mo ON COALESCE(e.ym, i.ym, mi.ym) = mo.ym
         ORDER BY COALESCE(e.ym, i.ym, mi.ym, mo.ym)
+    </select>
+
+    <select id="findByGradeKey" resultType="String">
+        SELECT grade_name as grade
+        FROM erp_grade_code
+        WHERE grade_key = #{gradeKey}
     </select>
 
 </mapper>

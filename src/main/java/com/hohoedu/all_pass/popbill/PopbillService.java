@@ -7,6 +7,8 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
 import com.hohoedu.all_pass.popbill._dto.PopbillRespDTO;
 import com.hohoedu.all_pass.popbill.repository.PopbillRepository;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.popbill.api.KakaoService;
 import com.popbill.api.PopbillException;
 import com.popbill.api.kakao.*;
@@ -25,6 +27,7 @@ public class PopbillService {
     private final PopbillRepository popbillRepository;
     private final PopbillServiceFactory serviceFactory;
     private final KakaoService kakaoService;
+    private final StudentRepository studentRepository;
 
     @Value("${popbill.aes.key}")
     private String aesKey;
@@ -68,7 +71,7 @@ public class PopbillService {
     }
 
     public String sendJoinAlimtalk(String centerCode, String phone, String regionName, String centerName, String userCode) {
-
+        String category = "join";
         try {
 
             KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
@@ -86,7 +89,7 @@ public class PopbillService {
     }*/
 
             PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
-            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode);
+            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode, category);
             ATSTemplate template = kakaoService.getATSTemplate(
                     config.getCorpNumber(),
                     respDTO.getPopbillTemplateCode()
@@ -101,7 +104,7 @@ public class PopbillService {
             String inviteCode = KeyGenerator.generateInviteCode();
             String sendKey = KeyGenerator.generateSendKey();
             String joinUrl = "https://hohocenter.co.kr/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
-//            String joinUrl = "http://192.168.0.8:8080/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
+//            String joinUrl = "https://c5310b9e0f45.ngrok-free.app/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
             String androidUrl = "https://play.google.com/store/apps/details?id=com.hohoedu.app";
             String iosUrl = "https://apps.apple.com/us/app/id6504266908";
 
@@ -170,22 +173,29 @@ public class PopbillService {
         }
     }
 
-    public String sendJoinCompletionAlimtalk(String centerCode, String teacherPhone, String parentPhone, String userCode) {
-
+    public String sendJoinCompletionAlimtalk(String centerCode, String teacherPhone, String parentPhone, String userCode, StudentWebReqDTO.StudentJoinDTO studentDTO) {
+        String category = "join_complete";
         try {
 
             KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
 
             PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
-            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode);
+            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode, category);
             ATSTemplate template = kakaoService.getATSTemplate(
                     config.getCorpNumber(),
                     respDTO.getPopbillTemplateCode()
             );
 
-            // 알림톡 내용
-            String content = template.getTemplate();
+            String grade = studentRepository.findByGradeKey(studentDTO.getGradeKey());
 
+            // 알림톡 내용
+            String content = template.getTemplate()
+                    .replace("#{학생명}", studentDTO.getStudentName())
+                    .replace("#{선택과목}", "미지정")
+                    .replace("#{연령/학년}", grade != null ? grade : "미지정")
+                    .replace("#{연락처}", parentPhone);
+            log.info(content);
+            log.info(teacherPhone);
             // 알림톡 전송
             String receiptNum = kakaoService.sendATS(
                     config.getCorpNumber(),

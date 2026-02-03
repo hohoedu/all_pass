@@ -33,6 +33,7 @@ public interface UserRepository {
 
     User findByUserCode(String userCode);
 
+    String findUserPhoneByUserCode(String userCode);
 
     void updatePassword(String userCode, String hashedPassword);
 }

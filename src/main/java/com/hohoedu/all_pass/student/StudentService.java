@@ -150,26 +150,27 @@ public class StudentService {
         String inviteCode = studentDTO.getInviteCode();
         if (inviteCode != null && !inviteCode.isEmpty()) {
             log.info("inviteCode : {}", inviteCode);
-            processInviteCompletion(inviteCode);
+            processInviteCompletion(inviteCode, studentDTO);
         }
 
         return studentDTO.getStudentId();
     }
 
-    private void processInviteCompletion(String inviteCode) {
+    private void processInviteCompletion(String inviteCode, StudentWebReqDTO.StudentJoinDTO studentDTO) {
         try {
             // 1. inviteCode로 초대 정보 조회
             InviteTracking invite = studentRepository.findByInviteCode(inviteCode);
 
             // 2. user_code로 선생님 정보 조회
-            User user = userRepository.findByUserCode(invite.getUserCode());
+            String userPhone = userRepository.findUserPhoneByUserCode(invite.getUserCode());
 
             // 3. 선생님에게 알림톡 발송
             popbillService.sendJoinCompletionAlimtalk(
-                    user.getCenter().getCenterCode(),
-                    user.getUserPhone(),
+                    invite.getCenterCode(),
+                    userPhone,
                     invite.getReceiverPhone(),
-                    invite.getUserCode()
+                    invite.getUserCode(),
+                    studentDTO
             );
 
             // 4. invite 상태 업데이트

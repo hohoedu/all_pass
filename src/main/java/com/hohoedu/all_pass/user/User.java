@@ -66,12 +66,13 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String userCode, String userId, String userName, String passwordHash, String salt, String type,
+    public User(String userCode, String userId, String userName, String userPhone, String passwordHash, String salt, String type,
                 UserRoleCode role, Center center) {
         this.userCode = userCode;
         this.userId = userId;
         this.userName = userName;
         this.passwordHash = passwordHash;
+        this.userPhone = userPhone;
         this.salt = salt;
         this.type = type;
         this.role = role;

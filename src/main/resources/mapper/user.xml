@@ -80,6 +80,12 @@
         where user_code = #{userCode}
     </select>
 
+    <select id="findUserPhoneByUserCode" resultType="String">
+        SELECT user_phone
+        FROM erp_user
+        WHERE user_code = #{userCode}
+    </select>
+
     <update id="updatePassword">
         update erp_user
         set password_hash = #{hashedPassword}
