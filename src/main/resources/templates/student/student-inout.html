@@ -213,7 +213,7 @@
                                 <div class="input-row">
                                     <div class="basic-select" style="width: 100%;">
                                         <select name="teacherNo" id="teacher-filter">
-                                            <th:block th:each="teacher : ${teachers}">
+                                            <th:block th:each="teacher : ${users}">
                                                 <option th:value="${teacher.userCode}"
                                                         th:text="${teacher.userName + ' 선생님'}"></option>
                                             </th:block>

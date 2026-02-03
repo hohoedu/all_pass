@@ -270,7 +270,6 @@ public class ClassController {
                 dto.getUnitKey(),
                 user.getCenterCode()  // centerCode 추가
         );
-
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
@@ -317,7 +316,7 @@ public class ClassController {
 
     @PostMapping("/api/after-notice/insert")
     public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList, HttpSession session) {
-
+        log.info(dtoList.get(0).getWord());
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -358,7 +357,7 @@ public class ClassController {
         }
 
         List<?> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), user.getUserCode());
-        
+
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 

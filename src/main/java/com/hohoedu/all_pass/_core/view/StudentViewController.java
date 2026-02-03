@@ -95,10 +95,12 @@ public class StudentViewController {
         List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), user.getUserCode());
 //        List<StudentInOutDTO> students = studentService.findStudentByUserCode(userCode);
         List<User> teachers = studentService.findTeacher(user);
+        List<User> users = userService.findAllUserCode(user);
 //        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);
 //        model.addAttribute("labels", labels);
         model.addAttribute("students", students);
         model.addAttribute("teachers", teachers);
+        model.addAttribute("users", users);
         return "student/student-inout";
     }
 

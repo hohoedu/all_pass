@@ -404,7 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         try {
-            console.log(JSON.stringify(requestBody));
             const response = await fetch("/student/inout", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -419,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
             if (response)
-                alert("전입/전출 처리가 완료되었습니다.");
+                alert("전입/전출 처리가 등록되었습니다.");
             location.reload();
 
         } catch (err) {

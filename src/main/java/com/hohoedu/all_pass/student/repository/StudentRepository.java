@@ -9,6 +9,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 
+import com.hohoedu.all_pass.student.model.InviteTracking;
 import com.hohoedu.all_pass.student.model.StudentTransferSchedule;
 import com.hohoedu.all_pass.student.model.TeacherAssign;
 import org.apache.ibatis.annotations.Mapper;
@@ -55,6 +56,8 @@ public interface StudentRepository {
     Integer findMaxAppIdSuffix(@Param("prefix") String prefix);
 
     public void insert(StudentJoinDTO student);
+
+    InviteTracking findByInviteCode(String inviteCode);
 
     public int statusHistoryInsert(StatusHistoryDTO historyDTO);
 

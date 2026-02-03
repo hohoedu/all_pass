@@ -457,7 +457,7 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
                             data-original-content="${originalContent.replace(/"/g, '&quot;')}">${originalContent}</textarea>
                     </div>
                 </div>
-                <input type="hidden" class="record-word" value="${afterClass?.homework ?? ''}">
+                <input type="hidden" class="record-word" value="${afterClass?.word ?? ''}">
             </td>`;
 
         const originalReview = afterClass?.review ? afterClass.review.replace(/<br\s*\/?>/gi, "\n") : "";
@@ -1006,8 +1006,9 @@ async function saveAfterClassNotice(checkedRows) {
         const reviewTextarea = row.querySelectorAll(".comment-text")[1]; // 두 번째 textarea가 리뷰
         const counselTextarea = row.querySelector(".counsel-box textarea");
         const counselType = row.querySelector(".counsel-type button.active")?.textContent || "전화";
-
+        const contentWord = row.querySelector(".record-word");
         const originalContent = contentTextarea.getAttribute("data-original-content") || "";
+        console.log(contentWord.value);
 
         return {
             studentId: row.getAttribute("data-student-id"),
@@ -1015,7 +1016,7 @@ async function saveAfterClassNotice(checkedRows) {
             afterClassKey: row.getAttribute("data-after-class-key"),
             week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
             content: contentTextarea?.value,
-            word: row.querySelector(".record-word")?.value || "",
+            word: contentWord.value || "",
             review: reviewTextarea?.value || "",
             counselType: counselType,
             counselContent: counselTextarea?.value || ""

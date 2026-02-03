@@ -1478,10 +1478,7 @@
             T.updated_at = GETDATE()
             WHEN NOT MATCHED THEN
         INSERT
-        (
-        student_id
-        ,
-        user_code
+        (student_id,user_code
         ,
         time_table_key
         ,

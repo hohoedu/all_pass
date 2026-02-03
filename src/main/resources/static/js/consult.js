@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const studentName = modal.querySelector('[name="studentName"]')?.value.trim();
             const consultDate = modal.querySelector('[name="consultDate"]')?.value;
             const school = modal.querySelector('[name="school"]')?.value.trim();
+            const consultType = modal.querySelector('[name="consultType"]:checked')?.value || '';
             const gradeKey = modal.querySelector('[name="gradeKey"]')?.value;
             const phone = modal.querySelector('[name="parentPhone"]')?.value.replace(/-/g, '');
             const inflowRouteKey = modal.querySelector('[name="inflowRouteKey"]')?.value;
@@ -228,7 +229,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 gradeKey,
                 phone,
                 inflowRouteKey,
-                content
+                content,
+                consultType
             };
             // 수정 모드일 경우 id 추가
             if (isEditMode && editingId) {

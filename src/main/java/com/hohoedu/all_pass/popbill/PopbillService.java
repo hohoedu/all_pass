@@ -169,6 +169,68 @@ public class PopbillService {
             throw new RuntimeException("알림톡 전송 실패: " + e.getMessage(), e);
         }
     }
+
+    public String sendJoinCompletionAlimtalk(String centerCode, String teacherPhone, String parentPhone, String userCode) {
+
+        try {
+
+            KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
+
+            PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
+            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode);
+            ATSTemplate template = kakaoService.getATSTemplate(
+                    config.getCorpNumber(),
+                    respDTO.getPopbillTemplateCode()
+            );
+
+            // 알림톡 내용
+            String content = template.getTemplate();
+
+            // 알림톡 전송
+            String receiptNum = kakaoService.sendATS(
+                    config.getCorpNumber(),
+                    respDTO.getPopbillTemplateCode(),
+                    config.getSenderNumber(),
+                    content,
+                    (String) null,
+                    null,
+                    teacherPhone,  // 선생님 전화번호
+                    "선생님",
+                    (String) null
+            );
+
+            KakaoSentInfo sentInfo = kakaoService.getMessages(
+                    config.getCorpNumber(),
+                    receiptNum
+            );
+
+            log.info("=== 가입 완료 알림 전송 정보 ===");
+            log.info("접수번호: {}", sentInfo.getSendNum());
+            log.info("성공건수: {}", sentInfo.getSuccessCnt());
+            log.info("실패건수: {}", sentInfo.getFailCnt());
+
+            // 전송 로그 저장
+            String sendKey = KeyGenerator.generateSendKey();
+            PopbillReqDTO.PopbillSendLogReqDTO sendLogDTO = PopbillReqDTO.PopbillSendLogReqDTO.builder()
+                    .sendKey(sendKey)
+                    .userCode(userCode)
+                    .receiverPhone(teacherPhone)
+                    .centerCode(centerCode)
+                    .sendType("JOIN_COMPLETION")  // 타입 변경
+                    .templateCode(respDTO.getPopbillTemplateCode())
+                    .content(content)
+                    .sendStatus("SUCCESS")
+                    .build();
+
+            popbillRepository.insertSendLog(sendLogDTO);
+
+            return receiptNum;
+
+        } catch (PopbillException e) {
+            log.error("가입 완료 알림톡 전송 실패 - code: {}, message: {}", e.getCode(), e.getMessage());
+            throw new RuntimeException("가입 완료 알림톡 전송 실패: " + e.getMessage(), e);
+        }
+    }
 }
 
 

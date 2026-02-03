@@ -50,6 +50,9 @@ public class User {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "user_phone")
+    private String userPhone;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_key", referencedColumnName = "role_key", nullable = false)
     private UserRoleCode role;

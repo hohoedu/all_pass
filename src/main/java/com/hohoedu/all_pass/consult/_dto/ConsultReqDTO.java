@@ -16,6 +16,7 @@ public class ConsultReqDTO {
         private String content;
         private String centerCode;
         private String userCode;
+        private String consultType;
     }
 
     @Data

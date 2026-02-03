@@ -13,7 +13,6 @@ import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.DuplicateStudentException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.attendance.AttendanceRepository;
-import com.hohoedu.all_pass.attendance.AttendanceService;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
@@ -23,17 +22,14 @@ import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.family.FamilyService;
 import com.hohoedu.all_pass.payment.PaymentService;
-import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
-import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
-import com.hohoedu.all_pass.popbill.PopbillConfig;
+import com.hohoedu.all_pass.popbill.PopbillService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
-import com.popbill.api.KakaoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
@@ -75,6 +71,7 @@ public class StudentService {
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
     private final AttendanceRepository attendanceRepository;
+    private final PopbillService popbillService;
 
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
@@ -112,11 +109,6 @@ public class StudentService {
         return studentDetailRespDTO;
     }
 
-    public boolean checkDuplicateStudent() {
-
-
-        return false;
-    }
 
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
         int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(), parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
@@ -158,9 +150,41 @@ public class StudentService {
         String inviteCode = studentDTO.getInviteCode();
         if (inviteCode != null && !inviteCode.isEmpty()) {
             log.info("inviteCode : {}", inviteCode);
+            processInviteCompletion(inviteCode);
         }
 
         return studentDTO.getStudentId();
+    }
+
+    private void processInviteCompletion(String inviteCode) {
+        try {
+            // 1. inviteCode로 초대 정보 조회
+            InviteTracking invite = studentRepository.findByInviteCode(inviteCode);
+
+            // 2. user_code로 선생님 정보 조회
+            User user = userRepository.findByUserCode(invite.getUserCode());
+
+            // 3. 선생님에게 알림톡 발송
+            popbillService.sendJoinCompletionAlimtalk(
+                    user.getCenter().getCenterCode(),
+                    user.getUserPhone(),
+                    invite.getReceiverPhone(),
+                    invite.getUserCode()
+            );
+
+            // 4. invite 상태 업데이트
+//            invite.setInviteStatus(InviteStatus.COMPLETED);
+//            invite.setCompletedAt(LocalDateTime.now());
+//            inviteRepository.save(invite);
+
+//            log.info("초대 완료 알림톡 발송 성공 - inviteCode: {}, teacher: {}",
+//                    inviteCode, teacher.getUserCode());
+
+        } catch (Exception e) {
+            log.error("초대 완료 알림톡 발송 실패 - inviteCode: {}, error: {}",
+                    inviteCode, e.getMessage(), e);
+            // 알림톡 발송 실패해도 학생 등록은 정상 완료되도록 예외를 던지지 않음
+        }
     }
 
 
