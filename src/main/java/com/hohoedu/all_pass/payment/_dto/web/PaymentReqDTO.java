@@ -96,6 +96,7 @@ public class PaymentReqDTO {
     }
 
     @Data
+    @Builder
     public static class ManualPaymentReqDTO {
 
         private String studentId;
@@ -107,10 +108,30 @@ public class PaymentReqDTO {
         private String cardName;
         private String paidDate;
         private String userCode;
+        private String centerCode;
         private String yy;
         private String mm;
         private String status;
+        private Integer prepaidAmount;
 
+    }
+
+    @Data
+    @Builder
+    public static class InsertPresetDTO {
+        private String studentId;
+        private String centerCode;
+        private String userCode;
+        private Integer totalAmount;
+        private Integer originalAmount;
+        private Integer usedMonths;
+        private String presetKey;
+        private String status;
+        private String cardName;
+        private String method;
+        private String paidDate;
+        private Integer originalManualPaymentId;
+        private String note;
     }
 
     @Data

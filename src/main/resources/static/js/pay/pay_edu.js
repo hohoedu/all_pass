@@ -6,7 +6,7 @@
 let currentFeeView = 'edu';
 let currentStudents = [];
 let currentSort = {key: null, order: 'asc'};
-
+let fetchStudentsGlobal;
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -92,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('학생 목록을 불러오지 못했습니다.');
         }
     }
+
+    fetchStudentsGlobal = fetchStudents;
 
     /* ===============================
         렌더링 (필터링/정렬 제거)
@@ -1007,6 +1009,11 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             alert('청구서 발행이 완료되었습니다.');
+
+            const monthInput = document.querySelector('.hidden-picker');
+            const teacherSelect = document.getElementById('student-filter');
+            const [year, month] = monthInput.value.split('-');
+            await fetchStudentsGlobal(year, month, teacherSelect.value);
 
         } catch (e) {
             console.error(e);

@@ -129,28 +129,17 @@
                             </div>
                         </div>
                     </div>
-<!--                    <div class="preorder-select">-->
-<!--                        <div></div>-->
-<!--                        <div class="basic-select">-->
-<!--                            <select id="step-all" name="">-->
-<!--                                <option value="">전체</option>-->
-<!--                                <option value="">호호하니 영재</option>-->
-<!--                                <option value="">호호하니 수재</option>-->
-<!--                                <option value="">호호하니 신동</option>-->
-<!--                            </select>-->
-<!--                        </div>-->
-<!--                    </div>-->
                     <div class="class-info">
                         <div class="table-frame preorder-frame mt">
                             <table class="basic-table yh">
                                 <colgroup>
                                     <col width="10%">
                                     <col width="10%">
-                                    <col width="10%">
-                                    <col width="10%">
-                                    <col width="20%">
+                                    <col width="5%">
+                                    <col width="5%">
+                                    <col width="25%">
                                     <col width="15%">
-                                    <col width="10%">
+                                    <col width="15%">
                                     <col width="5%">
                                 </colgroup>
                                 <thead>
@@ -168,7 +157,8 @@
                                 <tbody id="reorder-tbody" class="stripe">
                                 <tr th:each="reorder : ${reorderList}"
                                     th:data-class-key="${reorder.classKey}"
-                                    th:data-unit-key="${reorder.unitKey}">
+                                    th:data-unit-key="${reorder.unitKey}"
+                                    th:data-id="${reorder.id}">
                                     <td th:text="${reorder.reorderType} == 'ADD' ? '추가주문' : '반품' ">종류</td>
                                     <td th:text="${reorder.className}">수업</td>
                                     <td th:text="${reorder.unitName}">교재</td>

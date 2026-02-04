@@ -9,6 +9,7 @@ import com.hohoedu.all_pass.popbill._dto.PopbillRespDTO;
 import com.hohoedu.all_pass.popbill.repository.PopbillRepository;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import com.popbill.api.KakaoService;
 import com.popbill.api.PopbillException;
 import com.popbill.api.kakao.*;
@@ -239,6 +240,84 @@ public class PopbillService {
         } catch (PopbillException e) {
             log.error("가입 완료 알림톡 전송 실패 - code: {}, message: {}", e.getCode(), e.getMessage());
             throw new RuntimeException("가입 완료 알림톡 전송 실패: " + e.getMessage(), e);
+        }
+    }
+
+    public String sendAddReorderAlimtalk(UserRespDTO.LoginRespDTO user, String orderContent) {
+        String category = "add_reorder";
+        try {
+            // 1. KakaoService 가져오기
+            KakaoService kakaoService = serviceFactory.getKakaoService("PUS001");
+
+            // 2. Config 및 Template 조회
+            PopbillConfig config = popbillRepository.findPopbillConfig("PUS001");
+            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate("PUS001", category);
+
+            // 3. 템플릿 가져오기
+            ATSTemplate template = kakaoService.getATSTemplate(
+                    config.getCorpNumber(),
+                    respDTO.getPopbillTemplateCode()
+            );
+
+            log.info("=== 추가 주문 알림톡 템플릿 정보 ===");
+            log.info("템플릿명: {}", template.getTemplateName());
+            log.info("템플릿 내용: {}", template.getTemplate());
+
+            // 4. 템플릿 내용 치환
+            String content = template.getTemplate()
+                    .replace("#{지점명}", user.getCenterName()+" 선생님")
+                    .replace("#{선생님명}", user.getUserName())
+                    .replace("#{수정횟수}", "1")
+                    .replace("#{수정시간}", "2026-02-04 22:09")
+                    .replace("#{주문내용}", orderContent);
+
+            log.info("=== 전송할 내용 ===");
+            log.info(content);
+
+            // 5. 알림톡 전송 (본사 번호로)
+            String receiptNum = kakaoService.sendATS(
+                    config.getCorpNumber(),
+                    respDTO.getPopbillTemplateCode(),
+                    config.getSenderNumber(),
+                    content,
+                    (String) null,
+                    null,
+                    "01062954886",  // 본사 전화번호
+                    "본사",
+                    (String) null
+            );
+
+            // 6. 전송 결과 확인
+            KakaoSentInfo sentInfo = kakaoService.getMessages(
+                    config.getCorpNumber(),
+                    receiptNum
+            );
+
+            log.info("=== 추가 주문 알림 전송 정보 ===");
+            log.info("접수번호: {}", sentInfo.getSendNum());
+            log.info("성공건수: {}", sentInfo.getSuccessCnt());
+            log.info("실패건수: {}", sentInfo.getFailCnt());
+
+            // 7. 전송 로그 저장
+            String sendKey = KeyGenerator.generateSendKey();
+            PopbillReqDTO.PopbillSendLogReqDTO sendLogDTO = PopbillReqDTO.PopbillSendLogReqDTO.builder()
+                    .sendKey(sendKey)
+                    .userCode(user.getUserCode())
+                    .receiverPhone("01062954886")
+                    .centerCode(user.getCenterCode())
+                    .sendType("ADD_REORDER")
+                    .templateCode(respDTO.getPopbillTemplateCode())
+                    .content(content)
+                    .sendStatus("SUCCESS")
+                    .build();
+
+            popbillRepository.insertSendLog(sendLogDTO);
+
+            return receiptNum;
+
+        } catch (PopbillException e) {
+            log.error("추가 주문 알림톡 전송 실패 - code: {}, message: {}", e.getCode(), e.getMessage());
+            throw new RuntimeException("추가 주문 알림톡 전송 실패: " + e.getMessage(), e);
         }
     }
 }

@@ -135,4 +135,24 @@
         </foreach>
     </update>
 
+    <select id="findAllClassNames" resultType="map">
+        SELECT
+            class_key as classKey,
+            class_name as className
+        FROM erp_class_code
+    </select>
+
+    <select id="findAllUnitNames" resultType="map">
+        SELECT
+            unit_key as unitKey,
+            unit_name as unitName
+        FROM erp_unit_code
+    </select>
+
+    <update id="cancelReorder">
+        UPDATE erp_reorder
+        SET confirmed = 'user_cancel'
+        where id = #{id}
+    </update>
+
 </mapper>

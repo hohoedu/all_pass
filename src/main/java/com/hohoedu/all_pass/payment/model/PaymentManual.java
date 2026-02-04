@@ -31,7 +31,7 @@ public class PaymentManual {
     @Column(name = "transfer_amount")
     private Integer transferAmount;
 
-    @Column
+    @Column(name = "card_name")
     private String cardName;
 
     @Column

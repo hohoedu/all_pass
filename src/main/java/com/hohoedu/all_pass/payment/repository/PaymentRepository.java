@@ -51,7 +51,30 @@ public interface PaymentRepository {
             @Param("mm") String mm
     );
 
-    void insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO dto);
+    int insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO dto);
+
+    void insertPaymentPreset(PaymentReqDTO.InsertPresetDTO dto);
+
+    // 활성화된 선납금 조회
+    PaymentPreset findActivePresetByStudentId(String studentId);
+
+    // preset에서 자동 결제 시 manual_payment 생성
+    Integer insertPaymentManualFromPreset(
+            @Param("dto") PaymentReqDTO.ManualPaymentReqDTO dto,
+            @Param("presetId") Integer presetId,
+            @Param("amount") Integer amount,
+            @Param("method") String method,
+            @Param("cardName") String cardName
+
+    );
+
+    // preset 사용 후 업데이트
+    void updatePresetAfterUse(
+            @Param("presetId") Integer presetId,
+            @Param("newTotalAmount") Integer newTotalAmount,
+            @Param("newUsedMonths") Integer newUsedMonths,
+            @Param("newStatus") String newStatus
+    );
 
     int existsBillByStudentIds(
             @Param("studentIds") List<String> studentIds,

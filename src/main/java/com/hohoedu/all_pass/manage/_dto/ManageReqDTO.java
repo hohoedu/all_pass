@@ -47,6 +47,11 @@ public class ManageReqDTO {
     }
 
     @Data
+    public static class CancelReorderDTO {
+        private Integer id;
+    }
+
+    @Data
     public static class InsertClassFeeDTO {
         private List<ClassFeeMapDTO> classFeeMap;
 

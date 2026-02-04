@@ -45,7 +45,7 @@
     </select>
 
     <select id="existsBillByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BillRespDTO">
-        SELECT COUNT(*) as count,
+        SELECT COUNT(*)    as count,
                payment_key AS paymnetKey,
                student_id  AS studentId,
                bill_id     AS billId
@@ -81,11 +81,136 @@
 
     <insert id="insertPaymentManual"
             parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
-        insert into erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status,
-                                       student_id, payment_key, user_code, yy, mm, created_at)
-        VALUES (#{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status}, #{studentId},
-                #{paymentKey}, #{userCode}, #{yy}, #{mm}, SYSDATETIME())
+        INSERT INTO erp_payment_manual(
+            card_amount,
+            transfer_amount,
+            cash_amount,
+            card_name,
+            paid_date,
+            status,
+            student_id,
+            payment_key,
+            user_code,
+            yy,
+            mm,
+            prepaid_amount,
+            created_at
+        )
+        VALUES (
+                   #{cardAmount},
+                   #{transferAmount},
+                   #{cashAmount},
+                   #{cardName},
+                   #{paidDate},
+                   #{status},
+                   #{studentId},
+                   #{paymentKey},
+                   #{userCode},
+                   #{yy},
+                   #{mm},
+                   #{prepaidAmount},
+                   SYSDATETIME()
+               )
     </insert>
+
+    <insert id="insertPaymentPreset"
+            parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$InsertPresetDTO">
+        INSERT INTO erp_payment_preset (
+            student_id,
+            center_code,
+            user_code,
+            total_amount,
+            original_amount,
+            used_months,
+            preset_key,
+            status,
+            method,
+            card_name,
+            paid_date,
+            original_manual_payment_id,
+            note,
+            created_at
+        )
+        VALUES (
+                   #{studentId},
+                   #{centerCode},
+                   #{userCode},
+                   #{totalAmount},
+                   #{originalAmount},
+                   #{usedMonths},
+                   #{presetKey},
+                   #{status},
+                   #{method},
+                   #{cardName},
+                   #{paidDate},
+                   #{originalManualPaymentId},
+                   #{note},
+                   SYSDATETIME()
+               )
+    </insert>
+
+    <select id="findActivePresetByStudentId" resultType="com.hohoedu.all_pass.payment.model.PaymentPreset">
+        SELECT TOP 1 id,
+                     student_id                 AS studentId,
+                     center_code                AS centerCode,
+                     user_code                  AS userCode,
+                     total_amount               AS totalAmount,
+                     original_amount            AS originalAmount,
+                     used_months                AS usedMonths,
+                     preset_key                 AS presetKey,
+                     original_manual_payment_id AS originalManualPaymentId,
+                     status,
+                     card_name                  AS cardName,
+                     method,
+                     paid_date                  AS paidDate,
+                     note,
+                     created_at                 AS createdAt,
+                     updated_at                 AS updatedAt
+        FROM erp_payment_preset
+        WHERE student_id = #{studentId}
+          AND status = 'active'
+          AND total_amount > 0
+        ORDER BY created_at ASC
+
+    </select>
+
+    <!-- preset에서 자동 결제 -->
+    <insert id="insertPaymentManualFromPreset" parameterType="map">
+        INSERT INTO
+        erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id,
+                           payment_key,user_code,yy,mm,prepaid_amount,preset_id,is_auto_from_preset,created_at
+        )
+        VALUES (
+        <!-- ✨ method에 따라 금액 분배 -->
+        <choose>
+            <when test="method == 'card'">#{amount}</when>
+            <otherwise>0</otherwise>
+        </choose>
+        ,
+        <choose>
+            <when test="method == 'transfer'">#{amount}</when>
+            <otherwise>0</otherwise>
+        </choose>
+        ,
+        <choose>
+            <when test="method == 'cash'">#{amount}</when>
+            <otherwise>0</otherwise>
+        </choose>
+        ,
+        #{cardName}, #{dto.paidDate}, 'approved', #{dto.studentId}, #{dto.paymentKey},
+        #{dto.userCode}, #{dto.yy}, #{dto.mm}, 0, #{presetId},
+        1, SYSDATETIME() )
+    </insert>
+
+    <!-- preset 업데이트 -->
+    <update id="updatePresetAfterUse">
+        UPDATE erp_payment_preset
+        SET total_amount = #{newTotalAmount},
+            used_months  = #{newUsedMonths},
+            status       = #{newStatus},
+            updated_at   = SYSDATETIME()
+        WHERE id = #{presetId}
+    </update>
 
     <select id="findBookBillStatus" resultType="String">
         SELECT status
@@ -281,9 +406,9 @@
                                              AND t2.yy = #{year}
                                              AND t2.mm = #{month}
                                              AND cc2.class_type IN ('1', '2')
-                                              FOR XML PATH ('')),
-                                      1, 2, ''
-                              )                                                           AS subject,
+                                           FOR XML PATH ('')),
+                                          1, 2, ''
+                                  )                                                       AS subject,
 
                                   -- 한자 선생님
                                   MAX(CASE WHEN cc.class_type = '1' THEN u.user_name END) AS hanTeacher,
@@ -311,19 +436,19 @@
                              AND cc.class_type IN ('1', '2')
 
                            GROUP BY ta.student_id)
-        SELECT s.student_id         AS studentId,
-               s.student_name       AS studentName,
-               p.payment_key        AS paymentKey,
-               pb.bill_id           AS billId,
+        SELECT s.student_id           AS studentId,
+               s.student_name         AS studentName,
+               p.payment_key          AS paymentKey,
+               pb.bill_id             AS billId,
 
-               ci.subject           AS subject,
-               ci.hanTeacher        AS hanTeacher,
-               ci.assign_han_teacher        AS hanTeacher,
-               ci.bookTeacher       AS bookTeacher,
-               ci.assign_book_teacher       AS bookTeacher,
+               ci.subject             AS subject,
+               ci.hanTeacher          AS hanTeacher,
+               ci.assign_han_teacher  AS hanTeacher,
+               ci.bookTeacher         AS bookTeacher,
+               ci.assign_book_teacher AS bookTeacher,
 
-               amt.billAmount       AS billPrice,
-               pb.status            AS totalStatus,
+               amt.billAmount         AS billPrice,
+               pb.status              AS totalStatus,
 
             /* 발행여부 */
                CASE
@@ -332,16 +457,16 @@
                    WHEN pb.status = 'destroyed' THEN '파기'
                    WHEN pb.status = 'canceled' THEN '취소'
                    ELSE '발행'
-                   END              AS issuanceStatus,
+                   END                AS issuanceStatus,
 
             /* 결제금액 (item_type 기준 단일 계산) */
-               pay.calc_paid_amount AS paidAmount,
+               pay.calc_paid_amount   AS paidAmount,
 
             /* 미납금액 (결제금액 기준) */
                CASE
                    WHEN amt.billAmount - pay.calc_paid_amount &lt; 0 THEN 0
                    ELSE amt.billAmount - pay.calc_paid_amount
-                   END              AS unpaidAmount,
+                   END                AS unpaidAmount,
 
             /* 결제여부 (결제금액 기준) */
                CASE
@@ -349,7 +474,7 @@
                    WHEN pay.calc_paid_amount = 0 THEN '미결제'
                    WHEN pay.calc_paid_amount >= amt.billAmount THEN '결제완료'
                    ELSE '부분결제'
-                   END              AS payStatus
+                   END                AS payStatus
 
         FROM erp_payment p
                  JOIN erp_student s ON p.student_id = s.student_id
@@ -361,7 +486,8 @@
                  LEFT JOIN (SELECT payment_key, status, bill_id
                             FROM (SELECT payment_key,
                                          status,
-                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) as rn, bill_id
+                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) as rn,
+                                         bill_id
                                   FROM erp_payment_bill
                                   where bill_type = #{itemType}) sub
                             WHERE rn = 1) pb ON p.payment_key = pb.payment_key
@@ -373,34 +499,32 @@
                             WHERE status = 'approved'
                               AND bill_type = #{itemType}
                             GROUP BY payment_key) pb_pay ON p.payment_key = pb_pay.payment_key
-            CROSS APPLY (SELECT
-        CASE
-        WHEN amt.item_type = 'BOOK_FEE'
-        THEN COALESCE(pb_pay.bill_amount, 0)
-        ELSE COALESCE(pm.manual_amount, 0) + COALESCE(pb_pay.bill_amount, 0)
-        END AS calc_paid_amount) pay
+                 CROSS APPLY (SELECT CASE
+                                         WHEN amt.item_type = 'BOOK_FEE'
+                                             THEN COALESCE(pb_pay.bill_amount, 0)
+                                         ELSE COALESCE(pm.manual_amount, 0) + COALESCE(pb_pay.bill_amount, 0)
+                                         END AS calc_paid_amount) pay
 
         WHERE p.center_code = #{centerCode}
           AND p.yy = #{year}
           AND p.mm = #{month}
 
-        ORDER BY
-            CASE
-            WHEN amt.billAmount = 0 THEN 4
-            WHEN pay.calc_paid_amount = 0 THEN 1
-            WHEN pay.calc_paid_amount &lt; amt.billAmount THEN
-            2
-            ELSE 3
-        END
-        ,
-        CASE
-        WHEN p.status = 'pending' THEN 1
-        WHEN pb.status = 'destroyed' THEN 2
-        WHEN pb.status = 'cancel' THEN 3
-        ELSE 4
-        END
-        ,
-        s.student_name;
+        ORDER BY CASE
+                     WHEN amt.billAmount = 0 THEN 4
+                     WHEN pay.calc_paid_amount = 0 THEN 1
+                     WHEN pay.calc_paid_amount &lt; amt.billAmount THEN
+                         2
+                     ELSE 3
+                     END
+                ,
+                 CASE
+                     WHEN p.status = 'pending' THEN 1
+                     WHEN pb.status = 'destroyed' THEN 2
+                     WHEN pb.status = 'cancel' THEN 3
+                     ELSE 4
+                     END
+                ,
+                 s.student_name;
 
     </select>
 
@@ -434,7 +558,8 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount
+        FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
@@ -454,9 +579,10 @@
 
     <update id="updatePaymentDetailBookFee">
         UPDATE pd
-        SET pd.amount = #{materialFee} FROM erp_payment_detail pd
+        SET pd.amount = #{materialFee}
+        FROM erp_payment_detail pd
                  INNER JOIN erp_payment p
-        ON pd.payment_key = p.payment_key
+                            ON pd.payment_key = p.payment_key
         WHERE p.student_id = #{studentId}
           AND pd.class_type = #{classType}
           AND pd.item_type = 'BOOK_FEE'

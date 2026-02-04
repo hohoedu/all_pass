@@ -109,7 +109,7 @@ public class PaymentController {
         }
 
         dto.setUserCode(user.getUserCode());
-
+        dto.setCenterCode(user.getCenterCode());
         PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
         return ResponseEntity.ok(ApiUtils.success(response));
 

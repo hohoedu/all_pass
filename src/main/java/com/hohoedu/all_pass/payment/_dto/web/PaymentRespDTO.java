@@ -188,8 +188,10 @@ public class PaymentRespDTO {
     @Data
     public static class ManualPaymentRespDTO {
         private String paymentKey;
+        private Integer price;              // 총 결제 금액
+        private Integer actualBillPayment; // 이번 달 청구서에 적용된 금액
+        private Integer prepaidAmount;     // 선납금
         private String studentId;
-        private Integer price;
         private String message;
     }
 

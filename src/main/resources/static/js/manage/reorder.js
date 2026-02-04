@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const classUnits = JSON.parse(rawUnits);
 
     initAllMonthPickers();
+    attachCancelEvents();
 
     function initAllMonthPickers() {
         const pickers = document.querySelectorAll(".day-display");
@@ -274,9 +275,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         list.forEach(item => {
             const canCancel = item.confirmed === 'unchecked';
+            const cancelBtn = canCancel
+                ? `<button class="btn-cancel" data-id="${item.id}">취소</button>`
+                : '-';
 
             const html = `
-            <tr data-class-key="${item.classKey}" data-unit-key="${item.unitKey}">
+            <tr data-class-key="${item.classKey}" data-unit-key="${item.unitKey}" data-class-id="${item.id}">
                 <td>${item.reorderType === 'ADD' ? '추가주문' : '반품'}</td>
                 <td>${item.className}</td>
                 <td>${item.unitName}</td>
@@ -284,11 +288,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.reason}</td>
                 <td>${item.createdAt}</td>
                 <td>${confirmedTextMap[item.confirmed] ?? '-'}</td>
-                <td>${confirmedCancelMap[item.confirmed] ?? '-'}</td>
+                <td>${cancelBtn}</td>
             </tr>
         `;
 
             tbody.insertAdjacentHTML("beforeend", html);
+
+            // 취소 버튼 이벤트 추가
+            attachCancelEvents();
+        });
+    }
+
+    function attachCancelEvents() {
+        document.querySelectorAll('.btn-cancel').forEach(button => {
+            button.addEventListener('click', async function () {
+                const reorderId = this.dataset.id;
+
+                if (!confirm('정말 취소하시겠습니까?')) {
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/manage/reorder/cancel', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({id: reorderId})
+                    });
+
+                    const data = await res.json();
+                    console.log(data);
+                    console.log(data.response);
+                    if (data.response === '0000') {
+                        alert('취소되었습니다.');
+                        
+                        const searchCalendar = document.querySelector(".search-calendar .hidden-picker");
+                        if (searchCalendar.value) {
+                            const date = new Date(searchCalendar.value);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            loadReorderList(year, month);
+                        }
+                    } else {
+                        alert('취소 실패했습니다.');
+                    }
+                } catch (e) {
+                    console.error('cancelReorder Error:', e);
+                    alert('취소 중 오류가 발생했습니다.');
+                }
+            });
         });
     }
 
@@ -367,6 +416,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("saveReorder Error:", e);
         }
     });
-
-
 });

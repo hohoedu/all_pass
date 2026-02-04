@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const prepayAddBtn = document.querySelector(".charge-add");
     const manualTableBody = document.querySelector(".manual-payment-table tbody");
 
-    const searchInput = document.querySelector(".student-content .basic-input");
-    const searchBtn = document.querySelector("#search-unpaid-student");
+    const manualSearchInput = document.querySelector(".add-payment-modal .student-content .basic-input");
+    const manualSearchBtn = document.querySelector("#search-unpaid-student");
 
 
     /* -----------------------------
@@ -57,9 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ----------------------------- */
 
     // ===== 1. initMonth 함수를 이렇게 수정하세요 =====
-
-    // ===== 1. initMonth 함수를 이렇게 수정하세요 =====
-
 
     function initMonth() {
         // URL 파라미터에서 년월 가져오기
@@ -185,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const filtered = unpaidStudents.filter(s =>
-            s.studentName.includes(keyword) ||
+            s.studentName?.includes(keyword) ||
             s.gradeName?.includes(keyword) ||
             s.hanTeacher?.includes(keyword) ||
             s.bookTeacher?.includes(keyword)
@@ -194,11 +191,19 @@ document.addEventListener("DOMContentLoaded", () => {
         renderStudentList(filtered);
     };
 
-    searchInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") filterStudents(searchInput.value);
-    });
+// 수기 결제 검색 이벤트
+    if (manualSearchInput) {
+        manualSearchInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                filterStudents(manualSearchInput.value);
+            }
+        });
+    }
 
-    searchBtn.addEventListener("click", () => filterStudents(searchInput.value));
+    if (manualSearchBtn) {
+        manualSearchBtn.addEventListener("click", () => filterStudents(manualSearchInput.value));
+    }
 
     /* -----------------------------
           현금영수증 학생 목록 렌더링
@@ -264,12 +269,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     cashPriceInput.dispatchEvent(new Event('input'));
                 }
 
-                // 발급번호에 전화번호 자동 입력 (개인 선택 시)
                 const receiptNumberInput = document.getElementById("receipt-number");
                 const receiptType = document.querySelector('input[name="receipt-type"]:checked').value;
 
                 if (receiptNumberInput && s.phoneNumber && receiptType === 'personal') {
-                    // 전화번호 포맷팅 (하이픈 제거)
                     const cleanPhone = s.phoneNumber.replace(/[^0-9]/g, '');
                     receiptNumberInput.value = cleanPhone;
                 }
@@ -288,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const filtered = cashPaymentStudents.filter(s =>
-            s.studentName.includes(keyword) ||
+            s.studentName?.includes(keyword) ||
             s.gradeName?.includes(keyword) ||
             s.hanTeacher?.includes(keyword) ||
             s.bookTeacher?.includes(keyword)
@@ -297,11 +300,19 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCashbillStudentList(filtered);
     };
 
-    cashbillSearchInput?.addEventListener("keydown", e => {
-        if (e.key === "Enter") filterCashbillStudents(cashbillSearchInput.value);
-    });
+// 현금영수증 검색 이벤트
+    if (cashbillSearchInput) {
+        cashbillSearchInput.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                filterCashbillStudents(cashbillSearchInput.value);
+            }
+        });
+    }
 
-    cashbillSearchBtn?.addEventListener("click", () => filterCashbillStudents(cashbillSearchInput.value));
+    if (cashbillSearchBtn) {
+        cashbillSearchBtn.addEventListener("click", () => filterCashbillStudents(cashbillSearchInput.value));
+    }
 
     /* -----------------------------
         모달 열기: 수기 결제 추가

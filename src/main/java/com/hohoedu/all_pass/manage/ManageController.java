@@ -110,6 +110,19 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(reorderList));
     }
 
+    @PostMapping("/reorder/cancel")
+    public ResponseEntity<?> cancelReorder(@RequestBody ManageReqDTO.CancelReorderDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        String result = manageService.cancelReorder(dto.getId());
+        log.info("result = {}", result);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
     @PostMapping("/fee/insert")
     public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO, HttpSession session) {
 

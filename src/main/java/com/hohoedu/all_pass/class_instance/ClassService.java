@@ -431,9 +431,12 @@ public class ClassService {
             // 결제 + 상세
             String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), centerCode, userCode);
             paymentService.createPaymentDetail(paymentKey, classInfo, userCode);
+
+            paymentService.processPresetPaymentIfExists(dto.getStudentId(), paymentKey, classInfo.getClassFee(), userCode, centerCode, dto.getYy(), dto.getMm());
         }
 
     }
+
 
 
     @Transactional

@@ -5,6 +5,9 @@ import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.manage.repository.ManageRepository;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
+import com.hohoedu.all_pass.popbill.PopbillService;
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student.model.InviteTracking;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,7 @@ import org.threeten.bp.format.DateTimeFormatter;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 public class ManageService {
 
     private final ManageRepository manageRepository;
+    private final PopbillService popbillService;
 
     public List<ManageRespDTO.BasicOrderListDTO> getBasicOrderList(String userCode, String centerCode, String year, String month) {
 
@@ -38,43 +43,6 @@ public class ManageService {
         List<ManageRespDTO.SavedOrderListDTO> orderListDTO = manageRepository.findSavedOrderList(centerCode, userCode, year, month);
 
         return orderListDTO;
-    }
-
-    public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
-
-        String yy = req.getYy();
-        String mm = req.getMm();
-
-        String userCode = user.getUserCode();
-        String centerCode = user.getCenterCode();
-
-        for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
-            log.info(req.getReorderType());
-            manageRepository.insertReorder(userCode, centerCode, yy, mm, req.getReorderType(), item.getClassKey(), item.getUnitKey(), item.getCount(), item.getReason());
-        }
-        return 1;
-    }
-
-    public List<ManageRespDTO.ReorderListDTO> getReorderList(String userCode, String centerCode, String year, String month) {
-
-        List<ManageRespDTO.ReorderListDTO> reorderListDTO = manageRepository.findReorderList(centerCode, userCode, year, month);
-        reorderListDTO.stream()
-                .peek(dto -> {
-                    if (dto.getCreatedAt() != null) {
-                        dto.setCreatedAt(
-                                LocalDateTime.parse(
-                                        dto.getCreatedAt(),
-                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-                                ).format(
-                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                                )
-                        );
-                    }
-                })
-                .collect(Collectors.toList());
-
-        return reorderListDTO;
-
     }
 
     public void insertOrder(List<ManageReqDTO.InsertOrderDTO> reqDTO) {
@@ -103,6 +71,111 @@ public class ManageService {
 
     }
 
+    public List<ManageRespDTO.ReorderListDTO> getReorderList(String userCode, String centerCode, String year, String month) {
+
+        List<ManageRespDTO.ReorderListDTO> reorderListDTO = manageRepository.findReorderList(centerCode, userCode, year, month);
+        reorderListDTO.stream()
+                .peek(dto -> {
+                    if (dto.getCreatedAt() != null) {
+                        dto.setCreatedAt(
+                                LocalDateTime.parse(
+                                        dto.getCreatedAt(),
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+                                ).format(
+                                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                )
+                        );
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return reorderListDTO;
+
+    }
+
+    public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
+
+        String yy = req.getYy();
+        String mm = req.getMm();
+
+        String userCode = user.getUserCode();
+        String centerCode = user.getCenterCode();
+
+        for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
+            log.info(req.getReorderType());
+            manageRepository.insertReorder(userCode, centerCode, yy, mm, req.getReorderType(), item.getClassKey(), item.getUnitKey(), item.getCount(), item.getReason());
+        }
+        processAddReorder(req, user);
+
+        return 1;
+    }
+
+    private void processAddReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
+        try {
+
+            String orderContent = buildOrderContent(req.getItems());
+
+            popbillService.sendAddReorderAlimtalk(
+                    user,
+                    orderContent
+            );
+
+            log.info("추가 주문 알림톡 발송 완료");
+
+        } catch (Exception e) {
+            log.error("추가 주문 알림톡 발송 실패 - error: {}", e.getMessage(), e);
+        }
+    }
+
+    private String buildOrderContent(List<ManageReqDTO.InsertReorderDTO.ReorderItemDTO> items) {
+        List<Map<String, String>> classResults = manageRepository.findAllClassNames();
+        Map<String, String> classNameMap = classResults.stream()
+                .collect(Collectors.toMap(
+                        map -> (String) map.get("classKey"),
+                        map -> (String) map.get("className")
+                ));
+
+        List<Map<String, String>> unitResults = manageRepository.findAllUnitNames();
+        Map<String, String> unitNameMap = unitResults.stream()
+                .collect(Collectors.toMap(
+                        map -> (String) map.get("unitKey"),
+                        map -> (String) map.get("unitName")
+                ));
+
+        // 2. 주문 내용 생성
+        StringBuilder content = new StringBuilder();
+
+        for (int i = 0; i < items.size(); i++) {
+            ManageReqDTO.InsertReorderDTO.ReorderItemDTO item = items.get(i);
+
+            String className = classNameMap.get(item.getClassKey());
+            String unitName = unitNameMap.get(item.getUnitKey());
+
+            content.append(className)
+                    .append(" ")
+                    .append(unitName)
+                    .append(" ")
+                    .append(item.getCount())
+                    .append("권");
+
+            if (i < items.size() - 1) {
+                content.append(",\n");  // 쉼표 대신 줄바꿈
+            }
+        }
+
+        return content.toString();
+    }
+
+
+    public String cancelReorder(Integer id) {
+        int result = manageRepository.cancelReorder(id);
+        if (result > 0) {
+            return "0000";
+        }
+        return "9999";
+    }
+
+    ;
 
     // 센터별 수업료 조회
     public List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(String centerCode) {

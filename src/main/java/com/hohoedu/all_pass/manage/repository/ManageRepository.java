@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ManageRepository {
@@ -64,5 +65,11 @@ public interface ManageRepository {
     // 학원별 수강료 수정
     int updateClassFeeMap(@Param("list") List<ManageReqDTO.InsertClassFeeDTO.ClassFeeMapDTO> feeMapList);
 
+    // 추가: 전체 class 이름 조회
+    List<Map<String, String>> findAllClassNames();
 
+    // 추가: 전체 unit 이름 조회
+    List<Map<String, String>> findAllUnitNames();
+
+    int cancelReorder(Integer id);
 }
