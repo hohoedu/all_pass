@@ -241,13 +241,6 @@ function formatBirthInput(birth) {
     return `${fullYear}-${mm}-${dd}`;
 }
 
-function unformatBirth(dateString) {
-    if (!dateString) return "";
-    const p = dateString.split("-");
-    if (p.length !== 3) return "";
-    return p[0].substring(2) + p[1] + p[2];
-}
-
 function unformatPhone(phone) {
     return phone ? phone.replace(/-/g, "") : "";
 }
@@ -361,7 +354,7 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_address", info.address);
     setValue("#tab2 .s_address_detail", info.addressDetail);
     setValue("#tab2 .s_phone", formatPhone(info.parentPhone));
-    setValue("#tab2 .s_birth", formatBirthDisplay(info.birth)); // 텍스트 영역
+    setValue("#tab2 .s_birth", formatBirthDisplay(info.birth));
 
 
     // ---------------- TAB3: 수업 정보 ----------------
@@ -399,7 +392,14 @@ function renderStudentModal(data) {
 
     const birthInput = document.querySelector("#tab2 #birth-date");
     if (birthInput) {
-        birthInput.value = formatBirthInput(info.birth);
+        const formattedBirth = formatBirthInput(info.birth);
+
+        if (formattedBirth) {
+            birthInput.value = formattedBirth;
+        } else {
+            birthInput.value = info.birth || "";
+        }
+
     }
 
     // 날짜 input에 payment에서 가져온 값 넣기
@@ -660,7 +660,7 @@ async function updateStudentInfo() {
         const req = {
             studentId: currentStudentId,                     // 필수
             studentName: getValue("#tab2 .s_name"),
-            birth: unformatBirth(getValue("#tab2 #birth-date")), // YYYY-MM-DD -> YYMMDD
+            birth: getValue("#tab2 #birth-date"),
             genderKey: getValue("#tab2 .gender-hidden"),     // 0 / 1
             school: getValue("#tab2 .s_school"),
             address: getValue("#tab2 .s_address"),

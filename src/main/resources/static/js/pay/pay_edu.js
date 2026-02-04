@@ -26,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         초기 바인딩
     =============================== */
     initMonthFromUrl();
-    bindMonthPicker();          // 🔥 누락됐던 핵심
-    bindFeeViewRadio();
+    bindMonthPicker();
     bindTeacherChange();
+    bindFeeViewRadio();
     bindSearch();
     bindSelectAllCheckbox();
 
@@ -62,11 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ===============================
-        데이터 조회
-    =============================== */
+     데이터 조회
+ =============================== */
     async function fetchStudents(year, month, teacherCode) {
         try {
             tbody.style.visibility = 'hidden';
+            const itemType = document.querySelector('input[name="feeView"]:checked').value;
 
             const res = await fetch('/pay/students', {
                 method: 'POST',
@@ -74,7 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     year,
                     month: String(month).padStart(2, '0'),
-                    userCode: teacherCode
+                    userCode: teacherCode,
+                    itemType: itemType
                 })
             });
 
@@ -82,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const json = await res.json();
             currentStudents = json.response || json;
-
+            console.log("학생 데이터:", currentStudents);
             renderStudentTable(currentStudents);
 
         } catch (e) {
@@ -92,102 +94,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ===============================
-        렌더링
+        렌더링 (필터링/정렬 제거)
     =============================== */
     function renderStudentTable(list) {
-
-        // 🔥 금액 기준 필터 제거 (0원도 포함)
-        let filteredList = list;
-
-        // 🔥 형제 그룹 맵 생성 (전화번호 뒷자리 기준)
-        const siblingGroups = new Map();
-
-        filteredList.forEach(student => {
-            const phoneKey = student.parentPhone
-                ? student.parentPhone.slice(-8)
-                : `unique_${student.studentId}`;
-
-            if (!siblingGroups.has(phoneKey)) {
-                siblingGroups.set(phoneKey, []);
-            }
-            siblingGroups.get(phoneKey).push(student);
-        });
-
-        const groupRepresentatives = Array.from(siblingGroups.values()).map(group => {
-            const sorted = group.sort((a, b) =>
-                (a.studentName || '').localeCompare(b.studentName || '')
-            );
-            return {
-                representative: sorted[0],
-                members: sorted
-            };
-        });
-
-        // 🔥 그룹 대표 기준 정렬
-        // 1순위: 금액 있음 → 0원은 맨 아래
-        // 2순위: 결제 상태
-        // 3순위: 대표 학생 이름
-        const sortedGroups = groupRepresentatives.sort((a, b) => {
-            const feeA = currentFeeView === 'edu'
-                ? Number(a.representative.totalFee || 0)
-                : Number(a.representative.totalMaterialFee || 0);
-
-            const feeB = currentFeeView === 'edu'
-                ? Number(b.representative.totalFee || 0)
-                : Number(b.representative.totalMaterialFee || 0);
-
-            // 0원은 항상 마지막
-            if (feeA === 0 && feeB > 0) return 1;
-            if (feeA > 0 && feeB === 0) return -1;
-
-            // 🔥 새로운 우선순위 함수 사용
-            const priorityA = getPaymentPriority(a.representative, currentFeeView);
-            const priorityB = getPaymentPriority(b.representative, currentFeeView);
-
-            if (priorityA !== priorityB) {
-                return priorityA - priorityB;  // 숫자가 작을수록 먼저
-            }
-
-            // 우선순위가 같으면 이름순
-            return (a.representative.studentName || '')
-                .localeCompare(b.representative.studentName || '');
-        });
-
-        // 🔥 그룹 펼쳐서 최종 리스트 생성
-        const sortedList = [];
-        sortedGroups.forEach(group => {
-            sortedList.push(...group.members);
-        });
-
         tbody.innerHTML = '';
 
-        if (!sortedList || sortedList.length === 0) {
+        if (!list || list.length === 0) {
             tbody.innerHTML = `
-            <tr>
-                <td colspan="10" style="text-align:center;">
-                    등록된 학생 데이터가 없습니다.
-                </td>
-            </tr>`;
+        <tr>
+            <td colspan="10" style="text-align:center;">
+                등록된 학생 데이터가 없습니다.
+            </td>
+        </tr>`;
             tbody.style.visibility = 'visible';
             return;
         }
 
-        // 🔥 DocumentFragment 사용
         const fragment = document.createDocumentFragment();
 
-        sortedList.forEach((s, i) => {
-            const fee = currentFeeView === 'edu'
-                ? s.totalFee
-                : s.totalMaterialFee;
-
-            const unpaid = currentFeeView === 'edu'
-                ? s.unpaidEduAmount
-                : s.unpaidBookAmount;
-
-            const payState = currentFeeView === 'edu'
-                ? s.eduStatus
-                : s.materialStatus;
-
+        list.forEach((s, i) => {
             const lastPhone4 = s.parentPhone
                 ? s.parentPhone.replace(/[^0-9]/g, '').slice(-4)
                 : '';
@@ -197,29 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.studentId = s.studentId;
             tr.dataset.studentName = s.studentName;
             tr.dataset.paymentKey = s.paymentKey || '';
-            tr.dataset.eduStatus = s.eduStatus || '';
-            tr.dataset.materialStatus = s.materialStatus || '';
+            tr.dataset.billId = s.billId || '';
+            tr.dataset.issuanceStatus = s.issuanceStatus || '';
+            tr.dataset.payStatus = s.payStatus || '';
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
             tr.dataset.lastPhone4 = lastPhone4;
 
             tr.innerHTML = `
-            <td class="checkbox-group">
-                <input type="checkbox" class="row-checkbox">
-            </td>
-            <td>${i + 1}</td>
-            <td class="student-name-cell" style="position: relative;">
-                ${s.studentName}
-            </td>
-            <td>${s.subject || '-'}</td>
-            <td>${formatTeacher(s)}</td>
-            <td>${Number(fee || 0).toLocaleString()}</td>
-            <td>${Number(unpaid || 0).toLocaleString()}</td>
-            <td>${renderIssueStatus(s)}</td>
-            <td>${renderPayStatus(payState, unpaid)}</td>
-            <td id="personal-pay-info" style="cursor:pointer;">
-                <span style="font-size:18px;">🔍</span>
-            </td>
-        `;
+        <td class="checkbox-group">
+            <input type="checkbox" class="row-checkbox">
+        </td>
+        <td>${i + 1}</td>
+        <td class="student-name-cell" style="position: relative;">
+            ${s.studentName}
+        </td>
+        <td>${s.subject || '-'}</td>
+        <td>${formatTeacher(s)}</td>
+        <td>${Number(s.billPrice || 0).toLocaleString()}</td>
+        <td>${Number(s.unpaidAmount || 0).toLocaleString()}</td>
+        <td>${renderIssueStatus(s.issuanceStatus)}</td>
+        <td>${renderPayStatus(s.payStatus)}</td>
+        <td id="personal-pay-info" style="cursor:pointer;">
+            <span style="font-size:18px;">🔍</span>
+        </td>
+    `;
 
             fragment.appendChild(tr);
         });
@@ -231,34 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.style.visibility = 'visible';
     }
 
-    function getPaymentPriority(student, feeView) {
-        const status = feeView === 'edu' ? student.eduStatus : student.materialStatus;
-        const unpaid = feeView === 'edu' ? student.unpaidEduAmount : student.unpaidBookAmount;
-
-        // 미발행
-        if (!status || status === 'undefined' || status === 'null') {
-            return 1;
-        }
-
-        // 미결제 (발행됨)
-        if (status === 'issued') {
-            return 2;
-        }
-
-        // 부분결제
-        if (status === 'approved' && Number(unpaid || 0) !== 0) {
-            return 3;
-        }
-
-        // 결제완료
-        if (status === 'approved' && Number(unpaid || 0) === 0) {
-            return 4;
-        }
-
-        // destroyed 등 기타
-        return 5;
-    }
-    // 형제 이름 보이게 하기
+// 형제 이름 보이게 하기
     function bindStudentNameTooltip() {
         const nameCells = tbody.querySelectorAll('.student-name-cell');
 
@@ -275,9 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cell.style.cursor = 'help';
 
-            // 호버 시 툴팁 생성
             cell.addEventListener('mouseenter', (e) => {
-                // 기존 툴팁 제거
                 const existingTooltip = document.querySelector('.phone-tooltip');
                 if (existingTooltip) {
                     existingTooltip.remove();
@@ -286,19 +183,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tooltip = document.createElement('div');
                 tooltip.className = 'phone-tooltip';
                 tooltip.innerHTML = `
-                <div style="font-weight: bold; margin-bottom: 5px;">같은 전화번호 형제:</div>
-                ${samePhoneStudents}
-            `;
+            <div style="font-weight: bold; margin-bottom: 5px;">같은 전화번호 형제:</div>
+            ${samePhoneStudents}
+        `;
 
                 document.body.appendChild(tooltip);
 
-                // 툴팁 위치 조정
                 const rect = cell.getBoundingClientRect();
                 tooltip.style.left = rect.left + 'px';
                 tooltip.style.top = (rect.bottom + 5) + 'px';
             });
 
-            // 마우스 나가면 툴팁 제거
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.phone-tooltip');
                 if (tooltip) {
@@ -314,25 +209,37 @@ document.addEventListener('DOMContentLoaded', () => {
             + `${s.bookTeacher ? s.bookTeacher + '(독)' : ''}`;
     }
 
-    function renderIssueStatus(s) {
-        const status = currentFeeView === 'edu'
-            ? s.eduStatus
-            : s.materialStatus;
-
-        if (!status) return `<span class="unissued">미발행</span>`;
-        if (status === 'issued' || status === 'approved') return `<span class="issued">발행</span>`;
+    function renderIssueStatus(issuanceStatus) {
+        if (!issuanceStatus || issuanceStatus === '미발행') {
+            return `<span class="unissued">미발행</span>`;
+        }
+        if (issuanceStatus === '발행') {
+            return `<span class="issued">발행</span>`;
+        }
+        if (issuanceStatus === '파기') {
+            return `<span class="destroyed">파기</span>`;
+        }
+        if (issuanceStatus === '취소') {
+            return `<span class="canceled">취소</span>`;
+        }
+        if (issuanceStatus === '할인') {
+            return `<span class="discount">할인</span>`;
+        }
         return '-';
     }
 
-    function renderPayStatus(status, unpaid) {
-        if (status === 'approved') {
-            if (unpaid !== 0) {
-                return `<span class="pay-box pay-partial">부분결제</span>`;
-            }
+    function renderPayStatus(totalStatus) {
+        if (totalStatus === '결제완료') {
             return `<span class="pay-box pay-done">결제완료</span>`;
         }
-        if (status === 'issued') {
+        if (totalStatus === '부분결제') {
+            return `<span class="pay-box pay-partial">부분결제</span>`;
+        }
+        if (totalStatus === '미결제') {
             return `<span class="pay-box pay-late">미결제</span>`;
+        }
+        if (totalStatus === '할인') {
+            return `<span class="pay-box pay-discount">할인</span>`;
         }
         return '-';
     }
@@ -362,16 +269,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function bindFeeViewRadio() {
         document.querySelectorAll('input[name="feeView"]').forEach(radio => {
             radio.addEventListener('change', e => {
+                const [y, m] = monthInput.value.split('-');
                 currentFeeView = e.target.value;
-                renderStudentTable(currentStudents);
+                fetchStudents(y, m, teacherSelect.value, currentFeeView);
             });
         });
     }
 
     function bindTeacherChange() {
-        teacherSelect.addEventListener('change', () => {
+        teacherSelect.addEventListener('change', e => {
             const [y, m] = monthInput.value.split('-');
-            fetchStudents(y, m, teacherSelect.value);
+            currentFeeView = e.target.value;
+            fetchStudents(y, m, teacherSelect.value, currentFeeView);
         });
     }
 
@@ -425,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 // ========== 청구서 유효기간 세팅 ========== //
 document.addEventListener('DOMContentLoaded', () => {
     const expireInput = document.querySelector('.expire-input');
@@ -569,7 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const cellIndex = Array.from(row.children).indexOf(targetCell);
 
-            // 🔥 체크박스 클릭 시 무시
             if (cellIndex === 0) return;
 
             const studentId = row.dataset.studentId;
@@ -579,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const yy = url.searchParams.get('year');
             const mm = url.searchParams.get('month');
 
-            // 🔥 아이콘(personal-pay-info) 클릭 시 → 모달 열기
             if (e.target.closest('#personal-pay-info')) {
                 try {
                     const response = await fetch('/pay/edu-personal', {
@@ -615,29 +523,39 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             row.classList.add('selected-for-detail');
-
-            try {
-                const response = await fetch('/pay/detail/bill', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({studentId, yy, mm})
-                });
-
-                if (!response.ok) throw new Error('데이터 조회 실패');
-
-                const data = await response.json();
-                console.log(data);
-                fillClaimDetailTable(data.response);
-
-                claimDetailSection.style.display = 'block';
-                if (claimDivider) claimDivider.style.display = 'block';
-                if (claimButtons) claimButtons.style.display = 'flex';
-
-            } catch (error) {
-                console.error('❌ 청구 데이터 조회 오류:', error);
-                alert('청구 내역을 불러오지 못했습니다.');
-            }
+            await fetchBillDetail(studentId, yy, mm);
         });
+    }
+
+    /* =========================
+        청구 상세 데이터 로드 (개선됨)
+    ========================= */
+    async function fetchBillDetail(studentId, yy, mm) {
+        const claimDetailSection = document.querySelector('.claim-frame');
+        const claimDivider = document.getElementById('claim-divider');
+        const claimButtons = document.getElementById('claim-buttons');
+
+        try {
+            const response = await fetch('/pay/detail/bill', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId, yy, mm})
+            });
+
+            if (!response.ok) throw new Error('데이터 조회 실패');
+
+            const data = await response.json();
+            console.log(data);
+            fillClaimDetailTable(data.response);
+
+            claimDetailSection.style.display = 'block';
+            if (claimDivider) claimDivider.style.display = 'block';
+            if (claimButtons) claimButtons.style.display = 'flex';
+
+        } catch (error) {
+            console.error('❌ 청구 데이터 조회 오류:', error);
+            alert('청구 내역을 불러오지 못했습니다.');
+        }
     }
 
     /* =========================
@@ -926,7 +844,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if (result.success) {
                     alert('수강료가 저장되었습니다.');
-                    location.reload();
                 } else {
                     alert(result.message || '저장에 실패했습니다.');
                 }
@@ -1090,7 +1007,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             alert('청구서 발행이 완료되었습니다.');
-            window.location.reload();
 
         } catch (e) {
             console.error(e);
@@ -1172,7 +1088,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             alert(data.data || '결제가 취소되었습니다.');
-            location.reload();
+
+            // ✅ CSR 업데이트
+            const url = new URL(window.location.href);
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
+            await fetchBillDetail(studentId, yy, mm);
 
         } catch (err) {
             console.error('❌ 결제 취소 오류:', err);
@@ -1227,7 +1148,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             alert(data.data || '청구서가 파기되었습니다.');
-            location.reload();
+
+            // ✅ CSR 업데이트
+            const url = new URL(window.location.href);
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
+            await fetchBillDetail(studentId, yy, mm);
 
         } catch (err) {
             console.error('❌ 청구서 파기 오류:', err);
@@ -1248,6 +1174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const row = checkedBox.closest('tr');
         const billId = row.dataset.billId;
+        const studentId = row.dataset.studentId;
 
         if (!billId || billId === 'null' || billId === 'undefined') {
             alert('재발행할 수 있는 청구서가 아닙니다.');
@@ -1268,11 +1195,152 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             alert('재발행이 완료되었습니다.');
-            window.location.reload();
+
+            // ✅ CSR 업데이트
+            const url = new URL(window.location.href);
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
+            await fetchBillDetail(studentId, yy, mm);
 
         } catch (e) {
             console.error(e);
             alert('재발행 중 오류가 발생했습니다.');
         }
     });
+
+    // ✅ fetchBillDetail 함수를 여기서도 접근 가능하도록 외부에 선언
+    async function fetchBillDetail(studentId, yy, mm) {
+        const claimDetailSection = document.querySelector('.claim-frame');
+        const claimDivider = document.getElementById('claim-divider');
+        const claimButtons = document.getElementById('claim-buttons');
+
+        try {
+            const response = await fetch('/pay/detail/bill', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId, yy, mm})
+            });
+
+            if (!response.ok) throw new Error('데이터 조회 실패');
+
+            const data = await response.json();
+            console.log(data);
+            fillClaimDetailTable(data.response);
+
+            claimDetailSection.style.display = 'block';
+            if (claimDivider) claimDivider.style.display = 'block';
+            if (claimButtons) claimButtons.style.display = 'flex';
+
+        } catch (error) {
+            console.error('❌ 청구 데이터 조회 오류:', error);
+            alert('청구 내역을 불러오지 못했습니다.');
+        }
+    }
+
+    function fillClaimDetailTable(data) {
+        const claimTbody = document.querySelector('.claim-frame tbody');
+        if (!claimTbody) return;
+
+        claimTbody.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            claimTbody.innerHTML = `
+        <tr>
+            <td colspan="8" style="text-align:center;">
+                등록된 청구 내역이 없습니다.
+            </td>
+        </tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+
+            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
+
+            const hasCardName = item.type === 'bill' && item.cardName;
+            const tooltipStyle = hasCardName ? 'position: relative;' : '';
+            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
+
+            tr.dataset.billId = item.billId || '';
+            tr.dataset.studentId = item.studentId || '';
+            tr.dataset.paymentKey = item.paymentKey || '';
+            tr.dataset.billType = item.billType || '';
+            tr.dataset.status = item.status || '';
+
+            tr.innerHTML = `
+        <td class="checkbox-group">
+            <input type="checkbox" class="claim-checkbox">
+        </td>
+        <td>${item.studentName || '-'}</td>
+        <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+        <td>${item.expireDate || '-'}</td>
+        <td>${paidDate}</td>
+        <td class="payment-method-cell" style="${tooltipStyle}" ${tooltipAttr}>
+            ${paymentMethodText}
+        </td>
+        <td>${amount}</td>
+        <td>${getStatusText(item.status)}</td>
+    `;
+
+            claimTbody.appendChild(tr);
+        });
+
+        bindPaymentMethodTooltip();
+    }
+
+    function bindPaymentMethodTooltip() {
+        const paymentCells = document.querySelectorAll('.payment-method-cell[data-card-name]');
+
+        paymentCells.forEach(cell => {
+            const cardName = cell.getAttribute('data-card-name');
+
+            if (!cardName) return;
+
+            cell.addEventListener('mouseenter', (e) => {
+                const existingTooltip = document.querySelector('.payment-tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'payment-tooltip';
+                tooltip.textContent = cardName;
+
+                document.body.appendChild(tooltip);
+
+                const rect = cell.getBoundingClientRect();
+                const tooltipWidth = tooltip.offsetWidth;
+
+                const leftPosition = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+                tooltip.style.left = leftPosition + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+            });
+
+            cell.addEventListener('mouseleave', () => {
+                const tooltip = document.querySelector('.payment-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+    }
+
+    function getStatusText(status) {
+        switch (status) {
+            case 'issued':
+                return '결제대기';
+            case 'approved':
+                return '결제완료';
+            case 'canceled':
+                return '결제취소';
+            case 'destroyed':
+                return '청구서파기';
+            default:
+                return '-';
+        }
+    }
 });

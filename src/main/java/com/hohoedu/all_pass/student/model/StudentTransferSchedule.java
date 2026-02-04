@@ -21,6 +21,7 @@ public class StudentTransferSchedule {
 
     private String fromUser;
     private String toUser;
+    private String centerCode;
 
     private String moveAt;
     private String status;
@@ -33,11 +34,12 @@ public class StudentTransferSchedule {
     private Timestamp appliedAt;
 
     @Builder
-    public StudentTransferSchedule(String studentId, String classType, String fromUser, String toUser, String moveAt, String status, String reason, String createdBy, Timestamp createdAt, Timestamp appliedAt) {
+    public StudentTransferSchedule(String studentId, String classType, String fromUser, String toUser, String centerCode, String moveAt, String status, String reason, String createdBy, Timestamp createdAt, Timestamp appliedAt) {
         this.studentId = studentId;
         this.classType = classType;
         this.fromUser = fromUser;
         this.toUser = toUser;
+        this.centerCode = centerCode;
         this.moveAt = moveAt;
         this.status = status;
         this.reason = reason;

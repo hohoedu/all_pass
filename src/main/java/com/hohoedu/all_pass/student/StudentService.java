@@ -648,6 +648,7 @@ public class StudentService {
                     .student(Student.builder().studentId(t.getStudentId()).build())
                     .fromUser(User.builder().userCode(t.getFromUser()).build())
                     .toUser(User.builder().userCode(t.getToUser()).build())
+                    .centerCode(Center.builder().centerCode(t.getCenterCode()).build())
                     .classType(t.getClassType())
                     .transferReason(t.getReason())
                     .updatedBy("SYSTEM")

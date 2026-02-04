@@ -352,7 +352,7 @@ public class PaymentService {
         paymentRepository.createPaymentDetail(bookDetail);
 
         // 🔥 개선: payment 상태 재계산
-        recalculatePaymentStatus(paymentKey, userCode);
+//        recalculatePaymentStatus(paymentKey, userCode);
     }
 
 
@@ -654,8 +654,8 @@ public class PaymentService {
     /**
      * 수업료 청구 화면 데이터 조회
      */
-    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode) {
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode, centerCode);
+    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode, String itemType) {
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode, centerCode, itemType);
         return students;
     }
 
@@ -1188,7 +1188,7 @@ public class PaymentService {
         List<PaymentRespDTO.ExpiredBillDTO> result = paymentRepository.findExpriedBill(ymd);
 
         for (PaymentRespDTO.ExpiredBillDTO dto : result) {
-            paymentRepository.updateStatusToDestroyed(dto.getBillId());
+            paymentRepository.updateStatusToDestroyed(dto.getBillId(), ymd);
         }
 
     }

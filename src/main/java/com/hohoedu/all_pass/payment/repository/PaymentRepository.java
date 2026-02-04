@@ -85,7 +85,12 @@ public interface PaymentRepository {
     String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year, @Param("month") String month);
 
     // 수강료 청구 화면 데이터 필터링
-    List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(@Param("year") String year, @Param("month") String month, @Param("userCode") String userCode, @Param("centerCode") String centerCode);
+    List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudents(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode,
+            @Param("itemType") String itemType);
 
     // 수업별 센터별 수업료 조회
     Integer findFeeByClassKey(@Param("classKey") String classKey, @Param("centerCode") String centerCode);
@@ -242,7 +247,7 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.ExpiredBillDTO> findExpriedBill(@Param("ymd") String ymd);
 
-    int updateStatusToDestroyed(@Param("billId") String billId);
+    int updateStatusToDestroyed(@Param("billId") String billId, @Param("ymd") String ymd);
 
     List<PaymentRespDTO.CashbillStudentRespDTO> findCashbillStudents(
             @Param("yy") String yy,

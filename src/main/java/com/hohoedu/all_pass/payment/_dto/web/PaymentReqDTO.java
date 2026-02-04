@@ -123,6 +123,7 @@ public class PaymentReqDTO {
         private String year;
         private String month;
         private String userCode;
+        private String itemType;
     }
 
     @Data

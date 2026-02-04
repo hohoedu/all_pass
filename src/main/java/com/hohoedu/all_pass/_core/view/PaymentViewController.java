@@ -38,11 +38,11 @@ public class PaymentViewController {
 //        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
 
         List<User> users = userService.findByCenterCode(user);
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode());
+//        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode(), "EDU_FEE");
 
         model.addAttribute("user", user);
         model.addAttribute("users", users);
-        model.addAttribute("students", students);
+//        model.addAttribute("students", students);
         return "pay/pay-edu";
     }
 

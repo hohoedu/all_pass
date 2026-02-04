@@ -45,7 +45,7 @@
     </select>
 
     <select id="existsBillByPaymentKey" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BillRespDTO">
-        SELECT COUNT(*)    as count,
+        SELECT COUNT(*) as count,
                payment_key AS paymnetKey,
                student_id  AS studentId,
                bill_id     AS billId
@@ -267,231 +267,140 @@
 
     <select id="findByAssignStudents"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
+        WITH classInfo AS (SELECT ta.student_id,
 
-        WITH class AS (SELECT ta.student_id,
-
-                              -- 수업명 (한자 / 독서)
-                              STUFF(
-                                      (SELECT ', ' + cc2.class_name
-                                       FROM erp_time_table_assign ta2
-                                                JOIN erp_time_table t2
-                                                     ON ta2.time_table_key = t2.time_table_key
-                                                JOIN erp_class_code cc2
-                                                     ON t2.class_key = cc2.class_key
-                                       WHERE ta2.student_id = ta.student_id
-                                         AND t2.yy = #{year}
-                                         AND t2.mm = #{month}
-                                         AND cc2.class_type IN ('1', '2')
-                                       FOR XML PATH ('')),
+                                  -- 수업명 (한자 / 독서)
+                                  STUFF(
+                                          (SELECT ', ' + cc2.class_name
+                                           FROM erp_time_table_assign ta2
+                                                    JOIN erp_time_table t2
+                                                         ON ta2.time_table_key = t2.time_table_key
+                                                    JOIN erp_class_code cc2
+                                                         ON t2.class_key = cc2.class_key
+                                           WHERE ta2.student_id = ta.student_id
+                                             AND t2.yy = #{year}
+                                             AND t2.mm = #{month}
+                                             AND cc2.class_type IN ('1', '2')
+                                              FOR XML PATH ('')),
                                       1, 2, ''
-                              )                                                       AS subject,
+                              )                                                           AS subject,
 
-                              -- 한자 선생님
-                              MAX(CASE WHEN cc.class_type = '1' THEN u.user_name END) AS hanTeacher,
+                                  -- 한자 선생님
+                                  MAX(CASE WHEN cc.class_type = '1' THEN u.user_name END) AS hanTeacher,
 
-                              -- 독서 선생님
-                              MAX(CASE WHEN cc.class_type = '2' THEN u.user_name END) AS bookTeacher,
+                                  -- 독서 선생님
+                                  MAX(CASE WHEN cc.class_type = '2' THEN u.user_name END) AS bookTeacher,
 
-                              -- 한자 선생님
-                              MAX(CASE WHEN cc.class_type = '1' THEN u.user_code END) AS assign_han_teacher,
+                                  -- 한자 선생님
+                                  MAX(CASE WHEN cc.class_type = '1' THEN u.user_code END) AS assign_han_teacher,
 
-                              -- 독서 선생님
-                              MAX(CASE WHEN cc.class_type = '2' THEN u.user_code END) AS assign_book_teacher
-
-
-                       FROM erp_time_table_assign ta
-                                JOIN erp_time_table t
-                                     ON ta.time_table_key = t.time_table_key
-                                JOIN erp_class_code cc
-                                     ON t.class_key = cc.class_key
-                                JOIN erp_user u
-                                     ON t.user_code = u.user_code
-
-                       WHERE t.yy = #{year}
-                         AND t.mm = #{month}
-                         AND cc.class_type IN ('1', '2')
-
-                       GROUP BY ta.student_id),
-             pay AS (SELECT p.student_id,
-                            p.payment_key                  AS paymentKey,
-
-                            MAX(CASE
-                                    WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount
-                                    ELSE 0 END)            AS hanFee,
-                            MAX(CASE
-                                    WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount
-                                    ELSE 0 END)            AS bookFee,
-
-                            MAX(CASE
-                                    WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount
-                                    ELSE 0 END)            AS hanMaterialFee,
-                            MAX(CASE
-                                    WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount
-                                    ELSE 0 END)            AS bookMaterialFee,
-
-                            (MAX(CASE WHEN pd.item_type = 'edu_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE
-                                     WHEN pd.item_type = 'edu_fee' AND pd.class_type = 2 THEN pd.amount
-                                     ELSE 0 END))          AS totalFee,
-
-                            (MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE
-                                     WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount
-                                     ELSE 0 END))          AS totalMaterialFee,
-
-                            -- 교육비 미납금액
-                            CASE
-                                WHEN (
-                                         (MAX(CASE
-                                                  WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount
-                                                  ELSE 0 END) +
-                                          MAX(CASE
-                                                  WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount
-                                                  ELSE 0 END))
-                                             -
-                                         (
-                                             ISNULL(pm.total_amount, 0)
-                                                 +
-                                             ISNULL((SELECT SUM(pb2.amount)
-                                                     FROM erp_payment_bill pb2
-                                                     WHERE pb2.payment_key = p.payment_key
-                                                       AND pb2.bill_type = 'EDU_FEE'
-                                                       AND pb2.status = 'approved'), 0)
-                                             )
-                                         ) &lt; 0
-                                    THEN 0
-                                ELSE (
-                                    (MAX(CASE
-                                             WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '1' THEN pd.amount
-                                             ELSE 0 END) +
-                                     MAX(CASE
-                                             WHEN pd.item_type = 'EDU_FEE' AND pd.class_type = '2' THEN pd.amount
-                                             ELSE 0 END))
-                                        -
-                                    (
-                                        ISNULL(pm.total_amount, 0)
-                                            +
-                                        ISNULL((SELECT SUM(pb2.amount)
-                                                FROM erp_payment_bill pb2
-                                                WHERE pb2.payment_key = p.payment_key
-                                                  AND pb2.bill_type = 'EDU_FEE'
-                                                  AND pb2.status = 'approved'), 0)
-                                        )
-                                    )
-                                END                        AS unpaidEduAmount,
-
-                            -- 교재비 미납금액
-                            (MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 1 THEN pd.amount ELSE 0 END) +
-                             MAX(CASE WHEN pd.item_type = 'book_fee' AND pd.class_type = 2 THEN pd.amount ELSE 0 END)) -
-                            ISNULL(MAX(CASE
-                                           WHEN pb.bill_type = 'BOOK_FEE' AND pb.status = 'approved'
-                                               THEN pb.amount END),
-                                   0)                      AS unpaidBookAmount,
-
-                            -- 교육비 billId
-                            (SELECT TOP 1 pb2.bill_id
-                             FROM erp_payment_bill pb2
-                             WHERE pb2.payment_key = p.payment_key
-                               AND pb2.bill_type = 'EDU_FEE'
-                             ORDER BY pb2.created_at DESC, pb2.bill_id
-                                                     DESC) AS eduBillId,
-
-                            -- 교재비 billId
-                            (SELECT TOP 1 pb3.bill_id
-                             FROM erp_payment_bill pb3
-                             WHERE pb3.payment_key = p.payment_key
-                               AND pb3.bill_type = 'BOOK_FEE'
-                             ORDER BY pb3.created_at DESC, pb3.bill_id
-                                                     DESC) AS materialBillId,
-
-                            -- 교육비 상태
-                            ISNULL(
-                                    (SELECT TOP 1 pm2.status
-                                     FROM erp_payment_manual pm2
-                                     WHERE pm2.payment_key = p.payment_key
-                                       AND pm2.student_id = p.student_id
-                                     ORDER BY pm2.created_at DESC),
-                                    (SELECT TOP 1 pb2.status
-                                     FROM erp_payment_bill pb2
-                                     WHERE pb2.payment_key = p.payment_key
-                                       AND pb2.bill_type = 'EDU_FEE'
-                                     ORDER BY pb2.created_at DESC, pb2.bill_id DESC)
-                            )                              AS eduStatus,
-
-                            -- 교재비 상태
-                            (SELECT TOP 1 pb3.status
-                             FROM erp_payment_bill pb3
-                             WHERE pb3.payment_key = p.payment_key
-                               AND pb3.bill_type = 'BOOK_FEE'
-                             ORDER BY pb3.created_at DESC, pb3.bill_id
-                                                     DESC) AS materialStatus
-
-                     FROM erp_payment p
-                              JOIN erp_payment_detail pd ON pd.payment_key = p.payment_key
-                              LEFT JOIN erp_payment_bill pb ON pb.payment_key = p.payment_key
-                              LEFT JOIN (SELECT student_id,
-                                                SUM(
-                                                        ISNULL(card_amount, 0)
-                                                            + ISNULL(cash_amount, 0)
-                                                            + ISNULL(transfer_amount, 0)
-                                                ) AS total_amount
-                                         FROM erp_payment_manual pm
-                                         WHERE pm.yy = #{year}
-                                           AND pm.mm = #{month}
-                                         GROUP BY student_id) pm
-                                        ON pm.student_id = p.student_id
-                     WHERE p.yy = #{year}
-                       AND p.mm = #{month}
-                     GROUP BY p.student_id, p.payment_key, pm.total_amount)
+                                  -- 독서 선생님
+                                  MAX(CASE WHEN cc.class_type = '2' THEN u.user_code END) AS assign_book_teacher
 
 
-        SELECT s.student_id                                                    as studentId,
-               s.student_name + ' ' + pa.parent_tel_last                       as studentName,
+                           FROM erp_time_table_assign ta
+                                    JOIN erp_time_table t
+                                         ON ta.time_table_key = t.time_table_key
+                                    JOIN erp_class_code cc
+                                         ON t.class_key = cc.class_key
+                                    JOIN erp_user u
+                                         ON t.user_code = u.user_code
 
-               pay.paymentKey,
-               pay.hanFee,
-               pay.bookFee,
-               pay.hanMaterialFee,
-               pay.bookMaterialFee,
-               pay.totalFee,
-               pay.totalMaterialFee,
-               pay.unpaidEduAmount,
-               pay.unpaidBookAmount,
-               pay.eduStatus,
-               pay.materialStatus,
-               pay.eduBillId,
-               pay.materialBillId,
+                           WHERE t.yy = #{year}
+                             AND t.mm = #{month}
+                             AND cc.class_type IN ('1', '2')
 
-               pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS parentPhone,
+                           GROUP BY ta.student_id)
+        SELECT s.student_id         AS studentId,
+               s.student_name       AS studentName,
+               p.payment_key        AS paymentKey,
+               pb.bill_id           AS billId,
 
-               c.hanTeacher,
-               c.bookTeacher,
-               c.subject,
+               ci.subject           AS subject,
+               ci.hanTeacher        AS hanTeacher,
+               ci.assign_han_teacher        AS hanTeacher,
+               ci.bookTeacher       AS bookTeacher,
+               ci.assign_book_teacher       AS bookTeacher,
 
-               NULLIF(
-                       STUFF((SELECT ', ' + s2.student_name
-                              FROM erp_student s2
-                                       JOIN erp_parent pa2 ON s2.student_id = pa2.student_id
-                              WHERE pa2.parent_tel_middle = pa.parent_tel_middle
-                                AND pa2.parent_tel_last = pa.parent_tel_last
-                                AND s2.student_id != s.student_id
-                                AND s2.center_code = #{centerCode}
-                                AND s2.status_key NOT IN ('WITHDRAWN')
-                              FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
-                       ''
-               )                                                               AS samePhoneStudents
+               amt.billAmount       AS billPrice,
+               pb.status            AS totalStatus,
 
-        FROM erp_student s
+            /* 발행여부 */
+               CASE
+                   WHEN amt.billAmount = 0 THEN '할인'
+                   WHEN p.status = 'pending' THEN '미발행'
+                   WHEN pb.status = 'destroyed' THEN '파기'
+                   WHEN pb.status = 'canceled' THEN '취소'
+                   ELSE '발행'
+                   END              AS issuanceStatus,
 
-                 LEFT JOIN class c ON s.student_id = c.student_id
-                 INNER JOIN pay ON s.student_id = pay.student_id
-                 JOIN erp_parent pa ON s.student_id = pa.student_id
+            /* 결제금액 (item_type 기준 단일 계산) */
+               pay.calc_paid_amount AS paidAmount,
 
-        WHERE s.center_code = #{centerCode}
-          AND (#{userCode} = 'all'
-            OR c.assign_han_teacher = #{userCode}
-            OR c.assign_book_teacher = #{userCode})
-        ORDER BY s.student_name;
+            /* 미납금액 (결제금액 기준) */
+               CASE
+                   WHEN amt.billAmount - pay.calc_paid_amount &lt; 0 THEN 0
+                   ELSE amt.billAmount - pay.calc_paid_amount
+                   END              AS unpaidAmount,
+
+            /* 결제여부 (결제금액 기준) */
+               CASE
+                   WHEN amt.billAmount = 0 THEN '할인'
+                   WHEN pay.calc_paid_amount = 0 THEN '미결제'
+                   WHEN pay.calc_paid_amount >= amt.billAmount THEN '결제완료'
+                   ELSE '부분결제'
+                   END              AS payStatus
+
+        FROM erp_payment p
+                 JOIN erp_student s ON p.student_id = s.student_id
+                 LEFT JOIN ClassInfo ci ON s.student_id = ci.student_id
+                 JOIN (SELECT payment_key, SUM(amount) AS billAmount, item_type
+                       FROM erp_payment_detail
+                       WHERE item_type = #{itemType}
+                       GROUP BY payment_key, item_type) amt ON p.payment_key = amt.payment_key
+                 LEFT JOIN (SELECT payment_key, status, bill_id
+                            FROM (SELECT payment_key,
+                                         status,
+                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) as rn, bill_id
+                                  FROM erp_payment_bill
+                                  where bill_type = #{itemType}) sub
+                            WHERE rn = 1) pb ON p.payment_key = pb.payment_key
+                 LEFT JOIN (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                            FROM erp_payment_manual
+                            GROUP BY payment_key) pm ON p.payment_key = pm.payment_key
+                 LEFT JOIN (SELECT payment_key, SUM(amount) AS bill_amount
+                            FROM erp_payment_bill
+                            WHERE status = 'approved'
+                              AND bill_type = #{itemType}
+                            GROUP BY payment_key) pb_pay ON p.payment_key = pb_pay.payment_key
+            CROSS APPLY (SELECT
+        CASE
+        WHEN amt.item_type = 'BOOK_FEE'
+        THEN COALESCE(pb_pay.bill_amount, 0)
+        ELSE COALESCE(pm.manual_amount, 0) + COALESCE(pb_pay.bill_amount, 0)
+        END AS calc_paid_amount) pay
+
+        WHERE p.center_code = #{centerCode}
+          AND p.yy = #{year}
+          AND p.mm = #{month}
+
+        ORDER BY
+            CASE
+            WHEN amt.billAmount = 0 THEN 4
+            WHEN pay.calc_paid_amount = 0 THEN 1
+            WHEN pay.calc_paid_amount &lt; amt.billAmount THEN
+            2
+            ELSE 3
+        END
+        ,
+        CASE
+        WHEN p.status = 'pending' THEN 1
+        WHEN pb.status = 'destroyed' THEN 2
+        WHEN pb.status = 'cancel' THEN 3
+        ELSE 4
+        END
+        ,
+        s.student_name;
 
     </select>
 
@@ -525,8 +434,7 @@
     <update id="updateAmount">
         UPDATE erp_payment
         SET amount        = detail.total_amount,
-            unpaid_amount = detail.total_amount
-        FROM (SELECT SUM(amount) AS total_amount
+            unpaid_amount = detail.total_amount FROM (SELECT SUM(amount) AS total_amount
               FROM erp_payment_detail
               WHERE payment_key = #{paymentKey}) AS detail
         WHERE payment_key = #{paymentKey};
@@ -546,10 +454,9 @@
 
     <update id="updatePaymentDetailBookFee">
         UPDATE pd
-        SET pd.amount = #{materialFee}
-        FROM erp_payment_detail pd
+        SET pd.amount = #{materialFee} FROM erp_payment_detail pd
                  INNER JOIN erp_payment p
-                            ON pd.payment_key = p.payment_key
+        ON pd.payment_key = p.payment_key
         WHERE p.student_id = #{studentId}
           AND pd.class_type = #{classType}
           AND pd.item_type = 'BOOK_FEE'
@@ -997,7 +904,6 @@
           AND bill_type = #{billType}
     </select>
 
-
     <!-- 4. 기존 청구서가 이미 재발행되었는지 확인 -->
     <select id="checkAlreadyReissued" resultType="int">
         SELECT COUNT(*)
@@ -1012,6 +918,7 @@
         WHERE expire_date = #{ymd}
           AND status = 'issued'
     </select>
+
     <select id="findCashbillStudents"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CashbillStudentRespDTO">
         SELECT s.student_id                                                      AS studentId,
@@ -1047,8 +954,8 @@
 
     <insert id="insertCashbill" parameterType="com.hohoedu.all_pass.payment.model.PaymentCashbill">
         INSERT INTO erp_payment_cashbill (bill_id, payment_key, student_id, receipt_type, receipt_number, trader, price,
-                                  supply_price, tax, tax_type, appr_cash_num, hash_value, status, issue_date,
-                                  created_at)
+                                          supply_price, tax, tax_type, appr_cash_num, hash_value, status, issue_date,
+                                          created_at)
         VALUES (#{billId}, #{paymentKey}, #{studentId}, #{receiptType}, #{receiptNumber}, #{trader}, #{price},
                 #{supplyPrice}, #{tax}, #{taxType}, #{apprCashNum}, #{hashValue}, #{status}, #{issueDate},
                 SYSDATETIME())
@@ -1056,7 +963,7 @@
 
     <update id="updateCashbillInfo">
         UPDATE erp_payment_manual
-        SET cashbill_bill_id = #{billId},
+        SET cashbill_bill_id   = #{billId},
             cashbill_issued_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND payment_key = #{paymentKey}

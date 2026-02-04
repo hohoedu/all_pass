@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.student.model;
 
 import java.sql.Timestamp;
 
+import com.hohoedu.all_pass.center.Center;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
@@ -44,6 +45,10 @@ public class StudentTransferHistory {
     @JoinColumn(name = "to_user_code", referencedColumnName = "user_code", nullable = false)
     private User toUser;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code")
+    private Center centerCode;
+
     @Column(name = "class_type", nullable = false, length = 10)
     private String classType;
 
@@ -65,10 +70,11 @@ public class StudentTransferHistory {
     private Timestamp createdAt;
 
     @Builder
-    public StudentTransferHistory(Student student, User fromUser, User toUser, String classType, ClassCode classCode, String transferReason, String moveAt, String updatedBy, Timestamp createdAt) {
+    public StudentTransferHistory(Student student, User fromUser, User toUser, Center centerCode, String classType, ClassCode classCode, String transferReason, String moveAt, String updatedBy, Timestamp createdAt) {
         this.student = student;
         this.fromUser = fromUser;
         this.toUser = toUser;
+        this.centerCode = centerCode;
         this.classType = classType;
         this.classCode = classCode;
         this.transferReason = transferReason;

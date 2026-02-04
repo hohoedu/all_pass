@@ -22,28 +22,29 @@ public class PaymentRespDTO {
     public static class AssignStudentsDTO {
         private String studentId;
         private String paymentKey;
-        private String eduBillId;
-        private String materialBillId;
+        private String billId;
         private String studentName;
+
         private String subject;
         private String hanTeacher;
         private String bookTeacher;
+
         private Integer hanFee;
         private Integer hanMaterialFee;
         private Integer bookFee;
         private Integer bookMaterialFee;
         private String eduStatus;
         private String materialStatus;
-        private String totalStatus;
-        private String totalPrice;
-        private String unpaidAmount;
-        private String amountDue;
-        private String totalFee;
-        private String totalMaterialFee;
-        private String parentPhone;
-        private Integer unpaidEduAmount;
-        private Integer unpaidBookAmount;
-        private String samePhoneStudents;
+
+        private String billPrice;           // 청구 금액
+        private String paidAmount;          // 결제 금액
+        private String unpaidAmount;        // 미납 금액
+        private String issuanceStatus;      // 발행 여부
+        private String totalStatus;         // 결제 여부
+        private String payStatus;         // 결제 여부
+
+        private String parentPhone;         // 부모님 핸드폰 번호
+        private String samePhoneStudents;   // 전화번호 같은 형제들
     }
 
     @Data

@@ -34,53 +34,56 @@
 
     <select id="findStudentByCenterCode" parameterType="String"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
-        SELECT s.*
-             , g.*
-             , reg.registeredClassTypes                                        AS classType
-             , pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last as phone
-
+        -- @formatter:off
+        SELECT 	s.*,
+                  g.*,
+                  reg.registeredClassTypes AS classType,
+                  pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS phone
         FROM erp_student s
-                 JOIN erp_grade_code g
-                      ON s.grade_key = g.grade_key
-                 LEFT JOIN erp_teacher_assign ta
-                           ON s.student_id = ta.student_id
+                 JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  JOIN erp_parent pa ON s.student_id = pa.student_id
+                 JOIN erp_user u ON u.user_code = #{userCode}
             OUTER APPLY (
-    SELECT STUFF((
-        SELECT ',' + cc.class_type
-        FROM erp_time_table_assign tta
-        JOIN erp_time_table t
-            ON tta.time_table_key = t.time_table_key
-        JOIN erp_class_code cc
-            ON t.class_key = cc.class_key
-        WHERE tta.student_id = s.student_id
-          AND t.yy = #{year}
+        SELECT STUFF((
+            SELECT ',' + cc.class_type
+            FROM erp_time_table_assign tta
+            JOIN erp_time_table t ON tta.time_table_key = t.time_table_key
+            JOIN erp_class_code cc ON t.class_key = cc.class_key
+            WHERE tta.student_id = s.student_id
+              AND t.yy = #{year}
             AND t.mm = #{month}
-            FOR XML PATH ('')
-           , TYPE
-            ).value('.'
-           , 'NVARCHAR(MAX)')
-           , 1
-           , 1
-           , '') AS registeredClassTypes
+            FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
+            AS registeredClassTypes
             ) reg
         WHERE s.center_code = #{centerCode}
-          AND (reg.registeredClassTypes IS NULL
-           OR reg.registeredClassTypes IN ('1'
-            , '2'
-            , '3'))
-          AND s.status_key = 'ACTIVE'
+          AND s.status_key ='ACTIVE'
           AND (ta.assign_han_teacher = #{userCode}
            OR ta.assign_book_teacher = #{userCode})
+          AND (
+            reg.registeredClassTypes IS NULL
+           OR (
+        -- 한자만 담당
+            (u.is_han = 'true' AND u.is_book = 'false' AND (ta.han_state = 0 OR reg.registeredClassTypes NOT LIKE '%1%'))
+           OR
+        -- 독서만 담당
+            (u.is_han = 'false' AND u.is_book = 'true' AND (ta.book_state = 0 OR reg.registeredClassTypes NOT LIKE '%2%'))
+           OR
+        -- 둘 다 담당: 둘 다 없거나 하나만 있어야 함
+            (u.is_han = 'true' AND u.is_book = 'true' AND NOT (reg.registeredClassTypes LIKE '%1%' AND reg.registeredClassTypes LIKE '%2%'))
+           OR
+        -- 둘 다 안 담당
+            (u.is_han = 'false' AND u.is_book = 'false')
+            )
+            )
         ORDER BY
             CASE
-            WHEN ta.assign_han_teacher = #{userCode}
-            OR ta.assign_book_teacher = #{userCode}
+            WHEN ta.assign_han_teacher = #{userCode} OR ta.assign_book_teacher = #{userCode}
             THEN 0
             ELSE 1
-        END
-        ,
+        END,
     s.student_name;
+        -- @formatter:on
     </select>
 
     <select id="findStudentInfoByStudentId" parameterType="String"
@@ -488,11 +491,13 @@
 
     <!-- 오늘 처리 대상 조회 (크론용) -->
     <select id="findTodaySchedules" resultType="com.hohoedu.all_pass.student.model.StudentTransferSchedule">
+        <![CDATA[
         SELECT *
         FROM erp_student_transfer_schedule
-        WHERE move_at = #{today}
+        WHERE move_at <= #{today}
           AND status = 'SCHEDULED'
         ORDER BY id
+        ]]>
     </select>
 
     <!-- 적용 완료 처리 -->
@@ -504,8 +509,8 @@
     </update>
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
-        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, class_type, transfer_reason, class_key, move_at, created_at)
-        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{classType}, #{transferReason}, #{classCode.classKey}, #{moveAt}, SYSDATETIME());
+        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, center_code, class_type, transfer_reason, class_key, move_at, created_at)
+        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{centerCode.centerCode}, #{classType}, #{transferReason}, #{classCode.classKey}, #{moveAt}, SYSDATETIME());
     </insert>
 
     <!-- 출석 관련 -->
