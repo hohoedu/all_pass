@@ -47,6 +47,9 @@ public class PaymentRespDTO {
 
         private String parentPhone;         // 부모님 핸드폰 번호
         private String samePhoneStudents;   // 전화번호 같은 형제들
+
+        private Integer isPriceModified;    // 금액 수정 여부 (0: 일치, 1: 불일치)
+        private Integer standardFee;
     }
 
     @Data

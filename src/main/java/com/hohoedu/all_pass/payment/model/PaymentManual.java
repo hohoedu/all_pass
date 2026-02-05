@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.payment.model;
 
+import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
@@ -22,6 +23,9 @@ public class PaymentManual {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "manual_key")
+    private String manualKey;
+
     @Column(name = "card_amount")
     private Integer cardAmount;
 
@@ -37,6 +41,12 @@ public class PaymentManual {
     @Column
     private String paidDate;
 
+    @Column
+    private String yy;
+
+    @Column
+    private String mm;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", referencedColumnName = "student_id")
     private Student student;
@@ -46,6 +56,10 @@ public class PaymentManual {
     private Payment payment;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_code", referencedColumnName = "center_code")
+    private Center center;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_code", referencedColumnName = "user_code ")
     private User user;
 
@@ -53,14 +67,18 @@ public class PaymentManual {
     private Timestamp createdAt;
 
     @Builder
-    public PaymentManual(Integer cardAmount, Integer cashAmount, Integer transferAmount, String cardName, String paidDate, Student student, Payment payment, User user) {
+    public PaymentManual(String manualKey, Integer cardAmount, Integer cashAmount, Integer transferAmount, String cardName, String paidDate, String yy, String mm, Student student, Center center, Payment payment, User user) {
+        this.manualKey = manualKey;
         this.cardAmount = cardAmount;
         this.cashAmount = cashAmount;
         this.transferAmount = transferAmount;
         this.cardName = cardName;
         this.paidDate = paidDate;
+        this.center = center;
         this.student = student;
         this.payment = payment;
+        this.yy = yy;
+        this.mm = mm;
         this.user = user;
     }
 }

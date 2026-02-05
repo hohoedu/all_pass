@@ -282,4 +282,5 @@ public interface PaymentRepository {
     int updateCashbillInfo(@Param("studentId") String studentId,
                            @Param("paymentKey") String paymentKey,
                            @Param("billId") String billId);
+
 }

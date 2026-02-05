@@ -1,10 +1,9 @@
 package com.hohoedu.all_pass.payment.model;
 
-import com.hohoedu.all_pass.payment.Payment;
-import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,32 +20,53 @@ public class PaymentManualGroup {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String manualGroupKey;
+    @Column(name = "manual_key", unique = true, nullable = false)
+    private String manualKey;
 
+    @Column(name = "total_amount", nullable = false)
     private Integer totalAmount;
 
+    @Column(name = "card_name")
     private String cardName;
 
+    @Column(name = "method")
     private String method;
 
+    @Column(name = "paid_date")
     private String paidDate;
 
+    @Column
     private String yy;
 
+    @Column
     private String mm;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", referencedColumnName = "student_id")
-    private Student student;
+    @Column(name = "student_id")
+    private String studentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_key", referencedColumnName = "payment_key")
-    private Payment payment;
+    @Column(name = "center_code")
+    private String centerCode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_code", referencedColumnName = "user_code")
-    private User user;
+
+    @Column(name = "user_code")
+    private String userCode;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Builder
+    public PaymentManualGroup(String manualKey, Integer totalAmount, String cardName, String method, String paidDate,
+                              String yy, String mm, String studentId, String centerCode, String userCode) {
+        this.manualKey = manualKey;
+        this.totalAmount = totalAmount;
+        this.cardName = cardName;
+        this.method = method;
+        this.paidDate = paidDate;
+        this.yy = yy;
+        this.mm = mm;
+        this.studentId = studentId;
+        this.centerCode = centerCode;
+        this.userCode = userCode;
+    }
 }

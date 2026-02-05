@@ -130,6 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
             tr.dataset.lastPhone4 = lastPhone4;
 
+            const isPriceModified = s.isPriceModified === 1;
+            const billPriceStyle = isPriceModified
+                ? 'color: red;'
+                : '';
+            const billPriceTitle = isPriceModified && s.standardFee
+                ? `표준 금액: ${Number(s.standardFee).toLocaleString()}원`
+                : '';
+
+
             tr.innerHTML = `
         <td class="checkbox-group">
             <input type="checkbox" class="row-checkbox">
@@ -140,7 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </td>
         <td>${s.subject || '-'}</td>
         <td>${formatTeacher(s)}</td>
-        <td>${Number(s.billPrice || 0).toLocaleString()}</td>
+        <td style="${billPriceStyle}" title="${billPriceTitle}">
+            ${Number(s.billPrice || 0).toLocaleString()}
+        </td>
         <td>${Number(s.unpaidAmount || 0).toLocaleString()}</td>
         <td>${renderIssueStatus(s.issuanceStatus)}</td>
         <td>${renderPayStatus(s.payStatus)}</td>

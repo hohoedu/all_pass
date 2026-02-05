@@ -58,6 +58,9 @@ public class Student {
     @Column(name = "profile_img")
     private String profileImg;
 
+    @Column(name = "billing_phone")
+    private String billingPhone;
+
     @Column(nullable = false)
     private Boolean studentPrivacyAgree = Boolean.FALSE;
 
@@ -83,7 +86,7 @@ public class Student {
     @Builder
     public Student(String studentId, String studentName, String birth, Boolean gender, String school,
                    String address, String addressDetail, String appId, String appPassword, String appToken, String profileImg, Boolean studentPrivacyAgree, GradeCode gradeCode, StatusCode statusCode, Center center,
-                   LocalDateTime createdAt, LocalDateTime updatedAt) {
+                   String billingPhone, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.studentId = studentId;
         this.studentName = studentName;
         this.birth = birth;
@@ -95,6 +98,7 @@ public class Student {
         this.appPassword = appPassword;
         this.appToken = appToken;
         this.profileImg = profileImg;
+        this.billingPhone = billingPhone;
         this.studentPrivacyAgree = studentPrivacyAgree;
         this.gradeCode = gradeCode;
         this.statusCode = statusCode;
