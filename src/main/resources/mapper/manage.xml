@@ -60,6 +60,7 @@
                  JOIN erp_unit_code u ON r.unit_key = u.unit_key
         WHERE center_code = #{centerCode}
           AND user_code = #{userCode}
+          AND confirmed NOT IN ('user_cancel')
           AND yy = #{yy}
           AND mm = #{mm}
     </select>

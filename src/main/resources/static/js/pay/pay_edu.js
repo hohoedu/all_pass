@@ -215,16 +215,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!issuanceStatus || issuanceStatus === '미발행') {
             return `<span class="unissued">미발행</span>`;
         }
-        if (issuanceStatus === '발행') {
+        if (issuanceStatus === 'issued') {
             return `<span class="issued">발행</span>`;
         }
-        if (issuanceStatus === '파기') {
+        if (issuanceStatus === 'destroyed_off') {
+            return `<span class="destroyed">현장결제</span>`;
+        }
+        if (issuanceStatus === 'canceled_off') {
+            return `<span class="canceled">현장결제</span>`;
+        }
+        if (issuanceStatus === 'destroyed') {
             return `<span class="destroyed">파기</span>`;
         }
-        if (issuanceStatus === '취소') {
+        if (issuanceStatus === 'canceled') {
             return `<span class="canceled">취소</span>`;
         }
-        if (issuanceStatus === '할인') {
+        if (issuanceStatus === 'discount') {
             return `<span class="discount">할인</span>`;
         }
         return '-';

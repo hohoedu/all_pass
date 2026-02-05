@@ -449,7 +449,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnAddCashbill?.addEventListener("click", openCashbillModal);
 
+    /* -----------------------------
+        결제 방법 선택에 따른 테이블 제어
+    ----------------------------- */
+    const payMethodRadios = document.querySelectorAll('input[name="pay-method"]');
 
+    payMethodRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            // 라디오 버튼 옆의 span 텍스트 확인
+            const labelText = this.nextElementSibling.textContent.trim();
+            const receiptTable = document.getElementById('receipt-table');
+
+            if (labelText === '현금' || labelText === '계좌이체') {
+                // 클래스 추가해서 부드럽게 나타나기
+                receiptTable.classList.add('show');
+            } else {
+                // 클래스 제거해서 부드럽게 사라지기
+                receiptTable.classList.remove('show');
+            }
+        });
+    });
     /* -----------------------------
         선결제 행 추가/삭제 토글
     ----------------------------- */

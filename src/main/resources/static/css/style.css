@@ -944,6 +944,7 @@ table .checkbox-group {
 .pay-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 10px;
 }
 
@@ -958,7 +959,7 @@ table .checkbox-group {
     border-radius: 5px;
     padding: 6px 12px;
     font-size: 15px;
-    min-width: 190px;
+    max-width: 50%;
 }
 
 .color-green {
@@ -1079,6 +1080,36 @@ table .checkbox-group {
     align-items: center;
     justify-content: space-between;
 }
+
+.manual-m-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+/* 라벨 영역 (왼쪽) */
+.pay-label-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+#receipt-table {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#receipt-table.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+
 
 
 /* ======================= login page ======================= */

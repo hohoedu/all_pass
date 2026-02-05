@@ -27,7 +27,9 @@ public class PaymentRespDTO {
 
         private String subject;
         private String hanTeacher;
+        private String hanTeacherCode;
         private String bookTeacher;
+        private String bookTeacherCode;
 
         private Integer hanFee;
         private Integer hanMaterialFee;
@@ -112,6 +114,7 @@ public class PaymentRespDTO {
         private String paidDate;
         private String cardName;
         private String status;
+        private String ym;
         private String createdAt;
 
     }

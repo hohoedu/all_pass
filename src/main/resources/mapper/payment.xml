@@ -392,8 +392,8 @@
 
     <select id="findByAssignStudents"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
+        <!-- @formatter:off -->
         WITH classInfo AS (SELECT ta.student_id,
-
                                   -- 수업명 (한자 / 독서)
                                   STUFF(
                                           (SELECT ', ' + cc2.class_name
@@ -406,36 +406,28 @@
                                              AND t2.yy = #{year}
                                              AND t2.mm = #{month}
                                              AND cc2.class_type IN ('1', '2')
-                                           FOR XML PATH ('')),
+                                              FOR XML PATH ('')),
                                           1, 2, ''
                                   )                                                       AS subject,
 
-                                  -- 한자 선생님
+                                  -- 한자 선생님 이름
                                   MAX(CASE WHEN cc.class_type = '1' THEN u.user_name END) AS hanTeacher,
-
-                                  -- 독서 선생님
+                                  -- 독서 선생님 이름
                                   MAX(CASE WHEN cc.class_type = '2' THEN u.user_name END) AS bookTeacher,
-
-                                  -- 한자 선생님
+                                  -- 한자 선생님 코드
                                   MAX(CASE WHEN cc.class_type = '1' THEN u.user_code END) AS assign_han_teacher,
-
-                                  -- 독서 선생님
+                                  -- 독서 선생님 코드
                                   MAX(CASE WHEN cc.class_type = '2' THEN u.user_code END) AS assign_book_teacher
 
-
                            FROM erp_time_table_assign ta
-                                    JOIN erp_time_table t
-                                         ON ta.time_table_key = t.time_table_key
-                                    JOIN erp_class_code cc
-                                         ON t.class_key = cc.class_key
-                                    JOIN erp_user u
-                                         ON t.user_code = u.user_code
-
+                                    JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                                    JOIN erp_class_code cc ON t.class_key = cc.class_key
+                                    JOIN erp_user u ON t.user_code = u.user_code
                            WHERE t.yy = #{year}
                              AND t.mm = #{month}
                              AND cc.class_type IN ('1', '2')
-
                            GROUP BY ta.student_id)
+
         SELECT s.student_id           AS studentId,
                s.student_name         AS studentName,
                p.payment_key          AS paymentKey,
@@ -443,20 +435,22 @@
 
                ci.subject             AS subject,
                ci.hanTeacher          AS hanTeacher,
-               ci.assign_han_teacher  AS hanTeacher,
+               ci.assign_han_teacher  AS hanTeacherCode,
                ci.bookTeacher         AS bookTeacher,
-               ci.assign_book_teacher AS bookTeacher,
+               ci.assign_book_teacher AS bookTeacherCode,
 
                amt.billAmount         AS billPrice,
                pb.status              AS totalStatus,
 
             /* 발행여부 */
                CASE
-                   WHEN amt.billAmount = 0 THEN '할인'
-                   WHEN p.status = 'pending' THEN '미발행'
-                   WHEN pb.status = 'destroyed' THEN '파기'
-                   WHEN pb.status = 'canceled' THEN '취소'
-                   ELSE '발행'
+                   WHEN amt.billAmount = 0 THEN 'discount'
+                   WHEN p.status = 'pending' THEN 'nonIssue'
+                   WHEN pb.status = 'destroyed' AND COALESCE(pm.manual_amount, 0) > 0 THEN 'destroyed_off'
+                   WHEN pb.status = 'canceled' AND COALESCE(pm.manual_amount, 0) > 0 THEN 'canceled_off'
+                   WHEN pb.status = 'destroyed' THEN 'destroyed'
+                   WHEN pb.status = 'canceled' THEN 'canceled'
+                   ELSE 'issued'
                    END                AS issuanceStatus,
 
             /* 결제금액 (item_type 기준 단일 계산) */
@@ -486,8 +480,7 @@
                  LEFT JOIN (SELECT payment_key, status, bill_id
                             FROM (SELECT payment_key,
                                          status,
-                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) as rn,
-                                         bill_id
+                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) as rn, bill_id
                                   FROM erp_payment_bill
                                   where bill_type = #{itemType}) sub
                             WHERE rn = 1) pb ON p.payment_key = pb.payment_key
@@ -499,7 +492,7 @@
                             WHERE status = 'approved'
                               AND bill_type = #{itemType}
                             GROUP BY payment_key) pb_pay ON p.payment_key = pb_pay.payment_key
-                 CROSS APPLY (SELECT CASE
+            CROSS APPLY (SELECT CASE
                                          WHEN amt.item_type = 'BOOK_FEE'
                                              THEN COALESCE(pb_pay.bill_amount, 0)
                                          ELSE COALESCE(pm.manual_amount, 0) + COALESCE(pb_pay.bill_amount, 0)
@@ -508,24 +501,21 @@
         WHERE p.center_code = #{centerCode}
           AND p.yy = #{year}
           AND p.mm = #{month}
-
+          AND ((ci.assign_han_teacher = #{userCode} or ci.assign_book_teacher = #{userCode}) or 'all' = #{userCode})
         ORDER BY CASE
-                     WHEN amt.billAmount = 0 THEN 4
-                     WHEN pay.calc_paid_amount = 0 THEN 1
-                     WHEN pay.calc_paid_amount &lt; amt.billAmount THEN
-                         2
-                     ELSE 3
-                     END
-                ,
-                 CASE
-                     WHEN p.status = 'pending' THEN 1
-                     WHEN pb.status = 'destroyed' THEN 2
-                     WHEN pb.status = 'cancel' THEN 3
-                     ELSE 4
-                     END
-                ,
-                 s.student_name;
-
+                    WHEN amt.billAmount = 0 THEN 4
+                    WHEN pay.calc_paid_amount = 0 THEN 1
+                    WHEN pay.calc_paid_amount &lt; amt.billAmount THEN 2
+                    ELSE 3
+                END,
+                CASE
+                   WHEN p.status = 'pending' THEN 1
+                   WHEN pb.status = 'destroyed' THEN 2
+                   WHEN pb.status = 'canceled' THEN 3
+                   ELSE 4
+                END,
+                s.student_name;
+        <!-- @formatter:on -->
     </select>
 
     <select id="findFeeByClassKey" resultType="int">
@@ -846,11 +836,13 @@
                pb.amount,
                card.card_name                                            as cardName,
                pb.status,
+               p.yy + '-' + p.mm                                         as ym,
                pb.created_at                                             as createdAt
         FROM erp_payment_bill pb
                  JOIN erp_student s on pb.student_id = s.student_id
                  LEFT JOIN erp_payment_callback pc on pb.bill_id = pc.bill_id
                  LEFT JOIN erp_card_code card on pc.appr_issuer = card.card_code
+                 LEFT JOIN erp_payment p on pb.payment_key = p.payment_key
         WHERE pb.student_id = #{studentId}
 
         UNION ALL
@@ -866,10 +858,12 @@
                pm.card_amount + pm.cash_amount + pm.transfer_amount as amount,
                card.card_name                                       as cardName,
                pm.status,
+               p.yy + '-' + p.mm                                    as ym,
                pm.created_at                                        as createdAt
         FROM erp_payment_manual pm
                  JOIN erp_student s on pm.student_id = s.student_id
                  LEFT JOIN erp_card_code card on pm.card_name = card.card_code
+                 LEFT JOIN erp_payment p on pm.payment_key = p.payment_key
         WHERE pm.student_id = #{studentId}
         ORDER BY createdAt DESC;
     </select>

@@ -265,8 +265,8 @@ public class PopbillService {
 
             // 4. 템플릿 내용 치환
             String content = template.getTemplate()
-                    .replace("#{지점명}", user.getCenterName()+" 선생님")
-                    .replace("#{선생님명}", user.getUserName())
+                    .replace("#{지점명}", user.getCenterName())
+                    .replace("#{선생님명}", user.getUserName() + " 선생님")
                     .replace("#{수정횟수}", "1")
                     .replace("#{수정시간}", "2026-02-04 22:09")
                     .replace("#{주문내용}", orderContent);
@@ -282,7 +282,7 @@ public class PopbillService {
                     content,
                     (String) null,
                     null,
-                    "01062954886",  // 본사 전화번호
+                    "01091619291",  // 본사 전화번호
                     "본사",
                     (String) null
             );
@@ -303,7 +303,7 @@ public class PopbillService {
             PopbillReqDTO.PopbillSendLogReqDTO sendLogDTO = PopbillReqDTO.PopbillSendLogReqDTO.builder()
                     .sendKey(sendKey)
                     .userCode(user.getUserCode())
-                    .receiverPhone("01062954886")
+                    .receiverPhone("01091619291")
                     .centerCode(user.getCenterCode())
                     .sendType("ADD_REORDER")
                     .templateCode(respDTO.getPopbillTemplateCode())
