@@ -89,7 +89,94 @@
                                 </table>
 
                                 <!-- 현금영수증 발행 정보 -->
+                                <table class="manual-payment-table pay-edu-table">
+                                    <colgroup>
+                                        <col width="20%">
+                                        <col width="40%">
+                                        <col width="20%">
+                                        <col width="40%">
+                                    </colgroup>
+                                    <tbody>
+                                    <tr>
+                                        <td class="label-cell">발급번호</td>
+                                        <td class="content-cell white-bg">
+                                            <input type="text" class="basic-input" id="receipt-number"
+                                                   placeholder="휴대폰번호(01012345678) 또는 사업자번호"
+                                                   style="width: 100%; max-width: 400px;">
+                                        </td>
+                                        <td class="label-cell">발급구분</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="radio-group round"
+                                                 style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
+                                                <label><input type="radio" name="receipt-type" value="personal" checked>
+                                                    개인</label>
+                                                <label><input type="radio" name="receipt-type" value="business">
+                                                    사업자</label>
+                                                <label><input type="radio" name="receipt-type" value="self">
+                                                    자진발급</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label-cell">과세구분</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="radio-group round"
+                                                 style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
+                                                <label><input type="radio" name="tax-type" value="taxable" checked>
+                                                    과세</label>
+                                                <label><input type="radio" name="tax-type" value="tax-free">
+                                                    비과세</label>
+                                            </div>
+                                        </td>
+                                        <td class="label-cell">총 금액</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="amount-grid" style="display: flex; align-items: center">
+                                                <div class="amount-input" style="white-space: nowrap">
+                                                    <input type="text" class="basic-input"
+                                                           id="cash-price">
+                                                    <span style="margin-left: 10px">원</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label-cell">공급가액</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="amount-grid" style="display: flex; align-items: center">
+                                                <div class="amount-input" style="white-space: nowrap">
+                                                    <input type="text" class="basic-input"
+                                                           id="supply-price">
+                                                    <span style="margin-left: 10px">원</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="label-cell">세금</td>
+                                        <td class="content-cell white-bg">
+                                            <div class="amount-grid" style="display: flex; align-items: center">
+                                                <div class="amount-input" style="white-space: nowrap">
+                                                    <input type="text" class="basic-input" id="tax-price">
+                                                    <span style="margin-left: 10px">원</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
 
+                                    </tr>
+                                    <tr>
+                                        <td class="label-cell">발행일자</td>
+                                        <td class="content-cell white-bg" colspan="3">
+                                            <div style="padding: 10px 0;">
+                                                <span class="current-month" id="cashbill-receipt-date-text">2025년 2월 2일</span>
+                                                <input type="date" class="basic-input pay-date hidden-date" id="cashbill-receipt-date">
+                                                <button type="button" class="icon-btn calendar-open" data-target="cashbill-receipt-date">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                                 <div class="save-btn-frame" style="padding: 20px;">
                                     <div class="common-btn pay-issue" id="issue-cashbill">발급</div>
                                 </div>

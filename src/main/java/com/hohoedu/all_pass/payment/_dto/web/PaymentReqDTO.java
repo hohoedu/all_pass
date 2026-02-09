@@ -1,8 +1,7 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import java.util.List;
 
@@ -99,9 +98,12 @@ public class PaymentReqDTO {
     @Builder
     public static class ManualPaymentReqDTO {
 
+        private List<StudentPaymentInfo> students;
+
         private String studentId;
         private String paymentKey;
-        private String billId;
+        private String manualKey;
+
         private Integer cardAmount;
         private Integer cashAmount;
         private Integer transferAmount;
@@ -113,7 +115,47 @@ public class PaymentReqDTO {
         private String mm;
         private String status;
         private Integer prepaidAmount;
+        private CashbillInfoDTO cashbillInfo;
 
+        @Data
+        @Builder
+        public static class StudentPaymentInfo {
+            private String studentId;
+            private String paymentKey;
+            private Integer originalAmount;
+        }
+
+        @Data
+        public static class CashbillInfoDTO {
+            private String studentId;       // 학생 아이디
+            private String paymentKey;      // 결제한 페이먼트 키
+            private String receiptNumber;   // 발급 번호
+            private String issueDate;       // 발급 일자
+            private String price;           // 승인 금액
+            private String receiptType;     // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
+            private String supplyPrice;     // 공급가액
+            private String tax;             // 세금
+            private String taxType;         // 과세구분
+            private String trader;          // 발급 구분 (0: 개인, 1: 사업자, 2: 자진발급)
+        }
+    }
+
+    @Data
+    @Builder
+    public static class InsertManualGroupDTO {
+        private String manualKey;
+        private Integer totalAmount;
+        private String cardName;
+        private String method;
+        private String paidDate;
+        private String yy;
+        private String mm;
+        private String studentId;
+        private String userCode;
+        private String centerCode;
+        private String status;
+        private String cancelReason;
+        private String cashbillId;
     }
 
     @Data
@@ -122,6 +164,7 @@ public class PaymentReqDTO {
         private String studentId;
         private String centerCode;
         private String userCode;
+        private String manualKey;
         private Integer totalAmount;
         private Integer originalAmount;
         private Integer usedMonths;
@@ -132,6 +175,7 @@ public class PaymentReqDTO {
         private String paidDate;
         private Integer originalManualPaymentId;
         private String note;
+
     }
 
     @Data
@@ -194,5 +238,14 @@ public class PaymentReqDTO {
     public static class CashbillStudentReqDTO {
         private String year;
         private String month;
+    }
+
+    @Data
+    public static class ClaimFilterDTO {
+        private String userCode;
+        private String itemType;
+        private String centerCode;
+        private String yy;
+        private String mm;
     }
 }

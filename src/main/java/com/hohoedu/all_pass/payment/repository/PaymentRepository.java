@@ -53,6 +53,8 @@ public interface PaymentRepository {
 
     int insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO dto);
 
+    int insertPaymentManualGroup(PaymentReqDTO.InsertManualGroupDTO dto);
+
     void insertPaymentPreset(PaymentReqDTO.InsertPresetDTO dto);
 
     // 활성화된 선납금 조회
@@ -279,8 +281,11 @@ public interface PaymentRepository {
 
     void insertCashbill(PaymentCashbill cashbill);
 
+    void updateManualGroupCashbillId(@Param("manualKey") String manualKey, @Param("cashbillId") String cashbillId);
+
     int updateCashbillInfo(@Param("studentId") String studentId,
                            @Param("paymentKey") String paymentKey,
                            @Param("billId") String billId);
 
+    List<PaymentRespDTO.ClaimDto> getPaymentInfo(PaymentReqDTO.ClaimFilterDTO dto);
 }

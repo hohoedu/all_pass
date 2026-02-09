@@ -148,11 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ${s.studentName}
         </td>
         <td>${s.subject || '-'}</td>
-        <td>${formatTeacher(s)}</td>
+        
         <td style="${billPriceStyle}" title="${billPriceTitle}">
             ${Number(s.billPrice || 0).toLocaleString()}
         </td>
-        <td>${Number(s.unpaidAmount || 0).toLocaleString()}</td>
+        <td>-</td>
         <td>${renderIssueStatus(s.issuanceStatus)}</td>
         <td>${renderPayStatus(s.payStatus)}</td>
         <td id="personal-pay-info" style="cursor:pointer;">
@@ -223,17 +223,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderIssueStatus(issuanceStatus) {
-        if (!issuanceStatus || issuanceStatus === '미발행') {
+        if (!issuanceStatus || issuanceStatus === 'nonIssue') {
             return `<span class="unissued">미발행</span>`;
         }
         if (issuanceStatus === 'issued') {
             return `<span class="issued">발행</span>`;
         }
+        if (issuanceStatus === 'nonIssue_off') {
+            return `<span class="edu-issued">현장결제</span>`;
+        }
         if (issuanceStatus === 'destroyed_off') {
-            return `<span class="destroyed">현장결제</span>`;
+            return `<span class="edu-issued">현장결제</span>`;
         }
         if (issuanceStatus === 'canceled_off') {
-            return `<span class="canceled">현장결제</span>`;
+            return `<span class="edu-issued">현장결제</span>`;
         }
         if (issuanceStatus === 'destroyed') {
             return `<span class="destroyed">파기</span>`;
@@ -1368,3 +1371,171 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
+
+async function exportFilteredDataToExcel() {
+    try {
+        // 로딩 표시
+        const button = event.target;
+        button.disabled = true;
+        button.textContent = '다운로드 중...';
+
+        // URL에서 년/월 가져오기
+        const url = new URL(window.location.href);
+        const yy = url.searchParams.get('year');
+        const mm = url.searchParams.get('month');
+
+        // 선생님 필터
+        const teacherSelect = document.getElementById('student-filter');
+        const userCode = teacherSelect?.value || '';
+
+        // 교육비/교재비 라디오 버튼
+        // const itemTypeRadio = document.querySelector('input[name="feeView"]:checked');
+        const itemType = 'EDU_FEE';
+
+        const centerCode =  'PUS002';
+
+        // 필터 조건 수집
+        const filters = {
+            userCode: userCode,
+            centerCode: centerCode,  // 필요시 추가
+            yy: yy,
+            mm: mm,
+            itemType: itemType
+        };
+
+        console.log('전송 데이터:', filters);
+
+        // 백엔드에서 데이터 가져오기
+        const response = await fetch('/pay/api/claim/export', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(filters)
+        });
+
+        if (!response.ok) {
+            throw new Error('데이터 조회 실패');
+        }
+
+        const result = await response.json();
+        const allData = result.response || result;
+
+        if (!allData || allData.length === 0) {
+            alert('다운로드할 데이터가 없습니다.');
+            button.disabled = false;
+            button.textContent = '📥 엑셀 다운로드';
+            return;
+        }
+
+        // 워크북 생성
+        const wb = XLSX.utils.book_new();
+
+        // 상태별로 시트 분리
+        groupByStatus(allData, wb);
+
+        // 파일 다운로드
+        const fileName = `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+        button.disabled = false;
+        button.textContent = '📥 엑셀 다운로드';
+
+    } catch (error) {
+        console.error('엑셀 다운로드 실패:', error);
+        alert('엑셀 다운로드에 실패했습니다.');
+        button.disabled = false;
+        button.textContent = '📥 엑셀 다운로드';
+    }
+}
+
+// 상태별로 시트 분리
+function groupByStatus(data, wb) {
+    // 상태별로 데이터 그룹화
+    const grouped = data.reduce((acc, item) => {
+        const status = item.payStatus || '미분류';
+        if (!acc[status]) {
+            acc[status] = [];
+        }
+        acc[status].push({
+            '이름': item.studentName || '',
+            '수강과목': item.subject || '',
+            '한자 선생님': item.hanTeacher || '-',
+            '독서 선생님': item.bookTeacher || '-',
+            '청구금액': Number(item.billPrice || 0),
+            '미납금액': Number(item.unpaidAmount || 0),
+            '결제금액': Number(item.paidAmount || 0),
+            '상태': item.payStatus || ''
+        });
+        return acc;
+    }, {});
+
+    // 각 상태별로 시트 생성
+    Object.keys(grouped).forEach(status => {
+        const ws = XLSX.utils.json_to_sheet(grouped[status]);
+
+        // 컬럼 너비 설정
+        ws['!cols'] = [
+            { wch: 12 }, // 이름
+            { wch: 15 }, // 수강과목
+            { wch: 15 }, // 한자 선생님
+            { wch: 15 }, // 독서 선생님
+            { wch: 15 }, // 청구금액
+            { wch: 15 }, // 미납금액
+            { wch: 15 }, // 결제금액
+            { wch: 12 }  // 상태
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws, status);
+    });
+
+    // 전체 데이터 시트도 추가
+    const allSheetData = data.map(item => ({
+        '이름': item.studentName || '',
+        '수강과목': item.subject || '',
+        '한자 선생님': item.hanTeacher || '-',
+        '독서 선생님': item.bookTeacher || '-',
+        '청구금액': Number(item.billPrice || 0),
+        '미납금액': Number(item.unpaidAmount || 0),
+        '결제금액': Number(item.paidAmount || 0),
+        '상태': item.payStatus || ''
+    }));
+
+    const allSheet = XLSX.utils.json_to_sheet(allSheetData);
+    allSheet['!cols'] = [
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 12 }
+    ];
+    XLSX.utils.book_append_sheet(wb, allSheet, "전체");
+}
+// 상태 한글 변환 헬퍼 함수
+function getStatusKorean(status) {
+    switch (status) {
+        case '결제완료':
+        case 'approved':
+            return '결제완료';
+        case '부분결제':
+        case 'partial':
+            return '부분결제';
+        case '미결제':
+        case 'pending':
+        case 'issued':
+            return '미결제';
+        case '할인':
+        case 'discount':
+            return '할인';
+        case 'canceled':
+            return '취소';
+        case 'destroyed':
+            return '파기';
+        default:
+            return status || '미분류';
+    }
+}

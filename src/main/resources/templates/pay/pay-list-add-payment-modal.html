@@ -21,15 +21,17 @@
                             <div class="table-frame pay-add-t">
                                 <table class="basic-table pay-add-t stripe yh">
                                     <colgroup>
+                                        <col width="25%">
+                                        <col width="25%">
                                         <col width="30%">
                                         <col width="30%">
-                                        <col width="40%">
                                     </colgroup>
                                     <thead>
                                     <tr>
                                         <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
+                                        <th>전화번호</th>
                                     </tr>
                                     </thead>
                                     <tbody id="unpaid-student-list" class="stripe">
@@ -62,9 +64,9 @@
                     <table class="manual-payment-table pay-edu-table">
                         <colgroup>
                             <col width="20%">
-                            <col width="40%">
+                            <col width="30%">
                             <col width="20%">
-                            <col width="40%">
+                            <col width="30%">
                         </colgroup>
                         <tbody>
 
@@ -131,9 +133,9 @@
                     <table id="receipt-table" class="manual-payment-table pay-edu-table">
                         <colgroup>
                             <col width="20%">
-                            <col width="40%">
+                            <col width="30%">
                             <col width="20%">
-                            <col width="40%">
+                            <col width="30%">
                         </colgroup>
                         <tbody>
                         <tr>
@@ -206,11 +208,9 @@
                             <td class="label-cell">발행일자</td>
                             <td class="content-cell white-bg" colspan="3">
                                 <div style="padding: 10px 0;">
-                                    <span class="current-month" id="receipt-date-text">2025년 2월 2일</span>
-                                    <input type="date" class="basic-input pay-date hidden-date"
-                                           id="receipt-date">
-                                    <button type="button" class="icon-btn calendar-open"
-                                            data-target="receipt-date">
+                                    <span class="current-month" id="manual-receipt-date-text">2025년 2월 2일</span>
+                                    <input type="date" class="basic-input pay-date hidden-date" id="manual-receipt-date">
+                                    <button type="button" class="icon-btn calendar-open" data-target="manual-receipt-date">
                                         <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
                                     </button>
                                 </div>

@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.payment;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.config.DateConfig;
+import com.hohoedu.all_pass._core.utils.KeyGenerator;
 import com.hohoedu.all_pass._core.utils.PaymentKeyGenerator;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -14,8 +15,12 @@ import com.hohoedu.all_pass.payment.model.*;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.popbill.api.cashbill.CashbillInfo;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -40,6 +45,7 @@ import java.util.stream.Collectors;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final StudentRepository studentRepository;
 
     /**
      * payment 상태 재계산 (교육비 기준)
@@ -1044,150 +1050,365 @@ public class PaymentService {
      * 🔥 개선: manual 입력 후 payment 상태 재계산
      * - manual은 교육비(EDU_FEE)만 해당
      */
-    @Transactional
-    public PaymentRespDTO.ManualPaymentRespDTO insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
 
-        // 1. Payment 조회
-        Payment payment = paymentRepository.findByStudentAndYm(reqDTO.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
-        if (payment == null) {
-            throw new RuntimeException("해당 학생의 결제 정보가 없습니다.");
+    @Transactional
+//    public PaymentRespDTO.ManualPaymentRespDTO insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
+    public String insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
+
+        // 학생 정보
+        List<PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo> students = reqDTO.getStudents();
+
+        if (students == null || students.isEmpty()) {
+            throw new IllegalArgumentException("학생 정보가 없습니다.");
         }
 
-        // 2. 총 결제 금액 계산
+        // 실제 결제된 총 금액
         int totalPaidAmount = reqDTO.getCardAmount() + reqDTO.getCashAmount() + reqDTO.getTransferAmount();
-
-        // 3. 청구 금액 조회
-        Integer eduFee = paymentRepository.findPaymentDetailEduFee(reqDTO.getPaymentKey(), reqDTO.getStudentId());
-
-        // 4. 결제 수단 판단 (원래 금액 기준)
+        log.info("totalPaidAmount = {}", totalPaidAmount);
+        // 결제 수단 판단
         boolean hasCard = reqDTO.getCardAmount() != 0;
         boolean hasCash = reqDTO.getCashAmount() != 0;
         boolean hasTransfer = reqDTO.getTransferAmount() != 0;
-
+        log.info("hasCard = {}", hasCard);
+        log.info("hasCash = {}", hasCash);
+        log.info("hasTransfer = {}", hasTransfer);
         String method;
         if (hasCard && !hasCash && !hasTransfer) {
-            method = "card";
+            method = "CARD";
         } else if (!hasCard && hasCash && !hasTransfer) {
-            method = "cash";
+            method = "CASH";
         } else if (!hasCard && !hasCash && hasTransfer) {
-            method = "transfer";
+            method = "TRANSFER";
         } else {
-            method = "mixed";
+            method = "MIXED";
         }
+        log.info("method = {}", method);
 
-        // ✨ 5. 선납금 계산 및 금액 조정
-        int prepaidAmount = 0;
-        int actualBillPayment = totalPaidAmount;
+        // 4. 🔍 각 학생의 청구금액을 DB에서 조회 (안전하게)
+        int totalBillAmount = 0;
 
-        // 원래 입력된 금액 저장 (preset용)
-        int originalCardAmount = reqDTO.getCardAmount();
-        int originalCashAmount = reqDTO.getCashAmount();
-        int originalTransferAmount = reqDTO.getTransferAmount();
+        for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
+            // Payment 조회
+            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
 
-        if (totalPaidAmount > eduFee) {
-            // 선납금 발생
-            prepaidAmount = totalPaidAmount - eduFee;
-            actualBillPayment = eduFee;
-
-            // ✨ manual_payment에는 청구금액만큼만 저장
-            if (method.equals("card")) {
-                reqDTO.setCardAmount(eduFee);
-                reqDTO.setCashAmount(0);
-                reqDTO.setTransferAmount(0);
-            } else if (method.equals("cash")) {
-                reqDTO.setCardAmount(0);
-                reqDTO.setCashAmount(eduFee);
-                reqDTO.setTransferAmount(0);
-            } else if (method.equals("transfer")) {
-                reqDTO.setCardAmount(0);
-                reqDTO.setCashAmount(0);
-                reqDTO.setTransferAmount(eduFee);
-            } else {
-                // mixed는 비율대로 분배 (복잡하면 에러 처리)
-                throw new IllegalArgumentException("혼합 결제는 선납금을 지원하지 않습니다.");
+            if (payment == null) {
+                throw new RuntimeException("해당 학생의 결제 정보가 없습니다. studentId: " + studentInfo.getStudentId());
             }
 
-            reqDTO.setStatus("approved");
-            reqDTO.setPrepaidAmount(0); // manual_payment에는 0 저장
+            // 청구 금액 조회
+            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(), studentInfo.getStudentId());
+            log.info("eduFee = {}", eduFee);
+            if (eduFee == null || eduFee == 0) {
+                throw new RuntimeException("청구 금액을 찾을 수 없습니다. studentId: " + studentInfo.getStudentId());
+            }
 
-        } else if (totalPaidAmount == eduFee) {
-            reqDTO.setStatus("approved");
-            reqDTO.setPrepaidAmount(0);
+            totalBillAmount += eduFee;
+            log.info("totalBillAmount = {}", totalBillAmount);
+            log.info("학생 ID: {}, 청구금액: {}", studentInfo.getStudentId(), eduFee);
+        }
+
+        log.info("전체 청구금액 합계: {}, 실제 결제금액: {}", totalBillAmount, totalPaidAmount);
+
+        // manual_key 생성
+        String manualKey = KeyGenerator.generateManualKey(reqDTO.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        log.info("생성된 manualKey: {}", manualKey);
+
+        // 학생 이름 조회
+        List<String> studentNames = new ArrayList<>();
+        for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
+            Student student = studentRepository.findByStudentId(studentInfo.getStudentId());
+            if (student != null) {
+                studentNames.add(student.getStudentName());
+            }
+        }
+
+        String groupStatus;
+        if (totalPaidAmount >= totalBillAmount) {
+            groupStatus = "approved";
         } else {
-            reqDTO.setStatus("partial");
-            reqDTO.setPrepaidAmount(0);
+            groupStatus = "partial";
         }
 
-        String oldStatus = payment.getStatus();
-
-        // 6. manual_payment 저장 (청구금액만)
-        Integer manualPaymentId = paymentRepository.insertPaymentManual(reqDTO);
-
-        // 7. 결제 상태 재계산
-        recalculatePaymentStatus(reqDTO.getPaymentKey(), reqDTO.getUserCode());
-
-        Payment updatedPayment = paymentRepository.findPaymentByKey(reqDTO.getPaymentKey());
-
-        // 8. 결제 히스토리 기록
-        String description = "수기 결제 처리 (" + method + ")";
-        if (prepaidAmount > 0) {
-            description += " / 선납금: " + String.format("%,d", prepaidAmount) + "원";
-        }
-
-        PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
-                .eventType("manual_paid")
-                .eventSource("manual")
-                .oldStatus(oldStatus)
-                .newStatus(updatedPayment.getStatus())
-                .amount(actualBillPayment)
+        PaymentReqDTO.InsertManualGroupDTO groupDTO = PaymentReqDTO.InsertManualGroupDTO.builder()
+                .manualKey(manualKey)
+                .totalAmount(totalPaidAmount)
+                .cardName(reqDTO.getCardName())
+                .method(method)
+                .paidDate(reqDTO.getPaidDate())
+                .yy(reqDTO.getYy())
+                .mm(reqDTO.getMm())
+                .studentId(students.get(0).getStudentId())
+                .centerCode(reqDTO.getCenterCode())
                 .userCode(reqDTO.getUserCode())
-                .description(description)
-                .paymentKey(payment.getPaymentKey())
+                .status(groupStatus)
+                .cancelReason(null)
+                .cashbillId(null)
                 .build();
 
-        paymentRepository.insertPaymentHistory(history);
+        // payment_manual_group 등록
+        paymentRepository.insertPaymentManualGroup(groupDTO);
+        log.info("manual_group 생성 완료 - manualKey: {}, 대표학생: {}, 학생수: {}", manualKey, students.get(0).getStudentId(), students.size());
+        List<StudentPaymentResult> paymentResults = new ArrayList<>();
+        for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
 
-        // ✨ 9. 선납금이 있으면 preset 테이블에 저장 (원래 금액으로)
-        if (prepaidAmount > 0) {
-            PaymentReqDTO.InsertPresetDTO presetDTO = PaymentReqDTO.InsertPresetDTO.builder()
-                    .studentId(reqDTO.getStudentId())
-                    .centerCode(reqDTO.getCenterCode())
-                    .userCode(reqDTO.getUserCode())
-                    .totalAmount(prepaidAmount)
-                    .originalAmount(totalPaidAmount)
-                    .usedMonths(0)
-                    .presetKey(UUID.randomUUID().toString())
-                    .status("active")
+            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
+
+            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(), studentInfo.getStudentId());
+
+            int studentTotalPaid = 0;
+            int studentCardAmount = 0;
+            int studentCashAmount = 0;
+            int studentTransferAmount = 0;
+
+            // 비율 계산
+            double ratio = (double) eduFee / totalBillAmount;
+
+            // 각 결제 수단별로 비율대로 분배
+            if (reqDTO.getCardAmount() > 0) {
+                studentCardAmount = (int) Math.round(reqDTO.getCardAmount() * ratio);
+            }
+            if (reqDTO.getCashAmount() > 0) {
+                studentCashAmount = (int) Math.round(reqDTO.getCashAmount() * ratio);
+            }
+            if (reqDTO.getTransferAmount() > 0) {
+                studentTransferAmount = (int) Math.round(reqDTO.getTransferAmount() * ratio);
+            }
+
+            studentTotalPaid = studentCardAmount + studentCashAmount + studentTransferAmount;
+
+            // 이 학생의 청구금액을 초과했는지 확인
+            int studentActualPayment = studentTotalPaid;
+            String studentStatus;
+
+            // 🔥 선납금 계산
+            int studentPrepaidAmount = 0;
+
+            // manual에 저장할 금액 (청구금액 초과분 제외)
+            int finalCardAmount = studentCardAmount;
+            int finalCashAmount = studentCashAmount;
+            int finalTransferAmount = studentTransferAmount;
+
+            if (studentTotalPaid > eduFee) {
+                // 선납금 발생
+                studentPrepaidAmount = studentTotalPaid - eduFee;
+                studentActualPayment = eduFee;
+                studentStatus = "approved";
+
+                // manual에는 청구금액만큼만 저장
+                if (method.equals("CARD")) {
+                    finalCardAmount = eduFee;
+                    finalCashAmount = 0;
+                    finalTransferAmount = 0;
+                } else if (method.equals("CASH")) {
+                    finalCardAmount = 0;
+                    finalCashAmount = eduFee;
+                    finalTransferAmount = 0;
+                } else if (method.equals("TRANSFER")) {
+                    finalCardAmount = 0;
+                    finalCashAmount = 0;
+                    finalTransferAmount = eduFee;
+                } else {
+                    throw new IllegalArgumentException("혼합 결제는 선납금을 지원하지 않습니다.");
+                }
+            } else if (studentTotalPaid == eduFee) {
+                studentStatus = "approved";
+            } else {
+                studentStatus = "partial";
+            }
+
+            log.info("학생 ID: {}, 청구: {}, 할당: {}, 저장: {}, 선납금: {}, 상태: {}",
+                    studentInfo.getStudentId(), eduFee, studentTotalPaid, studentActualPayment, studentPrepaidAmount, studentStatus);
+            log.info("  -> 카드: {}, 현금: {}, 계좌: {}", finalCardAmount, finalCashAmount, finalTransferAmount);
+
+            // manual 레코드 생성
+            PaymentReqDTO.ManualPaymentReqDTO manualDTO = PaymentReqDTO.ManualPaymentReqDTO.builder()
+                    .studentId(studentInfo.getStudentId())
+                    .paymentKey(studentInfo.getPaymentKey())
+                    .manualKey(manualKey)
+                    .cardAmount(finalCardAmount)
+                    .cashAmount(finalCashAmount)
+                    .transferAmount(finalTransferAmount)
                     .cardName(reqDTO.getCardName())
-                    .method(method)
                     .paidDate(reqDTO.getPaidDate())
-                    .originalManualPaymentId(manualPaymentId)
-                    .note("수기 결제 시 선납금 (총 " + String.format("%,d", totalPaidAmount) +
-                            "원 중 " + String.format("%,d", prepaidAmount) + "원)")
+                    .userCode(reqDTO.getUserCode())
+                    .centerCode(reqDTO.getCenterCode())
+                    .yy(reqDTO.getYy())
+                    .mm(reqDTO.getMm())
+                    .status(studentStatus)
+                    .prepaidAmount(0)
                     .build();
 
-            paymentRepository.insertPaymentPreset(presetDTO);
+            Integer manualPaymentId = paymentRepository.insertPaymentManual(manualDTO);
+            log.info("manual 생성 완료 - studentId: {}, manualPaymentId: {}", studentInfo.getStudentId(), manualPaymentId);
+
+            // 🔥 결과 저장 (선납금 처리용)
+            paymentResults.add(new StudentPaymentResult(
+                    studentInfo.getStudentId(),
+                    studentInfo.getPaymentKey(),
+                    eduFee,
+                    studentTotalPaid,
+                    studentPrepaidAmount,
+                    manualPaymentId
+            ));
         }
 
-        // 10. 응답 생성
-        PaymentRespDTO.ManualPaymentRespDTO resp = new PaymentRespDTO.ManualPaymentRespDTO();
-        resp.setPaymentKey(reqDTO.getPaymentKey());
-        resp.setPrice(totalPaidAmount);
-        resp.setActualBillPayment(actualBillPayment);
-        resp.setPrepaidAmount(prepaidAmount);
-        resp.setStudentId(reqDTO.getStudentId());
+        log.info("전체 manual 인서트 완료");
 
-        String message = "수기 결제가 완료되었습니다.";
-        if (prepaidAmount > 0) {
-            message += " (선납금 " + String.format("%,d", prepaidAmount) + "원 등록)";
+// 🔥 선납금 처리 (각 학생별로)
+        int totalPrepaidAmount = 0;
+
+        for (StudentPaymentResult result : paymentResults) {
+            if (result.prepaidAmount > 0) {
+
+                totalPrepaidAmount += result.prepaidAmount;
+
+                // 🔥 preset 테이블에 저장 (manualKey 포함)
+                PaymentReqDTO.InsertPresetDTO presetDTO = PaymentReqDTO.InsertPresetDTO.builder()
+                        .studentId(result.studentId)
+                        .centerCode(reqDTO.getCenterCode())
+                        .userCode(reqDTO.getUserCode())
+                        .totalAmount(result.prepaidAmount)
+                        .originalAmount(result.paidAmount)
+                        .usedMonths(0)
+                        .presetKey(UUID.randomUUID().toString())
+                        .status("active")
+                        .cardName(reqDTO.getCardName())
+                        .method(method)
+                        .paidDate(reqDTO.getPaidDate())
+                        .originalManualPaymentId(result.manualPaymentId)
+                        .manualKey(manualKey) // 🔥 manualKey 추가
+                        .note(students.size() > 1
+                                ? "형제 묶음 결제 시 선납금 (개인 할당: " + String.format("%,d", result.prepaidAmount) + "원)"
+                                : "수기 결제 시 선납금 (총 " + String.format("%,d", result.paidAmount) + "원 중 " + String.format("%,d", result.prepaidAmount) + "원)")
+                        .build();
+
+                paymentRepository.insertPaymentPreset(presetDTO);
+                log.info("preset 생성 완료 - studentId: {}, 선납금: {}, manualKey: {}",
+                        result.studentId, result.prepaidAmount, manualKey);
+            }
         }
-        resp.setMessage(message);
 
-        return resp;
+        log.info("전체 선납금: {}", totalPrepaidAmount);
+
+        if (reqDTO.getCashbillInfo() != null && (method.equals("CASH") || method.equals("TRANSFER"))) {
+            log.info(reqDTO.getCashbillInfo().toString());
+            log.info("method = {}", method);
+            issueCashbillForManualPayment(manualKey, reqDTO.getCashbillInfo(), reqDTO.getCenterCode());
+        }
+
+        log.info("전체 처리 완료");
+        return "서비스 종료";
+    }
+
+    private void issueCashbillForManualPayment(String manualKey, PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
+
+        log.info("🔥 현금영수증 발행 시작 - manualKey: {}, 금액: {}", manualKey, cashbillInfo.getPrice());
+
+        try {
+            // 1. 결제 설정 조회
+            PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(centerCode);
+
+            if (conf == null) {
+                throw new IllegalStateException("결제 설정이 없습니다.");
+            }
+
+            // 2. bill_id 생성
+            LocalDate now = LocalDate.now();
+            LocalDate base = LocalDate.of(2025, 1, 1);
+
+            long diffDays = ChronoUnit.DAYS.between(base, now);
+            int secondsOfDay = LocalTime.now().toSecondOfDay();
+            int millis = LocalTime.now().getNano();
+
+            String dayCode = Long.toString(diffDays, 36);
+            String timeCode = Integer.toString(secondsOfDay, 36);
+            String millisStr = String.format("%02d", millis % 100);
+
+            String cashbillId = conf.getPreBillId() + "-" +
+                    String.format("%3s", dayCode).replace(" ", "0") +
+                    String.format("%4s", timeCode).replace(" ", "0") +
+                    millisStr;
+
+            log.info("✅ cashbill_id 생성: {}", cashbillId);
+
+            // 3. hash 생성
+            String raw = cashbillId + "," + cashbillInfo.getPrice();
+            String hash = DigestUtils.sha256Hex(raw);
+
+            // 4. 청구서 정보 구성
+            Map<String, Object> bill = Map.of(
+                    "bill_id", cashbillId,
+                    "price", Integer.parseInt(cashbillInfo.getPrice()),
+                    "supply_price", Integer.parseInt(cashbillInfo.getSupplyPrice()),
+                    "tax", Integer.parseInt(cashbillInfo.getTax()),
+                    "hash", hash,
+                    "trader", cashbillInfo.getTrader(),
+                    "issuance_number", cashbillInfo.getReceiptNumber()
+            );
+
+            // 5. API 요청
+            Map<String, Object> body = Map.of(
+                    "apikey", conf.getApiKey(),
+                    "member", conf.getMemberId(),
+                    "merchant", conf.getMerchantId(),
+                    "bill", bill
+            );
+
+            // 6. 결제선생 API 호출
+            PaymentRespDTO.CashBillRespDTO paymintResp = callPaymintCashbill(conf.getCashbillIssueUrl(), body);
+
+            if (!"0000".equals(paymintResp.getCode())) {
+                log.error("현금영수증 발행 실패 - code: {}, message: {}", paymintResp.getCode(), paymintResp.getMsg());
+                throw new RuntimeException("현금영수증 발행 실패: " + paymintResp.getMsg());
+            }
+
+            log.info("✅ 결제선생 API 성공 - 승인번호: {}", paymintResp.getAppr_cash_num());
+
+            // 7. erp_cashbill 테이블 저장
+            PaymentCashbill cashbill = PaymentCashbill.builder()
+                    .studentId(cashbillInfo.getStudentId())
+                    .paymentKey(cashbillInfo.getPaymentKey())
+                    .billId(cashbillId)
+                    .price(cashbillInfo.getPrice())
+                    .supplyPrice(cashbillInfo.getSupplyPrice())
+                    .tax(cashbillInfo.getTax())
+                    .apprCashNum(paymintResp.getAppr_cash_num())
+                    .hashValue(hash)
+                    .trader(cashbillInfo.getTrader())
+                    .receiptNumber(cashbillInfo.getReceiptNumber())
+                    .receiptType(cashbillInfo.getReceiptType())
+                    .taxType(cashbillInfo.getTaxType())
+                    .issueDate(cashbillInfo.getIssueDate())
+                    .status("ISSUED")
+                    .build();
+
+            paymentRepository.insertCashbill(cashbill);
+
+            // 8. manual_group 테이블 업데이트
+            paymentRepository.updateManualGroupCashbillId(manualKey, cashbillId);
+
+            log.info("✅ 현금영수증 발행 완료 - manualKey: {}, cashbillId: {}, 승인번호: {}",
+                    manualKey, cashbillId, paymintResp.getAppr_cash_num());
+
+        } catch (Exception e) {
+            log.error("❌ 현금영수증 발행 실패 - manualKey: {}, error: {}", manualKey, e.getMessage(), e);
+            // 예외를 던지지 않고 로그만 남김 (수기 결제는 성공한 상태)
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    private static class StudentPaymentResult {
+        private String studentId;
+        private String paymentKey;
+        private Integer eduFee;          // 청구금액 (예: 120,000)
+        private Integer paidAmount;      // 할당받은 금액 (예: 150,000)
+        private Integer prepaidAmount;   // 선납금 (예: 30,000)
+        private Integer manualPaymentId; // 방금 생성된 manual ID
     }
 
     public void processPresetPaymentIfExists(String studentId, String paymentKey, Integer billAmount,
-                                              String userCode, String centerCode, String yy, String mm) {
+                                             String userCode, String centerCode, String yy, String mm) {
         try {
             // 1. 활성화된 선납금 조회
             PaymentPreset preset = paymentRepository.findActivePresetByStudentId(studentId);
@@ -1207,11 +1428,9 @@ public class PaymentService {
             log.info("✨ 선납금 자동 결제 시작 - studentId: {}, preset: {}, 금액: {}",
                     studentId, preset.getId(), billAmount);
 
-            // 3. manual_payment 자동 생성
             PaymentReqDTO.ManualPaymentReqDTO manualDTO = PaymentReqDTO.ManualPaymentReqDTO.builder()
                     .studentId(studentId)
                     .paymentKey(paymentKey)
-                    .billId(null)  // 필요시 billId 조회
                     .paidDate(LocalDate.now().toString())
                     .cardAmount(0)
                     .cashAmount(0)
@@ -1263,7 +1482,6 @@ public class PaymentService {
 
         } catch (Exception e) {
             log.error("❌ 선납금 자동 처리 실패 - studentId: {}, error: {}", studentId, e.getMessage(), e);
-            // 선납금 처리 실패해도 전체 트랜잭션은 롤백하지 않음 (선택사항)
         }
     }
 
@@ -1437,9 +1655,9 @@ public class PaymentService {
 
         // 8. erp_cashbill 테이블에 INSERT
         PaymentCashbill cashbill = PaymentCashbill.builder()
-                .paymentKey(dto.getPaymentKey())
                 .studentId(dto.getStudentId())
                 .billId(billId)
+                .paymentKey(dto.getPaymentKey())
                 .price(dto.getPrice())
                 .supplyPrice(dto.getSupplyPrice())
                 .tax(dto.getTax())
@@ -1492,5 +1710,12 @@ public class PaymentService {
         ResponseEntity<PaymentRespDTO.CashBillRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentRespDTO.CashBillRespDTO.class);
 
         return response.getBody();
+    }
+
+
+    public List<PaymentRespDTO.ClaimDto> getFilteredClaims(PaymentReqDTO.ClaimFilterDTO filters) {
+
+        List<PaymentRespDTO.ClaimDto> response = paymentRepository.getPaymentInfo(filters);
+        return response;
     }
 }

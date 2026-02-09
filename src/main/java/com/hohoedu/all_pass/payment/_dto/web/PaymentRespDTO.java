@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.student.Student;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
@@ -182,13 +184,13 @@ public class PaymentRespDTO {
         private String gradeName;
         private String hanTeacher;
         private String bookTeacher;
-        private String amount;
-        // ✅ 추가된 필드들
+        private Integer amount;
         private Integer eduFeeTotal;      // 교육비 detail 총액
         private Integer eduBillPaid;      // 교육비 bill 결제 금액 (approved)
         private Integer eduManualPaid;    // 교육비 manual 결제 금액
         private Integer eduUnpaidAmount;  // 교육비 미납 금액 = total - bill - manual
         private String paymentStatus;
+        private String phoneNumber;
     }
 
     @Data
@@ -271,5 +273,17 @@ public class PaymentRespDTO {
         private String bookTeacher;
         private String amount;
         private String phoneNumber;
+    }
+
+    @Data
+    public  static class ClaimDto {
+        private String studentName;
+        private String subject;
+        private String hanTeacher;
+        private String bookTeacher;
+        private String billPrice;
+        private String paidAmount;
+        private String unpaidAmount;
+        private String payStatus;
     }
 }

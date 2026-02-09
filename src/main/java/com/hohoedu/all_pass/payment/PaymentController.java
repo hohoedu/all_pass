@@ -110,8 +110,12 @@ public class PaymentController {
 
         dto.setUserCode(user.getUserCode());
         dto.setCenterCode(user.getCenterCode());
-        PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
+
+        log.info(dto.toString());
+//        PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
+        String response = paymentService.insertPaymentManual(dto);
         return ResponseEntity.ok(ApiUtils.success(response));
+//        return ResponseEntity.ok(ApiUtils.success(null));
 
     }
 
@@ -279,5 +283,12 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
         }
+    }
+
+
+    @PostMapping("/api/claim/export")
+    public ResponseEntity<List<PaymentRespDTO.ClaimDto>> exportClaims(@RequestBody PaymentReqDTO.ClaimFilterDTO filters) {
+        List<PaymentRespDTO.ClaimDto> data = paymentService.getFilteredClaims(filters);
+        return ResponseEntity.ok(data);
     }
 }
