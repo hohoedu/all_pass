@@ -26,25 +26,22 @@ public class PaymentRespDTO {
         private String paymentKey;
         private String billId;
         private String studentName;
-
-        private String subject;
-        private String hanTeacher;
-        private String hanTeacherCode;
-        private String bookTeacher;
-        private String bookTeacherCode;
-
-        private Integer hanFee;
-        private Integer hanMaterialFee;
-        private Integer bookFee;
-        private Integer bookMaterialFee;
-        private String eduStatus;
-        private String materialStatus;
-
         private String billPrice;           // 청구 금액
+        private String subject;             // 선택된 선생님 수업
+        private String otherTeacher;        // 선택되지 않은 선생님 이름
+        private String otherSubject;        // 선택되지 않은 수업
+
+//        private Integer hanFee;
+//        private Integer hanMaterialFee;
+//        private Integer bookFee;
+//        private Integer bookMaterialFee;
+//        private String eduStatus;
+//        private String materialStatus;
+
+
         private String paidAmount;          // 결제 금액
         private String unpaidAmount;        // 미납 금액
         private String issuanceStatus;      // 발행 여부
-        private String totalStatus;         // 결제 여부
         private String payStatus;         // 결제 여부
 
         private String parentPhone;         // 부모님 핸드폰 번호

@@ -123,13 +123,24 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ========================================
         📝 수기 결제 모달 - 학생 검색 및 선택
     ======================================== */
+    // ⭐ 빈 리스트 렌더링 함수 추가
+    const renderEmptyStudentList = () => {
+        if (!studentTableBody) return;
+        studentTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 30px; color: #666;">
+                    학생 이름을 검색해주세요.
+                </td>
+            </tr>`;
+    };
+
     const renderStudentList = list => {
         if (!studentTableBody) return;
         studentTableBody.innerHTML = "";
 
         if (!list.length) {
             studentTableBody.innerHTML =
-                `<tr><td colspan="3" class="empty">결제 가능 학생이 없습니다.</td></tr>`;
+                `<tr><td colspan="4" class="empty">결제 가능 학생이 없습니다.</td></tr>`;
             return;
         }
 
@@ -175,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const amountCell = document.querySelector("#paid-student td:nth-child(4)");
                 if (amountCell) amountCell.textContent = totalAmount.toLocaleString('ko-KR') + ' 원';
 
-                // 수기 결제 모달의 현금영수증 발급번호 자동 입력
                 const receiptNumberInput = document.querySelector(".add-payment-modal #receipt-number");
                 if (receiptNumberInput && s.phoneNumber) {
                     const cleanPhone = s.phoneNumber.replace(/[^0-9]/g, '');
@@ -187,19 +197,68 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
+    // ⭐ 검색 로직 수정
     const filterStudents = keyword => {
         keyword = keyword.trim();
+
+        // 공백이거나 빈 값이면 검색 안내 메시지 표시
         if (!keyword) {
-            renderStudentList(unpaidStudents);
+            renderEmptyStudentList();
             return;
         }
-        const filtered = unpaidStudents.filter(s =>
-            s.studentName?.includes(keyword) ||
-            s.gradeName?.includes(keyword) ||
-            s.hanTeacher?.includes(keyword) ||
-            s.bookTeacher?.includes(keyword)
-        );
-        renderStudentList(filtered);
+
+        const matchedStudents = [];
+        const phoneNumbersToInclude = new Set();
+
+        // 숫자만 추출 (전화번호 검색용)
+        const numericKeyword = keyword.replace(/[^0-9]/g, '');
+
+        // ⭐ 전화번호 검색인지 판단 (숫자만 있고 4자리 이상)
+        const isPhoneSearch = numericKeyword.length >= 4 && numericKeyword === keyword.replace(/[^0-9]/g, '');
+
+        if (isPhoneSearch) {
+            // ========== 전화번호 검색 ==========
+            unpaidStudents.forEach(s => {
+                if (!s.phoneNumber) return;
+
+                // 학생 전화번호에서 숫자만 추출
+                const cleanPhone = s.phoneNumber.replace(/[^0-9]/g, '');
+
+                // ⭐ 4자리 이상 일치하는지 확인
+                // 예: 입력 "1234" → "01012345678"에서 "1234" 찾기
+                // 예: 입력 "01012345678" → "01012345678"과 완전 일치
+                if (cleanPhone.includes(numericKeyword)) {
+                    phoneNumbersToInclude.add(s.phoneNumber);
+                }
+            });
+        } else {
+            // ========== 이름 검색 ==========
+            unpaidStudents.forEach(s => {
+                if (s.studentName?.includes(keyword)) {
+                    phoneNumbersToInclude.add(s.phoneNumber);
+                }
+            });
+        }
+
+        // 같은 전화번호를 가진 모든 학생들 포함
+        unpaidStudents.forEach(s => {
+            if (phoneNumbersToInclude.has(s.phoneNumber)) {
+                matchedStudents.push(s);
+            }
+        });
+
+        // 결과가 없으면 메시지 표시
+        if (matchedStudents.length === 0) {
+            studentTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 30px; color: #666;">
+                    검색 결과가 없습니다.
+                </td>
+            </tr>`;
+            return;
+        }
+
+        renderStudentList(matchedStudents);
     };
 
     if (manualSearchInput) {
@@ -237,7 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
             manualReceiptDateInput.value = `${yyyy}-${mm}-${dd}`;
             manualReceiptDateText.textContent = `${yyyy}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 
-            // 날짜 변경 이벤트
             manualReceiptDateInput.addEventListener('change', function () {
                 if (this.value) {
                     const date = new Date(this.value);
@@ -248,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         }
-        // 과세 계산 함수
+
         const calculateTax = () => {
             if (!cashPriceInput || !supplyPriceInput || !taxPriceInput) return;
 
@@ -273,7 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        // 결제 방법 입력 시 자동 처리
         payInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
                 const amount = Number(e.target.value) || 0;
@@ -292,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         receiptTable.classList.add('show');
                     }
                 } else if (index === 0) {
-
                     if (receiptTable) {
                         receiptTable.classList.remove('show');
                     }
@@ -300,7 +356,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-        // 총금액 직접 입력
         if (cashPriceInput) {
             cashPriceInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/[^0-9]/g, '');
@@ -313,7 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // 과세구분 변경
         const taxTypeRadios = document.querySelectorAll('.add-payment-modal input[name="tax-type"]');
         taxTypeRadios.forEach(radio => {
             radio.addEventListener('change', calculateTax);
@@ -446,7 +500,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const students = await res.json();
             unpaidStudents = students.response || [];
             initPayDate();
-            renderStudentList(unpaidStudents);
+
+            // ⭐ 초기에는 검색 안내 메시지만 표시
+            renderEmptyStudentList();
+
+            // ⭐ 검색 입력창 초기화
+            if (manualSearchInput) {
+                manualSearchInput.value = '';
+            }
 
             const payDateInput = document.getElementById("manual-pay-date");
             if (payDateInput) {
@@ -456,21 +517,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const cardCodeSelect = document.getElementById('cardCodeSelect');
             if (cardCodeSelect) cardCodeSelect.value = '';
 
-            // 결제 방법 라디오 버튼 모두 해제
             const payRadios = document.querySelectorAll('.add-payment-modal .pay-radio');
             payRadios.forEach(radio => radio.checked = false);
 
-            // 결제 금액 입력 필드 초기화
             const payInputs = document.querySelectorAll('.add-payment-modal .pay-input');
             payInputs.forEach(input => input.value = '');
 
-            // 학생 정보 초기화
             const nameCell = document.querySelector("#paid-student td:nth-child(2)");
             const amountCell = document.querySelector("#paid-student td:nth-child(4)");
             if (nameCell) nameCell.textContent = '학생을 선택해주세요.';
             if (amountCell) amountCell.textContent = '학생을 선택해주세요.';
 
-            // 현금영수증 필드 초기화
             const manualReceiptNumber = document.querySelector('.add-payment-modal #receipt-number');
             const manualCashPrice = document.querySelector('.add-payment-modal #cash-price');
             const manualSupplyPrice = document.querySelector('.add-payment-modal #supply-price');
@@ -485,19 +542,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (manualSupplyPrice) manualSupplyPrice.value = '';
             if (manualTaxPrice) manualTaxPrice.value = '';
 
-            // 🔥 발급구분: 개인 선택
             const manualPersonalRadio = document.querySelector('.add-payment-modal input[name="receipt-type"][value="personal"]');
             if (manualPersonalRadio) manualPersonalRadio.checked = true;
 
-            // 🔥 과세구분: 과세 선택
             const manualTaxableRadio = document.querySelector('.add-payment-modal input[name="tax-type"][value="taxable"]');
             if (manualTaxableRadio) manualTaxableRadio.checked = true;
 
-            // 현금영수증 섹션 숨김
             const receiptSection = document.querySelector('.add-payment-modal .cashbill-section');
             if (receiptSection) receiptSection.classList.remove('show');
 
-            // 학생 선택 해제
             document.querySelectorAll("#unpaid-student-list tr").forEach(r => r.classList.remove("selected"));
 
             modalPayment.style.display = "block";
@@ -533,7 +586,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // 학생 정보
         const displayName = document.querySelector("#paid-student td:nth-child(2)")?.textContent || '';
         const studentNames = displayName.split(', ');
 
@@ -546,7 +598,6 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         });
 
-        // 🔥 현금영수증 정보 수집 (현금/계좌이체인 경우만)
         let cashbillInfo = null;
 
         console.log('🔍 cashAmount:', cashAmount);
@@ -559,8 +610,6 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('🔍 receiptSection:', receiptSection);
             console.log('🔍 has show class:', receiptSection?.classList.contains('show'));
 
-            // 🔥 섹션이 표시되지 않았더라도 데이터가 있으면 수집
-            // (섹션이 show 상태가 아니어도 필드 값이 입력되어 있을 수 있음)
             const receiptNumber = document.querySelector('.add-payment-modal #receipt-number')?.value || '';
             const receiptType = document.querySelector('.add-payment-modal input[name="receipt-type"]:checked')?.value || '';
             const taxType = document.querySelector('.add-payment-modal input[name="tax-type"]:checked')?.value || '';
@@ -572,10 +621,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log('🔍 receiptNumber:', receiptNumber);
             console.log('🔍 cashPrice:', cashPrice);
 
-            // 🔥 현금영수증 정보가 있으면 생성 (show 체크 제거)
             if (receiptNumber && parseInt(cashPrice) > 0) {
 
-                // trader 값 설정
                 let traderValue = '0';
                 if (receiptType === 'business') {
                     traderValue = '1';

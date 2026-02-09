@@ -127,6 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.billId = s.billId || '';
             tr.dataset.issuanceStatus = s.issuanceStatus || '';
             tr.dataset.payStatus = s.payStatus || '';
+            tr.dataset.otherSubject = s.otherSubject || '';
+            tr.dataset.otherTeacher = s.otherTeacher || '';
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
             tr.dataset.lastPhone4 = lastPhone4;
 
@@ -136,6 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 : '';
             const billPriceTitle = isPriceModified && s.standardFee
                 ? `표준 금액: ${Number(s.standardFee).toLocaleString()}원`
+                : '';
+            const otherSubjectDisplay = s.otherSubject && s.otherSubject.trim() !== ''
+                ? s.otherSubject
                 : '';
 
 
@@ -152,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <td style="${billPriceStyle}" title="${billPriceTitle}">
             ${Number(s.billPrice || 0).toLocaleString()}
         </td>
-        <td>-</td>
+         <td class="other-subject-cell" style="${otherSubjectDisplay ? 'cursor: help;' : ''}">
+        ${otherSubjectDisplay}
+    </td>
         <td>${renderIssueStatus(s.issuanceStatus)}</td>
         <td>${renderPayStatus(s.payStatus)}</td>
         <td id="personal-pay-info" style="cursor:pointer;">
@@ -165,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.appendChild(fragment);
         bindStudentNameTooltip();
+        bindOtherSubjectTooltip();
 
         selectAll.checked = false;
         tbody.style.visibility = 'visible';
@@ -209,6 +217,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.phone-tooltip');
+                if (tooltip) {
+                    tooltip.remove();
+                }
+            });
+        });
+    }
+
+    function bindOtherSubjectTooltip() {
+        const otherSubjectCells = tbody.querySelectorAll('.other-subject-cell');
+
+        otherSubjectCells.forEach(cell => {
+            const row = cell.closest('tr');
+            const otherSubject = row.dataset.otherSubject;
+            const otherTeacher = row.dataset.otherTeacher;  // ⭐ 변경
+
+            if (!otherSubject ||
+                otherSubject === 'null' ||
+                otherSubject === 'undefined' ||
+                otherSubject.trim() === '') {
+                return;
+            }
+
+            cell.addEventListener('mouseenter', (e) => {
+                const existingTooltip = document.querySelector('.other-subject-tooltip');
+                if (existingTooltip) {
+                    existingTooltip.remove();
+                }
+
+                const tooltip = document.createElement('div');
+                tooltip.className = 'other-subject-tooltip';
+                tooltip.style.cssText = `
+                position: fixed;
+                background: rgba(0, 0, 0, 0.85);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 13px;
+                z-index: 10000;
+                pointer-events: none;
+                white-space: nowrap;
+            `;
+                // ⭐ " 선생님" 붙여서 표시
+                tooltip.textContent = otherTeacher ? otherTeacher + ' 선생님' : '';
+
+                document.body.appendChild(tooltip);
+
+                const rect = cell.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
+            });
+
+            cell.addEventListener('mouseleave', () => {
+                const tooltip = document.querySelector('.other-subject-tooltip');
                 if (tooltip) {
                     tooltip.remove();
                 }
