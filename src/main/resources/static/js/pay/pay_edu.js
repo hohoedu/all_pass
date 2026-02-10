@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.otherTeacher = s.otherTeacher || '';
             tr.dataset.samePhoneStudents = s.samePhoneStudents || '';
             tr.dataset.lastPhone4 = lastPhone4;
+            tr.dataset.otherSubjectType = s.otherSubjectType || '';
 
             const isPriceModified = s.isPriceModified === 1;
             const billPriceStyle = isPriceModified
@@ -143,6 +144,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? s.otherSubject
                 : '';
 
+            const renderBadges = (subjectType) => {
+                if (!subjectType) return '';
+
+                const badges = [];
+
+                if (subjectType.includes('hoho')) {
+                    badges.push('<span class="badge-hoho">호</span>');
+                }
+                if (subjectType.includes('han')) {
+                    badges.push('<span class="badge-han">한</span>');
+                }
+                if (subjectType.includes('book')) {
+                    badges.push('<span class="badge-book">독</span>');
+                }
+
+                return badges.join('');
+            };
 
             tr.innerHTML = `
         <td class="checkbox-group">
@@ -157,9 +175,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <td style="${billPriceStyle}" title="${billPriceTitle}">
             ${Number(s.billPrice || 0).toLocaleString()}
         </td>
-         <td class="other-subject-cell" style="${otherSubjectDisplay ? 'cursor: help;' : ''}">
-        ${otherSubjectDisplay}
-    </td>
+        <td class="other-subject-cell" style="${otherSubjectDisplay ? 'cursor: pointer;' : ''}">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
+                ${otherSubjectDisplay ? renderBadges(s.otherSubjectType) : ''}
+            </div>
+        </td>
         <td>${renderIssueStatus(s.issuanceStatus)}</td>
         <td>${renderPayStatus(s.payStatus)}</td>
         <td id="personal-pay-info" style="cursor:pointer;">
@@ -230,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         otherSubjectCells.forEach(cell => {
             const row = cell.closest('tr');
             const otherSubject = row.dataset.otherSubject;
-            const otherTeacher = row.dataset.otherTeacher;  // ⭐ 변경
+            const otherTeacher = row.dataset.otherTeacher;
 
             if (!otherSubject ||
                 otherSubject === 'null' ||

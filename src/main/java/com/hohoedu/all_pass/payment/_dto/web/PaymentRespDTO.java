@@ -30,6 +30,7 @@ public class PaymentRespDTO {
         private String subject;             // 선택된 선생님 수업
         private String otherTeacher;        // 선택되지 않은 선생님 이름
         private String otherSubject;        // 선택되지 않은 수업
+        private String otherSubjectType;    // 선택되지 않은 수업 종류
 
 //        private Integer hanFee;
 //        private Integer hanMaterialFee;
@@ -149,6 +150,7 @@ public class PaymentRespDTO {
         private String classKey;
         private String className;
         private String fee;
+        private String category;
         private String classType;
         private String unitKey;
         private String unitName;

@@ -1,219 +1,176 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Custom Css / Js -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
-  <script src="js/custom.js"></script>
-  <title>상담문의 기록</title>
-  <style>
-    /* Horizontal Prints */
-    @page {
-      size: A4 landscape;
-      margin: 20mm;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <title>상담문의 기록</title>
+    <style>
+        /* Horizontal Prints */
+        @page {
+            size: A4 landscape;
+            margin: 20mm;
+        }
+    </style>
 </head>
 <body>
-  <div class="a4-print-landscape">
-    <div class="stats-filter counsel-header">
-      <!-- 좌측: 기간 선택 -->
-      <div class="stats-item-left">
-        <div class="radio-group">
-          <input type="radio" name="period" id="period-1year" value="1y" checked>
-          <label for="period-1year">1년</label>
-          <input type="radio" name="period" id="period-6month" value="6m">
-          <label for="period-6month">6개월</label>
-          <input type="radio" name="period" id="period-3month" value="3m">
-          <label for="period-3month">3개월</label>
-          <input type="radio" name="period" id="period-custom" value="custom">
-          <label for="period-custom">일자지정</label>
-        </div>
-        <div class="icon-field basic-input cal-adjust" style="margin-bottom: 0;">
-          <span>2024-07 ~ 2025-06</span>
-          <button class="icon-btn" style="background: transparent;">
-            <img src="image/calendar.png" alt="달력 아이콘">
-          </button>
-        </div>
-      </div>
-      <!-- 우측: 선택 필터 + 버튼 -->
-      <div class="teacher-search">
-        <div class="sl3">
-          <div class="basic-select" style="flex: 1;">
-            <select name="stuName" id="stu-name">
-              <option value="all">이름</option>
-              <option value="">김호호</option>
-              <option value="">김호호</option>
-              <option value="">김호호</option>
-              <option value="">김호호</option>
-            </select>
-          </div>
-          <div class="search-box" style="flex: 2;">
-            <input type="text" id="search-name" name="searchName">
-          </div>
-        </div>
-        <div class="explore common-btn">검색</div>
-      </div>
-    </div>
-    <!-- main-content -->
+<div class="a4-print-landscape">
     <div class="bt">
-      <div class="table-frame consult-frame">
-        <table class="lesson-log-table consult-table">
-          <colgroup>
-            <col width="5%">
-            <col width="5%">
-            <col width="10%">
-            <col width="5%">
-            <col width="10%">
-            <col width="5%">
-            <col width="10%">
-            <col width="25%">
-            <col width="10%">
-            <col width="10%">
-          </colgroup>
-          <thead>
-            <tr>
-              <th class="checkbox-group"><input type="checkbox" /></th>
-              <th>No</th>
-              <th>일자</th>
-              <th>이름</th>
-              <th>학교</th>
-              <th>학년</th>
-              <th>연락처</th>
-              <th>메모사항</th>
-              <th>진행상황</th>
-              <th>등록폼 발송/입회일</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-student-id="1001">
-              <td class="checkbox-group"><input type="checkbox" /></td>
-              <td>1</td>
-              <td>2026-06-10</td>
-              <td>김호일</td>
-              <td>호호부설유치원</td>
-              <td>7세</td>
-              <td>010-1234-5678</td>
-              <td>
-                <div class="memo-etc text-middle">
-                  <textarea class="comment-text"  placeholder="내용을 입력해주세요.">7세 수업 반이 있는지 문의주셨습니다. 현재 자리가 남는반이 없어 대기하셔야 한다고 안내드렸습니다. (추후 연락드려서 신규반 편성 필요!!)  </textarea>
-                </div>
-              </td>
-              <td>
-                <div class="select-arrow">
-                  <button class="select-status" data-status="counseling">상담진행</button>
-                  <ul class="dropdown-status">
-                    <li data-status="counseling">상담진행</li>
-                    <li data-status="waiting">수업대기</li>
-                    <li data-status="confirmed">수업확정</li>
-                    <li data-status="ended">종료</li>
-                  </ul>
-                </div>
-              </td>
-              <td>
-                <div class="cell-middle">
-                  <div class="icon-field basic-input" style="width: 150px;">
-                    <span>2026-06-25</span>
-                    <button class="icon-btn" style="background: transparent;">
-                      <img src="image/calendar.png" alt="달력 아이콘">
-                    </button>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr data-student-id="1002">
-              <td class="checkbox-group"><input type="checkbox" /></td>
-              <td>2</td>
-              <td>2026-06-10</td>
-              <td>김호이</td>
-              <td>호호부설유치원</td>
-              <td>초1</td>
-              <td>010-1234-5678</td>
-              <td>
-                <div class="memo-etc text-middle">
-                  <textarea class="comment-text"  placeholder="내용을 입력해주세요."></textarea>
-                </div>
-              </td>
-              <td class="send-ornot">
-                <div class="select-arrow">
-                  <button class="select-status" data-status="counseling">상담진행</button>
-                  <ul class="dropdown-status">
-                    <li data-status="counseling">상담진행</li>
-                    <li data-status="waiting">수업대기</li>
-                    <li data-status="confirmed">수업확정</li>
-                    <li data-status="ended">종료</li>
-                  </ul>
-                </div>
-              </td>
-              <td>
-                <div class="join-link common-btn">가입링크 발송</div>
-                <div class="first-send">최초발송일: <span>2025-06-13</span></div>
-              </td>
-            </tr>
-            <tr data-student-id="1003">
-              <td class="checkbox-group"><input type="checkbox" /></td>
-              <td>2</td>
-              <td>2026-06-10</td>
-              <td>김호이</td>
-              <td>호호부설유치원</td>
-              <td>초1</td>
-              <td>010-1234-5678</td>
-              <td>
-                <div class="memo-etc text-middle">
-                  <textarea class="comment-text"  placeholder="내용을 입력해주세요."></textarea>
-                </div>
-              </td>
-              <td class="send-ornot">
-                <div class="select-arrow">
-                  <button class="select-status" data-status="counseling">상담진행</button>
-                  <ul class="dropdown-status">
-                    <li data-status="counseling">상담진행</li>
-                    <li data-status="waiting">수업대기</li>
-                    <li data-status="confirmed">수업확정</li>
-                    <li data-status="ended">종료</li>
-                  </ul>
-                </div>
-              </td>
-              <td>
-                <div class="join-link common-btn">가입링크 발송</div>
-                <div class="first-send">최초발송일: <span>2025-06-13</span></div>
-              </td>
-            </tr>
-            <tr data-student-id="1004">
-              <td class="checkbox-group"><input type="checkbox" /></td>
-              <td>2</td>
-              <td>2026-06-10</td>
-              <td>김호이</td>
-              <td>호호부설유치원</td>
-              <td>초1</td>
-              <td>010-1234-5678</td>
-              <td>
-                <div class="memo-etc text-middle">
-                  <textarea class="comment-text"  placeholder="내용을 입력해주세요."></textarea>
-                </div>
-              </td>
-              <td class="send-ornot">
-                <div class="select-arrow">
-                  <button class="select-status" data-status="counseling">상담진행</button>
-                  <ul class="dropdown-status">
-                    <li data-status="counseling">상담진행</li>
-                    <li data-status="waiting">수업대기</li>
-                    <li data-status="confirmed">수업확정</li>
-                    <li data-status="ended">종료</li>
-                  </ul>
-                </div>
-              </td>
-              <td>
-                <div class="join-link common-btn">가입링크 발송</div>
-                <div class="first-send">최초발송일: <span>2025-06-13</span></div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="table-frame consult-frame">
+            <table class="lesson-log-table consult-table">
+                <colgroup>
+                    <col width="5%">
+                    <col width="5%">
+                    <col width="10%">
+                    <col width="5%">
+                    <col width="10%">
+                    <col width="5%">
+                    <col width="10%">
+                    <col width="25%">
+                    <col width="10%">
+                    <col width="10%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th class="checkbox-group"><input type="checkbox"/></th>
+                    <th>No</th>
+                    <th>일자</th>
+                    <th>이름</th>
+                    <th>학교</th>
+                    <th>학년</th>
+                    <th>연락처</th>
+                    <th>메모사항</th>
+                    <th>진행상황</th>
+                    <th>등록폼 발송/입회일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-student-id="1001">
+                    <td class="checkbox-group"><input type="checkbox"/></td>
+                    <td>1</td>
+                    <td>2026-06-10</td>
+                    <td>김호일</td>
+                    <td>호호부설유치원</td>
+                    <td>7세</td>
+                    <td>010-1234-5678</td>
+                    <td>
+                        <div class="memo-etc text-middle">
+                            <textarea class="comment-text" placeholder="내용을 입력해주세요.">7세 수업 반이 있는지 문의주셨습니다. 현재 자리가 남는반이 없어 대기하셔야 한다고 안내드렸습니다. (추후 연락드려서 신규반 편성 필요!!)  </textarea>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="select-arrow">
+                            <button class="select-status" data-status="counseling">상담진행</button>
+                            <ul class="dropdown-status">
+                                <li data-status="counseling">상담진행</li>
+                                <li data-status="waiting">수업대기</li>
+                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="ended">종료</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cell-middle">
+                            <div class="icon-field basic-input" style="width: 150px;">
+                                <span>2026-06-25</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-student-id="1002">
+                    <td class="checkbox-group"><input type="checkbox"/></td>
+                    <td>2</td>
+                    <td>2026-06-10</td>
+                    <td>김호이</td>
+                    <td>호호부설유치원</td>
+                    <td>초1</td>
+                    <td>010-1234-5678</td>
+                    <td>
+                        <div class="memo-etc text-middle">
+                            <textarea class="comment-text" placeholder="내용을 입력해주세요."></textarea>
+                        </div>
+                    </td>
+                    <td class="send-ornot">
+                        <div class="select-arrow">
+                            <button class="select-status" data-status="counseling">상담진행</button>
+                            <ul class="dropdown-status">
+                                <li data-status="counseling">상담진행</li>
+                                <li data-status="waiting">수업대기</li>
+                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="ended">종료</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="join-link common-btn">가입링크 발송</div>
+                        <div class="first-send">최초발송일: <span>2025-06-13</span></div>
+                    </td>
+                </tr>
+                <tr data-student-id="1003">
+                    <td class="checkbox-group"><input type="checkbox"/></td>
+                    <td>2</td>
+                    <td>2026-06-10</td>
+                    <td>김호이</td>
+                    <td>호호부설유치원</td>
+                    <td>초1</td>
+                    <td>010-1234-5678</td>
+                    <td>
+                        <div class="memo-etc text-middle">
+                            <textarea class="comment-text" placeholder="내용을 입력해주세요."></textarea>
+                        </div>
+                    </td>
+                    <td class="send-ornot">
+                        <div class="select-arrow">
+                            <button class="select-status" data-status="counseling">상담진행</button>
+                            <ul class="dropdown-status">
+                                <li data-status="counseling">상담진행</li>
+                                <li data-status="waiting">수업대기</li>
+                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="ended">종료</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="join-link common-btn">가입링크 발송</div>
+                        <div class="first-send">최초발송일: <span>2025-06-13</span></div>
+                    </td>
+                </tr>
+                <tr data-student-id="1004">
+                    <td class="checkbox-group"><input type="checkbox"/></td>
+                    <td>2</td>
+                    <td>2026-06-10</td>
+                    <td>김호이</td>
+                    <td>호호부설유치원</td>
+                    <td>초1</td>
+                    <td>010-1234-5678</td>
+                    <td>
+                        <div class="memo-etc text-middle">
+                            <textarea class="comment-text" placeholder="내용을 입력해주세요."></textarea>
+                        </div>
+                    </td>
+                    <td class="send-ornot">
+                        <div class="select-arrow">
+                            <button class="select-status" data-status="counseling">상담진행</button>
+                            <ul class="dropdown-status">
+                                <li data-status="counseling">상담진행</li>
+                                <li data-status="waiting">수업대기</li>
+                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="ended">종료</li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="join-link common-btn">가입링크 발송</div>
+                        <div class="first-send">최초발송일: <span>2025-06-13</span></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-  </div>
+</div>
 </body>
 </html>

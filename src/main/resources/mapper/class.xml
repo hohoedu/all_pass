@@ -211,12 +211,19 @@
 
         FROM erp_time_table t
                  JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_student s ON ta.student_id = s.student_id
                  LEFT JOIN erp_class_code c ON c.class_key =
                                                CASE
                                                    WHEN t.class_key = 'COM' THEN ta.class_key
                                                    ELSE t.class_key
                                                    END
-                 LEFT JOIN erp_class_fee_map cf ON cf.class_key = c.class_key AND cf.center_code = t.center_code
+                 LEFT JOIN erp_class_fee_map_copy cf ON cf.class_key = c.class_key
+            AND cf.center_code = t.center_code
+            AND cf.category = CASE
+                                  WHEN s.is_hoho = '1' THEN 'hoho'
+                                  WHEN s.is_hoho = '0' AND c.class_type = '1' THEN 'han'
+                                  WHEN s.is_hoho = '0' AND c.class_type = '2' THEN 'book'
+                END
                  LEFT JOIN erp_teacher_assign eta ON ta.student_id = eta.student_id
         WHERE t.time_table_key = #{timeTableKey}
           AND ta.student_id = #{studentId}
@@ -251,6 +258,9 @@
                           WHERE sa.student_id = #{studentId}
                             AND sa.time_table_key = #{timeTableKey}
                             AND sa.week = w.week);
+
+       
+
     </insert>
 
     <update id="updateAttendance">

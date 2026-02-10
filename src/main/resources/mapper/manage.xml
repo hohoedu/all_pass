@@ -106,10 +106,11 @@
         SELECT cf.class_key  AS classKey,
                cf.unit_key   AS unitKey,
                cf.fee        AS fee,
+               cf.category   AS category,
                cc.class_name AS className,
                cc.class_type AS classType,
                uc.unit_name  AS unitName
-        FROM erp_class_fee_map cf
+        FROM erp_class_fee_map_copy cf
                  JOIN erp_class_code cc ON cf.class_key = cc.class_key
                  LEFT JOIN erp_unit_code uc ON cf.unit_key = uc.unit_key
         WHERE cf.center_code = #{centerCode}

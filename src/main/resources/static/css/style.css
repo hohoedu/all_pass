@@ -1110,8 +1110,6 @@ table .checkbox-group {
 }
 
 
-
-
 /* ======================= login page ======================= */
 .login-container {
     display: flex;
@@ -4326,6 +4324,7 @@ input:checked + .slider::before {
 
 .badge-han,
 .badge-book,
+.badge-hoho,
 .badge-han-gray,
 .badge-book-gray {
     margin-right: 5px;
@@ -4345,6 +4344,10 @@ input:checked + .slider::before {
 
 .badge-book {
     background: #0F95BC;
+}
+
+.badge-hoho {
+    background: #ff6600;
 }
 
 .badge-han-gray,
@@ -7122,8 +7125,13 @@ td.middle {
 }
 
 .tuition-frame {
-    /* max-height: 77vh; */
+    max-height: 80vh;
     margin-top: 15px;
+}
+
+.tuition-frame .table-scroll {
+    height: 100%;
+    overflow-y: auto;
 }
 
 .tution-table tr th {

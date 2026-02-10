@@ -1,11 +1,14 @@
 package com.hohoedu.all_pass.manage;
 
+import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.manage.repository.ManageRepository;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.popbill.PopbillService;
+import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.InviteTracking;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -20,6 +23,7 @@ import org.threeten.bp.format.DateTimeFormatter;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -30,6 +34,7 @@ public class ManageService {
 
     private final ManageRepository manageRepository;
     private final PopbillService popbillService;
+    private final ClassService classService;
 
     public List<ManageRespDTO.BasicOrderListDTO> getBasicOrderList(String userCode, String centerCode, String year, String month) {
 
@@ -201,4 +206,49 @@ public class ManageService {
     }
 
 
+    public ManageRespDTO.TuitionRespDTO getTuitionData(String centerCode) {
+        List<ClassCode> classCodes = classService.findClassCode();
+        List<PaymentRespDTO.ClassFeeMapDTO> feeMaps = findClassFeeMapByCenterCode(centerCode);
+
+        return ManageRespDTO.TuitionRespDTO.builder()
+                // 클래스 목록 (category별로 조회)
+                .hohoClasses(getClassesByCategory(classCodes, feeMaps, "hoho"))
+                .hanClasses(getClassesByCategory(classCodes, feeMaps, "han"))
+                .bookClasses(getClassesByCategory(classCodes, feeMaps, "book"))
+
+                // Fee 매핑 (category별로 조회)
+                .hohoFeeMap(getFeeMapByCategory(feeMaps, "hoho"))
+                .hanFeeMap(getFeeMapByCategory(feeMaps, "han"))
+                .bookFeeMap(getFeeMapByCategory(feeMaps, "book"))
+                .build();
+    }
+
+    // category에 해당하는 classKey들을 추출해서 해당하는 ClassCode 반환
+    private List<ClassCode> getClassesByCategory(
+            List<ClassCode> classCodes,
+            List<PaymentRespDTO.ClassFeeMapDTO> feeMaps,
+            String category) {
+
+        Set<String> classKeys = feeMaps.stream()
+                .filter(f -> category.equalsIgnoreCase(f.getCategory()))
+                .map(PaymentRespDTO.ClassFeeMapDTO::getClassKey)
+                .collect(Collectors.toSet());
+
+        return classCodes.stream()
+                .filter(c -> classKeys.contains(c.getClassKey()))
+                .toList();
+    }
+
+    // category별 fee 매핑
+    private Map<String, String> getFeeMapByCategory(
+            List<PaymentRespDTO.ClassFeeMapDTO> feeMaps,
+            String category) {
+
+        return feeMaps.stream()
+                .filter(f -> category.equalsIgnoreCase(f.getCategory()))
+                .collect(Collectors.toMap(
+                        PaymentRespDTO.ClassFeeMapDTO::getClassKey,
+                        PaymentRespDTO.ClassFeeMapDTO::getFee
+                ));
+    }
 }

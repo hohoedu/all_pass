@@ -9,7 +9,7 @@
                         </a>
                     </div>
                     <div class="sidebar-item">
-                        <a href="main.html" class="menu-toggle" data-target="order">
+                        <a href="#" class="menu-toggle" data-target="order">
                             <img th:src="@{/image/menu-icon6.png}" alt=""><span>주문관리</span>
                         </a>
                     </div>
@@ -40,7 +40,7 @@
             <div class="sub-frame">
                 <!-- 1 -->
                 <div class="submenu" data-menu="order">
-                    <a href="1order_1list.html" class="menu-link">교재주문 리스트</a>
+                    <a th:href="@{/admin/order/order-list}" class="menu-link">교재주문 리스트</a>
                     <a href="1order_2check.html" class="menu-link">교재 입금 확인</a>
                     <a href="1order_2bill.html" class="menu-link">청구서 발행</a>
                 </div>

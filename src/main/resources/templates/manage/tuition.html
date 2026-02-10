@@ -29,21 +29,55 @@
                         <h2>과목별 수강료 설정</h2>
                         <div class="common-btn commission-save" id="fee-save-btn">저장하기</div>
                     </div>
-                    <div class="lump-sum">
-                        <div class="radio-group">
-                            <input type="radio" name="feeMethod" id="fee-submit" >
-                            <div>
-                                <label for="fee-submit">수강료 일괄 적용</label>
-                                <input type="text" class="basic-input edu-input no-spin" id="fee-input">
-                            </div>
-                        </div>
-                        <div class="radio-group">
-                            <input type="radio" name="feeMethod" id="fee-each" checked>
-                            <label for="fee-each">수강료 개별 적용</label>
-                        </div>
-                    </div>
+                    <!--                    <div class="lump-sum">-->
+                    <!--                        <div class="radio-group">-->
+                    <!--                            <input type="radio" name="feeMethod" id="fee-submit">-->
+                    <!--                            <div>-->
+                    <!--                                <label for="fee-submit">수강료 일괄 적용</label>-->
+                    <!--                                <input type="text" class="basic-input edu-input no-spin" id="fee-input">-->
+                    <!--                            </div>-->
+                    <!--                        </div>-->
+                    <!--                        <div class="radio-group">-->
+                    <!--                            <input type="radio" name="feeMethod" id="fee-each" checked>-->
+                    <!--                            <label for="fee-each">수강료 개별 적용</label>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
                 </section>
                 <div class="tuition-table-frame">
+                    <!-- 호호스쿨 -->
+                    <section>
+                        <div class="table-frame tuition-frame">
+                            <div class="table-scroll">  <!-- 추가 -->
+                                <table class="member-status-table tution-table bt">
+                                    <colgroup>
+                                        <col width="20%">
+                                        <col width="30%">
+                                        <col width="40%">
+                                    </colgroup>
+                                    <thead>
+                                    <tr>
+                                        <th>분류</th>
+                                        <th>과목</th>
+                                        <th>수강료</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="cls, stat : ${hohoClasses}">
+                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hohoClasses)}">호호스쿨</td>
+                                        <td th:text="${cls.className}"></td>
+                                        <td>
+                                            <input type="number"
+                                                   step="10000"
+                                                   class="basic-input edu-input"
+                                                   th:name="'fee_hoho_' + ${cls.classKey}"
+                                                   th:value="${hohoFeeMap.containsKey(cls.classKey) ? hohoFeeMap[cls.classKey] : ''}"/>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>  <!-- 추가 -->
+                        </div>
+                    </section>
                     <section>
                         <div class="table-frame tuition-frame">
                             <div class="table-scroll">
@@ -62,13 +96,13 @@
                                     </thead>
                                     <tbody>
                                     <tr th:each="cls, stat : ${hanClasses}">
-                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hanClasses)}">한자 교육비</td>
+                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hanClasses)}">한스쿨</td>
                                         <td th:text="${cls.className}"></td>
                                         <td>
                                             <input type="number"
                                                    step="10000"
                                                    class="basic-input edu-input"
-                                                   th:name="'fee_' + ${cls.classKey}"
+                                                   th:name="'fee_han_' + ${cls.classKey}"
                                                    th:value="${hanFeeMap.containsKey(cls.classKey) ? hanFeeMap[cls.classKey] : ''}"/>
                                         </td>
                                     </tr>
@@ -82,72 +116,38 @@
                     <!-- section:center -->
                     <section>
                         <div class="table-frame tuition-frame">
-                            <table class="member-status-table tution-table bt">
-                                <colgroup>
-                                    <col width="20%">
-                                    <col width="30%">
-                                    <col width="40%">
-                                </colgroup>
-                                <thead>
-                                <tr>
-                                    <th>분류</th>
-                                    <th>과목</th>
-                                    <th>수강료</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="cls, stat : ${bookClasses}">
-                                    <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(bookClasses)}">독서 교육비</td>
-                                    <td th:text="${cls.className}"></td>
-                                    <td>
-                                        <input type="number"
-                                               step="10000"
-                                               class="basic-input edu-input"
-                                               th:name="'fee_' + ${cls.classKey}"
-                                               th:value="${bookFeeMap.containsKey(cls.classKey) ? bookFeeMap[cls.classKey] : ''}"/>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
+                            <div class="table-scroll">  <!-- 추가 -->
+                                <table class="member-status-table tution-table bt">
+                                    <colgroup>
+                                        <col width="20%">
+                                        <col width="30%">
+                                        <col width="40%">
+                                    </colgroup>
+                                    <thead>
+                                    <tr>
+                                        <th>분류</th>
+                                        <th>과목</th>
+                                        <th>수강료</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="cls, stat : ${bookClasses}">
+                                        <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(bookClasses)}">북스쿨</td>
+                                        <td th:text="${cls.className}"></td>
+                                        <td>
+                                            <input type="number"
+                                                   step="10000"
+                                                   class="basic-input edu-input"
+                                                   th:name="'fee_book_' + ${cls.classKey}"
+                                                   th:value="${bookFeeMap.containsKey(cls.classKey) ? bookFeeMap[cls.classKey] : ''}"/>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </section>
                     <!-- section:right-->
-                    <section>
-                        <div class="table-frame tuition-frame">
-                            <table class="member-status-table tution-table bt">
-                                <colgroup>
-                                    <col width="20%">
-                                    <col width="30%">
-                                    <col width="40%">
-                                </colgroup>
-                                <thead>
-                                <th>분류</th>
-                                <th>과목</th>
-                                <th>수강료</th>
-                                </thead>
-                                <tbody>
-                                <tr th:each="lvl, stat : ${hanLevelCode}">
-                                    <!-- 첫 번째 행에서만 rowspan 처리 -->
-                                    <td th:if="${stat.index == 0}" th:rowspan="${#lists.size(hanLevelCode)}">
-                                        한자급수 교육비
-                                    </td>
-
-                                    <!-- 급수명 -->
-                                    <td th:text="${lvl.unitName}"></td>
-
-                                    <!-- 입력창: fee_HL_H01 형태로 name 생성 -->
-                                    <td>
-                                        <input type="number"
-                                               class="basic-input edu-input"
-                                               th:name="'fee_HL_' + ${lvl.unitKey}"
-                                               th:value="${levelFeeMap.containsKey(lvl.unitKey) ? levelFeeMap[lvl.unitKey] : ''}"
-                                               step="10000">
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
                 </div>
             </div>
         </main>

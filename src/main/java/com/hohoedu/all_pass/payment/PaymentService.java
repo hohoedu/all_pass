@@ -351,10 +351,26 @@ public class PaymentService {
 
         String classType = classInfoDTO.getClassType().equals("1") ? "한자" : "독서";
 
-        PaymentDetail eduDetail = PaymentDetail.builder().payment(payment).user(creator).itemType("EDU_FEE").classType(classInfoDTO.getClassType()).amount(classInfoDTO.getClassFee()).note("수업료 (" + classType + ")").timeTableKey(classInfoDTO.getTimeTableKey()).build();
+        PaymentDetail eduDetail = PaymentDetail.builder()
+                .payment(payment)
+                .user(creator)
+                .itemType("EDU_FEE")
+                .classType(classInfoDTO.getClassType())
+                .amount(classInfoDTO.getClassFee())
+                .note("수업료 (" + classType + ")")
+                .timeTableKey(classInfoDTO.getTimeTableKey())
+                .build();
         paymentRepository.createPaymentDetail(eduDetail);
 
-        PaymentDetail bookDetail = PaymentDetail.builder().payment(payment).user(creator).itemType("BOOK_FEE").classType(classInfoDTO.getClassType()).amount(classInfoDTO.getBookFee()).note("교재비").timeTableKey(classInfoDTO.getTimeTableKey()).build();
+        PaymentDetail bookDetail = PaymentDetail.builder()
+                .payment(payment)
+                .user(creator)
+                .itemType("BOOK_FEE")
+                .classType(classInfoDTO.getClassType())
+                .amount(classInfoDTO.getBookFee())
+                .note("교재비")
+                .timeTableKey(classInfoDTO.getTimeTableKey())
+                .build();
         paymentRepository.createPaymentDetail(bookDetail);
 
         // 🔥 개선: payment 상태 재계산

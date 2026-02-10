@@ -4143,7 +4143,7 @@ input:checked + .slider::before {
 }
 
 input[type="time" i] {
-    border: 1ps solid #DCE4F5;
+    border: 1px solid #DCE4F5;
     background: #EEF3FF;
     font-family: "Arial", sans-serif;
     color: #333;
@@ -6673,7 +6673,7 @@ label {
 }
 
 .class-btn2 strong {
-    display: blo-ck;
+    display: block;
     margin-bottom: -20px;
 }
 

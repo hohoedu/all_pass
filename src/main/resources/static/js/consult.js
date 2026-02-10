@@ -44,6 +44,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    const printBtn = document.getElementById("consult-print");
+
+    printBtn.addEventListener("click", () => {
+        alert("상담 문의 출력은 현재 작업 중입니다.")
+        // const ym = document.getElementById('monthPickerInput').value.replace('-', '');
+        // const userCode = document.getElementById('teacher-select')?.value;
+        // const centerCode = document.getElementById('')
+        // window.open(`/consult/print-consult`);
+        // printTimeView(ym, userCode);
+    });
+
+    function printTimeView(ym, userCode) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/consult/print-consult?ym=${ym}&userCode=${userCode}`;
+
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
+
+        document.body.appendChild(iframe);
+    }
+
     /* =================== *
      *   모달 관리          *
      * =================== */

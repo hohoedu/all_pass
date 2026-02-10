@@ -1,7 +1,12 @@
 package com.hohoedu.all_pass._core.view;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -18,6 +23,9 @@ import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.GradeCode;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
 
 @Controller
 @RequestMapping("/consult")
@@ -46,6 +54,19 @@ public class ConsultViewController {
         model.addAttribute("routes", routes);
 //        model.addAttribute("consults", consults);
         return "consult/consult";
+    }
+
+    @GetMapping("/print-consult")
+    public String getPrintTimeView(Model model, HttpSession session) {
+
+        // 센터 선생님 목록
+//        List<User> users = userService.findAllUserCode(user);
+//        List<User> users = userService.findByCenterCodeDev();
+
+//        model.addAttribute("users", users);
+        model.addAttribute("days", DAYS);
+
+        return "print/print-consult";
     }
 
     @GetMapping("/test")

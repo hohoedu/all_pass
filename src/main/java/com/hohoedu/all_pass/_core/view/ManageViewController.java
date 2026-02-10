@@ -132,36 +132,15 @@ public class ManageViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        List<ClassCode> classCodes = classService.findClassCode();
-        List<UnitCode> hanLevelCode = classService.findHanLevelCode();
-        List<ClassCode> hanClasses = classCodes.stream()
-                .filter(c -> "1".equals(c.getClassType()))
-                .toList();
 
-        List<ClassCode> bookClasses = classCodes.stream()
-                .filter(c -> "2".equals(c.getClassType()))
-                .toList();
+        ManageRespDTO.TuitionRespDTO data = manageService.getTuitionData(user.getCenterCode());
 
-        List<PaymentRespDTO.ClassFeeMapDTO> feeMaps = manageService.findClassFeeMapByCenterCode(user.getCenterCode());
-
-        Map<String, String> bookFeeMap = feeMaps.stream()
-                .filter(f -> "2".equals(f.getClassType()))
-                .collect(Collectors.toMap(PaymentRespDTO.ClassFeeMapDTO::getClassKey, PaymentRespDTO.ClassFeeMapDTO::getFee));
-
-        Map<String, String> hanFeeMap = feeMaps.stream()
-                .filter(f -> "1".equals(f.getClassType()))
-                .collect(Collectors.toMap(PaymentRespDTO.ClassFeeMapDTO::getClassKey, PaymentRespDTO.ClassFeeMapDTO::getFee));
-
-        Map<String, String> levelFeeMap = feeMaps.stream()
-                .filter(f -> "HL".equals(f.getClassKey()))
-                .collect(Collectors.toMap(PaymentRespDTO.ClassFeeMapDTO::getUnitKey, PaymentRespDTO.ClassFeeMapDTO::getFee));
-
-        model.addAttribute("hanFeeMap", hanFeeMap);
-        model.addAttribute("bookFeeMap", bookFeeMap);
-        model.addAttribute("levelFeeMap", levelFeeMap);
-        model.addAttribute("hanClasses", hanClasses);
-        model.addAttribute("bookClasses", bookClasses);
-        model.addAttribute("hanLevelCode", hanLevelCode);
+        model.addAttribute("hanClasses", data.getHanClasses());
+        model.addAttribute("bookClasses", data.getBookClasses());
+        model.addAttribute("hohoClasses", data.getHohoClasses());
+        model.addAttribute("hanFeeMap", data.getHanFeeMap());
+        model.addAttribute("bookFeeMap", data.getBookFeeMap());
+        model.addAttribute("hohoFeeMap", data.getHohoFeeMap());
         model.addAttribute("centerCode", user.getCenterCode());
 
         return "manage/tuition";

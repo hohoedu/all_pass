@@ -28,6 +28,11 @@ public class AdminViewController {
     private final CenterService centerService;
     private final AdminService adminService;
 
+    @GetMapping("/order/order-list")
+    public String getAdminOrderList(Model model, HttpSession session) {
+        return "/admin/order/order-list";
+    }
+
     @GetMapping("/ebook/person")
     public String getAdminPersonPage(Model model, HttpSession session) {
         List<UnitCode> unitCodes = classService.findUnitCodeForPerson();
