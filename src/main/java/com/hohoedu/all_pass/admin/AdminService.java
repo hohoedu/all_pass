@@ -140,4 +140,6 @@ public class AdminService {
         return adminRepository.findBookSuggest();
     }
 
+    public void findAdminOrderList() {
+    }
 }

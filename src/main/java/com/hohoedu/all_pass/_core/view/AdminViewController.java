@@ -30,6 +30,8 @@ public class AdminViewController {
 
     @GetMapping("/order/order-list")
     public String getAdminOrderList(Model model, HttpSession session) {
+        adminService.findAdminOrderList();
+
         return "/admin/order/order-list";
     }
 
