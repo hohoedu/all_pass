@@ -28,19 +28,15 @@ public class ManageController {
 
 
     @PostMapping("/order/save")
-    public ResponseEntity<?> insertOrder(@RequestBody List<ManageReqDTO.InsertOrderDTO> reqDTO, HttpSession session) {
+    public ResponseEntity<?> insertOrder(@RequestBody ManageReqDTO.InsertOrderHistoryDTO reqDTO, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        reqDTO.stream()
-                .filter(Objects::nonNull)
-                .forEach(dto -> {
-                    dto.setCenterCode(user.getCenterCode());
-                    dto.setUserCode(user.getUserCode());
-                });
+        reqDTO.setCenterCode(user.getCenterCode());
+        reqDTO.setUserCode(user.getUserCode());
 
         manageService.insertOrder(reqDTO);
 

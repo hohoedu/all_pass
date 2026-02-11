@@ -22,6 +22,16 @@ public class ManageRespDTO {
     }
 
     @Data
+    public static class BaseOrderListDTO {
+        private String className;
+        private String classKey;
+        private String unitName;
+        private String unitKey;
+        private Integer baseCount;
+    }
+
+
+    @Data
     public static class SavedOrderListDTO {
         private Integer baseCount;
         private Integer addCount;

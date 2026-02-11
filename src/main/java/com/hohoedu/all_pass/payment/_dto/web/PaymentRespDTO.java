@@ -275,11 +275,10 @@ public class PaymentRespDTO {
     }
 
     @Data
-    public  static class ClaimDto {
+    public static class ClaimDto {
         private String studentName;
         private String subject;
-        private String hanTeacher;
-        private String bookTeacher;
+        private String teacherName;
         private String billPrice;
         private String paidAmount;
         private String unpaidAmount;

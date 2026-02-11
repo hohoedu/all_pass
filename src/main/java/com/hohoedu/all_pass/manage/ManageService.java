@@ -50,29 +50,25 @@ public class ManageService {
         return orderListDTO;
     }
 
-    public void insertOrder(List<ManageReqDTO.InsertOrderDTO> reqDTO) {
-        for (ManageReqDTO.InsertOrderDTO dto : reqDTO) {
+    @Transactional
+    public void insertOrder(ManageReqDTO.InsertOrderHistoryDTO reqDTO) {
 
-            ManageReqDTO.InsertOrderDTO existing =
-                    manageRepository.findOrder(dto.getCenterCode(),
-                            dto.getClassKey(),
-                            dto.getUnitKey(),
-                            dto.getUserCode(),
-                            dto.getYy(),
-                            dto.getMm());
 
-            // 1) 신규 주문 (없으면 insert)
-            if (existing == null) {
-                dto.setTotalCount(dto.getBaseCount() + dto.getAddCount());
-                manageRepository.insertOrder(dto);
-            }
+        // 1) order_history insert (무조건 insert)
+        manageRepository.insertOrderHistory(reqDTO);
 
-            // 2) 기존 주문 수정 (있으면 update)
-            else {
-                dto.setTotalCount(dto.getBaseCount() + dto.getAddCount());
-                manageRepository.updateOrder(dto);
-            }
+        // 2) order 조회
+        List<ManageRespDTO.BaseOrderListDTO> baseOrderList = manageRepository.findOrder(reqDTO);
+        log.info(baseOrderList.toString());
+
+        // 3) 있으면 딜리트
+        if (!baseOrderList.isEmpty()) {
+            manageRepository.deleteOrderByCondition(reqDTO.getUserCode(), reqDTO.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+
         }
+        // 4) 없으면 인서트
+        manageRepository.insertOrder(reqDTO);
+
 
     }
 

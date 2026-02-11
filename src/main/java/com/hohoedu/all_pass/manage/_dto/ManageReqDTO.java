@@ -10,16 +10,23 @@ import java.util.List;
 public class ManageReqDTO {
 
     @Data
-    public static class InsertOrderDTO {
-        private String classKey;
-        private String unitKey;
+    public static class InsertOrderHistoryDTO {
         private String centerCode;
         private String userCode;
-        private Integer baseCount;
-        private Integer addCount;
-        private Integer totalCount;
         private String yy;
         private String mm;
+
+        List<InsertOrder> insertOrders;
+
+        @Data
+        public static class InsertOrder {
+            private String classKey;
+            private String unitKey;
+            private Integer baseCount;
+            private Integer addCount;
+            private Integer totalCount;
+        }
+
     }
 
     @Data

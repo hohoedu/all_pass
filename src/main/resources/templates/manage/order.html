@@ -43,9 +43,8 @@
                             <div class="table-frame makeup-table mt">
                                 <table class="basic-table order-table yh">
                                     <colgroup>
+                                        <col width="40%">
                                         <col width="30%">
-                                        <col width="20%">
-                                        <col width="20%">
                                         <col width="30%">
                                     </colgroup>
                                     <thead>
@@ -53,13 +52,12 @@
                                         <th>단계</th>
                                         <th>교재</th>
                                         <th>기본수량</th>
-                                        <th>추가수량</th>
                                     </tr>
                                     </thead>
                                     <tbody id="order-left-body" class="stripe">
 
                                     <tr th:if="${baseOrderList == null or baseOrderList.isEmpty()}">
-                                        <td colspan="5" style="text-align:center; padding: 20px; ">
+                                        <td colspan="3" style="text-align:center; padding: 20px; ">
                                             등록된 수업이 없습니다.
                                         </td>
                                     </tr>
@@ -70,17 +68,6 @@
                                         <td th:text="${baseOrder.className}">수업</td>
                                         <td th:text="${baseOrder.unitName}">진도</td>
                                         <td th:text="${baseOrder.baseCount}">기본수량</td>
-                                        <td>
-                                            <div class="spinner-frame">
-                                                <div class="custom-spinner">
-                                                    <input type="number" value="0" step="1">
-                                                    <div class="spinner-buttons">
-                                                        <button type="button" class="increment-button">▲</button>
-                                                        <button type="button" class="decrement-button">▼</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -129,18 +116,9 @@
                             </div>
                             <div class="basic-select">
                                 <select id="order-history" name="month">
-
                                 </select>
                             </div>
                         </div>
-                        <!--                        <div class="basic-select">-->
-                        <!--                            <select id="step-all" name="">-->
-                        <!--                                <option value="">전체</option>-->
-                        <!--                                <option value="">호호하니 영재</option>-->
-                        <!--                                <option value="">호호하니 수재</option>-->
-                        <!--                                <option value="">호호하니 신동</option>-->
-                        <!--                            </select>-->
-                        <!--                        </div>-->
                     </div>
                     <div class="class-info">
                         <div class="table-frame preorder-frame mt">
@@ -150,14 +128,13 @@
                                     <th>단계</th>
                                     <th>교재</th>
                                     <th>주문수량</th>
-                                    <th>변동수량</th>
                                     <th>최종수량</th>
                                 </tr>
                                 </thead>
                                 <tbody id="order-right-body" class="stripe">
 
                                 <tr th:if="${savedOrderList == null or savedOrderList.isEmpty()}">
-                                    <td colspan="5" style="text-align:center; padding: 20px;">
+                                    <td colspan="4" style="text-align:center; padding: 20px;">
                                         주문 내역이 없습니다.
                                     </td>
                                 </tr>
@@ -168,32 +145,9 @@
                                     <td th:text="${savedOrder.className}"></td>
                                     <td th:text="${savedOrder.unitName}"></td>
                                     <td th:text="${savedOrder.baseCount}"></td>
-                                    <td>
-                                        <span th:if="${savedOrder.addCount > 0}"
-                                              th:text="'+' + ${savedOrder.addCount}"
-                                              class="increase"></span>
-
-                                        <span th:if="${savedOrder.addCount < 0}"
-                                              th:text="${savedOrder.addCount}"
-                                              class="decrease"></span>
-
-                                        <span th:if="${savedOrder.addCount == 0}"></span>
-                                    </td>
-
                                     <td th:text="${savedOrder.totalCount}"></td>
                                 </tr>
                                 </tbody>
-                                <!--                                <tfoot class="order-table">-->
-                                <!--                                <tr>-->
-                                <!--                                    <td>-->
-                                <!--                                        합계-->
-                                <!--                                    </td>-->
-                                <!--                                    <td></td>-->
-                                <!--                                    <td></td>-->
-                                <!--                                    <td>5</td>-->
-                                <!--                                    <td></td>-->
-                                <!--                                </tr>-->
-                                <!--                                </tfoot>-->
                             </table>
                         </div>
                     </div>

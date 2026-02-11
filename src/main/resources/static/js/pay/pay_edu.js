@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setDisplay = (dt) => {
         expireDisplay.textContent =
-            `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
+            `${dt.getFullYear()}년 ${dt.getMonth()}월 ${dt.getDate()}일`;
     };
 
     // 🔥 이번 달 5일 계산 함수
@@ -1453,7 +1453,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-
 async function exportFilteredDataToExcel() {
     try {
         // 로딩 표시
@@ -1471,15 +1470,13 @@ async function exportFilteredDataToExcel() {
         const userCode = teacherSelect?.value || '';
 
         // 교육비/교재비 라디오 버튼
-        // const itemTypeRadio = document.querySelector('input[name="feeView"]:checked');
         const itemType = 'EDU_FEE';
-
-        const centerCode =  'PUS002';
+        const centerCode = 'PUS002';
 
         // 필터 조건 수집
         const filters = {
             userCode: userCode,
-            centerCode: centerCode,  // 필요시 추가
+            centerCode: centerCode,
             yy: yy,
             mm: mm,
             itemType: itemType
@@ -1506,117 +1503,241 @@ async function exportFilteredDataToExcel() {
         if (!allData || allData.length === 0) {
             alert('다운로드할 데이터가 없습니다.');
             button.disabled = false;
-            button.textContent = '📥 엑셀 다운로드';
+            button.textContent = '엑셀 다운로드';
             return;
         }
+
+        // 데이터 구조 확인용 로그
+        console.log('받은 데이터 샘플:', allData[0]);
+        console.log('전체 데이터:', allData);
 
         // 워크북 생성
         const wb = XLSX.utils.book_new();
 
-        // 상태별로 시트 분리
-        groupByStatus(allData, wb);
+        // 선생님별로 데이터 그룹화
+        const groupedByTeacher = groupDataByTeacher(allData);
+
+        console.log('그룹화된 데이터:', groupedByTeacher);
+
+        // 각 선생님별로 시트 생성
+        Object.keys(groupedByTeacher).sort().forEach(teacherName => {
+            const teacherData = groupedByTeacher[teacherName];
+            const title = `${mm}월 ${teacherName} 결제 기록`;
+            const sheetData = teacherData.map(item => {
+                // 결제금액 계산: 결제금액 - (결제금액 - 청구금액), 미납이면 0
+                const paidAmount = Number(item.paidAmount || 0);
+                const billPrice = Number(item.billPrice || 0);
+                const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+
+                return {
+                    '이름': item.studentName || '',
+                    '수강과목': item.subject || '',
+                    '청구금액': billPrice,
+                    '결제금액': calculatedPaid,
+                    '미납금액': Number(item.unpaidAmount || 0),
+                    '상태': item.payStatus || ''
+                };
+            });
+
+            const sheet = createSheetWithTitle(sheetData, title);
+            // 시트 이름은 최대 31자로 제한
+            const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
+            XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+        });
+
+        // 전체 시트 추가
+        const title = `${mm}월 전체 결제 기록`;
+        const allSheetData = allData.map(item => {
+            // 결제금액 계산: 결제금액 - (결제금액 - 청구금액), 미납이면 0
+            const paidAmount = Number(item.paidAmount || 0);
+            const billPrice = Number(item.billPrice || 0);
+            const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+
+            return {
+                '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
+                '이름': item.studentName || '',
+                '수강과목': item.subject || '',
+                '청구금액': billPrice,
+                '결제금액': calculatedPaid,
+                '미납금액': Number(item.unpaidAmount || 0),
+                '상태': item.payStatus || ''
+            };
+        });
+
+        const allSheet = createSheetWithTitle(allSheetData, title, true);
+        XLSX.utils.book_append_sheet(wb, allSheet, "전체");
 
         // 파일 다운로드
         const fileName = `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
 
         button.disabled = false;
-        button.textContent = '📥 엑셀 다운로드';
+        button.textContent = '엑셀 다운로드';
 
     } catch (error) {
         console.error('엑셀 다운로드 실패:', error);
         alert('엑셀 다운로드에 실패했습니다.');
         button.disabled = false;
-        button.textContent = '📥 엑셀 다운로드';
+        button.textContent = '엑셀 다운로드';
     }
 }
 
-// 상태별로 시트 분리
-function groupByStatus(data, wb) {
-    // 상태별로 데이터 그룹화
-    const grouped = data.reduce((acc, item) => {
-        const status = item.payStatus || '미분류';
-        if (!acc[status]) {
-            acc[status] = [];
+// 선생님별로 데이터 그룹화
+function groupDataByTeacher(data) {
+    return data.reduce((acc, item) => {
+        // teacherName이 없으면 hanTeacher나 bookTeacher 사용
+        const teacherName = item.teacherName || item.hanTeacher || item.bookTeacher || '미지정';
+        console.log('학생:', item.studentName, '-> 선생님:', teacherName, '원본:', item.teacherName);
+
+        if (!acc[teacherName]) {
+            acc[teacherName] = [];
         }
-        acc[status].push({
-            '이름': item.studentName || '',
-            '수강과목': item.subject || '',
-            '한자 선생님': item.hanTeacher || '-',
-            '독서 선생님': item.bookTeacher || '-',
-            '청구금액': Number(item.billPrice || 0),
-            '미납금액': Number(item.unpaidAmount || 0),
-            '결제금액': Number(item.paidAmount || 0),
-            '상태': item.payStatus || ''
-        });
+        acc[teacherName].push(item);
         return acc;
     }, {});
-
-    // 각 상태별로 시트 생성
-    Object.keys(grouped).forEach(status => {
-        const ws = XLSX.utils.json_to_sheet(grouped[status]);
-
-        // 컬럼 너비 설정
-        ws['!cols'] = [
-            { wch: 12 }, // 이름
-            { wch: 15 }, // 수강과목
-            { wch: 15 }, // 한자 선생님
-            { wch: 15 }, // 독서 선생님
-            { wch: 15 }, // 청구금액
-            { wch: 15 }, // 미납금액
-            { wch: 15 }, // 결제금액
-            { wch: 12 }  // 상태
-        ];
-
-        XLSX.utils.book_append_sheet(wb, ws, status);
-    });
-
-    // 전체 데이터 시트도 추가
-    const allSheetData = data.map(item => ({
-        '이름': item.studentName || '',
-        '수강과목': item.subject || '',
-        '한자 선생님': item.hanTeacher || '-',
-        '독서 선생님': item.bookTeacher || '-',
-        '청구금액': Number(item.billPrice || 0),
-        '미납금액': Number(item.unpaidAmount || 0),
-        '결제금액': Number(item.paidAmount || 0),
-        '상태': item.payStatus || ''
-    }));
-
-    const allSheet = XLSX.utils.json_to_sheet(allSheetData);
-    allSheet['!cols'] = [
-        { wch: 12 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 12 }
-    ];
-    XLSX.utils.book_append_sheet(wb, allSheet, "전체");
 }
-// 상태 한글 변환 헬퍼 함수
-function getStatusKorean(status) {
-    switch (status) {
-        case '결제완료':
-        case 'approved':
-            return '결제완료';
-        case '부분결제':
-        case 'partial':
-            return '부분결제';
-        case '미결제':
-        case 'pending':
-        case 'issued':
-            return '미결제';
-        case '할인':
-        case 'discount':
-            return '할인';
-        case 'canceled':
-            return '취소';
-        case 'destroyed':
-            return '파기';
-        default:
-            return status || '미분류';
+
+// 제목이 있는 시트 생성 함수
+function createSheetWithTitle(data, title, isAllSheet = false) {
+    // 제목 행, 빈 행, 헤더 행, 데이터 행을 합친 배열 생성
+    const sheetData = [
+        [title], // 첫 번째 행: 제목
+        [], // 두 번째 행: 빈 행
+    ];
+
+    // 총계 계산
+    let totalCount = data.length;
+    let totalBill = 0;
+    let totalPaid = 0;
+    let totalUnpaid = 0;
+
+    // 데이터를 배열 형태로 변환
+    if (data.length > 0) {
+        // 헤더 추가 (번호 컬럼 추가)
+        const headers = ['번호', ...Object.keys(data[0])];
+        sheetData.push(headers);
+
+        // 데이터 추가 (번호 포함) 및 총계 계산
+        data.forEach((row, index) => {
+            const originalHeaders = Object.keys(data[0]);
+            const rowData = [index + 1, ...originalHeaders.map(header => row[header])];
+            sheetData.push(rowData);
+
+            // 총계 계산
+            totalBill += row['청구금액'] || 0;
+            totalPaid += row['결제금액'] || 0;
+            totalUnpaid += row['미납금액'] || 0;
+        });
+
+        // 총계 행 추가
+        if (isAllSheet) {
+            // 전체 시트는 선생님 컬럼이 있어서 구조가 다름
+            sheetData.push([
+                `총원:`,
+                `${totalCount}명`,
+                '',
+                '',
+                totalBill,
+                totalPaid,
+                totalUnpaid,
+                ''
+            ]);
+        } else {
+            sheetData.push([
+                `총원:`,
+                `${totalCount}명`,
+                '',
+                totalBill,
+                totalPaid,
+                totalUnpaid,
+                ''
+            ]);
+        }
     }
+
+    // 배열을 시트로 변환
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+    // 범위 가져오기
+    const range = XLSX.utils.decode_range(ws['!ref']);
+
+    // 금액 컬럼 인덱스 (전체 시트는 선생님 컬럼이 추가되어 다름)
+    // 청구금액, 결제금액, 미납금액 순서
+    const amountColumns = isAllSheet ? [4, 5, 6] : [3, 4, 5];
+
+    // 모든 셀에 스타일 적용
+    for (let R = range.s.r; R <= range.e.r; R++) {
+        for (let C = range.s.c; C <= range.e.c; C++) {
+            const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+            if (!ws[cellAddress]) {
+                ws[cellAddress] = {t: 's', v: ''};
+            }
+
+            // 셀 스타일 초기화
+            if (!ws[cellAddress].s) {
+                ws[cellAddress].s = {};
+            }
+
+            // 가운데 정렬 적용
+            ws[cellAddress].s = {
+                alignment: {
+                    horizontal: 'center',
+                    vertical: 'center',
+                    wrapText: false
+                }
+            };
+
+            // 금액 컬럼
+            if (R > 2 && amountColumns.includes(C)) {
+                const cellValue = ws[cellAddress].v;
+                if (typeof cellValue === 'number' || !isNaN(cellValue)) {
+                    ws[cellAddress].t = 'n';
+                    ws[cellAddress].v = Number(cellValue);
+                    ws[cellAddress].z = '#,##0';
+                    ws[cellAddress].s = {
+                        alignment: {
+                            horizontal: 'center',
+                            vertical: 'center'
+                        },
+                        numFmt: '#,##0'
+                    };
+                }
+            }
+        }
+    }
+
+    // 셀 병합 (전체 시트는 컬럼이 하나 더 많음)
+    if (!ws['!merges']) ws['!merges'] = [];
+    const mergeEndCol = isAllSheet ? 7 : 6;
+    ws['!merges'].push({s: {r: 0, c: 0}, e: {r: 0, c: mergeEndCol}});
+
+    // 첫 번째 행 높이 2배로 설정
+    if (!ws['!rows']) ws['!rows'] = [];
+    ws['!rows'][0] = {hpt: 30, hpx: 30};
+
+    // 컬럼 너비 설정
+    if (isAllSheet) {
+        ws['!cols'] = [
+            {wch: 10},  // 번호
+            {wch: 12},  // 선생님
+            {wch: 12},  // 이름
+            {wch: 20},  // 수강과목
+            {wch: 15},  // 청구금액
+            {wch: 15},  // 결제금액
+            {wch: 15},  // 미납금액
+            {wch: 12}   // 상태
+        ];
+    } else {
+        ws['!cols'] = [
+            {wch: 10},  // 번호
+            {wch: 12},  // 이름
+            {wch: 20},  // 수강과목
+            {wch: 15},  // 청구금액
+            {wch: 15},  // 결제금액
+            {wch: 15},  // 미납금액
+            {wch: 12}   // 상태
+        ];
+    }
+
+    return ws;
 }

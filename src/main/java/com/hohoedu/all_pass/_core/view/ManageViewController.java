@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.List;
 import java.util.Map;
@@ -39,22 +41,48 @@ public class ManageViewController {
     private final ManageService manageService;
 
     @GetMapping("/order")
-    public String getManageOrderPage(HttpSession session, Model model) {
+    public String getManageOrderPage(
+            @RequestParam(required = false) String year,
+            @RequestParam(required = false) String month,
+            HttpSession session,
+            Model model) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
         String userCode = user.getUserCode();
-        String cneterCode = user.getCenterCode();
-        String year = DateConfig.currentYearMonth().get("currentYear");
-        String month = DateConfig.currentYearMonth().get("currentMonth");
+        String centerCode = user.getCenterCode();
 
-        List<ManageRespDTO.BasicOrderListDTO> baseOrderList = manageService.getBasicOrderList(userCode, cneterCode, year, month);
-        List<ManageRespDTO.SavedOrderListDTO> savedOrderList = manageService.getSavedOrderList(userCode, cneterCode, year, month);
+        // URL 파라미터가 없으면 다음달로 설정
+        if (year == null || month == null) {
+            LocalDate now = LocalDate.now();
+            LocalDate nextMonth = now.plusMonths(1);
+            year = String.valueOf(nextMonth.getYear());
+            month = nextMonth.format(DateTimeFormatter.ofPattern("MM"));
+        }
+
+        // 파라미터로 받은 년월이 이미 다음달이므로 그대로 사용
+        List<ManageRespDTO.BasicOrderListDTO> baseOrderList = manageService.getBasicOrderList(
+                userCode,
+                centerCode,
+                year,
+                month
+        );
+
+        List<ManageRespDTO.SavedOrderListDTO> savedOrderList = manageService.getSavedOrderList(
+                userCode,
+                centerCode,
+                year,
+                month
+        );
 
         model.addAttribute("baseOrderList", baseOrderList);
         model.addAttribute("savedOrderList", savedOrderList);
+        model.addAttribute("year", year);
+        model.addAttribute("month", month);
+
         return "manage/order";
     }
 

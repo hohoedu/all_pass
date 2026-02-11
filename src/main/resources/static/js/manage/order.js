@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     /* ======= *
      *   LEFT  *
      * ======= */
@@ -14,10 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initCurrentMonth() {
         try {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth() + 1;
+            // URL 파라미터에서 year, month 가져오기
+            const urlParams = new URLSearchParams(window.location.search);
+            let year = urlParams.get('year');
+            let month = urlParams.get('month');
 
+            // 파라미터가 없으면 다음 달로 설정
+            if (!year || !month) {
+                const now = new Date();
+                year = now.getFullYear();
+                month = now.getMonth() + 2; // 다음 달
+
+                if (month > 12) {
+                    month = 1;
+                    year += 1;
+                }
+            } else {
+                // 파라미터가 있으면 정수로 변환
+                year = parseInt(year);
+                month = parseInt(month);
+            }
             monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
             monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
         } catch (e) {
@@ -31,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isNaN(date)) return;
 
             const year = date.getFullYear();
-            const month = date.getMonth() + 1;
+            const month = date.getMonth();
 
             monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
 
@@ -67,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!list || list.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align:center; padding:20px;">
+                    <td colspan="3" style="text-align:center; padding:20px;">
                         등록된 수업이 없습니다.
                     </td>
                 </tr>`;
@@ -82,76 +97,63 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${item.className}</td>
                     <td>${item.unitName}</td>
                     <td>${item.baseCount}</td>
-                    <td>
-                        <div class="spinner-frame">
-                            <div class="custom-spinner">
-                                <input type="number" value="${item.addCount || 0}" step="1">
-                                <div class="spinner-buttons">
-                                    <button type="button" class="increment-button">▲</button>
-                                    <button type="button" class="decrement-button">▼</button>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+                </tr> 
             `);
         });
 
-        bindLeftTableEvents();
+        // bindLeftTableEvents();
         calculateTotal();
     }
 
-    function bindLeftTableEvents() {
-        const rows = document.querySelectorAll("#order-left-body tr");
-
-        rows.forEach(row => {
-            const input = row.querySelector("input[type='number']");
-            const incBtn = row.querySelector(".increment-button");
-            const decBtn = row.querySelector(".decrement-button");
-
-            if (!input) return;
-
-            // input 직접 입력 시
-            input.addEventListener("input", () => {
-                if (input.value === "" || isNaN(input.value)) {
-                    input.value = 0;
-                }
-                calculateTotal();
-            });
-
-            // 키보드 입력 후 포커스 해제 시
-            input.addEventListener("change", () => {
-                if (input.value === "" || isNaN(input.value)) {
-                    input.value = 0;
-                }
-                calculateTotal();
-            });
-
-            // 증가 버튼
-            if (incBtn) {
-                incBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const currentValue = parseInt(input.value) || 0;
-                    input.value = currentValue + 1;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    calculateTotal();
-                });
-            }
-
-            // 감소 버튼
-            if (decBtn) {
-                decBtn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const currentValue = parseInt(input.value) || 0;
-                    input.value = currentValue - 1;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    calculateTotal();
-                });
-            }
-        });
-    }
+    // function bindLeftTableEvents() {
+    //     const rows = document.querySelectorAll("#order-left-body tr");
+    //
+    //     rows.forEach(row => {
+    //         const input = row.querySelector("input[type='number']");
+    //         const incBtn = row.querySelector(".increment-button");
+    //         const decBtn = row.querySelector(".decrement-button");
+    //
+    //         if (!input) return;
+    //
+    //         // input 직접 입력 시
+    //         input.addEventListener("input", () => {
+    //             if (input.value === "" || isNaN(input.value)) {
+    //                 input.value = 0;
+    //             }
+    //             calculateTotal();
+    //         });
+    //
+    //         // 키보드 입력 후 포커스 해제 시
+    //         input.addEventListener("change", () => {
+    //             if (input.value === "" || isNaN(input.value)) {
+    //                 input.value = 0;
+    //             }
+    //             calculateTotal();
+    //         });
+    //
+    //         if (incBtn) {
+    //             incBtn.addEventListener("click", (e) => {
+    //                 e.preventDefault();
+    //                 e.stopPropagation();
+    //                 const currentValue = parseInt(input.value) || 0;
+    //                 input.value = currentValue + 1;
+    //                 input.dispatchEvent(new Event('input', { bubbles: true }));
+    //                 calculateTotal();
+    //             });
+    //         }
+    //
+    //         if (decBtn) {
+    //             decBtn.addEventListener("click", (e) => {
+    //                 e.preventDefault();
+    //                 e.stopPropagation();
+    //                 const currentValue = parseInt(input.value) || 0;
+    //                 input.value = currentValue - 1;
+    //                 input.dispatchEvent(new Event('input', { bubbles: true }));
+    //                 calculateTotal();
+    //             });
+    //         }
+    //     });
+    // }
 
     const totalSpan = document.querySelector(".all-order span");
 
@@ -161,13 +163,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rows.forEach(row => {
             const baseTd = row.querySelector("td:nth-child(3)");
-            const addInput = row.querySelector("input[type='number']");
-
-            if (baseTd && addInput) {
-                const baseCount = parseInt(baseTd.innerText) || 0;
-                const addCount = parseInt(addInput.value) || 0;
-                total += (baseCount + addCount);
-            }
+            const baseCount = parseInt(baseTd.innerText) || 0;
+            total += (baseCount);
         });
 
         if (totalSpan) {
@@ -176,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (window.initialBaseList) {
+        calculateTotal();
         renderLeftTable(window.initialBaseList);
     } else {
         calculateTotal();
@@ -283,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!list || list.length === 0) {
             rightBody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align:center; padding:20px;">
+                    <td colspan="4" style="text-align:center; padding:20px;">
                         주문 내역이 없습니다.
                     </td>
                 </tr>`;
@@ -291,19 +289,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         list.forEach(item => {
-            const add =
-                item.addCount > 0
-                    ? `<span class="increase">+${item.addCount}</span>`
-                    : item.addCount < 0
-                        ? `<span class="decrease">${item.addCount}</span>`
-                        : `<span></span>`;
 
             rightBody.insertAdjacentHTML("beforeend", `
                 <tr>
                     <td>${item.className}</td>
                     <td>${item.unitName}</td>
                     <td>${item.baseCount}</td>
-                    <td>${add}</td>
                     <td>${item.totalCount}</td>
                 </tr>
             `);
@@ -320,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth(); // 0~11
 
-        // 마감 시작일: 매월 20일 00:00
-        const deadlineStart = new Date(currentYear, currentMonth, 14, 0, 0, 0);
+        // 마감 시작일: 매월 11일 00:00
+        const deadlineStart = new Date(currentYear, currentMonth, 12, 0, 0, 0);
 
         // 마감 종료일: 해당 월의 마지막 날 23:59:59
         const deadlineEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
@@ -409,6 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showDeadlineModal();
             return;
         }
+        if (!confirm("교재를 주문하시겠습니까?")) {
+            return;
+        }
+
 
         try {
             const ymRaw = monthInput.value;
@@ -419,31 +414,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const ym = ymRaw.replace("-", "");
             const rows = document.querySelectorAll("#order-left-body tr");
-            const orderList = [];
+            const insertOrders = [];
 
             rows.forEach(row => {
-                orderList.push({
+                const baseCount = parseInt(row.querySelector("td:nth-child(3)").innerText);
+
+                insertOrders.push({
                     classKey: row.dataset.classKey,
                     unitKey: row.dataset.unitKey,
-                    baseCount: parseInt(row.querySelector("td:nth-child(3)").innerText),
-                    addCount: parseInt(row.querySelector("input").value),
-                    yy: ym.substring(0, 4),
-                    mm: ym.substring(4, 6)
+                    baseCount: baseCount,
                 });
             });
+
+            const requestData = {
+                yy: ym.substring(0, 4),
+                mm: ym.substring(4, 6),
+                insertOrders: insertOrders
+            };
 
             const res = await fetch("/manage/order/save", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(orderList)
+                body: JSON.stringify(requestData)
             });
 
             if (!res.ok) {
-                alert("저장 실패");
+                alert("저장에 실패했습니다.");
                 return;
             }
-
-            alert("저장 완료!");
+            alert("저장 되었습니다.");
             window.location.reload();
 
         } catch (e) {

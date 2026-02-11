@@ -115,8 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
 
-        const url = `/class/timetable?year=${year}&month=${month}`;
-        window.location.href = url;
+        window.location.href = `/class/timetable?year=${year}&month=${month}`;
     });
 });
 
@@ -132,8 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
 
-        const url = `/class/timeview?year=${year}&month=${month}`;
-        window.location.href = url;
+        window.location.href = `/class/timeview?year=${year}&month=${month}`;
+
     });
 });
 
@@ -148,24 +147,45 @@ document.addEventListener('DOMContentLoaded', function () {
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
 
-        const url = `/class/remedial?year=${year}&month=${month}`;
-        window.location.href = url;
+        window.location.href = `/class/remedial?year=${year}&month=${month}`;
     });
 });
 
 function getNextYearMonth() {
     const now = new Date();
     let year = now.getFullYear();
-    let month = now.getMonth() + 2; // 다음 달
+    let month = now.getMonth() + 2; // 현재 월 + 1 = 다음달
 
-    if (month === 13) {
+    if (month > 12) {
         month = 1;
         year += 1;
     }
 
     return {
-        year: String(year),
-        month: String(month).padStart(2, '0')
+        year: year.toString(),
+        month: month.toString().padStart(2, '0')
+    };
+}
+
+function getYearMonthByDay20() {
+    const today = new Date();
+    const day = today.getDate();
+
+    let year = today.getFullYear();
+    let month = today.getMonth() + 1; // 0-based이므로 +1
+
+    // 20일 이후면 다음 달로
+    if (day >= 20) {
+        month += 1;
+        if (month > 12) {
+            month = 1;
+            year += 1;
+        }
+    }
+
+    return {
+        year: year.toString(),
+        month: month.toString().padStart(2, '0')
     };
 }
 
@@ -177,22 +197,15 @@ document.addEventListener('DOMContentLoaded', function () {
     link.addEventListener('click', function (e) {
         e.preventDefault();
 
-        const url = new URL(window.location.href);
-        const params = url.searchParams;
-
-        let year = params.get('year');
-        let month = params.get('month');
-
-        // URL에 없을 경우만 현재월 fallback
-        if (!year || !month) {
-            const next = getNextYearMonth();
-            year = next.year;
-            month = next.month;
-        }
+        // 항상 20일 기준으로 계산 (URL 파라미터 무시)
+        const target = getYearMonthByDay20();
+        const year = target.year;
+        const month = target.month;
 
         window.location.href = `/pay/pay-edu?year=${year}&month=${month}`;
     });
 });
+
 // ================ 월별 결제 내역 ============ //
 document.addEventListener('DOMContentLoaded', function () {
     const link = document.getElementById('payListLink');
@@ -201,19 +214,28 @@ document.addEventListener('DOMContentLoaded', function () {
     link.addEventListener('click', function (e) {
         e.preventDefault();
 
-        const url = new URL(window.location.href);
-        const params = url.searchParams;
-
-        let year = params.get('year');
-        let month = params.get('month');
-
-        // URL에 없을 경우만 현재월 fallback
-        if (!year || !month) {
-            const next = getNextYearMonth();
-            year = next.year;
-            month = next.month;
-        }
+        // 항상 20일 기준으로 계산 (URL 파라미터 무시)
+        const target = getYearMonthByDay20();
+        const year = target.year;
+        const month = target.month;
 
         window.location.href = `/pay/pay-list?year=${year}&month=${month}`;
+    });
+});
+
+// ================ 교재 주문 ============ //
+document.addEventListener('DOMContentLoaded', function () {
+    const link = document.getElementById('orderLink');
+    if (!link) return;
+
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // 항상 다음달
+        const next = getNextYearMonth();
+        const year = next.year;
+        const month = next.month;
+
+        window.location.href = `/manage/order?year=${year}&month=${month}`;
     });
 });

@@ -31,20 +31,22 @@ public interface ManageRepository {
             @Param("mm") String mm);
 
 
+    // 정규 주문서 로직
+
+    // order_history insert
+    void insertOrderHistory(ManageReqDTO.InsertOrderHistoryDTO dto);
+
     // 주문서 조회
-    ManageReqDTO.InsertOrderDTO findOrder(
-            @Param("centerCode") String centerCode,
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey,
+    List<ManageRespDTO.BaseOrderListDTO> findOrder(ManageReqDTO.InsertOrderHistoryDTO dto);
+
+    void insertOrder(ManageReqDTO.InsertOrderHistoryDTO dto);
+
+    void deleteOrderByCondition(
             @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode,
             @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    // 주문서 최초 저장
-    void insertOrder(ManageReqDTO.InsertOrderDTO dto);
-
-    // 주문서 업데이트
-    void updateOrder(ManageReqDTO.InsertOrderDTO dto);
+            @Param("mm") String mm
+            );
 
     int insertReorder(
             @Param("userCode") String userCode,
