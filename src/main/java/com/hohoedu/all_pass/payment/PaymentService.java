@@ -18,6 +18,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.popbill.api.cashbill.Cashbill;
 import com.popbill.api.cashbill.CashbillInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,10 +28,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -1734,4 +1738,81 @@ public class PaymentService {
         List<PaymentRespDTO.ClaimDto> response = paymentRepository.getPaymentInfo(filters);
         return response;
     }
+
+    public List<PaymentRespDTO.CashBillHistoryDTO> getCashbillHistory(String centerCode) {
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode);
+        return response;
+    }
+
+    @Transactional
+    public PaymentRespDTO.CashbillCancelRespDTO cancelCashbills(String billId,  String reason, String centerCode) {
+        log.info("현금영수증 취소 시작: billIds = {}", billId);
+        int successCount = 0;
+        int failCount = 0;
+
+        PaymentCashbill cashbill = paymentRepository.findCashbillByBillId(billId);
+
+        if (cashbill == null) {
+            throw new RuntimeException("취소할 현금영수증을 찾을 수 없습니다.");
+        }
+        if ("CANCELED".equals(cashbill.getStatus())) {
+            throw new RuntimeException("이미 취소된 현금영수증입니다.");
+        }
+
+        // 2. 요청 준비
+        // 센터별 설정값 조회 (첫 번째 cashbill의 센터 기준)
+        PaymentRespDTO.PaymentConfigDTO config = paymentRepository.findPayConfigByCenterCode(centerCode);
+
+        if (config == null) {
+            throw new RuntimeException("결제 설정을 찾을 수 없습니다.");
+        }
+        try {
+            // 요청 바디 생성
+            Map<String, Object> requestBody = buildCancelRequestBody(config, cashbill);
+
+            // 3. API 호출
+            String cancelUrl = config.getCashbillCancelUrl();
+            PaymentRespDTO.PaymintRespDTO response = callPaymint(cancelUrl, requestBody);
+
+            log.info("취소 응답: billId={}, code={}, msg={}",
+                    cashbill.getBillId(), response.getCode(), response.getMsg());
+
+            // 4. 응답값으로 DB 수정
+            if (response != null && "0000".equals(response.getCode())) {
+                paymentRepository.updateCashbillStatus(cashbill.getBillId(), "CANCELED", reason);
+                log.info("현금영수증 취소 성공: {}", cashbill.getBillId());
+
+                // 5. 컨트롤러 리턴
+                PaymentRespDTO.CashbillCancelRespDTO responseDTO = new PaymentRespDTO.CashbillCancelRespDTO();
+                responseDTO.setSuccess(true);
+                responseDTO.setMessage("현금영수증이 취소되었습니다.");
+                return responseDTO;
+
+            } else {
+                log.error("현금영수증 취소 실패: {}, 응답코드: {}, 메시지: {}",
+                        cashbill.getBillId(), response.getCode(), response.getMsg());
+                throw new RuntimeException("취소 실패: " + response.getMsg());
+            }
+
+        } catch (Exception e) {
+            log.error("현금영수증 취소 중 오류: billId={}", cashbill.getBillId(), e);
+            throw new RuntimeException("현금영수증 취소 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    private Map<String, Object> buildCancelRequestBody(PaymentRespDTO.PaymentConfigDTO config, PaymentCashbill cashbill) {
+        Map<String, Object> body = new HashMap<>();
+
+        body.put("apikey", config.getApiKey());
+        body.put("member", config.getMemberId());
+        body.put("merchant", config.getMerchantId());
+        body.put("bill_id", cashbill.getBillId());
+        body.put("price", cashbill.getPrice());
+        body.put("trader", cashbill.getTrader());
+        body.put("hash", cashbill.getHashValue());
+
+        return body;
+    }
+
+
 }

@@ -6,6 +6,7 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.*;
+import com.popbill.api.cashbill.Cashbill;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.hibernate.annotations.Parent;
@@ -288,4 +289,16 @@ public interface PaymentRepository {
                            @Param("billId") String billId);
 
     List<PaymentRespDTO.ClaimDto> getPaymentInfo(PaymentReqDTO.ClaimFilterDTO dto);
+
+    List<PaymentRespDTO.CashBillHistoryDTO> findCashbillHistory(
+            @Param("centerCode") String centerCode
+    );
+
+    PaymentCashbill findCashbillByBillId(@Param("billId") String billId);
+
+    void updateCashbillStatus(
+            @Param("billId") String billId,
+            @Param("status") String status,
+            @Param("reason") String reason
+    );
 }

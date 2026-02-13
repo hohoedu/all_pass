@@ -2,787 +2,789 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- jQuery CDN -->
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <!-- Custom Css / Js -->
-  <link rel="stylesheet" th:href="@{/css/admin-style.css}">
-  <link rel="stylesheet" th:href="@{/css/media.css}">
-  <script th:src="@{/js/custom.js}"></script>
-  <!-- Html menu Load -->
-  <script th:src="@{/js/sidebar.js}"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <title>교재 주문 리스트</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <!-- Html menu Load -->
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/admin/order/admin_order.js}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <title>교재 주문 리스트</title>
 </head>
 
 <body>
-  <div class="main-container">
+<div class="main-container">
     <!-- header -->
     <div class="main-frame">
-      <!-- left nav bar -->
-      <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
-      <main class="main-info">
-        <div class="student-frame time-regist-frame">
-          <!-- section:top -->
-          <section>
-            <div class="class-desc">
-              <div class="class-header">
-                <div class="common-title">
-                  <h2>교재 주문 리스트</h2>
+        <!-- left nav bar -->
+        <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+        <main class="main-info">
+            <div class="student-frame time-regist-frame">
+                <!-- section:top -->
+                <section>
+                    <div class="class-desc">
+                        <div class="class-header">
+                            <div class="common-title">
+                                <h2>교재 주문 리스트</h2>
+                            </div>
+                            <div class="class-btns">
+                                <div class="common-btn print-invoice" id="print-invoice">명세서 출력</div>
+                                <div class="common-btn record-save">저장</div>
+                            </div>
+                        </div>
+                        <div class="month-header2 month-today" style="padding: 10px 0;">
+                            <div class="month-title2">
+                                <span class="current-month"></span>
+                                <div class="calendar-wrapper">
+                                    <input type="month" class="hidden-date"/>
+                                    <button type="button" class="icon-btn calendar-open">
+                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="radio-group">
+                                <input type="radio" name="statement" id="statement-1" value="1y" checked="">
+                                <label for="statement-1">거래명세서 보기</label>
+                                <input type="radio" name="statement" id="statement-2" value="6m">
+                                <label for="statement-2">시간표 기준 주문 내역</label>
+                                <input type="radio" name="statement" id="statement-3" value="3m">
+                                <label for="statement-3">센터별 선생님 주문 내역</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- section:bottom -->
+                <div class="second-frame" style="padding: 0 15px;">
+                    <section class="list-code-left">
+                        <div class="list_wrapper">
+                            <div class="class-header">
+                                <h4>학원 검색</h4>
+                                <div class="class-btns">
+                                    <div class="common-btn handover-btn">이월처리</div>
+                                </div>
+                            </div>
+                            <div class="content_wrapper" style="display:flex; gap:20px;">
+                                <div class="list-code">
+                                    <table class="basic-table stripe2 table-over">
+                                        <colgroup>
+                                            <col width="20%">
+                                            <col width="45%">
+                                            <col width="35%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th class="checkbox-group"><input type="checkbox" id="" name=""></th>
+                                            <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">지점명</th>
+                                            <th>상태</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>부산 남천점</td>
+                                            <td>사용중</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>부산 남천점</td>
+                                            <td>사용중</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>부산 남천점</td>
+                                            <td>사용중</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="list-code">
+                                    <table class="basic-table stripe2 table-over">
+                                        <colgroup>
+                                            <col width="35%">
+                                            <col width="35%">
+                                            <col width="30%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>명세서명</th>
+                                            <th>최종 수정일</th>
+                                            <th>전체수량</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>최초 명세서</td>
+                                            <td>2025-11-11</td>
+                                            <td>98</td>
+                                        </tr>
+                                        <tr>
+                                            <td>추가 명세서1</td>
+                                            <td>2025-11-11</td>
+                                            <td>98</td>
+                                        </tr>
+                                        <tr>
+                                            <td>추가 명세서2</td>
+                                            <td>2025-11-11</td>
+                                            <td>98</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list_wrapper">
+                            <div class="class-header">
+                                <h4>변동사항</h4>
+                                <div class="class-btns">
+                                    <div class="common-btn cancel-list">미승인</div>
+                                    <div class="common-btn approval-list">승인</div>
+                                </div>
+                            </div>
+                            <div class="content_wrapper" style="display:flex; gap:20px;">
+                                <div class="list-code">
+                                    <table class="basic-table stripe2 table-over">
+                                        <colgroup>
+                                            <col width="7%">
+                                            <col width="10%">
+                                            <col width="20%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                            <col width="20%">
+                                            <col width="13%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th class="checkbox-group"><input type="checkbox" id="" name=""></th>
+                                            <th>상태</th>
+                                            <th>등록일시</th>
+                                            <th>주문자</th>
+                                            <th>단계</th>
+                                            <th>사유</th>
+                                            <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">승인</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-return">반품</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-add">추가</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-return">반품</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-add">추가</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-return">반품</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
+                                            <td>
+                                                <div class="pay-box pay-add">추가</div>
+                                            </td>
+                                            <td>2025-10-01 13:53:21</td>
+                                            <td>김하늘</td>
+                                            <td>초등박사 1호</td>
+                                            <td>탈퇴로 인한 반품</td>
+                                            <td>승인</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- 거래명세서 -->
+                    <section class="list-code-right">
+                        <div class="list-code2" style="display:block ;">
+                            <h2>거 래 명 세 서</h2>
+                            <p>거래년월 : <span>2025.10</span></p>
+                            <table>
+                                <colgroup>
+                                    <col width="3%">
+                                    <col width="8%">
+                                    <col width="15%">
+                                    <col width="8%">
+                                    <col width="15%">
+                                    <col width="3%">
+                                    <col width="8%">
+                                    <col width="15%">
+                                    <col width="8%">
+                                    <col width="15%">
+                                </colgroup>
+                                <tbody>
+                                <tr>
+                                    <td rowspan="5">공급자</td>
+                                    <td>상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
+                                    <td colspan="3">호호에듀 주식회사</td>
+                                    <td rowspan="5">공급받는자</td>
+                                    <td>상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
+                                    <td colspan="3">호호서당 부산 남천점</td>
+                                </tr>
+                                <tr>
+                                    <td>등록번호</td>
+                                    <td>320-88-00028</td>
+                                    <td>성 명</td>
+                                    <td>임무화</td>
+                                    <td>등록번호</td>
+                                    <td>315-87-00242</td>
+                                    <td>성명</td>
+                                    <td>조정로</td>
+                                </tr>
+                                <tr>
+                                    <td>주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
+                                    <td colspan="3">부산 해운대구 센텀중앙로 97, 센텀스카이비즈 A동 2810호 (재송동 1208-2)</td>
+                                    <td>주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
+                                    <td colspan="3">부산 수영구 남천동로 13-6, 대명빌딩 1층 호호서당</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="2">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
+                                    <td rowspan="2">이종열</td>
+                                    <td colspan="2">T. <span>010-9161-9291</span></td>
+                                    <td rowspan="2">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
+                                    <td rowspan="2">이경진</td>
+                                    <td colspan="2">T. <span>010-7788-6291</span></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">E. <span>st8898st@naver.com</span></td>
+                                    <td colspan="2">E. <span>6288898@hanmail.net</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <colgroup>
+                                    <col width="13%">
+                                    <col width="20%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="15%">
+                                    <col width="10%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th>주문일시</th>
+                                    <th>품명</th>
+                                    <th>규격</th>
+                                    <th>수량</th>
+                                    <th>단가</th>
+                                    <th>금액</th>
+                                    <th>비고</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>2025-09-03</td>
+                                    <td>초등신동</td>
+                                    <td>5호</td>
+                                    <td>10</td>
+                                    <td>15,000</td>
+                                    <td>150,000</td>
+                                    <td>이경진</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-09-03</td>
+                                    <td>초등신동</td>
+                                    <td>5호</td>
+                                    <td>10</td>
+                                    <td>15,000</td>
+                                    <td>150,000</td>
+                                    <td>이경진</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-09-03</td>
+                                    <td>초등신동</td>
+                                    <td>5호</td>
+                                    <td>10</td>
+                                    <td>15,000</td>
+                                    <td>150,000</td>
+                                    <td>이경진</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-09-03</td>
+                                    <td>초등신동</td>
+                                    <td>5호</td>
+                                    <td>10</td>
+                                    <td>15,000</td>
+                                    <td class="colorRed">-150,000</td>
+                                    <td>이경진</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="listBot">
+                                <h3>※교재비 결제</h3>
+                                <p>결제 기간 : 전월 20일 ~ 당월 10일 마감<br>거래명세서 : 시간표 수량 확인 하오니 당월 10일까지 추가, 반품 접수 부탁드립니다.</p>
+                            </div>
+                        </div>
+                        <!-- 시간표 기준 주문 내역 -->
+                        <div class="list-code2" style="display:none ;">
+                            <h2>2025년 12월 시간표 기준 주문 내역</h2>
+                            <p>출력일시 : <span>2025-12-24 08:55:27</span></p>
+                            <table class="listRed">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="30%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th rowspan="2">단계</th>
+                                    <th rowspan="2">교재</th>
+                                    <th colspan="4">수량</th>
+                                </tr>
+                                <tr>
+                                    <th>학생</th>
+                                    <th>선생님</th>
+                                    <th>추가</th>
+                                    <th>합계</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td>초등수재</td>
+                                    <td>영재10호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>초등수재</td>
+                                    <td>영재10호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>초등수재</td>
+                                    <td>영재10호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- 센터별 선생님 주문 내역 -->
+                        <div class="list-code2" style="display:block ;">
+                            <h2>2025년 12월 센터별 선생님 주문 내역</h2>
+                            <p>출력일시 : <span>2025-12-24 08:55:27</span></p>
+                            <table class="listRed">
+                                <colgroup>
+                                    <col width="15%">
+                                    <col width="25%">
+                                    <col width="20%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th rowspan="2">선생님</th>
+                                    <th rowspan="2">단계</th>
+                                    <th rowspan="2">교재</th>
+                                    <th colspan="4">교재</th>
+                                </tr>
+                                <tr>
+                                    <th>학생</th>
+                                    <th>선생님</th>
+                                    <th>추가</th>
+                                    <th>합계</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td rowspan="5">오푸른</td>
+                                    <td>초등수재</td>
+                                    <td>6호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>초등천재</td>
+                                    <td>7호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>초등박사</td>
+                                    <td>10호</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>한스쿨</td>
+                                    <td>기본2</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td>한스쿨</td>
+                                    <td>기본4</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr class="listSum">
+                                    <td><span>오푸른</span> 계</td>
+                                    <td colspan="2"></td>
+                                    <td>20</td>
+                                    <td>10</td>
+                                    <td>69</td>
+                                    <td>69</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
                 </div>
-                <div class="class-btns">
-                  <div class="common-btn record-save">저장</div>
-                </div>
-              </div>
-              <div class="month-header2 month-today" style="padding: 10px 0;">
-                <div class="month-title2">
-                  <span class="current-month"></span>
-                  <div class="calendar-wrapper">
-                    <input type="month" class="hidden-date" />
-                    <button type="button" class="icon-btn calendar-open">
-                      <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                    </button>
-                  </div>
-                </div>
-                <div class="radio-group">
-                  <input type="radio" name="statement" id="statement-1" value="1y" checked="">
-                  <label for="statement-1">거래명세서 보기</label>
-                  <input type="radio" name="statement" id="statement-2" value="6m">
-                  <label for="statement-2">시간표 기준 주문 내역</label>
-                  <input type="radio" name="statement" id="statement-3" value="3m">
-                  <label for="statement-3">센터별 선생님 주문 내역</label>
-                </div>
-              </div>
             </div>
-          </section>
-          <!-- section:bottom -->
-          <div class="second-frame" style="padding: 0 15px;">
-            <section class="list-code-left">
-              <div class="list_wrapper">
-                <div class="class-header">
-                  <h4>학원 검색</h4>
-                  <div class="class-btns">
-                    <div class="common-btn handover-btn">이월처리</div>
-                  </div>
-                </div>
-                <div class="content_wrapper" style="display:flex; gap:20px;">
-                  <div class="list-code">
-                    <table class="basic-table stripe2 table-over">
-                      <colgroup>
-                        <col width="20%">
-                        <col width="45%">
-                        <col width="35%">
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th class="checkbox-group"><input type="checkbox" id="" name=""></th>
-                          <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">지점명</th>
-                          <th>상태</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>부산 남천점</td>
-                          <td>사용중</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>부산 남천점</td>
-                          <td>사용중</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>부산 남천점</td>
-                          <td>사용중</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="list-code">
-                    <table class="basic-table stripe2 table-over">
-                      <colgroup>
-                        <col width="35%">
-                        <col width="35%">
-                        <col width="30%">
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th>명세서명</th>
-                          <th>최종 수정일</th>
-                          <th>전체수량</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>최초 명세서</td>
-                          <td>2025-11-11</td>
-                          <td>98</td>
-                        </tr>
-                        <tr>
-                          <td>추가 명세서1</td>
-                          <td>2025-11-11</td>
-                          <td>98</td>
-                        </tr>
-                        <tr>
-                          <td>추가 명세서2</td>
-                          <td>2025-11-11</td>
-                          <td>98</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-              <div class="list_wrapper">
-                <div class="class-header">
-                  <h4>변동사항</h4>
-                  <div class="class-btns">
-                    <div class="common-btn cancel-list">미승인</div>
-                    <div class="common-btn approval-list">승인</div>
-                  </div>
-                </div>
-                <div class="content_wrapper" style="display:flex; gap:20px;">
-                  <div class="list-code">
-                    <table class="basic-table stripe2 table-over">
-                      <colgroup>
-                        <col width="7%">
-                        <col width="10%">
-                        <col width="20%">
-                        <col width="10%">
-                        <col width="10%">
-                        <col width="20%">
-                        <col width="13%">
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th class="checkbox-group"><input type="checkbox" id="" name=""></th>
-                          <th>상태</th>
-                          <th>등록일시</th>
-                          <th>주문자</th>
-                          <th>단계</th>
-                          <th>사유</th>
-                          <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">승인</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-return">반품</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-add">추가</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-return">반품</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-add">추가</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-return">반품</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                        <tr>
-                          <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                          <td>
-                            <div class="pay-box pay-add">추가</div>
-                          </td>
-                          <td>2025-10-01 13:53:21</td>
-                          <td>김하늘</td>
-                          <td>초등박사 1호</td>
-                          <td>탈퇴로 인한 반품</td>
-                          <td>승인</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </section>
-            <!-- 거래명세서 -->
-            <section class="list-code-right">
-              <div class="list-code2" style="display:block ;">
-                <h2>거 래 명 세 서</h2>
-                <p>거래년월 : <span>2025.10</span></p>
-                <table>
-                  <colgroup>
-                    <col width="3%">
-                    <col width="8%">
-                    <col width="15%">
-                    <col width="8%">
-                    <col width="15%">
-                    <col width="3%">
-                    <col width="8%">
-                    <col width="15%">
-                    <col width="8%">
-                    <col width="15%">
-                  </colgroup>
-                  <tbody>
-                    <tr>
-                      <td rowspan="5">공급자</td>
-                      <td>상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
-                      <td colspan="3">호호에듀 주식회사</td>
-                      <td rowspan="5">공급받는자</td>
-                      <td>상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
-                      <td colspan="3">호호서당 부산 남천점</td>
-                    </tr>
-                    <tr>
-                      <td>등록번호</td>
-                      <td>320-88-00028</td>
-                      <td>성 명</td>
-                      <td>임무화</td>
-                      <td>등록번호</td>
-                      <td>315-87-00242</td>
-                      <td>성명</td>
-                      <td>조정로</td>
-                    </tr>
-                    <tr>
-                      <td>주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
-                      <td colspan="3">부산 해운대구 센텀중앙로 97, 센텀스카이비즈 A동 2810호 (재송동 1208-2)</td>
-                      <td>주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
-                      <td colspan="3">부산 수영구 남천동로 13-6, 대명빌딩 1층 호호서당</td>
-                    </tr>
-                    <tr>
-                      <td rowspan="2">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
-                      <td rowspan="2">이종열</td>
-                      <td colspan="2">T. <span>010-9161-9291</span></td>
-                      <td rowspan="2">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
-                      <td rowspan="2">이경진</td>
-                      <td colspan="2">T. <span>010-7788-6291</span></td>
-                    </tr>
-                    <tr>
-                      <td colspan="2">E. <span>st8898st@naver.com</span></td>
-                      <td colspan="2">E. <span>6288898@hanmail.net</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-                <table>
-                  <colgroup>
-                    <col width="13%">
-                    <col width="20%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="15%">
-                    <col width="10%">
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th>주문일시</th>
-                      <th>품명</th>
-                      <th>규격</th>
-                      <th>수량</th>
-                      <th>단가</th>
-                      <th>금액</th>
-                      <th>비고</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>2025-09-03</td>
-                      <td>초등신동</td>
-                      <td>5호</td>
-                      <td>10</td>
-                      <td>15,000</td>
-                      <td>150,000</td>
-                      <td>이경진</td>
-                    </tr>
-                    <tr>
-                      <td>2025-09-03</td>
-                      <td>초등신동</td>
-                      <td>5호</td>
-                      <td>10</td>
-                      <td>15,000</td>
-                      <td>150,000</td>
-                      <td>이경진</td>
-                    </tr>
-                    <tr>
-                      <td>2025-09-03</td>
-                      <td>초등신동</td>
-                      <td>5호</td>
-                      <td>10</td>
-                      <td>15,000</td>
-                      <td>150,000</td>
-                      <td>이경진</td>
-                    </tr>
-                    <tr>
-                      <td>2025-09-03</td>
-                      <td>초등신동</td>
-                      <td>5호</td>
-                      <td>10</td>
-                      <td>15,000</td>
-                      <td class="colorRed">-150,000</td>
-                      <td>이경진</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <div class="listBot">
-                  <h3>※교재비 결제</h3>
-                  <p>결제 기간 : 전월 20일 ~ 당월 10일 마감<br>거래명세서 : 시간표 수량 확인 하오니 당월 10일까지 추가, 반품 접수 부탁드립니다.</p>
-                </div>
-              </div>
-              <!-- 시간표 기준 주문 내역 -->
-              <div class="list-code2" style="display:none ;">
-                <h2>2025년 12월 시간표 기준 주문 내역</h2>
-                <p>출력일시 : <span>2025-12-24 08:55:27</span></p>
-                <table class="listRed">
-                  <colgroup>
-                    <col width="30%">
-                    <col width="30%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="10%">
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th rowspan="2">단계</th>
-                      <th rowspan="2">교재</th>
-                      <th colspan="4">수량</th>
-                    </tr>
-                    <tr>
-                      <th>학생</th>
-                      <th>선생님</th>
-                      <th>추가</th>
-                      <th>합계</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>초등수재</td>
-                      <td>영재10호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>초등수재</td>
-                      <td>영재10호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>초등수재</td>
-                      <td>영재10호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <!-- 센터별 선생님 주문 내역 -->
-              <div class="list-code2" style="display:block ;">
-                <h2>2025년 12월 센터별 선생님 주문 내역</h2>
-                <p>출력일시 : <span>2025-12-24 08:55:27</span></p>
-                <table class="listRed">
-                  <colgroup>
-                    <col width="15%">
-                    <col width="25%">
-                    <col width="20%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="10%">
-                    <col width="10%">
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th rowspan="2">선생님</th>
-                      <th rowspan="2">단계</th>
-                      <th rowspan="2">교재</th>
-                      <th colspan="4">교재</th>
-                    </tr>
-                    <tr>
-                      <th>학생</th>
-                      <th>선생님</th>
-                      <th>추가</th>
-                      <th>합계</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td rowspan="5">오푸른</td>
-                      <td>초등수재</td>
-                      <td>6호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>초등천재</td>
-                      <td>7호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>초등박사</td>
-                      <td>10호</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>한스쿨</td>
-                      <td>기본2</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr>
-                      <td>한스쿨</td>
-                      <td>기본4</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>1</td>
-                      <td>3</td>
-                    </tr>
-                    <tr class="listSum">
-                      <td><span>오푸른</span> 계</td>
-                      <td colspan="2"></td>
-                      <td>20</td>
-                      <td>10</td>
-                      <td>69</td>
-                      <td>69</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </div>
-        </div>
-      </main>
+        </main>
     </div>
-  </div>
-  <!-- modal 명세서 수기 추가 -->
-  <div class="modal consult-modal">
+</div>
+<!-- modal 명세서 수기 추가 -->
+<div class="modal consult-modal">
     <div class="modal-scroll">
-      <div class="consult-free">
-        <div class="m-t-line" style="margin-bottom: 15px;">
-          <div class="title">현 명세서에 수기로 추가</div>
-          <a href="#" class="btn-close"></a>
-        </div>
-        <div style="display: flex; gap:20px; margin-bottom:20px;">
-          <table class="base-info-t list-info-t">
-            <colgroup>
-              <col width="40%;">
-              <col width="60%;">
-            </colgroup>
-            <tbody>
-              <tr>
-                <th>주문일시</th>
-                <td><input type="text" value="2025-10-16"></td>
-              </tr>
-              <tr>
-                <th>품명</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>규격</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>수량</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>단가</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>금액</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>비고</th>
-                <td><input type="text" value=""></td>
-              </tr>
-              <tr>
-                <th>승인일자</th>
-                <td><input type="text" value="" readonly="rea"></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="table-frame2 move-t-frame">
-            <div class="table-body">
+        <div class="consult-free">
+            <div class="m-t-line" style="margin-bottom: 15px;">
+                <div class="title">현 명세서에 수기로 추가</div>
+                <a href="#" class="btn-close"></a>
             </div>
-            <table class="basic-table yh">
-              <colgroup>
-                <col width="15%">
-                <col width="15%">
-                <col width="10%">
-                <col width="10%">
-                <col width="10%">
-                <col width="10%">
-                <col width="10%">
-                <col width="10%">
-                <col width="10%">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>주문일시</th>
-                  <th>품명</th>
-                  <th>규격</th>
-                  <th>수량</th>
-                  <th>단가</th>
-                  <th>금액</th>
-                  <th>비고</th>
-                  <th>구분</th>
-                  <th>승인일자</th>
-                </tr>
-              </thead>
-              <tbody id="student-tbody" class="stripe">
-                <tr>
-                  <td>2025-12-05</td>
-                  <td>초등천재</td>
-                  <td>1호</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-
-
-              </tbody>
-
-            </table>
-          </div>
-        </div>
-
-        <div class="save-btn-frame">
-          <button class="new-regist">신규</button>
-          <button class="save-btn">저장</button>
-          <button class="cancel-list">삭제</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- modal 신규 수기명세서 -->
-  <div class="modal consult-modal">
-    <div class="modal-scroll">
-      <div class="consult-free">
-        <div class="m-t-line" style="margin-bottom: 15px;">
-          <div class="title">신규 수기명세서</div>
-          <a href="#" class="btn-close"></a>
-        </div>
-        <div class="second-frame" style="padding: 0 15px;">
-          <!-- left -->
-          <section class="new-statement-left">
-            <table class="base-info-t list-info-t base-info-t2">
-              <colgroup>
-                <col width="40%;">
-                <col width="60%;">
-              </colgroup>
-              <tbody>
-                <tr>
-                  <th>거래연월</th>
-                  <td><input type="text" value="2025-10-16"></td>
-                </tr>
-                <tr>
-                  <th>명세서 타이틀</th>
-                  <td><input type="text" value=""></td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="save-btn-frame">
-              <button class="new-regist miniButton">신규</button>
-              <button class="save-btn miniButton">저장</button>
-              <button class="cancel-list miniButton">삭제</button>
-            </div>
-            <div class="master-content">
-              <h4>수기 명세서 마스터 리스트</h4>
-              <div class="mt">
-                <div class="table-frame">
-                  <table class="basic-table stu-chocie-table stripe">
+            <div style="display: flex; gap:20px; margin-bottom:20px;">
+                <table class="base-info-t list-info-t">
                     <colgroup>
-                      <col width="10%">
-                      <col width="7%">
-                      <col width="40%">
-                      <col width="10%">
-                      <col width="30%">
+                        <col width="40%;">
+                        <col width="60%;">
                     </colgroup>
-                    <thead>
-                      <tr>
-                        <th>연</th>
-                        <th>월</th>
-                        <th>명세서 타이틀</th>
-                        <th>상태</th>
-                        <th>생성일자</th>
-                      </tr>
-                    </thead>
-                    <tbody id="" class="stripe">
-                      <tr>
-                        <td>2025</td>
-                        <td>08</td>
-                        <td>시간표 외 급수 명세서</td>
-                        <td>Y</td>
-                        <td>2025-07-15 11:27:54</td>
-                      </tr>
-                      <tr>
-                        <td>2025</td>
-                        <td>08</td>
-                        <td>시간표 외 급수 명세서</td>
-                        <td>Y</td>
-                        <td>2025-07-15 11:27:54</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-          <!-- right -->
-          <section class="new-statement-right">
-            <table class="base-info-t list-info-t base-info-t2">
-              <colgroup>
-                <col width="20%;">
-                <col width="30%;">
-                <col width="20%;">
-                <col width="30%;">
-              </colgroup>
-              <tbody>
-                <tr>
-                  <th>주문일시</th>
-                  <td><input type="text" value="2025-10-16"></td>
-                  <th>품명</th>
-                  <td><input type="text" value="2025-10-16"></td>
-                </tr>
-                <tr>
-                  <th>규격</th>
-                  <td><input type="text" value=""></td>
-                  <th>수량</th>
-                  <td><input type="text" value=""></td>
-                </tr>
-                <tr>
-                  <th>단가</th>
-                  <td><input type="text" value=""></td>
-                  <th>금액</th>
-                  <td><input type="text" value=""></td>
-                </tr>
-                <tr>
-                  <th>비고</th>
-                  <td><input type="text" value=""></td>
-                  <th>승인일자</th>
-                  <td><input type="text" value="" readonly="readonly"></td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="save-btn-frame">
-              <button class="new-regist miniButton">신규</button>
-              <button class="save-btn miniButton">저장</button>
-              <button class="cancel-list miniButton">삭제</button>
-            </div>
-            <div class="master-content master-content2">
-              <div class="table-frame move-t-frame">
-                <table class="basic-table yh">
-                  <thead>
+                    <tbody>
                     <tr>
-                      <th>주문일시</th>
-                      <th>품명</th>
-                      <th>규격</th>
-                      <th>수량</th>
-                      <th>단가</th>
-                      <th>금액</th>
-                      <th>비고</th>
-                      <th>구분</th>
-                      <th>승인일자</th>
+                        <th>주문일시</th>
+                        <td><input type="text" value="2025-10-16"></td>
                     </tr>
-                  </thead>
-                    <tbody id="student-tbody" class="stripe">
-                      <tr>
-                        <td>2025-07-15</td>
-                        <td>문제집</td>
-                        <td>준 6급</td>
-                        <td>2</td>
-                        <td>15,000</td>
-                        <td>30,000</td>
-                        <td>시간표외</td>
-                        <td>승인</td>
-                        <td>2025.07.15 11:28:54</td>
-                      </tr>
-                      <tr>
-                        <td>2025-07-15</td>
-                        <td>문제집</td>
-                        <td>준 6급</td>
-                        <td>2</td>
-                        <td>15,000</td>
-                        <td>30,000</td>
-                        <td>시간표외</td>
-                        <td>승인</td>
-                        <td>2025.07.15 11:28:54</td>
-                      </tr>
-                      <tr>
-                        <td>2025-07-15</td>
-                        <td>문제집</td>
-                        <td>준 6급</td>
-                        <td>2</td>
-                        <td>15,000</td>
-                        <td>30,000</td>
-                        <td>시간표외</td>
-                        <td>승인</td>
-                        <td>2025.07.15 11:28:54</td>
-                      </tr>
+                    <tr>
+                        <th>품명</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>규격</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>수량</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>단가</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>금액</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>비고</th>
+                        <td><input type="text" value=""></td>
+                    </tr>
+                    <tr>
+                        <th>승인일자</th>
+                        <td><input type="text" value="" readonly="rea"></td>
+                    </tr>
                     </tbody>
                 </table>
-              </div>
-            </div>
-          </section>
-        </div>
+                <div class="table-frame2 move-t-frame">
+                    <div class="table-body">
+                    </div>
+                    <table class="basic-table yh">
+                        <colgroup>
+                            <col width="15%">
+                            <col width="15%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                            <col width="10%">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>주문일시</th>
+                            <th>품명</th>
+                            <th>규격</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>금액</th>
+                            <th>비고</th>
+                            <th>구분</th>
+                            <th>승인일자</th>
+                        </tr>
+                        </thead>
+                        <tbody id="student-tbody" class="stripe">
+                        <tr>
+                            <td>2025-12-05</td>
+                            <td>초등천재</td>
+                            <td>1호</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
 
-        
-      </div>
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="save-btn-frame">
+                <button class="new-regist">신규</button>
+                <button class="save-btn">저장</button>
+                <button class="cancel-list">삭제</button>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+<!-- modal 신규 수기명세서 -->
+<div class="modal consult-modal">
+    <div class="modal-scroll">
+        <div class="consult-free">
+            <div class="m-t-line" style="margin-bottom: 15px;">
+                <div class="title">신규 수기명세서</div>
+                <a href="#" class="btn-close"></a>
+            </div>
+            <div class="second-frame" style="padding: 0 15px;">
+                <!-- left -->
+                <section class="new-statement-left">
+                    <table class="base-info-t list-info-t base-info-t2">
+                        <colgroup>
+                            <col width="40%;">
+                            <col width="60%;">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <th>거래연월</th>
+                            <td><input type="text" value="2025-10-16"></td>
+                        </tr>
+                        <tr>
+                            <th>명세서 타이틀</th>
+                            <td><input type="text" value=""></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="save-btn-frame">
+                        <button class="new-regist miniButton">신규</button>
+                        <button class="save-btn miniButton">저장</button>
+                        <button class="cancel-list miniButton">삭제</button>
+                    </div>
+                    <div class="master-content">
+                        <h4>수기 명세서 마스터 리스트</h4>
+                        <div class="mt">
+                            <div class="table-frame">
+                                <table class="basic-table stu-chocie-table stripe">
+                                    <colgroup>
+                                        <col width="10%">
+                                        <col width="7%">
+                                        <col width="40%">
+                                        <col width="10%">
+                                        <col width="30%">
+                                    </colgroup>
+                                    <thead>
+                                    <tr>
+                                        <th>연</th>
+                                        <th>월</th>
+                                        <th>명세서 타이틀</th>
+                                        <th>상태</th>
+                                        <th>생성일자</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="" class="stripe">
+                                    <tr>
+                                        <td>2025</td>
+                                        <td>08</td>
+                                        <td>시간표 외 급수 명세서</td>
+                                        <td>Y</td>
+                                        <td>2025-07-15 11:27:54</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025</td>
+                                        <td>08</td>
+                                        <td>시간표 외 급수 명세서</td>
+                                        <td>Y</td>
+                                        <td>2025-07-15 11:27:54</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- right -->
+                <section class="new-statement-right">
+                    <table class="base-info-t list-info-t base-info-t2">
+                        <colgroup>
+                            <col width="20%;">
+                            <col width="30%;">
+                            <col width="20%;">
+                            <col width="30%;">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <th>주문일시</th>
+                            <td><input type="text" value="2025-10-16"></td>
+                            <th>품명</th>
+                            <td><input type="text" value="2025-10-16"></td>
+                        </tr>
+                        <tr>
+                            <th>규격</th>
+                            <td><input type="text" value=""></td>
+                            <th>수량</th>
+                            <td><input type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <th>단가</th>
+                            <td><input type="text" value=""></td>
+                            <th>금액</th>
+                            <td><input type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <th>비고</th>
+                            <td><input type="text" value=""></td>
+                            <th>승인일자</th>
+                            <td><input type="text" value="" readonly="readonly"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="save-btn-frame">
+                        <button class="new-regist miniButton">신규</button>
+                        <button class="save-btn miniButton">저장</button>
+                        <button class="cancel-list miniButton">삭제</button>
+                    </div>
+                    <div class="master-content master-content2">
+                        <div class="table-frame move-t-frame">
+                            <table class="basic-table yh">
+                                <thead>
+                                <tr>
+                                    <th>주문일시</th>
+                                    <th>품명</th>
+                                    <th>규격</th>
+                                    <th>수량</th>
+                                    <th>단가</th>
+                                    <th>금액</th>
+                                    <th>비고</th>
+                                    <th>구분</th>
+                                    <th>승인일자</th>
+                                </tr>
+                                </thead>
+                                <tbody id="student-tbody" class="stripe">
+                                <tr>
+                                    <td>2025-07-15</td>
+                                    <td>문제집</td>
+                                    <td>준 6급</td>
+                                    <td>2</td>
+                                    <td>15,000</td>
+                                    <td>30,000</td>
+                                    <td>시간표외</td>
+                                    <td>승인</td>
+                                    <td>2025.07.15 11:28:54</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-15</td>
+                                    <td>문제집</td>
+                                    <td>준 6급</td>
+                                    <td>2</td>
+                                    <td>15,000</td>
+                                    <td>30,000</td>
+                                    <td>시간표외</td>
+                                    <td>승인</td>
+                                    <td>2025.07.15 11:28:54</td>
+                                </tr>
+                                <tr>
+                                    <td>2025-07-15</td>
+                                    <td>문제집</td>
+                                    <td>준 6급</td>
+                                    <td>2</td>
+                                    <td>15,000</td>
+                                    <td>30,000</td>
+                                    <td>시간표외</td>
+                                    <td>승인</td>
+                                    <td>2025.07.15 11:28:54</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

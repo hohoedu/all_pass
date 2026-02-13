@@ -593,6 +593,7 @@ table .checkbox-group {
 }
 
 .new-regist,
+.print-invoice,
 .class-comment,
 .consult-add,
 .pay-desc,
@@ -4378,9 +4379,6 @@ input[type="time" i] {
 }
 
 
-
-
-
 /* ======================= timeview page ======================= */
 .timeview-frame {
     height: auto;
@@ -6731,7 +6729,7 @@ label {
     border-radius: 5px;
 }
 
-.order-code-left table td>img {
+.order-code-left table td > img {
     vertical-align: -14px;
 }
 
@@ -6739,8 +6737,7 @@ label {
     background: #f7f7f7;
     padding: 15px;
     box-sizing: border-box;
-    border-radius: 10px;
-;
+    border-radius: 10px;;
 }
 
 .list_wrapper:first-child {
@@ -6817,8 +6814,7 @@ label {
 
 .list-code2 p {
     text-align: right;
-    margin-bottom: 10px;
-;
+    margin-bottom: 10px;;
 }
 
 .list-code2 table {
@@ -6864,7 +6860,7 @@ label {
 .list-info-t {
     flex: 1;
     margin-bottom: 0;
-    border:1px solid #111;
+    border: 1px solid #111;
 }
 
 .consult-free {
@@ -6874,37 +6870,41 @@ label {
 
 .table-frame2 {
     flex: 2;
-    border-top:1px solid #3e3e3e;
-    border-bottom:1px solid #3e3e3e;
+    border-top: 1px solid #3e3e3e;
+    border-bottom: 1px solid #3e3e3e;
     max-height: 50vh;
 }
 
-.new-statement-left{
-    height:70vh;
-    flex:1;
+.new-statement-left {
+    height: 70vh;
+    flex: 1;
     border-radius: 5px;
-}
-.new-statement-right{
-    height:70vh;
-    flex:2;
-    border-radius: 5px;
-}
-.new-statement-left tr, .new-statement-right tr{
-    line-height: 1.5rem;
-}
-.miniButton{
-    padding:8px 20px;
-    font-size: 14px;
-    margin:5px 0;
-}
-.master-content{
-    padding:20px;
-    height:55vh;
-    border:1px solid #3e3e3e;
-    margin-top:20px;
 }
 
-.master-content h4{
+.new-statement-right {
+    height: 70vh;
+    flex: 2;
+    border-radius: 5px;
+}
+
+.new-statement-left tr, .new-statement-right tr {
+    line-height: 1.5rem;
+}
+
+.miniButton {
+    padding: 8px 20px;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.master-content {
+    padding: 20px;
+    height: 55vh;
+    border: 1px solid #3e3e3e;
+    margin-top: 20px;
+}
+
+.master-content h4 {
     font-weight: 700;
     text-align: center;
 }
@@ -6916,6 +6916,6 @@ label {
     vertical-align: middle;
 }
 
-.master-content2{
-    height:47.4vh;
+.master-content2 {
+    height: 47.4vh;
 }

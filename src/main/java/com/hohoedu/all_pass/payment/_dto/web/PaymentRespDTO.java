@@ -65,6 +65,7 @@ public class PaymentRespDTO {
         private String destroyUrl;
         private String cancelUrl;
         private String cashbillIssueUrl;
+        private String cashbillCancelUrl;
     }
 
     @Data
@@ -283,5 +284,28 @@ public class PaymentRespDTO {
         private String paidAmount;
         private String unpaidAmount;
         private String payStatus;
+    }
+
+    @Data
+    public static class CashBillHistoryDTO {
+        private String studentId;
+        private String studentName;
+        private String paymentKey;
+        private String billId;
+        private String apprNum;
+        private String issueDate;
+        private String receiptType;
+        private String price;
+        private String taxType;
+        private String supplyPrice;
+        private String taxPrice;
+        private String status;
+    }
+
+    @Data
+    public static class CashbillCancelRespDTO {
+        private Boolean success;
+        private int failCount;
+        private String message;
     }
 }

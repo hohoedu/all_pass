@@ -694,21 +694,41 @@ document.addEventListener("DOMContentLoaded", () => {
                 month: monthInput.value.split("-")[1]
             };
 
-            const res = await fetch("/pay/api/cashbill/students", {
+            // 1. 발급 대상 학생 조회 (기존 로직)
+            const studentsRes = await fetch("/pay/api/cashbill/students", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(yearMonth)
             });
 
-            if (!res.ok) throw new Error("현금영수증 발급 대상 학생 조회 실패");
+            if (!studentsRes.ok) throw new Error("현금영수증 발급 대상 학생 조회 실패");
 
-            const result = await res.json();
-            cashPaymentStudents = result.response || [];
+            const studentsResult = await studentsRes.json();
+            cashPaymentStudents = studentsResult.response || [];
 
             renderCashbillStudentList(cashPaymentStudents);
 
             if (cashbillSearchInput) {
                 cashbillSearchInput.value = '';
+            }
+
+            try {
+                const historyRes = await fetch("/pay/api/cashbill/history", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(yearMonth)
+                });
+
+                if (historyRes.ok) {
+                    const historyResult = await historyRes.json();
+                    renderCashbillHistory(historyResult.response || []);
+                } else {
+                    console.warn("발행내역 조회 실패");
+                    renderCashbillHistory([]);
+                }
+            } catch (historyErr) {
+                console.error("발행내역 조회 중 오류:", historyErr);
+                renderCashbillHistory([]);
             }
 
             modalCashbill.style.display = "block";
@@ -986,6 +1006,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('현금영수증이 발행되었습니다.');
                 resetForm();
                 document.querySelector('.add-cashbill-modal').style.display = 'none';
+                const monthInput = document.querySelector(".hidden-date");
+                const yearMonth = {
+                    year: monthInput.value.split("-")[0],
+                    month: monthInput.value.split("-")[1]
+                };
+
+                fetch("/pay/api/cashbill/history", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(yearMonth)
+                })
+                    .then(res => res.json())
+                    .then(data => renderCashbillHistory(data.response || []));
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1010,3 +1043,284 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+/* ========================================
+    💰 현금영수증 발행내역 렌더링
+======================================== */
+const renderCashbillHistory = (historyList) => {
+    const historyTbody = document.getElementById('cashbill-history-tbody');
+    if (!historyTbody) return;
+
+    historyTbody.innerHTML = "";
+
+    if (!historyList || historyList.length === 0) {
+        historyTbody.innerHTML = `
+            <tr>
+                <td colspan="11" style="text-align:center; padding: 30px; color: #666;">
+                    발행내역이 없습니다.
+                </td>
+            </tr>`;
+        return;
+    }
+
+    historyList.forEach((item, index) => {
+        const tr = document.createElement("tr");
+
+        // 발급구분 텍스트 변환
+        let receiptTypeText = '';
+        if (item.receiptType === 'personal') {
+            receiptTypeText = '개인 소득공제용';
+        } else if (item.receiptType === 'business') {
+            receiptTypeText = '사업자 지출증빙용';
+        } else if (item.receiptType === 'self') {
+            receiptTypeText = '자진발급';
+        }
+
+        // 상태 텍스트 및 색상
+        let statusText = '';
+        let statusColor = '';
+        let isCanceled = false;
+
+        if (item.status === 'ISSUED' || item.status === '발행완료') {
+            statusText = '발행완료';
+            statusColor = '#28a745';
+        } else if (item.status === 'CANCELED' || item.status === '취소') {
+            statusText = '취소';
+            statusColor = '#dc3545';
+            isCanceled = true;
+        } else {
+            statusText = item.status || '-';
+            statusColor = '#666';
+        }
+
+        tr.innerHTML = `
+            <td class="checkbox-group">
+                <input type="checkbox" class="cashbill-checkbox" data-cashbill-id="${item.billId || ''}" ${isCanceled ? 'disabled style="cursor: not-allowed;"' : ''}>
+            </td>
+            <td>${historyList.length - index}</td>
+            <td>${item.issueDate || item.createdAt || '-'}</td>
+            <td>${item.studentName || '-'}</td>
+            <td>${receiptTypeText}</td>
+            <td>${item.billId || '-'}</td>
+            <td>${item.apprNum || '-'}</td>
+            <td>${parseInt(item.supplyPrice || 0).toLocaleString()}원</td>
+            <td>${parseInt(item.taxPrice || 0).toLocaleString()}원</td>
+            <td class="cashbill-price">${parseInt(item.price || 0).toLocaleString()}원</td>
+            <td><span style="color: ${statusColor}; font-weight: 500;">${statusText}</span></td>
+        `;
+
+        historyTbody.appendChild(tr);
+    });
+    setupSingleCheckbox();
+};
+
+function setupSingleCheckbox() {
+    const checkboxes = document.querySelectorAll('.cashbill-checkbox:not([disabled])');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            if (this.checked) {
+                checkboxes.forEach(otherCheckbox => {
+                    if (otherCheckbox !== this) {
+                        otherCheckbox.checked = false;
+                    }
+                });
+            }
+        });
+    });
+}
+
+/* ========================================
+    💰 현금영수증 취소 기능
+======================================== */
+document.addEventListener('DOMContentLoaded', function () {
+    const cancelCashbillBtn = document.getElementById('cancel-cashbill');
+
+    if (cancelCashbillBtn) {
+        cancelCashbillBtn.addEventListener('click', async function () {
+
+            const selectedCheckbox = document.querySelector('#cashbill-history-tbody .cashbill-checkbox:checked');
+
+            if (!selectedCheckbox) {
+                alert('취소할 항목을 선택해주세요.');
+                return;
+            }
+
+            const row = selectedCheckbox.closest('tr');
+            const billId = selectedCheckbox.dataset.cashbillId;
+            const studentNameCell = row.querySelector('td:nth-child(4)');
+            const studentName = studentNameCell ? studentNameCell.textContent.trim() : '';
+
+            if (!billId) {
+                alert('취소할 수 있는 항목이 없습니다.');
+                return;
+            }
+
+            // 확인 메시지
+            const confirmMessage = `정말로 발행을 취소하시겠습니까?\n\n학생: ${studentName}`;
+
+            if (confirm(confirmMessage)) {
+                // 취소 사유 입력
+                const reason = prompt('취소 사유를 입력해주세요:', '고객 요청');
+
+                if (!reason || !reason.trim()) {
+                    alert('취소 사유를 입력해야 합니다.');
+                    return;
+                }
+
+                await cancelCashbill(billId, reason.trim());
+            }
+        });
+    }
+});
+
+// 현금영수증 취소 처리 함수
+async function cancelCashbill(billId, reason) {
+    // 로딩 오버레이 생성 및 표시
+    const loadingOverlay = createLoadingOverlay();
+
+    try {
+        // 로딩 표시
+        document.body.appendChild(loadingOverlay);
+
+        // 취소 버튼 비활성화
+        const cancelBtn = document.getElementById('cancel-cashbill');
+        if (cancelBtn) {
+            cancelBtn.disabled = true;
+        }
+
+        // 취소 요청
+        const response = await fetch('/pay/api/cashbill/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                billId: billId,
+                reason: reason
+            })
+        });
+
+        const result = await response.json();
+
+        // 로딩 해제
+        document.body.removeChild(loadingOverlay);
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+        }
+
+        // 결과 처리
+        if (response.ok && result.success) {
+            alert('현금영수증이 취소되었습니다.');
+
+            // 발행내역 목록 새로고침
+            await refreshCashbillHistory();
+
+        } else {
+            // 실패 처리
+            alert(result.message || '현금영수증 취소 중 오류가 발생했습니다.');
+        }
+
+    } catch (error) {
+        // 로딩 해제
+        if (loadingOverlay && loadingOverlay.parentNode) {
+            document.body.removeChild(loadingOverlay);
+        }
+
+        const cancelBtn = document.getElementById('cancel-cashbill');
+        if (cancelBtn) {
+            cancelBtn.disabled = false;
+        }
+
+        console.error('현금영수증 취소 중 오류:', error);
+        alert('취소 처리 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.');
+    }
+}
+
+function createLoadingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'cashbill-loading-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    `;
+
+    const loadingBox = document.createElement('div');
+    loadingBox.style.cssText = `
+        background: white;
+        padding: 40px 60px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    `;
+
+    const spinner = document.createElement('div');
+    spinner.style.cssText = `
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    `;
+
+    const text = document.createElement('div');
+    text.textContent = '현금영수증 취소 처리중...';
+    text.style.cssText = `
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    `;
+
+    loadingBox.appendChild(spinner);
+    loadingBox.appendChild(text);
+    overlay.appendChild(loadingBox);
+
+    // 스피너 애니메이션 추가
+    if (!document.getElementById('spinner-animation')) {
+        const style = document.createElement('style');
+        style.id = 'spinner-animation';
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    return overlay;
+}
+
+// 발행내역 새로고침 함수
+async function refreshCashbillHistory() {
+    const monthInput = document.querySelector(".hidden-date");
+    if (!monthInput) return;
+
+    const [year, month] = monthInput.value.split("-");
+    const yearMonth = {year, month};
+
+    try {
+        const historyRes = await fetch("/pay/api/cashbill/history", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(yearMonth)
+        });
+
+        if (historyRes.ok) {
+            const historyResult = await historyRes.json();
+            renderCashbillHistory(historyResult.response || []);
+        }
+    } catch (error) {
+        console.error('발행내역 새로고침 중 오류:', error);
+    }
+}

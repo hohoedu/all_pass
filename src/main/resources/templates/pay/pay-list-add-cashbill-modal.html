@@ -191,49 +191,34 @@
                                 <div class="claim-list">
                                     <h3 class="claim-sub">발행내역 조회</h3>
                                 </div>
-                                <!-- 검색 필터 -->
-                                <div style="padding: 15px 10px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
-                                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                                        <input type="date" class="basic-input" style="width: 150px;">
-                                        <span>~</span>
-                                        <input type="date" class="basic-input" style="width: 150px;">
-                                        <select class="basic-input" style="width: 140px;">
-                                            <option>전체</option>
-                                            <option>개인소득공제</option>
-                                            <option>사업자지출증빙</option>
-                                        </select>
-                                        <input type="text" class="basic-input" placeholder="이름 검색"
-                                               style="width: 150px;">
-                                        <button class="save-btn">조회</button>
-                                    </div>
-                                </div>
-
                                 <div class="modal-scroll bt">
                                     <div class="table-frame claim-frame">
                                         <table class="basic-table yh">
                                             <colgroup>
-                                                <col width="7%">
-                                                <col width="8%">
-                                                <col width="12%">
-                                                <col width="10%">
-                                                <col width="15%">
-                                                <col width="18%">
-                                                <col width="15%">
-                                                <col width="10%">
-                                                <col width="10%">
+                                                <col style="width:3%">
+                                                <col style="width:4%">
+                                                <col style="width:9%">
+                                                <col style="width:7%">
+                                                <col style="width:10%">
+                                                <col style="width:14%">
+                                                <col style="width:14%">
+                                                <col style="width:9%">
+                                                <col style="width:8%">
+                                                <col style="width:10%">
+                                                <col style="width:6%">
                                             </colgroup>
                                             <thead>
                                             <tr>
-                                                <th class="checkbox-group">
-                                                    <input type="checkbox">
-                                                </th>
+                                                <th></th>
                                                 <th>No</th>
                                                 <th>발행일시</th>
                                                 <th>이름</th>
                                                 <th>발급구분</th>
                                                 <th>발급번호</th>
                                                 <th>승인번호</th>
-                                                <th>금액</th>
+                                                <th>공급가액</th>
+                                                <th>세금</th>
+                                                <th>승인금액</th>
                                                 <th>상태</th>
                                             </tr>
                                             </thead>
@@ -285,8 +270,7 @@
                             </div>
                             <div class="invoice-btn-wrap">
                                 <p class="invoice-label-text">선택한 내역</p>
-                                <button class="invoice-btn invoice-btn-red">선택 취소</button>
-                                <button class="invoice-btn">엑셀 다운로드</button>
+                                <button class="invoice-btn invoice-btn-red" id="cancel-cashbill">선택 취소</button>
                             </div>
                         </div>
                     </div>

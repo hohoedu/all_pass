@@ -5,20 +5,27 @@
 <mapper namespace="com.hohoedu.all_pass.app.AppRepository">
 
     <select id="findBookMainInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListMainRawDTO">
-        select g.grade_name        AS hak_info,
-               '2026'              AS yyyy,
-               '02'                AS mm,
+        SELECT g.grade_name        AS hak_info,
+               book.yy             AS yyyy,
+               book.mm             AS mm,
                sc.subject_name     AS week_subject,
                book.book_name      AS week_title,
                book.publisher      AS week_publisher,
                book.book_image_url AS week_bookimg
-        from erp_book_suggest book
-                 JOIN erp_grade_code g ON book.class_key = g.book_class_key
-                 LEFT JOIN erp_subject_code sc ON book.subject_key = sc.subject_key
+        FROM erp_book_suggest book
+                 JOIN erp_grade_code g
+                      ON book.class_key = g.book_class_key
+                 LEFT JOIN erp_subject_code sc
+                           ON book.subject_key = sc.subject_key
+                 JOIN (SELECT TOP 1 yy, mm
+                       FROM erp_book_suggest b
+                                JOIN erp_grade_code g
+                                     ON b.class_key = g.book_class_key
+                       WHERE g.grade_key = #{gradeKey}
+                       ORDER BY yy DESC, mm DESC) latest
+                      ON book.yy = latest.yy AND book.mm = latest.mm
         WHERE g.grade_key = #{gradeKey}
-          AND book.yy = '2026'
-          AND book.mm = '02'
-        order by book.yy, book.mm, book.week
+        ORDER BY book.week;
     </select>
 
     <select id="findBookInfo" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BookListRawDTO">

@@ -241,6 +241,12 @@ public class PaymentReqDTO {
     }
 
     @Data
+    public static class CashbillCancelDTO {
+        String billId;
+        String reason;
+    }
+
+    @Data
     public static class ClaimFilterDTO {
         private String userCode;
         private String itemType;

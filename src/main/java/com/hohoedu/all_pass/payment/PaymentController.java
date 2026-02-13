@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.payment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.Http;
 import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
@@ -10,6 +11,7 @@ import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.C;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -290,5 +292,39 @@ public class PaymentController {
     public ResponseEntity<List<PaymentRespDTO.ClaimDto>> exportClaims(@RequestBody PaymentReqDTO.ClaimFilterDTO filters) {
         List<PaymentRespDTO.ClaimDto> data = paymentService.getFilteredClaims(filters);
         return ResponseEntity.ok(data);
+    }
+
+    @PostMapping("/api/cashbill/history")
+    public ResponseEntity<?> getCashbillHistory(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentService.getCashbillHistory(user.getCenterCode());
+        log.info(response.toString());
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/api/cashbill/cancel")
+    public ResponseEntity<?> cancelCashbills(@RequestBody PaymentReqDTO.CashbillCancelDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        log.info("현금영수증 취소 요청: billIds = {}", dto.getBillId());
+
+        try {
+            PaymentRespDTO.CashbillCancelRespDTO result = paymentService.cancelCashbills(dto.getBillId(), dto.getReason(), user.getCenterCode());
+            return ResponseEntity.ok(ApiUtils.success(result));
+
+        } catch (Exception e) {
+            log.error("현금영수증 취소 중 오류 발생", e);
+            return ResponseEntity.ok(ApiUtils.error(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+        }
     }
 }
