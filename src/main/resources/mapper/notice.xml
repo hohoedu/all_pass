@@ -10,6 +10,27 @@
         VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{linkUrl}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
     </insert>
 
+    <update id="deleteCenterNotice" parameterType="int">
+        UPDATE erp_center_notice
+        SET is_delete  = 'Y',
+            deleted_at = SYSDATETIME()
+        WHERE id = #{id}
+          AND is_delete = 'N'
+    </update>
+
+    <update id="updateCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeUpdateDTO">
+        UPDATE erp_center_notice
+        SET
+            title = #{title},
+            sub_title = #{subTitle},
+            icon = #{icon},
+            content = #{content},
+            link_url = #{linkUrl},
+            image = #{image}
+        WHERE id = #{id}
+          AND is_delete = 'N'
+    </update>
+
     <select id="findCenterNoticeByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$CenterNoticeDTO">
         SELECT n.id                AS id,
                n.center_notice_key AS centerNoticeKey,
@@ -25,8 +46,8 @@
                  JOIN erp_user u ON n.user_code = u.user_code
         WHERE n.center_code = #{centerCode}
           AND n.user_code = #{userCode}
+          AND is_delete = 'N'
         ORDER BY n.created_at DESC;
-
     </select>
 
     <select id="findStudentByUserCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$NoticeStudentDTO">

@@ -153,6 +153,8 @@ public class StudentService {
             processInviteCompletion(inviteCode, studentDTO);
         }
 
+        studentRepository.createTeacherAssign(studentDTO.getStudentId());
+
         return studentDTO.getStudentId();
     }
 

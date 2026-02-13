@@ -57,6 +57,8 @@ public interface StudentRepository {
 
     public void insert(StudentJoinDTO student);
 
+    void createTeacherAssign(String studentId);
+
     InviteTracking findByInviteCode(String inviteCode);
 
     public int statusHistoryInsert(StatusHistoryDTO historyDTO);

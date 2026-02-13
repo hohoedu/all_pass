@@ -7,6 +7,56 @@ document.addEventListener("DOMContentLoaded", () => {
     const registBtn = modal.querySelector(".regist-btn");
     const titleElem = modal.querySelector(".pre-title");
     let mode = "create";
+    let currentNoticeId = null; // 수정할 공지 ID 저장
+
+    // ========== 함수 정의 먼저 ==========
+    function clearForm() {
+        currentNoticeId = null; // ID 초기화
+        modal.querySelectorAll("input[type='text'], textarea").forEach((el) => (el.value = ""));
+        $('#content').summernote('code', '');
+        document.getElementById('imagePath').value = "";
+        document.getElementById('imageNameWrapper').style.display = 'none';
+        document.getElementById('linkUrl').value = "";
+        const linkRow = document.getElementById('linkRow');
+        if (linkRow) linkRow.style.display = 'none';
+
+        // 아이콘 초기화
+        const selected = document.querySelector('#noticeSelect .selected');
+        if (selected) {
+            selected.dataset.value = "1";
+            selected.innerHTML = `<img src="/image/notice01.png" alt=""> 아이콘 1<span class="arrow"><i class="xi-angle-down"></i></span>`;
+        }
+    }
+
+    function fillForm(data) {
+        currentNoticeId = data.id; // ID 저장
+        const inputs = modal.querySelectorAll("input[type='text']");
+        inputs[0].value = data.title || "";
+        inputs[1].value = data.subTitle || "";
+        $('#content').summernote('code', data.rawContent || data.content || "");
+
+        // 아이콘 선택
+        const selected = document.querySelector('#noticeSelect .selected');
+        if (data.icon) {
+            selected.dataset.value = data.icon;
+            selected.innerHTML = `<img src="/image/notice0${data.icon}.png" alt=""> 아이콘 ${data.icon}<span class="arrow"><i class="xi-angle-down"></i></span>`;
+        }
+
+        // 링크 URL
+        if (data.linkUrl) {
+            document.getElementById('linkUrl').value = data.linkUrl;
+            const linkRow = document.getElementById('linkRow');
+            if (linkRow) linkRow.style.display = 'flex';
+        }
+
+        // 이미지
+        if (data.image) {
+            document.getElementById('imagePath').value = data.image;
+            const fileName = data.image.split('/').pop();
+            document.getElementById('fileName').textContent = fileName;
+            document.getElementById('imageNameWrapper').style.display = 'flex';
+        }
+    }
 
     const openModal = (type, data) => {
         mode = type;
@@ -29,119 +79,35 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.classList.remove("modal-open");
     };
 
-    openCreateBtn.addEventListener("click", () => openModal("create"));
-    closeBtn.addEventListener("click", closeModal);
-
-    modal.addEventListener("click", (e) => {
-        if (!modalContent.contains(e.target)) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
+    // ========== 삭제 함수 ==========
+    async function handleDelete(e) {
+        const id = e.target.dataset.id;
+        if (!id) {
+            console.error("❌ data-id가 없습니다:", e.target);
+            return;
         }
-    });
 
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const studentCheckboxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:not(:disabled)');
-
-    selectAllCheckbox.addEventListener('change', function () {
-        studentCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    });
-
-    // 개별 체크박스 클릭 시 전체 선택 상태 업데이트
-    document.getElementById('student-tbody').addEventListener('change', function (e) {
-        if (e.target.type === 'checkbox') {
-            const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
-            selectAllCheckbox.checked = allChecked;
-        }
-    });
-
-    // ========== 테이블 정렬 기능 ==========
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    let currentSort = {column: null, ascending: true};
-
-    sortableHeaders.forEach(header => {
-        header.addEventListener('click', function () {
-            const column = this.dataset.column;
-            const tbody = document.getElementById('student-tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr:not([th\\:if])'));
-
-            // 정렬 방향 결정
-            if (currentSort.column === column) {
-                currentSort.ascending = !currentSort.ascending;
-            } else {
-                currentSort.column = column;
-                currentSort.ascending = true;
-            }
-
-            // 정렬 아이콘 업데이트
-            sortableHeaders.forEach(h => {
-                const img = h.querySelector('img');
-                img.src = '/image/sort.svg';
-            });
-            const currentImg = this.querySelector('img');
-            currentImg.src = currentSort.ascending ? '/image/sort_checked.svg' : '/image/sort.svg';
-
-            // 행 정렬
-            rows.sort((a, b) => {
-                let aValue, bValue;
-
-                switch (column) {
-                    case 'name':
-                        aValue = a.cells[1].textContent.trim();
-                        bValue = b.cells[1].textContent.trim();
-                        break;
-                    case 'subject':
-                        aValue = a.cells[2].textContent.trim();
-                        bValue = b.cells[2].textContent.trim();
-                        break;
-                    case 'grade':
-                        aValue = a.cells[3].textContent.trim();
-                        bValue = b.cells[3].textContent.trim();
-                        break;
-                }
-
-                if (aValue < bValue) return currentSort.ascending ? -1 : 1;
-                if (aValue > bValue) return currentSort.ascending ? 1 : -1;
-                return 0;
-            });
-
-            // 정렬된 행 다시 추가
-            rows.forEach(row => tbody.appendChild(row));
-        });
-    });
-
-    function clearForm() {
-        modal.querySelectorAll("input[type='text'], textarea").forEach((el) => (el.value = ""));
-        $('#content').summernote('code', '');
-    }
-
-    function fillForm(data) {
-        const inputs = modal.querySelectorAll("input[type='text']");
-        inputs[0].value = data.title || "";
-        inputs[1].value = data.subTitle || "";
-        $('#content').summernote('code', data.rawContent || data.content || "");
-    }
-
-    window.loadNoticeDetail = async (element) => {
-        const parent = element.closest(".app-style");
-        const id = parent.dataset.id;
+        if (!confirm("정말 삭제하시겠습니까?")) return;
 
         try {
-            const res = await fetch("/notice/detail", {
+            const response = await fetch("/notice/center/delete", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({id})
+                body: JSON.stringify({id: parseInt(id)})
             });
-            if (!res.ok) throw new Error("공지 상세 조회 실패");
-            const data = await res.json();
 
-            renderNoticeDetail(data.response);
+            const result = await response.json();
+            if (result.success) {
+                alert("공지사항이 삭제되었습니다.");
+                location.reload();
+            } else {
+                alert("삭제 실패: " + result.message);
+            }
         } catch (err) {
-            console.error("❌ 공지 상세 로드 실패:", err);
-            alert("공지 상세정보를 불러오지 못했습니다.");
+            console.error("❌ 삭제 중 오류:", err);
+            alert("삭제 중 오류가 발생했습니다.");
         }
-    };
+    }
 
     function renderNoticeDetail(data) {
         const rightSection = document.querySelector(".edu-right");
@@ -170,61 +136,218 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const openEditBtn = rightSection.querySelector(".notice-update");
         openEditBtn.addEventListener("click", () => openModal("edit", data));
+
+        const deleteBtn = rightSection.querySelector(".notice-delete");
+        deleteBtn.addEventListener("click", handleDelete);
     }
 
+    window.loadNoticeDetail = async (element) => {
+        const parent = element.closest(".app-style");
+        const id = parent.dataset.id;
+
+        try {
+            const res = await fetch("/notice/detail", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({id})
+            });
+            if (!res.ok) throw new Error("공지 상세 조회 실패");
+            const data = await res.json();
+
+            renderNoticeDetail(data.response);
+        } catch (err) {
+            console.error("❌ 공지 상세 로드 실패:", err);
+            alert("공지 상세정보를 불러오지 못했습니다.");
+        }
+    };
+
+    // ========== 초기 로드된 버튼에 이벤트 연결 ==========
+    const initialDeleteBtn = document.querySelector(".edu-right .notice-delete");
+    if (initialDeleteBtn) {
+        console.log("✅ 초기 삭제 버튼 발견, 이벤트 연결");
+        initialDeleteBtn.addEventListener("click", handleDelete);
+    }
+
+    const initialUpdateBtn = document.querySelector(".edu-right .notice-update");
+    if (initialUpdateBtn) {
+        console.log("✅ 초기 수정 버튼 발견, 이벤트 연결");
+        initialUpdateBtn.addEventListener("click", async function () {
+            const id = this.dataset.id;
+            if (!id) return;
+
+            try {
+                const res = await fetch("/notice/detail", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({id})
+                });
+                if (!res.ok) throw new Error("공지 상세 조회 실패");
+                const data = await res.json();
+                openModal("edit", data.response);
+            } catch (err) {
+                console.error("❌ 공지 로드 실패:", err);
+                alert("공지 정보를 불러오지 못했습니다.");
+            }
+        });
+    }
+
+    // ========== 모달 이벤트 ==========
+    openCreateBtn.addEventListener("click", () => openModal("create"));
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
+        if (!modalContent.contains(e.target)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }
+    });
+
+    // ========== 체크박스 전체 선택 ==========
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const studentCheckboxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:not(:disabled)');
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function () {
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    const studentTbody = document.getElementById('student-tbody');
+    if (studentTbody) {
+        studentTbody.addEventListener('change', function (e) {
+            if (e.target.type === 'checkbox') {
+                const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
+                if (selectAllCheckbox) selectAllCheckbox.checked = allChecked;
+            }
+        });
+    }
+
+    // ========== 테이블 정렬 기능 ==========
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    let currentSort = {column: null, ascending: true};
+
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function () {
+            const column = this.dataset.column;
+            const tbody = document.getElementById('student-tbody');
+            if (!tbody) return;
+
+            const rows = Array.from(tbody.querySelectorAll('tr:not([th\\:if])'));
+
+            if (currentSort.column === column) {
+                currentSort.ascending = !currentSort.ascending;
+            } else {
+                currentSort.column = column;
+                currentSort.ascending = true;
+            }
+
+            sortableHeaders.forEach(h => {
+                const img = h.querySelector('img');
+                if (img) img.src = '/image/sort.svg';
+            });
+            const currentImg = this.querySelector('img');
+            if (currentImg) {
+                currentImg.src = currentSort.ascending ? '/image/sort_checked.svg' : '/image/sort.svg';
+            }
+
+            rows.sort((a, b) => {
+                let aValue, bValue;
+
+                switch (column) {
+                    case 'name':
+                        aValue = a.cells[1].textContent.trim();
+                        bValue = b.cells[1].textContent.trim();
+                        break;
+                    case 'subject':
+                        aValue = a.cells[2].textContent.trim();
+                        bValue = b.cells[2].textContent.trim();
+                        break;
+                    case 'grade':
+                        aValue = a.cells[3].textContent.trim();
+                        bValue = b.cells[3].textContent.trim();
+                        break;
+                }
+
+                if (aValue < bValue) return currentSort.ascending ? -1 : 1;
+                if (aValue > bValue) return currentSort.ascending ? 1 : -1;
+                return 0;
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+
+    // ========== 이미지 업로드 ==========
     const uploadBtn = document.getElementById("uploadBtn");
     const imageInput = document.getElementById("imageInput");
     const fileName = document.getElementById("fileName");
     const imageNameWrapper = document.getElementById("imageNameWrapper");
     const imagePathInput = document.getElementById("imagePath");
 
-    uploadBtn.addEventListener("click", () => imageInput.click());
+    if (uploadBtn && imageInput) {
+        uploadBtn.addEventListener("click", () => imageInput.click());
 
-    imageInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        imageInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        const safeFileName = file.name.replace(/\s+/g, "_");
-        fileName.textContent = safeFileName;
-        imageNameWrapper.style.display = "flex";
+            const safeFileName = file.name.replace(/\s+/g, "_");
+            if (fileName) fileName.textContent = safeFileName;
+            if (imageNameWrapper) imageNameWrapper.style.display = "flex";
 
-        const renamedFile = new File([file], safeFileName, {type: file.type});
-        const formData = new FormData();
-        formData.append("file", renamedFile);
+            const renamedFile = new File([file], safeFileName, {type: file.type});
+            const formData = new FormData();
+            formData.append("file", renamedFile);
 
-        fetch("/notice/upload", {method: "POST", body: formData})
-            .then(res => res.text())
-            .then(path => imagePathInput.value = path)
-            .catch(err => alert("업로드 실패"));
-    });
+            fetch("/notice/upload", {method: "POST", body: formData})
+                .then(res => res.text())
+                .then(path => {
+                    if (imagePathInput) imagePathInput.value = path;
+                })
+                .catch(err => alert("업로드 실패"));
+        });
+    }
 
-    document.getElementById("removeImage").addEventListener("click", (e) => {
-        e.preventDefault();
-        imageInput.value = "";
-        imageNameWrapper.style.display = "none";
-        imagePathInput.value = "";
-    });
+    const removeImageBtn = document.getElementById("removeImage");
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (imageInput) imageInput.value = "";
+            if (imageNameWrapper) imageNameWrapper.style.display = "none";
+            if (imagePathInput) imagePathInput.value = "";
+        });
+    }
 
+    // ========== 커스텀 셀렉트 ==========
     const select = document.getElementById("noticeSelect");
-    const selected = select.querySelector(".selected");
-    const options = select.querySelectorAll(".select-options li");
+    if (select) {
+        const selected = select.querySelector(".selected");
+        const options = select.querySelectorAll(".select-options li");
 
-    selected.onclick = () => select.classList.toggle("open");
+        if (selected) {
+            selected.onclick = () => select.classList.toggle("open");
+        }
 
-    options.forEach((li, index) => {
-        li.onclick = () => {
-            const img = li.querySelector("img").getAttribute("src");
-            const text = li.textContent.trim();
-            selected.innerHTML = `<img src="${img}" alt=""> ${text}<span class="arrow"><i class="xi-angle-down"></i></span>`;
-            selected.dataset.value = index + 1;
-            select.classList.remove("open");
-        };
-    });
+        options.forEach((li, index) => {
+            li.onclick = () => {
+                const img = li.querySelector("img").getAttribute("src");
+                const text = li.textContent.trim();
+                if (selected) {
+                    selected.innerHTML = `<img src="${img}" alt=""> ${text}<span class="arrow"><i class="xi-angle-down"></i></span>`;
+                    selected.dataset.value = index + 1;
+                }
+                select.classList.remove("open");
+            };
+        });
 
-    document.addEventListener("click", (e) => {
-        if (!select.contains(e.target)) select.classList.remove("open");
-    });
+        document.addEventListener("click", (e) => {
+            if (!select.contains(e.target)) select.classList.remove("open");
+        });
+    }
 
+    // ========== Summernote 에디터 ==========
     $('#content').summernote({
         height: 250,
         lang: 'ko-KR',
@@ -253,8 +376,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (result.isConfirmed && result.value) {
                                 const linkInput = document.getElementById('linkUrl');
                                 const linkRow = document.getElementById('linkRow');
-                                linkInput.value = result.value;
-                                linkRow.style.display = 'flex';
+                                if (linkInput) linkInput.value = result.value;
+                                if (linkRow) linkRow.style.display = 'flex';
                             }
                         });
                     }
@@ -263,59 +386,96 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ========== 공지 저장/수정 ==========
     const saveBtn = document.querySelector("#saveNotice");
-    saveBtn.addEventListener("click", async () => {
-        const title = document.querySelector('input[placeholder="제목을 입력해주세요."]').value.trim();
-        const subTitle = document.querySelector('input[placeholder="부제목을 입력해주세요."]').value.trim();
-        const icon = document.querySelector('#noticeSelect .selected').dataset.value;
-        const content = $('#content').summernote('code');
-        const linkUrl = document.getElementById('linkUrl').value.trim();
-        const image = document.getElementById('imagePath').value;
+    if (saveBtn) {
+        saveBtn.addEventListener("click", async () => {
+            const title = document.querySelector('input[placeholder="제목을 입력해주세요."]').value.trim();
+            const subTitle = document.querySelector('input[placeholder="부제목을 입력해주세요."]').value.trim();
+            const icon = document.querySelector('#noticeSelect .selected').dataset.value;
+            const content = $('#content').summernote('code');
+            const linkUrlInput = document.getElementById('linkUrl');
+            const linkUrl = linkUrlInput ? linkUrlInput.value.trim() : '';
+            const imagePathElem = document.getElementById('imagePath');
+            const image = imagePathElem ? imagePathElem.value : '';
 
-        if (!title || !subTitle || !content) {
-            alert("제목, 부제목, 내용을 모두 입력해주세요.");
-            return;
-        }
-
-        // 선택된 학생들의 앱 토큰 수집
-        const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked:not(:disabled)');
-        const tokens = Array.from(checkedBoxes)
-            .map(cb => cb.dataset.token)
-            .filter(token => token && token !== 'null');
-
-        const noticeData = {
-            title,
-            subTitle,
-            icon,
-            content,
-            linkUrl,
-            image,
-            tokens: tokens  // 앱 토큰 추가
-        };
-
-        try {
-            const response = await fetch("/notice/center/save", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(noticeData)
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                if (tokens.length > 0) {
-                    alert(`공지사항이 등록되고 ${tokens.length}명의 학생에게 알림이 발송되었습니다!`);
-                } else {
-                    alert("공지사항이 성공적으로 등록되었습니다!");
-                }
-                location.reload();
-            } else {
-                alert("공지 저장 실패: " + result.message);
+            if (!title || !subTitle || !content) {
+                alert("제목, 부제목, 내용을 모두 입력해주세요.");
+                return;
             }
-        } catch (err) {
-            console.error("❌ 저장 중 오류:", err);
-            alert("공지 저장 중 오류가 발생했습니다.");
-        }
-    });
 
+            // 선택된 학생들의 앱 토큰 수집 (등록 시에만)
+            let tokens = [];
+            if (mode === "create") {
+                const checkedBoxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:checked:not(:disabled)');
+                tokens = Array.from(checkedBoxes)
+                    .map(cb => cb.dataset.token)
+                    .filter(token => token && token !== 'null');
+            }
+
+            const noticeData = {
+                title,
+                subTitle,
+                icon,
+                content,
+                linkUrl,
+                image,
+                tokens: tokens
+            };
+
+            try {
+                let url = "/notice/center/save";
+                let requestData = {
+                    title,
+                    subTitle,
+                    icon: parseInt(icon),
+                    content,
+                    linkUrl,
+                    image,
+                    tokens: tokens
+                };
+
+                // 수정 모드일 때
+                if (mode === "edit") {
+                    url = "/notice/center/update";
+                    requestData = {
+                        id: currentNoticeId,
+                        title: title,
+                        subTitle: subTitle,
+                        icon: parseInt(icon),
+                        content: content,
+                        linkUrl: linkUrl,
+                        image: image
+                    };
+                }
+
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (mode === "edit") {
+                        alert("공지사항이 수정되었습니다!");
+                    } else {
+                        if (tokens.length > 0) {
+                            alert(`공지사항이 등록되고 ${tokens.length}명의 학생에게 알림이 발송되었습니다!`);
+                        } else {
+                            alert("공지사항이 성공적으로 등록되었습니다!");
+                        }
+                    }
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert("저장 실패: " + result.message);
+                }
+            } catch (err) {
+                console.error("❌ 저장 중 오류:", err);
+                alert("저장 중 오류가 발생했습니다.");
+            }
+        });
+    }
 
 });

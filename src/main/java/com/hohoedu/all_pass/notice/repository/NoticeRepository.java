@@ -13,6 +13,9 @@ import java.util.List;
 public interface NoticeRepository {
     int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto);
 
+    int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO);
+    int deleteCenterNotice(Integer id);
+
     List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode);

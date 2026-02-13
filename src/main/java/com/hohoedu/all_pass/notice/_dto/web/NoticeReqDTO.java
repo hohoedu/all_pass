@@ -22,4 +22,20 @@ public class NoticeReqDTO {
         private List<String> tokens;
     }
 
+    @Data
+    public static class CenterNoticeDeleteDTO {
+        private Integer id;
+    }
+
+    @Data
+    public static class  CenterNoticeUpdateDTO {
+        private Integer id;           // 수정할 공지 ID (필수)
+        private String title;         // 제목
+        private String subTitle;      // 부제목 (sub_title)
+        private Integer icon;         // 아이콘 번호
+        private String content;       // 내용
+        private String linkUrl;       // 링크 URL (link_url)
+        private String image;         // 이미지 경로
+    }
+
 }

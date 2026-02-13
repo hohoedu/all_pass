@@ -75,6 +75,14 @@ public class NoticeService {
 
     }
 
+    public int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO) {
+        return noticeRepository.updateCenterNotice(noticeDTO);
+    }
+
+    public int deleteCenterNotice(Integer id) {
+        return noticeRepository.deleteCenterNotice(id);
+    }
+
     public List<NoticeRespDTO.NoticeStudentDTO> findStudentByUserCode(UserRespDTO.LoginRespDTO user) {
         return noticeRepository.findStudentByUserCode(user.getUserCode(), user.getCenterCode());
     }

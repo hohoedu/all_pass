@@ -23,7 +23,6 @@ public class NoticeRespDTO {
 
         public static String sanitizeHtml(String html) {
             if (html == null) return "";
-            // 허용할 태그만 직접 지정 가능 (단순 예시)
             return html.replaceAll("<[^>]*>", " ");
         }
 
