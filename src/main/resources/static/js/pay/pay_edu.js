@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.lastPhone4 = lastPhone4;
             tr.dataset.otherSubjectType = s.otherSubjectType || '';
 
-            const isPriceModified = s.isPriceModified === 1;
+            const isPriceModified = currentFeeView === 'edu' && s.isPriceModified === 1;
             const billPriceStyle = isPriceModified
                 ? 'color: red;'
                 : '';
@@ -947,6 +947,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if (result.success) {
                     alert('수강료가 저장되었습니다.');
+
+                    modal.style.display = 'none';
+
+                    const monthInput = document.querySelector('.hidden-picker');
+                    const teacherSelect = document.getElementById('student-filter');
+                    const [year, month] = monthInput.value.split('-');
+                    await fetchStudentsGlobal(year, month, teacherSelect.value);
+
                 } else {
                     alert(result.message || '저장에 실패했습니다.');
                 }
@@ -1045,6 +1053,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🔥 1. 청구서 발행 (상단 테이블 체크박스 사용)
     // ================================
     payIssue.addEventListener('click', async () => {
+
+        // ================================
+        // 유효성 검사
+        // ================================
         const checkedBoxes = document.querySelectorAll(
             '#student-tbody input[type="checkbox"]:checked'
         );
@@ -1073,69 +1085,267 @@ document.addEventListener("DOMContentLoaded", () => {
         const customPriceInput = document.querySelector('.edu-input').value;
         const customPrice = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
 
-
-        try {
-            if (eduChecked) {
-
-                if (customPrice !== null && customPrice <= 0) {
-                    return alert('올바른 금액을 입력하세요.');
-                }
-
-                await sendBills({
-                    studentIds,
-                    type: 'edu',
-                    message: `${mm}월 교육비 청구`,
-                    expireDt,
-                    yy,
-                    mm,
-                    includeSibling,
-                    customPrice
-                });
-            }
-
-            if (bookChecked) {
-                if (customPrice !== null && customPrice <= 0) {
-                    return alert('올바른 금액을 입력하세요.');
-                }
-                await sendBills({
-                    studentIds,
-                    type: 'material',
-                    message: `${mm}월 교재비 청구`,
-                    expireDt,
-                    yy,
-                    mm,
-                    includeSibling,
-                    customPrice
-                });
-            }
-
-            alert('청구서 발행이 완료되었습니다.');
-
-            const monthInput = document.querySelector('.hidden-picker');
-            const teacherSelect = document.getElementById('student-filter');
-            const [year, month] = monthInput.value.split('-');
-            await fetchStudentsGlobal(year, month, teacherSelect.value);
-
-        } catch (e) {
-            console.error(e);
-            alert(e.message || '청구서 발행 중 오류가 발생했습니다.');
+        if (customPrice !== null && customPrice <= 0) {
+            return alert('올바른 금액을 입력하세요.');
         }
-    });
 
-    async function sendBills(body) {
-        const res = await fetch('/pay/send', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
+        // ================================
+        // 발행 타입 목록
+        // ================================
+        const types = [];
+        if (eduChecked) types.push({type: 'edu', label: '교육비'});
+        if (bookChecked) types.push({type: 'material', label: '교재비'});
+
+        const jobId = crypto.randomUUID();
+
+        const overlay = showProgressOverlay();
+        const evtSource = new EventSource(`/pay/progress/${jobId}`);
+
+        // 리스너 먼저 등록
+        evtSource.addEventListener('progress', (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                updateOverlayProgress(overlay, data);
+                if (data.status === 'done') {
+                    evtSource.close();
+                }
+            } catch (err) {
+                console.error('[SSE] 파싱 오류:', err, '원본 데이터:', e.data);
+            }
         });
 
-        const data = await res.json();
+        evtSource.onopen = () => {
+        };
 
-        if (!res.ok || !data.success) {
-            throw new Error(data.msg || data.response || '청구 실패');
+        evtSource.onerror = (e) => {
+            evtSource.close();
+        };
+
+        // 연결 대기
+        await new Promise((resolve) => {
+            evtSource.onopen = () => {
+                resolve();
+            };
+            setTimeout(() => {
+                resolve();
+            }, 1500);
+        });
+
+        // ================================
+        // 청구서 발행
+        // ================================
+        let totalSuccessCount = 0;
+        let totalFailCount = 0;
+        const failMessages = [];
+
+        for (let i = 0; i < types.length; i++) {
+            const {type, label} = types[i];
+
+            // 타입 표시 업데이트 (교육비/교재비 전환 시)
+            updateOverlayLabel(overlay, `${label} 청구서 발행 중...`);
+
+            const result = await sendBillsSafe({
+                studentIds,
+                type,
+                message: `${mm}월 ${label} 청구`,
+                expireDt,
+                yy,
+                mm,
+                includeSibling,
+                customPrice,
+                jobId  // ✅ SSE 연동용 jobId
+            });
+
+            if (result.success) {
+                totalSuccessCount += result.successCount;
+                totalFailCount += result.failCount;
+            } else {
+                totalFailCount++;
+                failMessages.push(`${label}: ${result.error}`);
+            }
         }
 
-        console.log('✓ 발행 결과:', data.response);
+        // ================================
+        // 마무리
+        // ================================
+        evtSource.close();
+        hideProgressOverlay(overlay);
+
+        let resultMsg = `✅ 발행 완료: ${totalSuccessCount}건\n❌ 실패: ${totalFailCount}건`;
+        if (failMessages.length > 0) {
+            resultMsg += `\n\n실패 내용:\n${failMessages.join('\n')}`;
+        }
+        alert(resultMsg);
+
+        // 테이블 재조회
+        const monthInput = document.querySelector('.hidden-picker');
+        const teacherSelect = document.getElementById('student-filter');
+        const [year, month] = monthInput.value.split('-');
+        await fetchStudentsGlobal(year, month, teacherSelect.value);
+    });
+
+// ================================
+// sendBillsSafe - 에러를 throw 하지 않고 결과 반환
+// ================================
+    async function sendBillsSafe(body) {
+        try {
+            const res = await fetch('/pay/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                return {
+                    success: false,
+                    error: data.msg || data.response || '청구 실패'
+                };
+            }
+
+            return {
+                success: true,
+                successCount: data.response?.successCount || 0,
+                failCount: data.response?.failCount || 0
+            };
+        } catch (e) {
+            return {success: false, error: e.message || '네트워크 오류'};
+        }
+    }
+
+// ================================
+// 진행 오버레이 생성
+// ================================
+    function showProgressOverlay() {
+        // 스피너 애니메이션 스타일 주입 (한 번만)
+        if (!document.getElementById('spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'spinner-style';
+            style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+            document.head.appendChild(style);
+        }
+
+        const overlay = document.createElement('div');
+        overlay.id = 'progress-overlay';
+        overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    `;
+
+        overlay.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 12px;
+            padding: 32px 48px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            min-width: 340px;
+        ">
+            <!-- 스피너 -->
+            <div style="
+                width: 40px; height: 40px;
+                border: 4px solid #e5e7eb;
+                border-top-color: #6366f1;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin: 0 auto 20px;
+            "></div>
+
+            <!-- 타입 라벨 (교육비/교재비) -->
+            <p id="overlay-label" style="
+                margin: 0 0 6px;
+                font-size: 15px;
+                font-weight: 600;
+                color: #374151;
+            ">청구서 발행 중...</p>
+
+            <!-- 현재 처리 중인 학생 이름 -->
+            <p id="overlay-student" style="
+                margin: 0 0 16px;
+                font-size: 13px;
+                color: #6b7280;
+                min-height: 18px;
+            ">준비 중...</p>
+
+            <!-- 진행바 -->
+            <div style="
+                background: #e5e7eb;
+                border-radius: 999px;
+                height: 8px;
+                overflow: hidden;
+                margin-bottom: 10px;
+            ">
+                <div id="overlay-bar" style="
+                    height: 100%;
+                    width: 0%;
+                    background: #6366f1;
+                    border-radius: 999px;
+                    transition: width 0.3s ease;
+                "></div>
+            </div>
+
+            <!-- 진행 카운트 -->
+            <p id="overlay-count" style="
+                margin: 0;
+                font-size: 13px;
+                color: #9ca3af;
+            ">0 / 0 (0%)</p>
+        </div>
+    `;
+
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+// ================================
+// 오버레이 라벨 업데이트 (교육비/교재비 전환)
+// ================================
+    function updateOverlayLabel(overlay, text) {
+        const el = overlay.querySelector('#overlay-label');
+        if (el) el.textContent = text;
+    }
+
+// ================================
+// 오버레이 진행상황 업데이트 (SSE 수신 시)
+// ================================
+    function updateOverlayProgress(overlay, data) {
+        const {current, total, studentName, successCount, failCount, status} = data;
+
+        const bar = overlay.querySelector('#overlay-bar');
+        const count = overlay.querySelector('#overlay-count');
+        const student = overlay.querySelector('#overlay-student');
+
+        const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+
+        if (bar) bar.style.width = `${pct}%`;
+
+        if (count) {
+            if (status === 'done') {
+                count.textContent = `완료 ✅ (성공: ${successCount}건 / 실패: ${failCount}건)`;
+            } else {
+                count.textContent = `${current} / ${total} (${pct}%)`;
+            }
+        }
+
+        if (student) {
+            if (status === 'done') {
+                student.textContent = '발행 완료!';
+            } else if (studentName) {
+                student.textContent = `처리 중: ${studentName}`;
+            }
+        }
+    }
+
+    function hideProgressOverlay(overlay) {
+        if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
     }
 
     // ================================

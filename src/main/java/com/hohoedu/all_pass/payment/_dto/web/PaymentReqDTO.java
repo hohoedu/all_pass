@@ -47,6 +47,8 @@ public class PaymentReqDTO {
 
         private Integer customPrice;
 
+        private String jobId;
+
     }
 
     @Data

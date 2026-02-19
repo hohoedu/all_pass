@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.Http;
 import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass._core.utils.SseEmitterHolder;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -15,6 +16,7 @@ import org.checkerframework.checker.units.qual.C;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final SseEmitterHolder sseEmitterHolder;
 
     @GetMapping("/access-url")
     public ResponseEntity<?> getAccessURL(HttpSession session) {
@@ -50,6 +53,18 @@ public class PaymentController {
         }
     }
 
+    @GetMapping(value = "/progress/{jobId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter progress(@PathVariable String jobId) {
+        SseEmitter emitter = new SseEmitter(300_000L); // 5분 타임아웃
+        sseEmitterHolder.add(jobId, emitter);
+
+        emitter.onCompletion(() -> sseEmitterHolder.remove(jobId));
+        emitter.onTimeout(() -> sseEmitterHolder.remove(jobId));
+        emitter.onError(e -> sseEmitterHolder.remove(jobId));
+
+        return emitter;
+    }
+
     // 결제선생 청구서 발행
     @PostMapping("/send")
     public ResponseEntity<?> sendBill(HttpSession session, @RequestBody PaymentReqDTO.PaySendReqDTO dto) throws JsonProcessingException {
@@ -60,9 +75,9 @@ public class PaymentController {
                     .build();
         }
 
-        paymentService.sendBill(user, dto);
+        Map<String, Integer> result = paymentService.sendBill(user, dto);
 
-        return ResponseEntity.ok(ApiUtils.success("청구서 발행 완료"));
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
     @PostMapping("/reissue")
