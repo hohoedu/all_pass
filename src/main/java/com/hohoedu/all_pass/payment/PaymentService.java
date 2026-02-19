@@ -593,19 +593,20 @@ public class PaymentService {
                 );
 
                 // API 요청 바디
-                Map<String, Object> body = Map.of("apikey", conf.getApiKey(),
-//                        "apikey", "TEST-API-KEY-TALK",
-                        "member", conf.getMemberId(),
-//                        "member", "TEST-MEMBER-FOR-API",
-                        "merchant", conf.getMerchantId(),
-//                        "merchant", "TEST-MERCHANT-FOR-API",
+                Map<String, Object> body = Map.of(
+//                        "apikey", conf.getApiKey(),
+                        "apikey", "TEST-API-KEY-TALK",
+//                        "member", conf.getMemberId(),
+                        "member", "TEST-MEMBER-FOR-API",
+//                        "merchant", conf.getMerchantId(),
+                        "merchant", "TEST-MERCHANT-FOR-API",
                         "bill", bill);
 
                 log.info("✅ 결제 API 호출 - billId: {}, phone: {}, amount: {}, 형제 수: {}, 추가청구: {}", billId, parentPhone, totalPrice, group.size(), hasAdditionalCharge ? "Yes" : "No");
 
                 // 외부 결제 API 호출
-                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
-//                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
+//                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
+                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
 
                 if (!"0000".equals(paymintResp.getCode())) {
                     log.error("결제 API 실패 - billId: {}, code: {}, message: {}", billId, paymintResp.getCode(), paymintResp.getMsg());
@@ -1745,7 +1746,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentRespDTO.CashbillCancelRespDTO cancelCashbills(String billId,  String reason, String centerCode) {
+    public PaymentRespDTO.CashbillCancelRespDTO cancelCashbills(String billId, String reason, String centerCode) {
         log.info("현금영수증 취소 시작: billIds = {}", billId);
         int successCount = 0;
         int failCount = 0;

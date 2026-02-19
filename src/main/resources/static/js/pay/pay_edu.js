@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formatYYYYMMDD = (dt) => {
         const y = dt.getFullYear();
-        const m = String(dt.getMonth() + 1).padStart(2, '0');
+        const m = String(dt.getMonth()).padStart(2, '0');
         const d = String(dt.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     };
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🔥 이번 달 5일 계산 함수
     const getCurrentMonth5th = (year, month) => {
         // month는 1~12 기준
-        return new Date(year, month - 1, 5);
+        return new Date(year, month, 5);
     };
 
     const billingMonth = document.querySelector('.hidden-picker')?.value;
