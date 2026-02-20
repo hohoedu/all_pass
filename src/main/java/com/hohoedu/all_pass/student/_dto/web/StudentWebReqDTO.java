@@ -66,6 +66,8 @@ public class StudentWebReqDTO {
         private String genderKey;
         private String relationKey;
 
+        private String appId;
+
         private boolean cashTypePersonal;
         private boolean cashTypeCorporate;
         private String cashReceiptNumber;

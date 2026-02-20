@@ -1084,6 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const customPriceInput = document.querySelector('.edu-input').value;
         const customPrice = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
+        const customMessage = document.querySelector('input[name="message"]')?.value?.trim();
 
         if (customPrice !== null && customPrice <= 0) {
             return alert('올바른 금액을 입력하세요.');
@@ -1147,7 +1148,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await sendBillsSafe({
                 studentIds,
                 type,
-                message: `${mm}월 ${label} 청구`,
+                message: customMessage || `${mm}월 ${label} 청구`,
                 expireDt,
                 yy,
                 mm,

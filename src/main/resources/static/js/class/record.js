@@ -788,52 +788,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     sendbtn.addEventListener("click", async () => {
-
         const checkedRows = Array.from(document.querySelectorAll("#record_tbody tr"))
-            .filter(row => {
-                const checkbox = row.querySelector("input[type=checkbox]");
-                return checkbox && checkbox.checked;
-            });
+            .filter(row => row.querySelector("input[type=checkbox]")?.checked);
 
         if (checkedRows.length === 0) {
             alert("학생을 선택해주세요.");
             return;
         }
+        if (!confirm('수업 전 안내를 발송하시겠습니까?')) return;
 
         const tokens = checkedRows
             .map(row => row.getAttribute("data-app-token") || '')
             .filter(token => token !== '');
-        console.log(tokens);
-        const requestBody = {
-            tokens: tokens,
-            title: "수업 안내",
-            body: "수업 전 안내가 등록되었습니다."
-        };
 
-        fetch("/api/push/before", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("서버 오류: " + response.status);
-                }
-                return response.json();
-            })
-            .then(async data => {
-                console.log("성공:", data);
-                alert("수업 전 안내가 발송되었습니다.");
-                await insertStudentAttendance();
-            })
-            .catch(error => {
-                console.error("실패:", error);
-                alert("발송을 실패했습니다. " + error.message);
+        try {
+            // 1. 푸시 발송
+            const res = await fetch("/api/push/before", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    tokens: tokens,
+                    title: "수업 안내",
+                    body: "수업 전 안내가 등록되었습니다."
+                })
             });
 
-        await insertBeforeClassNotice(checkedRows);
+            if (!res.ok) throw new Error("서버 오류: " + res.status);
+
+            // 2. 출결 insert
+            await insertStudentAttendance();
+
+            // 3. 내용 저장
+            await insertBeforeClassNotice(checkedRows);
+
+            alert("수업 전 안내가 발송되었습니다.");
+
+            // 4. 모달 닫기
+            document.querySelector('.class-guide-modal').style.display = 'none';
+
+            // 5. 재렌더링
+            await loadStudentList();
+
+        } catch (error) {
+            console.error("실패:", error);
+            alert("발송을 실패했습니다. " + error.message);
+        }
     });
 });
 
@@ -850,7 +849,6 @@ async function insertBeforeClassNotice(checkedRows) {
         classDate: document.getElementById("record_calendar")?.value || "",
         content: modalContent,
     }));
-    console.log(notices);
 
     try {
         const response = await fetch("/class/api/before-notice/insert", {
@@ -863,7 +861,7 @@ async function insertBeforeClassNotice(checkedRows) {
             throw new Error("서버 오류: " + response.status);
         }
 
-        alert("저장되었습니다.");
+
     } catch (error) {
         console.error("발송 로그 저장 실패:", error);
     }

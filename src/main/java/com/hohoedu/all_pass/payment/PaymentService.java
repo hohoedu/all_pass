@@ -254,19 +254,28 @@ public class PaymentService {
      */
     private String generateBillId(String prefix, int index, String type) {
 
-        LocalDate now = LocalDate.now();
-        LocalDate base = LocalDate.of(2025, 1, 1);
+        LocalDate nowDate = LocalDate.now();
+        LocalDate baseDate = LocalDate.of(2025, 1, 1);
 
-        long diffDays = ChronoUnit.DAYS.between(base, now);
-        int secondsOfDay = LocalTime.now().toSecondOfDay();
+        long diffDays = ChronoUnit.DAYS.between(baseDate, nowDate);
+
+        LocalTime nowTime = LocalTime.now();
+        int secondsOfDay = nowTime.toSecondOfDay();
+        int millis = nowTime.getNano() / 1_000_000;
+
+        long milliOfDay = (long) secondsOfDay * 1000 + millis;
 
         String dayCode = Long.toString(diffDays, 36);
-        String timeCode = Integer.toString(secondsOfDay, 36);
+        String timeCode = Long.toString(milliOfDay, 36);
 
-        String indexStr = String.format("%02d", index);
-        String typeCode = type.equals("edu") ? "1" : "0";
+        // 고정 자리수 맞추기
+        String dayCodePadded = String.format("%3s", dayCode).replace(" ", "0");
+        String timeCodePadded = String.format("%5s", timeCode).replace(" ", "0");
+        String indexStr = String.format("%03d", index);
 
-        return prefix + String.format("%" + 3 + "s", dayCode).replace(" ", "0") + String.format("%" + 4 + "s", timeCode).replace(" ", "0") + indexStr + typeCode;
+        String typeCode = "edu".equals(type) ? "1" : "0";
+
+        return prefix + dayCodePadded + timeCodePadded + indexStr + typeCode;
     }
 
     /**

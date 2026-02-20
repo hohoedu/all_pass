@@ -269,12 +269,26 @@ public class StudentService {
 
     public int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req) {
 
-        studentRepository.updateStudentInfo(req);
-
         String rawPhone = req.getParentPhone();
         String first = rawPhone.substring(0, 3);
         String middle = rawPhone.substring(3, 7);
         String last = rawPhone.substring(7, 11);
+
+        String baseAppId = middle + last;
+        String appId = baseAppId + 0;
+        int suffix = 0;
+
+        while (studentRepository.existsByAppId(appId)) {
+            suffix++;
+            appId = baseAppId + suffix;
+        }
+
+        req.setAppId(appId);
+
+
+        studentRepository.updateStudentInfo(req);
+
+
         studentRepository.updateParent(first, middle, last, req.getRelationKey(), req.getStudentId());
 
         insertTeacherAssign(req);

@@ -78,26 +78,20 @@
                                         </colgroup>
                                         <thead>
                                         <tr>
-                                            <th class="checkbox-group"><input type="checkbox" id="" name=""></th>
+                                            <th class="checkbox-group">
+                                                <input type="checkbox" name="">
+                                            </th>
                                             <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">지점명</th>
                                             <th>상태</th>
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr>
-                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                                            <td>부산 남천점</td>
-                                            <td>사용중</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                                            <td>부산 남천점</td>
-                                            <td>사용중</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="checkbox-group"><input type="checkbox" id="" name=""></td>
-                                            <td>부산 남천점</td>
-                                            <td>사용중</td>
+                                        <tr th:each="center : ${center}">
+                                            <td class="checkbox-group">
+                                                <input type="checkbox" th:value="${center.centerCode}">
+                                            </td>
+                                            <td th:text="${center.centerName}"></td>
+                                            <td th:text="${'open'.equals(center.status)} ? '사용중' : '사용안함'"></td>
                                         </tr>
                                         </tbody>
                                     </table>

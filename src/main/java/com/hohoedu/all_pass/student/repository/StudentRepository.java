@@ -75,6 +75,8 @@ public interface StudentRepository {
 
     int updateStudentClass(TeacherAssign studentClass);
 
+    boolean existsByAppId(String appId);
+
     int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req);
 
     int updateParent(
