@@ -102,4 +102,8 @@ public class ConsultService {
 
         return consultRepository.findConsultForPrint(userCode);
     }
+
+    public String getUserName(String userCode){
+        return consultRepository.findUserNameByUserCode(userCode);
+    }
 }

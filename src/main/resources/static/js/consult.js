@@ -47,11 +47,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const printBtn = document.getElementById("consult-print");
 
     printBtn.addEventListener("click", () => {
-        alert("상담 문의 출력은 현재 작업 중입니다.")
+        // alert("상담 문의 출력은 현재 작업 중입니다.")
         // const ym = document.getElementById('monthPickerInput').value.replace('-', '');
         // const userCode = document.getElementById('teacher-select')?.value;
         // const centerCode = document.getElementById('')
-        // window.open(`/consult/print-consult`);
+
+
+        const displayText = periodDisplay.textContent;
+        const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
+
+        const userCode = teacherFilter.value;
+
+        let url = `/consult/print-consult?userCode=${userCode}`;
+        if (matches) {
+            url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
+        }
+
+        window.open(url);
         // printConsult();
     });
 

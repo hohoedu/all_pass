@@ -193,8 +193,7 @@
     <div class="header">
         <div class="left">
             <span class="muted">기간 :</span>
-            <!--            <span th:text="${startDate + ' ~ ' + endDate}"></span>-->
-            <span>2025-11 ~ 2026-02</span>
+            <span th:text="${startDate + ' ~ ' + endDate}"></span>
         </div>
         <div class="title">상담문의 기록</div>
         <div class="right" th:text="${userName + ' 선생님'}"></div>
@@ -246,7 +245,7 @@
               th:text="${c.progressName}">
         </span>
             </td>
-<!--            <td class="center" th:text="${c.sentDate != null ? c.sentDate : '-'}"></td>-->
+            <td class="center" th:text="${c.sendAt != null ? c.sendAt : '-'}"></td>
         </tr>
         </tbody>
     </table>

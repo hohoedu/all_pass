@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,12 +59,28 @@ public class ConsultViewController {
     }
 
     @GetMapping("/print-consult")
-    public String getPrintTimeView(Model model, HttpSession session) {
+    public String getPrintTimeView(@RequestParam(required = false) String startYm,
+                                   @RequestParam(required = false) String endYm,
+                                   @RequestParam(required = false) String userCode,
+                                   Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
 
-        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint("PUS002bbun2");
+        if (startYm == null || endYm == null) {
+            LocalDate now = LocalDate.now();
+            endYm = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            startYm = now.minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
 
+        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(userCode);
+        String userName = consultService.getUserName(userCode);
         model.addAttribute("consults", consults);
         model.addAttribute("days", DAYS);
+        model.addAttribute("startDate", startYm);
+        model.addAttribute("endDate", endYm);
+        model.addAttribute("userName", userName);
 
         return "print/print-consult";
     }

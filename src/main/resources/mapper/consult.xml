@@ -107,4 +107,10 @@
         where con.user_code = #{userCode}
         order by consultDate desc
     </select>
+
+    <select id="findUserNameByUserCode" resultType="String">
+        SELECT user_name as userName
+        FROM erp_user
+        where user_code = #{userCode}
+    </select>
 </mapper>

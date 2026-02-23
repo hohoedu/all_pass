@@ -30,4 +30,6 @@ public interface ConsultRepository {
     void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
     List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode);
+
+    String findUserNameByUserCode(String userCode);
 }
