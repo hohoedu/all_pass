@@ -219,6 +219,7 @@ public class ClassRespDTO {
         private String isBeforeSend;
         private String isAfterSend;
         private String updatedAt;
+        private List<String> remarks;
     }
 
     @Data
@@ -367,6 +368,20 @@ public class ClassRespDTO {
         private String classKey;     // 시간표의 class_key
         private String teacherCode;  // user_code
         private String classType;    // 한자 = 1, 독서 = 2
+    }
+
+    @Data
+    public static class RemarksCategoryDTO {
+        private String categoryName;
+        private List<RemarksItemDTO> items;
+    }
+
+    @Data
+    public static class RemarksItemDTO {
+        private String remarksKey;
+        private String categoryName;
+        private String itemName;
+        private boolean checked;
     }
 
 }

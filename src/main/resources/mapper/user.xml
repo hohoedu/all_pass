@@ -11,9 +11,6 @@
         values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
     </insert>
 
-    <insert id="createTeacherAssign">
-        insert into erp_teacher_assign (studentId, created_at) values (#{studentId}, SYSDATETIME())
-    </insert>
 
     <select id="findAllCount" resultType="int">
         select count(*)

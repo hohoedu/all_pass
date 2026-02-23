@@ -120,7 +120,7 @@ public class StudentService {
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
         String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
-
+        log.info(studentDTO.getSubject());
 
         studentDTO.setStudentId(code);
 
@@ -137,10 +137,14 @@ public class StudentService {
         String appId = phoneNumber + nextSuffix;
 
         studentDTO.setAppId(appId);
-        studentDTO.setAppPassword(
-                DigestUtils.sha256Hex(parentDTO.getParentTelLast())
-        );
+        studentDTO.setAppPassword(DigestUtils.sha256Hex(parentDTO.getParentTelLast()));
         studentDTO.setEntryHanDate(today);
+
+        switch (studentDTO.getSubject()) {
+            case "hoho" -> { studentDTO.setSubHoho(true); studentDTO.setSubHan(false); studentDTO.setSubBook(false); }
+            case "han"  -> { studentDTO.setSubHoho(false); studentDTO.setSubHan(true); studentDTO.setSubBook(true); }
+            case "book" -> { studentDTO.setSubHoho(false); studentDTO.setSubHan(false); studentDTO.setSubBook(true); }
+        }
 
         studentRepository.insert(studentDTO);
         parentDTO.setStudentId(studentDTO.getStudentId());

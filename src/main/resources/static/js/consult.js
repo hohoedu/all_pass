@@ -52,13 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // const userCode = document.getElementById('teacher-select')?.value;
         // const centerCode = document.getElementById('')
         // window.open(`/consult/print-consult`);
-        // printTimeView(ym, userCode);
+        // printConsult();
     });
 
-    function printTimeView(ym, userCode) {
+    function printConsult() {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `/consult/print-consult?ym=${ym}&userCode=${userCode}`;
+        iframe.src = `/consult/print-consult`;
 
         iframe.onload = () => {
             iframe.contentWindow.print();

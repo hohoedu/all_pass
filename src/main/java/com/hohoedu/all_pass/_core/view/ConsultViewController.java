@@ -59,11 +59,9 @@ public class ConsultViewController {
     @GetMapping("/print-consult")
     public String getPrintTimeView(Model model, HttpSession session) {
 
-        // 센터 선생님 목록
-//        List<User> users = userService.findAllUserCode(user);
-//        List<User> users = userService.findByCenterCodeDev();
+        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint("PUS002bbun2");
 
-//        model.addAttribute("users", users);
+        model.addAttribute("consults", consults);
         model.addAttribute("days", DAYS);
 
         return "print/print-consult";

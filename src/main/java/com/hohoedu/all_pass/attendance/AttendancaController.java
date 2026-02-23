@@ -21,7 +21,7 @@ public class AttendancaController {
     private final AttendanceService attendanceService;
 
     @PostMapping("/select")
-    public ResponseEntity<?> attendanceScheduler() {
+    public ResponseEntity<?> attendanceSxcheduler() {
         log.info("AttendancaController select");
         String today = DateConfig.currentYearMonth().get("today");
         String yy = DateConfig.currentYearMonth().get("currentYear");

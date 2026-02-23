@@ -175,9 +175,9 @@ $(document).ready(function () {
 
     /* ====== bfclass.html ====== */
     // remarks modal
-    $('.remarks').click(function () {
-        $('.remarks-modal').fadeIn();
-    });
+    // $('.remarks').click(function () {
+    //     $('.remarks-modal').fadeIn();
+    // });
     // 시간 선택 시 표시되는 텍스트 업데이트
     $('.timepicker').on('input', function () {
         const timeValue = $(this).val(); // ex: "14:30"

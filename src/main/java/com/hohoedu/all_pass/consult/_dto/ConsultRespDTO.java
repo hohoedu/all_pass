@@ -17,4 +17,21 @@ public class ConsultRespDTO {
         private String content;
         private String sendAt;
     }
+
+    @Data
+    public static class ConsultPrintDTO {
+        private Integer id;
+        private String consultKey;
+        private String username;
+        private String consultDate;
+        private String studentName;
+        private String school;
+        private String gradeName;
+        private String phone;
+        private String content;
+        private String inflowRouteName;
+        private String progressKey;
+        private String progressName;
+        private String sendAt;
+    }
 }

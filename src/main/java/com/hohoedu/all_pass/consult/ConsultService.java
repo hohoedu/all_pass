@@ -97,4 +97,9 @@ public class ConsultService {
     public void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
         consultRepository.updateConsult(reqDTO);
     }
+
+    public List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode) {
+
+        return consultRepository.findConsultForPrint(userCode);
+    }
 }

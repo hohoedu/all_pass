@@ -441,4 +441,11 @@ public interface ClassRepository {
     AfterClassNotice findByTimeTableKeyAndWeek(String timeTableKey, String week);
 
 
+    List<ClassRespDTO.RemarksItemDTO> selectAllItems();
+
+    List<String> selectCheckedKeys(ClassReqDTO.RemarksRequestDTO dto);
+
+    void deleteRemarks(ClassReqDTO.RemarksSaveDTO dto);
+
+    void insertRemarks(ClassReqDTO.RemarksSaveDTO dto);
 }

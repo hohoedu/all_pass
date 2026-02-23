@@ -136,11 +136,13 @@ public class ClassReqDTO {
         private String centerCode;
         private String attendanceDate;
     }
+
     @Data
-    public static class GetRemedialDTO{
+    public static class GetRemedialDTO {
         private String year;
         private String month;
     }
+
     @Data
     public static class BeforeClassDTO {
         private String classKey;
@@ -362,6 +364,25 @@ public class ClassReqDTO {
         private String year;
         private String month;
         private String userCode;
+    }
+
+    @Data
+    public static class RemarksRequestDTO {
+        private String studentId;
+        private String timeTableKey;
+        private String yy;
+        private String mm;
+        private String week;
+    }
+
+    @Data
+    public static class RemarksSaveDTO {
+        private String studentId;
+        private String timeTableKey;
+        private String yy;
+        private String mm;
+        private String week;
+        private List<String> remarksKeys; // 체크된 항목들
     }
 
 }

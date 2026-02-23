@@ -27,6 +27,10 @@ public class StudentWebReqDTO {
         private String gradeKey;
         private String gradeName;
         private String levelKey;
+        private String subject;
+        private boolean subHoho;
+        private boolean subHan;
+        private boolean subBook;
     }
 
     @Data

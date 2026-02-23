@@ -26,5 +26,8 @@ public interface ConsultRepository {
     void updateProgress(@Param("id") Integer id, @Param("progressKey") String progressKey);
 
     int updateConsultContent(@Param("id") Integer id, @Param("content") String content);
+
     void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
+
+    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode);
 }

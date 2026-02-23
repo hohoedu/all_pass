@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.protobuf.Api;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 
@@ -539,5 +540,17 @@ public class ClassController {
             return ResponseEntity.status(500)
                     .body(ApiUtils.error("SERVER_ERROR", HttpStatus.INTERNAL_SERVER_ERROR));
         }
+    }
+
+    @PostMapping("/api/remarks/list")
+    public ResponseEntity<?> getRemarksList(@RequestBody ClassReqDTO.RemarksRequestDTO dto) {
+        List<ClassRespDTO.RemarksCategoryDTO> result = classService.getRemarksList(dto);
+        return ResponseEntity.ok(Map.of("response", result));
+    }
+
+    @PostMapping("/api/remarks/save")
+    public ResponseEntity<?> saveRemarks(@RequestBody ClassReqDTO.RemarksSaveDTO dto) {
+        classService.saveRemarks(dto);
+        return ResponseEntity.ok(Map.of("success", true));
     }
 }

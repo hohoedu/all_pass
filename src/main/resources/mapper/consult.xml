@@ -22,11 +22,11 @@
                g.grade_name        AS gradeName,
                i.inflow_route_name AS inflowRouteName,
                c.progress_key      AS progressKey
-            FROM ERP_CONSULT c
+        FROM ERP_CONSULT c
                  JOIN erp_grade_code g ON c.grade_key = g.grade_key
                  LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         WHERE c.center_code = #{centerCode}
-        AND c.user_code = #{userCode}
+          AND c.user_code = #{userCode}
     </select>
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
@@ -86,4 +86,25 @@
             updated_at       = SYSDATETime()
         WHERE id = #{id};
     </update>
+
+    <select id="findConsultForPrint" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultPrintDTO">
+        select con.id                AS id,
+               con.consult_key       AS consultKey,
+               u.user_name           AS userName,
+               consult_date          AS consultDate,
+               student_name          AS studentName,
+               school                AS school,
+               gc.grade_name         AS gradeName,
+               phone                 AS phone,
+               content               AS content,
+               eir.inflow_route_name AS inflowRouteName,
+               epc.progress_name     AS progressName
+        from erp_consult con
+                 left join erp_grade_code gc on con.grade_key = gc.grade_key
+                 left join erp_inflow_route eir on con.inflow_route_key = eir.inflow_route_key
+                 left join erp_progress_code epc on con.progress_key = epc.progress_key
+                 join erp_user u on con.user_code = u.user_code
+        where con.user_code = #{userCode}
+        order by consultDate desc
+    </select>
 </mapper>

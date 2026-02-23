@@ -337,7 +337,8 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
         tr.innerHTML += `<td class="checkbox-group"><input type="checkbox" /></td>`;
         tr.innerHTML += `<td>${idx + 1}</td>`;
         tr.innerHTML += `<td class="studentName">${s.studentName ?? ''}</td>`;
-
+        const remarks = Array.isArray(s.remarks) ? s.remarks.filter(r => r != null) : [];
+        const tagItems = remarks.slice(0, 3).map(name => '<li>' + name + '</li>').join("");
         const attendance = s.attendanceName ?? '결석';
         let statusClass;
         switch (attendance) {
@@ -421,13 +422,14 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
 
         // 특이사항
         tr.innerHTML += `
-          <td>
-            <ul class="tag-list">
-              <li>#숙제</li>
-              <li>#교재준비</li>
-              <li class="remarks"><img src="/image/add.png" alt=""></li>
-            </ul>
-          </td>`;
+<td>
+    <ul class="tag-list">
+        ${tagItems}
+        <li class="remarks">
+            <img src="/image/add.png" alt="">
+        </li>
+    </ul>
+  </td>`;
 
         // 상담기록
         const counselType = afterClass?.counselType || '전화';
@@ -1109,3 +1111,137 @@ async function updateAfterSend() {
         console.error("발송 내역 업데이트 에러:", err);
     }
 }
+
+let currentRemarksStudent = {studentId: null, studentName: null};
+
+// 기존 remarks 모달 오픈 코드 대체 (기존 코드 삭제 후 이걸로 교체)
+document.addEventListener("click", async function (e) {
+    const target = e.target.closest(".remarks img");
+    if (!target) return;
+
+    const row = target.closest("tr");
+    if (!row) return;
+
+    currentRemarksStudent.studentId = row.dataset.studentId;
+    currentRemarksStudent.studentName = row.querySelector(".studentName")?.textContent.trim() || "";
+
+    const sub = document.querySelector(".remarks-modal .remark-sub");
+    if (sub) sub.textContent = `${currentRemarksStudent.studentName} 학생의 해당 수업에 대한 특이사항이나 문제점을 체크해 주세요.`;
+
+    await loadRemarksItems(currentRemarksStudent.studentId);
+
+    document.querySelector(".remarks-modal").style.display = "block";
+});
+
+async function loadRemarksItems(studentId) {
+    const tbody = document.querySelector(".remarks-table tbody");
+    if (!tbody) return;
+
+    // state.date에서 yy, mm 추출
+    const [yy, mm] = state.date.split("-");
+
+    try {
+        const res = await fetch("/class/api/remarks/list", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                studentId: studentId,
+                timeTableKey: state.timeTableKey,
+                yy: yy,
+                mm: mm,
+                week: state.week
+            })
+        });
+
+        if (!res.ok) throw new Error("서버 오류: " + res.status);
+
+        const data = await res.json();
+        const categories = Array.isArray(data?.response) ? data.response : [];
+
+        renderRemarksModal(tbody, categories);
+
+    } catch (err) {
+        console.error("[loadRemarksItems] 실패:", err);
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">항목을 불러오지 못했습니다.</td></tr>`;
+    }
+}
+
+// 특이사항 모달 렌더링
+// 서버 응답 예시:
+// [
+//   { categoryName: "수업 준비", items: [{ remarksKey: "r1", itemName: "숙제 안함", checked: true }, ...] },
+//   { categoryName: "수업태도", items: [...] }
+// ]
+function renderRemarksModal(tbody, categories) {
+    tbody.innerHTML = "";
+
+    if (categories.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">등록된 항목이 없습니다.</td></tr>`;
+        return;
+    }
+
+    categories.forEach(category => {
+        const tr = document.createElement("tr");
+
+        const tdCategory = document.createElement("td");
+        tdCategory.textContent = category.categoryName;
+
+        const tdItems = document.createElement("td");
+        const checkboxGroup = document.createElement("div");
+        checkboxGroup.className = "checkbox-group";
+
+        (category.items || []).forEach(item => {
+            const div = document.createElement("div");
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.dataset.remarksKey = item.remarksKey;
+            checkbox.checked = item.checked || false;
+
+            div.appendChild(checkbox);
+            div.appendChild(document.createTextNode(" " + item.itemName));
+            checkboxGroup.appendChild(div);
+        });
+
+        tdItems.appendChild(checkboxGroup);
+        tr.appendChild(tdCategory);
+        tr.appendChild(tdItems);
+        tbody.appendChild(tr);
+    });
+}
+
+// 특이사항 저장
+document.addEventListener("click", async function (e) {
+    const saveBtn = e.target.closest(".remarks-modal .save-btn");
+    if (!saveBtn) return;
+
+    const checkedItems = Array.from(document.querySelectorAll(".remarks-table input[type=checkbox]:checked"))
+        .map(cb => cb.dataset.remarksKey)
+        .filter(Boolean);
+
+    // state.date에서 yy, mm 추출
+    const [yy, mm] = state.date.split("-");
+
+    try {
+        const res = await fetch("/class/api/remarks/save", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                studentId: currentRemarksStudent.studentId,
+                timeTableKey: state.timeTableKey,
+                yy: yy,
+                mm: mm,
+                week: state.week,
+                remarksKeys: checkedItems
+            })
+        });
+
+        if (!res.ok) throw new Error("서버 오류: " + res.status);
+
+        alert("저장되었습니다.");
+        document.querySelector(".remarks-modal").style.display = "none";
+        await loadStudentList();
+    } catch (err) {
+        console.error("[remarks save] 실패:", err);
+        alert("저장에 실패했습니다.");
+    }
+});

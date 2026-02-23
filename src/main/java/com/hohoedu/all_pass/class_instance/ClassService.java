@@ -438,7 +438,6 @@ public class ClassService {
     }
 
 
-
     @Transactional
     public void copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
 
@@ -682,7 +681,7 @@ public class ClassService {
         bundle.setStudents(students);
         bundle.setAfterClass(afterClassList);
         bundle.setWeek(week);  // 계산된 주차 반환
-
+        log.info("students + {}", students);
         return bundle;
     }
 
@@ -1285,6 +1284,41 @@ public class ClassService {
         List<ClassAppRespDTO.AfterClassDetailRespDTO> response = classRepository.findAfterClassDetail(dto.getId(), dto.getGamok(), dto.getYyyy(), dto.getMm(), dto.getJu());
         return response;
 
+    }
+
+
+    public List<ClassRespDTO.RemarksCategoryDTO> getRemarksList(ClassReqDTO.RemarksRequestDTO dto) {
+        // 1. 전체 12개 항목 조회
+        List<ClassRespDTO.RemarksItemDTO> allItems = classRepository.selectAllItems();
+
+        // 2. 해당 학생의 체크된 항목 조회
+        List<String> checkedKeys = classRepository.selectCheckedKeys(dto);
+
+        // 3. checked 세팅
+        allItems.forEach(item -> item.setChecked(checkedKeys.contains(item.getRemarksKey())));
+
+        // 4. 카테고리별로 그룹핑
+        Map<String, List<ClassRespDTO.RemarksItemDTO>> grouped = allItems.stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.RemarksItemDTO::getCategoryName, LinkedHashMap::new, Collectors.toList()));
+
+        return grouped.entrySet().stream()
+                .map(e -> {
+                    ClassRespDTO.RemarksCategoryDTO cat = new ClassRespDTO.RemarksCategoryDTO();
+                    cat.setCategoryName(e.getKey());
+                    cat.setItems(e.getValue());
+                    return cat;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void saveRemarks(ClassReqDTO.RemarksSaveDTO dto) {
+        // 1. 기존 데이터 삭제
+        classRepository.deleteRemarks(dto);
+
+        // 2. 체크된 항목만 INSERT
+        if (dto.getRemarksKeys() != null && !dto.getRemarksKeys().isEmpty()) {
+            classRepository.insertRemarks(dto);
+        }
     }
 }
 

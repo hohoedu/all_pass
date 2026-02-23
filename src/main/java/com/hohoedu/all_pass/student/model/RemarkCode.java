@@ -31,12 +31,12 @@ public class RemarkCode {
     @Column(name = "remark_name", nullable = false, length = 50)
     private String remarkName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "remark_category_key", referencedColumnName = "remark_category_key", nullable = false)
-    private RemarkCategory remarkCategory;
+    @Column(name = "remark_category", length = 5)
+    private String remarkCategory;
+
 
     @Builder
-    public RemarkCode(String remarkKey, String remarkName, RemarkCategory remarkCategory) {
+    public RemarkCode(String remarkKey, String remarkName, String remarkCategory) {
         this.remarkKey = remarkKey;
         this.remarkName = remarkName;
         this.remarkCategory = remarkCategory;

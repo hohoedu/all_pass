@@ -259,7 +259,6 @@
                             AND sa.time_table_key = #{timeTableKey}
                             AND sa.week = w.week);
 
-       
 
     </insert>
 
@@ -669,8 +668,32 @@
     </select>
 
     <!--  수업 일지 학생 불러오기  -->
-    <select id="findRecordStudentByKey"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordStudentDTO">
+
+    <resultMap id="studentWithRemarks" type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordStudentDTO">
+        <id property="studentId" column="studentId"/>
+        <result property="studentName" column="studentName"/>
+        <result property="appToken" column="appToken"/>
+        <result property="timeTableKey" column="timeTableKey"/>
+        <result property="ym" column="ym"/>
+        <result property="classKey" column="classKey"/>
+        <result property="unitKey" column="unitKey"/>
+        <result property="week" column="week"/>
+        <result property="inTime" column="inTime"/>
+        <result property="outTime" column="outTime"/>
+        <result property="attendanceName" column="attendanceName"/>
+        <result property="attendanceKey" column="attendanceKey"/>
+        <result property="isBeforeSend" column="isBeforeSend"/>
+        <result property="isAfterSend" column="isAfterSend"/>
+        <result property="absenceDate" column="absenceDate"/>
+        <result property="remedialDate" column="remedialDate"/>
+        <result property="updatedAt" column="updatedAt"/>
+        <result property="centerCode" column="centerCode"/>
+        <collection property="remarks" ofType="String" javaType="List">
+            <result column="remarkName"/>
+        </collection>
+    </resultMap>
+
+    <select id="findRecordStudentByKey" resultMap="studentWithRemarks">
         SELECT s.student_id       AS studentId,
                s.student_name     AS studentName,
                s.app_token        AS appToken,
@@ -685,10 +708,11 @@
                ac.attendance_key  AS attendanceKey,
                sa.is_before_send  AS isBeforeSend,
                sa.is_after_send   AS isAfterSend,
-               r.absence_date     AS absenceDate,
-               r.remedial_date    AS remedialDate,
-               r.updated_at       AS updatedAt,
-               s.center_code      AS centerCode
+               rem.absence_date   AS absenceDate,
+               rem.remedial_date  AS remedialDate,
+               rem.updated_at     AS updatedAt,
+               s.center_code      AS centerCode,
+               ranked.remark_name AS remarkName
         FROM erp_student s
                  JOIN erp_time_table_assign tta ON s.student_id = tta.student_id
                  JOIN erp_time_table t ON tta.time_table_key = t.time_table_key
@@ -697,15 +721,25 @@
                            ON s.student_id = sa.student_id
                                AND sa.time_table_key = #{timeTableKey}
                                AND sa.week = #{week}
-                 join erp_attendance_code ac
-                      ON sa.attendance_key = ac.attendance_key
-                 LEFT JOIN erp_remedial r
-                           ON s.student_id = r.student_id
-                               AND r.time_table_key = #{timeTableKey}
-                               AND r.week = #{week}
+                 JOIN erp_attendance_code ac ON sa.attendance_key = ac.attendance_key
+                 LEFT JOIN erp_remedial rem
+                           ON s.student_id = rem.student_id
+                               AND rem.time_table_key = #{timeTableKey}
+                               AND rem.week = #{week}
+                 LEFT JOIN (SELECT sr.student_id,
+                                   rc.remark_name,
+                                   rc.remark_category,
+                                   ROW_NUMBER() OVER (
+                            PARTITION BY sr.student_id, rc.remark_category
+                            ORDER BY rc.id
+                        ) AS rn
+                            FROM erp_student_remark sr
+                                     JOIN erp_remark_code rc ON sr.remark_key = rc.remark_key
+                            WHERE sr.time_table_key = #{timeTableKey}
+                              AND sr.week = #{week}) ranked ON s.student_id = ranked.student_id AND ranked.rn = 1
         WHERE tta.time_table_key = #{timeTableKey}
-
     </select>
+
 
     <!--  수업 전 안내 내용  -->
     <select id="findBeforeClass"
@@ -1488,7 +1522,10 @@
             T.updated_at = GETDATE()
             WHEN NOT MATCHED THEN
         INSERT
-        (student_id,user_code
+        (
+        student_id
+        ,
+        user_code
         ,
         time_table_key
         ,
@@ -1652,7 +1689,7 @@
                  SELECT *,
                         RANK() OVER (ORDER BY per DESC) AS ranking
                  FROM AggregatedData)
-        -- 4. 최종 결과 조인 및 월별 결과 선택
+-- 4. 최종 결과 조인 및 월별 결과 선택
         SELECT tr.qtypestr,
                rd.per,
                rd.ranking,
@@ -1695,5 +1732,48 @@
         GROUP BY yy, mm
         ORDER BY yy, mm;
     </select>
+
+
+    <!-- 전체 항목 12개 조회 (마스터 테이블) -->
+    <select id="selectAllItems" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemarksItemDTO">
+        SELECT remark_key  AS remarksKey,
+               remark_name AS itemName,
+               CASE remark_category
+                   WHEN 1 THEN '수업 준비'
+                   WHEN 2 THEN '수업태도'
+                   WHEN 3 THEN '이해도'
+                   END     AS categoryName
+        FROM erp_remark_code
+        ORDER BY remark_category, id
+    </select>
+
+    <!-- 해당 학생의 체크된 항목 조회 -->
+    <select id="selectCheckedKeys" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$RemarksRequestDTO" resultType="String">
+        SELECT remark_key
+        FROM erp_student_remark
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND week = #{week}
+    </select>
+
+    <delete id="deleteRemarks" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$RemarksSaveDTO">
+        DELETE
+        FROM erp_student_remark
+        WHERE student_id = #{studentId}
+          AND time_table_key = #{timeTableKey}
+          AND yy = #{yy}
+          AND mm = #{mm}
+          AND week = #{week}
+    </delete>
+
+    <insert id="insertRemarks" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$RemarksSaveDTO">
+        INSERT INTO erp_student_remark (student_id, time_table_key, remark_key, yy, mm, week)
+        VALUES
+        <foreach collection="remarksKeys" item="key" separator=",">
+            (#{studentId}, #{timeTableKey}, #{key}, #{yy}, #{mm}, #{week})
+        </foreach>
+    </insert>
 
 </mapper>

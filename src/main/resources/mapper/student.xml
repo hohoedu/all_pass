@@ -19,11 +19,9 @@
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_student
         (student_id, student_name, birth, gender, school, address, address_detail, app_id, app_password, created_at,
-         center_code, grade_key, status_key,
-         student_privacy_agree)
+         center_code, grade_key, status_key, student_privacy_agree, sub_han, sub_book, sub_hoho, is_hoho)
         values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{appId},
-                #{appPassword}, SYSDATETIME(),
-                #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree});
+                #{appPassword}, SYSDATETIME(), #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree}, #{subHan}, #{subBook}, #{subHoho}, #{subHoho});
     </insert>
 
     <select id="findMaxAppIdSuffix" resultType="java.lang.Integer">
@@ -290,6 +288,10 @@
         FROM erp_student
         WHERE app_id = #{appId}
     </select>
+
+    <insert id="createTeacherAssign">
+        insert into erp_teacher_assign (student_id, created_at) values (#{studentId}, SYSDATETIME())
+    </insert>
 
     <update id="updateStudentInfo">
         UPDATE erp_student

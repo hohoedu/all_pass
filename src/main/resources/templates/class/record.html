@@ -47,7 +47,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="basic-select" >
+                            <div class="basic-select">
                                 <select name="teacher" id="teacher-select" style="width: 200px;">
                                     <th:block th:each="u : ${users}">
                                         <option th:value="${u.userCode}"
@@ -172,8 +172,6 @@
                                         </td>
                                         <td>
                                             <ul class="tag-list">
-                                                <li>#숙제</li>
-                                                <li>#교재준비</li>
                                                 <div class="remarks">
                                                     <img th:src="@{/image/add.png}" alt="">
                                                 </div>
@@ -214,12 +212,9 @@
                             placeholder="리뷰를 입력해주세요."
                             th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].review != null
                             ? #strings.replace(#strings.replace(
-                            #strings.replace(afterClass[stat.index].review, '<br />', '
-'),
-                            '<br/>','
-'),
-                            '<br>','
-')
+                            #strings.replace(afterClass[stat.index].review, '<br />', ''),
+                            '<br/>',''),
+                            '<br>','')
                             : ''}">
                     </textarea>
                                                 </div>
@@ -261,50 +256,15 @@
                 </div>
                 <a href="#" class="btn-close"></a>
             </div>
-            <p class="remark-sub">김호호 학생의 해당 수업에 대한 특이사항이나 문제점을 체크해 주세요.</p>
+            <p class="remark-sub">학생의 해당 수업에 대한 특이사항이나 문제점을 체크해 주세요.</p>
             <div class="table-frame remarks-tframe bt">
                 <table class="basic-table remarks-table">
                     <colgroup>
                         <col width="30%">
                         <col width="70%">
                     </colgroup>
-                    <thead>
-                    </thead>
-                    <tbody id="" class="">
-                    <tr>
-                        <td>수업 준비</td>
-                        <td>
-                            <div class="checkbox-group">
-                                <div><input type="checkbox"> 수업도서 안 읽어옴</div>
-                                <div><input type="checkbox"> 숙제 안함</div>
-                                <div><input type="checkbox"> 교재준비 안함</div>
-                                <div><input type="checkbox"> 기타준비 안함</div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>수업태도</td>
-                        <td>
-                            <div class="checkbox-group">
-                                <div><input type="checkbox"> 발표 참여도 낮음</div>
-                                <div><input type="checkbox"> 산만함</div>
-                                <div><input type="checkbox"> 수업방해</div>
-                                <div><input type="checkbox"> 의욕저하</div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>이해도</td>
-                        <td>
-                            <div class="checkbox-group">
-                                <div><input type="checkbox"> 암기력</div>
-                                <div><input type="checkbox"> 책 정독</div>
-                                <div><input type="checkbox"> 글쓰기</div>
-                                <div><input type="checkbox"> 사고력</div>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
+                    <thead></thead>
+                    <tbody></tbody>
                 </table>
             </div>
             <div class="save-btn-frame" style="margin-top: 20px;">
