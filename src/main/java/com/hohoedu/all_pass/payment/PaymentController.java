@@ -342,4 +342,38 @@ public class PaymentController {
             return ResponseEntity.ok(ApiUtils.error(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
+
+    @PostMapping("/api/remind/unpaid-students")
+    public ResponseEntity<?> findUnpaidStudents(@RequestBody PaymentReqDTO.UnpaidStudentReqDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        dto.setCenterCode(user.getCenterCode());
+        List<PaymentRespDTO.UnpaidStudentRespDTO> response = paymentService.findUnpaidStudentForAlimtalk(dto);
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/list/payments")
+    public ResponseEntity<?> getPayments(@RequestBody Map<String, String> body, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String year = body.get("year");
+        String month = body.get("month");
+
+        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(
+                user.getUserCode(),
+                user.getCenterCode(),
+                year,
+                month
+        );
+
+        return ResponseEntity.ok(Map.of("response", payments));
+    }
+
 }

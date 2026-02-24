@@ -104,6 +104,13 @@ public class StudentViewController {
         return "student/student-inout";
     }
 
+
+    @GetMapping("/withdraw")
+    public String getStudentWithdrawPage(Model model, HttpSession session) {
+
+        return "student/student_withdrawal";
+    }
+
     // 전입 전출 현황 출력화면
     @GetMapping("/print-transfer")
     public String getStudentTransferPrintPage() {

@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.popbill;
 
+import com.google.api.Http;
 import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.handler.GlobalExceptionHandler;
 import com.hohoedu.all_pass._core.utils.Aes256Util;
@@ -106,4 +107,28 @@ public class PopbillController {
         }
     }
 
+    @PostMapping("/remind/send")
+    public ResponseEntity<?> sendRemind(@RequestBody PopbillReqDTO.RemindReqDTO request,
+                                        HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        log.info("컨트롤러 오류??");
+
+        try {
+            int successCount = popbillService.sendRemindTalk(user.getCenterCode(), request);
+
+            return ResponseEntity.ok(ApiUtils.success(
+                    String.format("알림톡 발송이 완료되었습니다. (%d건)", successCount)
+            ));
+
+        } catch (Exception e) {
+            log.error("알림톡 발송 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiUtils.error("알림톡 발송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
 }

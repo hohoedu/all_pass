@@ -1,0 +1,92 @@
+body{
+  font-family:"Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.status-tab, input, select, textarea{
+  font-family: inherit;
+}
+.info-arrange{
+  justify-content: right;
+  flex:1;
+}
+.status-tabs-wrap{
+  width:100%;
+  overflow-x:auto;
+  padding-bottom:4px;
+}
+
+.status-tabs{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  gap:14px;
+  justify-content:center;
+  align-items:stretch;
+  width:100%;
+}
+
+.status-tab{
+  position: static !important;
+  
+  --bg:#f5f7fa;
+  --accent:#16a34a;
+  --bg-active:#15803d;
+
+  height:54px;
+  border:0;
+  padding:0 18px;
+  border-radius:12px;
+  background:var(--bg);
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+
+  flex: 1 1 0;
+  max-width:200px;
+  min-width:140px;
+
+  color:var(--txt, #111);
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+
+.status-tab .left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.status-tab .bar{
+  width:10px;
+}
+.status-tab .label{
+  font-weight:500;
+  font-size:15px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.status-tab .count{
+  font-weight:800;
+  font-size:18px;
+  white-space:nowrap;
+}
+
+.status-tab.is-active{
+  background:var(--bg-active);
+  color:#fff;
+}
+.status-tab.is-active .label,
+.status-tab.is-active .count{ color:#fff; }
+
+.status-panels{ margin-top:18px; }
+.status-panel{
+  display:none;
+}
+.status-panel.is-active{ display:flex; }
+
+#student-tbody p{
+ line-height: 1.5rem;
+ padding:10px 0;
+}

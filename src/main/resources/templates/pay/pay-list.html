@@ -6,6 +6,7 @@
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
@@ -87,81 +88,7 @@
                             <div class="table-body-scroll" style="max-height: 76vh;">
                                 <table class="basic-table pay-list-t yh table-body">
                                     <colgroup class="pay-colgroup"></colgroup>
-                                    <tbody class="stripe">
-                                    <tr th:each="payment, stat : ${payments}">
-                                        <td class="checkbox-group">
-                                            <input type="checkbox" th:data-bill-id="${payment.billId}">
-                                        </td>
-                                        <td th:text="${stat.count}">1</td>
-                                        <td class="pay-day" th:text="${payment.paidDate}">2026-06-13 13:50</td>
-                                        <td class="stu-name" th:text="${payment.studentName}">김호일</td>
-                                        <td>
-                                            <p class="ask-list" th:text="${payment.billType == 'EDU_FEE' ? '교육비' : '교재비'}">교육비</p>
-                                            <span class="origin" th:text="${#numbers.formatInteger(payment.billAmount, 0, 'COMMA')}">30,000</span>
-                                        </td>
-                                        <td>
-                                            <div class="method-boxes">
-                                                <!-- 결제 방법에 따른 버튼 표시 -->
-                                                <button th:if="${payment.method == 'paymint'}" class="method-box card-online">
-                                                    <span>결제선생</span>
-                                                    <span class="total-amount" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </button>
-                                                <button th:if="${payment.method == 'card'}" class="method-box card-offline">
-                                                    <span>오프라인 카드</span>
-                                                    <span class="total-amount" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </button>
-                                                <button th:if="${payment.method == 'cash'}" class="method-box cash-only">
-                                                    <span>현금</span>
-                                                    <span class="total-amount" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </button>
-                                                <button th:if="${payment.method == 'transfer'}" class="method-box account-transfer">
-                                                    <span>계좌이체</span>
-                                                    <span class="total-amount" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </button>
-                                                <button class="method-box mthod-total">
-                                                    <span>합계</span>
-                                                    <span class="total-amount" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="td-inputs">
-                                                <th:block th:if="${payment.paidPrice != null and payment.paidPrice != '0'}">
-                                                    <span class="origin" th:text="${#numbers.formatInteger(payment.paidPrice, 0, 'COMMA')}">30,000</span>
-                                                </th:block>
-                                                <th:block th:if="${payment.paidPrice == null or payment.paidPrice == '0'}">
-                                                    <input type="number" name="overpayment" value="0" class="td-input">
-                                                </th:block>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div th:if="${payment.unpaidAmount != null and #strings.toString(payment.unpaidAmount).startsWith('-')}"
-                                                 class="minus-charge"
-                                                 th:text="${#numbers.formatInteger(payment.unpaidAmount, 0, 'COMMA')}">
-                                                -15,000
-                                            </div>
-                                            <div th:if="${payment.unpaidAmount != null and !#strings.toString(payment.unpaidAmount).startsWith('-') and payment.unpaidAmount != '0'}"
-                                                 class="plus-charge"
-                                                 th:text="${#numbers.formatInteger(payment.unpaidAmount, 0, 'COMMA')}">
-                                                20,000
-                                            </div>
-                                            <span th:if="${payment.unpaidAmount == '0'}">0</span>
-                                        </td>
-                                        <td>
-                                            <!-- 현금영수증 아이콘 (조건부 표시) -->
-                                            <img th:if="${payment.method == 'cash'}"
-                                                 th:src="@{/image/bill1.png}"
-                                                 class="bill-icon"
-                                                 alt="영수증아이콘">
-                                        </td>
-                                    </tr>
-
-                                    <!-- 데이터가 없을 때 -->
-                                    <tr th:if="${#lists.isEmpty(payments)}">
-                                        <td colspan="9" style="text-align: center; padding: 40px;">
-                                            조회된 결제 내역이 없습니다.
-                                        </td>
-                                    </tr>
+                                    <tbody id="payment-list-body" class="stripe">
                                     </tbody>
                                 </table>
                             </div>

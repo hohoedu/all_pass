@@ -1,9 +1,6 @@
 package com.hohoedu.all_pass.popbill._dto;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -65,5 +62,23 @@ public class PopbillReqDTO {
         private String receiverPhone;
         private String centerCode;
         private String inviteStatus;
+    }
+
+    @Data
+    @Builder
+    public static class RemindReqDTO {
+        private String year;
+        private String month;
+        private List<RemindStudentDTO> students;
+
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class RemindStudentDTO {
+            private String studentName;
+            private String parentPhone;
+            private Long totalUnpaidAmount;
+            private String paymentKey;
+        }
     }
 }

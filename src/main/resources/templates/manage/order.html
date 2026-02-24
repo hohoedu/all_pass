@@ -103,10 +103,7 @@
                         <div class="preorder-day">
                             <div class="basic-select">
                                 <select id="order-year" name="year">
-                                    <option th:each="i : ${#numbers.sequence(0,2)}"
-                                            th:value="${#dates.year(#dates.createNow()) - i}"
-                                            th:text="${#dates.year(#dates.createNow()) - i + '년'}">
-                                    </option>
+
                                 </select>
                             </div>
                             <div class="basic-select">

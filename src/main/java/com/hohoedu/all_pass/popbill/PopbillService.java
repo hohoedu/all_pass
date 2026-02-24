@@ -320,6 +320,79 @@ public class PopbillService {
             throw new RuntimeException("추가 주문 알림톡 전송 실패: " + e.getMessage(), e);
         }
     }
+
+    public int sendRemindTalk(String centerCode, PopbillReqDTO.RemindReqDTO request) {
+        log.info("서비스에서 오류");
+        String category = "pay_remind";  // 팝빌에 등록한 템플릿 카테고리명으로 변경
+        int successCount = 0;
+
+        try {
+            KakaoService kakaoService = serviceFactory.getKakaoService(centerCode);
+            PopbillConfig config = popbillRepository.findPopbillConfig(centerCode);
+            PopbillRespDTO.PopbillTemplateRespDTO respDTO = popbillRepository.findPopbillTemplate(centerCode, category);
+
+            ATSTemplate template = kakaoService.getATSTemplate(
+                    config.getCorpNumber(),
+                    respDTO.getPopbillTemplateCode()
+            );
+
+            log.info("=== 미납 알림톡 템플릿 정보 ===");
+            log.info("템플릿명: {}", template.getTemplateName());
+            log.info("템플릿 내용: {}", template.getTemplate());
+            log.info("승인상태: {}", template.getState());
+
+            for (PopbillReqDTO.RemindReqDTO.RemindStudentDTO student : request.getStudents()) {
+                try {
+                    String sendKey = KeyGenerator.generateSendKey();
+
+                    String content = template.getTemplate();
+                    String receiverPhone = student.getParentPhone().replaceAll("[^0-9]", "");
+
+                    String receiptNum = kakaoService.sendATS(
+                            config.getCorpNumber(),
+                            respDTO.getPopbillTemplateCode(),
+                            config.getSenderNumber(),
+                            content,
+                            (String) null,
+                            null,
+                            receiverPhone,
+                            student.getStudentName(),
+                            (String) null
+                    );
+
+                    log.info("알림톡 발송 성공 - 학생: {}, receiptNum: {}",
+                            student.getStudentName(), receiptNum);
+
+                    // 발송 로그 저장
+                    PopbillReqDTO.PopbillSendLogReqDTO sendLogDTO = PopbillReqDTO.PopbillSendLogReqDTO.builder()
+                            .sendKey(sendKey)
+                            .userCode("SYSTEM")
+                            .receiverPhone(receiverPhone)
+                            .centerCode(centerCode)
+                            .sendType("UNPAID_REMIND")
+                            .templateCode(respDTO.getPopbillTemplateCode())
+                            .content(content)
+                            .sendStatus("SUCCESS")
+                            .build();
+
+                    popbillRepository.insertSendLog(sendLogDTO);
+
+                    successCount++;
+
+                } catch (PopbillException e) {
+                    log.error("알림톡 발송 실패 - 학생: {}, code: {}, message: {}",
+                            student.getStudentName(), e.getCode(), e.getMessage());
+                    // 한 명 실패해도 나머지는 계속 발송
+                }
+            }
+
+        } catch (PopbillException e) {
+            log.error("팝빌 설정 조회 실패 - code: {}, message: {}", e.getCode(), e.getMessage());
+            throw new RuntimeException("알림톡 발송 준비 실패: " + e.getMessage(), e);
+        }
+
+        return successCount;
+    }
 }
 
 

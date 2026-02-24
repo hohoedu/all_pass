@@ -301,4 +301,10 @@ public interface PaymentRepository {
             @Param("status") String status,
             @Param("reason") String reason
     );
+
+    List<PaymentRespDTO.UnpaidStudentRespDTO> findUnpaidStudentForAlimtalk(
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("month") String month
+    );
 }

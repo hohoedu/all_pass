@@ -151,6 +151,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const link = document.getElementById('studentWithdraw');
+    if (!link) return;
+
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+
+        window.location.href = `/student/withdraw?year=${year}&month=${month}`;
+    });
+});
+
 function getNextYearMonth() {
     const now = new Date();
     let year = now.getFullYear();

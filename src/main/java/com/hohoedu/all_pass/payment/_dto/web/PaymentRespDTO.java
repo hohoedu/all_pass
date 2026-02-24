@@ -308,4 +308,13 @@ public class PaymentRespDTO {
         private int failCount;
         private String message;
     }
+
+    @Data
+    public static class UnpaidStudentRespDTO {
+        private String studentId;
+        private String studentName;
+        private String paymentKey;
+        private String parentPhone;
+        private String totalUnpaidAmount;
+    }
 }

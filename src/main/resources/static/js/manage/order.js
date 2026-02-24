@@ -6,38 +6,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthBtn = document.querySelector('.calendar-open');
     const monthDisplay = document.querySelector('.day-display');
 
-    initCurrentMonth();
+    initMonthFromUrl();
 
     monthBtn.addEventListener('click', () => monthInput.showPicker());
     monthInput.addEventListener('change', onMonthChange);
 
-    function initCurrentMonth() {
-        try {
-            // URL 파라미터에서 year, month 가져오기
-            const urlParams = new URLSearchParams(window.location.search);
-            let year = urlParams.get('year');
-            let month = urlParams.get('month');
+    function initMonthFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const urlYear = params.get('year');
+        const urlMonth = params.get('month');
 
-            // 파라미터가 없으면 다음 달로 설정
-            if (!year || !month) {
-                const now = new Date();
-                year = now.getFullYear();
-                month = now.getMonth() + 2; // 다음 달
+        let y, m;
 
-                if (month > 12) {
-                    month = 1;
-                    year += 1;
-                }
-            } else {
-                // 파라미터가 있으면 정수로 변환
-                year = parseInt(year);
-                month = parseInt(month);
-            }
-            monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
-            monthDisplay.insertAdjacentText('afterbegin', `${year}년 ${month}월`);
-        } catch (e) {
-            console.error("initCurrentMonth Error:", e);
+        if (urlYear && urlMonth) {
+            y = urlYear;
+            m = String(urlMonth).padStart(2, '0');
+        } else {
+            const now = new Date();
+            const next = new Date(now.getFullYear(), now.getMonth(), 1);
+            y = next.getFullYear();
+            m = String(next.getMonth() + 1).padStart(2, '0');
         }
+
+        monthInput.value = `${y}-${m}`;
+        monthDisplay.insertAdjacentText('afterbegin', `${y}년 ${m}월`);
     }
 
     async function onMonthChange() {
@@ -46,17 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isNaN(date)) return;
 
             const year = date.getFullYear();
-            const month = date.getMonth();
+            const month = date.getMonth() + 1;
 
-            monthDisplay.childNodes[0].textContent = `${year}년 ${month}월`;
+            const monthStr = String(month).padStart(2, "0");
+            monthDisplay.childNodes[0].textContent = `${year}년 ${monthStr}월`;
+
 
             const response = await fetch(`/manage/order/base/list`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    yy: String(year),
-                    mm: String(month).padStart(2, "0")
-                })
+                body: JSON.stringify({yy: String(year), mm: monthStr})
             });
 
             if (!response.ok) {
@@ -205,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = new Date(ty, tm - 7, 1);
         const end = new Date(ty, tm, 1);
 
+
         const startYear = start.getFullYear();
         const endYear = end.getFullYear();
 
@@ -223,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const ty = now.getFullYear();
         const tm = now.getMonth() + 1;
+        const nextMonth = tm + 1;
 
         const start = new Date(ty, tm - 7, 1);
         const end = new Date(ty, tm, 1);
@@ -240,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.value = String(mm).padStart(2, "0");
                 opt.textContent = `${String(mm).padStart(2, "0")}월`;
 
-                if (yy === ty && mm === tm) {
+                if (yy === ty && mm === nextMonth) {
                     opt.selected = true;
                 }
 

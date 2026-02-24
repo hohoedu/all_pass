@@ -1,39 +1,116 @@
+/* ===============================
+    전역 상태
+=============================== */
+let currentPayments = [];
 let unpaidStudents = [];
 let cashPaymentStudents = [];
 let selectedYear = '';
 let selectedMonth = '';
+let selectedStudentsForPayment = [];
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    /* -----------------------------
+    /* ===============================
         DOM 캐싱
-    ----------------------------- */
+    =============================== */
+    const tbody = document.getElementById("payment-list-body");
     const monthInput = document.querySelector(".hidden-date");
     const calendarBtn = document.querySelector(".calendar-open");
-    const currentMonth = document.querySelector(".current-month");
+    const currentMonthEl = document.querySelector(".current-month");
 
     const btnAddPayment = document.querySelector("#btn-add-payment");
     const btnAddCashbill = document.querySelector("#btn-add-cashbill");
-
     const modalPayment = document.querySelector(".add-payment-modal");
     const modalCashbill = document.querySelector(".add-cashbill-modal");
 
     const studentTableBody = document.querySelector("#unpaid-student-list");
-
     const cashbillStudentTableBody = document.querySelector("#cashbill-student-list");
     const cashbillSearchInput = document.querySelector(".add-cashbill-modal .add-inform .basic-input");
     const cashbillSearchBtn = document.querySelector("#search-cashbill-student");
-
-    const prepayAddBtn = document.querySelector(".charge-add");
-    const manualTableBody = document.querySelector(".manual-payment-table tbody");
-
     const manualSearchInput = document.querySelector(".add-payment-modal .student-content .basic-input");
     const manualSearchBtn = document.querySelector("#search-unpaid-student");
 
+    /* ===============================
+        초기 바인딩
+    =============================== */
+    initMonthFromUrl();
+    bindMonthPicker();
 
-    /* -----------------------------
+    const [yy, mm] = monthInput.value.split('-');
+    fetchPayments(yy, mm);
+
+    /* ===============================
+        URL 월 초기화
+    =============================== */
+    function initMonthFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const urlYear = params.get('year');
+        const urlMonth = params.get('month');
+
+        let y, m;
+
+        if (urlYear && urlMonth) {
+            y = urlYear;
+            m = String(urlMonth).padStart(2, '0');
+        } else {
+            const now = new Date();
+            const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            y = next.getFullYear();
+            m = String(next.getMonth() + 1).padStart(2, '0');
+        }
+
+        monthInput.value = `${y}-${m}`;
+        currentMonthEl.textContent = `${y}년 ${parseInt(m)}월`;
+        selectedYear = y;
+        selectedMonth = m;
+    }
+
+    /* ===============================
+        월 선택 달력
+    =============================== */
+    function bindMonthPicker() {
+        calendarBtn?.addEventListener('click', () => {
+            if (typeof monthInput.showPicker === 'function') {
+                monthInput.showPicker();
+            } else {
+                monthInput.focus();
+                monthInput.click();
+            }
+        });
+
+        monthInput?.addEventListener('change', () => {
+            const [y, m] = monthInput.value.split('-');
+            currentMonthEl.textContent = `${y}년 ${parseInt(m)}월`;
+
+            const url = new URL(location.href);
+            url.searchParams.set('year', y);
+            url.searchParams.set('month', m);
+            location.href = url.toString();
+        });
+
+        // 모달 내 캘린더 버튼 처리
+        document.addEventListener("click", e => {
+            const btn = e.target.closest(".calendar-open");
+            if (!btn) return;
+
+            const targetId = btn.dataset.target;
+            if (!targetId) return;
+
+            const input = document.getElementById(targetId);
+            if (!input) return;
+
+            if (typeof input.showPicker === "function") {
+                input.showPicker();
+            } else {
+                input.focus();
+                input.click();
+            }
+        });
+    }
+
+    /* ===============================
         유틸 함수
-    ----------------------------- */
+    =============================== */
     const formatKoreanDate = (dateStr) => {
         if (!dateStr) return '';
         const [y, m, d] = dateStr.split('-');
@@ -42,83 +119,176 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const getTodayForDateInput = () => {
         const d = new Date();
-        const yy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${yy}-${mm}-${dd}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
     const closeAllModals = () =>
         document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-
-
-    /* -----------------------------
-        날짜 초기화 + 변경
-    ----------------------------- */
-    function initMonth() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlYear = urlParams.get('year');
-        const urlMonth = urlParams.get('month');
-
-        let yy, mm;
-
-        if (urlYear && urlMonth) {
-            yy = urlYear;
-            mm = String(urlMonth).padStart(2, "0");
-        } else {
-            const now = new Date();
-            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-            yy = nextMonth.getFullYear();
-            mm = String(nextMonth.getMonth() + 1).padStart(2, "0");
-        }
-
-        if (monthInput) monthInput.value = `${yy}-${mm}`;
-        if (currentMonth) currentMonth.textContent = `${yy}년 ${parseInt(mm)}월`;
-
-        selectedYear = yy;
-        selectedMonth = mm;
-    }
-
-    const handleMonthChange = () => {
-        if (!monthInput || !currentMonth) return;
-        const [year, month] = monthInput.value.split("-");
-        currentMonth.textContent = `${year}년 ${parseInt(month)}월`;
-
-        const baseUrl = window.location.origin + window.location.pathname;
-        window.location.href = `${baseUrl}?year=${year}&month=${month}`;
-    };
 
     const initPayDate = () => {
         const input = document.getElementById('manual-pay-date');
         const text = document.getElementById('pay-date-text');
         if (!input || !text) return;
 
-        if (!input.value) {
-            input.value = getTodayForDateInput();
-        }
-
+        if (!input.value) input.value = getTodayForDateInput();
         text.textContent = formatKoreanDate(input.value);
     };
 
-    monthInput?.addEventListener("change", handleMonthChange);
-    calendarBtn?.addEventListener("click", () => monthInput.showPicker());
-    initMonth();
-
-    document.addEventListener("click", e => {
-        const btn = e.target.closest(".calendar-open");
-        if (!btn) return;
-
-        const targetId = btn.dataset.target;
-        const input = document.getElementById(targetId);
-        if (!input) return;
-
-        if (typeof input.showPicker === "function") {
-            input.showPicker();
-        } else {
-            input.focus();
-            input.click();
-        }
+    document.getElementById('manual-pay-date')?.addEventListener('change', e => {
+        const text = document.getElementById('pay-date-text');
+        if (text) text.textContent = formatKoreanDate(e.target.value);
     });
+
+    /* ===============================
+        데이터 조회
+    =============================== */
+    async function fetchPayments(year, month) {
+        try {
+            tbody.style.visibility = 'hidden';
+
+            const res = await fetch('/pay/list/payments', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    year,
+                    month: String(month).padStart(2, '0')
+                })
+            });
+
+            if (!res.ok) throw new Error();
+
+            const json = await res.json();
+            currentPayments = json.response || json;
+            renderPaymentList(currentPayments);
+
+        } catch (e) {
+            console.error(e);
+            alert('결제 목록을 불러오지 못했습니다.');
+        }
+    }
+
+    /* ===============================
+        렌더링
+    =============================== */
+    function renderPaymentList(list) {
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 40px;">
+                        조회된 결제 내역이 없습니다.
+                    </td>
+                </tr>`;
+            tbody.style.visibility = 'visible';
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        list.forEach((payment, index) => {
+            const tr = document.createElement('tr');
+
+            const methodMap = {
+                paymint: {label: '결제선생', cls: 'card-online'},
+                card: {label: '오프라인 카드', cls: 'card-offline'},
+                cash: {label: '현금', cls: 'cash-only'},
+                transfer: {label: '계좌이체', cls: 'account-transfer'}
+            };
+
+            const method = methodMap[payment.method];
+            const methodBtn = method
+                ? `<button class="method-box ${method.cls}">
+                       <span>${method.label}</span>
+                       <span class="total-amount">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>
+                   </button>`
+                : '';
+
+            const totalBtn = `
+                <button class="method-box mthod-total">
+                    <span>합계</span>
+                    <span class="total-amount">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>
+                </button>`;
+
+            const paidPriceCell = (payment.paidPrice && payment.paidPrice !== '0')
+                ? `<span class="origin">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>`
+                : `<input type="number" name="overpayment" value="0" class="td-input">`;
+
+            const unpaid = payment.unpaidAmount;
+            let unpaidCell = '<span>0</span>';
+            if (unpaid && String(unpaid).startsWith('-')) {
+                unpaidCell = `<div class="minus-charge">${Number(unpaid).toLocaleString('ko-KR')}</div>`;
+            } else if (unpaid && unpaid !== '0') {
+                unpaidCell = `<div class="plus-charge">${Number(unpaid).toLocaleString('ko-KR')}</div>`;
+            }
+
+            const billTypeText = payment.billType === 'EDU_FEE' ? '교육비' : '교재비';
+            const cashbillIcon = payment.method === 'cash'
+                ? `<img src="/image/bill1.png" class="bill-icon" alt="영수증아이콘">`
+                : '';
+
+            tr.innerHTML = `
+                <td class="checkbox-group">
+                    <input type="checkbox" data-bill-id="${payment.billId}">
+                </td>
+                <td>${index + 1}</td>
+                <td class="pay-day">${payment.paidDate || ''}</td>
+                <td class="stu-name">${payment.studentName || ''}</td>
+                <td>
+                    <p class="ask-list">${billTypeText}</p>
+                    <span class="origin">${Number(payment.billAmount || 0).toLocaleString('ko-KR')}</span>
+                </td>
+                <td>
+                    <div class="method-boxes">
+                        ${methodBtn}
+                        ${totalBtn}
+                    </div>
+                </td>
+                <td><div class="td-inputs">${paidPriceCell}</div></td>
+                <td>${unpaidCell}</td>
+                <td>${cashbillIcon}</td>
+            `;
+
+            fragment.appendChild(tr);
+        });
+
+        tbody.appendChild(fragment);
+        tbody.style.visibility = 'visible';
+    }
+
+    /* ===============================
+        검색 / 필터
+    =============================== */
+    function bindSearch() {
+        const searchBtn = document.querySelector(".explore");
+        const searchInput = document.getElementById("search-name");
+        const stuNameSelect = document.getElementById("stu-name");
+
+        const doSearch = () => {
+            const keyword = searchInput?.value.trim() || '';
+
+            tbody.querySelectorAll('tr').forEach(tr => {
+                const name = tr.querySelector('.stu-name')?.textContent || '';
+                tr.style.display = (!keyword || name.includes(keyword)) ? '' : 'none';
+            });
+        };
+
+        stuNameSelect?.addEventListener('change', () => {
+            if (searchInput) searchInput.value = '';
+        });
+
+        searchBtn?.addEventListener('click', doSearch);
+
+        searchInput?.addEventListener('keydown', e => {
+            if (e.isComposing) return;
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSearch();
+            }
+        });
+    }
+
+    bindSearch();
 
     /* ========================================
         📝 수기 결제 모달 - 학생 검색 및 선택
@@ -158,17 +328,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${s.phoneNumber.substring(3, 12)}</td>
             `;
 
-            tr.addEventListener("click", () => {
+            tr.addEventListener("click", async () => {
                 document.querySelectorAll("#unpaid-student-list tr").forEach(r => r.classList.remove("selected"));
                 tr.classList.add("selected");
 
-                const siblings = list.filter(student =>
+                const siblings = unpaidStudents.filter(student =>
                     student.phoneNumber === s.phoneNumber &&
                     student.studentId !== s.studentId
                 );
 
                 let totalAmount = Number(s.amount);
                 let displayName = s.studentName;
+
+                selectedStudentsForPayment = [s];
 
                 if (siblings.length > 0) {
                     const siblingNames = siblings.map(sib => sib.studentName).join(", ");
@@ -177,6 +349,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (confirm(confirmMessage)) {
                         totalAmount = Number(s.amount) + siblings.reduce((sum, sib) => sum + Number(sib.amount), 0);
                         displayName = [s.studentName, ...siblings.map(sib => sib.studentName)].join(", ");
+                        // ⭐ 형제도 함께 저장
+                        selectedStudentsForPayment = [s, ...siblings];
                     }
                 }
 
@@ -499,12 +673,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const students = await res.json();
             unpaidStudents = students.response || [];
-            initPayDate();
 
-            // ⭐ 초기에는 검색 안내 메시지만 표시
+            selectedStudentsForPayment = [];
+
+            initPayDate();
             renderEmptyStudentList();
 
-            // ⭐ 검색 입력창 초기화
             if (manualSearchInput) {
                 manualSearchInput.value = '';
             }
@@ -576,6 +750,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (selectedStudentsForPayment.length === 0) {
+            alert("학생 데이터를 다시 선택해주세요.");
+            return;
+        }
+
         const cardAmount = Number(document.querySelector('.border-green')?.value || 0);
         const cashAmount = Number(document.querySelector('.border-blue')?.value || 0);
         const transferAmount = Number(document.querySelector('.border-olive')?.value || 0);
@@ -589,14 +768,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const displayName = document.querySelector("#paid-student td:nth-child(2)")?.textContent || '';
         const studentNames = displayName.split(', ');
 
-        const students = studentNames.map(name => {
-            const student = unpaidStudents.find(s => s.studentName === name.trim());
-            return {
-                studentId: student.studentId,
-                paymentKey: student.paymentKey,
-                originalAmount: Number(student.amount)
-            };
-        });
+        const students = selectedStudentsForPayment.map(s => ({
+            studentId: s.studentId,
+            paymentKey: s.paymentKey,
+            originalAmount: Number(s.amount)
+        }));
 
         let cashbillInfo = null;
 
@@ -662,6 +838,28 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         console.log('📤 최종 전송 데이터:', JSON.stringify(dto, null, 2));
+
+        // ⭐ 결제 확인 메시지 구성
+        const confirmStudentNames = selectedStudentsForPayment.map(s => s.studentName).join(', ');
+        const totalAmount = (cardAmount + cashAmount + transferAmount).toLocaleString('ko-KR');
+
+        let payMethodText = '';
+        if (cardAmount > 0) payMethodText = `카드(${cardCode})`;
+        else if (cashAmount > 0) payMethodText = '현금';
+        else if (transferAmount > 0) payMethodText = '계좌이체';
+
+        const [y, m, d] = payDateInput.value.split('-');
+        const payDateText = `${parseInt(m)}월 ${parseInt(d)}일`;
+
+        const confirmMessage =
+            `학생 이름: ${confirmStudentNames}\n` +
+            `금액: ${totalAmount}원\n` +
+            `결제 방법: ${payMethodText}\n` +
+            `결제일: ${payDateText}\n\n` +
+            `추가하시겠습니까?`;
+
+        if (!confirm(confirmMessage)) return;
+
         try {
             const res = await fetch("/pay/manual", {
                 method: "POST",
@@ -1324,3 +1522,4 @@ async function refreshCashbillHistory() {
         console.error('발행내역 새로고침 중 오류:', error);
     }
 }
+

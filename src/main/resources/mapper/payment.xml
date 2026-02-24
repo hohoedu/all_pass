@@ -405,7 +405,7 @@
                                               AND t2.center_code = #{centerCode}
                                               AND cc2.class_type IN ('1', '2')
                                             ORDER BY cc2.class_type, cc2.class_name
-                                            FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 1,
+                                               FOR XML PATH (''), TYPE).value('.', 'nvarchar(max)'), 1, 1,
                                            '') AS all_subjects
                               FROM erp_time_table_assign ta
                                        JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
@@ -472,7 +472,7 @@
                                WHERE b2.student_id = b.student_id
                                  AND b2.payment_key = b.payment_key
                                ORDER BY b2.class_type
-                               FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 1, '')
+                                  FOR XML PATH (''), TYPE).value('.', 'nvarchar(max)'), 1, 1, '')
                    END                                                                AS subject,
 
                -- 다른 선생님 / 과목 정보 (개인 조회 시에만)
@@ -544,9 +544,9 @@
                                 AND pa2.parent_tel_middle = pa.parent_tel_middle
                                 AND pa2.parent_tel_last = pa.parent_tel_last
                                 AND s2.student_id != b.student_id
-                                AND s2.center_code = #{centerCode}
-                                AND s2.status_key NOT IN ('WITHDRAWN')
-                              FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
+                                 AND s2.center_code = #{centerCode}
+                                 AND s2.status_key NOT IN ('WITHDRAWN')
+                                 FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
                        '')                                                            AS samePhoneStudents,
 
                -- ✅ 금액 수정 여부 (EDU_FEE 만 의미 있음)
@@ -568,98 +568,124 @@
                  LEFT JOIN manualPayments mp ON b.payment_key = mp.payment_key
                  LEFT JOIN approvedBills ab ON b.payment_key = ab.payment_key
 
-            -- 다른 선생님 / 과목 정보
-                 OUTER APPLY (SELECT
+        -- 다른 선생님 / 과목 정보
+            OUTER APPLY (SELECT
                                   -- 다른 선생님 이름
                                   CASE
                                       WHEN #{userCode} != 'all' THEN
-                                          STUFF((SELECT DISTINCT ',' + u2.user_name
-                                                 FROM erp_time_table_assign ta2
-                                                          JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
-                                                          JOIN erp_user u2 ON t2.user_code = u2.user_code
-                                                 WHERE ta2.student_id = b.student_id
-                                                   AND t2.yy = #{year}
-                                                   AND t2.mm = #{month}
-                                                   AND t2.center_code = #{centerCode}
-                                                   AND t2.user_code != #{userCode}
-                                                 FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 1, '')
-                                      END AS other_teachers,
+            STUFF((SELECT DISTINCT ',' + u2.user_name
+            FROM erp_time_table_assign ta2
+            JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+            JOIN erp_user u2 ON t2.user_code = u2.user_code
+            WHERE ta2.student_id = b.student_id
+            AND t2.yy = #{year}
+            AND t2.mm = #{month}
+            AND t2.center_code = #{centerCode}
+            AND t2.user_code != #{userCode}
+            FOR XML PATH ('')
+           , TYPE).value('.'
+           , 'nvarchar(max)')
+           , 1
+           , 1
+           , '')
+            END AS other_teachers
+           ,
 
-                                  -- 다른 과목 이름
-                                  CASE
-                                      WHEN #{userCode} != 'all' THEN
-                                          STUFF((SELECT ',' + cc2.class_name
-                                                 FROM erp_time_table_assign ta3
-                                                          JOIN erp_time_table t3 ON ta3.time_table_key = t3.time_table_key
-                                                          JOIN erp_class_code cc2 ON t3.class_key = cc2.class_key
-                                                 WHERE ta3.student_id = b.student_id
-                                                   AND t3.yy = #{year}
-                                                   AND t3.mm = #{month}
-                                                   AND t3.center_code = #{centerCode}
-                                                   AND t3.user_code != #{userCode}
-                                                 ORDER BY cc2.class_type
-                                                 FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 1, '')
-                                      END AS other_class_names,
+        -- 다른 과목 이름
+            CASE
+            WHEN #{userCode} != 'all' THEN
+            STUFF((SELECT ',' + cc2.class_name
+            FROM erp_time_table_assign ta3
+            JOIN erp_time_table t3 ON ta3.time_table_key = t3.time_table_key
+            JOIN erp_class_code cc2 ON t3.class_key = cc2.class_key
+            WHERE ta3.student_id = b.student_id
+            AND t3.yy = #{year}
+            AND t3.mm = #{month}
+            AND t3.center_code = #{centerCode}
+            AND t3.user_code != #{userCode}
+            ORDER BY cc2.class_type
+            FOR XML PATH ('')
+           , TYPE).value('.'
+           , 'nvarchar(max)')
+           , 1
+           , 1
+           , '')
+            END AS other_class_names
+           ,
 
-                                  -- 다른 과목 타입
-                                  CASE
-                                      WHEN #{userCode} = 'all' THEN NULL
-                                      ELSE (SELECT CASE
-                                                       WHEN MAX(CAST(s.is_hoho AS TINYINT)) = 1 THEN 'hoho'
-                                                       WHEN MAX(CASE WHEN cc2.class_type = '1' THEN 1 ELSE 0 END) = 1
-                                                           THEN 'han'
-                                                       WHEN MAX(CASE WHEN cc2.class_type = '2' THEN 1 ELSE 0 END) = 1
-                                                           THEN 'book'
-                                                       ELSE NULL
-                                                       END
-                                            FROM erp_time_table_assign ta4
-                                                     JOIN erp_time_table t4 ON ta4.time_table_key = t4.time_table_key
-                                                     JOIN erp_class_code cc2 ON t4.class_key = cc2.class_key
-                                                     JOIN erp_student s ON ta4.student_id = s.student_id
-                                            WHERE ta4.student_id = b.student_id
-                                              AND t4.yy = #{year}
-                                              AND t4.mm = #{month}
-                                              AND t4.center_code = #{centerCode}
-                                              AND t4.user_code != #{userCode})
-                                      END AS other_subject_type) oc
+        -- 다른 과목 타입
+            CASE
+            WHEN #{userCode} = 'all' THEN NULL
+            ELSE (SELECT CASE
+            WHEN MAX (CAST (s.is_hoho AS TINYINT)) = 1 THEN 'hoho'
+            WHEN MAX (CASE WHEN cc2.class_type = '1' THEN 1 ELSE 0 END) = 1
+            THEN 'han'
+            WHEN MAX (CASE WHEN cc2.class_type = '2' THEN 1 ELSE 0 END) = 1
+            THEN 'book'
+            ELSE NULL
+            END
+            FROM erp_time_table_assign ta4
+            JOIN erp_time_table t4 ON ta4.time_table_key = t4.time_table_key
+            JOIN erp_class_code cc2 ON t4.class_key = cc2.class_key
+            JOIN erp_student s ON ta4.student_id = s.student_id
+            WHERE ta4.student_id = b.student_id
+            AND t4.yy = #{year}
+            AND t4.mm = #{month}
+            AND t4.center_code = #{centerCode}
+            AND t4.user_code != #{userCode})
+            END AS other_subject_type) oc
 
         GROUP BY b.student_id, b.payment_key, b.student_name,
-                 lb.bill_id, lb.status,
-                 p.status,
-                 mp.manual_amount,
-                 ab.bill_amount,
-                 oc.other_teachers, oc.other_class_names, oc.other_subject_type,
-                 pa.parent_tel_first, pa.parent_tel_middle, pa.parent_tel_last,
-                 sf.standard_edu_fee,
-                 aci.all_subjects
+            lb.bill_id, lb.status,
+            p.status,
+            mp.manual_amount,
+            ab.bill_amount,
+            oc.other_teachers, oc.other_class_names, oc.other_subject_type,
+            pa.parent_tel_first, pa.parent_tel_middle, pa.parent_tel_last,
+            sf.standard_edu_fee,
+            aci.all_subjects
 
         ORDER BY CASE
-                     WHEN SUM(b.billPrice) = 0 THEN 4
-                     WHEN (CASE
-                               WHEN #{itemType} = 'EDU_FEE'
-                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
-                               ELSE COALESCE(ab.bill_amount, 0) END) = 0 THEN 1
-                     WHEN (CASE
-                               WHEN #{itemType} = 'EDU_FEE'
-                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
-                               ELSE COALESCE(ab.bill_amount, 0) END) < SUM(b.billPrice) THEN 2
-                     ELSE 3
-                     END,
+            WHEN SUM (b.billPrice) = 0 THEN 4
+            WHEN (CASE
+            WHEN #{itemType} = 'EDU_FEE'
+            THEN COALESCE (mp.manual_amount, 0) + COALESCE (ab.bill_amount, 0)
+            ELSE COALESCE (ab.bill_amount, 0) END) = 0 THEN 1
+            WHEN (CASE
+            WHEN #{itemType} = 'EDU_FEE'
+            THEN COALESCE (mp.manual_amount, 0) + COALESCE (ab.bill_amount, 0)
+            ELSE COALESCE (ab.bill_amount, 0) END) < SUM (b.billPrice) THEN 2
+            ELSE 3
+        END
+        ,
                  CASE
                      WHEN p.status = 'pending' THEN 1
                      WHEN lb.status = 'destroyed' THEN 2
                      WHEN lb.status = 'canceled' THEN 3
                      ELSE 4
-                     END,
+        END
+        ,
                  (SELECT MIN(s2.student_name)
                   FROM erp_student s2
                            LEFT JOIN erp_parent pa2 ON s2.student_id = pa2.student_id
                   WHERE pa2.parent_tel_first  = pa.parent_tel_first
                     AND pa2.parent_tel_middle = pa.parent_tel_middle
                     AND pa2.parent_tel_last   = pa.parent_tel_last
-                    AND s2.center_code        = #{centerCode}
-                    AND s2.status_key        NOT IN ('WITHDRAWN')),
-                 b.student_name
+                    AND s2.center_code        =
+        #{centerCode}
+        AND
+        s2
+        .
+        status_key
+        NOT
+        IN
+        (
+        'WITHDRAWN'
+        )
+        ),
+        b
+        .
+        student_name
         ]]>
     </select>
 
@@ -1370,8 +1396,78 @@
         UPDATE erp_payment_cashbill
         SET status        = #{status},
             cancel_reason = #{reason},
-            cancelled_at   = SYSDATETIME()
+            cancelled_at  = SYSDATETIME()
         WHERE bill_id = #{billId}
     </update>
+
+    <select id="findUnpaidStudentForAlimtalk" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentRespDTO">
+        WITH base AS (SELECT s.student_id,
+                             p.payment_key,
+                             s.student_name,
+                             pd.item_type,
+                             SUM(pd.amount) AS billPrice
+                      FROM erp_student s
+                               JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                               JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                               JOIN erp_payment p ON s.student_id = p.student_id
+                               JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+                          AND ta.time_table_key = pd.time_table_key
+                      WHERE t.yy = #{year}
+                        AND t.mm = #{month}
+                        AND t.center_code = #{centerCode}
+                        AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
+                        AND p.status NOT IN ('pending')
+                      GROUP BY s.student_id, p.payment_key, s.student_name, pd.item_type),
+             manualPayments AS (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                                FROM erp_payment_manual
+                                GROUP BY payment_key),
+             approvedBills AS (SELECT payment_key, bill_type, SUM(amount) AS bill_amount
+                               FROM erp_payment_bill
+                               WHERE status = 'approved'
+                                 AND bill_type IN ('EDU_FEE', 'BOOK_FEE')
+                               GROUP BY payment_key, bill_type)
+        SELECT b.student_id                                                    AS studentId,
+               b.student_name                                                  AS studentName,
+               pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS parentPhone,
+               SUM(CASE
+                       WHEN b.billPrice - (
+                           CASE
+                               WHEN b.item_type = 'EDU_FEE'
+                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                               ELSE COALESCE(ab.bill_amount, 0)
+                               END) > 0
+                           THEN b.billPrice - (
+                           CASE
+                               WHEN b.item_type = 'EDU_FEE'
+                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                               ELSE COALESCE(ab.bill_amount, 0)
+                               END)
+                       ELSE 0 END)                                             AS totalUnpaidAmount,
+               b.payment_key                                                   AS paymentKey
+        FROM base b
+                 LEFT JOIN erp_parent pa ON b.student_id = pa.student_id
+                 LEFT JOIN manualPayments mp ON b.payment_key = mp.payment_key
+                 LEFT JOIN approvedBills ab
+                           ON b.payment_key = ab.payment_key
+                               AND b.item_type = ab.bill_type
+        GROUP BY b.student_id, b.payment_key, b.student_name,
+                 pa.parent_tel_first, pa.parent_tel_middle, pa.parent_tel_last,
+                 mp.manual_amount
+        HAVING SUM(CASE
+                       WHEN b.billPrice - (
+                           CASE
+                               WHEN b.item_type = 'EDU_FEE'
+                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                               ELSE COALESCE(ab.bill_amount, 0)
+                               END) > 0
+                           THEN b.billPrice - (
+                           CASE
+                               WHEN b.item_type = 'EDU_FEE'
+                                   THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                               ELSE COALESCE(ab.bill_amount, 0)
+                               END)
+                       ELSE 0 END) > 0
+        ORDER BY b.student_name
+    </select>
 
 </mapper>

@@ -461,8 +461,20 @@ public class PaymentService {
 
             // 교육비만 payment.status로 승인 완료 체크
             if ("EDU_FEE".equals(billType) && "approved".equals(payment.getStatus())) {
-                log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, billType: {}, payment.status가 approved", studentId, paymentKey, billType);
-                continue;
+
+                // approved여도 추가 청구 가능 금액이 있으면 통과
+                int totalDetailAmount = target.getAmount();
+                int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(
+                        paymentKey, req.getYy(), req.getMm(), billType,
+                        Arrays.asList("issued", "approved")
+                );
+
+                if (totalDetailAmount <= billedAmount) {
+                    log.info("✅ 청구 제외 - payment.status가 approved이고 추가 청구 금액 없음");
+                    continue;
+                }
+
+                log.info("✅ approved 상태이나 추가 청구 금액 존재 - 청구 진행");
             }
 
             // detail 총 금액 (현재 청구해야 할 총 금액)
@@ -1544,7 +1556,7 @@ public class PaymentService {
      * 월별 결제 내역 조회
      */
     public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy, String mm) {
-        return paymentRepository.findMonthlyPayments(userCode, centerCode, yy, mm).stream().peek(dto -> {
+        return paymentRepository.findMonthlyPayments(centerCode, userCode, yy, mm).stream().peek(dto -> {
             String paidDate = dto.getPaidDate();
             dto.setPaidDate((paidDate == null || paidDate.isBlank()) ? "-" : paidDate);
         }).toList();
@@ -1840,6 +1852,11 @@ public class PaymentService {
         body.put("hash", cashbill.getHashValue());
 
         return body;
+    }
+
+    public List<PaymentRespDTO.UnpaidStudentRespDTO> findUnpaidStudentForAlimtalk(PaymentReqDTO.UnpaidStudentReqDTO reqDTO) {
+
+        return paymentRepository.findUnpaidStudentForAlimtalk(reqDTO.getCenterCode(), reqDTO.getYear(), reqDTO.getMonth());
     }
 
 

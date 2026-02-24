@@ -1952,3 +1952,102 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
 
     return ws;
 }
+
+// ========== 미납 알림톡 발송 ========== //
+document.addEventListener('DOMContentLoaded', () => {
+    const btnPayRemind = document.querySelector("#pay-remind");
+    if (!btnPayRemind) return;
+
+    const formatPhone = (phone) => {
+        if (!phone) return '-';
+        const cleaned = phone.replace(/[^0-9]/g, '');
+        if (cleaned.length === 11) {
+            return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+        }
+        return phone;
+    };
+
+    btnPayRemind.addEventListener("click", async () => {
+        try {
+            const monthInput = document.querySelector('.hidden-date.hidden-picker');
+            const yearMonth = {
+                year: monthInput.value.split("-")[0],
+                month: monthInput.value.split("-")[1]
+            };
+
+            const res = await fetch("/pay/api/remind/unpaid-students", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(yearMonth)
+            });
+
+            if (!res.ok) throw new Error("미납 학생 조회 실패");
+
+            const result = await res.json();
+            const unpaidList = result.response || [];
+
+            if (!unpaidList.length) {
+                alert("미납 학생이 없습니다.");
+                return;
+            }
+
+            // ✅ 전화번호 기준으로 그룹핑 (형제 묶기)
+            const phoneGroupMap = new Map();
+            unpaidList.forEach(s => {
+                const phone = s.parentPhone?.replace(/[^0-9]/g, '') || 'unknown';
+                if (!phoneGroupMap.has(phone)) {
+                    phoneGroupMap.set(phone, {
+                        parentPhone: s.parentPhone,
+                        students: [],
+                        totalUnpaidAmount: 0,
+                        paymentKeys: []
+                    });
+                }
+                const group = phoneGroupMap.get(phone);
+                group.students.push(s.studentName);
+                group.totalUnpaidAmount += Number(s.totalUnpaidAmount || 0);
+                group.paymentKeys.push(s.paymentKey);
+            });
+
+            const groupedList = Array.from(phoneGroupMap.values());
+
+            const confirmMessage =
+                `알림톡 발송 대상: ${groupedList.length}건\n\n` +
+                groupedList.map(g =>
+                    `• ${g.students.join(", ")} / ${formatPhone(g.parentPhone)} / ${g.totalUnpaidAmount.toLocaleString('ko-KR')}원`
+                ).join('\n') +
+                `\n\n발송하시겠습니까?`;
+
+            if (!confirm(confirmMessage)) return;
+
+            const sendRes = await fetch("/popbill/remind/send", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    year: yearMonth.year,
+                    month: yearMonth.month,
+                    students: groupedList.map(g => ({
+                        studentName: g.students.join(", "),   // "홍길동, 홍길순"
+                        parentPhone: g.parentPhone,
+                        totalUnpaidAmount: g.totalUnpaidAmount, // 합산 금액
+                        paymentKeys: g.paymentKeys              // 여러 paymentKey
+                    }))
+                })
+            });
+
+            if (!sendRes.ok) throw new Error("알림톡 발송 실패");
+
+            const sendResult = await sendRes.json();
+
+            if (sendResult.success) {
+                alert(sendResult.response?.message || `알림톡 발송이 완료되었습니다. (${unpaidList.length}건)`);
+            } else {
+                alert(sendResult.message || "알림톡 발송 중 오류가 발생했습니다.");
+            }
+
+        } catch (err) {
+            console.error("미납 알림톡 발송 오류:", err);
+            alert("알림톡 발송 중 오류가 발생했습니다.");
+        }
+    });
+});

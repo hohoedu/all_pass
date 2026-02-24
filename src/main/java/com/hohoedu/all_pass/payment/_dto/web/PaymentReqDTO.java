@@ -256,4 +256,14 @@ public class PaymentReqDTO {
         private String yy;
         private String mm;
     }
+
+    @Data
+    public static class UnpaidStudentReqDTO {
+        private String year;
+        private String month;
+        private String centerCode;
+    }
+
+    @Data
+    public static class UnpaidStudentCancelDTO {}
 }
