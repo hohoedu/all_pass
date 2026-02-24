@@ -295,5 +295,46 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/api/withdraw/counts")
+    public ResponseEntity<?> getWithdrawCounts(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findWithdrawCounts(req)));
+    }
+
+    @PostMapping("/api/withdraw/join")
+    public ResponseEntity<?> getJoinList(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findJoinList(req)));
+    }
+
+    @PostMapping("/api/withdraw/withdraw")
+    public ResponseEntity<?> getWithdrawList(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findWithdrawList(req)));
+    }
+
+    @PostMapping("/api/withdraw/transfer-in")
+    public ResponseEntity<?> getTransferInList(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findTransferInList(req)));
+    }
+
+    @PostMapping("/api/withdraw/transfer-out")
+    public ResponseEntity<?> getTransferOutList(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findTransferOutList(req)));
+    }
+
+    @PostMapping("/api/withdraw/graduate")
+    public ResponseEntity<?> getGraduateList(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(Map.of("response", studentService.findGraduateList(req)));
+    }
 
 }

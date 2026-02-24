@@ -214,4 +214,29 @@ public class StudentWebRespDTO {
 
     }
 
+    @Data
+    public static class WithdrawCountDTO {
+        private int joinCount;
+        private int withdrawCount;
+        private int transferInCount;
+        private int transferOutCount;
+        private int graduateCount;
+    }
+
+    @Data
+    public static class WithdrawItemDTO {
+        private String studentId;
+        private String studentName;
+        private String className;
+        private String teacherName;
+        private String transferInTeacher;
+        private String transferOutTeacher;
+        private String gradeName;
+        private String joinDate;
+        private String withdrawDate;
+        private String transferDate;
+        private String graduateDate;
+        private String reason;
+    }
+
 }

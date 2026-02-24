@@ -141,9 +141,21 @@ public class StudentService {
         studentDTO.setEntryHanDate(today);
 
         switch (studentDTO.getSubject()) {
-            case "hoho" -> { studentDTO.setSubHoho(true); studentDTO.setSubHan(false); studentDTO.setSubBook(false); }
-            case "han"  -> { studentDTO.setSubHoho(false); studentDTO.setSubHan(true); studentDTO.setSubBook(true); }
-            case "book" -> { studentDTO.setSubHoho(false); studentDTO.setSubHan(false); studentDTO.setSubBook(true); }
+            case "hoho" -> {
+                studentDTO.setSubHoho(true);
+                studentDTO.setSubHan(false);
+                studentDTO.setSubBook(false);
+            }
+            case "han" -> {
+                studentDTO.setSubHoho(false);
+                studentDTO.setSubHan(true);
+                studentDTO.setSubBook(true);
+            }
+            case "book" -> {
+                studentDTO.setSubHoho(false);
+                studentDTO.setSubHan(false);
+                studentDTO.setSubBook(true);
+            }
         }
 
         studentRepository.insert(studentDTO);
@@ -1146,5 +1158,29 @@ public class StudentService {
         } catch (Exception e) {
             return "SYSTEM";
         }
+    }
+
+    public StudentWebRespDTO.WithdrawCountDTO findWithdrawCounts(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectWithdrawCounts(req);
+    }
+
+    public List<StudentWebRespDTO.WithdrawItemDTO> findJoinList(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectJoinList(req);
+    }
+
+    public List<StudentWebRespDTO.WithdrawItemDTO> findWithdrawList(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectWithdrawList(req);
+    }
+
+    public List<StudentWebRespDTO.WithdrawItemDTO> findTransferInList(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectTransferInList(req);
+    }
+
+    public List<StudentWebRespDTO.WithdrawItemDTO> findTransferOutList(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectTransferOutList(req);
+    }
+
+    public List<StudentWebRespDTO.WithdrawItemDTO> findGraduateList(StudentWebReqDTO.WithdrawReqDTO req) {
+        return studentRepository.selectGraduateList(req);
     }
 }

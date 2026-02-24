@@ -246,4 +246,16 @@ public interface StudentRepository {
             @Param("mm") String mm);
 
     String findByGradeKey(String gradeKey);
+
+    StudentWebRespDTO.WithdrawCountDTO selectWithdrawCounts(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.WithdrawItemDTO> selectJoinList(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.WithdrawItemDTO> selectWithdrawList(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.WithdrawItemDTO> selectTransferInList(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.WithdrawItemDTO> selectTransferOutList(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.WithdrawItemDTO> selectGraduateList(StudentWebReqDTO.WithdrawReqDTO req);
 }

@@ -150,4 +150,10 @@ public class StudentWebReqDTO {
         private String userCode;
         private String centerCode;
     }
+
+    @Data
+    public static class WithdrawReqDTO {
+        private String userCode;
+        private String ym;
+    }
 }

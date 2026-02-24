@@ -353,21 +353,15 @@
 
                  -- 탈퇴
                  Select 'inactive' as gb, es.student_name, a.*
-                 from (Select student_id,
-                              Case
-                                  WHEN han_state = 1 Then
-                                          (Select c.class_name + ',' from erp_class_code c where c.class_key = t.assign_han_class)
-                                  else ''
-                                  end +
-                              Case
-                                  WHEN book_state = 1 Then
-                                          (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
-                                  else ' '
-                                  end className,
-                              null as 'week'
-                       from erp_teacher_assign t
-                       where (assign_han_teacher = #{userCode} and substring(inactive_han_date, 1, 7) = #{ym})
-                          or (assign_book_teacher = #{userCode} and substring(inactive_book_date, 1, 7) = #{ym})) a
+                 from (SELECT student_id, null as className, null as week
+                       FROM erp_teacher_assign
+                       WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
+                         AND substring(inactive_han_date, 1, 7) = #{ym}
+                       UNION ALL
+                       SELECT student_id, null, null
+                       FROM erp_teacher_assign
+                       WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
+                         AND substring(inactive_book_date, 1, 7) = #{ym}) a
                           Join erp_student es On a.student_id = es.student_id
 
                  UNION ALL

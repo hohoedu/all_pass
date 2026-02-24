@@ -3,6 +3,8 @@ package com.hohoedu.all_pass._core.view;
 import java.time.YearMonth;
 import java.util.List;
 
+import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -104,9 +106,17 @@ public class StudentViewController {
         return "student/student-inout";
     }
 
-
+    // 입탈퇴 현황
     @GetMapping("/withdraw")
     public String getStudentWithdrawPage(Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        YearMonth ym = YearMonth.now();
+
+        List<User> teachers = studentService.findTeacher(user);
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("selectedMonthValue", ym.toString());
 
         return "student/student_withdrawal";
     }

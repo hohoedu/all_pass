@@ -21,7 +21,8 @@
         (student_id, student_name, birth, gender, school, address, address_detail, app_id, app_password, created_at,
          center_code, grade_key, status_key, student_privacy_agree, sub_han, sub_book, sub_hoho, is_hoho)
         values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{appId},
-                #{appPassword}, SYSDATETIME(), #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree}, #{subHan}, #{subBook}, #{subHoho}, #{subHoho});
+                #{appPassword}, SYSDATETIME(), #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree},
+                #{subHan}, #{subBook}, #{subHoho}, #{subHoho});
     </insert>
 
     <select id="findMaxAppIdSuffix" resultType="java.lang.Integer">
@@ -290,7 +291,8 @@
     </select>
 
     <insert id="createTeacherAssign">
-        insert into erp_teacher_assign (student_id, created_at) values (#{studentId}, SYSDATETIME())
+        insert into erp_teacher_assign (student_id, created_at)
+        values (#{studentId}, SYSDATETIME())
     </insert>
 
     <update id="updateStudentInfo">
@@ -494,8 +496,10 @@
     </update>
 
     <insert id="insertTransferSchedule">
-        INSERT INTO erp_student_transfer_schedule (student_id, class_type, from_user, to_user, move_at, status, reason, created_by, created_at)
-        VALUES (#{studentId}, #{classType}, #{fromUser}, #{toUser}, #{moveAt}, 'SCHEDULED', #{reason}, #{createdBy}, SYSDATETIME())
+        INSERT INTO erp_student_transfer_schedule (student_id, class_type, from_user, to_user, move_at, status, reason,
+                                                   created_by, created_at)
+        VALUES (#{studentId}, #{classType}, #{fromUser}, #{toUser}, #{moveAt}, 'SCHEDULED', #{reason}, #{createdBy},
+                SYSDATETIME())
     </insert>
 
     <!-- 오늘 처리 대상 조회 (크론용) -->
@@ -518,8 +522,10 @@
     </update>
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
-        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, center_code, class_type, transfer_reason, class_key, move_at, created_at)
-        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{centerCode.centerCode}, #{classType}, #{transferReason}, #{classCode.classKey}, #{moveAt},
+        INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, center_code, class_type,
+                                                  transfer_reason, class_key, move_at, created_at)
+        VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{centerCode.centerCode}, #{classType},
+                #{transferReason}, #{classCode.classKey}, #{moveAt},
                 SYSDATETIME());
     </insert>
 
@@ -623,7 +629,7 @@
         WHERE snapshot_ym = #{ym};
 
         INSERT INTO student_monthly_snapshot
-            (snapshot_ym, active_count, rest_count, withdrawn_count, wait_count, created_at)
+        (snapshot_ym, active_count, rest_count, withdrawn_count, wait_count, created_at)
 
         SELECT #{ym},
                SUM(CASE WHEN sc.status = '재원중' THEN 1 ELSE 0 END),
@@ -769,7 +775,8 @@
         WHERE student_id = #{studentId}
     </update>
 
-    <update id="updateAttendance" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StudentAttendanceUpdateDTO">
+    <update id="updateAttendance"
+            parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StudentAttendanceUpdateDTO">
         UPDATE erp_student_attendance
         SET
         attendance_key = #{attendanceKey},
@@ -794,7 +801,8 @@
           AND week = #{week}
     </select>
 
-    <select id="findStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentOverviewDTO">
+    <select id="findStudentOverview"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentOverviewDTO">
         SELECT COALESCE(e.ym, i.ym, mi.ym, mo.ym) AS ym,
                ISNULL(e.cnt, 0)                   AS entry_count,
                ISNULL(i.cnt, 0)                   AS inactive_count,
@@ -819,12 +827,12 @@
             SELECT substring(inactive_date, 1, 7) AS ym, COUNT(DISTINCT student_id) AS cnt
             FROM (SELECT student_id, inactive_han_date AS inactive_date
                   FROM erp_teacher_assign
-                  WHERE (#{teacherCode} = 'all' OR assign_han_teacher = #{teacherCode})
+                  WHERE (#{teacherCode} = 'all' OR inactive_han_teacher = #{teacherCode})
                     AND substring(inactive_han_date, 1, 7) BETWEEN #{startYm} AND #{endYm}
                   UNION ALL
                   SELECT student_id, inactive_book_date
                   FROM erp_teacher_assign
-                  WHERE (#{teacherCode} = 'all' OR assign_book_teacher = #{teacherCode})
+                  WHERE (#{teacherCode} = 'all' OR inactive_book_teacher = #{teacherCode})
                     AND substring(inactive_book_date, 1, 7) BETWEEN #{startYm} AND #{endYm}) t
             WHERE inactive_date IS NOT NULL
             GROUP BY substring(inactive_date, 1, 7)) i ON e.ym = i.ym
@@ -861,6 +869,136 @@
         SELECT grade_name as grade
         FROM erp_grade_code
         WHERE grade_key = #{gradeKey}
+    </select>
+
+    <select id="selectWithdrawCounts"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawCountDTO">
+        SELECT SUM(CASE WHEN gb = 'entry' THEN 1 ELSE 0 END)    AS joinCount,
+               SUM(CASE WHEN gb = 'inactive' THEN 1 ELSE 0 END) AS withdrawCount,
+               SUM(CASE WHEN gb = 'move_in' THEN 1 ELSE 0 END)  AS transferInCount,
+               SUM(CASE WHEN gb = 'move_out' THEN 1 ELSE 0 END) AS transferOutCount,
+               SUM(CASE WHEN gb = 'week' THEN 1 ELSE 0 END)     AS graduateCount
+        FROM (SELECT 'entry' AS gb
+              FROM erp_teacher_assign t
+              WHERE  (t.assign_han_teacher = #{userCode} OR t.assign_book_teacher = #{userCode})
+                AND (SUBSTRING(t.entry_han_date, 1, 7) = #{ym} OR SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+              UNION ALL
+              SELECT 'inactive'
+              FROM erp_teacher_assign t
+              WHERE (t.inactive_han_teacher = #{userCode} OR t.inactive_book_teacher = #{userCode})
+                AND (SUBSTRING(t.inactive_han_date, 1, 7) = #{ym} OR SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
+              UNION ALL
+              SELECT 'move_in'
+              FROM erp_student_transfer_history
+              WHERE  to_user_code = #{userCode}
+                AND SUBSTRING(move_at, 1, 7) = #{ym}
+
+              UNION ALL
+
+              SELECT 'move_out'
+              FROM erp_student_transfer_history
+              WHERE  from_user_code = #{userCode}
+                AND SUBSTRING(move_at, 1, 7) = #{ym}
+
+              UNION ALL
+
+              SELECT 'week'
+              FROM erp_time_table et
+                       JOIN erp_time_table_assign etta ON et.time_table_key = etta.time_table_key
+              WHERE  et.user_code = #{userCode}
+                AND et.yy + '-' + et.mm = #{ym}
+                AND etta.week IN (1, 2, 3)) a
+    </select>
+
+    <!-- 입회 -->
+    <select id="selectJoinList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id                                 AS studentId,
+               es.student_name                               AS studentName,
+               COALESCE(
+                       (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_han_class),
+                       (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_book_class)
+               )                                             AS className,
+               COALESCE(
+                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_han_teacher),
+                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_book_teacher)
+               )                                             AS teacherName,
+               COALESCE(t.entry_han_date, t.entry_book_date) AS joinDate
+        FROM erp_teacher_assign t
+                 JOIN erp_student es ON t.student_id = es.student_id
+        WHERE (t.assign_han_teacher = #{userCode} OR t.assign_book_teacher = #{userCode})
+          AND (SUBSTRING(t.entry_han_date, 1, 7) = #{ym} OR SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+        ORDER BY es.student_name
+    </select>
+
+    <!-- 탈퇴 -->
+    <select id="selectWithdrawList"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id                                           AS studentId,
+               es.student_name                                         AS studentName,
+               COALESCE(
+                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher),
+                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_book_teacher)
+               )                                                       AS teacherName,
+               COALESCE(t.entry_han_date, t.entry_book_date)           AS joinDate,
+               COALESCE(t.inactive_han_date, t.inactive_book_date)     AS withdrawDate,
+               COALESCE(t.inactive_han_reason, t.inactive_book_reason) AS reason
+        FROM erp_teacher_assign t
+                 JOIN erp_student es ON t.student_id = es.student_id
+        WHERE (t.inactive_han_teacher = #{userCode} OR t.inactive_book_teacher = #{userCode})
+          AND (SUBSTRING(t.inactive_han_date, 1, 7) = #{ym}
+            OR SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
+        ORDER BY es.student_name
+    </select>
+
+    <!-- 전입 -->
+    <select id="selectTransferInList"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id                                                                AS studentId,
+               es.student_name                                                              AS studentName,
+               (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
+               (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
+               (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
+               th.move_at                                                                   AS transferDate,
+               th.transfer_reason                                                           AS reason
+        FROM erp_student_transfer_history th
+                 JOIN erp_student es ON th.student_id = es.student_id
+        WHERE th.to_user_code = #{userCode}
+          AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+        ORDER BY es.student_name
+    </select>
+
+    <!-- 전출 -->
+    <select id="selectTransferOutList"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id                                                                AS studentId,
+               es.student_name                                                              AS studentName,
+               (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
+               (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
+               (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
+               th.move_at                                                                   AS transferDate,
+               th.transfer_reason                                                                    AS reason
+        FROM erp_student_transfer_history th
+                 JOIN erp_student es ON th.student_id = es.student_id
+        WHERE  th.from_user_code = #{userCode}
+          AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+        ORDER BY es.student_name
+    </select>
+
+    <!-- 졸업 -->
+    <select id="selectGraduateList"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id                                                                AS studentId,
+               es.student_name                                                              AS studentName,
+               (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = et.class_key) AS className,
+               (SELECT u.user_name FROM erp_user u WHERE u.user_code = et.user_code)        AS teacherName,
+               et.yy + '-' + et.mm                                                          AS graduateDate
+        FROM erp_time_table et
+                 JOIN erp_time_table_assign etta ON et.time_table_key = etta.time_table_key
+                 JOIN erp_student es ON etta.student_id = es.student_id
+        WHERE et.user_code = #{userCode}
+          AND et.yy + '-' + et.mm = #{ym}
+          AND etta.week IN (1, 2, 3)
+        ORDER BY es.student_name
     </select>
 
 </mapper>

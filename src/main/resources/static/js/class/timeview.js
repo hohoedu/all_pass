@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             const entry = getStatHtml('entry');
-            const withdraw = getStatHtml('withdraw');
+            const inactive = getStatHtml('inactive');
             const moveIn = getStatHtml('move_in');
             const moveOut = getStatHtml('move_out');
             const week = getStatHtml('week');
@@ -309,8 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>
             <tr>
                 <td>탈퇴</td>
-                <td>${withdraw.count}명</td>
-                <td>${withdraw.names}</td>
+                <td>${inactive.count}명</td>
+                <td>${inactive.names}</td>
             </tr>
             <tr>
                 <td>전입</td>
