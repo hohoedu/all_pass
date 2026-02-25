@@ -175,11 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!list || list.length === 0) {
             tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" style="text-align: center; padding: 40px;">
-                        조회된 결제 내역이 없습니다.
-                    </td>
-                </tr>`;
+            <tr>
+                <td colspan="9" style="text-align: center; padding: 40px;">
+                    조회된 결제 내역이 없습니다.
+                </td>
+            </tr>`;
             tbody.style.visibility = 'visible';
             return;
         }
@@ -189,71 +189,248 @@ document.addEventListener("DOMContentLoaded", () => {
         list.forEach((payment, index) => {
             const tr = document.createElement('tr');
 
-            const methodMap = {
-                paymint: {label: '결제선생', cls: 'card-online'},
-                card: {label: '오프라인 카드', cls: 'card-offline'},
-                cash: {label: '현금', cls: 'cash-only'},
-                transfer: {label: '계좌이체', cls: 'account-transfer'}
-            };
+            /* ── 수납방법 판별 ── */
+            const cash = Number(payment.cash || 0);
+            const card = Number(payment.card || 0);
+            const transfer = Number(payment.transfer || 0);
+            const totalPaid = cash + card + transfer;
 
-            const method = methodMap[payment.method];
-            const methodBtn = method
-                ? `<button class="method-box ${method.cls}">
-                       <span>${method.label}</span>
-                       <span class="total-amount">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>
-                   </button>`
-                : '';
+            const methodParts = [];
+            if (card > 0) methodParts.push({label: '카드', cls: 'card-offline', amount: card});
+            if (cash > 0) methodParts.push({label: '현금', cls: 'cash-only', amount: cash});
+            if (transfer > 0) methodParts.push({label: '계좌이체', cls: 'account-transfer', amount: transfer});
+
+            const methodBtns = methodParts.map(m => `
+            <button class="method-box ${m.cls}">
+                <span>${m.label}</span>
+                <span class="total-amount">${m.amount.toLocaleString('ko-KR')}</span>
+            </button>
+        `).join('');
 
             const totalBtn = `
-                <button class="method-box mthod-total">
-                    <span>합계</span>
-                    <span class="total-amount">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>
-                </button>`;
+            <button class="method-box mthod-total">
+                <span>합계</span>
+                <span class="total-amount">${totalPaid.toLocaleString('ko-KR')}</span>
+            </button>`;
 
-            const paidPriceCell = (payment.paidPrice && payment.paidPrice !== '0')
-                ? `<span class="origin">${Number(payment.paidPrice).toLocaleString('ko-KR')}</span>`
+            /* ── 결제금액 셀 ── */
+            const paidPriceCell = totalPaid > 0
+                ? `<span class="origin">${totalPaid.toLocaleString('ko-KR')}</span>`
                 : `<input type="number" name="overpayment" value="0" class="td-input">`;
 
-            const unpaid = payment.unpaidAmount;
-            let unpaidCell = '<span>0</span>';
-            if (unpaid && String(unpaid).startsWith('-')) {
-                unpaidCell = `<div class="minus-charge">${Number(unpaid).toLocaleString('ko-KR')}</div>`;
-            } else if (unpaid && unpaid !== '0') {
-                unpaidCell = `<div class="plus-charge">${Number(unpaid).toLocaleString('ko-KR')}</div>`;
-            }
-
-            const billTypeText = payment.billType === 'EDU_FEE' ? '교육비' : '교재비';
-            const cashbillIcon = payment.method === 'cash'
-                ? `<img src="/image/bill1.png" class="bill-icon" alt="영수증아이콘">`
-                : '';
+            /* ── 현금영수증 아이콘 ── */
+            const cashbillIcon = payment.apprCashNum
+                ? `<img src="/image/bill1.png" class="bill-icon" alt="발급완료" title="${payment.apprCashNum}">`
+                : (cash > 0 || transfer > 0)
+                    ? `<img src="/image/bill_empty.png" class="bill-icon" alt="미발급" title="현금영수증 미발급">`
+                    : '';
 
             tr.innerHTML = `
-                <td class="checkbox-group">
-                    <input type="checkbox" data-bill-id="${payment.billId}">
-                </td>
-                <td>${index + 1}</td>
-                <td class="pay-day">${payment.paidDate || ''}</td>
-                <td class="stu-name">${payment.studentName || ''}</td>
-                <td>
-                    <p class="ask-list">${billTypeText}</p>
-                    <span class="origin">${Number(payment.billAmount || 0).toLocaleString('ko-KR')}</span>
-                </td>
-                <td>
-                    <div class="method-boxes">
-                        ${methodBtn}
-                        ${totalBtn}
-                    </div>
-                </td>
-                <td><div class="td-inputs">${paidPriceCell}</div></td>
-                <td>${unpaidCell}</td>
-                <td>${cashbillIcon}</td>
-            `;
+            <td class="checkbox-group">
+                <input type="checkbox" data-id="${payment.id}">
+            </td>
+            <td>${index + 1}</td>
+            <td class="pay-day">${payment.paidDate || ''}</td>
+            <td class="stu-name">${payment.studentName || ''}</td>
+         
+            <td>
+                <div class="method-boxes">
+                    ${methodBtns}
+                    ${totalBtn}
+                </div>
+            </td>
+            <td><div class="td-inputs">${paidPriceCell}</div></td>
+            <td><span>-</span></td>
+            <td>${cashbillIcon}</td>
+            <td>
+        <div class="common-btn btn-edit pay-desc" 
+             data-id="${payment.id}"
+             style="margin-inline: 10px; padding-block: 0px;">수정</div>
+    </td>
+    <td>
+        <div class="common-btn btn-delete pay-remind" 
+             data-id="${payment.id}" 
+             data-name="${payment.studentName}" 
+             data-date="${payment.paidDate}" 
+             data-amount="${totalPaid}"
+             style="margin-inline: 10px; padding-block: 0px;">삭제</div>
+    </td>
+        `;
 
             fragment.appendChild(tr);
         });
 
         tbody.appendChild(fragment);
         tbody.style.visibility = 'visible';
+    }
+
+    function bindRowActions() {
+        tbody.addEventListener('click', e => {
+
+            /* ── 삭제 버튼 ── */
+            const deleteBtn = e.target.closest('.btn-delete');
+            if (deleteBtn) {
+                const { id, name, date, amount } = deleteBtn.dataset;
+
+                Swal.fire({
+                    title: '결제 내역 삭제',
+                    html: `
+                    <div style="text-align:left; line-height:2;">
+                        <b>학생:</b> ${name}<br>
+                        <b>결제일:</b> ${date}<br>
+                        <b>금액:</b> ${Number(amount).toLocaleString('ko-KR')}원
+                    </div>
+                    <p style="color:#e74c3c; margin-top:12px;">정말 삭제하시겠습니까?</p>
+                `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e74c3c',
+                    cancelButtonColor: '#aaa',
+                    confirmButtonText: '삭제',
+                    cancelButtonText: '취소'
+                }).then(async result => {
+                    if (result.isConfirmed) {
+                        await deletePayment(id);
+                    }
+                });
+                return;
+            }
+
+            /* ── 수정 버튼 ── */
+            const editBtn = e.target.closest('.btn-edit');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const payment = currentPayments.find(p => String(p.id) === String(id));
+                if (payment) openEditModal(payment);
+            }
+        });
+    }
+
+    bindRowActions();
+
+    function openEditModal(payment) {
+        const cash     = Number(payment.cash     || 0);
+        const card     = Number(payment.card     || 0);
+        const transfer = Number(payment.transfer || 0);
+        const total    = cash + card + transfer;
+
+        // 모달 요소
+        const modal = document.getElementById('edit-payment-modal');
+
+        // 학생명 / 청구금액
+        document.getElementById('edit-student-name-cell').textContent = payment.studentName || '-';
+        document.getElementById('edit-bill-amount-cell').textContent  = total.toLocaleString('ko-KR') + ' 원';
+
+        // 결제일
+        const paidDateInput = document.getElementById('edit-paid-date');
+        const paidDateText  = document.getElementById('edit-pay-date-text');
+        paidDateInput.value = payment.paidDate || '';
+        paidDateText.textContent = formatKoreanDate(payment.paidDate);
+
+        // 결제일 변경 이벤트
+        paidDateInput.onchange = (e) => {
+            paidDateText.textContent = formatKoreanDate(e.target.value);
+        };
+
+        // 금액
+        document.getElementById('edit-card-amount').value     = card     || '';
+        document.getElementById('edit-cash-amount').value     = cash     || '';
+        document.getElementById('edit-transfer-amount').value = transfer || '';
+
+        // 카드사 (card_name 필드가 있으면 세팅)
+        const cardSelect = document.getElementById('edit-card-select');
+        if (cardSelect && payment.cardName) {
+            cardSelect.value = payment.cardName;
+        }
+
+        // 현재 수정 중인 id
+        modal.dataset.currentId = payment.id;
+
+        // 닫기 / 취소 / 저장 이벤트 (중복 방지)
+        const closeBtn  = document.getElementById('edit-modal-close');
+        const saveBtn   = document.getElementById('edit-modal-save');
+
+        closeBtn.onclick  = () => modal.style.display = 'none';
+        saveBtn.onclick   = () => saveEditPayment();
+
+        modal.style.display = 'block';
+    }
+
+    async function deletePayment(id) {
+        try {
+            const res = await fetch(`/pay/manual/delete/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                Swal.fire('삭제 완료', '결제 내역이 삭제되었습니다.', 'success')
+                    .then(() => {
+                        const [yy, mm] = monthInput.value.split('-');
+                        fetchPayments(yy, mm);
+                    });
+            } else {
+                Swal.fire('실패', result.message || '삭제 중 오류가 발생했습니다.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire('오류', '삭제 처리 중 오류가 발생했습니다.', 'error');
+        }
+    }
+
+    /* ── 수정 저장 API ── */
+    async function saveEditPayment() {
+        const modal = document.getElementById('edit-payment-modal');
+        const id    = modal.dataset.currentId;
+
+        const paidDate       = document.getElementById('edit-paid-date').value;
+        const cardAmount     = Number(document.getElementById('edit-card-amount').value     || 0);
+        const cashAmount     = Number(document.getElementById('edit-cash-amount').value     || 0);
+        const transferAmount = Number(document.getElementById('edit-transfer-amount').value || 0);
+        const cardName       = document.getElementById('edit-card-select').value || '';
+
+        if (!paidDate) {
+            Swal.fire('알림', '결제일을 선택해주세요.', 'warning');
+            return;
+        }
+
+        if (cardAmount + cashAmount + transferAmount === 0) {
+            Swal.fire('알림', '결제 금액을 입력해주세요.', 'warning');
+            return;
+        }
+
+        if (cardAmount > 0 && !cardName) {
+            Swal.fire('알림', '카드사를 선택해주세요.', 'warning');
+            return;
+        }
+
+        const dto = { paidDate, cardAmount, cashAmount, transferAmount, cardName };
+
+        try {
+            const res = await fetch(`/pay/manual/update/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            });
+
+            const result = await res.json();
+
+            if (result.success) {
+                Swal.fire('수정 완료', '결제 내역이 수정되었습니다.', 'success')
+                    .then(() => {
+                        modal.style.display = 'none';
+                        const [yy, mm] = monthInput.value.split('-');
+                        fetchPayments(yy, mm);
+                    });
+            } else {
+                Swal.fire('실패', result.message || '수정 중 오류가 발생했습니다.', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire('오류', '수정 처리 중 오류가 발생했습니다.', 'error');
+        }
     }
 
     /* ===============================

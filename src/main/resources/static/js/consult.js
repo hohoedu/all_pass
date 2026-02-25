@@ -45,32 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const printBtn = document.getElementById("consult-print");
+    const excelBtn = document.getElementById("consult-excel");
 
     printBtn.addEventListener("click", () => {
-        alert("상담 문의 출력은 현재 작업 중입니다.")
+        // alert("상담 문의 출력은 현재 작업 중입니다.")
         // const ym = document.getElementById('monthPickerInput').value.replace('-', '');
         // const userCode = document.getElementById('teacher-select')?.value;
         // const centerCode = document.getElementById('')
 
 
-        // const displayText = periodDisplay.textContent;
-        // const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
-        //
-        // const userCode = teacherFilter.value;
-        //
-        // let url = `/consult/print-consult?userCode=${userCode}`;
-        // if (matches) {
-        //     url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
-        // }
-        //
+        const displayText = periodDisplay.textContent;
+        const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
+
+        const userCode = teacherFilter.value;
+
+        let url = `/consult/print-consult?userCode=${userCode}`;
+        if (matches) {
+            url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
+        }
+
         // window.open(url);
-        // printConsult();
+        printConsult(url);
     });
 
-    function printConsult() {
+    function printConsult(url) {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `/consult/print-consult`;
+        iframe.src = url;
 
         iframe.onload = () => {
             iframe.contentWindow.print();
@@ -78,6 +79,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.body.appendChild(iframe);
     }
+
+    excelBtn.addEventListener("click", () => {
+        const displayText = periodDisplay.textContent;
+        const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
+        const userCode = teacherFilter.value;
+
+        let url = `/consult/excel-consult?userCode=${userCode}`;
+        if (matches) {
+            url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
+        }
+
+        window.location.href = url;
+    });
 
     /* =================== *
      *   모달 관리          *
@@ -365,9 +379,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
         attachRowClickEvents();
         attachDropdownEvents();
-        attachTextareaEvents(); // 새로 추가
+        attachTextareaEvents();
+        attachJoinLinkEvents();
     }
+    function attachJoinLinkEvents() {
+        consultTableBody.querySelectorAll('.join-link').forEach(btn => {
+            btn.addEventListener('click', async function (e) {
+                e.stopPropagation();
 
+                const row = this.closest('tr');
+                const rawPhone = row.dataset.phone || '';
+
+                // 전화번호 정규화
+                let phone = rawPhone.replace(/-/g, '').trim();
+
+                if (!/^[0-9]+$/.test(phone)) {
+                    alert('전화번호는 숫자만 입력해 주세요.');
+                    return;
+                }
+
+                if (phone.startsWith('010') && phone.length === 11) {
+                    // 정상
+                } else if (phone.length === 8) {
+                    phone = '010' + phone;
+                } else {
+                    alert('올바른 전화번호가 아닙니다.');
+                    return;
+                }
+
+                if (!confirm(`${row.dataset.studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
+
+                try {
+                    const response = await fetch('/popbill/send-join', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('알림톡이 발송되었습니다.');
+                    } else {
+                        alert('발송 실패: ' + (result.message || ''));
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('알림톡 발송 중 오류가 발생했습니다.');
+                }
+            });
+        });
+    }
 // textarea 변경 감지 함수 추가
     function attachTextareaEvents() {
         const textareas = consultTableBody.querySelectorAll('.comment-text');
@@ -727,3 +789,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+

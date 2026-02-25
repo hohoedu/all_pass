@@ -8,6 +8,7 @@
     <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
+    <link rel="stylesheet" th:href="@{/css/manage/order-split.css}">
     <script th:src="@{/js/custom.js}"></script>
     <script th:src="@{/js/manage/order.js}"></script>
     <!-- Html menu Load -->
@@ -96,56 +97,193 @@
                 <div class="divider"></div>
                 <!-- section:right -->
                 <section class="pre-order">
+
+                    <!-- 고정 타이틀 -->
                     <div class="common-title">
                         <h2>주문 내역</h2>
                     </div>
-                    <div class="preorder-select">
-                        <div class="preorder-day">
-                            <div class="basic-select">
-                                <select id="order-year" name="year">
 
-                                </select>
-                            </div>
-                            <div class="basic-select">
-                                <select id="order-month" name="month">
+                    <!-- 위아래 50/50 래퍼 -->
+                    <div class="preorder-split">
 
-                                </select>
+                        <!-- 위: 주문 내역 -->
+                        <div class="preorder-top">
+                            <div class="preorder-select">
+                                <div class="preorder-day">
+                                    <div class="basic-select">
+                                        <select id="order-year" name="year"></select>
+                                    </div>
+                                    <div class="basic-select">
+                                        <select id="order-month" name="month"></select>
+                                    </div>
+                                    <div class="basic-select">
+                                        <select id="order-history" name="month"></select>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="basic-select">
-                                <select id="order-history" name="month">
-                                </select>
+                            <div class="class-info">
+                                <div class="table-frame preorder-frame mt">
+                                    <table class="basic-table yh">
+                                        <thead>
+                                        <tr>
+                                            <th>단계</th>
+                                            <th>교재</th>
+                                            <th>주문수량</th>
+                                            <th>최종수량</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="order-right-body" class="stripe">
+                                        <tr th:if="${savedOrderList == null or savedOrderList.isEmpty()}">
+                                            <td colspan="4" style="text-align:center; padding: 20px;">
+                                                주문 내역이 없습니다.
+                                            </td>
+                                        </tr>
+                                        <tr th:each="savedOrder : ${savedOrderList}"
+                                            th:data-class-key="${savedOrder.classKey}"
+                                            th:data-unit-key="${savedOrder.unitKey}">
+                                            <td th:text="${savedOrder.className}"></td>
+                                            <td th:text="${savedOrder.unitName}"></td>
+                                            <td th:text="${savedOrder.baseCount}"></td>
+                                            <td th:text="${savedOrder.totalCount}"></td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="class-info">
-                        <div class="table-frame preorder-frame mt">
-                            <table class="basic-table yh">
-                                <thead>
-                                <tr>
-                                    <th>단계</th>
-                                    <th>교재</th>
-                                    <th>주문수량</th>
-                                    <th>최종수량</th>
-                                </tr>
-                                </thead>
-                                <tbody id="order-right-body" class="stripe">
+                        <div class="preorder-bottom">
+                            <div id="preorder-bottom-wrap">
+                                <div class="list-code2" style="display:none;">
+                                    <h2>2025년 12월 시간표 기준 주문 내역</h2>
+                                    <p>출력일시 : <span>2025-12-24 08:55:27</span></p>
+                                    <table class="listRed">
+                                        <colgroup>
+                                            <col width="30%">
+                                            <col width="30%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                            <col width="10%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th rowspan="2">단계</th>
+                                            <th rowspan="2">교재</th>
+                                            <th colspan="4">수량</th>
+                                        </tr>
+                                        <tr>
+                                            <th>학생</th>
+                                            <th>선생님</th>
+                                            <th>추가</th>
+                                            <th>합계</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>초등수재</td>
+                                            <td>영재10호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>초등수재</td>
+                                            <td>영재10호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>초등수재</td>
+                                            <td>영재10호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                <tr th:if="${savedOrderList == null or savedOrderList.isEmpty()}">
-                                    <td colspan="4" style="text-align:center; padding: 20px;">
-                                        주문 내역이 없습니다.
-                                    </td>
-                                </tr>
-
-                                <tr th:each="savedOrder : ${savedOrderList}"
-                                    th:data-class-key="${savedOrder.classKey}"
-                                    th:data-unit-key="${savedOrder.unitKey}">
-                                    <td th:text="${savedOrder.className}"></td>
-                                    <td th:text="${savedOrder.unitName}"></td>
-                                    <td th:text="${savedOrder.baseCount}"></td>
-                                    <td th:text="${savedOrder.totalCount}"></td>
-                                </tr>
-                                </tbody>
-                            </table>
+                                <!-- 센터별 선생님 주문 내역 -->
+                                <div class="list-code2" style="display:block;">
+                                    <h2>2025년 12월 선생님 주문 내역</h2>
+                                    <table class="listRed">
+                                        <colgroup>
+                                            <col width="20%">
+                                            <col width="20%">
+                                            <col width="15%">
+                                            <col width="15%">
+                                            <col width="15%">
+                                            <col width="15%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th rowspan="2">단계</th>
+                                            <th rowspan="2">교재</th>
+                                            <th colspan="4">교재</th>
+                                        </tr>
+                                        <tr>
+                                            <th>학생</th>
+                                            <th>선생님</th>
+                                            <th>추가</th>
+                                            <th>합계</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>초등수재</td>
+                                            <td>6호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>초등천재</td>
+                                            <td>7호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>초등박사</td>
+                                            <td>10호</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>한스쿨</td>
+                                            <td>기본2</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr>
+                                            <td>한스쿨</td>
+                                            <td>기본4</td>
+                                            <td>0</td>
+                                            <td>0</td>
+                                            <td>1</td>
+                                            <td>3</td>
+                                        </tr>
+                                        <tr class="listSum">
+                                            <td colspan="2"></td>
+                                            <td>20</td>
+                                            <td>10</td>
+                                            <td>69</td>
+                                            <td>69</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -307,4 +307,23 @@ public interface PaymentRepository {
             @Param("year") String year,
             @Param("month") String month
     );
+    PaymentManual findManualById(Integer id);
+
+    // 같은 manualKey 매뉴얼 전체 조회
+    List<PaymentManual> findAllByManualKey(String manualKey);
+
+    // 매뉴얼 수정
+    void updateManual(@Param("id") Integer id, @Param("dto") PaymentReqDTO.UpdatePaymentDTO dto);
+
+    // 매뉴얼 그룹 수정
+    void updateManualGroup(@Param("manualKey") String manualKey,
+                           @Param("paidDate")  String paidDate,
+                           @Param("totalAmount") Long totalAmount);
+
+    // 매뉴얼 전체 삭제 (같은 manualKey)
+    void deleteAllByManualKey(String manualKey);
+
+    // 매뉴얼 그룹 삭제
+    void deleteManualGroup(String manualKey);
+
 }

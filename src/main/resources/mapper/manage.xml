@@ -39,6 +39,28 @@
           AND mm = #{mm}
     </select>
 
+    <select id ="findOrderDetailList">
+        select cc.id, uc.id, cc.class_name as className, o.class_key as classKey, uc.unit_name as unitName, o.unit_key as unitKey, o.base_count as count, 'base' as type
+        from erp_order o
+            JOIN erp_class_code cc
+        on o.class_key = cc.class_key
+            JOIN erp_unit_code uc on o.unit_key =uc.unit_key
+        where user_code = #{userCode}
+          AND yy= #{yy}
+          AND mm = #{mm}
+        UNION ALL
+        select cc.id, uc.id, cc.class_name as className, r.class_key as classKey, uc.unit_name as unitName, r.unit_key as unitKey, r.count as count, r.reorder_type as type
+        from erp_reorder r
+            JOIN erp_class_code cc
+        on r.class_key = cc.class_key
+            JOIN erp_unit_code uc on r.unit_key =uc.unit_key
+        where user_code = #{userCode}
+          AND yy= #{yy}
+          AND mm = #{mm}
+
+        ORDER BY cc.id, uc.id
+    </select>
+
     <insert id="insertReorder">
         INSERT INTO erp_reorder (user_code, center_code, yy, mm, reorder_type, class_key, unit_key, count, reason, created_at, confirmed)
         VALUES (#{userCode}, #{centerCode}, #{yy}, #{mm}, #{reorderType}, #{classKey}, #{unitKey}, #{count}, #{reason}, SYSDATETIME(), 'unchecked')

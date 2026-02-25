@@ -76,11 +76,12 @@
                                     <th>No</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결제일</th>
                                     <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                                    <th>청구 내역</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수납방법</th>
                                     <th>결제금액</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">잔여금액</th>
                                     <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">현금영수증</th>
+                                    <th>수정</th>
+                                    <th>삭제</th>
                                 </tr>
                                 </thead>
                             </table>
@@ -103,6 +104,96 @@
 <div th:replace="~{pay/pay-list-add-cashbill-modal :: addCashbillModal}"></div>
 <!-- section: modal(납부내역추가) -->
 <div th:replace="~{pay/pay-list-add-payment-modal :: addPaymentModal}"></div>
+<!-- section: modal(결제 수정) -->
+<div class="modal edit-payment-modal" id="edit-payment-modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>결제 내역 수정</h3>
+            <button class="modal-close" id="edit-modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="add-m-right table-frame manual-m-edit">
+                <!-- 학생명 -->
+                <table class="stu-m-tbl bt" style="margin-bottom: 0px">
+                    <colgroup>
+                        <col style="width:20%"><col style="width:30%">
+                        <col style="width:20%"><col style="width:30%">
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td>학생명</td>
+                        <td id="edit-student-name-cell">-</td>
+                        <td>청구 금액</td>
+                        <td id="edit-bill-amount-cell">-</td>
+                    </tr>
+                    </tbody>
+                </table>
 
+                <!-- 결제 정보 -->
+                <table class="manual-payment-table pay-edu-table manual-edit-table">
+                    <colgroup>
+                        <col width="20%"><col width="30%">
+                        <col width="20%"><col width="30%">
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td class="label-cell">카드사</td>
+                        <td class="content-cell white-bg">
+                            <div class="select-group">
+                                <select class="basic-input card-select" id="edit-card-select" style="width: 200px;">
+                                    <option value="">선택 안함</option>
+                                    <option th:each="c : ${cardCode}"
+                                            th:value="${c.cardCode}"
+                                            th:text="${c.cardName}">
+                                    </option>
+                                </select>
+                            </div>
+                        </td>
+                        <td class="label-cell">결제일</td>
+                        <td>
+                            <div style="margin: 20px">
+                                <span id="edit-pay-date-text">-</span>
+                                <input type="date" class="basic-input pay-date hidden-date" id="edit-paid-date">
+                                <button type="button" class="icon-btn calendar-open" data-target="edit-paid-date">
+                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">결제 방법 및 금액</td>
+                        <td class="content-cell white-bg" colspan="3" style="border-right:0px;">
+                            <div class="pay-input-group">
+                                <div class="pay-row">
+                                    <label class="pay-label-container">
+                                        <span class="pay-label color-green">오프라인 카드</span>
+                                    </label>
+                                    <input type="number" id="edit-card-amount" class="pay-input border-green" placeholder="0">
+                                </div>
+                                <div class="pay-row">
+                                    <label class="pay-label-container">
+                                        <span class="pay-label color-blue2">현금</span>
+                                    </label>
+                                    <input type="number" id="edit-cash-amount" class="pay-input border-blue" placeholder="0">
+                                </div>
+                                <div class="pay-row">
+                                    <label class="pay-label-container">
+                                        <span class="pay-label color-olive">계좌이체</span>
+                                    </label>
+                                    <input type="number" id="edit-transfer-amount" class="pay-input border-olive" placeholder="0">
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="padding:16px 24px; display:flex; justify-content:center; gap:8px;">
+            <button id="edit-modal-save" class="common-btn manual-edit" style="margin-left: 0">저장</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

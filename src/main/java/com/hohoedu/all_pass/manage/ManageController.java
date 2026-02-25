@@ -71,6 +71,20 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(orderList));
     }
 
+    @PostMapping("/order/detail/list")
+    public ResponseEntity<?> getOrderDetailList(@RequestBody ManageReqDTO.GetOrderDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        List<ManageRespDTO.OrderDetailDTO> response = manageService.getOrderDetailList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        log.info(response.toString());
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
 
     @PostMapping("/reorder/save")
     public ResponseEntity<?> insertReorder(@RequestBody ManageReqDTO.InsertReorderDTO reqDTO, HttpSession session) {
@@ -106,6 +120,7 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(reorderList));
     }
 
+
     @PostMapping("/reorder/cancel")
     public ResponseEntity<?> cancelReorder(@RequestBody ManageReqDTO.CancelReorderDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -140,5 +155,6 @@ public class ManageController {
             return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
         }
     }
+
 
 }

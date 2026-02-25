@@ -1148,21 +1148,21 @@
 
     <select id="findMonthlyPayments"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
-        select s.student_name                                  as studentName,
-               p.paid_date                                     as paidDate,
-               pb.bill_type                                    as billType,
-               p.method                                        as method,
-               isnull(pc.appr_price, 0)                        as paidPrice,
-               isnull(pb.amount, 0)                            as billAmount,
-               isnull(pb.amount, 0) - isnull(pc.appr_price, 0) as unpaidAmount
-        from erp_payment_bill pb
-                 join erp_payment p on pb.payment_key = p.payment_key
-                 LEFT join erp_payment_callback pc on pb.bill_id = pc.bill_id
-                 join erp_student s on pb.student_id = s.student_id
-        where pb.status = 'approved'
-          and s.center_code = #{centerCode}
-          and pb.yy = #{yy}
-          and pb.mm = #{mm}
+        select pm.id,
+               s.student_name,
+               pm.paid_date,
+               pm.payment_key,
+               pm.cash_amount     as cash,
+               pm.card_amount     as card,
+               pm.transfer_amount as trasfer,
+               epc.appr_cash_num
+        from erp_payment_manual pm
+                 join erp_payment_manual_group pmg on pm.manual_key = pmg.manual_key
+                 join erp_student s on pm.student_id = s.student_id
+                 left join erp_payment_cashbill epc on pmg.cashbill_id = epc.bill_id
+        where pmg.center_code = #{centerCode}
+          and pm.yy = #{yy}
+          and pm.mm = #{mm}
     </select>
 
     <select id="findEduPaymentDetailByPaymentKey"
@@ -1469,5 +1469,60 @@
                        ELSE 0 END) > 0
         ORDER BY b.student_name
     </select>
+
+    <!-- 단건 조회 -->
+    <select id="findManualById" resultType="com.hohoedu.all_pass.payment.model.PaymentManual">
+        SELECT
+            id,
+            manual_key      AS manualKey,
+            center_code     AS centerCode,
+            student_id      AS studentId,
+            paid_date       AS paidDate,
+            payment_key     AS paymentKey,
+            cash_amount     AS cashAmount,
+            card_amount     AS cardAmount,
+            transfer_amount AS transferAmount,
+            card_name       AS cardName
+        FROM erp_payment_manual
+        WHERE id = #{id}
+    </select>
+
+    <!-- 같은 manualKey 매뉴얼 전체 조회 -->
+    <select id="findAllByManualKey" resultType="com.hohoedu.all_pass.payment.model.PaymentManual">
+        SELECT
+            id,
+            manual_key  AS manualKey,
+            student_id  AS studentId
+        FROM erp_payment_manual
+        WHERE manual_key = #{manualKey}
+    </select>
+
+    <update id="updateManual">
+        UPDATE erp_payment_manual
+        SET
+            paid_date       = #{dto.paidDate},
+            card_amount     = #{dto.cardAmount},
+            cash_amount     = #{dto.cashAmount},
+            transfer_amount = #{dto.transferAmount},
+            card_name       = #{dto.cardName}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateManualGroup">
+        UPDATE erp_payment_manual_group
+        SET total_amount = #{totalAmount},
+            paid_date    = #{paidDate}
+        WHERE manual_key = #{manualKey}
+    </update>
+
+    <delete id="deleteAllByManualKey">
+        DELETE FROM erp_payment_manual
+        WHERE manual_key = #{manualKey}
+    </delete>
+
+    <delete id="deleteManualGroup">
+        DELETE FROM erp_payment_manual_group
+        WHERE manual_key = #{manualKey}
+    </delete>
 
 </mapper>

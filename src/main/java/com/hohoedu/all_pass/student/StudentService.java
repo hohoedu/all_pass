@@ -407,30 +407,30 @@ public class StudentService {
         User teacher = User.builder().userCode(info.getTeacherCode()).build();
         ClassCode classCode = ClassCode.builder().classKey(info.getClassKey()).build();
 
-        if (assign == null) {
-            TeacherAssign newAssign = TeacherAssign.builder()
-                    .student(Student.builder().studentId(studentId).build())
-                    .hanState(isHan)
-                    .bookState(isBook)
-                    .assignHanTeacher(isHan ? teacher : null)
-                    .assignBookTeacher(isBook ? teacher : null)
-                    .assignHanClass(isHan ? classCode : null)
-                    .assignBookClass(isBook ? classCode : null)
-                    .entryHanDate(isHan ? today : null)
-                    .entryBookDate(isBook ? today : null)
-                    .build();
-
-            studentRepository.insertTeacherAssign(newAssign);
-            return;
-        }
+//        if (assign == null) {
+//            TeacherAssign newAssign = TeacherAssign.builder()
+//                    .student(Student.builder().studentId(studentId).build())
+//                    .hanState(isHan)
+//                    .bookState(isBook)
+//                    .assignHanTeacher(isHan ? teacher : null)
+//                    .assignBookTeacher(isBook ? teacher : null)
+//                    .assignHanClass(isHan ? classCode : null)
+//                    .assignBookClass(isBook ? classCode : null)
+//                    .entryHanDate(isHan ? today : null)
+//                    .entryBookDate(isBook ? today : null)
+//                    .build();
+//
+//            studentRepository.insertTeacherAssign(newAssign);
+//            return;
+//        }
 
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();
 
 
-        if (isHan == oldHan && isBook == oldBook) {
-            return;
-        }
+//        if (isHan == oldHan && isBook == oldBook) {
+//            return;
+//        }
 
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
         dto.setStudentId(studentId);

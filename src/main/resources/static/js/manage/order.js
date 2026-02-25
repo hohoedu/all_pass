@@ -92,59 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `);
         });
 
-        // bindLeftTableEvents();
         calculateTotal();
     }
-
-    // function bindLeftTableEvents() {
-    //     const rows = document.querySelectorAll("#order-left-body tr");
-    //
-    //     rows.forEach(row => {
-    //         const input = row.querySelector("input[type='number']");
-    //         const incBtn = row.querySelector(".increment-button");
-    //         const decBtn = row.querySelector(".decrement-button");
-    //
-    //         if (!input) return;
-    //
-    //         // input 직접 입력 시
-    //         input.addEventListener("input", () => {
-    //             if (input.value === "" || isNaN(input.value)) {
-    //                 input.value = 0;
-    //             }
-    //             calculateTotal();
-    //         });
-    //
-    //         // 키보드 입력 후 포커스 해제 시
-    //         input.addEventListener("change", () => {
-    //             if (input.value === "" || isNaN(input.value)) {
-    //                 input.value = 0;
-    //             }
-    //             calculateTotal();
-    //         });
-    //
-    //         if (incBtn) {
-    //             incBtn.addEventListener("click", (e) => {
-    //                 e.preventDefault();
-    //                 e.stopPropagation();
-    //                 const currentValue = parseInt(input.value) || 0;
-    //                 input.value = currentValue + 1;
-    //                 input.dispatchEvent(new Event('input', { bubbles: true }));
-    //                 calculateTotal();
-    //             });
-    //         }
-    //
-    //         if (decBtn) {
-    //             decBtn.addEventListener("click", (e) => {
-    //                 e.preventDefault();
-    //                 e.stopPropagation();
-    //                 const currentValue = parseInt(input.value) || 0;
-    //                 input.value = currentValue - 1;
-    //                 input.dispatchEvent(new Event('input', { bubbles: true }));
-    //                 calculateTotal();
-    //             });
-    //         }
-    //     });
-    // }
 
     const totalSpan = document.querySelector(".all-order span");
 
@@ -179,13 +128,18 @@ document.addEventListener('DOMContentLoaded', () => {
     initYearOptions();
     renderMonthOptions(yearSelect.value);
 
+    loadSavedOrder();
+    loadOrderDetail();
+
     yearSelect.addEventListener("change", async () => {
         renderMonthOptions(yearSelect.value);
         await loadSavedOrder();
+        await loadOrderDetail();
     });
 
     monthSelect.addEventListener("change", async () => {
         await loadSavedOrder();
+        await loadOrderDetail();
     });
 
     function initYearOptions() {
@@ -292,6 +246,148 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `);
         });
+    }
+
+    async function loadOrderDetail() {
+        const bottomWrap = document.getElementById("preorder-bottom-wrap");
+        if (!bottomWrap) return;
+
+        try {
+            const yy = yearSelect.value;
+            const mm = monthSelect.value;
+            if (!yy || !mm) return;
+
+            // 로딩 표시
+            bottomWrap.innerHTML = `
+                <div class="bottom-loading">
+                    <span>불러오는 중...</span>
+                </div>`;
+
+            const res = await fetch("/manage/order/detail/list", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({yy, mm})
+            });
+
+            if (!res.ok) {
+                bottomWrap.innerHTML = `<p class="bottom-empty">데이터를 불러오지 못했습니다.</p>`;
+                return;
+            }
+
+            const data = await res.json();
+            renderOrderDetail(data.response, yy, mm);
+
+        } catch (e) {
+            console.error("loadOrderDetail Error:", e);
+            bottomWrap.innerHTML = `<p class="bottom-empty">오류가 발생했습니다.</p>`;
+        }
+    }
+
+    function renderOrderDetail(detail, yy, mm) {
+        const bottomWrap = document.getElementById("preorder-bottom-wrap");
+        if (!bottomWrap) return;
+
+        if (!detail || detail.length === 0) {
+            bottomWrap.innerHTML = `<p class="bottom-empty">${yy}년 ${mm}월 주문 내역이 없습니다.</p>`;
+            return;
+        }
+
+        // className + unitName 기준으로 그룹핑
+        const groupMap = new Map();
+
+        detail.forEach(item => {
+            const key = `${item.classKey}_${item.unitKey}`;
+            const count = parseInt(item.count) || 0;
+
+            if (!groupMap.has(key)) {
+                groupMap.set(key, {
+                    className:    item.className,
+                    unitName:     item.unitName,
+                    studentCount: 0,   // base
+                    teacherCount: 0,   // (없으면 0)
+                    addCount:     0,   // add - return
+                    totalCount:   0
+                });
+            }
+
+            const group = groupMap.get(key);
+
+            if (item.type === 'base') {
+                group.studentCount += count;
+            } else if (item.type === 'ADD') {
+                group.addCount += count;
+            } else if (item.type === 'RETURN') {
+                group.addCount -= count;  // 반품은 마이너스
+            }
+        });
+
+        // 합계 계산 및 총합
+        let sumStudent = 0, sumTeacher = 0, sumAdd = 0, sumTotal = 0;
+
+        let rows = "";
+        groupMap.forEach(group => {
+            group.totalCount = group.studentCount + group.teacherCount + group.addCount;
+
+            sumStudent += group.studentCount;
+            sumTeacher += group.teacherCount;
+            sumAdd     += group.addCount;
+            sumTotal   += group.totalCount;
+
+            // 추가 표시: 음수면 -N, 양수면 N
+            const addDisplay = group.addCount < 0
+                ? `<span style="color:red;">${group.addCount}</span>`
+                : group.addCount;
+
+            rows += `
+            <tr>
+                <td>${group.className}</td>
+                <td>${group.unitName}</td>
+                <td>${group.studentCount}</td>
+                <td>${group.teacherCount}</td>
+                <td>${addDisplay}</td>
+                <td>${group.totalCount}</td>
+            </tr>`;
+        });
+
+        const html = `
+        <div class="list-code2">
+            <h2>${yy}년 ${mm}월 선생님 주문 내역</h2>
+            <table class="listRed">
+                <colgroup>
+                    <col width="20%">
+                    <col width="20%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                    <col width="15%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th rowspan="2">단계</th>
+                        <th rowspan="2">교재</th>
+                        <th colspan="4">수량</th>
+                    </tr>
+                    <tr>
+                        <th>학생</th>
+                        <th>선생님</th>
+                        <th>추가</th>
+                        <th>합계</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows}
+                    <tr class="listSum">
+                        <td colspan="2">합계</td>
+                        <td>${sumStudent}</td>
+                        <td>${sumTeacher}</td>
+                        <td>${sumAdd}</td>
+                        <td>${sumTotal}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>`;
+
+        bottomWrap.innerHTML = html;
     }
 
     /* =============================== *

@@ -446,20 +446,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const formatYYYYMMDD = (dt) => {
         const y = dt.getFullYear();
-        const m = String(dt.getMonth()).padStart(2, '0');
+        const m = String(dt.getMonth() + 1).padStart(2, '0');
         const d = String(dt.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
     };
 
     const setDisplay = (dt) => {
         expireDisplay.textContent =
-            `${dt.getFullYear()}년 ${dt.getMonth()}월 ${dt.getDate()}일`;
+            `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
     };
 
     // 🔥 이번 달 5일 계산 함수
     const getCurrentMonth5th = (year, month) => {
         // month는 1~12 기준
-        return new Date(year, month, 5);
+        return new Date(year, month - 1, 5);
     };
 
     const billingMonth = document.querySelector('.hidden-picker')?.value;

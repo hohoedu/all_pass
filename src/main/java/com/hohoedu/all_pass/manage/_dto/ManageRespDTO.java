@@ -30,6 +30,16 @@ public class ManageRespDTO {
         private Integer baseCount;
     }
 
+    @Data
+    public static class OrderDetailDTO {
+        private String className;
+        private String classKey;
+        private String unitName;
+        private String unitKey;
+        private String count;
+        private String type;
+    }
+
 
     @Data
     public static class SavedOrderListDTO {

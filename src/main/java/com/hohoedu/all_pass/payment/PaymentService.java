@@ -1859,5 +1859,63 @@ public class PaymentService {
         return paymentRepository.findUnpaidStudentForAlimtalk(reqDTO.getCenterCode(), reqDTO.getYear(), reqDTO.getMonth());
     }
 
+    public void updatePayment(Integer id, PaymentReqDTO.UpdatePaymentDTO dto, String centerCode) {
+
+        // 1. id로 매뉴얼 조회
+        PaymentManual manual = paymentRepository.findManualById(id);
+        if (manual == null) {
+            throw new IllegalArgumentException("존재하지 않는 결제 내역입니다.");
+        }
+
+        String manualKey = manual.getManualKey();
+
+        // 2. 매뉴얼 수정
+        paymentRepository.updateManual(id, dto);
+
+        // 3. 같은 manualKey 매뉴얼 전체 조회 (수정된 값 포함하여 재조회)
+        List<PaymentManual> siblings = paymentRepository.findAllByManualKey(manualKey);
+
+        // 4. 전체 합산 (수정된 id는 dto 값으로, 나머지는 기존 값으로)
+        long totalAmount = siblings.stream()
+                .mapToLong(s -> {
+                    if (s.getId().equals(id)) {
+                        // 수정된 매뉴얼은 dto 값으로 계산
+                        return (dto.getCardAmount()     != null ? dto.getCardAmount()     : 0L)
+                                + (dto.getCashAmount()      != null ? dto.getCashAmount()      : 0L)
+                                + (dto.getTransferAmount()  != null ? dto.getTransferAmount()  : 0L);
+                    } else {
+                        // 나머지는 기존 값
+                        return (s.getCardAmount()     != null ? s.getCardAmount()     : 0L)
+                                + (s.getCashAmount()      != null ? s.getCashAmount()      : 0L)
+                                + (s.getTransferAmount()  != null ? s.getTransferAmount()  : 0L);
+                    }
+                })
+                .sum();
+
+        // 5. 매뉴얼 그룹 수정 (paidDate + totalAmount)
+        paymentRepository.updateManualGroup(manualKey, dto.getPaidDate(), totalAmount);
+    }
+
+    /* ── 삭제 ── */
+    public void deletePayment(Integer id, String centerCode) {
+
+        // 1. id로 매뉴얼 조회
+        PaymentManual manual = paymentRepository.findManualById(id);
+        if (manual == null) {
+            throw new IllegalArgumentException("존재하지 않는 결제 내역입니다.");
+        }
+
+        String manualKey = manual.getManualKey();
+
+        // 2. 같은 매뉴얼 키를 가진 매뉴얼이 몇 개인지 확인
+        List<PaymentManual> siblings = paymentRepository.findAllByManualKey(manualKey);
+
+        // 3. 매뉴얼 키로 연결된 매뉴얼 전체 삭제 (형제 매뉴얼 포함)
+        paymentRepository.deleteAllByManualKey(manualKey);
+
+        // 4. 매뉴얼 그룹 삭제
+        paymentRepository.deleteManualGroup(manualKey);
+    }
+
 
 }

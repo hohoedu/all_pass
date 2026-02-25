@@ -265,5 +265,11 @@ public class PaymentReqDTO {
     }
 
     @Data
-    public static class UnpaidStudentCancelDTO {}
+    public static class UpdatePaymentDTO {
+        private String paidDate;        // "2026-03-15"
+        private Long cardAmount;
+        private Long cashAmount;
+        private Long transferAmount;
+        private String cardName;        // 카드사 코드
+    }
 }

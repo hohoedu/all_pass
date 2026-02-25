@@ -1,5 +1,8 @@
 package com.hohoedu.all_pass._core.view;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -12,7 +15,10 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,6 +89,113 @@ public class ConsultViewController {
         model.addAttribute("userName", userName);
 
         return "print/print-consult";
+    }
+
+    @GetMapping("/excel-consult")
+    public void downloadConsultExcel(@RequestParam(required = false) String startYm,
+                                     @RequestParam(required = false) String endYm,
+                                     @RequestParam(required = false) String userCode,
+                                     HttpSession session,
+                                     HttpServletResponse response) throws IOException {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            response.sendRedirect("/login");
+            return;
+        }
+
+        if (startYm == null || endYm == null) {
+            LocalDate now = LocalDate.now();
+            endYm = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            startYm = now.minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
+
+        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(userCode);
+        String userName = consultService.getUserName(userCode);
+
+        String fileName = URLEncoder.encode("상담문의기록_" + userName + "_" + startYm + "~" + endYm + ".xlsx", StandardCharsets.UTF_8);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("상담문의기록");
+
+        // ── 스타일 ──────────────────────────────
+        CellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        setBorder(headerStyle);
+
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        CellStyle centerStyle = workbook.createCellStyle();
+        centerStyle.setAlignment(HorizontalAlignment.CENTER);
+        centerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        centerStyle.setWrapText(true);
+        setBorder(centerStyle);
+
+        CellStyle memoStyle = workbook.createCellStyle();
+        memoStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        memoStyle.setWrapText(true);
+        setBorder(memoStyle);
+
+        // ── 헤더 ────────────────────────────────
+        String[] headers = {"No", "일자", "이름", "학교", "학년", "연락처", "메모사항", "유입경로", "진행상황", "발송/입회일"};
+        Row headerRow = sheet.createRow(0);
+        headerRow.setHeight((short) 500);
+
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        // ── 데이터 ──────────────────────────────
+        int rowNum = 1;
+        for (ConsultRespDTO.ConsultPrintDTO c : consults) {
+            Row row = sheet.createRow(rowNum);
+            row.setHeight((short) -1);  // ✅ 자동 높이
+
+            createCell(row, 0, String.valueOf(rowNum), centerStyle);
+            createCell(row, 1, c.getConsultDate(),     centerStyle);
+            createCell(row, 2, c.getStudentName(),     centerStyle);
+            createCell(row, 3, c.getSchool(),          centerStyle);
+            createCell(row, 4, c.getGradeName(),       centerStyle);
+            createCell(row, 5, c.getPhone(),           centerStyle);
+            createCell(row, 6, c.getContent(),         memoStyle);
+            createCell(row, 7, c.getInflowRouteName(), centerStyle);
+            createCell(row, 8, c.getProgressName(),    centerStyle);
+            createCell(row, 9, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
+
+            rowNum++;
+        }
+
+        // ── 컬럼 너비 ───────────────────────────
+        int[] colWidths = {2000, 4000, 3000, 5000, 3000, 5000, 12000, 4000, 4000, 5000};
+        for (int i = 0; i < colWidths.length; i++) {
+            sheet.setColumnWidth(i, colWidths[i]);
+        }
+
+        workbook.write(response.getOutputStream());
+        workbook.close();
+    }
+
+    // ── 헬퍼 ────────────────────────────────────
+    private void createCell(Row row, int col, String value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value != null ? value : "");
+        cell.setCellStyle(style);
+    }
+
+    private void setBorder(CellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
 
     @GetMapping("/test")

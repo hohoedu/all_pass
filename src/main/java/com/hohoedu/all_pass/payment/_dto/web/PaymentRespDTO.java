@@ -213,15 +213,14 @@ public class PaymentRespDTO {
 
     @Data
     public static class MonthlyPaymentDTO {
-        private String studentId;
-        private String billId;
+        private String id;
         private String studentName;
-        private String billType;
         private String paidDate;
-        private String method;
-        private String paidPrice;
-        private String billAmount;
-        private String unpaidAmount;
+        private String paymentKey;
+        private Integer cash;
+        private Integer card;
+        private Integer transfer;
+        private String apprCashNum;
     }
 
     @Data

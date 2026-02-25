@@ -94,6 +94,16 @@ public class ManageService {
 
     }
 
+    public List<ManageRespDTO.OrderDetailDTO> getOrderDetailList(String userCode, String centerCode, String year, String month) {
+
+        List<ManageRespDTO.OrderDetailDTO> reorderListDTO = manageRepository.findOrderDetailList(centerCode, userCode, year, month);
+
+
+        return reorderListDTO;
+
+    }
+
+
     public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
 
         String yy = req.getYy();

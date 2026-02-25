@@ -24,6 +24,12 @@ public interface ManageRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    List<ManageRespDTO.OrderDetailDTO> findOrderDetailList(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
     List<ManageRespDTO.ReorderListDTO> findReorderList(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
@@ -46,7 +52,7 @@ public interface ManageRepository {
             @Param("centerCode") String centerCode,
             @Param("yy") String yy,
             @Param("mm") String mm
-            );
+    );
 
     int insertReorder(
             @Param("userCode") String userCode,

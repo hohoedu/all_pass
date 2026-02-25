@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -374,6 +375,42 @@ public class PaymentController {
         );
 
         return ResponseEntity.ok(Map.of("response", payments));
+    }
+
+    @PostMapping("/manual/update/{id}")
+    public ResponseEntity<?> updatePayment(@PathVariable Integer id, @RequestBody PaymentReqDTO.UpdatePaymentDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        paymentService.updatePayment(id, dto, user.getCenterCode());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "수정되었습니다.");
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/manual/delete/{id}")
+    public ResponseEntity<?> deletePayment(@PathVariable Integer id, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        paymentService.deletePayment(id, user.getCenterCode());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "삭제되었습니다.");
+
+        return ResponseEntity.ok(result);
     }
 
 }
