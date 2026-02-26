@@ -1121,7 +1121,16 @@ public class StudentService {
                 dto.getWeek()
         );
 
-        // 2. 출결 업데이트
+        // 2. 출석, 지각으로 변경시 등원 시간 없으면 수업 시작시간을 기본값으로 지정
+        if (("present".equals(dto.getAttendanceKey()) || "late".equals(dto.getAttendanceKey()))
+                && dto.getInTime() == null) {
+            String classStartTime = attendanceRepository.findClassStartTime(dto.getTimeTableKey());
+            if (classStartTime != null) {
+                dto.setInTime(classStartTime);
+            }
+        }
+
+        // 3. 출결 업데이트
         int updated = studentRepository.updateAttendance(dto);
         if (updated == 0) {
             throw new RuntimeException("출석 정보를 찾을 수 없거나 업데이트에 실패했습니다.");
@@ -1129,7 +1138,7 @@ public class StudentService {
 
         String newKey = dto.getAttendanceKey();
         log.info("absenceDate = {}", dto.getAbsenceDate());
-        // 3. 결석 → 보강 생성
+        // 4. 결석 → 보강 생성
         if (!"absent".equals(prevKey) && "absent".equals(newKey)) {
             attendanceRepository.insertRemedialForStudent(
                     dto.getStudentId(),
@@ -1141,7 +1150,7 @@ public class StudentService {
 
         }
 
-        // 4. 결석 해제 → 보강 삭제 (하드 딜리트)
+        // 5. 결석 해제 → 보강 삭제 (하드 딜리트)
         if ("absent".equals(prevKey) && !"absent".equals(newKey)) {
             attendanceRepository.deleteRemedialForStudent(
                     dto.getStudentId(),

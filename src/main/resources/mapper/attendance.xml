@@ -136,4 +136,10 @@
           AND time_table_key = #{timeTableKey}
           AND week = #{week}
     </delete>
+
+    <select id="findClassStartTime" resultType="String">
+        SELECT start_time
+        FROM erp_time_table
+        WHERE time_table_key = #{timeTableKey}
+    </select>
 </mapper>

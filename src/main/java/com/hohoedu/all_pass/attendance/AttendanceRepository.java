@@ -51,4 +51,7 @@ public interface AttendanceRepository {
                                  @Param("timeTableKey") String timeTableKey,
                                  @Param("week") String week);
 
+    String findClassStartTime(
+            @Param("timeTableKey") String timeTableKey
+    );
 }
