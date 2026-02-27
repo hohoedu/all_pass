@@ -100,6 +100,7 @@
                gc.grade_name                                                AS gradeName,
                s.gender                                                     AS genderKey,
                s.birth                                                      AS birth,
+               s.billing_phone                                              AS billingPhone,
                s.address                                                    AS address,
                s.address_detail                                             AS addressDetail
         from erp_student s
@@ -304,6 +305,7 @@
             address_detail = #{addressDetail},
             grade_key      = #{gradeKey},
             gender         = #{genderKey},
+            billing_phone  = #{billingPhone},
             app_id         = #{appId},
             updated_at     = SYSDATETIME()
         where student_id = #{studentId}
@@ -918,10 +920,12 @@
                        (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_han_class),
                        (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_book_class)
                )                                             AS className,
-               COALESCE(
-                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_han_teacher),
-                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_book_teacher)
-               )                                             AS teacherName,
+               CASE
+                   WHEN t.assign_han_teacher = #{userCode}
+                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_han_teacher)
+                   WHEN t.assign_book_teacher = #{userCode}
+                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_book_teacher)
+                   END                                                 AS teacherName,
                COALESCE(t.entry_han_date, t.entry_book_date) AS joinDate
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
@@ -935,10 +939,12 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                           AS studentId,
                es.student_name                                         AS studentName,
-               COALESCE(
-                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher),
-                       (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_book_teacher)
-               )                                                       AS teacherName,
+               CASE
+                   WHEN t.inactive_han_teacher = #{userCode}
+                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher)
+                   WHEN t.inactive_book_teacher = #{userCode}
+                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_book_teacher)
+                   END                                                 AS teacherName,
                COALESCE(t.entry_han_date, t.entry_book_date)           AS joinDate,
                COALESCE(t.inactive_han_date, t.inactive_book_date)     AS withdrawDate,
                COALESCE(t.inactive_han_reason, t.inactive_book_reason) AS reason

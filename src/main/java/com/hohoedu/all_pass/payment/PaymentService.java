@@ -546,7 +546,11 @@ public class PaymentService {
 
         // 5. 부모별로 그룹화
         Map<String, List<PaymentRespDTO.PayTargetDTO>> groupByParent = finalTargets.stream()
-                .collect(Collectors.groupingBy(PaymentRespDTO.PayTargetDTO::getParentPhone));
+                .collect(Collectors.groupingBy(t ->
+                        (t.getBillingPhone() != null && !t.getBillingPhone().isBlank())
+                                ? t.getBillingPhone()
+                                : t.getParentPhone()
+                ));
 
         log.info("✅ 부모별 그룹 수: {}", groupByParent.size());
 
@@ -558,7 +562,7 @@ public class PaymentService {
 
         for (Map.Entry<String, List<PaymentRespDTO.PayTargetDTO>> entry : groupByParent.entrySet()) {
             current++;
-            String parentPhone = entry.getKey();
+            String sendPhone = entry.getKey();
             List<PaymentRespDTO.PayTargetDTO> group = entry.getValue();
 
             sendProgress(req.getJobId(), current, total, "processing",
@@ -567,7 +571,7 @@ public class PaymentService {
             int totalPrice = group.stream().mapToInt(PaymentRespDTO.PayTargetDTO::getAmount).sum();
 
             if (totalPrice <= 0) {
-                log.warn("청구 금액이 0 이하 - 부모 번호: {}", parentPhone);
+                log.warn("청구 금액이 0 이하 - 부모 번호: {}", sendPhone);
                 failCount++;
                 continue;
             }
@@ -578,7 +582,7 @@ public class PaymentService {
                 String indexStr = String.format("%02d", seq++);
                 String billId = generateBillId(conf.getPreBillId(), Integer.parseInt(indexStr), billType);
 
-                String raw = billId + "," + parentPhone + "," + totalPrice;
+                String raw = billId + "," + sendPhone + "," + totalPrice;
                 String hash = DigestUtils.sha256Hex(raw);
 
                 String memberName = group.size() == 1
@@ -603,12 +607,13 @@ public class PaymentService {
                     }
                 }
 
+
                 Map<String, Object> bill = Map.of(
                         "bill_id", billId,
                         "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
                         "message", message,
                         "member_nm", memberName,
-                        "phone", parentPhone,
+                        "phone", sendPhone,
                         "price", totalPrice,
                         "hash", hash,
                         "expire_dt", req.getExpireDt(),
@@ -626,7 +631,7 @@ public class PaymentService {
                 );
 
                 log.info("✅ 결제 API 호출 - billId: {}, phone: {}, amount: {}, 형제 수: {}, 추가청구: {}",
-                        billId, parentPhone, totalPrice, group.size(), hasAdditionalCharge ? "Yes" : "No");
+                        billId, sendPhone, totalPrice, group.size(), hasAdditionalCharge ? "Yes" : "No");
                 PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
 //                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
 
@@ -645,7 +650,7 @@ public class PaymentService {
                     billDTO.setStudentId(target.getStudentId());
                     billDTO.setAmount(target.getAmount());
                     billDTO.setBillType(billType);
-                    billDTO.setPhone(parentPhone);
+                    billDTO.setPhone(sendPhone);
                     billDTO.setCenterCode(user.getCenterCode());
                     billDTO.setExpireDate(req.getExpireDt());
                     billDTO.setYy(req.getYy());
@@ -661,9 +666,10 @@ public class PaymentService {
                 successCount++;
 
             } catch (Exception e) {
-                log.error("청구서 발행 실패 - 부모 번호: {}, 오류: {}", parentPhone, e.getMessage(), e);
+                log.error("청구서 발행 실패 - 부모 번호: {}, 오류: {}", sendPhone, e.getMessage(), e);
                 failCount++;
             }
+
         }
 
         sendProgress(req.getJobId(), total, total, "done", null, successCount, failCount);
@@ -1880,14 +1886,14 @@ public class PaymentService {
                 .mapToLong(s -> {
                     if (s.getId().equals(id)) {
                         // 수정된 매뉴얼은 dto 값으로 계산
-                        return (dto.getCardAmount()     != null ? dto.getCardAmount()     : 0L)
-                                + (dto.getCashAmount()      != null ? dto.getCashAmount()      : 0L)
-                                + (dto.getTransferAmount()  != null ? dto.getTransferAmount()  : 0L);
+                        return (dto.getCardAmount() != null ? dto.getCardAmount() : 0L)
+                                + (dto.getCashAmount() != null ? dto.getCashAmount() : 0L)
+                                + (dto.getTransferAmount() != null ? dto.getTransferAmount() : 0L);
                     } else {
                         // 나머지는 기존 값
-                        return (s.getCardAmount()     != null ? s.getCardAmount()     : 0L)
-                                + (s.getCashAmount()      != null ? s.getCashAmount()      : 0L)
-                                + (s.getTransferAmount()  != null ? s.getTransferAmount()  : 0L);
+                        return (s.getCardAmount() != null ? s.getCardAmount() : 0L)
+                                + (s.getCashAmount() != null ? s.getCashAmount() : 0L)
+                                + (s.getTransferAmount() != null ? s.getTransferAmount() : 0L);
                     }
                 })
                 .sum();

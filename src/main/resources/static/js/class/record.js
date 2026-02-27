@@ -432,7 +432,7 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
   </td>`;
 
         // 상담기록
-        const counselType = afterClass?.counselType || '전화';
+        const counselType = afterClass?.counselType || '';
         const counselContent = afterClass?.counselContent || '';
 
         tr.innerHTML += `
@@ -1043,7 +1043,7 @@ async function insertAfterClassNotice(checkedRows) {
         const contentTextarea = row.querySelector(".record-content");
         const reviewTextarea = row.querySelectorAll(".comment-text")[1]; // 두 번째 textarea가 리뷰
         const counselTextarea = row.querySelector(".counsel-box textarea");
-        const counselType = row.querySelector(".counsel-type button.active")?.textContent || "전화";
+        const counselType = row.querySelector(".counsel-type button.active")?.textContent || "";
 
         const originalContent = contentTextarea.getAttribute("data-original-content") || "";
 

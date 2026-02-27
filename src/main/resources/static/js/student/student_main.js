@@ -355,6 +355,7 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_address_detail", info.addressDetail);
     setValue("#tab2 .s_phone", formatPhone(info.parentPhone));
     setValue("#tab2 .s_birth", formatBirthDisplay(info.birth));
+    setValue("#tab2 .s_billing_phone", formatPhone(info.billingPhone));
 
 
     // ---------------- TAB3: 수업 정보 ----------------
@@ -668,6 +669,7 @@ async function updateStudentInfo() {
             parentPhone: unformatPhone(getValue("#tab2 .s_phone")),
             gradeKey: getValue("#tab2 .s_grade"),
             relationKey: getValue("#tab2 .relation-hidden"),
+            billingPhone: unformatPhone(getValue("#tab2 .s_billing_phone")),
             entryHanDate: getValue("#entry-han-date")?.trim() === "" ? null : getValue("#entry-han-date"),
             entryBookDate: getValue("#entry-book-date")?.trim() === "" ? null : getValue("#entry-book-date"),
         };

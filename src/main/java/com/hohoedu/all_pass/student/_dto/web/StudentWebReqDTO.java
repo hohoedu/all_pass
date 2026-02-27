@@ -69,6 +69,7 @@ public class StudentWebReqDTO {
         private String gradeKey;
         private String genderKey;
         private String relationKey;
+        private String billingPhone;
 
         private String appId;
 

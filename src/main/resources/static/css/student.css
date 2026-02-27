@@ -90,3 +90,50 @@ body{
  line-height: 1.5rem;
  padding:10px 0;
 }
+.icon-new{
+  margin-left:2px;
+  -webkit-animation: blink-1 0.6s 5 both;
+	animation: blink-1 0.6s 5 both;
+}
+@-webkit-keyframes blink-1 {
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
+@keyframes blink-1 {
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
+.color-box{
+  line-height:1rem;
+  border-radius: 6px;
+  font-weight: bold;
+  margin:auto;
+  display:inline-flex;
+  padding:5px 7px;
+}
+.cb-tu{
+  background-color: #7adfd2;
+  color:#008d7b;
+}
+.cb-gr{
+  background-color: #cdcdca;
+  color:#6c6c63;
+}
+.fa-circle-xmark::before{
+  font-size: 20px;
+  color:#d7396c;
+}

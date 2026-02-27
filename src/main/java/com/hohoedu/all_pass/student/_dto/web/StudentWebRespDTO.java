@@ -100,6 +100,7 @@ public class StudentWebRespDTO {
         private String gradeKey;
         private String gradeName;
         private String birth;
+        private String billingPhone;
         private String genderKey;
         private String address;
         private String addressDetail;

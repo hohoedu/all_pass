@@ -1527,6 +1527,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    const payCheckedReissue = document.querySelector('#pay-checked-reissue');
+
+    payCheckedReissue.addEventListener('click', async () => {
+        const checkedBoxes = document.querySelectorAll(
+            '#student-tbody input[type="checkbox"]:checked'
+        );
+
+        if (checkedBoxes.length === 0) {
+            return alert('재발행할 학생을 선택하세요.');
+        }
+
+        const billIds = Array.from(checkedBoxes)
+            .map(cb => cb.closest('tr').dataset.billId)
+            .filter(id => id && id !== 'null' && id !== 'undefined' && id !== '');
+
+        console.log('선택된 학생 수:', checkedBoxes.length);
+        console.log('재발행 대상 billIds:', billIds);
+
+        if (billIds.length === 0) {
+            return alert('선택된 학생 중 발행된 청구서가 없습니다.\n(미발행 상태인 학생은 재발행 불가)');
+        }
+
+        if (!confirm(`총 ${billIds.length}건의 청구서를 재발행하시겠습니까?`)) return;
+
+        try {
+            const res = await fetch('/pay/reissue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ billIds })
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                return alert(data.msg || '재발행 실패');
+            }
+
+            alert(`재발행이 완료되었습니다. (${billIds.length}건)`);
+
+            // 테이블 재조회
+            const monthInput = document.querySelector('.hidden-picker');
+            const teacherSelect = document.getElementById('student-filter');
+            const [year, month] = monthInput.value.split('-');
+            await fetchStudentsGlobal(year, month, teacherSelect.value);
+
+        } catch (e) {
+            console.error('❌ 재발행 오류:', e);
+            alert('재발행 중 오류가 발생했습니다.');
+        }
+    });
+
     // ✅ fetchBillDetail 함수를 여기서도 접근 가능하도록 외부에 선언
     async function fetchBillDetail(studentId, yy, mm) {
         const claimDetailSection = document.querySelector('.claim-frame');

@@ -207,7 +207,7 @@ public class ClassService {
             List<ClassRespDTO.ClassUnitDTO> units = classRepository.findPersonUnitsInRange(
                     centerCode,
                     startYear, startMonth,
-                    endYear, endMonth,
+                    endYear, "12",
                     classKey
             );
 

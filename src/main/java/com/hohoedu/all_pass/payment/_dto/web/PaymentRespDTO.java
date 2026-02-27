@@ -72,6 +72,7 @@ public class PaymentRespDTO {
     public static class PayTargetDTO {
         private String studentId;
         private String studentName;
+        private String billingPhone;
         private String parentPhone;   // 01012345678
         private String paymentKey;
         private Integer amount;

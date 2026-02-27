@@ -1,7 +1,11 @@
 package com.hohoedu.all_pass._core.view;
 
 import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
@@ -119,6 +123,51 @@ public class StudentViewController {
         model.addAttribute("selectedMonthValue", ym.toString());
 
         return "student/student_withdrawal";
+    }
+
+    @GetMapping("/print-withdraw")
+    public String getStudentWithdrawPrintPage(
+            @RequestParam String ym,
+            @RequestParam String userCode,
+            @RequestParam String tab,
+            Model model, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        StudentWebReqDTO.WithdrawReqDTO req = new StudentWebReqDTO.WithdrawReqDTO();
+        req.setYm(ym);
+        req.setUserCode(userCode);
+
+        String tabName = switch (tab) {
+            case "t1" -> "입회";
+            case "t2" -> "탈퇴";
+            case "t3" -> "전입";
+            case "t4" -> "전출";
+            case "t5" -> "졸업";
+            default   -> "";
+        };
+
+        Map<String, ?> groupedByTeacher = switch (tab) {
+            case "t1" -> studentService.findJoinList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정"));
+            case "t2" -> studentService.findWithdrawList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정"));
+            case "t3" -> studentService.findTransferInList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정"));
+            case "t4" -> studentService.findTransferOutList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정"));
+            case "t5" -> studentService.findGraduateList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정"));
+            default -> new HashMap<>();
+        };
+
+        model.addAttribute("groupedByTeacher", groupedByTeacher);
+        model.addAttribute("tab", tab);
+        model.addAttribute("tabName", tabName);
+        model.addAttribute("ym", ym);
+
+        return "print/print-student-withdrawal";
     }
 
     // 전입 전출 현황 출력화면

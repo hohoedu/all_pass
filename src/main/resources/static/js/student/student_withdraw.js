@@ -1,14 +1,37 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const monthPickerInput  = document.getElementById("monthPickerInput");
+
+    const printBtn = document.getElementById('print-withdraw');
+
+    printBtn.addEventListener("click", () => {
+        const ym = monthPickerInput.value;
+        const userCode = document.getElementById('teacher-filter')?.value || 'all';
+        const tab = activeTab; // t1~t5
+
+        window.open(`/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`);
+    });
+
+    function printTimeView(ym, userCode) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/class/print-timeview?ym=${ym}&userCode=${userCode}`;
+
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
+
+        document.body.appendChild(iframe);
+    }
+
+    const monthPickerInput = document.getElementById("monthPickerInput");
     const currentMonthLabel = document.getElementById("currentMonth");
 
     const TAB_CONFIG = {
-        t1: { url: "/student/api/withdraw/join",         render: renderJoinTable        },
-        t2: { url: "/student/api/withdraw/withdraw",     render: renderWithdrawTable    },
-        t3: { url: "/student/api/withdraw/transfer-in",  render: renderTransferInTable  },
-        t4: { url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable },
-        t5: { url: "/student/api/withdraw/graduate",     render: renderGraduateTable    },
+        t1: {url: "/student/api/withdraw/join", render: renderJoinTable},
+        t2: {url: "/student/api/withdraw/withdraw", render: renderWithdrawTable},
+        t3: {url: "/student/api/withdraw/transfer-in", render: renderTransferInTable},
+        t4: {url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable},
+        t5: {url: "/student/api/withdraw/graduate", render: renderGraduateTable},
     };
 
     let activeTab = "t1";
@@ -80,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getReq() {
         return {
             userCode: document.getElementById("teacher-filter")?.value || "all",
-            ym:       monthPickerInput.value || defaultMonth,
+            ym: monthPickerInput.value || defaultMonth,
         };
     }
 
@@ -89,9 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
      * ======================== */
     function fetchCounts() {
         fetch("/student/api/withdraw/counts", {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify(getReq()),
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(getReq()),
         })
             .then(res => res.json())
             .then(data => {
@@ -114,9 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!config) return;
 
         fetch(config.url, {
-            method:  "POST",
-            headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify(getReq()),
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(getReq()),
         })
             .then(res => res.json())
             .then(data => config.render(data.response ?? []))
@@ -138,10 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <tr>
                     <td>${i + 1}</td>
                     <td>${s.studentName ?? ""}</td>
-                    <td>${s.className   ?? ""}</td>
+                    <td>${s.className ?? ""}</td>
                     <td>${s.teacherName ?? ""}</td>
-                    <td>${s.gradeName   ?? ""}</td>
-                    <td>${s.joinDate    ?? ""}</td>
+                    <td>${s.gradeName ?? ""}</td>
+                    <td>${s.joinDate ?? ""}</td>
                     <td><button class="class-action-btn" data-id="${s.studentId}">입회 취소</button></td>
                 </tr>
             `).join("");
@@ -154,13 +177,13 @@ document.addEventListener("DOMContentLoaded", () => {
             : list.map((s, i) => `
                 <tr>
                     <td>${i + 1}</td>
-                    <td>${s.studentName  ?? ""}</td>
-                    <td>${s.className    ?? ""}</td>
-                    <td>${s.teacherName  ?? ""}</td>
-                    <td>${s.gradeName    ?? ""}</td>
-                    <td>${s.joinDate     ?? ""}</td>
+                    <td>${s.studentName ?? ""}</td>
+                    <td>${s.className ?? ""}</td>
+                    <td>${s.teacherName ?? ""}</td>
+                    <td>${s.gradeName ?? ""}</td>
+                    <td>${s.joinDate ?? ""}</td>
                     <td>${s.withdrawDate ?? ""}</td>
-                    <td><p>${s.reason    ?? ""}</p></td>
+                    <td><p>${s.reason ?? ""}</p></td>
                     <td><button class="class-action-btn" data-id="${s.studentId}">탈퇴 취소</button></td>
                 </tr>
             `).join("");
@@ -173,14 +196,14 @@ document.addEventListener("DOMContentLoaded", () => {
             : list.map((s, i) => `
                 <tr>
                     <td>${i + 1}</td>
-                    <td>${s.studentName        ?? ""}</td>
-                    <td>${s.className          ?? ""}</td>
-                    <td>${s.transferInTeacher  ?? ""}</td>
+                    <td>${s.studentName ?? ""}</td>
+                    <td>${s.className ?? ""}</td>
+                    <td>${s.transferInTeacher ?? ""}</td>
                     <td>${s.transferOutTeacher ?? ""}</td>
-                    <td>${s.gradeName          ?? ""}</td>
-                    <td>${s.joinDate           ?? ""}</td>
-                    <td>${s.transferDate       ?? ""}</td>
-                    <td><p>${s.reason          ?? ""}</p></td>
+                    <td>${s.gradeName ?? ""}</td>
+                    <td>${s.joinDate ?? ""}</td>
+                    <td>${s.transferDate ?? ""}</td>
+                    <td><p>${s.reason ?? ""}</p></td>
                     <td><button class="class-action-btn" data-id="${s.studentId}">전입 취소</button></td>
                 </tr>
             `).join("");
@@ -193,14 +216,14 @@ document.addEventListener("DOMContentLoaded", () => {
             : list.map((s, i) => `
                 <tr>
                     <td>${i + 1}</td>
-                    <td>${s.studentName        ?? ""}</td>
-                    <td>${s.className          ?? ""}</td>
-                    <td>${s.transferInTeacher  ?? ""}</td>
+                    <td>${s.studentName ?? ""}</td>
+                    <td>${s.className ?? ""}</td>
+                    <td>${s.transferInTeacher ?? ""}</td>
                     <td>${s.transferOutTeacher ?? ""}</td>
-                    <td>${s.gradeName          ?? ""}</td>
-                    <td>${s.joinDate           ?? ""}</td>
-                    <td>${s.transferDate       ?? ""}</td>
-                    <td><p>${s.reason          ?? ""}</p></td>
+                    <td>${s.gradeName ?? ""}</td>
+                    <td>${s.joinDate ?? ""}</td>
+                    <td>${s.transferDate ?? ""}</td>
+                    <td><p>${s.reason ?? ""}</p></td>
                     <td><button class="class-action-btn" data-id="${s.studentId}">전출 취소</button></td>
                 </tr>
             `).join("");
@@ -213,13 +236,13 @@ document.addEventListener("DOMContentLoaded", () => {
             : list.map((s, i) => `
                 <tr>
                     <td>${i + 1}</td>
-                    <td>${s.studentName  ?? ""}</td>
-                    <td>${s.className    ?? ""}</td>
-                    <td>${s.teacherName  ?? ""}</td>
-                    <td>${s.gradeName    ?? ""}</td>
-                    <td>${s.joinDate     ?? ""}</td>
+                    <td>${s.studentName ?? ""}</td>
+                    <td>${s.className ?? ""}</td>
+                    <td>${s.teacherName ?? ""}</td>
+                    <td>${s.gradeName ?? ""}</td>
+                    <td>${s.joinDate ?? ""}</td>
                     <td>${s.graduateDate ?? ""}</td>
-                    <td><p>${s.reason    ?? ""}</p></td>
+                    <td><p>${s.reason ?? ""}</p></td>
                 </tr>
             `).join("");
     }
