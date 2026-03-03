@@ -713,10 +713,8 @@ public class StudentService {
         );
 
         if (existingAttendance != null && !existingAttendance.isEmpty()) {
-
             boolean alreadyCheckedIn = existingAttendance.stream()
                     .anyMatch(att -> att.getInTime() != null);
-
             if (alreadyCheckedIn) {
                 return "7777";
             }
@@ -727,6 +725,39 @@ public class StudentService {
         String month = String.format("%02d", today.getMonthValue());
         String todayDayname = getDayname(today.getDayOfWeek());
 
+        // ✅ 1. 현재 월 주차에서 날짜 매칭 확인
+        List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
+        String week = null;
+        if (weekList != null && !weekList.isEmpty()) {
+            week = findWeekByDate(today, weekList);
+        }
+
+        // ✅ 2. 현재 월에서 매칭 없으면 → 전월로 재조회 + year, month도 전월로 변경
+        if (week == null) {
+            LocalDate prevMonth = today.minusMonths(1);
+            String prevYear = String.valueOf(prevMonth.getYear());
+            String prevMonthStr = String.format("%02d", prevMonth.getMonthValue());
+
+            log.info("[체크인 주차계산] 현재 월 매칭 없음 → 전월({}-{}) 조회", prevYear, prevMonthStr);
+
+            List<ClassWeek> prevWeekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), prevYear, prevMonthStr);
+            if (prevWeekList != null && !prevWeekList.isEmpty()) {
+                week = findWeekByDate(today, prevWeekList);
+            }
+
+            if (week != null) {
+                // 전월 주차에서 찾았으므로 year, month 전월로 변경
+                year = prevYear;
+                month = prevMonthStr;
+                log.info("[체크인 주차계산] 전월({}-{})에서 찾음 → {}", year, month, week);
+            }
+        }
+
+        if (week == null) {
+            throw new RuntimeException("오늘 날짜는 어떤 주차에도 속하지 않습니다.");
+        }
+
+        // ✅ 3. 결정된 year, month 기준으로 수업 시간 조회
         List<ClassRespDTO.TimeRangeDTO> timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
         if (timeDTO == null || timeDTO.isEmpty()) {
             throw new RuntimeException("수업 시간이 설정되지 않았습니다.");
@@ -742,22 +773,9 @@ public class StudentService {
 
         LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
 
-        List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
-        if (weekList == null || weekList.isEmpty()) {
-            throw new RuntimeException("이번 달 주차 설정이 없습니다.");
-        }
-
-        String week = findWeekByDate(today, weekList);
-        if (week == null) {
-            throw new RuntimeException("오늘 날짜는 어떤 주차에도 속하지 않습니다.");
-        }
-
         int totalUpdated = 0;
-
         for (ClassRespDTO.TimeRangeDTO targetClass : todayClasses) {
-
             LocalTime start = LocalTime.parse(targetClass.getStartTime());
-
             String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
 
             int updated = studentRepository.checkinStudentAttendance(
@@ -793,7 +811,7 @@ public class StudentService {
         );
 
         if (attendanceList == null || attendanceList.isEmpty()) {
-            System.out.println("등원 기록 없음");
+            log.info("[체크아웃] 등원 기록 없음. studentId={}, ymd={}", student.getStudentId(), dto.getYmd());
             return "8888";
         }
 
@@ -802,7 +820,7 @@ public class StudentService {
                 .anyMatch(attendance -> attendance.getOutTime() != null);
 
         if (alreadyCheckedOut) {
-            return "6666"; // 이미 하원 처리됨
+            return "6666";
         }
 
         // 해당 날짜의 모든 교시 하원 처리
@@ -816,7 +834,7 @@ public class StudentService {
             throw new RuntimeException("하원 처리에 실패했습니다.");
         }
 
-        System.out.println("총 " + totalUpdated + "개 교시 하원 완료");
+        log.info("[체크아웃] 총 {}개 교시 하원 완료. studentId={}", totalUpdated, student.getStudentId());
         return "0000";
     }
 

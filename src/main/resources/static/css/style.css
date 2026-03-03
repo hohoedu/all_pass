@@ -1835,6 +1835,19 @@ textarea {
     font-weight: 400;
 }
 
+.left-top .sidebar-item:nth-child(3){
+    position:relative;
+}
+.icon-dot{
+    position: absolute;
+    top:12px; right:10px;
+    font-size: 8px;
+    color:#ff006c;
+    -webkit-animation: blink-1 0.6s 3 both;
+    animation: blink-1 0.6s 3 both;
+
+}
+
 .menu-link {
     display: block;
     transition: .3s ease;

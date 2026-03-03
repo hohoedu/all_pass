@@ -636,9 +636,43 @@ public class ClassService {
 
 
     // ================ 수업 일지 서비스 =====================//
-    public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String yy, String mm, String dayName, String userCode, String centerCode) {
+    public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String dateStr, String dayName, String userCode, String centerCode) {
+        java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+        String yy = String.valueOf(date.getYear());
+        String mm = String.format("%02d", date.getMonthValue());
+
+        log.info("[라벨조회] 날짜: {}, yy: {}, mm: {}", dateStr, yy, mm);
+
+        // ✅ 1. 현재 월 주차에서 날짜 매칭 확인
+        List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(yy, mm, centerCode);
+        boolean isCurrentMonthMatch = weeks.stream().anyMatch(w ->
+                isDateMatch(w.getMon(), date) || isDateMatch(w.getTue(), date) ||
+                        isDateMatch(w.getWed(), date) || isDateMatch(w.getThu(), date) ||
+                        isDateMatch(w.getFri(), date) || isDateMatch(w.getSat(), date) ||
+                        isDateMatch(w.getSun(), date));
+
+        // ✅ 2. 매칭 없으면 전월 기준으로 변경
+        if (!isCurrentMonthMatch) {
+            java.time.LocalDate prevMonth = date.minusMonths(1);
+            yy = String.valueOf(prevMonth.getYear());
+            mm = String.format("%02d", prevMonth.getMonthValue());
+            log.info("[라벨조회] 현재 월 매칭 없음 → 전월({}-{}) 기준으로 변경", yy, mm);
+        }
+
+        // ✅ 3. 결정된 월 기준으로 라벨 조회
         List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode, centerCode);
+        log.info("[라벨조회] {}-{}월 결과: {}건", yy, mm, response.size());
+
         return response;
+    }
+
+    private boolean isDateMatch(Object dateObj, java.time.LocalDate target) {
+        if (dateObj == null || target == null) return false;
+        String dateStr = target.toString();
+        if (dateObj instanceof java.time.LocalDate) return dateObj.toString().equals(dateStr);
+        if (dateObj instanceof org.threeten.bp.LocalDate) return dateObj.toString().equals(dateStr);
+        if (dateObj instanceof String) return dateObj.equals(dateStr);
+        return String.valueOf(dateObj).equals(dateStr);
     }
 
     public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String date, String classKey, String unitKey, String centerCode) {
@@ -688,56 +722,79 @@ public class ClassService {
     // 날짜로부터 주차 계산 메서드
     private String calculateWeekFromDate(String dateStr, String centerCode) {
         try {
-
             java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
             String year = String.valueOf(date.getYear());
             String month = String.format("%02d", date.getMonthValue());
-            List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(year, month, centerCode);
-            if (weeks.isEmpty()) {
-                return "ju_1";
+
+            log.info("[주차계산] 입력 날짜: {}, year: {}, month: {}", dateStr, year, month);
+
+            String result = findWeekFromRepository(dateStr, date, year, month, centerCode);
+            if (result != null) {
+                log.info("[주차계산] 현재 월({}-{})에서 찾음 → {}", year, month, result);
+                return result;
             }
 
-            for (ClassRespDTO.ClassWeekDTO week : weeks) {
-                log.info("주차 확인: {}", week.getWeek());
-                log.info("  월: {}, 화: {}, 수: {}, 목: {}, 금: {}, 토: {}, 일: {}",
-                        week.getMon(), week.getTue(), week.getWed(),
-                        week.getThu(), week.getFri(), week.getSat(), week.getSun());
+            log.info("[주차계산] 현재 월({}-{})에서 매칭 없음 → 전월 조회", year, month);
 
-                // 모든 요일 날짜를 리스트로 만들기
-                List<Object> dates = Arrays.asList(
-                        week.getMon(), week.getTue(), week.getWed(),
-                        week.getThu(), week.getFri(), week.getSat(), week.getSun()
-                );
+            // 현재 월에서 못 찾으면 → 전월로 재조회
+            java.time.LocalDate prevMonth = date.minusMonths(1);
+            String prevYear = String.valueOf(prevMonth.getYear());
+            String prevMonthStr = String.format("%02d", prevMonth.getMonthValue());
 
-                // 날짜 매칭
-                for (Object dateObj : dates) {
-                    if (dateObj == null) continue;
+            log.info("[주차계산] 전월 조회: year: {}, month: {}", prevYear, prevMonthStr);
 
-                    String weekDateStr = null;
-
-                    // 타입별로 문자열 변환
-                    if (dateObj instanceof java.time.LocalDate) {
-                        weekDateStr = dateObj.toString();
-                    } else if (dateObj instanceof org.threeten.bp.LocalDate) {
-                        weekDateStr = dateObj.toString();
-                    } else if (dateObj instanceof String) {
-                        weekDateStr = (String) dateObj;
-                    } else {
-                        weekDateStr = String.valueOf(dateObj);
-                    }
-
-
-                    if (dateStr.equals(weekDateStr)) {
-                        return week.getWeek();
-                    }
-                }
+            String prevResult = findWeekFromRepository(dateStr, date, prevYear, prevMonthStr, centerCode);
+            if (prevResult != null) {
+                log.info("[주차계산] 전월({}-{})에서 찾음 → {}", prevYear, prevMonthStr, prevResult);
+                return prevResult;
             }
 
-            return weeks.get(0).getWeek();
+            // 전월도 없으면 전월 첫 주차 반환
+            List<ClassRespDTO.ClassWeekDTO> prevWeeks = classRepository.getClassWeek(prevYear, prevMonthStr, centerCode);
+            String fallback = prevWeeks.isEmpty() ? "ju_1" : prevWeeks.get(0).getWeek();
+            log.info("[주차계산] 전월에서도 매칭 없음 → fallback: {}", fallback);
+            return fallback;
 
         } catch (Exception e) {
+            log.error("[주차계산] 오류 발생: dateStr={}, error={}", dateStr, e.getMessage());
             return "ju_1";
         }
+    }
+
+    // 탐색 로직 분리
+    private String findWeekFromRepository(String dateStr, java.time.LocalDate date, String year, String month, String centerCode) {
+        List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(year, month, centerCode);
+        if (weeks.isEmpty()) {
+            return null;
+        }
+
+        for (ClassRespDTO.ClassWeekDTO week : weeks) {
+            List<Object> dates = Arrays.asList(
+                    week.getMon(), week.getTue(), week.getWed(),
+                    week.getThu(), week.getFri(), week.getSat(), week.getSun()
+            );
+
+            for (Object dateObj : dates) {
+                if (dateObj == null) continue;
+
+                String weekDateStr;
+                if (dateObj instanceof java.time.LocalDate) {
+                    weekDateStr = dateObj.toString();
+                } else if (dateObj instanceof org.threeten.bp.LocalDate) {
+                    weekDateStr = dateObj.toString();
+                } else if (dateObj instanceof String) {
+                    weekDateStr = (String) dateObj;
+                } else {
+                    weekDateStr = String.valueOf(dateObj);
+                }
+
+                if (dateStr.equals(weekDateStr)) {
+                    return week.getWeek();
+                }
+            }
+        }
+
+        return null; // 매칭 없음
     }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week, String timeTableKey) {

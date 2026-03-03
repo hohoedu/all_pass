@@ -243,12 +243,15 @@ public class ClassController {
     public ResponseEntity<?> findRecordLabel(@RequestBody ClassRecordReqDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+            return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
 
-        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(dto.getYy(), dto.getMm(), dto.getDay(), dto.getUserCode(), user.getCenterCode());
+        // ✅ date 기준으로 서비스에서 월 판단
+        List<RecordLabelDTO> labels = classService.getTimeTableByUserCode(
+                dto.getDate(), dto.getDay(), dto.getUserCode(), user.getCenterCode());
+
         return ResponseEntity.ok(ApiUtils.success(labels));
     }
 
@@ -304,6 +307,7 @@ public class ClassController {
     //알림발송 이후 출결 업데이트
     @PostMapping("/api/attendance/insert")
     public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.updateAttendanceDTO> dtos) {
+        log.info("이거지?");
         for (ClassReqDTO.updateAttendanceDTO dto : dtos) {
             classService.updateAttendance(
                     dto.getStudentId(),

@@ -188,51 +188,60 @@ public class ClassViewController {
         if (user == null) {
             return "redirect:/login";
         }
-        String yy = DateConfig.currentYearMonth().get("currentYear");
-        String mm = DateConfig.currentYearMonth().get("currentMonth");
+
+        LocalDate today = LocalDate.now();
+        String currentDate = today.toString();
         String dayName = DateConfig.currentYearMonth().get("currentDayName");
 
-        List<User> users = userService.findByCenterCode(user);
-        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(yy, mm, dayName, user.getUserCode(), user.getCenterCode());
-
-        // 주차 정보 계산
+        // ✅ 1. 주차 계산 먼저
+        String yy = String.valueOf(today.getYear());
+        String mm = String.format("%02d", today.getMonthValue());
         List<ClassRespDTO.ClassWeekDTO> weeks = classService.getClassWeek(yy, mm, user.getCenterCode());
-        LocalDate today = LocalDate.now();
-        String currentWeek = findWeekByDate(weeks, today);
-        String activeWeek = currentWeek != null ? currentWeek : "ju_1";
+        String activeWeek = findWeekByDate(
+                weeks,
+                today,
+                date -> classService.getClassWeek(
+                        String.valueOf(date.getYear()),
+                        String.format("%02d", date.getMonthValue()),
+                        user.getCenterCode()
+                )
+        );
+        if (activeWeek == null) activeWeek = "ju_1";
 
-        // 현재 날짜 문자열 (yyyy-MM-dd 형식)
-        String currentDate = today.toString();
+        // ✅ 2. 주차가 전월에서 찾아진 경우 → 전월 기준으로 yy, mm 교체
+        boolean isCurrentMonthMatch = weeks.stream().anyMatch(w ->
+                isDateMatch(w.getMon(), today) || isDateMatch(w.getTue(), today) ||
+                        isDateMatch(w.getWed(), today) || isDateMatch(w.getThu(), today) ||
+                        isDateMatch(w.getFri(), today) || isDateMatch(w.getSat(), today) ||
+                        isDateMatch(w.getSun(), today));
+
+        if (!isCurrentMonthMatch) {
+            // 전월로 기준 변경
+            LocalDate prevMonth = today.minusMonths(1);
+            yy = String.valueOf(prevMonth.getYear());
+            mm = String.format("%02d", prevMonth.getMonthValue());
+            log.info("[페이지로딩] 전월 기준으로 변경: {}-{}", yy, mm);
+        }
+
+        List<User> users = userService.findByCenterCode(user);
+        List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(
+                currentDate, dayName, user.getUserCode(), user.getCenterCode());
 
         if (!labels.isEmpty()) {
             String timeTableKey = labels.get(0).getTimeTableKey();
             String classKey = labels.get(0).getClassKey();
             String unitKey = labels.get(0).getUnitKey();
 
-            // 수정: week 대신 date 전달
             ClassRespDTO.RecordBundleDTO bundle = classService.getTimeTableByKey(
-                    user.getUserCode(),
-                    timeTableKey,
-                    currentDate,  // week 대신 현재 날짜 전달
-                    classKey,
-                    unitKey,
-                    user.getCenterCode()
-            );
+                    user.getUserCode(), timeTableKey, currentDate, classKey, unitKey, user.getCenterCode());
 
             model.addAttribute("students", bundle.getStudents());
+            model.addAttribute("content", bundle.getAfterClass() != null
+                    ? bundle.getAfterClass()
+                    : new ClassRespDTO.AfterClassRespDTO());
 
-            if (bundle.getAfterClass() != null) {
-                model.addAttribute("content", bundle.getAfterClass());
-            } else {
-                model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
-            }
-
-            // 백엔드에서 계산된 주차를 activeWeek로 사용
-            if (bundle.getWeek() != null) {
-                activeWeek = bundle.getWeek();
-            }
+            if (bundle.getWeek() != null) activeWeek = bundle.getWeek();
         } else {
-            // 수업이 없을 때도 빈 리스트 추가
             model.addAttribute("students", Collections.emptyList());
             model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
         }
@@ -245,9 +254,22 @@ public class ClassViewController {
         return "class/record";
     }
 
+    private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate, Function<LocalDate, List<ClassRespDTO.ClassWeekDTO>> weeksFetcher) {
+        // 현재 월에서 먼저 탐색
+        Optional<String> result = findWeekInList(weeks, targetDate);
+        if (result.isPresent()) {
+            return result.get();
+        }
 
-    //주차 찾기
-    private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate) {
+        // 매칭 없거나 비어있으면 → 전월로 재조회
+        LocalDate prevMonthDate = targetDate.minusMonths(1);
+        List<ClassRespDTO.ClassWeekDTO> prevWeeks = weeksFetcher.apply(prevMonthDate);
+
+        return findWeekInList(prevWeeks, targetDate)
+                .orElse(prevWeeks.isEmpty() ? "ju_1" : prevWeeks.get(0).getWeek());
+    }
+
+    private Optional<String> findWeekInList(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate) {
         return weeks.stream()
                 .filter(week ->
                         isDateMatch(week.getMon(), targetDate) ||
@@ -259,8 +281,7 @@ public class ClassViewController {
                                 isDateMatch(week.getSun(), targetDate)
                 )
                 .map(ClassRespDTO.ClassWeekDTO::getWeek)
-                .findFirst()
-                .orElse(weeks.isEmpty() ? "ju_1" : weeks.get(0).getWeek());
+                .findFirst();
     }
 
     // 날짜 비교 헬퍼 메서드
