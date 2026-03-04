@@ -88,6 +88,18 @@ public class StudentViewController {
         return "student/student-main";
     }
 
+    // 신규 입회 등록 관리
+    @GetMapping("/new")
+    public String getStudentNewPage(Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+                session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        return "student/student-new";
+    }
+
     // 전입 전출
     @GetMapping("/transfer")
     public String getStudentInoutPage(Model model, HttpSession session) {
@@ -145,7 +157,7 @@ public class StudentViewController {
             case "t3" -> "전입";
             case "t4" -> "전출";
             case "t5" -> "졸업";
-            default   -> "";
+            default -> "";
         };
 
         Map<String, ?> groupedByTeacher = switch (tab) {

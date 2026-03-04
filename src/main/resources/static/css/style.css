@@ -1845,7 +1845,28 @@ textarea {
     color:#ff006c;
     -webkit-animation: blink-1 0.6s 3 both;
     animation: blink-1 0.6s 3 both;
-
+}
+@-webkit-keyframes blink-1 {
+    0%,
+    50%,
+    100% {
+        opacity: 1;
+    }
+    25%,
+    75% {
+        opacity: 0;
+    }
+}
+@keyframes blink-1 {
+    0%,
+    50%,
+    100% {
+        opacity: 1;
+    }
+    25%,
+    75% {
+        opacity: 0;
+    }
 }
 
 .menu-link {

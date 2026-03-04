@@ -1,3 +1,5 @@
+<script src="https://kit.fontawesome.com/180a7620c6.js" crossorigin="anonymous"></script>
+
 <aside class="sidebar" th:fragment="sidebar">
     <div class="sidebar-frame">
         <div class="sidebar-left">
@@ -16,6 +18,7 @@
                     <div class="sidebar-item">
                         <a href="#" class="menu-toggle" data-target="student">
                             <img th:src="@{/image/menu-icon1.png}" alt=""><span>학생관리</span>
+<!--                            <div class="icon-dot">●</div>-->
                         </a>
                     </div>
                     <div class="sidebar-item">
@@ -65,6 +68,7 @@
                 <!-- 1 -->
                 <div class="submenu" data-menu="student">
                     <a th:href="@{/student/main}" class="menu-link">학생 정보</a>
+<!--                    <a th:href="@{/student/new}" class="menu-link">신규 입회<img src="image/icon-new.png" class="icon-new"></a>-->
                     <a th:href="@{/student/transfer}" class="menu-link">전입/전출</a>
                     <a th:href="@{/student/withdraw}" class="menu-link">입·탈퇴 현황</a>
                     <!--          <a th:href="@{/student/overview}" class="menu-link">학생현황 통계</a>-->

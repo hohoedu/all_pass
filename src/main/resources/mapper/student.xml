@@ -879,7 +879,7 @@
                SUM(CASE WHEN gb = 'inactive' THEN 1 ELSE 0 END) AS withdrawCount,
                SUM(CASE WHEN gb = 'move_in' THEN 1 ELSE 0 END)  AS transferInCount,
                SUM(CASE WHEN gb = 'move_out' THEN 1 ELSE 0 END) AS transferOutCount,
-               SUM(CASE WHEN gb = 'week' THEN 1 ELSE 0 END)     AS graduateCount
+               0    AS graduateCount
         FROM (SELECT 'entry' AS gb
               FROM erp_teacher_assign t
               WHERE  (t.assign_han_teacher = #{userCode} OR t.assign_book_teacher = #{userCode})
@@ -993,18 +993,7 @@
     <!-- 졸업 -->
     <select id="selectGraduateList"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
-        SELECT es.student_id                                                                AS studentId,
-               es.student_name                                                              AS studentName,
-               (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = et.class_key) AS className,
-               (SELECT u.user_name FROM erp_user u WHERE u.user_code = et.user_code)        AS teacherName,
-               et.yy + '-' + et.mm                                                          AS graduateDate
-        FROM erp_time_table et
-                 JOIN erp_time_table_assign etta ON et.time_table_key = etta.time_table_key
-                 JOIN erp_student es ON etta.student_id = es.student_id
-        WHERE et.user_code = #{userCode}
-          AND et.yy + '-' + et.mm = #{ym}
-          AND etta.week IN (1, 2, 3)
-        ORDER BY es.student_name
+
     </select>
 
 </mapper>
