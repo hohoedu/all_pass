@@ -523,8 +523,7 @@ public class ClassController {
     }
 
     @PostMapping("/infant/save")
-    public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session
-    ) {
+    public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session) {
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {

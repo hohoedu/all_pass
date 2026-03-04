@@ -1267,8 +1267,12 @@
                hanja_song        AS hanjaSong,
                workbook          AS workBook,
                story_comment     AS storyComment,
-               hangul_playground AS clean,
-               insung            AS insung
+               hangul_playground AS hangulPlayground,
+               clean             AS clean,
+               insung            AS insung,
+               promise           AS promise,
+               resource_song     AS resourceSong,
+               note              AS note
         FROM erp_infant_han
         WHERE class_key = #{classKey}
           AND unit_key = #{unitKey}
@@ -1296,12 +1300,20 @@
                knowledge_board AS knowledgeBoard,
                think_talk      AS thinkTalk,
                goldenbell      AS goldenbell,
-               find_diff       AS findDiff
+               find_diff       AS findDiff,
+               hangul          AS hangul,
+               song            AS song,
+               empathy         AS empathy,
+               make_story      AS makeStory,
+               pic_match       AS picMatch,
+               workbook        AS workbook,
+               note            AS note
         FROM erp_infant_book
         WHERE class_key = #{classKey}
           AND unit_key = #{unitKey}
           AND yy = #{year}
     </select>
+
 
     <select id="findInfantBookStudents"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO$StudentInfo">

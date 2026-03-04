@@ -5650,6 +5650,17 @@ input[type="time" i] {
     filter: grayscale(100%);
 }
 
+.hashtag {
+    cursor: pointer;
+}
+
+.hashtag.hash-blue.active   { color: #4A90D9; }
+.hashtag.hash-orange.active { color: #F5A623; }
+.hashtag.hash-pink.active   { color: #E91E8C; }
+.hashtag.hash-purple.active { color: #9B59B6; }
+.hashtag.hash-green.active  { color: #27AE60; }
+.hashtag:not([class*="hash-"]).active { color: #888; }
+
 .disabled-row input[type="checkbox"] {
     cursor: default;
     filter: grayscale(100%);

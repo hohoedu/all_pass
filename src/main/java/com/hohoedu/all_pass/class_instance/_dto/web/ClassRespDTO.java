@@ -322,8 +322,12 @@ public class ClassRespDTO {
         private String hanjaSong;
         private String workBook;
         private String storyComment;
+        private String hangulPlayground;
         private String clean;
         private String insung;
+        private String promise;
+        private String resourceSong;
+        private String note;
 
         private List<StudentInfo> students;
 
@@ -334,10 +338,10 @@ public class ClassRespDTO {
             private String appId;
             private String appToken;
             private Boolean isSend;
-
         }
     }
 
+    // ✅ InfantBookDTO - 누락 필드 추가
     @Data
     public static class InfantBookDTO {
         private String classLabel;
@@ -349,6 +353,13 @@ public class ClassRespDTO {
         private String thinkTalk;
         private String goldenbell;
         private String findDiff;
+        private String hangul;
+        private String song;
+        private String empathy;
+        private String makeStory;
+        private String picMatch;
+        private String workbook;
+        private String note;
 
         private List<StudentInfo> students;
 
@@ -359,7 +370,6 @@ public class ClassRespDTO {
             private String appId;
             private String appToken;
             private Boolean isSend;
-
         }
     }
 
