@@ -26,7 +26,7 @@ body{
 
 .status-tab{
   position: static !important;
-  
+
   --bg:#f5f7fa;
   --accent:#16a34a;
   --bg-active:#15803d;

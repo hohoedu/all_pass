@@ -6,6 +6,8 @@ import com.hohoedu.all_pass._core.handler.GlobalExceptionHandler;
 import com.hohoedu.all_pass._core.utils.Aes256Util;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
+import com.hohoedu.all_pass.student.StudentService;
+import com.hohoedu.all_pass.student.model.PendingStudent;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class PopbillController {
 
     private final PopbillService popbillService;
+    private final StudentService studentService;
 
     @ResponseBody
     @PostMapping("/insert/config")
@@ -68,10 +71,8 @@ public class PopbillController {
     }
 
     @PostMapping("/send-join")
-    public ResponseEntity<?> sendJoinAlimtalk(@RequestBody Map<String, String> request, HttpSession session) {
+    public ResponseEntity<?> sendJoinAlimtalk(@RequestBody PopbillReqDTO.SendJoinReqDTO request, HttpSession session) {
         try {
-
-            // 세션 체크
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.FOUND)
@@ -79,25 +80,36 @@ public class PopbillController {
                         .build();
             }
 
-            // 전화번호 검증
-            String phone = request.get("phone");
-            if (phone == null || phone.trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(ApiUtils.error("전화번호를 입력해주세요.", HttpStatus.BAD_REQUEST));
-            }
-
-
-            // PopbillService에 위임
-            String receiptNum = popbillService.sendJoinAlimtalk(
+            PopbillReqDTO.InviteTrackingReqDTO inviteDTO = popbillService.sendJoinAlimtalk(
                     user.getCenterCode(),
-                    phone,
+                    request.getPhone(),
                     user.getRegionName(),
                     user.getCenterName(),
                     user.getUserCode()
             );
 
+            PendingStudent pendingStudent = PendingStudent.builder()
+                    .name(request.getName())
+                    .phone(request.getPhone())
+                    .sendKey(inviteDTO.getSendKey())
+                    .gradeKey(request.getGradeKey())
+                    .userCode(user.getUserCode())
+                    .centerCode(user.getCenterCode())
+                    .subHoho(Boolean.TRUE.equals(request.getSubHoho()))
+                    .subHan(Boolean.TRUE.equals(request.getSubHan()))
+                    .subBook(Boolean.TRUE.equals(request.getSubBook()))
+                    .status("LINK_SENT")
+                    .isDeleted(false)
+                    .build();
 
-            // 성공 응답
+            // 상담 발송이면 consultId도 저장 (추적용)
+//            if ("CONSULT".equals(request.getSource()) && request.getConsultId() != null) {
+//                pendingStudent.linkConsult(request.getConsultId());
+//            }
+            log.info("reqDTO = {}", request.toString());
+            log.info("user = {}", user.toString());
+            studentService.createPendingStudent(pendingStudent);
+
             return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));
 
         } catch (Exception e) {

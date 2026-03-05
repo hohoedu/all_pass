@@ -5,6 +5,37 @@
 <mapper
         namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
+    <insert id="createPendingStudent" parameterType="com.hohoedu.all_pass.student.model.PendingStudent" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO erp_pending_student
+        (name, phone, grade_key, send_key, status, user_code, center_code, sub_hoho, sub_han, sub_book, invite_sent_at, is_deleted)
+        VALUES (#{name}, #{phone}, #{gradeKey}, #{sendKey}, #{status}, #{userCode}, #{centerCode}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
+    </insert>
+
+    <select id="findPendingStudent" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PendingStudentRespDTO">
+        select ps.student_id    AS studentId,
+               ps.name          AS name,
+               ps.phone         AS phone,
+               gc.grade_name    AS gradeName,
+               ps.sub_hoho      AS subHoho,
+               ps.sub_han       AS subHan,
+               ps.sub_book      AS subBook,
+               u.user_name      AS userName,
+               ps.status        AS status,
+               ps.registered_at AS registeredAt
+        from erp_pending_student ps
+                 LEFT JOIN erp_grade_code gc on ps.grade_key = gc.grade_key
+                 LEFT JOIN erp_user u on ps.user_code = u.user_code
+        where ps.center_code = #{centerCode}
+          AND ps.is_deleted = 0
+        ORDER BY CASE ps.status
+                     WHEN 'REGISTERED' THEN 1
+                     WHEN 'LINK_SENT'  THEN 2
+                     WHEN 'ASSIGNED'   THEN 3
+                     ELSE 4
+                     END
+    </select>
+
+
     <select id="checkDuplicateStudent" resultType="int">
         select count(*)
         from erp_student s
@@ -143,6 +174,15 @@
         WHERE ta.student_id = #{studentId}
     </select>
 
+    <select id="findStudentConsultByStudentId" parameterType="String"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentConsultDTO">
+        SELECT CONCAT(yy, '년 ', dayname) AS consultDate,
+               counsel_content           AS consultContent
+        FROM erp_after_class_notice
+        WHERE student_id = #{studentId}
+        order by consultDate desc
+    </select>
+
     <!-- 메인화면 선생님별 학생 조회 -->
     <select id="selectStudentByUserCode"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
@@ -255,6 +295,24 @@
         FROM erp_invite_tracking
         WHERE invite_code = #{inviteCode}
     </select>
+
+    <select id="findPendingStudentBySendKey" parameterType="String"
+            resultType="com.hohoedu.all_pass.student.model.PendingStudent">
+        SELECT *
+        FROM erp_pending_student
+        WHERE send_key = #{sendKey}
+          AND is_deleted = 0
+    </select>
+
+    <update id="updatePendingStudentOnRegister">
+        UPDATE erp_pending_student
+        SET student_id    = #{studentId},
+            grade_key     = #{gradeKey},
+            name          = #{name},
+            status        = 'REGISTERED',
+            registered_at = SYSDATETIME()
+        WHERE send_key = #{sendKey}
+    </update>
 
     <!-- 학생 상태 기록 -->
     <insert id="statusHistoryInsert"
@@ -382,11 +440,19 @@
         FROM erp_teacher_assign
         WHERE student_id = #{studentId}
     </select>
+
     <select id="findTeacherAssignByStudentId"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TeacherDTO">
         SELECT *
         FROM erp_teacher_assign
         WHERE student_id = #{studentId}
+    </select>
+
+    <select id="existsTransferSchedule" resultType="boolean">
+        SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+        FROM erp_student_transfer_schedule
+        WHERE student_id = #{studentId}
+          AND from_user_code = #{fromUserCode}
     </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">

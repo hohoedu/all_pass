@@ -18,6 +18,20 @@ import lombok.NoArgsConstructor;
 public class StudentWebRespDTO {
 
     @Data
+    public static class PendingStudentRespDTO {
+        private String studentId;
+        private String name;
+        private String phone;
+        private String gradeName;
+        private Boolean subHoho;
+        private Boolean subHan;
+        private Boolean subBook;
+        private String userName;
+        private String status;
+        private Timestamp registeredAt;
+    }
+
+    @Data
     public static class StudentsListDTO {
         private String studentId;
         private String studentName;
@@ -83,7 +97,8 @@ public class StudentWebRespDTO {
 
     @Data
     public static class StudentConsultDTO {
-
+        private String consultDate;
+        private String consultContent;
     }
 
     @Data

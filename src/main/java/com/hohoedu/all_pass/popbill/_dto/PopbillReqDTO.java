@@ -17,6 +17,20 @@ public class PopbillReqDTO {
     }
 
     @Data
+    public static class SendJoinReqDTO {
+        private String phone;
+        private String source;
+
+        private String name;
+        private String gradeKey;
+        private Boolean subHoho;
+        private Boolean subHan;
+        private Boolean subBook;
+
+        private String consultId;
+    }
+
+    @Data
     public static class PopbillSendRequest {
 
         private String centerCode;

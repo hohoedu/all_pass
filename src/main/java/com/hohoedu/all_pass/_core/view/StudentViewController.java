@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
+import com.hohoedu.all_pass.student.model.PendingStudent;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -96,6 +97,9 @@ public class StudentViewController {
         if (user == null) {
             return "redirect:/login";
         }
+        List<StudentWebRespDTO.PendingStudentRespDTO> students = studentService.findPendingStudent(user.getCenterCode());
+
+        model.addAttribute("students", students);
 
         return "student/student-new";
     }

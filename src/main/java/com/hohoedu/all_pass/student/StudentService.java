@@ -12,6 +12,7 @@ import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.DuplicateStudentException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
+import com.hohoedu.all_pass._core.utils.KeyGenerator;
 import com.hohoedu.all_pass.attendance.AttendanceRepository;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterRepository;
@@ -99,14 +100,19 @@ public class StudentService {
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
 //        studentRepository.findStudentAttendanceByStudentId(studentId);
-//        studentRepository.findStudentConsultByStudentId(studentId);
+        List<StudentWebRespDTO.StudentConsultDTO> consult =  studentRepository.findStudentConsultByStudentId(studentId);
 
         StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
                 .studentInfo(student)
                 .studentPayment(payment)
                 .gradeCodes(grades)
+                .studentCounsult(consult)
                 .build();
         return studentDetailRespDTO;
+    }
+
+    public void createPendingStudent(PendingStudent pendingStudent){
+        studentRepository.createPendingStudent(pendingStudent);
     }
 
 
@@ -176,13 +182,10 @@ public class StudentService {
 
     private void processInviteCompletion(String inviteCode, StudentWebReqDTO.StudentJoinDTO studentDTO) {
         try {
-            // 1. inviteCode로 초대 정보 조회
             InviteTracking invite = studentRepository.findByInviteCode(inviteCode);
 
-            // 2. user_code로 선생님 정보 조회
             String userPhone = userRepository.findUserPhoneByUserCode(invite.getUserCode());
 
-            // 3. 선생님에게 알림톡 발송
             popbillService.sendJoinCompletionAlimtalk(
                     invite.getCenterCode(),
                     userPhone,
@@ -191,18 +194,33 @@ public class StudentService {
                     studentDTO
             );
 
-            // 4. invite 상태 업데이트
-//            invite.setInviteStatus(InviteStatus.COMPLETED);
-//            invite.setCompletedAt(LocalDateTime.now());
-//            inviteRepository.save(invite);
+            PendingStudent pending = studentRepository.findPendingStudentBySendKey(invite.getSendKey());
 
-//            log.info("초대 완료 알림톡 발송 성공 - inviteCode: {}, teacher: {}",
-//                    inviteCode, teacher.getUserCode());
+            if (pending != null) {
+                studentRepository.updatePendingStudentOnRegister(
+                        invite.getSendKey(),
+                        studentDTO.getStudentId(),
+                        studentDTO.getStudentName(),
+                        studentDTO.getGradeKey()
+                        );
+            } else {
+                PendingStudent newPending = PendingStudent.builder()
+                        .name(studentDTO.getStudentName())
+                        .phone(invite.getReceiverPhone())
+                        .sendKey(invite.getSendKey() != null ? invite.getSendKey() : KeyGenerator.generateSendKey())
+                        .userCode(invite.getUserCode())
+                        .centerCode(invite.getCenterCode())
+                        .status("REGISTERED")
+                        .subHoho(studentDTO.isSubHoho())
+                        .subHan(studentDTO.isSubHan())
+                        .subBook(studentDTO.isSubBook())
+                        .build();
+                studentRepository.createPendingStudent(newPending);
+            }
 
         } catch (Exception e) {
             log.error("초대 완료 알림톡 발송 실패 - inviteCode: {}, error: {}",
                     inviteCode, e.getMessage(), e);
-            // 알림톡 발송 실패해도 학생 등록은 정상 완료되도록 예외를 던지지 않음
         }
     }
 
@@ -240,13 +258,6 @@ public class StudentService {
         List<StudentInOutDTO> students = studentRepository.selectTransferStudents(centerCode, userCode);
 
         return students;
-    }
-
-    public List<StudentInOutDTO> findStudentByUserCode(String userCode) {
-        String yy = DateConfig.currentYearMonth().get("currentYear");
-        String mm = DateConfig.currentYearMonth().get("currentMonth");
-
-        return null;
     }
 
     public List<User> findTeacher(UserRespDTO.LoginRespDTO dto) {
@@ -458,136 +469,104 @@ public class StudentService {
     }
 
 
-//    public String insertStudentClass(ClassRespDTO.ClassInfoDTO dto, String studentId, String yy, String mm) {
-//        Integer fee = paymentRepository.findFeeByClassKey(dto.getClassKey(), dto.getCenterCode());
-//
-//        StudentClass.StudentClassBuilder builder = StudentClass.builder()
-//                .student(Student.builder().studentId(studentId).build())
-//                .yy(yy)
-//                .mm(mm);
-//
-//        if ("1".equals(dto.getClassType())) {
-//            builder
-//                    .hanClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-//                    .hanUser(User.builder().userCode(dto.getUserCode()).build())
-//                    .hanFee(fee);
-//
-//        } else if ("2".equals(dto.getClassType())) {
-//            builder
-//                    .bookClassCode(ClassCode.builder().classKey(dto.getClassKey()).build())
-//                    .bookUser(User.builder().userCode(dto.getUserCode()).build())
-//                    .bookFee(fee);
-//        }
-//
-//        StudentClass studentClass = builder.build();
-//
-//        StudentClass existing = studentRepository.findStudentClassByStudentId(studentId, yy, mm);
-//
-//        if (existing != null)
-//            studentRepository.updateStudentClass(studentClass);
-//        else
-//            studentRepository.insertStudentClass(studentClass);
-//
-//        return "ok";
-//    }
-
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);
         return responseDTO;
     }
 
-    @Transactional
-    public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
-
-        String[] parts = reqDto.getMoveAt().split("-");
-        String yy = parts[0];
-        String mm = parts[1];
-
-        for (String studentId : reqDto.getStudents()) {
-
-
-        }
-
-        // 한자 과목 선택
-        if (reqDto.getSelectedHan() != null) {
-            for (String studentId : reqDto.getStudents()) {
-                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
-                if (teacher.getAssignHanTeacher().equals(reqDto.getUserCode())) {
-                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-                }
-                if (teacher.getAssignHanTeacher() == null) {
-                    throw new Exception400("등록된 한자 수업이 없습니다.");
-                }
-
-                // 전입/전출 업데이트
-                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
-
-                // 시간표 삭제
-                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
-
-                if (dto != null) {
-                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
-                }
-
-                // 전입 전출 히스토리 저장
-                StudentTransferHistory history = StudentTransferHistory.builder()
-                        .student(Student.builder().studentId(studentId).build())
-                        .fromUser(User.builder().userCode(teacher.getAssignHanTeacher()).build())
-                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-                        .classCode(ClassCode.builder().classKey(teacher.getAssignHanClass()).build())
-                        .classType(reqDto.getSelectedHan())
-                        .transferReason(reqDto.getTransferReason())
-                        .updatedBy(userCode)
-                        .moveAt(reqDto.getMoveAt())
-                        .build();
-
-                studentRepository.insertTransferHistory(history);
-
-            }
-        }
-        // 독서 과목 선택
-        if (reqDto.getSelectedBook() != null) {
-            for (String studentId : reqDto.getStudents()) {
-                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
-
-                if (teacher.getAssignBookTeacher().equals(reqDto.getUserCode())) {
-                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-                }
-
-                if (teacher.getAssignBookTeacher() == null) {
-                    throw new Exception400("등록된 독서 수업이 없습니다.");
-                }
-                // 전입/전출
-                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), yy, mm);
-
-                // 시간표 삭제
-                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
-
-                if (dto != null) {
-                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
-                }
-
-                // history 저장
-                StudentTransferHistory history = StudentTransferHistory.builder()
-                        .student(Student.builder().studentId(studentId).build())
-                        .fromUser(User.builder().userCode(teacher.getAssignBookTeacher()).build())
-                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-                        .classCode(ClassCode.builder().classKey(teacher.getAssignBookClass()).build())
-                        .classType(reqDto.getSelectedBook())
-                        .transferReason(reqDto.getTransferReason())
-                        .updatedBy(userCode)
-                        .moveAt(reqDto.getMoveAt())
-                        .build();
-
-                studentRepository.insertTransferHistory(history);
-
-            }
-        }
-
-    }
-
+    // 전입 전출
+//    @Transactional
+//    public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
+//
+//        String[] parts = reqDto.getMoveAt().split("-");
+//        String yy = parts[0];
+//        String mm = parts[1];
+//
+//        for (String studentId : reqDto.getStudents()) {
+//
+//
+//        }
+//
+//        // 한자 과목 선택
+//        if (reqDto.getSelectedHan() != null) {
+//            for (String studentId : reqDto.getStudents()) {
+//                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+//                if (teacher.getAssignHanTeacher().equals(reqDto.getUserCode())) {
+//                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+//                }
+//                if (teacher.getAssignHanTeacher() == null) {
+//                    throw new Exception400("등록된 한자 수업이 없습니다.");
+//                }
+//
+//                // 전입/전출 업데이트
+//                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
+//
+//                // 시간표 삭제
+//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
+//
+//                if (dto != null) {
+//                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+//                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+//                }
+//
+//                // 전입 전출 히스토리 저장
+//                StudentTransferHistory history = StudentTransferHistory.builder()
+//                        .student(Student.builder().studentId(studentId).build())
+//                        .fromUser(User.builder().userCode(teacher.getAssignHanTeacher()).build())
+//                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+//                        .classCode(ClassCode.builder().classKey(teacher.getAssignHanClass()).build())
+//                        .classType(reqDto.getSelectedHan())
+//                        .transferReason(reqDto.getTransferReason())
+//                        .updatedBy(userCode)
+//                        .moveAt(reqDto.getMoveAt())
+//                        .build();
+//
+//                studentRepository.insertTransferHistory(history);
+//
+//            }
+//        }
+//        // 독서 과목 선택
+//        if (reqDto.getSelectedBook() != null) {
+//            for (String studentId : reqDto.getStudents()) {
+//                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
+//
+//                if (teacher.getAssignBookTeacher().equals(reqDto.getUserCode())) {
+//                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
+//                }
+//
+//                if (teacher.getAssignBookTeacher() == null) {
+//                    throw new Exception400("등록된 독서 수업이 없습니다.");
+//                }
+//                // 전입/전출
+//                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), yy, mm);
+//
+//                // 시간표 삭제
+//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
+//
+//                if (dto != null) {
+//                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
+//                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
+//                }
+//
+//                // history 저장
+//                StudentTransferHistory history = StudentTransferHistory.builder()
+//                        .student(Student.builder().studentId(studentId).build())
+//                        .fromUser(User.builder().userCode(teacher.getAssignBookTeacher()).build())
+//                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
+//                        .classCode(ClassCode.builder().classKey(teacher.getAssignBookClass()).build())
+//                        .classType(reqDto.getSelectedBook())
+//                        .transferReason(reqDto.getTransferReason())
+//                        .updatedBy(userCode)
+//                        .moveAt(reqDto.getMoveAt())
+//                        .build();
+//
+//                studentRepository.insertTransferHistory(history);
+//
+//            }
+//        }
+//
+//    }
+//
 
     @Transactional
     public void reserveTransfer(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
@@ -610,6 +589,14 @@ public class StudentService {
                     throw new Exception400("본인에게 전입/전출 할 수는 없습니다.");
                 }
 
+                // 중복 체크
+                boolean hanExists = studentRepository.existsTransferSchedule(
+                        studentId, teacher.getAssignHanTeacher()
+                );
+                if (hanExists) {
+                    throw new Exception400("이미 전입/전출이 등록되었습니다.");
+                }
+
                 studentRepository.insertTransferSchedule(
                         studentId,
                         "1",
@@ -629,6 +616,14 @@ public class StudentService {
                     throw new Exception400("본인에게 전입/전출 할 수는 없습니다.");
                 }
 
+                // 중복 체크
+                boolean bookExists = studentRepository.existsTransferSchedule(
+                        studentId, teacher.getAssignBookTeacher()
+                );
+                if (bookExists) {
+                    throw new Exception400("이미 전입/전출이 등록되었습니다.");
+                }
+
                 studentRepository.insertTransferSchedule(
                         studentId,
                         "2",
@@ -640,6 +635,11 @@ public class StudentService {
                 );
             }
         }
+    }
+
+    public List<StudentWebRespDTO.PendingStudentRespDTO> findPendingStudent(String centerCode){
+        List<StudentWebRespDTO.PendingStudentRespDTO> student = studentRepository.findPendingStudent(centerCode);
+        return student;
     }
 
     @Transactional

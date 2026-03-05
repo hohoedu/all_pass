@@ -82,18 +82,39 @@ public class AttendanceService {
             if (!weekMap.containsKey(centerCode)) {
 
                 List<ClassRespDTO.ClassWeekDTO> classWeeks = classRepository.getClassWeek(yy, mm, centerCode);
-                if (classWeeks == null || classWeeks.isEmpty()) {
-                    weekMap.put(centerCode, "");
-                    continue;
+                String week = null;
+
+                if (classWeeks != null && !classWeeks.isEmpty()) {
+                    for (ClassRespDTO.ClassWeekDTO w : classWeeks) {
+                        String found = findWeek(currentDay, w);
+                        if (found != null && !found.isBlank()) {
+                            week = found;
+                            break;
+                        }
+                    }
                 }
 
-                String week = "";
-                for (ClassRespDTO.ClassWeekDTO w : classWeeks) {
-                    week = findWeek(currentDay, w);
-                    if (!week.isBlank()) break;
+                if (week == null || week.isBlank()) {
+                    LocalDate prevMonth = currentDay.minusMonths(1);
+                    String prevYy = String.valueOf(prevMonth.getYear());
+                    String prevMm = String.format("%02d", prevMonth.getMonthValue());
+
+                    log.info("[스케줄 주차계산] 현재 월 매칭 없음 → 전월({}-{}) 조회, centerCode={}", prevYy, prevMm, centerCode);
+
+                    List<ClassRespDTO.ClassWeekDTO> prevWeeks = classRepository.getClassWeek(prevYy, prevMm, centerCode);
+                    if (prevWeeks != null && !prevWeeks.isEmpty()) {
+                        for (ClassRespDTO.ClassWeekDTO w : prevWeeks) {
+                            String found = findWeek(currentDay, w);
+                            if (found != null && !found.isBlank()) {
+                                week = found;
+                                log.info("[스케줄 주차계산] 전월({}-{})에서 찾음 → {}", prevYy, prevMm, week);
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                weekMap.put(centerCode, week);
+                weekMap.put(centerCode, week != null ? week : "");
             }
         }
 
@@ -105,7 +126,6 @@ public class AttendanceService {
         List<ProcessedClassDTO> details = new ArrayList<>();
 
         for (ClassRespDTO.FinishClassDTO tt : finished) {
-
             try {
                 attendanceRepository.bulkInsertAbsentForClass(tt.getTimeTableKey(), today, tt.getWeek());
                 attendanceRepository.bulkInsertRemedialForClass(tt.getTimeTableKey(), today, tt.getWeek());
@@ -119,7 +139,7 @@ public class AttendanceService {
             }
         }
 
-        return null; // 필요 시 ScheduleRunResultDTO 반환 구성
+        return null;
     }
 
 }

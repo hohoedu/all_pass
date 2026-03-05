@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    function getUrlParam(key) {
+        return new URLSearchParams(window.location.search).get(key);
+    }
+
+    function setUrlParams(year, month) {
+        const params = new URLSearchParams(window.location.search);
+        params.set('year', year);
+        params.set('month', month);
+        history.replaceState(null, '', '?' + params.toString());
+    }
+
     /* ======= *
      *   LEFT  *
      * ======= */
@@ -12,20 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
     monthInput.addEventListener('change', onMonthChange);
 
     function initMonthFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const urlYear = params.get('year');
-        const urlMonth = params.get('month');
+        const urlYear = getUrlParam('year');
+        const urlMonth = getUrlParam('month');
 
         let y, m;
-
         if (urlYear && urlMonth) {
             y = urlYear;
             m = String(urlMonth).padStart(2, '0');
         } else {
             const now = new Date();
-            const next = new Date(now.getFullYear(), now.getMonth(), 1);
-            y = next.getFullYear();
-            m = String(next.getMonth() + 1).padStart(2, '0');
+            y = now.getFullYear();
+            m = String(now.getMonth() + 1).padStart(2, '0');
         }
 
         monthInput.value = `${y}-${m}`;
@@ -39,10 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
-
             const monthStr = String(month).padStart(2, "0");
-            monthDisplay.childNodes[0].textContent = `${year}년 ${monthStr}월`;
 
+            monthDisplay.childNodes[0].textContent = `${year}년 ${monthStr}월`;
+            setUrlParams(year, monthStr); // ✅ URL 업데이트
 
             const response = await fetch(`/manage/order/base/list`, {
                 method: "POST",
@@ -50,15 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({yy: String(year), mm: monthStr})
             });
 
-            if (!response.ok) {
-                console.error("서버 조회 실패:", response.status);
-                return;
-            }
-
+            if (!response.ok) return;
             const data = await response.json();
             renderLeftTable(data.response);
-
-            // 월 변경 시 마감 여부 체크
             checkOrderDeadline();
 
         } catch (e) {
@@ -103,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         rows.forEach(row => {
             const baseTd = row.querySelector("td:nth-child(3)");
+            if (!baseTd) return;
             const baseCount = parseInt(baseTd.innerText) || 0;
             total += (baseCount);
         });
@@ -127,36 +130,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initYearOptions();
     renderMonthOptions(yearSelect.value);
+    setUrlParams(yearSelect.value, monthSelect.value);
 
     loadSavedOrder();
     loadOrderDetail();
 
     yearSelect.addEventListener("change", async () => {
         renderMonthOptions(yearSelect.value);
+        setUrlParams(yearSelect.value, monthSelect.value);
         await loadSavedOrder();
         await loadOrderDetail();
     });
 
     monthSelect.addEventListener("change", async () => {
+        setUrlParams(yearSelect.value, monthSelect.value);
         await loadSavedOrder();
         await loadOrderDetail();
     });
 
     function initYearOptions() {
-        const now = new Date();
-        const ty = now.getFullYear();
-        const tm = now.getMonth() + 1;
-
-        const start = new Date(ty, tm - 7, 1);
-        const end = new Date(ty, tm, 1);
-
-
-        const startYear = start.getFullYear();
-        const endYear = end.getFullYear();
+        const ty = new Date().getFullYear();
 
         yearSelect.innerHTML = "";
-
-        for (let y = startYear; y <= endYear; y++) {
+        for (let y = ty - 1; y <= ty + 1; y++) {
             const opt = document.createElement("option");
             opt.value = y;
             opt.textContent = `${y}년`;
@@ -165,36 +161,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+// ===== 월 옵션 =====
     function renderMonthOptions(selectedYear) {
         const now = new Date();
         const ty = now.getFullYear();
         const tm = now.getMonth() + 1;
-        const nextMonth = tm + 1;
-
-        const start = new Date(ty, tm - 7, 1);
-        const end = new Date(ty, tm, 1);
 
         monthSelect.innerHTML = "";
+        for (let m = 1; m <= 12; m++) {
+            const opt = document.createElement("option");
+            opt.value = String(m).padStart(2, "0");
+            opt.textContent = `${String(m).padStart(2, "0")}월`;
 
-        let d = new Date(start);
+            const defaultMonth = Number(selectedYear) === ty ? tm : 1;
+            if (m === defaultMonth) opt.selected = true;
 
-        while (d <= end) {
-            const yy = d.getFullYear();
-            const mm = d.getMonth() + 1;
-
-            if (yy == selectedYear) {
-                const opt = document.createElement("option");
-                opt.value = String(mm).padStart(2, "0");
-                opt.textContent = `${String(mm).padStart(2, "0")}월`;
-
-                if (yy === ty && mm === nextMonth) {
-                    opt.selected = true;
-                }
-
-                monthSelect.appendChild(opt);
-            }
-
-            d.setMonth(d.getMonth() + 1);
+            monthSelect.appendChild(opt);
         }
     }
 
@@ -204,7 +186,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const yy = yearSelect.value;
             const mm = monthSelect.value;
-            if (!yy || !mm) return;
 
             const res = await fetch("/manage/order/list", {
                 method: "POST",
@@ -241,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr>
                     <td>${item.className}</td>
                     <td>${item.unitName}</td>
-                    <td>${item.baseCount}</td>
+                    <td>${item.totalCount}</td>
                     <td>${item.totalCount}</td>
                 </tr>
             `);

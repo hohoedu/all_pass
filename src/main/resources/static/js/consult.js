@@ -389,8 +389,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const row = this.closest('tr');
                 const rawPhone = row.dataset.phone || '';
+                const studentName = row.dataset.studentName || '';
+                const gradeKey = row.dataset.gradeKey || '';
+                const consultId = row.dataset.id || '';
 
-                // 전화번호 정규화
                 let phone = rawPhone.replace(/-/g, '').trim();
 
                 if (!/^[0-9]+$/.test(phone)) {
@@ -407,13 +409,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                if (!confirm(`${row.dataset.studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
+                if (!confirm(`${studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
 
                 try {
                     const response = await fetch('/popbill/send-join', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ phone })
+                        body: JSON.stringify({
+                            source: 'CONSULT',
+                            phone,
+                            name: studentName,
+                            gradeKey,
+                            consultId,
+                            subHoho: false,
+                            subHan: false,
+                            subBook: false
+                        })
                     });
 
                     const result = await response.json();
@@ -430,7 +441,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-// textarea 변경 감지 함수 추가
     function attachTextareaEvents() {
         const textareas = consultTableBody.querySelectorAll('.comment-text');
 

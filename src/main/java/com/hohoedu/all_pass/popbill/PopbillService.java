@@ -71,7 +71,7 @@ public class PopbillService {
         }
     }
 
-    public String sendJoinAlimtalk(String centerCode, String phone, String regionName, String centerName, String userCode) {
+    public PopbillReqDTO.InviteTrackingReqDTO sendJoinAlimtalk(String centerCode, String phone, String regionName, String centerName, String userCode) {
         String category = "join";
         try {
 
@@ -105,7 +105,7 @@ public class PopbillService {
             String inviteCode = KeyGenerator.generateInviteCode();
             String sendKey = KeyGenerator.generateSendKey();
             String joinUrl = "https://hohocenter.co.kr/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
-//            String joinUrl = "https://c5310b9e0f45.ngrok-free.app/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
+//            String joinUrl = "https://45e2-106-246-14-212.ngrok-free.app/student/mobile/join?centerCode=" + centerCode + "&invite=" + inviteCode;
             String androidUrl = "https://play.google.com/store/apps/details?id=com.hohoedu.app";
             String iosUrl = "https://apps.apple.com/us/app/id6504266908";
 
@@ -165,7 +165,7 @@ public class PopbillService {
 
             popbillRepository.insertInviteTracking(inviteDTO);
 
-            return receiptNum;
+            return inviteDTO;
 
 
         } catch (PopbillException e) {

@@ -317,6 +317,7 @@ function renderStudentModal(data) {
     const info = data.studentInfo;
     const payment = data.studentPayment ?? {};
     const grade = data.gradeCodes;
+    const consult = data.studentCounsult;
 
     const setValue = (selector, value) => {
         document.querySelectorAll(selector).forEach(el => {
@@ -374,6 +375,79 @@ function renderStudentModal(data) {
     setValue("#tab3 .s_entry_han_date", formatDate(payment.entryHanDate) ?? '날짜를 선택해주세요.');
     setValue("#tab3 .s_entry_book_date", formatDate(payment.entryBookDate) ?? '날짜를 선택해주세요.');
 
+    // ---------------- TAB4: 출결 정보 ----------------
+    let currentAttendanceYear = new Date().getFullYear();
+    let currentAttendanceMonth = new Date().getMonth() + 1;
+    renderCalendar(currentAttendanceYear, currentAttendanceMonth);
+    function renderCalendar(year, month) {
+        const titleEl = document.getElementById("calendar-title");
+        if (titleEl) {
+            titleEl.textContent = `${year}년 ${String(month).padStart(2, "0")}월`;
+        }
+
+        const firstDay = new Date(year, month - 1, 1).getDay(); // 1일 요일
+        const lastDate = new Date(year, month, 0).getDate();    // 마지막 날
+
+        const tbody = document.querySelector("#tab4 .calendar-table tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        let day = 1;
+        for (let row = 0; row < 6; row++) {
+            if (day > lastDate) break;
+
+            const tr = document.createElement("tr");
+
+            for (let col = 0; col < 7; col++) {
+                const td = document.createElement("td");
+
+                if (row === 0 && col < firstDay) {
+                    td.innerHTML = "";
+                } else if (day > lastDate) {
+                    td.innerHTML = "";
+                } else {
+                    td.textContent = day;
+                    day++;
+                }
+
+                tr.appendChild(td);
+            }
+
+            tbody.appendChild(tr);
+        }
+    }
+
+// 이전달 / 다음달
+    document.addEventListener("DOMContentLoaded", () => {
+        const prevBtn = document.getElementById("calendar-prev");
+        const nextBtn = document.getElementById("calendar-next");
+
+        if (prevBtn) {
+            prevBtn.addEventListener("click", () => {
+                currentAttendanceMonth--;
+                if (currentAttendanceMonth < 1) {
+                    currentAttendanceMonth = 12;
+                    currentAttendanceYear--;
+                }
+                renderCalendar(currentAttendanceYear, currentAttendanceMonth);
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                currentAttendanceMonth++;
+                if (currentAttendanceMonth > 12) {
+                    currentAttendanceMonth = 1;
+                    currentAttendanceYear++;
+                }
+                renderCalendar(currentAttendanceYear, currentAttendanceMonth);
+            });
+        }
+    });
+    // ---------------- TAB5: 상담 정보 ----------------
+    renderConsult(consult ?? []);
+
     // 5) 수강 상태 버튼 표시 + 비활성화
     setCourseState("han", payment.hanState);
     setCourseState("book", payment.bookState);
@@ -403,16 +477,41 @@ function renderStudentModal(data) {
 
     }
 
-    // 날짜 input에 payment에서 가져온 값 넣기
     const hanInput = document.querySelector("#entry-han-date");
     if (hanInput) {
-        hanInput.value = payment.entryHanDate || '';  // info가 아니라 payment!
+        hanInput.value = payment.entryHanDate || '';
     }
 
     const bookInput = document.querySelector("#entry-book-date");
     if (bookInput) {
-        bookInput.value = payment.entryBookDate || '';  // info가 아니라 payment!
+        bookInput.value = payment.entryBookDate || '';
     }
+}
+
+function renderConsult(consultList = []) {
+    const tbodies = document.querySelectorAll("#consult-tbody");
+    if (!tbodies.length) return;
+
+    // null, 공백 제외
+    const filtered = consultList.filter(c => c.consultContent?.trim());
+
+    if (!filtered.length) {
+        tbodies.forEach(tbody => {
+            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">상담 내역이 없습니다.</td></tr>`;
+        });
+        return;
+    }
+    const rows = filtered.map(c => {
+        const dateOnly = c.consultDate?.replace(/(\d{4}년 \d{2}월 \d{2}일).*/, '$1') ?? "";
+        return `
+        <tr>
+            <td>${dateOnly}</td>
+            <td>${c.consultContent}</td>
+        </tr>
+    `;
+    }).join("");
+
+    tbodies.forEach(tbody => tbody.innerHTML = rows);
 }
 
 function setCourseState(type, state) {
@@ -1093,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
 
     async function refreshStudentList() {
         try {

@@ -23,7 +23,7 @@
     <select id="findSavedOrderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$SavedOrderListDTO">
         SELECT o.base_count  AS baseCount,
                o.add_count   AS addCount,
-               o.base_count AS totalCount,
+               o.total_count AS totalCount,
                o.yy,
                o.mm,
                o.class_key   AS classKey,
@@ -40,7 +40,7 @@
     </select>
 
     <select id ="findOrderDetailList">
-        select cc.id, uc.id, cc.class_name as className, o.class_key as classKey, uc.unit_name as unitName, o.unit_key as unitKey, o.base_count as count, 'base' as type
+        select cc.id, uc.id, cc.class_name as className, o.class_key as classKey, uc.unit_name as unitName, o.unit_key as unitKey, o.total_count as count, 'base' as type
         from erp_order o
             JOIN erp_class_code cc
         on o.class_key = cc.class_key

@@ -9,9 +9,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 
-import com.hohoedu.all_pass.student.model.InviteTracking;
-import com.hohoedu.all_pass.student.model.StudentTransferSchedule;
-import com.hohoedu.all_pass.student.model.TeacherAssign;
+import com.hohoedu.all_pass.student.model.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -21,7 +19,6 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDTO;
-import com.hohoedu.all_pass.student.model.StudentTransferHistory;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StatusHistoryDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StudentJoinDTO;
 import org.springframework.security.core.parameters.P;
@@ -38,6 +35,10 @@ public interface StudentRepository {
     public StudentWebRespDTO.StudentInfoDTO findStudentInfoByStudentId(@Param("studentId") String studentId);
 
     public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
+
+    public List<StudentWebRespDTO.StudentConsultDTO> findStudentConsultByStudentId(@Param("studentId") String studentId);
+
+    void createPendingStudent(PendingStudent pendingStudent);
 
     int checkDuplicateStudent(
             @Param("studentName") String studentName,
@@ -60,6 +61,10 @@ public interface StudentRepository {
     void createTeacherAssign(String studentId);
 
     InviteTracking findByInviteCode(String inviteCode);
+
+    PendingStudent findPendingStudentBySendKey(String sendKey);
+
+    void updatePendingStudentOnRegister(String sendKey, String studentId, String name, String gradeKey);
 
     public int statusHistoryInsert(StatusHistoryDTO historyDTO);
 
@@ -117,6 +122,8 @@ public interface StudentRepository {
 
     StudentWebRespDTO.TeacherDTO findTeacherAssignByStudentId(@Param("studentId") String studentId);
 
+    boolean existsTransferSchedule(String studentId, String fromUserCode);
+
     int insertTeacherAssign(TeacherAssign teacherAssign);
 
     int updateTeacherAssign(ClassReqDTO.TeacherAssignUpdateDTO teacherAssign);
@@ -137,6 +144,8 @@ public interface StudentRepository {
             @Param("classType") String classType,
             @Param("yy") String yy,
             @Param("mm") String mm);
+
+    List<StudentWebRespDTO.PendingStudentRespDTO> findPendingStudent(String centerCode);
 
     void insertTransferSchedule(
             @Param("studentId") String studentId,

@@ -1,0 +1,372 @@
+<div th:fragment="studentNewModal" class="modal student-new-modal">
+    <div class="stu-m-con">
+
+        <!-- 헤더 -->
+        <div class="m-t-line" style="margin-bottom: 30px;">
+            <div class="title">
+                <span class="new-s-name"></span>학생 상세정보
+            </div>
+            <a href="#" class="new-btn-close"></a>
+        </div>
+
+        <div class="info-tab-inner">
+
+            <!-- 탭 버튼 -->
+            <div class="info-tab-btn">
+                <a href="#" data-tab="new-tab2" class="new-tab-btn active">기본정보</a>
+                <a href="#" data-tab="new-tab3" class="new-tab-btn">수강과목/회비</a>
+            </div>
+
+            <div class="info-tab-content">
+
+                <!-- ======================== TAB2: 기본정보 ======================== -->
+                <div id="new-tab2" class="tab" style="display:block;">
+                    <div class="modal-scroll">
+                        <div class="modal-inner">
+
+                            <!-- 상태 변경 버튼 (submit 제외 / 별도 API 처리) -->
+                            <div class="btn-group">
+                                <div class="status-buttons" data-visibility="except-current">
+                                    <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                                    <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                                    <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                                    <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
+                                </div>
+                            </div>
+
+                            <!-- reason -->
+                            <div class="reason-input">
+                                <div class="s_student_no" style="display:none;"></div>
+
+                                <!-- 날짜 입력칸 + 달력 아이콘 -->
+                                <div class="withdraw-date hide-input" style="display: flex; gap: 10px; align-items: center; margin-right: 10px;">
+                                    <div style="position: relative;">
+                                        <div class="day-display">날짜를 선택해주세요</div>
+                                        <input type="date" id="withdraw-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                    </div>
+                                    <button type="button" class="icon-btn calendar-open">
+                                        <img src="/image/calendar.png" alt="달력 아이콘">
+                                    </button>
+                                </div>
+
+                                <!-- 사유 입력칸 + 변경 버튼 -->
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
+                                    <button type="button" class="change-btn" id="status-change">변경</button>
+                                </div>
+                            </div>
+
+
+                            <!-- 기본 정보 -->
+                            <table class="base-info-t">
+                                <div class="small-title">기본 정보</div>
+                                <tbody>
+
+                                <tr>
+                                    <th>이름</th>
+                                    <td><input type="text" name="studentName" class="s_name"></td>
+
+                                    <th>상태</th>
+                                    <td>
+                                        <div class="status-buttons" data-visibility="current-status">
+                                            <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
+                                            <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>
+                                            <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>
+                                            <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>생년월일</th>
+                                    <td class="day-picker" style="position: relative;">
+                                        <div class="icon-field">
+                                            <div class="birth-display s_birth"></div>
+                                            <div>
+                                                <input type="date" class="hidden-date" id="birth-date" name="birth">
+                                                <button type="button" class="icon-btn">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <th>성별</th>
+                                    <td class="choose-group gender-group">
+                                        <button type="button" class="btn-choose s_gender" data-value="1">남자</button>
+                                        <button type="button" class="btn-choose s_gender" data-value="0">여자</button>
+                                        <input type="hidden" name="gender" class="gender-hidden" value="0">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>학교</th>
+                                    <td class="icon-field">
+                                        <input type="text" name="school" class="s_school">
+                                        <button type="button" class="icon-btn search-school">
+                                            <img th:src="@{/image/search.png}" alt="검색 아이콘">
+                                        </button>
+                                    </td>
+
+                                    <th>주소</th>
+                                    <td class="icon-field">
+                                        <input type="text" name="address" class="s_address" readonly id="address-input" style="flex: 2;">
+                                        <button type="button" class="icon-btn" onclick="openJusoPopup()">
+                                            <img th:src="@{/image/search.png}" alt="검색 아이콘">
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>학년</th>
+                                    <td><select name="gradeNo" class="grade-select s_grade"></select></td>
+
+                                    <th>상세주소</th>
+                                    <td><input type="text" name="addressDetail" class="s_address_detail" id="address-detail-input"></td>
+                                </tr>
+
+                                <tr>
+                                    <th>부모님HP</th>
+                                    <td><input type="tel" name="parentPhone" class="s_phone"></td>
+
+                                    <th>학생과의 관계</th>
+                                    <td class="choose-group relation-group">
+                                        <button type="button" class="btn-choose" data-value="father">부</button>
+                                        <button type="button" class="btn-choose" data-value="mother">모</button>
+                                        <button type="button" class="btn-choose" data-value="other">기타</button>
+                                        <input type="hidden" class="relation-hidden" name="relationship" value="">
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th>청구서 발송<br>전화번호</th>
+                                    <td>
+                                        <input type="tel" name="cashReceipt" class="s_billing_phone" placeholder="010-1234-5678"
+                                               style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                                    </td>
+
+                                    <th>형제 연결</th>
+                                    <td>
+                                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
+                                            <select id="nameSelect" name="familySearchKey">
+                                                <option value="name">이름</option>
+                                                <option value="phone">전화번호</option>
+                                            </select>
+                                            <input type="text" name="familySearchValue"
+                                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                                            <div class="explore common-btn">검색</div>
+                                        </div>
+
+                                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
+                                            저장할 연락처
+                                            <input type="text" name="familySavePhone"
+                                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                </tbody>
+                            </table>
+                            <!--            &lt;!&ndash; 입회 정보 &ndash;&gt;-->
+                            <!--            <h4 class="small-title">입회 정보</h4>-->
+                            <!--            <table class="base-info-t">-->
+                            <!--                <tbody>-->
+                            <!--                <tr>-->
+                            <!--                    <th>한자 입회</th>-->
+                            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
+                            <!--                        <div class="birth-display s_entry_han_date"></div>-->
+                            <!--                        <div>-->
+                            <!--                            <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date">-->
+                            <!--                            <button type="button" class="icon-btn">-->
+                            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
+                            <!--                            </button>-->
+                            <!--                        </div>-->
+                            <!--                    </td>-->
+
+                            <!--                    <th>독서 입회</th>-->
+                            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
+                            <!--                        <div class="birth-display s_entry_book_date"></div>-->
+                            <!--                        <div>-->
+                            <!--                            <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date">-->
+                            <!--                            <button type="button" class="icon-btn">-->
+                            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
+                            <!--                            </button>-->
+                            <!--                        </div>-->
+                            <!--                    </td>-->
+                            <!--                </tr>-->
+                            <!--                </tbody>-->
+                            <!--            </table>-->
+
+                            <div class="save-btn-frame">
+                                <button type="submit" class="save-btn" id="update-btn">저장</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ======================== TAB3: 수강과목/회비 ======================== -->
+                <div id="new-tab3" class="tab" style="display:none;">
+                    <div class="modal-scroll">
+                        <div class="modal-inner">
+                            <div class="small-title" style="margin-top: 30px;">수강과목(한자)</div>
+                            <table class="base-info-t">
+                                <colgroup>
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                </colgroup>
+                                <tbody>
+                                <tr>
+                                    <th>한자 단계</th>
+                                    <td>
+                                        <input type="text" class="styled-input s_han_class" readonly>
+                                    </td>
+                                    <th>수강 상태</th>
+                                    <td class="choose-group" data-type="han">
+                                        <button type="button" class="btn-choose" data-value="active">수강</button>
+                                        <button type="button" class="btn-choose" data-value="inactive">미수강</button>
+                                        <input type="hidden" name="hanStatus" value="inactive"/>
+                                    </td>
+                                </tr>
+                                <!-- 한자 미수강 입력 영역 -->
+                                <tr class="course-inactive-input han-inactive hide-input">
+                                    <th>미수강 사유</th>
+                                    <td>
+                                        <input type="text" id="han-inactive-reason" placeholder="미수강 사유를 입력해주세요" style="width: 100%;">
+                                    </td>
+                                    <th>미수강 날짜</th>
+                                    <td>
+                                        <div style="position: relative; display: flex; gap: 10px; align-items: center;">
+                                            <div style="position: relative;">
+                                                <input type="text" class="han-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
+                                                <input type="date" id="han-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                            </div>
+                                            <button type="button" class="icon-btn han-calendar-open">
+                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="han-course-info">
+                                    <th>담당 선생님</th>
+                                    <td>
+                                        <input type="text" class="styled-input p_han_teacher" readonly>
+                                    </td>
+
+                                    <th>시작일자</th>
+                                    <td class="day-picker" style="position: relative;">
+                                        <div class="icon-field">
+                                            <div class="birth-display s_birth s_entry_han_date">날짜를 선택하세요.</div>
+                                            <div>
+                                                <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date" data-type="han">
+                                                <button type="button" class="icon-btn">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                </tr>
+                                <tr class="han-course-info">
+                                    <th class="tuition-fee">교육비</th>
+                                    <td>
+                                        <input type="text" name="hanFee" class="no-spin p_han_fee" id="hanFee" readonly>
+                                    </td>
+                                    <th>교재비</th>
+                                    <td>
+                                        <input type="text" name="hanMaterialFee" class="no-spin  p_han_material_fee" id="hanMaterialFee">
+                                    </td>
+                                </tr>
+                                </tbody>
+
+                            </table>
+                            <!-- 수강과목(독서) -->
+                            <div class="small-title">수강과목(독서)</div>
+                            <table class="base-info-t" style="margin-bottom: 5px;">
+                                <colgroup>
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                </colgroup>
+                                <tbody>
+                                <tr>
+                                    <th>독서 단계</th>
+                                    <td>
+                                        <input type="text" class="styled-input s_book_class" readonly>
+                                    </td>
+                                    <th>수강 상태</th>
+                                    <td data-type="book">
+                                        <div class="choose-group" data-type="book">
+                                            <button type="button" class="btn-choose" data-value="active">수강</button>
+                                            <button type="button" class="btn-choose" data-value="inactive">미수강</button>
+                                            <input type="hidden" name="bookStatus" value="inactive" readonly/>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- 독서 미수강 입력 영역 -->
+                                <tr class="course-inactive-input book-inactive hide-input">
+                                    <th>미수강 사유</th>
+                                    <td>
+                                        <input type="text" id="book-inactive-reason" placeholder="미수강 사유를 입력해주세요" style="width: 100%;">
+                                    </td>
+                                    <th>미수강 날짜</th>
+                                    <td>
+                                        <div style="position: relative; display: flex; gap: 10px; align-items: center;">
+                                            <div style="position: relative;">
+                                                <input type="text" class="book-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
+                                                <input type="date" id="book-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                            </div>
+                                            <button type="button" class="icon-btn book-calendar-open">
+                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="book-course-info">
+                                    <th>담당 선생님</th>
+                                    <td>
+                                        <input type="text" class="styled-input p_book_teacher" readonly>
+                                    </td>
+                                    <th>시작일자</th>
+                                    <td class="day-picker" style="position: relative;">
+                                        <div class="icon-field">
+                                            <div class="birth-display s_birth s_entry_book_date">날짜를 선택하세요.</div>
+                                            <div>
+                                                <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date" data-type="book">
+                                                <button type="button" class="icon-btn">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="book-course-info">
+                                    <th class="tuition-fee">교육비</th>
+                                    <td>
+                                        <input type="text" name="bookFee" class="no-spin p_book_fee" id="bookFee" readonly>
+                                    </td>
+                                    <th>교재비</th>
+                                    <td>
+                                        <input type="text" name="bookMaterialFee" class="no-spin p_book_material_fee" id="bookMaterialFee">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="dues-sum">
+                                <p>회비 합계<span> 0</span>원</p>
+                            </div>
+                            <div class="save-btn-frame">
+                                <button type="submit" class="save-btn" id="pay-info">교재비 저장</button>
+                                <button type="submit" class="save-btn" id="course-status-save">수강상태 저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
