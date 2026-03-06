@@ -900,6 +900,10 @@ public class ClassService {
         classRepository.updateRemedialDate(dto.getRemedialKey(), dto.getRemedialDate());
     }
 
+    public void updateRemedialTime(ClassReqDTO.UpdateRemedialTimeDTO dto) {
+        classRepository.updateRemedialTime(dto.getRemedialKey(), dto.getStartTime());
+    }
+
 
     // ================ 월간 평가 서비스 =====================//
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname, String centerCode) {

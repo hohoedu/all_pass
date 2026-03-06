@@ -63,7 +63,7 @@
                         <div class="student-info">
                             <h2 class="subtitle">오늘 수업 목록</h2>
                             <div class="class-button">
-                                <a class="class-next" href="#"></a>
+                                <a class="class-next" th:href="@{/class/record}"></a>
                             </div>
                         </div>
                         <div class="">
@@ -220,7 +220,7 @@
                         <div class="student-info">
                             <h2 class="subtitle">오늘의 보강 목록</h2>
                             <div class="class-button">
-                                <a class="class-next" href="#"></a>
+                                <a class="class-next" th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}"></a>
                             </div>
                         </div>
                         <div class="">

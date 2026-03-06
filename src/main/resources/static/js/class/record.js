@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.timeTableKey = initActiveClass.dataset.timeTableKey || initActiveClass.dataset.classId || null;
         state.classKey = initActiveClass.dataset.classKey || null;
         state.unitKey = initActiveClass.dataset.unitKey || null;
+        state.classType = initActiveClass.dataset.classType || null;
     }
 
     const initActiveWeek = weekWrap?.querySelector('.week-btn.active');
@@ -140,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.timeTableKey = el?.dataset?.timeTableKey || el?.dataset?.classId || null;
         state.classKey = el?.dataset?.classKey || null;
         state.unitKey = el?.dataset?.unitKey || null;
+        state.classType = el?.dataset?.classType || null;
         loadStudentList();
     };
 
@@ -212,10 +214,12 @@ async function loadOverviewFromState() {
         const firstTimeTableKey = list1[0].timeTableKey;
         const firstClassKey = list1[0].classKey;
         const firstUnitKey = list1[0].unitKey;
+        const firstClassType = list1[0].classType;
 
         state.timeTableKey = String(firstTimeTableKey);
         state.classKey = String(firstClassKey);
         state.unitKey = String(firstUnitKey);
+        state.classType = String(firstClassType);
 
         // 학생 목록 조회 (한 번만 호출)
         await loadStudentList(firstTimeTableKey);
@@ -281,6 +285,7 @@ function renderRecordClassList(list) {
         li.dataset.timeTableKey = item.timeTableKey;
         li.dataset.unitKey = item.unitKey;
         li.dataset.classKey = item.classKey;
+        li.dataset.classType = item.classType;
         li.onclick = function () {
             ul.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
             this.classList.add('active');
@@ -1114,7 +1119,6 @@ async function updateAfterSend() {
 
 let currentRemarksStudent = {studentId: null, studentName: null};
 
-// 기존 remarks 모달 오픈 코드 대체 (기존 코드 삭제 후 이걸로 교체)
 document.addEventListener("click", async function (e) {
     const target = e.target.closest(".remarks img");
     if (!target) return;
@@ -1137,7 +1141,6 @@ async function loadRemarksItems(studentId) {
     const tbody = document.querySelector(".remarks-table tbody");
     if (!tbody) return;
 
-    // state.date에서 yy, mm 추출
     const [yy, mm] = state.date.split("-");
 
     try {
@@ -1175,12 +1178,27 @@ async function loadRemarksItems(studentId) {
 function renderRemarksModal(tbody, categories) {
     tbody.innerHTML = "";
 
-    if (categories.length === 0) {
+    console.log("categories:", categories);           // 서버에서 뭐가 오는지
+    console.log("state.classType:", state.classType); // classType이 있는지
+
+    const classTypeMap = {"1": "han", "2": "book"};
+    const currentType = classTypeMap[state.classType];
+    console.log("currentType:", currentType);
+    const filtered = categories
+        .map(category => ({
+            ...category,
+            items: (category.items || []).filter(item =>
+                item.remarkSubject === "all" || item.remarkSubject === currentType
+            )
+        }))
+        .filter(category => category.items.length > 0);
+
+    if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;">등록된 항목이 없습니다.</td></tr>`;
         return;
     }
 
-    categories.forEach(category => {
+    filtered.forEach(category => {
         const tr = document.createElement("tr");
 
         const tdCategory = document.createElement("td");

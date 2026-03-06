@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.threeten.bp.LocalDate;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -74,6 +75,8 @@ public class MainViewController {
 
         model.addAttribute("user", user);
         model.addAttribute("classSummary", classSummary);
+        model.addAttribute("currentYear", LocalDate.now().getYear()); // 2026
+        model.addAttribute("currentMonth", String.format("%02d", LocalDate.now().getMonthValue()));
 
         return "main";
     }

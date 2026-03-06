@@ -73,8 +73,7 @@ public class StudentViewController {
     @GetMapping("/main")
     public String getStudentMainPage(HttpSession session, Model model) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }

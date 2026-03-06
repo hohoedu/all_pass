@@ -58,8 +58,7 @@ public class StudentController {
     @GetMapping(value = "/api/students", params = "userCode")
     public ResponseEntity<?> getStudentsByUSerCode(@RequestParam("userCode") String userCode, HttpSession session) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")

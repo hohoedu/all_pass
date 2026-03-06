@@ -13,6 +13,20 @@ function getYearMonthFromURL() {
     };
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+
+    document.body.addEventListener('input', e => {
+        if (!e.target.matches('.time_input')) return;
+
+        const input = e.target;
+        let v = input.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) {
+            v = v.slice(0, 2) + ':' + v.slice(2, 4);
+        }
+        input.value = v;
+    });
+});
+
 // URL에 year, month 파라미터 설정
 function setYearMonthToURL(year, month) {
     const url = new URL(window.location);
@@ -91,10 +105,10 @@ async function loadRemedialData(year, month) {
 
         // response 배열에서 데이터 가져오기
         const remedials = data.response || [];
-
+        console.log(remedials[0]);
         // action 값에 따라 좌측/우측 데이터 분리
-        const leftRemedials = remedials.filter(item => !item.action);  // action이 false인 것 (보강 대기)
-        const rightRemedials = remedials.filter(item => item.action);  // action이 true인 것 (보강 완료)
+        const leftRemedials = remedials.filter(item => !item.action);
+        const rightRemedials = remedials.filter(item => item.action);
 
         // 좌측 테이블 렌더링 (보강 대기)
         renderLeftTable(leftRemedials);
@@ -131,6 +145,17 @@ function renderLeftTable(data) {
                     </button>
                 </div>
             </td>
+            <td>
+                <div class="time-boxes">
+                    <div class="time-start"style="margin-bottom: 0">
+                        시작
+                        <input type="text" class="time_input start-time"
+                        value="${item.stime ?? ''}"
+                        placeholder="00:00" pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                        inputmode="numeric" maxlength="5"title="시간은 24시간 기준으로 입력하세요"/>
+                    </div>
+                </div>
+            </td>
             <td>${item.userName}</td>
             <td class="checkbox-group">
                 <input type="checkbox"/>
@@ -140,6 +165,7 @@ function renderLeftTable(data) {
 
         // 렌더링 후 이벤트 바인딩
         bindDatePickerEvents(row);
+        bindTimeInputEvents(row);
     });
 }
 
@@ -177,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const action = e.target.checked;
 
             // URL에서 year, month 가져오기
-            const { year, month } = getYearMonthFromURL();
+            const {year, month} = getYearMonthFromURL();
 
             fetch(`/class/remedial/update?year=${year}&month=${month}`, {
                 method: "POST",
@@ -239,4 +265,38 @@ function bindDatePickerEvents(row) {
             }
         });
     }
+}
+
+function bindTimeInputEvents(row) {
+    const timeInput = row.querySelector(".start-time");
+
+    if (!timeInput) return;
+
+    timeInput.addEventListener("change", () => {
+        const value = timeInput.value;
+        console.log(value);
+        // 패턴 검증
+        const pattern = /^([01]\d|2[0-3]):[0-5]\d$/;
+        if (!pattern.test(value)) {
+            alert("시간 형식이 올바르지 않습니다. (예: 09:30)");
+            timeInput.value = '';
+            return;
+        }
+
+        fetch("/class/remedial/updateTime", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                remedialKey: row.dataset.id,
+                startTime: value
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert("시간 저장 실패");
+                }
+            })
+            .catch(err => console.error("서버 오류:", err));
+    });
 }

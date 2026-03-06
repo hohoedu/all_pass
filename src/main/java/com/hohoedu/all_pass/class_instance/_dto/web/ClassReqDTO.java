@@ -171,6 +171,12 @@ public class ClassReqDTO {
         private String remedialDate;
     }
 
+    @Data
+    public static class UpdateRemedialTimeDTO {
+        private String remedialKey;
+        private String startTime;
+    }
+
 
     @Data
     public static class TeacherAssignUpdateDTO {

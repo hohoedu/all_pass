@@ -8,13 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const userCode = document.getElementById('teacher-filter')?.value || 'all';
         const tab = activeTab; // t1~t5
 
-        window.open(`/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`);
+        // window.open(`/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`);
+        printWithdraw(ym, userCode, tab);
     });
 
-    function printTimeView(ym, userCode) {
+    function printWithdraw(ym, userCode, tab) {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `/class/print-timeview?ym=${ym}&userCode=${userCode}`;
+        iframe.src = `/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`;
 
         iframe.onload = () => {
             iframe.contentWindow.print();

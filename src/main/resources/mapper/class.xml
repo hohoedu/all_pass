@@ -648,9 +648,11 @@
         SELECT t.time_table_key as timeTableKey,
         tc.time_table_label as classLabel,
         t.class_key as classKey,
-        t.unit_key as unitKey
+        t.unit_key as unitKey,
+        cc.class_type as classType
         FROM erp_time_table t
         JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+        JOIN erp_class_code cc ON t.class_key = cc.class_key
         WHERE yy = #{yy}
         AND mm = #{mm}
         AND dayName = #{dayName}
@@ -854,6 +856,14 @@
     <update id="updateRemedialDate">
         UPDATE erp_remedial
         SET remedial_date = #{remedialDate},
+            updated_at    = CURRENT_TIMESTAMP
+        WHERE remedial_key = #{remedialKey}
+    </update>
+
+    <!-- 보강 시간 수정 -->
+    <update id="updateRemedialTime">
+        UPDATE erp_remedial
+        SET s_time = #{startTime},
             updated_at    = CURRENT_TIMESTAMP
         WHERE remedial_key = #{remedialKey}
     </update>
@@ -1742,13 +1752,14 @@
 
     <!-- 전체 항목 12개 조회 (마스터 테이블) -->
     <select id="selectAllItems" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemarksItemDTO">
-        SELECT remark_key  AS remarksKey,
-               remark_name AS itemName,
+        SELECT remark_key     AS remarksKey,
+               remark_name    AS itemName,
                CASE remark_category
                    WHEN 1 THEN '수업 준비'
                    WHEN 2 THEN '수업태도'
                    WHEN 3 THEN '이해도'
-                   END     AS categoryName
+                   END        AS categoryName,
+               remark_subject AS remarkSubject
         FROM erp_remark_code
         ORDER BY remark_category, id
     </select>

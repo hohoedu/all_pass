@@ -145,6 +145,7 @@ public class ClassRespDTO {
         private String remedialSubject;
         private String absenceDate;
         private String remedialDate;
+        private String sTime;
         private boolean action;
         private Timestamp updatedAt;
     }
@@ -188,6 +189,7 @@ public class ClassRespDTO {
         private String timeTableKey;
         private String classLabel;
         private String classKey;
+        private String classType;
         private String unitKey;
     }
 
@@ -391,6 +393,7 @@ public class ClassRespDTO {
         private String remarksKey;
         private String categoryName;
         private String itemName;
+        private String remarkSubject;
         private boolean checked;
     }
 

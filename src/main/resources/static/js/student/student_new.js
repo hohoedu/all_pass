@@ -484,12 +484,17 @@ document.addEventListener('DOMContentLoaded', () => {
             display.textContent = `${y}년 ${m}월 ${d}일`;
         });
 
-        // ★ 수강/미수강 버튼 클릭
+        // ★ 수강/미수강 버튼 클릭 - closest()는 단순 선택자만 지원하므로 수동 체크
         modal.addEventListener('click', (e) => {
-            const btn = e.target.closest('#new-tab3 .choose-group .btn-choose');
+            const btn = e.target.closest('.btn-choose');
             if (!btn) return;
 
-            const group  = btn.closest('.choose-group');
+            const group = btn.closest('.choose-group');
+            if (!group) return;
+
+            // #new-tab3 안에 있는지 확인
+            if (!btn.closest('#new-tab3')) return;
+
             const hidden = group.querySelector('input[type="hidden"]');
             if (!hidden) return;
 
@@ -497,10 +502,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             hidden.value = btn.dataset.value;
 
-            // 미수강 입력 영역 show/hide
-            const type           = group.dataset.type; // 'han' or 'book'
-            const status         = btn.dataset.value;  // 'active' or 'inactive'
-            const inactiveRow    = modal.querySelector(`.${type}-inactive`);
+            const type   = group.dataset.type;   // 'han' or 'book'
+            const status = btn.dataset.value;    // 'active' or 'inactive'
+            const inactiveRow = modal.querySelector(`.${type}-inactive`);
             if (inactiveRow) {
                 inactiveRow.classList.toggle('hide-input', status !== 'inactive');
             }
@@ -654,11 +658,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================= //
 
     function initCourseStatusSave() {
-        let initialHanState    = null;
-        let initialBookState   = null;
+        let initialHanState      = null;
+        let initialBookState     = null;
         let initialEntryHanDate  = null;
         let initialEntryBookDate = null;
 
+        // 한자 미수강 달력
+        modal.querySelector('.han-calendar-open')?.addEventListener('click', () => {
+            const dateInput = modal.querySelector('#han-inactive-date');
+            if (!dateInput) return;
+            if (typeof dateInput.showPicker === 'function') {
+                dateInput.showPicker();
+            } else {
+                dateInput.click();
+            }
+        });
+
+        // 독서 미수강 달력
+        modal.querySelector('.book-calendar-open')?.addEventListener('click', () => {
+            const dateInput = modal.querySelector('#book-inactive-date');
+            if (!dateInput) return;
+            if (typeof dateInput.showPicker === 'function') {
+                dateInput.showPicker();
+            } else {
+                dateInput.click();
+            }
+        });
+
+        // 한자 미수강 날짜 표시
+        modal.querySelector('#han-inactive-date')?.addEventListener('change', function () {
+            const display = modal.querySelector('.han-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+
+        // 독서 미수강 날짜 표시
+        modal.querySelector('#book-inactive-date')?.addEventListener('change', function () {
+            const display = modal.querySelector('.book-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+
+        // 초기 수강 상태 저장
         window.saveInitialCourseState = function (hanState, bookState) {
             initialHanState  = (hanState  === 1 || hanState  === '1') ? 'active' : 'inactive';
             initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
@@ -666,6 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
             initialEntryBookDate = modal.querySelector('#entry-book-date')?.value || null;
         };
 
+        // 수강상태 저장 버튼
         modal.querySelector('#course-status-save')?.addEventListener('click', async () => {
             if (!currentStudentId) { alert('학생 ID를 찾을 수 없습니다.'); return; }
 
@@ -681,18 +727,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const bookChanged = (initialBookState !== null && initialBookState !== currentBookState) || (initialEntryBookDate !== entryBookInput?.value);
 
             const requestBody = {
-                studentId:        currentStudentId,
-                hanState:         currentHanState  === 'active' ? 1 : 0,
-                bookState:        currentBookState === 'active' ? 1 : 0,
+                studentId:          currentStudentId,
+                hanState:           currentHanState  === 'active' ? 1 : 0,
+                bookState:          currentBookState === 'active' ? 1 : 0,
                 hanChanged,
                 bookChanged,
-                entryHanDate:     entryHanInput?.value  || null,
-                entryBookDate:    entryBookInput?.value || null,
-                inactiveHanDate:  modal.querySelector('#han-inactive-date')?.value  || null,
-                inactiveBookDate: modal.querySelector('#book-inactive-date')?.value || null,
+                entryHanDate:       entryHanInput?.value  || null,
+                entryBookDate:      entryBookInput?.value || null,
+                inactiveHanDate:    modal.querySelector('#han-inactive-date')?.value  || null,
+                inactiveBookDate:   modal.querySelector('#book-inactive-date')?.value || null,
                 inactiveHanReason:  modal.querySelector('#han-inactive-reason')?.value?.trim()  || null,
                 inactiveBookReason: modal.querySelector('#book-inactive-reason')?.value?.trim() || null,
             };
+
+            // 둘 다 미수강이면 학생 상태 변경 여부 확인
+            if (currentHanState === 'inactive' && currentBookState === 'inactive') {
+                const shouldChange = await showStudentStatusModal();
+                if (!shouldChange) return;
+                requestBody.changeStudentStatus = true;
+            }
 
             try {
                 const res = await fetch('/student/update/course-status', {
@@ -708,7 +761,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 initialEntryHanDate  = entryHanInput?.value;
                 initialEntryBookDate = entryBookInput?.value;
 
+                // 미수강 입력 초기화
+                const hanDisplay  = modal.querySelector('.han-date-display');
+                const bookDisplay = modal.querySelector('.book-date-display');
+                const hanReason   = modal.querySelector('#han-inactive-reason');
+                const bookReason  = modal.querySelector('#book-inactive-reason');
+                const hanDate     = modal.querySelector('#han-inactive-date');
+                const bookDate    = modal.querySelector('#book-inactive-date');
+
+                if (hanReason)  hanReason.value  = '';
+                if (hanDate)    hanDate.value    = '';
+                if (hanDisplay) hanDisplay.value = '';
+                if (bookReason) bookReason.value  = '';
+                if (bookDate)   bookDate.value    = '';
+                if (bookDisplay) bookDisplay.value = '';
+
+                modal.querySelector('.han-inactive')?.classList.add('hide-input');
+                modal.querySelector('.book-inactive')?.classList.add('hide-input');
+
             } catch { alert('수강상태 변경 중 오류가 발생했습니다.'); }
+        });
+    }
+
+
+// 둘 다 미수강 시 학생 상태 변경 확인 모달
+    function showStudentStatusModal() {
+        return new Promise((resolve) => {
+            const modalId = 'status-change-modal-' + Date.now();
+            document.body.insertAdjacentHTML('beforeend', `
+            <div id="${modalId}" style="
+                position:fixed; top:0; left:0; width:100%; height:100%;
+                background:rgba(0,0,0,0.5); display:flex;
+                justify-content:center; align-items:center; z-index:10000;">
+                <div style="background:white; padding:30px; border-radius:8px;
+                    box-shadow:0 4px 6px rgba(0,0,0,0.1); max-width:400px; text-align:center;">
+                    <h3 style="margin-bottom:15px;">학생 상태 변경</h3>
+                    <p style="margin-bottom:20px; line-height:1.6;">
+                        한자와 독서 모두 미수강으로 변경됩니다.<br>
+                        학생 상태도 함께 변경하시겠습니까?
+                    </p>
+                    <button class="confirm-btn" style="padding:10px 20px; margin:0 5px;
+                        background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">확인</button>
+                    <button class="cancel-btn" style="padding:10px 20px; margin:0 5px;
+                        background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">취소</button>
+                </div>
+            </div>
+        `);
+            const el = document.getElementById(modalId);
+            el.addEventListener('click', (e) => {
+                if (e.target.classList.contains('confirm-btn')) { el.remove(); resolve(true); }
+                else if (e.target.classList.contains('cancel-btn')) { el.remove(); resolve(false); }
+            });
         });
     }
 

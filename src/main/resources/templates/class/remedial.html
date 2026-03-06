@@ -43,25 +43,26 @@
                             </div>
                         </div>
                     </div>
-<!--                    <div>-->
-<!--                        <div class="basic-select sl1">-->
-<!--                            <select name="teacherNo" id="consult-teacher-filter">-->
-<!--                                <th:block th:each="teacher : ${teachers}">-->
-<!--                                    <option th:value="${teacher.userCode}"-->
-<!--                                            th:text="${teacher.userName + ' 선생님'}" th:selected="${teacher.userCode == user.userCode}"></option>-->
+                    <!--                    <div>-->
+                    <!--                        <div class="basic-select sl1">-->
+                    <!--                            <select name="teacherNo" id="consult-teacher-filter">-->
+                    <!--                                <th:block th:each="teacher : ${teachers}">-->
+                    <!--                                    <option th:value="${teacher.userCode}"-->
+                    <!--                                            th:text="${teacher.userName + ' 선생님'}" th:selected="${teacher.userCode == user.userCode}"></option>-->
 
-<!--                                </th:block>-->
-<!--                            </select>-->
-<!--                        </div>-->
-<!--                    </div>-->
+                    <!--                                </th:block>-->
+                    <!--                            </select>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
                     <div class="bt">
                         <div class="table-frame">
                             <div class="table-body-scroll">
                                 <table class="basic-table yh">
                                     <colgroup>
-                                        <col width="10%">
+                                        <col width="5%">
                                         <col width="10%">
                                         <col width="20%">
+                                        <col width="10%">
                                         <col width="20%">
                                         <col width="20%">
                                         <col width="10%">
@@ -74,6 +75,7 @@
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">결석일자</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">보강과목</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">보강일자</th>
+                                        <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">보강시간</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">선생님</th>
                                         <th class="checkbox-group">보강여부</th>
                                     </tr>
@@ -97,7 +99,20 @@
                                                 </button>
                                             </div>
                                         </td>
-                                        <!-- <td class="cal-content" th:text="${item.remedialDate}"></td> -->
+                                        <td>
+                                            <div class="time-boxes">
+                                                <div class="time-start">
+                                                    시작
+                                                    <input type="text" class="time_input start-time"
+                                                           style="margin-bottom: 0"
+                                                           th:value="${item != null ? item.sTime : ''}"
+                                                           placeholder="00:00"
+                                                           pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
+                                                           inputmode="numeric" maxlength="5"
+                                                           title="시간은 24시간 기준으로 입력하세요"/>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td th:text="${item.userName}"></td>
                                         <td class="checkbox-group">
                                             <input type="checkbox"/>

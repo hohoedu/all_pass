@@ -361,7 +361,7 @@ public class ClassController {
                     .build();
         }
 
-        List<?> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), user.getUserCode());
+        List<RemedialDTO> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }
@@ -402,6 +402,11 @@ public class ClassController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping("/remedial/updateTime")
+    public ResponseEntity<?> updateRemedialTime(@RequestBody ClassReqDTO.UpdateRemedialTimeDTO dto) {
+        classService.updateRemedialTime(dto);
+        return ResponseEntity.ok(null);
+    }
 
     // 월간 평가 (초등)
     // 월별 / 선생님 별 테이블 라벨 가져오기
