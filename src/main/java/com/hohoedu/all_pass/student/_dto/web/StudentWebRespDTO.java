@@ -18,6 +18,15 @@ import lombok.NoArgsConstructor;
 public class StudentWebRespDTO {
 
     @Data
+    public static class MainStudentStatusDTO {
+        private Integer totalCount;     // 전체 학생 수
+        private Integer entryCount;     // 이번달 입회
+        private Integer withdrawCount;  // 이번달 탈퇴
+        private Integer transferInCount;  // 이번달 전입
+        private Integer transferOutCount; // 이번달 전출
+    }
+
+    @Data
     public static class PendingStudentRespDTO {
         private String studentId;
         private String name;
@@ -154,6 +163,7 @@ public class StudentWebRespDTO {
         private String bookClass;
         private String hasApp;
         private String appId;
+        private String parentPhone;
 
     }
 

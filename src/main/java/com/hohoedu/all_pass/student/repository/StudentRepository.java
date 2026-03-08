@@ -26,6 +26,12 @@ import org.springframework.security.core.parameters.P;
 @Mapper
 public interface StudentRepository {
 
+    StudentWebRespDTO.MainStudentStatusDTO findStudentStatus(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("year") String year,
+            @Param("month") String month);
+
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(
             @Param("year") String year,
             @Param("month") String month,

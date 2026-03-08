@@ -5,6 +5,79 @@
 <mapper
         namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
+    <select id="findStudentStatus"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentStatusDTO">
+    SELECT
+    -- 전체 학생 수 (yy/mm 조건 추가)
+        (
+            SELECT COUNT(DISTINCT s.student_id)
+            FROM erp_student s
+            WHERE s.status_key != 'WITHDRAWN'
+        AND EXISTS (
+        SELECT 1
+        FROM erp_time_table_assign ta
+        JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+        WHERE ta.student_id = s.student_id
+        AND t.center_code = #{centerCode}
+        AND t.user_code = #{userCode}
+        AND t.yy = #{year}
+        AND t.mm = #{month}
+        )
+        ) AS totalCount,
+
+    -- 이번달 입회
+         (
+    SELECT COUNT(DISTINCT ta.student_id)
+    FROM erp_teacher_assign ta
+    WHERE (
+        ta.assign_han_teacher = #{userCode}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.entry_han_date, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.entry_han_date, 120), 6, 2) = #{month}
+        )
+       OR (
+        ta.assign_book_teacher = #{userCode}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.entry_book_date, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.entry_book_date, 120), 6, 2) = #{month}
+        )
+        ) AS entryCount,
+
+    -- 이번달 탈퇴
+        (
+    SELECT COUNT(DISTINCT ta.student_id)
+    FROM erp_teacher_assign ta
+    WHERE (
+        ta.assign_han_teacher = #{userCode}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_han_date, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_han_date, 120), 6, 2) = #{month}
+        )
+       OR (
+        ta.assign_book_teacher = #{userCode}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_book_date, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_book_date, 120), 6, 2) = #{month}
+        )
+        ) AS withdrawCount,
+
+    -- 이번달 전입
+        (
+    SELECT COUNT(*)
+    FROM erp_student_transfer_history
+    WHERE to_user_code = #{userCode}
+      AND center_code = #{centerCode}
+      AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
+        ) AS transferInCount,
+
+    -- 이번달 전출
+        (
+    SELECT COUNT(*)
+    FROM erp_student_transfer_history
+    WHERE from_user_code = #{userCode}
+      AND center_code = #{centerCode}
+      AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
+      AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
+        ) AS transferOutCount
+    </select>
+
     <insert id="createPendingStudent" parameterType="com.hohoedu.all_pass.student.model.PendingStudent" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_pending_student
         (name, phone, grade_key, send_key, status, user_code, center_code, sub_hoho, sub_han, sub_book, invite_sent_at, is_deleted)
@@ -242,6 +315,7 @@
         c.center_name AS centerName,
         s.app_id AS appId,
 
+
         STUFF((
         SELECT DISTINCT ', ' + cc2.class_name
         FROM erp_time_table_assign ta2
@@ -274,12 +348,14 @@
             AND t.user_code = #{userCode}
         </if>
         FOR XML PATH(''), TYPE
-        ).value('.', 'nvarchar(max)'), 1, 2, '') AS bookClass
+        ).value('.', 'nvarchar(max)'), 1, 2, '') AS bookClass,
+        p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last AS parentPhone
 
         FROM ERP_STUDENT s
         LEFT JOIN ERP_status_code sc ON sc.status_key = s.status_key
         LEFT JOIN ERP_grade_code g ON g.grade_key = s.grade_key
         LEFT JOIN ERP_center c ON c.center_code = s.center_code
+        LEFT JOIN erp_parent p ON s.student_id = p.student_id
         <if test="timeTableKey != null and timeTableKey != 'all'">
             LEFT JOIN ERP_time_table_assign ta ON s.student_id = ta.student_id
             LEFT JOIN ERP_time_table t ON ta.time_table_key = t.time_table_key

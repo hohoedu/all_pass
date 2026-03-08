@@ -103,6 +103,22 @@ public class ClassService {
         return responseDTO;
     }
 
+    public List<ClassRespDTO.MainRemedialSummaryDTO> getRemedialSummary(String centerCode) {
+        String today = DateConfig.currentYearMonth().get("today");
+        String year = DateConfig.currentYearMonth().get("currentYear");
+        String month = DateConfig.currentYearMonth().get("currentMonth");
+        String dayname = DateConfig.currentYearMonth().get("currentDayName");
+
+        List<ClassRespDTO.MainRemedialSummaryDTO> responseDTO = classRepository.findRemedialSummary(today, centerCode);
+
+        return responseDTO;
+    }
+
+    public ClassRespDTO.MainAbsentSummaryDTO getAbsentSummary(
+            String centerCode, String userCode, String year, String month) {
+        return classRepository.findAbsentSummary(centerCode, userCode, year, month);
+    }
+
     public void saveClassWeek(ClassReqDTO.WeekReqDTO dto, String centerCode) {
 
         List<ClassRespDTO.ClassWeekDTO> existing = classRepository.getClassWeek(dto.getYear(), dto.getMonth(), centerCode);

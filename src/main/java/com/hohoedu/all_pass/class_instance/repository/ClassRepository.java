@@ -28,6 +28,16 @@ public interface ClassRepository {
             @Param("centerCode") String centerCode
     );
 
+    List<ClassRespDTO.MainRemedialSummaryDTO> findRemedialSummary(
+            @Param("today") String today,
+            @Param("centerCode") String centerCode);
+
+    ClassRespDTO.MainAbsentSummaryDTO findAbsentSummary(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("year") String year,
+            @Param("month") String month);
+
     List<ClassRespDTO.ClassWeekDTO> getClassWeek(
             @Param("year") String year,
             @Param("month") String month,

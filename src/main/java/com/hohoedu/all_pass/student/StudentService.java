@@ -74,6 +74,12 @@ public class StudentService {
     private final AttendanceRepository attendanceRepository;
     private final PopbillService popbillService;
 
+    public StudentWebRespDTO.MainStudentStatusDTO getStudentStatus(
+            String centerCode, String userCode, String year, String month) {
+        return studentRepository.findStudentStatus(centerCode, userCode, year, month);
+    }
+
+
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
 
         List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month, centerCode, userCode);

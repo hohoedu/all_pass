@@ -1,50 +1,42 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Custom Css / Js -->
     <link rel="stylesheet" href="/static/css/style.css" th:href="@{/css/style.css}">
     <link rel="stylesheet" href="/static/css/media.css" th:href="@{/css/media.css}">
     <script src="/static/js/custom.js" th:src="@{/js/custom.js}"></script>
-    <!-- Html menu Load -->
     <script src="/static/js/sidebar.js" th:src="@{/js/sidebar.js}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <title>대시 보드</title>
     <style>
-        .main-container,
-        .main-frame,
-        .sidebar-load,
-        .main-info,
-        .student-frame,
-        .student-frame > section {
+        .main-container, .main-frame, .sidebar-load,
+        .main-info, .student-frame, .student-frame > section {
             background: #f7f7f7;
         }
     </style>
 </head>
-
 <body>
 <div class="main-container">
     <div class="main-frame">
-        <!-- left nav bar -->
         <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
         <main class="main-info">
             <div class="student-frame">
-                <!-- section:top -->
+
+                <!-- ====== section:top ====== -->
                 <section class="class-info-section">
                     <div class="class-desc">
                         <div class="class-header">
                             <div class="main-sub">
-                                <div class="common-title" style="margin-bottom:  0;">
+                                <div class="common-title" style="margin-bottom: 0;">
                                     <h2 id="main-month-title"></h2>
                                 </div>
                                 <div class="basic-select">
                                     <select name="teacher" id="main-teacher-select" style="width: 200px;">
                                         <th:block th:each="u : ${user}">
-                                            <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}">
+                                            <option th:value="${u.userCode}"
+                                                    th:text="${u.userName + ' 선생님'}">
                                             </option>
                                         </th:block>
                                     </select>
@@ -58,7 +50,10 @@
                         </div>
                     </div>
                 </section>
+
                 <section class="class-status">
+
+                    <!-- ====== 오늘 수업 목록 ====== -->
                     <article class="edu-card">
                         <div class="student-info">
                             <h2 class="subtitle">오늘 수업 목록</h2>
@@ -66,8 +61,7 @@
                                 <a class="class-next" th:href="@{/class/record}"></a>
                             </div>
                         </div>
-                        <div class="">
-                            <!-- 고정 헤더 -->
+                        <div>
                             <table class="class-status-table">
                                 <thead>
                                 <tr>
@@ -79,16 +73,14 @@
                                 </tr>
                                 </thead>
                             </table>
-                            <!-- 스크롤 바디 -->
                             <div class="class-tbody-scroll table-frame">
                                 <table class="class-status-table class-tbody">
                                     <tbody>
-                                    <!-- 반복 -->
                                     <tr th:each="item : ${classSummary}">
-                                        <td th:text="${item.startTime}">15:30</td>
-                                        <td th:text="${item.className}">초등천재</td>
-                                        <td th:text="${item.countStudent}">3/8</td>
-                                        <td th:text="${item.userName}">이한나</td>
+                                        <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
+                                        <td th:text="${item.className}"></td>
+                                        <td th:text="${item.countStudent}"></td>
+                                        <td th:text="${item.userName}"></td>
                                         <td>
                                             <button class="class-action-btn"
                                                     th:attr="data-key=${item.timeTableKey}">
@@ -96,22 +88,22 @@
                                             </button>
                                         </td>
                                     </tr>
-
-                                    <!-- 데이터 없을 때 -->
                                     <tr th:if="${#lists.isEmpty(classSummary)}">
-                                        <td colspan="5" style="text-align: center; padding: 20px;">
+                                        <td colspan="5" style="text-align:center; padding:20px;">
                                             조회된 수업이 없습니다.
                                         </td>
                                     </tr>
-
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
                     </article>
+
+                    <!-- ====== 미납 현황 ====== -->
                     <article class="unpaid-card">
                         <div class="unpaid-lists">
+
+                            <!-- 이전 미납 현황 (전체 기간) -->
                             <div class="payment-area">
                                 <div class="status-title">
                                     <h2 class="subtitle">이전 미납 현황</h2>
@@ -123,11 +115,18 @@
                                     <div class="payment-chart">
                                         <div class="unpaid-stats">
                                             <div class="all-amounts">
-                                                <span class="unpaid-amount">10</span><span
-                                                    class="all-amount">건</span>
+                                                <span class="unpaid-amount"
+                                                      th:text="${not #lists.isEmpty(allUnpaidSummary)
+                                                          ? allUnpaidSummary[0].unpaidCount : 0}">
+                                                </span>
+                                                <span class="all-amount">건</span>
                                             </div>
                                             <div class="unpaid percent">
-                                                미납률: <span> 6.1%</span>
+                                                미납률:
+                                                <span th:text="${not #lists.isEmpty(allUnpaidSummary)
+                                                    ? #numbers.formatDecimal(allUnpaidSummary[0].unpaidRate, 1, 1) + '%'
+                                                    : '0%'}">
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -136,26 +135,25 @@
                                             <table class="class-status-table">
                                                 <thead>
                                                 <tr>
-                                                    <th>발행일</th>
+                                                    <th>년월</th>
+                                                    <th>유효기간</th>
                                                     <th>이름</th>
+                                                    <th>종류</th>
                                                     <th>금액</th>
                                                 </tr>
                                                 </thead>
-                                                <tbody class="unpaid-tbody">
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
+                                                <tbody>
+                                                <tr th:each="item : ${allUnpaidSummary}">
+                                                    <td th:text="${item.yy + '년 ' + item.mm + '월'}"></td>
+                                                    <td th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}"></td>
+                                                    <td th:text="${item.studentName}"></td>
+                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}"></td>
+                                                    <td th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}"></td>
                                                 </tr>
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
+                                                <tr th:if="${#lists.isEmpty(allUnpaidSummary)}">
+                                                    <td colspan="5" style="text-align:center; padding:20px;">
+                                                        미납 내역이 없습니다.
+                                                    </td>
                                                 </tr>
                                                 </tbody>
                                             </table>
@@ -163,6 +161,8 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- 이번달 미납 현황 -->
                             <div class="payment-area">
                                 <div class="status-title">
                                     <h2 class="subtitle">이번달 미납 현황</h2>
@@ -174,11 +174,18 @@
                                     <div class="payment-chart">
                                         <div class="unpaid-stats">
                                             <div class="all-amounts">
-                                                <span class="unpaid-amount">10</span><span
-                                                    class="all-amount">건</span>
+                                                <span class="unpaid-amount"
+                                                      th:text="${not #lists.isEmpty(paymentSummary)
+                                                          ? paymentSummary[0].unpaidCount : 0}">
+                                                </span>
+                                                <span class="all-amount">건</span>
                                             </div>
                                             <div class="unpaid percent">
-                                                미납률: <span> 6.1%</span>
+                                                미납률:
+                                                <span th:text="${not #lists.isEmpty(paymentSummary)
+                                                    ? #numbers.formatDecimal(paymentSummary[0].unpaidRate, 1, 1) + '%'
+                                                    : '0%'}">
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -187,26 +194,23 @@
                                             <table class="class-status-table">
                                                 <thead>
                                                 <tr>
-                                                    <th>발행일</th>
+                                                    <th>유효기간</th>
                                                     <th>이름</th>
+                                                    <th>종류</th>
                                                     <th>금액</th>
                                                 </tr>
                                                 </thead>
-                                                <tbody class="unpaid-tbody">
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
+                                                <tbody>
+                                                <tr th:each="item : ${paymentSummary}">
+                                                    <td th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}"></td>
+                                                    <td th:text="${item.studentName}"></td>
+                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}"></td>
+                                                    <td th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}"></td>
                                                 </tr>
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>2025-05-20</td>
-                                                    <td>김호일</td>
-                                                    <td>210,000</td>
+                                                <tr th:if="${#lists.isEmpty(paymentSummary)}">
+                                                    <td colspan="4" style="text-align:center; padding:20px;">
+                                                        미납 내역이 없습니다.
+                                                    </td>
                                                 </tr>
                                                 </tbody>
                                             </table>
@@ -214,17 +218,21 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </article>
+
+                    <!-- ====== 오늘의 보강 목록 ====== -->
                     <article class="makeup-card">
                         <div class="student-info">
                             <h2 class="subtitle">오늘의 보강 목록</h2>
                             <div class="class-button">
-                                <a class="class-next" th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}"></a>
+                                <a class="class-next"
+                                   th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}">
+                                </a>
                             </div>
                         </div>
-                        <div class="">
-                            <!-- 고정 헤더 -->
+                        <div>
                             <table class="class-status-table">
                                 <thead>
                                 <tr>
@@ -236,157 +244,42 @@
                                 </tr>
                                 </thead>
                             </table>
-                            <!-- 스크롤 바디 -->
                             <div class="makeup-tbody-scroll table-frame">
                                 <table class="class-status-table class-tbody">
-                                    <tbody class="class-tbody">
-                                    <tr>
-                                        <td>15:30</td>
-                                        <td>초등천재</td>
-                                        <td>3/8</td>
-                                        <td>이한나</td>
+                                    <tbody>
+                                    <tr th:each="item : ${remedialSummary}">
+                                        <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
+                                        <td th:text="${item.remedialSubject}"></td>
+                                        <td th:text="${item.countStudent}"></td>
+                                        <td th:text="${item.userName}"></td>
                                         <td class="checkbox-group">
                                             <input type="checkbox">
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>16:30</td>
-                                        <td>초등수재</td>
-                                        <td>4/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>17:30</td>
-                                        <td>신동</td>
-                                        <td>7/8</td>
-                                        <td>김유영</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>18:30</td>
-                                        <td>초등박사</td>
-                                        <td>5/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>19:30</td>
-                                        <td>한스쿨 II</td>
-                                        <td>8/8</td>
-                                        <td>서진수</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>15:30</td>
-                                        <td>초등천재</td>
-                                        <td>3/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>16:30</td>
-                                        <td>초등수재</td>
-                                        <td>4/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>17:30</td>
-                                        <td>신동</td>
-                                        <td>7/8</td>
-                                        <td>김유영</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>18:30</td>
-                                        <td>초등박사</td>
-                                        <td>5/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>19:30</td>
-                                        <td>한스쿨 II</td>
-                                        <td>8/8</td>
-                                        <td>서진수</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>15:30</td>
-                                        <td>초등천재</td>
-                                        <td>3/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>16:30</td>
-                                        <td>초등수재</td>
-                                        <td>4/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>17:30</td>
-                                        <td>신동</td>
-                                        <td>7/8</td>
-                                        <td>김유영</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>18:30</td>
-                                        <td>초등박사</td>
-                                        <td>5/8</td>
-                                        <td>이한나</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>19:30</td>
-                                        <td>한스쿨 II</td>
-                                        <td>8/8</td>
-                                        <td>서진수</td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
+                                    <tr th:if="${#lists.isEmpty(remedialSummary)}">
+                                        <td colspan="5" style="text-align:center; padding:20px;">
+                                            조회된 보강이 없습니다.
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
                     </article>
+
+                    <!-- ====== 결석/보강 현황 + 학생 현황 ====== -->
                     <article class="status-card">
+
+                        <!-- 결석/보강 현황 -->
                         <div class="absence-num">
                             <div class="absence-info">
                                 <div class="absence-desc">
-                                    <p class="subtitle">결석 및 보강 현황</p>
-                                    <p class="pax"><span>3</span>/<span>10</span></p>
+                                    <p class="subtitle">이번달 결석/보강 현황</p>
+                                    <p class="pax">
+                                        <span th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>
+                                        /
+                                        <span th:text="${absentSummary != null ? absentSummary.remedialCount : 0}">0</span>
+                                    </p>
                                 </div>
                                 <div class="class-button">
                                     <a class="class-next" href="#"></a>
@@ -395,20 +288,30 @@
                             <div class="class-boxes">
                                 <div class="class-box">
                                     <p>결석</p>
-                                    <p><span>3</span>명</p>
-                                    <!-- <div class="tooltip">탈퇴 확률이 높아 관리 필요!</div> -->
+                                    <p>
+                                        <span th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>명
+                                    </p>
                                 </div>
                                 <div class="class-box">
                                     <p>보강</p>
-                                    <p><span>5</span>명</p>
+                                    <p>
+                                        <span th:text="${absentSummary != null ? absentSummary.remedialCount : 0}">0</span>명
+                                    </p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 학생 현황 -->
                         <div class="student-num">
                             <div class="student-info">
                                 <div class="student-desc">
-                                    <p class="subtitle">결석 및 보강 현황</p>
-                                    <p class="pax"><span class="number">61</span>명</p>
+                                    <p class="subtitle">학생 현황</p>
+                                    <p class="pax">
+                                        <span class="number"
+                                              th:text="${studentStatus != null ? studentStatus.totalCount : 0}">
+                                            0
+                                        </span>명
+                                    </p>
                                 </div>
                                 <div class="class-button">
                                     <a class="class-next" href="#"></a>
@@ -417,28 +320,41 @@
                             <div class="student-status-boxes">
                                 <div class="status-box join">
                                     <div class="label">입회</div>
-                                    <div class="count">10</div>
+                                    <div class="count"
+                                         th:text="${studentStatus != null ? studentStatus.entryCount : 0}">
+                                        0
+                                    </div>
                                 </div>
                                 <div class="status-box leave">
                                     <div class="label">탈퇴</div>
-                                    <div class="count">3</div>
+                                    <div class="count"
+                                         th:text="${studentStatus != null ? studentStatus.withdrawCount : 0}">
+                                        0
+                                    </div>
                                 </div>
                                 <div class="status-box transfer-in">
                                     <div class="label">전입</div>
-                                    <div class="count">4</div>
+                                    <div class="count"
+                                         th:text="${studentStatus != null ? studentStatus.transferInCount : 0}">
+                                        0
+                                    </div>
                                 </div>
                                 <div class="status-box transfer-out">
                                     <div class="label">전출</div>
-                                    <div class="count">1</div>
+                                    <div class="count"
+                                         th:text="${studentStatus != null ? studentStatus.transferOutCount : 0}">
+                                        0
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                     </article>
+
                 </section>
             </div>
         </main>
     </div>
 </div>
 </body>
-
 </html>

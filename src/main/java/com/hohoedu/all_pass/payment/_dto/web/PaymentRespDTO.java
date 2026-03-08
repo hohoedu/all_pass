@@ -1,24 +1,27 @@
 package com.hohoedu.all_pass.payment._dto.web;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.hohoedu.all_pass.center.Center;
-import com.hohoedu.all_pass.payment.Payment;
-import com.hohoedu.all_pass.student.Student;
-import jakarta.persistence.Column;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
 public class PaymentRespDTO {
+
+    @Data
+    public static class MainPaymentSummaryDTO {
+        private String studentId;
+        private String studentName;
+        private Long billPrice;
+        private String className;
+        private String classType;
+        private String itemType;
+        private String billExpireAt;
+        private String yy;
+        private String mm;
+        private Integer unpaidCount;
+        private Integer totalCount;
+        private Double unpaidRate;
+    }
 
     @Data
     public static class AssignStudentsDTO {

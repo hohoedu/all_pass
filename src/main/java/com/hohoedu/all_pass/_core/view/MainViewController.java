@@ -5,6 +5,9 @@ import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.student.StudentService;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
@@ -37,6 +40,7 @@ public class MainViewController {
     private final UserService userService;
     private final ClassService classService;
     private final PaymentService paymentService;
+    private final StudentService studentService;
 
 
     @GetMapping({"/", "/home"})
@@ -65,18 +69,48 @@ public class MainViewController {
     // 메인화면 열기
     @GetMapping("/main")
     public String getMainPage(HttpSession session, Model model) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user =
+                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
-        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(), user.getUserCode());
+        String year  = String.valueOf(LocalDate.now().getYear());
+        String month = String.format("%02d", LocalDate.now().getMonthValue());
 
+        // 오늘 수업 목록
+        List<ClassRespDTO.MainClassSummaryDTO> classSummary =
+                classService.getClassSummary(user.getCenterCode(), user.getUserCode());
+
+        // 오늘 보강 목록
+        List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary =
+                classService.getRemedialSummary(user.getCenterCode());
+
+        // 이번달 미납
+        List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary =
+                paymentService.getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode());
+
+        // 전체 기간 미납
+        List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary =
+                paymentService.getPaymentSummary(user.getCenterCode(), user.getUserCode());
+
+        // 이번달 결석/보강 현황
+        ClassRespDTO.MainAbsentSummaryDTO absentSummary =
+                classService.getAbsentSummary(user.getCenterCode(), user.getUserCode(), year, month);
+
+        // 학생 현황
+        StudentWebRespDTO.MainStudentStatusDTO studentStatus =
+                studentService.getStudentStatus(user.getCenterCode(), user.getUserCode(), year, month);
 
         model.addAttribute("user", user);
         model.addAttribute("classSummary", classSummary);
-        model.addAttribute("currentYear", LocalDate.now().getYear()); // 2026
-        model.addAttribute("currentMonth", String.format("%02d", LocalDate.now().getMonthValue()));
+        model.addAttribute("remedialSummary", remedialSummary);
+        model.addAttribute("paymentSummary", paymentSummary);
+        model.addAttribute("allUnpaidSummary", allUnpaidSummary);
+        model.addAttribute("absentSummary", absentSummary);
+        model.addAttribute("studentStatus", studentStatus);
+        model.addAttribute("currentYear", year);
+        model.addAttribute("currentMonth", month);
 
         return "main";
     }

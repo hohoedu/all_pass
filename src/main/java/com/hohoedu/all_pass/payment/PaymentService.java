@@ -53,6 +53,18 @@ public class PaymentService {
     private final StudentRepository studentRepository;
     private final SseEmitterHolder sseEmitterHolder;
 
+
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode) {
+        return paymentRepository.findPaymentSummary(centerCode, userCode);
+    }
+
+    // 기간별 미납 조회
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode) {
+        String year = DateConfig.currentYearMonth().get("currentYear");
+        String month = DateConfig.currentYearMonth().get("currentMonth");
+        return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, year, month);
+    }
+
     /**
      * payment 상태 재계산 (교육비 기준)
      * <p>

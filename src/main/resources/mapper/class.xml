@@ -4,6 +4,32 @@
 
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
+    <select id="findAbsentSummary"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainAbsentSummaryDTO">
+        SELECT
+            -- 이번달 누적 결석
+            (
+                SELECT COUNT(*)
+                FROM erp_student_attendance ea
+                         JOIN erp_time_table t ON ea.time_table_key = t.time_table_key
+                WHERE ea.yy = #{year}
+                  AND ea.mm = #{month}
+                  AND ea.center_code = #{centerCode}
+                  AND t.user_code = #{userCode}
+                  AND ea.attendance_key = 'absent'
+            ) AS absentCount,
+
+            -- 이번달 누적 보강 (완료된 것만)
+            (
+                SELECT COUNT(*)
+                FROM erp_remedial er
+                WHERE SUBSTRING(er.remedial_date, 1, 4) = #{year}
+                  AND SUBSTRING(er.remedial_date, 6, 2) = #{month}
+                  AND er.user_code = #{userCode}
+                  AND er.action = 1
+            ) AS remedialCount
+    </select>
+
     <select id="findClassSummary"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainClassSummaryDTO">
         SElECT
@@ -27,6 +53,18 @@
         GROUP BY t.time_table_key, t.start_time, cc.class_name, uc.unit_name, u.user_name
         ORDER BY startTime ASC;
 
+    </select>
+
+    <select id="findRemedialSummary" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainRemedialSummaryDTO">
+        select s_time                as startTime,
+               remedial_subject      as remedialSubject,
+               count(time_table_key) as countStudent,
+               u.user_name           as userName
+        from erp_remedial er
+                 JOIN erp_user u on er.user_code = u.user_code
+        where er.remedial_date = #{today}
+          AND u.center_code = #{centerCode}
+        GROUP BY s_time, er.remedial_subject, u.user_name;
     </select>
 
     <!--  센터별 수업 주차 설정  -->

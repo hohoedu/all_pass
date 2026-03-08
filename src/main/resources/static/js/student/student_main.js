@@ -9,28 +9,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (teacherFilter) {
         teacherFilter.addEventListener("change", function () {
             const userCode = this.value;
-            console.log(userCode);
+
             fetch(`/student/api/label?userCode=${encodeURIComponent(userCode)}`)
-                .then(res => {
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
                     subjectFilter.innerHTML = `<option value="all">전체</option>`;
                     data.response.forEach(item => {
                         subjectFilter.innerHTML += `<option value="${item.timeTableKey}">${item.classLabel}</option>`;
                     });
                 })
-                .catch(err => {
+                .catch(() => {
                     subjectFilter.innerHTML = `<option value="all">전체</option>`;
                 });
 
             fetch(`/student/api/students?userCode=${encodeURIComponent(userCode)}`)
-                .then(res => {
-                    return res.json();
-
-                })
+                .then(res => res.json())
                 .then(data => {
                     renderStudents(tbody, data.response);
+
+                    // ✅ 추가: 검색어가 남아있으면 새 목록에서 자동 재검색
+                    if (typeof window.doSearch === "function") {
+                        window.doSearch();
+                    }
                 });
         });
     }
@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ============ 검색 ============ //
+// ============ 검색 ============ //
 document.addEventListener("DOMContentLoaded", () => {
     const searchBtn = document.getElementById("search-main-student");
     const searchInput = document.getElementById("search-name");
@@ -67,12 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!searchBtn || !searchInput || !tbody) return;
 
-    const getRows = () =>
-        Array.from(tbody.querySelectorAll("tr"));
+    const getRows = () => Array.from(tbody.querySelectorAll("tr"));
 
-    function doSearch() {
+    window.doSearch = function () {
         const keyword = searchInput.value.trim().toLowerCase();
-        const filterType = filterSelect?.value || "all";
+        const filterType = filterSelect?.value || "name"; // ✅ "all" → "name"
         const rows = getRows();
 
         if (!keyword) {
@@ -89,8 +89,25 @@ document.addEventListener("DOMContentLoaded", () => {
             let textToSearch = "";
 
             switch (filterType) {
-                case "all": // 이름
+                case "name":   // ✅ "all" → "name"
                     textToSearch = tds[1]?.innerText.toLowerCase() || "";
+                    break;
+                case "class":
+                    textToSearch = tds[4]?.innerText.toLowerCase() || "";
+                    break;
+                case "phone":
+                    const rawPhone = tr.dataset.phone ?? "";
+                    const normalizedPhone = rawPhone.replace(/-/g, "");
+                    const normalizedKeyword = keyword.replace(/-/g, "");
+                    if (normalizedPhone.includes(normalizedKeyword)) {
+                        tr.style.display = "";
+                        matchedCount++;
+                    } else {
+                        tr.style.display = "none";
+                    }
+                    return;
+                case "school":
+                    textToSearch = tds[6]?.innerText.toLowerCase() || "";
                     break;
                 default:
                     textToSearch = tr.innerText.toLowerCase();
@@ -104,24 +121,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // 🔹 검색 결과가 하나도 없으면 전체 복구
         if (matchedCount === 0) {
             rows.forEach(tr => (tr.style.display = ""));
         }
-    }
+    };
 
-    // 버튼 클릭
-    searchBtn.addEventListener("click", doSearch);
+    searchBtn.addEventListener("click", window.doSearch);
 
-    // 🔥 Enter 키 검색
     searchInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
-            doSearch();
+            window.doSearch();
         }
     });
 
-    // 🔹 입력값 지우면 즉시 전체 복구
     searchInput.addEventListener("input", () => {
         if (searchInput.value.trim() === "") {
             getRows().forEach(tr => (tr.style.display = ""));
@@ -137,6 +150,7 @@ function renderStudents(tbody, students = []) {
         const tr = document.createElement("tr");
         tr.setAttribute("data-id", s.studentId);
         tr.setAttribute("onclick", "openModal(this)");
+        tr.setAttribute("data-phone", (s.appId ?? "").substring(0, 8));
         const appIcon = s.hasApp === "Y"
             ? `<div class="tooltip-container">
                  <img src="/image/in_app.png" alt="앱 연결" class="app-icon" 

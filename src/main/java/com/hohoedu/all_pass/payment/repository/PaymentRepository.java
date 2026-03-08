@@ -17,6 +17,15 @@ import java.util.List;
 @Mapper
 public interface PaymentRepository {
 
+    List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummary(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode);
+
+    List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummaryByPeriod(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("year") String year,
+            @Param("month") String month);
 
     int updateExpiredBillsToDestroyed();
 

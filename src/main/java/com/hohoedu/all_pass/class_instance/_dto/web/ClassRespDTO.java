@@ -24,6 +24,20 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class MainRemedialSummaryDTO {
+        private String startTime;
+        private String remedialSubject;
+        private String countStudent;
+        private String userName;
+    }
+
+    @Data
+    public static class MainAbsentSummaryDTO {
+        private Integer absentCount;    // 이번달 누적 결석
+        private Integer remedialCount;  // 이번달 누적 보강
+    }
+
+    @Data
     public static class ClassWeekDTO {
         private Integer id;
         private String year;
