@@ -906,6 +906,11 @@
         WHERE remedial_key = #{remedialKey}
     </update>
 
+    <delete id="deleteRemedial">
+        DELETE FROM erp_remedial
+        WHERE remedial_key = #{remedialKey}
+    </delete>
+
     <!-- 클래스 코드별 학생 및 본문 조회 -->
     <resultMap id="MonthlyStudentMap"
                type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO">

@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!keyword) {
             rows.forEach(tr => (tr.style.display = ""));
+            tbody.querySelector(".empty-search-row")?.remove();
             return;
         }
 
@@ -122,7 +123,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         if (matchedCount === 0) {
-            rows.forEach(tr => (tr.style.display = ""));
+            rows.forEach(tr => (tr.style.display = "none"));
+
+            const existingEmpty = tbody.querySelector(".empty-search-row");
+            if (!existingEmpty) {
+                const emptyTr = document.createElement("tr");
+                emptyTr.className = "empty-search-row";
+                emptyTr.innerHTML = `<td colspan="9" style="text-align:center; padding: 20px;">검색결과가 없습니다.</td>`;
+                tbody.appendChild(emptyTr);
+            }
+        } else {
+            tbody.querySelector(".empty-search-row")?.remove();
         }
     };
 
@@ -138,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput.addEventListener("input", () => {
         if (searchInput.value.trim() === "") {
             getRows().forEach(tr => (tr.style.display = ""));
+            tbody.querySelector(".empty-search-row")?.remove();
         }
     });
 });

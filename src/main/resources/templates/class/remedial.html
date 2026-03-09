@@ -67,6 +67,7 @@
                                         <col width="20%">
                                         <col width="10%">
                                         <col width="10%">
+                                        <col width="5%">
                                     </colgroup>
                                     <thead id="remedialLeftHead">
                                     <tr>
@@ -78,6 +79,7 @@
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">보강시간</th>
                                         <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">선생님</th>
                                         <th class="checkbox-group">보강여부</th>
+                                        <th>삭제</th>
                                     </tr>
                                     </thead>
 
@@ -116,6 +118,11 @@
                                         <td th:text="${item.userName}"></td>
                                         <td class="checkbox-group">
                                             <input type="checkbox"/>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="icon-btn delete-btn" style="background: transparent;">
+                                                <img th:src="@{/image/cancel-icon.png}" alt="삭제" style="width:20px; height:20px;"/>
+                                            </button>
                                         </td>
                                     </tr>
                                     </tbody>

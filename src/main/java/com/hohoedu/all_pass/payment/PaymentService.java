@@ -55,7 +55,9 @@ public class PaymentService {
 
 
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode) {
-        return paymentRepository.findPaymentSummary(centerCode, userCode);
+        String year = DateConfig.currentYearMonth().get("currentYear");
+        String month = DateConfig.currentYearMonth().get("currentMonth");
+        return paymentRepository.findPaymentSummary(centerCode, userCode, year, month, year, 1);
     }
 
     // 기간별 미납 조회

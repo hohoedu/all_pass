@@ -419,10 +419,11 @@
         WHERE s.student_id = #{studentId}
     </select>
 
-    <select id="existsByAppId" parameterType="String" resultType="boolean">
+    <select id="existsByAppIdAndNotStudentId" resultType="boolean">
         SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
         FROM erp_student
         WHERE app_id = #{appId}
+          AND student_id != #{studentId}
     </select>
 
     <insert id="createTeacherAssign">
@@ -726,6 +727,7 @@
     <update id="checkinStudentAttendance">
         UPDATE erp_student_attendance
         SET in_time             = #{inTime},
+            out_time            = null,
             attendance_date     = #{attendanceDate},
             attendance_key      = #{attendanceKey},
             check_in_updated_at = SYSDATETIME()
@@ -756,6 +758,7 @@
             check_out_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND attendance_date = #{attendanceDate}
+          AND in_time IS NOT NULL
           AND (out_time IS NULL OR out_time = '')
     </update>
 

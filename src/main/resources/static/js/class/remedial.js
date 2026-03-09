@@ -160,12 +160,18 @@ function renderLeftTable(data) {
             <td class="checkbox-group">
                 <input type="checkbox"/>
             </td>
+            <td>
+                <button type="button" class="icon-btn delete-btn" style="background: transparent;">
+                    <img src="/image/cancel-icon.png" alt="삭제" style="width:20px; height:20px;"/>
+                </button>
+            </td>
         `;
         tbody.appendChild(row);
 
         // 렌더링 후 이벤트 바인딩
         bindDatePickerEvents(row);
         bindTimeInputEvents(row);
+        bindDeleteEvents(row);
     });
 }
 
@@ -295,6 +301,33 @@ function bindTimeInputEvents(row) {
             .then(data => {
                 if (!data.success) {
                     alert("시간 저장 실패");
+                }
+            })
+            .catch(err => console.error("서버 오류:", err));
+    });
+}
+
+function bindDeleteEvents(row) {
+    const deleteBtn = row.querySelector(".delete-btn");
+    if (!deleteBtn) return;
+
+    deleteBtn.addEventListener("click", () => {
+        if (!confirm("해당 보강 항목을 삭제하시겠습니까?")) return;
+
+        const remedialKey = row.dataset.id;
+
+        fetch("/class/remedial/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ remedialKey: remedialKey })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const { year, month } = getYearMonthFromURL();
+                    loadRemedialData(year, month);
+                } else {
+                    alert("삭제 실패");
                 }
             })
             .catch(err => console.error("서버 오류:", err));

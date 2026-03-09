@@ -408,6 +408,12 @@ public class ClassController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping("/remedial/delete")
+    public ResponseEntity<?> deleteRemedial(@RequestBody ClassReqDTO.DeleteRemedialTimeDTO dto){
+        classService.deleteRemedial(dto);
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
+
     // 월간 평가 (초등)
     // 월별 / 선생님 별 테이블 라벨 가져오기
     @PostMapping("/api/monthly/classes")

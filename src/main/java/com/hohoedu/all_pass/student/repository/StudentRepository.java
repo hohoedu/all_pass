@@ -86,7 +86,9 @@ public interface StudentRepository {
 
     int updateStudentClass(TeacherAssign studentClass);
 
-    boolean existsByAppId(String appId);
+    boolean existsByAppIdAndNotStudentId(
+            @Param("appId") String appId,
+            @Param("studentId") String studentId);
 
     int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req);
 

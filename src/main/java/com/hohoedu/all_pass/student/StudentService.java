@@ -311,7 +311,7 @@ public class StudentService {
         String appId = baseAppId + 0;
         int suffix = 0;
 
-        while (studentRepository.existsByAppId(appId)) {
+        while (studentRepository.existsByAppIdAndNotStudentId(appId, req.getStudentId())) {
             suffix++;
             appId = baseAppId + suffix;
         }

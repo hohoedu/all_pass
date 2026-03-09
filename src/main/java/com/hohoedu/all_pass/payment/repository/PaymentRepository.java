@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 import org.hibernate.annotations.Parent;
 import org.springframework.security.core.parameters.P;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper
@@ -19,7 +20,11 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummary(
             @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode);
+            @Param("userCode") String userCode,
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("startYear") String startYear,
+            @Param("startMonth") int startMonth);
 
     List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummaryByPeriod(
             @Param("centerCode") String centerCode,
@@ -316,6 +321,7 @@ public interface PaymentRepository {
             @Param("year") String year,
             @Param("month") String month
     );
+
     PaymentManual findManualById(Integer id);
 
     // 같은 manualKey 매뉴얼 전체 조회
@@ -326,7 +332,7 @@ public interface PaymentRepository {
 
     // 매뉴얼 그룹 수정
     void updateManualGroup(@Param("manualKey") String manualKey,
-                           @Param("paidDate")  String paidDate,
+                           @Param("paidDate") String paidDate,
                            @Param("totalAmount") Long totalAmount);
 
     // 매뉴얼 전체 삭제 (같은 manualKey)

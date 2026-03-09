@@ -3,116 +3,120 @@
 
 <mapper namespace="com.hohoedu.all_pass.payment.repository.PaymentRepository">
 
-    <select id="findPaymentSummary"
-            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MainPaymentSummaryDTO">
-        WITH paymentBase AS (
-            SELECT s.student_id,
-                   s.student_name,
-                   p.payment_key,
-                   p.yy,
-                   p.mm,
-                   cc.class_name,
-                   cc.class_type,
-                   pd.item_type,
-                   SUM(pd.amount) AS billPrice
-            FROM erp_student s
-                     JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
-                     JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-                     JOIN erp_class_code cc ON t.class_key = cc.class_key
-                     JOIN erp_payment p ON s.student_id = p.student_id
-                AND p.yy = t.yy
-                AND p.mm = t.mm
-                     JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
-                AND ta.time_table_key = pd.time_table_key
-            WHERE t.center_code = #{centerCode}
-              AND t.user_code = #{userCode}
-              AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
-            GROUP BY s.student_id, s.student_name, p.payment_key,
-                     p.yy, p.mm,
-                     cc.class_name, cc.class_type, pd.item_type
-        ),
-             approvedBills AS (
-                 SELECT payment_key, bill_type, SUM(amount) AS bill_amount
-                 FROM erp_payment_bill
-                 WHERE status = 'approved'
-                   AND bill_type IN ('EDU_FEE', 'BOOK_FEE')
-                 GROUP BY payment_key, bill_type
-             ),
-             manualPayments AS (
-                 SELECT payment_key,
-                        SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
-                 FROM erp_payment_manual
-                 GROUP BY payment_key
-             ),
-             latestBill AS (
-                 SELECT payment_key, bill_type, expire_date
-                 FROM (
-                          SELECT *,
-                                 ROW_NUMBER() OVER (PARTITION BY payment_key, bill_type
-                                     ORDER BY created_at DESC) AS rn
-                          FROM erp_payment_bill
-                          WHERE bill_type IN ('EDU_FEE', 'BOOK_FEE')
-                      ) x
-                 WHERE rn = 1
-             ),
-             totalStudents AS (
-                 SELECT COUNT(DISTINCT s.student_id) AS total_count
-                 FROM erp_student s
-                          JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
-                          JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
-                 WHERE t.center_code = #{centerCode}
-                   AND t.user_code = #{userCode}
-             ),
-             unpaidSummary AS (
-                 SELECT pb.student_id,
-                        pb.student_name,
-                        pb.payment_key,
-                        pb.yy,
-                        pb.mm,
-                        pb.class_name,
-                        pb.class_type,
-                        pb.item_type,
-                        SUM(pb.billPrice)  AS billPrice,
-                        lb.expire_date     AS billExpireAt,
-                        CASE
-                            WHEN pb.item_type = 'EDU_FEE'
-                                THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
-                            ELSE COALESCE(ab.bill_amount, 0)
-                            END AS paidAmount
-                 FROM paymentBase pb
-                          LEFT JOIN approvedBills ab  ON pb.payment_key = ab.payment_key
-                     AND pb.item_type   = ab.bill_type
-                          LEFT JOIN manualPayments mp ON pb.payment_key = mp.payment_key
-                          LEFT JOIN latestBill lb     ON pb.payment_key = lb.payment_key
-                     AND pb.item_type   = lb.bill_type
-                 GROUP BY pb.student_id, pb.student_name, pb.payment_key,
-                          pb.yy, pb.mm,
-                          pb.class_name, pb.class_type, pb.item_type,
-                          lb.expire_date, mp.manual_amount, ab.bill_amount
-                 HAVING SUM(pb.billPrice) > 0
-                    AND CASE
-                            WHEN pb.item_type = 'EDU_FEE'
-                                THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
-                            ELSE COALESCE(ab.bill_amount, 0)
-                            END = 0
-             )
-        SELECT us.student_id    AS studentId,
-               us.student_name  AS studentName,
-               us.yy            AS yy,
-               us.mm            AS mm,
-               us.billPrice     AS billPrice,
-               us.class_name    AS className,
-               us.class_type    AS classType,
-               us.item_type     AS itemType,
-               us.billExpireAt  AS billExpireAt,
-               COUNT(*) OVER () AS unpaidCount,
-               ts.total_count   AS totalCount,
-               CAST(COUNT(*) OVER () AS FLOAT)
-                   / NULLIF(ts.total_count, 0) * 100 AS unpaidRate
-        FROM unpaidSummary us
-                 CROSS JOIN totalStudents ts
-        ORDER BY us.yy DESC, us.mm DESC, us.student_name, us.item_type
-    </select>
+   <select id="findPaymentSummary"
+               resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MainPaymentSummaryDTO">
+    WITH paymentBase AS (
+        SELECT s.student_id,
+               s.student_name,
+               p.payment_key,
+               p.yy,
+               p.mm,
+               cc.class_name,
+               cc.class_type,
+               pd.item_type,
+               SUM(pd.amount) AS billPrice
+        FROM erp_student s
+                 JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                 JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                 JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 JOIN erp_payment p ON s.student_id = p.student_id
+            AND p.yy = t.yy
+            AND p.mm = t.mm
+                 JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+            AND ta.time_table_key = pd.time_table_key
+        WHERE (t.yy * 100 + t.mm) BETWEEN (#{startYear} * 100 + #{startMonth})
+            AND (#{year}      * 100 + #{month})
+          AND t.center_code = #{centerCode}
+          AND t.user_code = #{userCode}
+          AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
+        GROUP BY s.student_id, s.student_name, p.payment_key,
+                 p.yy, p.mm,
+                 cc.class_name, cc.class_type, pd.item_type
+    ),
+         approvedBills AS (
+             SELECT payment_key, bill_type, SUM(amount) AS bill_amount
+             FROM erp_payment_bill
+             WHERE status = 'approved'
+               AND bill_type IN ('EDU_FEE', 'BOOK_FEE')
+             GROUP BY payment_key, bill_type
+         ),
+         manualPayments AS (
+             SELECT payment_key,
+                    SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+             FROM erp_payment_manual
+             GROUP BY payment_key
+         ),
+         latestBill AS (
+             SELECT payment_key, bill_type, expire_date
+             FROM (
+                      SELECT *,
+                             ROW_NUMBER() OVER (PARTITION BY payment_key, bill_type
+                                 ORDER BY created_at DESC) AS rn
+                      FROM erp_payment_bill
+                      WHERE bill_type IN ('EDU_FEE', 'BOOK_FEE')
+                  ) x
+             WHERE rn = 1
+         ),
+         totalStudents AS (
+             SELECT COUNT(DISTINCT s.student_id) AS total_count
+             FROM erp_student s
+                      JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                      JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+             WHERE (t.yy * 100 + t.mm) BETWEEN (#{startYear} * 100 + #{startMonth})
+                 AND (#{year}      * 100 + #{month})
+               AND t.center_code = #{centerCode}
+               AND t.user_code = #{userCode}
+         ),
+         unpaidSummary AS (
+             SELECT pb.student_id,
+                    pb.student_name,
+                    pb.payment_key,
+                    pb.yy,
+                    pb.mm,
+                    pb.class_name,
+                    pb.class_type,
+                    pb.item_type,
+                    SUM(pb.billPrice)  AS billPrice,
+                    lb.expire_date     AS billExpireAt,
+                    CASE
+                        WHEN pb.item_type = 'EDU_FEE'
+                            THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                        ELSE COALESCE(ab.bill_amount, 0)
+                        END AS paidAmount
+             FROM paymentBase pb
+                      LEFT JOIN approvedBills ab  ON pb.payment_key = ab.payment_key
+                 AND pb.item_type   = ab.bill_type
+                      LEFT JOIN manualPayments mp ON pb.payment_key = mp.payment_key
+                      LEFT JOIN latestBill lb     ON pb.payment_key = lb.payment_key
+                 AND pb.item_type   = lb.bill_type
+             GROUP BY pb.student_id, pb.student_name, pb.payment_key,
+                      pb.yy, pb.mm,
+                      pb.class_name, pb.class_type, pb.item_type,
+                      lb.expire_date, mp.manual_amount, ab.bill_amount
+             HAVING SUM(pb.billPrice) > 0
+                AND CASE
+                        WHEN pb.item_type = 'EDU_FEE'
+                            THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                        ELSE COALESCE(ab.bill_amount, 0)
+                        END = 0
+         )
+    SELECT us.student_id    AS studentId,
+           us.student_name  AS studentName,
+           us.yy            AS yy,
+           us.mm            AS mm,
+           us.billPrice     AS billPrice,
+           us.class_name    AS className,
+           us.class_type    AS classType,
+           us.item_type     AS itemType,
+           us.billExpireAt  AS billExpireAt,
+           COUNT(*) OVER () AS unpaidCount,
+            ts.total_count   AS totalCount,
+           CAST(COUNT(*) OVER () AS FLOAT)
+               / NULLIF(ts.total_count, 0) * 100 AS unpaidRate
+    FROM unpaidSummary us
+             CROSS JOIN totalStudents ts
+    ORDER BY us.yy DESC, us.mm DESC, us.student_name, us.item_type
+</select>
 
     <!-- ===== 기간별 미납 조회 ===== -->
     <select id="findPaymentSummaryByPeriod"

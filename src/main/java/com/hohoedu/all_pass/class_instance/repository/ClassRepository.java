@@ -207,6 +207,10 @@ public interface ClassRepository {
             @Param("remedialKey") String remedialKey,
             @Param("startTime") String startTime);
 
+
+    public void deleteRemedial(
+            @Param("remedialKey") String remedialKey);
+
     // 선생님별 클래스 코드 조회
     public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
             @Param("userCode") String userCode,

@@ -919,6 +919,9 @@ public class ClassService {
     public void updateRemedialTime(ClassReqDTO.UpdateRemedialTimeDTO dto) {
         classRepository.updateRemedialTime(dto.getRemedialKey(), dto.getStartTime());
     }
+    public void deleteRemedial(ClassReqDTO.DeleteRemedialTimeDTO dto) {
+        classRepository.deleteRemedial(dto.getRemedialKey());
+    }
 
 
     // ================ 월간 평가 서비스 =====================//
