@@ -60,8 +60,11 @@ public class StudentViewController {
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
 
+        StudentWebRespDTO.PendingStudentRespDTO pendingStudent = studentService.findStudentByInviteCode(invite);
+
         model.addAttribute("centerCode", centerCode);
         model.addAttribute("inviteCode", invite);
+        model.addAttribute("pendingStudent", pendingStudent);
         model.addAttribute("gradeCodes", gradeCodes);
         model.addAttribute("relationCodes", relationCodes);
 

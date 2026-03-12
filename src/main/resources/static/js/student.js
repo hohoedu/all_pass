@@ -311,8 +311,38 @@ document.addEventListener("DOMContentLoaded", () => {
         return !value || value.trim() === "";
     }
 
+
     function isValidBirth(birth) {
-        return /^[0-9]{6}$/.test(birth);
+        if (!/^[0-9]{6}$/.test(birth)) {
+            return {valid: false, msg: "생년월일은 숫자 6자리로 입력해 주세요."};
+        }
+
+        const yy = parseInt(birth.substring(0, 2));
+        const month = parseInt(birth.substring(2, 4));
+        const day = parseInt(birth.substring(4, 6));
+
+        if (month < 1 || month > 12) {
+            return {valid: false, msg: "생년월일이 올바르지 않습니다."};
+        }
+
+        if (day < 1) {
+            return {valid: false, msg: "생년월일이 올바르지 않습니다."};
+        }
+
+        const currentYY = new Date().getFullYear() % 100;
+        const fullYear = yy <= currentYY ? 2000 + yy : 1900 + yy;
+
+        const lastDay = new Date(fullYear, month, 0).getDate();
+        if (day > lastDay) {
+            return {valid: false, msg: `${month}월은 ${lastDay}일까지만 있습니다.`};
+        }
+
+        const inputDate = new Date(fullYear, month - 1, day);
+        if (inputDate > new Date()) {
+            return {valid: false, msg: "미래 날짜는 입력할 수 없습니다."};
+        }
+
+        return {valid: true};
     }
 
     function isValidPhone(p1, p2, p3) {
@@ -353,8 +383,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (!isValidBirth(birth)) {
-            alert("생년월일은 숫자 6자리로 입력해 주세요.");
+        const birthResult = isValidBirth(birth);
+        if (!birthResult.valid) {
+            alert(birthResult.msg);
             form.birth.focus();
             return;
         }
@@ -443,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // studentId 없으면 서명 업로드 불가
         if (!studentId) {
-            alert("studentId를 찾지못했습니다.");
+            alert("가입 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
             return;
         }
 

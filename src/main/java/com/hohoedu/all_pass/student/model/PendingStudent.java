@@ -28,9 +28,12 @@ public class PendingStudent {
     @Column(name = "send_key", length = 100, nullable = false, unique = true)
     private String sendKey;
 
+    @Column(name = "invite_code")
+    private String inviteCode;
 
     @Column(name = "status", nullable = false, length = 20)
     private String status;
+
     @Column(name = "user_code")
     private String userCode;
 
@@ -67,11 +70,12 @@ public class PendingStudent {
 
 
     @Builder
-    public PendingStudent(String name, String phone, String gradeKey, String sendKey, String status, String userCode, String centerCode, Boolean subHoho, Boolean subHan, Boolean subBook, Timestamp inviteSentAt, Timestamp registeredAt, Timestamp assignedAt, boolean isDeleted, Timestamp deletedAt, String studentId) {
+    public PendingStudent(String name, String phone, String gradeKey, String sendKey, String inviteCode, String status, String userCode, String centerCode, Boolean subHoho, Boolean subHan, Boolean subBook, Timestamp inviteSentAt, Timestamp registeredAt, Timestamp assignedAt, boolean isDeleted, Timestamp deletedAt, String studentId) {
         this.name = name;
         this.phone = phone;
         this.gradeKey = gradeKey;
         this.sendKey = sendKey;
+        this.inviteCode = inviteCode;
         this.status = status;
         this.userCode = userCode;
         this.centerCode = centerCode;

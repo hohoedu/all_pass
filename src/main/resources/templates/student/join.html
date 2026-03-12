@@ -28,7 +28,9 @@
         <input type="hidden" name="inviteCode" th:value="${inviteCode}">
         <div class="join-group">
             <label for="student-name">학생 이름</label>
-            <input type="text" id="student-name" name="studentName" placeholder="학생 이름을 입력해 주세요.">
+            <input type="text" id="student-name" name="studentName"
+                   th:value="${pendingStudent != null ? pendingStudent.name : ''}"
+                   placeholder="학생 이름을 입력해 주세요.">
         </div>
         <div class="join-group">
             <div style="display: flex; gap: 10px;">
@@ -54,8 +56,10 @@
                 <label for="grade-filter">연령/학년</label>
                 <div class="join-select">
                     <select id="grade-filter" name="gradeKey">
-                        <option th:each="grade : ${gradeCodes}" th:value="${grade.gradeKey}"
-                                th:text="${grade.gradeName}">
+                        <option th:each="grade : ${gradeCodes}"
+                                th:value="${grade.gradeKey}"
+                                th:text="${grade.gradeName}"
+                                th:selected="${pendingStudent != null and pendingStudent.gradeKey == grade.gradeKey}">
                         </option>
                     </select>
                 </div>
@@ -63,17 +67,19 @@
             <div class="join-group">
                 <label>수업 과목</label>
                 <div style="display: flex; gap: 20px;">
-
-                    <div class="radio-group round">
-                        <input type="radio" id="select-han" name="subject" value="han" style="border-radius: 100%; width: 0">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="select-han" name="subject" value="han"
+                               th:checked="${pendingStudent != null and pendingStudent.subHan}">
                         <label for="select-han" style="margin: 0;">한스쿨</label>
                     </div>
-                    <div class="radio-group round">
-                        <input type="radio" id="select-book" name="subject" value="book" style="border-radius: 100%; width: 0">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="select-book" name="subject" value="book"
+                               th:checked="${pendingStudent != null and pendingStudent.subBook}">
                         <label for="select-book" style="margin: 0;">북스쿨</label>
                     </div>
-                    <div class="radio-group round">
-                        <input type="radio" id="select-hoho" name="subject" value="hoho" style="border-radius: 100%; width: 0">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="select-hoho" name="subject" value="hoho"
+                               th:checked="${pendingStudent != null and pendingStudent.subHoho}">
                         <label for="select-hoho" style="margin: 0;">호호스쿨</label>
                     </div>
                 </div>
@@ -120,11 +126,14 @@
                 <div class="join-group phone-input-group">
                     <label for="phone1">법정대리인 연락처</label>
                     <div class="phone-inputs">
-                        <input type="text" id="phone1" name="parentTelFirst" maxlength="3" placeholder="010">
+                        <input type="text" id="phone1" name="parentTelFirst" maxlength="3" placeholder="010"
+                               th:value="${pendingStudent != null ? #strings.substring(pendingStudent.phone, 0, 3) : ''}">
                         <span class="dash">-</span>
-                        <input type="text" id="phone2" name="parentTelMiddle" maxlength="4" placeholder="0000">
+                        <input type="text" id="phone2" name="parentTelMiddle" maxlength="4" placeholder="0000"
+                               th:value="${pendingStudent != null ? #strings.substring(pendingStudent.phone, 3, 7) : ''}">
                         <span class="dash">-</span>
-                        <input type="text" id="phone3" name="parentTelLast" maxlength="4" placeholder="0000">
+                        <input type="text" id="phone3" name="parentTelLast" maxlength="4" placeholder="0000"
+                               th:value="${pendingStudent != null ? #strings.substring(pendingStudent.phone, 7) : ''}">
                     </div>
                 </div>
                 <div class="join-group">

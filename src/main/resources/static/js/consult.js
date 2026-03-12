@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('올바른 전화번호가 아닙니다.');
                     return;
                 }
-
+                alert(gradeKey);
                 if (!confirm(`${studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
 
                 try {
@@ -619,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await res.json();
+            console.log(data.response);
             renderConsultTable(data.response);
         } catch (err) {
             console.error("조회 실패:", err);

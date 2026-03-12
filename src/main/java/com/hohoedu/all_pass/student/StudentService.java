@@ -106,7 +106,7 @@ public class StudentService {
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
 //        studentRepository.findStudentAttendanceByStudentId(studentId);
-        List<StudentWebRespDTO.StudentConsultDTO> consult =  studentRepository.findStudentConsultByStudentId(studentId);
+        List<StudentWebRespDTO.StudentConsultDTO> consult = studentRepository.findStudentConsultByStudentId(studentId);
 
         StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
                 .studentInfo(student)
@@ -117,10 +117,14 @@ public class StudentService {
         return studentDetailRespDTO;
     }
 
-    public void createPendingStudent(PendingStudent pendingStudent){
+    public void createPendingStudent(PendingStudent pendingStudent) {
         studentRepository.createPendingStudent(pendingStudent);
     }
 
+    public StudentWebRespDTO.PendingStudentRespDTO findStudentByInviteCode(String inviteCode) {
+
+        return studentRepository.findStudentByInviteCode(inviteCode);
+    }
 
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
         int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(), parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
@@ -208,7 +212,7 @@ public class StudentService {
                         studentDTO.getStudentId(),
                         studentDTO.getStudentName(),
                         studentDTO.getGradeKey()
-                        );
+                );
             } else {
                 PendingStudent newPending = PendingStudent.builder()
                         .name(studentDTO.getStudentName())
@@ -300,6 +304,7 @@ public class StudentService {
     }
 
 
+    @Transactional
     public int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req) {
 
         String rawPhone = req.getParentPhone();
@@ -643,7 +648,7 @@ public class StudentService {
         }
     }
 
-    public List<StudentWebRespDTO.PendingStudentRespDTO> findPendingStudent(String centerCode){
+    public List<StudentWebRespDTO.PendingStudentRespDTO> findPendingStudent(String centerCode) {
         List<StudentWebRespDTO.PendingStudentRespDTO> student = studentRepository.findPendingStudent(centerCode);
         return student;
     }
@@ -702,7 +707,14 @@ public class StudentService {
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
 
-        StudentAppRespDTO.AppTokenRespDTO respDTO = studentRepository.findAppTokenByAppId(appId);
+        StudentAppRespDTO.AppTokenRespDTO respDTO;
+        respDTO = studentRepository.findAppTokenByAppId(appId);
+
+        if (respDTO == null) {
+            String oldAppId = studentRepository.findAppIdByLog(appId);
+            respDTO = studentRepository.findAppTokenByAppId(oldAppId);
+        }
+
         return respDTO;
     }
 

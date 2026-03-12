@@ -92,6 +92,7 @@ public class PopbillController {
                     .name(request.getName())
                     .phone(request.getPhone())
                     .sendKey(inviteDTO.getSendKey())
+                    .inviteCode(inviteDTO.getInviteCode())
                     .gradeKey(request.getGradeKey())
                     .userCode(user.getUserCode())
                     .centerCode(user.getCenterCode())
@@ -102,12 +103,6 @@ public class PopbillController {
                     .isDeleted(false)
                     .build();
 
-            // 상담 발송이면 consultId도 저장 (추적용)
-//            if ("CONSULT".equals(request.getSource()) && request.getConsultId() != null) {
-//                pendingStudent.linkConsult(request.getConsultId());
-//            }
-            log.info("reqDTO = {}", request.toString());
-            log.info("user = {}", user.toString());
             studentService.createPendingStudent(pendingStudent);
 
             return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));

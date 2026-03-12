@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =================== *
      *   전역 변수           *
      * =================== */
-    const tbody  = document.getElementById('student-tbody');
-    const modal  = document.querySelector('.student-new-modal');
+    const tbody = document.getElementById('student-tbody');
+    const modal = document.querySelector('.student-new-modal');
     let currentStudentId = null;
 
 
@@ -18,17 +18,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function getSubjectText(student) {
         const subjects = [];
         if (student.subHoho) subjects.push('호호스쿨');
-        if (student.subHan)  subjects.push('한스쿨');
+        if (student.subHan) subjects.push('한스쿨');
         if (student.subBook) subjects.push('북스쿨');
         return subjects.length > 0 ? subjects.join(', ') : '-';
     }
 
     function getStatusBadge(status) {
         switch (status) {
-            case 'REGISTERED': return `<span class="color-box cb-tu">가입완료</span>`;
-            case 'LINK_SENT':  return `<span class="color-box cb-gr">대기중</span>`;
-            case 'ASSIGNED':   return `<span class="color-box cb-bl">배정완료</span>`;
-            default:           return `<span class="color-box">${status}</span>`;
+            case 'REGISTERED':
+                return `<span class="color-box cb-tu">가입완료</span>`;
+            case 'LINK_SENT':
+                return `<span class="color-box cb-gr">대기중</span>`;
+            case 'ASSIGNED':
+                return `<span class="color-box cb-bl">배정완료</span>`;
+            default:
+                return `<span class="color-box">${status}</span>`;
         }
     }
 
@@ -51,16 +55,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let year, month, day, match;
 
         match = birth.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일$/);
-        if (match) { [, year, month, day] = match; }
+        if (match) {
+            [, year, month, day] = match;
+        }
 
         if (!year) {
             match = birth.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
-            if (match) { [, year, month, day] = match; }
+            if (match) {
+                [, year, month, day] = match;
+            }
         }
 
         if (!year) {
             match = birth.match(/^(\d{4})(\d{2})(\d{2})$/);
-            if (match) { [, year, month, day] = match; }
+            if (match) {
+                [, year, month, day] = match;
+            }
         }
 
         if (!year) return '';
@@ -73,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mm = birth.substring(2, 4);
         const dd = birth.substring(4, 6);
         const currentYY = new Date().getFullYear() % 100;
-        const fullYear  = yy > currentYY ? `19${yy}` : `20${yy}`;
+        const fullYear = yy > currentYY ? `19${yy}` : `20${yy}`;
         return `${fullYear}-${mm}-${dd}`;
     }
 
@@ -124,11 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         data.forEach((student, index) => {
             const isRegistered = student.status === 'REGISTERED';
+            console.log(student.gradeKey);
             tbody.insertAdjacentHTML('beforeend', `
                 <tr data-student-id="${student.studentId || ''}"
                     data-pending-id="${student.id || ''}"
                     data-phone="${student.phone || ''}"
                     data-name="${student.name || ''}"
+                    data-grade-key="${student.gradeKey || ''}"
+                    data-sub-hoho="${student.subHoho || false}"
+                    data-sub-han="${student.subHan || false}"
+                    data-sub-book="${student.subBook || false}"
                     style="${isRegistered ? 'cursor:pointer;' : 'cursor:default;'}">
                     <td>${index + 1}</td>
                     <td>${student.name || '-'}</td>
@@ -158,33 +173,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 재발송
         if (e.target.closest('.resend-btn')) {
-            const row   = e.target.closest('tr');
+            const row = e.target.closest('tr');
             const phone = row.dataset.phone;
-            const name  = row.dataset.name;
+            const name = row.dataset.name;
+            const gradeKey = row.dataset.gradeKey;
+            const subHoho = row.dataset.subHoho === 'true';
+            const subHan = row.dataset.subHan === 'true';
+            const subBook = row.dataset.subBook === 'true';
+
             if (!confirm(`${name} 학생에게 가입링크를 재발송하시겠습니까?`)) return;
             try {
-                const res    = await fetch('/popbill/send-join', {
+                const res = await fetch('/popbill/send-join', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, source: 'RESEND' })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        phone,
+                        name,
+                        gradeKey,
+                        subHoho,
+                        subHan,
+                        subBook,
+                        source: 'RESEND'
+                    })
                 });
                 const result = await res.json();
                 alert(result.success ? '재발송되었습니다.' : '발송 실패: ' + (result.message || ''));
-            } catch { alert('오류가 발생했습니다.'); }
+            } catch {
+                alert('오류가 발생했습니다.');
+            }
             return;
         }
 
         // 취소
         if (e.target.closest('.cancel-btn')) {
-            const row  = e.target.closest('tr');
-            const id   = row.dataset.pendingId;
+            const row = e.target.closest('tr');
+            const id = row.dataset.pendingId;
             const name = row.dataset.name;
             if (!confirm(`${name} 학생의 입회를 취소하시겠습니까?`)) return;
             try {
-                const res    = await fetch('/student/pending/cancel', {
+                const res = await fetch('/student/pending/cancel', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id})
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -193,7 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     alert('취소 실패: ' + (result.message || ''));
                 }
-            } catch { alert('오류가 발생했습니다.'); }
+            } catch {
+                alert('오류가 발생했습니다.');
+            }
             return;
         }
 
@@ -242,21 +274,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStudentModal(data) {
         if (!data) return;
 
-        const info    = data.studentInfo    ?? {};
+        const info = data.studentInfo ?? {};
         const payment = data.studentPayment ?? {};
-        const grade   = data.gradeCodes;
+        const grade = data.gradeCodes;
 
         // 상단 이름
         setValue('.s_name', info.studentName);
 
         // TAB2 기본정보
-        setValue('#new-tab2 .s_name',          info.studentName);
-        setValue('#new-tab2 .s_school',         info.school);
-        setValue('#new-tab2 .s_address',        info.address);
+        setValue('#new-tab2 .s_name', info.studentName);
+        setValue('#new-tab2 .s_school', info.school);
+        setValue('#new-tab2 .s_address', info.address);
         setValue('#new-tab2 .s_address_detail', info.addressDetail);
-        setValue('#new-tab2 .s_phone',          formatPhone(info.parentPhone));
-        setValue('#new-tab2 .s_birth',          formatBirthDisplay(info.birth));
-        setValue('#new-tab2 .s_billing_phone',  formatPhone(info.billingPhone));
+        setValue('#new-tab2 .s_phone', formatPhone(info.parentPhone));
+        setValue('#new-tab2 .s_birth', formatBirthDisplay(info.birth));
+        setValue('#new-tab2 .s_billing_phone', formatPhone(info.billingPhone));
 
         renderGender(info.genderKey);
         renderParent(info.parentRelation);
@@ -267,23 +299,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (birthInput) birthInput.value = formatBirthInput(info.birth) || info.birth || '';
 
         // TAB3 수강정보
-        setValue('#new-tab3 .s_han_class',         payment.hanClassName);
-        setValue('#new-tab3 .s_book_class',        payment.bookClassName);
-        setValue('#new-tab3 .p_han_teacher',       payment.hanTeacher);
-        setValue('#new-tab3 .p_book_teacher',      payment.bookTeacher);
-        setValue('#new-tab3 .p_han_fee',           formatMoney(payment.hanFee));
-        setValue('#new-tab3 .p_book_fee',          formatMoney(payment.bookFee));
-        setValue('#new-tab3 .p_han_material_fee',  formatMoney(payment.hanMaterialPrice));
+        setValue('#new-tab3 .s_han_class', payment.hanClassName);
+        setValue('#new-tab3 .s_book_class', payment.bookClassName);
+        setValue('#new-tab3 .p_han_teacher', payment.hanTeacher);
+        setValue('#new-tab3 .p_book_teacher', payment.bookTeacher);
+        setValue('#new-tab3 .p_han_fee', formatMoney(payment.hanFee));
+        setValue('#new-tab3 .p_book_fee', formatMoney(payment.bookFee));
+        setValue('#new-tab3 .p_han_material_fee', formatMoney(payment.hanMaterialPrice));
         setValue('#new-tab3 .p_book_material_fee', formatMoney(payment.bookMaterialPrice));
-        setValue('#new-tab3 .s_entry_han_date',    formatDateDisplay(payment.entryHanDate) || '날짜를 선택하세요.');
-        setValue('#new-tab3 .s_entry_book_date',   formatDateDisplay(payment.entryBookDate) || '날짜를 선택하세요.');
+        setValue('#new-tab3 .s_entry_han_date', formatDateDisplay(payment.entryHanDate) || '날짜를 선택하세요.');
+        setValue('#new-tab3 .s_entry_book_date', formatDateDisplay(payment.entryBookDate) || '날짜를 선택하세요.');
 
-        const hanInput  = modal.querySelector('#entry-han-date');
+        const hanInput = modal.querySelector('#entry-han-date');
         const bookInput = modal.querySelector('#entry-book-date');
-        if (hanInput)  hanInput.value  = payment.entryHanDate  || '';
+        if (hanInput) hanInput.value = payment.entryHanDate || '';
         if (bookInput) bookInput.value = payment.entryBookDate || '';
 
-        setCourseState('han',  payment.hanState);
+        setCourseState('han', payment.hanState);
         setCourseState('book', payment.bookState);
         renderFeeTable(payment);
         updateTotalFee();
@@ -312,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrapper = modal.querySelector('.gender-group');
         if (!wrapper) return;
         const buttons = wrapper.querySelectorAll('.s_gender');
-        const hidden  = wrapper.querySelector('.gender-hidden');
+        const hidden = wrapper.querySelector('.gender-hidden');
         if (!hidden) return;
         buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.value === genderKey));
         hidden.value = genderKey;
@@ -333,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const group = modal.querySelector('.relation-group');
         if (!group) return;
         const buttons = group.querySelectorAll('.btn-choose');
-        const hidden  = group.querySelector('.relation-hidden');
+        const hidden = group.querySelector('.relation-hidden');
         if (!hidden) return;
         buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.value === initialValue));
         hidden.value = initialValue ?? '';
@@ -367,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const group = modal.querySelector(`#new-tab3 .choose-group[data-type="${type}"]`);
         if (!group) return;
         const buttons = group.querySelectorAll('.btn-choose');
-        const hidden  = group.querySelector('input[type="hidden"]');
+        const hidden = group.querySelector('input[type="hidden"]');
         buttons.forEach(btn => {
             const isActive =
                 ((state === '1' || state === 1) && btn.dataset.value === 'active') ||
@@ -398,12 +430,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTotalFee() {
         const removeComma = v => (v ? v.toString().replace(/,/g, '') : '0');
-        const hanFee  = parseInt(removeComma(modal.querySelector('#hanFee')?.value))  || 0;
+        const hanFee = parseInt(removeComma(modal.querySelector('#hanFee')?.value)) || 0;
         const bookFee = parseInt(removeComma(modal.querySelector('#bookFee')?.value)) || 0;
-        const hanMat  = parseInt(removeComma(modal.querySelector('#hanMaterialFee')?.value))  || 0;
+        const hanMat = parseInt(removeComma(modal.querySelector('#hanMaterialFee')?.value)) || 0;
         const bookMat = parseInt(removeComma(modal.querySelector('#bookMaterialFee')?.value)) || 0;
-        const total   = hanFee + bookFee + hanMat + bookMat;
-        const sumEl   = modal.querySelector('.dues-sum span');
+        const total = hanFee + bookFee + hanMat + bookMat;
+        const sumEl = modal.querySelector('.dues-sum span');
         if (sumEl) sumEl.innerText = ' ' + formatMoney(total);
     }
 
@@ -484,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
             display.textContent = `${y}년 ${m}월 ${d}일`;
         });
 
-        // ★ 수강/미수강 버튼 클릭 - closest()는 단순 선택자만 지원하므로 수동 체크
+        // 수강/미수강 버튼 클릭
         modal.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-choose');
             if (!btn) return;
@@ -492,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const group = btn.closest('.choose-group');
             if (!group) return;
 
-            // #new-tab3 안에 있는지 확인
             if (!btn.closest('#new-tab3')) return;
 
             const hidden = group.querySelector('input[type="hidden"]');
@@ -502,8 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             hidden.value = btn.dataset.value;
 
-            const type   = group.dataset.type;   // 'han' or 'book'
-            const status = btn.dataset.value;    // 'active' or 'inactive'
+            const type = group.dataset.type;
+            const status = btn.dataset.value;
             const inactiveRow = modal.querySelector(`.${type}-inactive`);
             if (inactiveRow) {
                 inactiveRow.classList.toggle('hide-input', status !== 'inactive');
@@ -518,10 +549,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initStatusChange() {
         const exceptCurrentContainer = modal.querySelector('.status-buttons[data-visibility="except-current"]');
-        const reasonInputBox         = modal.querySelector('.reason-input');
-        const reasonField            = modal.querySelector('#reason');
-        const submitBtn              = modal.querySelector('#status-change');
-        const withdrawDateDiv        = modal.querySelector('.withdraw-date');
+        const reasonInputBox = modal.querySelector('.reason-input');
+        const reasonField = modal.querySelector('#reason');
+        const submitBtn = modal.querySelector('#status-change');
+        const withdrawDateDiv = modal.querySelector('.withdraw-date');
 
         if (!exceptCurrentContainer) return;
 
@@ -572,28 +603,40 @@ document.addEventListener('DOMContentLoaded', () => {
         // 변경 버튼
         submitBtn?.addEventListener('click', async () => {
             const selectedBtn = exceptCurrentContainer.querySelector('.s_status.selected');
-            if (!selectedBtn) { alert('상태를 선택해주세요.'); return; }
+            if (!selectedBtn) {
+                alert('상태를 선택해주세요.');
+                return;
+            }
 
             const statusKey = selectedBtn.dataset.status;
-            let reason      = '';
+            let reason = '';
             let withdrawDate = null;
 
             if (statusKey !== 'ACTIVE') {
                 reason = reasonField?.value.trim() || '';
-                if (!reason) { alert('사유를 입력해주세요.'); return; }
+                if (!reason) {
+                    alert('사유를 입력해주세요.');
+                    return;
+                }
                 if (statusKey === 'WITHDRAWN') {
                     withdrawDate = modal.querySelector('#withdraw-date')?.value;
-                    if (!withdrawDate) { alert('탈퇴 날짜를 입력해주세요.'); return; }
+                    if (!withdrawDate) {
+                        alert('탈퇴 날짜를 입력해주세요.');
+                        return;
+                    }
                 }
             }
 
-            if (!currentStudentId) { alert('학생 ID를 찾을 수 없습니다.'); return; }
+            if (!currentStudentId) {
+                alert('학생 ID를 찾을 수 없습니다.');
+                return;
+            }
 
             try {
                 const res = await fetch('/student/status', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentId: currentStudentId, statusKey, reason, withdrawDate })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({studentId: currentStudentId, statusKey, reason, withdrawDate})
                 });
                 if (!res.ok) throw new Error('요청 실패');
                 const data = await res.json();
@@ -602,16 +645,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const s = data.response;
                 if (s?.statusKey) renderStatusButton(s.statusKey);
 
-                // 입력 초기화
                 if (reasonField) reasonField.value = '';
                 const dateInput = modal.querySelector('#withdraw-date');
-                const display   = modal.querySelector('.withdraw-date .day-display');
+                const display = modal.querySelector('.withdraw-date .day-display');
                 if (dateInput) dateInput.value = '';
-                if (display)   display.textContent = '날짜를 선택해주세요';
+                if (display) display.textContent = '날짜를 선택해주세요';
                 exceptCurrentContainer.querySelectorAll('.s_status').forEach(b => b.classList.remove('selected'));
                 reasonInputBox?.classList.remove('active');
 
-            } catch { alert('오류가 발생했습니다.'); }
+            } catch {
+                alert('오류가 발생했습니다.');
+            }
         });
     }
 
@@ -622,33 +666,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initUpdateBtn() {
         modal.querySelector('#update-btn')?.addEventListener('click', async () => {
-            if (!currentStudentId) { alert('학생 ID를 찾을 수 없습니다.'); return; }
+            if (!currentStudentId) {
+                alert('학생 ID를 찾을 수 없습니다.');
+                return;
+            }
 
             const req = {
-                studentId:     currentStudentId,
-                studentName:   getValue('#new-tab2 .s_name'),
-                birth:         getValue('#birth-date'),
-                genderKey:     getValue('#new-tab2 .gender-hidden'),
-                school:        getValue('#new-tab2 .s_school'),
-                address:       getValue('#new-tab2 .s_address'),
+                studentId: currentStudentId,
+                studentName: getValue('#new-tab2 .s_name'),
+                birth: getValue('#birth-date'),
+                genderKey: getValue('#new-tab2 .gender-hidden'),
+                school: getValue('#new-tab2 .s_school'),
+                address: getValue('#new-tab2 .s_address'),
                 addressDetail: getValue('#new-tab2 .s_address_detail'),
-                parentPhone:   unformatPhone(getValue('#new-tab2 .s_phone')),
-                gradeKey:      getValue('#new-tab2 .s_grade'),
-                relationKey:   getValue('#new-tab2 .relation-hidden'),
-                billingPhone:  unformatPhone(getValue('#new-tab2 .s_billing_phone')),
-                entryHanDate:  getValue('#entry-han-date')?.trim() || null,
+                parentPhone: unformatPhone(getValue('#new-tab2 .s_phone')),
+                gradeKey: getValue('#new-tab2 .s_grade'),
+                relationKey: getValue('#new-tab2 .relation-hidden'),
+                billingPhone: unformatPhone(getValue('#new-tab2 .s_billing_phone')),
+                entryHanDate: getValue('#entry-han-date')?.trim() || null,
                 entryBookDate: getValue('#entry-book-date')?.trim() || null,
             };
 
             try {
                 const res = await fetch('/student/update/info', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(req)
                 });
-                if (!res.ok) { alert('오류가 발생했습니다.'); return; }
+                if (!res.ok) {
+                    alert('오류가 발생했습니다.');
+                    return;
+                }
                 alert('저장되었습니다.');
-            } catch { alert('저장 중 오류가 발생했습니다.'); }
+            } catch {
+                alert('저장 중 오류가 발생했습니다.');
+            }
         });
     }
 
@@ -658,12 +710,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================= //
 
     function initCourseStatusSave() {
-        let initialHanState      = null;
-        let initialBookState     = null;
-        let initialEntryHanDate  = null;
+        let initialHanState = null;
+        let initialBookState = null;
+        let initialEntryHanDate = null;
         let initialEntryBookDate = null;
 
-        // 한자 미수강 달력
         modal.querySelector('.han-calendar-open')?.addEventListener('click', () => {
             const dateInput = modal.querySelector('#han-inactive-date');
             if (!dateInput) return;
@@ -674,7 +725,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 독서 미수강 달력
         modal.querySelector('.book-calendar-open')?.addEventListener('click', () => {
             const dateInput = modal.querySelector('#book-inactive-date');
             if (!dateInput) return;
@@ -685,7 +735,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 한자 미수강 날짜 표시
         modal.querySelector('#han-inactive-date')?.addEventListener('change', function () {
             const display = modal.querySelector('.han-date-display');
             if (display && this.value) {
@@ -694,7 +743,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 독서 미수강 날짜 표시
         modal.querySelector('#book-inactive-date')?.addEventListener('change', function () {
             const display = modal.querySelector('.book-date-display');
             if (display && this.value) {
@@ -703,44 +751,44 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 초기 수강 상태 저장
         window.saveInitialCourseState = function (hanState, bookState) {
-            initialHanState  = (hanState  === 1 || hanState  === '1') ? 'active' : 'inactive';
+            initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
             initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
-            initialEntryHanDate  = modal.querySelector('#entry-han-date')?.value  || null;
+            initialEntryHanDate = modal.querySelector('#entry-han-date')?.value || null;
             initialEntryBookDate = modal.querySelector('#entry-book-date')?.value || null;
         };
 
-        // 수강상태 저장 버튼
         modal.querySelector('#course-status-save')?.addEventListener('click', async () => {
-            if (!currentStudentId) { alert('학생 ID를 찾을 수 없습니다.'); return; }
+            if (!currentStudentId) {
+                alert('학생 ID를 찾을 수 없습니다.');
+                return;
+            }
 
-            const hanHidden  = modal.querySelector('.choose-group[data-type="han"] input[type="hidden"]');
+            const hanHidden = modal.querySelector('.choose-group[data-type="han"] input[type="hidden"]');
             const bookHidden = modal.querySelector('.choose-group[data-type="book"] input[type="hidden"]');
-            const currentHanState  = hanHidden?.value;
+            const currentHanState = hanHidden?.value;
             const currentBookState = bookHidden?.value;
 
-            const entryHanInput  = modal.querySelector('#entry-han-date');
+            const entryHanInput = modal.querySelector('#entry-han-date');
             const entryBookInput = modal.querySelector('#entry-book-date');
 
-            const hanChanged  = (initialHanState  !== null && initialHanState  !== currentHanState)  || (initialEntryHanDate  !== entryHanInput?.value);
+            const hanChanged = (initialHanState !== null && initialHanState !== currentHanState) || (initialEntryHanDate !== entryHanInput?.value);
             const bookChanged = (initialBookState !== null && initialBookState !== currentBookState) || (initialEntryBookDate !== entryBookInput?.value);
 
             const requestBody = {
-                studentId:          currentStudentId,
-                hanState:           currentHanState  === 'active' ? 1 : 0,
-                bookState:          currentBookState === 'active' ? 1 : 0,
+                studentId: currentStudentId,
+                hanState: currentHanState === 'active' ? 1 : 0,
+                bookState: currentBookState === 'active' ? 1 : 0,
                 hanChanged,
                 bookChanged,
-                entryHanDate:       entryHanInput?.value  || null,
-                entryBookDate:      entryBookInput?.value || null,
-                inactiveHanDate:    modal.querySelector('#han-inactive-date')?.value  || null,
-                inactiveBookDate:   modal.querySelector('#book-inactive-date')?.value || null,
-                inactiveHanReason:  modal.querySelector('#han-inactive-reason')?.value?.trim()  || null,
+                entryHanDate: entryHanInput?.value || null,
+                entryBookDate: entryBookInput?.value || null,
+                inactiveHanDate: modal.querySelector('#han-inactive-date')?.value || null,
+                inactiveBookDate: modal.querySelector('#book-inactive-date')?.value || null,
+                inactiveHanReason: modal.querySelector('#han-inactive-reason')?.value?.trim() || null,
                 inactiveBookReason: modal.querySelector('#book-inactive-reason')?.value?.trim() || null,
             };
 
-            // 둘 다 미수강이면 학생 상태 변경 여부 확인
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {
                 const shouldChange = await showStudentStatusModal();
                 if (!shouldChange) return;
@@ -750,67 +798,73 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/student/update/course-status', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(requestBody)
                 });
                 if (!res.ok) throw new Error('수강상태 변경 실패');
                 alert('수강상태가 성공적으로 변경되었습니다.');
 
-                initialHanState      = currentHanState;
-                initialBookState     = currentBookState;
-                initialEntryHanDate  = entryHanInput?.value;
+                initialHanState = currentHanState;
+                initialBookState = currentBookState;
+                initialEntryHanDate = entryHanInput?.value;
                 initialEntryBookDate = entryBookInput?.value;
 
-                // 미수강 입력 초기화
-                const hanDisplay  = modal.querySelector('.han-date-display');
+                const hanDisplay = modal.querySelector('.han-date-display');
                 const bookDisplay = modal.querySelector('.book-date-display');
-                const hanReason   = modal.querySelector('#han-inactive-reason');
-                const bookReason  = modal.querySelector('#book-inactive-reason');
-                const hanDate     = modal.querySelector('#han-inactive-date');
-                const bookDate    = modal.querySelector('#book-inactive-date');
+                const hanReason = modal.querySelector('#han-inactive-reason');
+                const bookReason = modal.querySelector('#book-inactive-reason');
+                const hanDate = modal.querySelector('#han-inactive-date');
+                const bookDate = modal.querySelector('#book-inactive-date');
 
-                if (hanReason)  hanReason.value  = '';
-                if (hanDate)    hanDate.value    = '';
+                if (hanReason) hanReason.value = '';
+                if (hanDate) hanDate.value = '';
                 if (hanDisplay) hanDisplay.value = '';
-                if (bookReason) bookReason.value  = '';
-                if (bookDate)   bookDate.value    = '';
+                if (bookReason) bookReason.value = '';
+                if (bookDate) bookDate.value = '';
                 if (bookDisplay) bookDisplay.value = '';
 
                 modal.querySelector('.han-inactive')?.classList.add('hide-input');
                 modal.querySelector('.book-inactive')?.classList.add('hide-input');
 
-            } catch { alert('수강상태 변경 중 오류가 발생했습니다.'); }
+            } catch {
+                alert('수강상태 변경 중 오류가 발생했습니다.');
+            }
         });
     }
 
 
-// 둘 다 미수강 시 학생 상태 변경 확인 모달
+    // 둘 다 미수강 시 학생 상태 변경 확인 모달
     function showStudentStatusModal() {
         return new Promise((resolve) => {
             const modalId = 'status-change-modal-' + Date.now();
             document.body.insertAdjacentHTML('beforeend', `
-            <div id="${modalId}" style="
-                position:fixed; top:0; left:0; width:100%; height:100%;
-                background:rgba(0,0,0,0.5); display:flex;
-                justify-content:center; align-items:center; z-index:10000;">
-                <div style="background:white; padding:30px; border-radius:8px;
-                    box-shadow:0 4px 6px rgba(0,0,0,0.1); max-width:400px; text-align:center;">
-                    <h3 style="margin-bottom:15px;">학생 상태 변경</h3>
-                    <p style="margin-bottom:20px; line-height:1.6;">
-                        한자와 독서 모두 미수강으로 변경됩니다.<br>
-                        학생 상태도 함께 변경하시겠습니까?
-                    </p>
-                    <button class="confirm-btn" style="padding:10px 20px; margin:0 5px;
-                        background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">확인</button>
-                    <button class="cancel-btn" style="padding:10px 20px; margin:0 5px;
-                        background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">취소</button>
+                <div id="${modalId}" style="
+                    position:fixed; top:0; left:0; width:100%; height:100%;
+                    background:rgba(0,0,0,0.5); display:flex;
+                    justify-content:center; align-items:center; z-index:10000;">
+                    <div style="background:white; padding:30px; border-radius:8px;
+                        box-shadow:0 4px 6px rgba(0,0,0,0.1); max-width:400px; text-align:center;">
+                        <h3 style="margin-bottom:15px;">학생 상태 변경</h3>
+                        <p style="margin-bottom:20px; line-height:1.6;">
+                            한자와 독서 모두 미수강으로 변경됩니다.<br>
+                            학생 상태도 함께 변경하시겠습니까?
+                        </p>
+                        <button class="confirm-btn" style="padding:10px 20px; margin:0 5px;
+                            background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">확인</button>
+                        <button class="cancel-btn" style="padding:10px 20px; margin:0 5px;
+                            background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">취소</button>
+                    </div>
                 </div>
-            </div>
-        `);
+            `);
             const el = document.getElementById(modalId);
             el.addEventListener('click', (e) => {
-                if (e.target.classList.contains('confirm-btn')) { el.remove(); resolve(true); }
-                else if (e.target.classList.contains('cancel-btn')) { el.remove(); resolve(false); }
+                if (e.target.classList.contains('confirm-btn')) {
+                    el.remove();
+                    resolve(true);
+                } else if (e.target.classList.contains('cancel-btn')) {
+                    el.remove();
+                    resolve(false);
+                }
             });
         });
     }
@@ -822,26 +876,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initPayInfo() {
         modal.querySelector('#pay-info')?.addEventListener('click', async () => {
-            if (!currentStudentId) { alert('학생을 먼저 선택해주세요.'); return; }
+            if (!currentStudentId) {
+                alert('학생을 먼저 선택해주세요.');
+                return;
+            }
 
             const payload = {
-                studentId:       currentStudentId,
-                entryHanDate:    getValue('#entry-han-date')?.trim()  || null,
-                entryBookDate:   getValue('#entry-book-date')?.trim() || null,
-                hanMaterialFee:  parseInt((getValue('#hanMaterialFee')  || '0').replace(/,/g, '')) || 0,
+                studentId: currentStudentId,
+                entryHanDate: getValue('#entry-han-date')?.trim() || null,
+                entryBookDate: getValue('#entry-book-date')?.trim() || null,
+                hanMaterialFee: parseInt((getValue('#hanMaterialFee') || '0').replace(/,/g, '')) || 0,
                 bookMaterialFee: parseInt((getValue('#bookMaterialFee') || '0').replace(/,/g, '')) || 0,
             };
 
             try {
                 const res = await fetch('/student/update/payment', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(payload)
                 });
                 if (!res.ok) throw new Error('결제 정보 저장 실패');
                 alert('교재비가 저장되었습니다.');
                 updateTotalFee();
-            } catch { alert('저장 중 오류가 발생했습니다.'); }
+            } catch {
+                alert('저장 중 오류가 발생했습니다.');
+            }
         });
     }
 

@@ -18,6 +18,7 @@
                c.school            AS school,
                c.phone             AS phone,
                c.content           AS content,
+               c.grade_key         AS gradeKey,
                g.grade_name        AS gradeName,
                i.inflow_route_name AS inflowRouteName,
                c.progress_key      AS progressKey
@@ -36,6 +37,7 @@
         c.school AS school,
         c.phone AS phone,
         c.content AS content,
+        c.grade_key AS gradeKey,
         g.grade_name AS gradeName,
         i.inflow_route_name AS inflowRouteName,
         c.progress_key AS progressKey

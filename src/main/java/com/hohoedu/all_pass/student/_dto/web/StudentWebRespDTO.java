@@ -31,6 +31,7 @@ public class StudentWebRespDTO {
         private String studentId;
         private String name;
         private String phone;
+        private String gradeKey;
         private String gradeName;
         private Boolean subHoho;
         private Boolean subHan;

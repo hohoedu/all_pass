@@ -46,6 +46,8 @@ public interface StudentRepository {
 
     void createPendingStudent(PendingStudent pendingStudent);
 
+    StudentWebRespDTO.PendingStudentRespDTO findStudentByInviteCode(String inviteCode);
+
     int checkDuplicateStudent(
             @Param("studentName") String studentName,
             @Param("parentTelMiddle") String parentTelMiddle,
@@ -239,6 +241,8 @@ public interface StudentRepository {
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(
             @Param("appId") String appId);
+
+    String findAppIdByLog(@Param("appId") String appId);
 
     public StudentAppRespDTO.AppLoginViewDTO appLogin(
             @Param("appId") String appId);

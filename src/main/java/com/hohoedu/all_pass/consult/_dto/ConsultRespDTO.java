@@ -11,6 +11,7 @@ public class ConsultRespDTO {
         private String consultDate;
         private String school;
         private String phone;
+        private String gradeKey;
         private String gradeName;
         private String inflowRouteName;
         private String progressKey;
