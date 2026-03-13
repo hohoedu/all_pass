@@ -125,6 +125,13 @@
         VALUES (#{name}, #{phone}, #{gradeKey}, #{sendKey}, #{inviteCode}, #{status}, #{userCode}, #{centerCode}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
     </insert>
 
+    <insert id="insertPendingStudent" parameterType="com.hohoedu.all_pass.student.model.PendingStudent" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO erp_pending_student
+        (name, phone, grade_key, user_code, center_code, send_key, status, sub_hoho, sub_han, sub_book, registered_at, is_deleted)
+        VALUES (#{name}, #{phone}, #{gradeKey}, #{userCode}, #{centerCode}, #{sendKey}, #{status}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
+    </insert>
+
+
     <select id="findStudentByInviteCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PendingStudentRespDTO">
         SELECT name      as name,
                phone     as phone,
@@ -480,8 +487,8 @@
     </select>
 
     <insert id="createTeacherAssign">
-        insert into erp_teacher_assign (student_id, created_at)
-        values (#{studentId}, SYSDATETIME())
+        insert into erp_teacher_assign (student_id, center_code, created_at)
+        values (#{studentId}, #{centerCode}, SYSDATETIME())
     </insert>
 
     <update id="updateStudentInfo">
@@ -743,11 +750,20 @@
         FROM erp_student
         WHERE app_id = #{appId}
     </select>
+    <select id="findAppTokenByStudentId"
+            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+        SELECT center_code  as centerCode,
+               student_id   as stuid,
+               student_name as name,
+               app_token    as token
+        FROM erp_student
+        WHERE student_id = #{studentId}
+    </select>
 
     <select id="findAppIdByLog" resultType="String">
-        SELECT old_app_id
+        SELECT student_id as studentId
         FROM erp_change_app_id
-        WHERE app_id = #{appId}
+        WHERE old_app_id = #{appId}
     </select>
 
     <!-- 출석 여부 확인 -->
@@ -1206,5 +1222,19 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
 
     </select>
+
+    <select id="searchByStudentName" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$SearchRespDTO">
+        select s.student_id, s.student_name, s.app_id as currentAppId, p.parent_tel_first + p.parent_tel_middle + p.parent_tel_last as parentPhone
+        from erp_student s
+                 JOIN erp_parent p on s.student_id = p.student_id
+        where s.student_name LIKE CONCAT('%', #{studentName}, '%')
+
+    </select>
+
+    <insert id="updateAppIdLog" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$UpdateAppIdLogDTO">
+        INSERT INTO erp_change_app_id (student_id, old_app_id, new_app_id, updated_by, updated_at, is_manual)
+        VALUES (#{studentId}, #{prevAppId}, #{currentAppId}, #{userCode}, SYSDATETIME(), #{isManual})
+    </insert>
+
 
 </mapper>

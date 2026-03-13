@@ -75,7 +75,7 @@ public class MainViewController {
             return "redirect:/login";
         }
 
-        String year  = String.valueOf(LocalDate.now().getYear());
+        String year = String.valueOf(LocalDate.now().getYear());
         String month = String.format("%02d", LocalDate.now().getMonthValue());
 
         // 오늘 수업 목록
@@ -199,4 +199,10 @@ public class MainViewController {
 //
 //        response.sendRedirect(redirectUrl);
 //    }
+
+    @GetMapping("/appid")
+    public String getAppId(HttpSession session) {
+
+        return "app_id_temp";
+    }
 }

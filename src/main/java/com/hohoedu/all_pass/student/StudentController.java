@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 
+import com.google.api.Http;
 import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
@@ -97,7 +98,12 @@ public class StudentController {
 
     // 학생 등록
     @PostMapping("/join")
-    public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO, @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO) {
+    public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO, @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO, HttpSession session) {
+
+        if (studentDTO.getInviteCode() == null || studentDTO.getInviteCode().isEmpty()) {
+            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user"); // 세션 키 이름은 맞게 수정
+            studentDTO.setUserCode(user.getUserCode());
+        }
 
         String studentId = studentService.studentInsert(studentDTO, parentDTO);
 
@@ -335,5 +341,50 @@ public class StudentController {
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         return ResponseEntity.ok(Map.of("response", studentService.findGraduateList(req)));
     }
+//================================================================================================================================================================================================================================================================//
+
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam String studentName) {
+        try {
+            List<StudentWebRespDTO.SearchRespDTO> result = studentService.searchByName(studentName);
+            return ResponseEntity.ok(ApiUtils.success(result));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+            log.error("[AppId] 학생 검색 오류", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "서버 오류가 발생했습니다."));
+        }
+    }
+
+    @PostMapping("/app_id/update")
+    public ResponseEntity<?> save(@RequestBody StudentWebReqDTO.UpdateAppIdLogDTO req, HttpSession session) {
+        if (session.getAttribute("user") != null) {
+            UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+            log.info("user = {}", user.toString());
+            req.setUserCode(user.getUserName());
+        }
+        try {
+            studentService.updateAppIdLog(req);
+            return ResponseEntity.ok(Map.of("success", true));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+            log.error("[AppId] App ID 저장 오류", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "서버 오류가 발생했습니다."));
+        }
+    }
+
 
 }

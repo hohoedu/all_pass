@@ -183,9 +183,25 @@ public class StudentService {
         if (inviteCode != null && !inviteCode.isEmpty()) {
             log.info("inviteCode : {}", inviteCode);
             processInviteCompletion(inviteCode, studentDTO);
+        } else {
+
+            PendingStudent newPending = PendingStudent.builder()
+                    .name(studentDTO.getStudentName())
+                    .phone(parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast())
+                    .sendKey(KeyGenerator.generateSendKey())
+                    .gradeKey(studentDTO.getGradeKey())
+                    .userCode(studentDTO.getUserCode())
+                    .centerCode(studentDTO.getCenterCode())
+                    .status("REGISTERED")
+                    .subHoho(studentDTO.isSubHoho())
+                    .subHan(studentDTO.isSubHan())
+                    .subBook(studentDTO.isSubBook())
+                    .build();
+
+            studentRepository.insertPendingStudent(newPending);
         }
 
-        studentRepository.createTeacherAssign(studentDTO.getStudentId());
+        studentRepository.createTeacherAssign(studentDTO.getStudentId(), studentDTO.getCenterCode());
 
         return studentDTO.getStudentId();
     }
@@ -218,12 +234,14 @@ public class StudentService {
                         .name(studentDTO.getStudentName())
                         .phone(invite.getReceiverPhone())
                         .sendKey(invite.getSendKey() != null ? invite.getSendKey() : KeyGenerator.generateSendKey())
+                        .inviteCode(inviteCode)
                         .userCode(invite.getUserCode())
                         .centerCode(invite.getCenterCode())
                         .status("REGISTERED")
                         .subHoho(studentDTO.isSubHoho())
                         .subHan(studentDTO.isSubHan())
                         .subBook(studentDTO.isSubBook())
+                        .studentId(studentDTO.getStudentId())
                         .build();
                 studentRepository.createPendingStudent(newPending);
             }
@@ -711,8 +729,8 @@ public class StudentService {
         respDTO = studentRepository.findAppTokenByAppId(appId);
 
         if (respDTO == null) {
-            String oldAppId = studentRepository.findAppIdByLog(appId);
-            respDTO = studentRepository.findAppTokenByAppId(oldAppId);
+            String studentId = studentRepository.findAppIdByLog(appId);
+            respDTO = studentRepository.findAppTokenByStudentId(studentId);
         }
 
         return respDTO;
@@ -1228,4 +1246,21 @@ public class StudentService {
     public List<StudentWebRespDTO.WithdrawItemDTO> findGraduateList(StudentWebReqDTO.WithdrawReqDTO req) {
         return studentRepository.selectGraduateList(req);
     }
+
+    public List<StudentWebRespDTO.SearchRespDTO> searchByName(String studentName) {
+        if (studentName == null || studentName.isBlank()) {
+            throw new IllegalArgumentException("학생 이름을 입력해 주세요.");
+        }
+
+        List<StudentWebRespDTO.SearchRespDTO> result = studentRepository.searchByStudentName(studentName);
+        log.info("[AppId] 학생 검색 - name={}, 결과 {}건", studentName, result.size());
+        return result;
+    }
+
+    @Transactional
+    public void updateAppIdLog(StudentWebReqDTO.UpdateAppIdLogDTO req) {
+        req.setManual(true);
+        studentRepository.updateAppIdLog(req);
+    }
 }
+

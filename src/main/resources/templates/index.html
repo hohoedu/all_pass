@@ -24,6 +24,20 @@
     <div class="menu">
         <div class="menu-desc">
             <div class="menu-exit">
+                <button type="button" id="app-id-btn" onclick="openAppIdPopup()" style="
+        height: 30px;
+        padding: 0 12px;
+        background: #5c8af5;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        margin-right: 50px;
+    ">App ID 조회
+                </button>
                 <a class="exit-icon" th:href="@{/logout}">
                     <img th:src="@{/image/log-out.png}" alt="">
                 </a>
@@ -59,7 +73,7 @@
                     <h2>독서클리닉</h2>
                     <p>선생님이 사용하는<br>
                         독서클리닉 프로그램 입니다.</p>
-                    <button type="button"id="clinic-btn">
+                    <button type="button" id="clinic-btn">
                         바로가기
                     </button>
                 </div>
@@ -136,6 +150,14 @@
         window.open(url, "_blank");
 
     });
+
+    function openAppIdPopup() {
+        window.open(
+            '/appid',   // 팝업 HTML URL — 실제 경로로 변경
+            'appIdPopup',
+            'width=780,height=580,top=100,left=200,resizable=no,scrollbars=no'
+        );
+    }
 
 </script>
 </body>

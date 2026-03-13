@@ -22,6 +22,7 @@ public class StudentWebReqDTO {
         private boolean studentPrivacyAgree;
         private String appId;
         private String appPassword;
+        private String userCode;
         private String centerCode;
         private String statusKey;
         private String gradeKey;
@@ -156,5 +157,14 @@ public class StudentWebReqDTO {
     public static class WithdrawReqDTO {
         private String userCode;
         private String ym;
+    }
+
+    @Data
+    public static class UpdateAppIdLogDTO {
+        private String studentId;
+        private String currentAppId;
+        private String prevAppId;
+        private String userCode;
+        private boolean isManual;
     }
 }

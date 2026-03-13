@@ -266,4 +266,19 @@ public class StudentWebRespDTO {
         private String reason;
     }
 
+    @Data
+    public static class SearchRespDTO {
+        private String studentId;
+        private String studentName;
+        private String currentAppId;
+        private String parentPhone;
+    }
+
+    @Data
+    public static class ChangeAppIdDTO{
+        private String studentId;
+        private String newAppId;
+        private String oldAppId;
+    }
+
 }

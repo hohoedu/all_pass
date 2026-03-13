@@ -46,6 +46,8 @@ public interface StudentRepository {
 
     void createPendingStudent(PendingStudent pendingStudent);
 
+    void insertPendingStudent(PendingStudent pendingStudent);
+
     StudentWebRespDTO.PendingStudentRespDTO findStudentByInviteCode(String inviteCode);
 
     int checkDuplicateStudent(
@@ -66,7 +68,9 @@ public interface StudentRepository {
 
     public void insert(StudentJoinDTO student);
 
-    void createTeacherAssign(String studentId);
+    void createTeacherAssign(
+            @Param("studentId") String studentId,
+            @Param("centerCode") String centerCode);
 
     InviteTracking findByInviteCode(String inviteCode);
 
@@ -242,6 +246,10 @@ public interface StudentRepository {
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(
             @Param("appId") String appId);
 
+    StudentAppRespDTO.AppTokenRespDTO findAppTokenByStudentId(
+            @Param("studentId") String studentId);
+
+
     String findAppIdByLog(@Param("appId") String appId);
 
     public StudentAppRespDTO.AppLoginViewDTO appLogin(
@@ -279,4 +287,8 @@ public interface StudentRepository {
     List<StudentWebRespDTO.WithdrawItemDTO> selectTransferOutList(StudentWebReqDTO.WithdrawReqDTO req);
 
     List<StudentWebRespDTO.WithdrawItemDTO> selectGraduateList(StudentWebReqDTO.WithdrawReqDTO req);
+
+    List<StudentWebRespDTO.SearchRespDTO> searchByStudentName(String studentName);
+
+    void updateAppIdLog(StudentWebReqDTO.UpdateAppIdLogDTO req);
 }

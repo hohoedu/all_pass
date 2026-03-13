@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
             /* ── 삭제 버튼 ── */
             const deleteBtn = e.target.closest('.btn-delete');
             if (deleteBtn) {
-                const { id, name, date, amount } = deleteBtn.dataset;
+                const {id, name, date, amount} = deleteBtn.dataset;
 
                 Swal.fire({
                     title: '결제 내역 삭제',
@@ -309,21 +309,21 @@ document.addEventListener("DOMContentLoaded", () => {
     bindRowActions();
 
     function openEditModal(payment) {
-        const cash     = Number(payment.cash     || 0);
-        const card     = Number(payment.card     || 0);
+        const cash = Number(payment.cash || 0);
+        const card = Number(payment.card || 0);
         const transfer = Number(payment.transfer || 0);
-        const total    = cash + card + transfer;
+        const total = cash + card + transfer;
 
         // 모달 요소
         const modal = document.getElementById('edit-payment-modal');
 
         // 학생명 / 청구금액
         document.getElementById('edit-student-name-cell').textContent = payment.studentName || '-';
-        document.getElementById('edit-bill-amount-cell').textContent  = total.toLocaleString('ko-KR') + ' 원';
+        document.getElementById('edit-bill-amount-cell').textContent = total.toLocaleString('ko-KR') + ' 원';
 
         // 결제일
         const paidDateInput = document.getElementById('edit-paid-date');
-        const paidDateText  = document.getElementById('edit-pay-date-text');
+        const paidDateText = document.getElementById('edit-pay-date-text');
         paidDateInput.value = payment.paidDate || '';
         paidDateText.textContent = formatKoreanDate(payment.paidDate);
 
@@ -333,8 +333,8 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         // 금액
-        document.getElementById('edit-card-amount').value     = card     || '';
-        document.getElementById('edit-cash-amount').value     = cash     || '';
+        document.getElementById('edit-card-amount').value = card || '';
+        document.getElementById('edit-cash-amount').value = cash || '';
         document.getElementById('edit-transfer-amount').value = transfer || '';
 
         // 카드사 (card_name 필드가 있으면 세팅)
@@ -347,11 +347,11 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.dataset.currentId = payment.id;
 
         // 닫기 / 취소 / 저장 이벤트 (중복 방지)
-        const closeBtn  = document.getElementById('edit-modal-close');
-        const saveBtn   = document.getElementById('edit-modal-save');
+        const closeBtn = document.getElementById('edit-modal-close');
+        const saveBtn = document.getElementById('edit-modal-save');
 
-        closeBtn.onclick  = () => modal.style.display = 'none';
-        saveBtn.onclick   = () => saveEditPayment();
+        closeBtn.onclick = () => modal.style.display = 'none';
+        saveBtn.onclick = () => saveEditPayment();
 
         modal.style.display = 'block';
     }
@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch(`/pay/manual/delete/${id}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {'Content-Type': 'application/json'}
             });
 
             const result = await res.json();
@@ -383,13 +383,13 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ── 수정 저장 API ── */
     async function saveEditPayment() {
         const modal = document.getElementById('edit-payment-modal');
-        const id    = modal.dataset.currentId;
+        const id = modal.dataset.currentId;
 
-        const paidDate       = document.getElementById('edit-paid-date').value;
-        const cardAmount     = Number(document.getElementById('edit-card-amount').value     || 0);
-        const cashAmount     = Number(document.getElementById('edit-cash-amount').value     || 0);
+        const paidDate = document.getElementById('edit-paid-date').value;
+        const cardAmount = Number(document.getElementById('edit-card-amount').value || 0);
+        const cashAmount = Number(document.getElementById('edit-cash-amount').value || 0);
         const transferAmount = Number(document.getElementById('edit-transfer-amount').value || 0);
-        const cardName       = document.getElementById('edit-card-select').value || '';
+        const cardName = document.getElementById('edit-card-select').value || '';
 
         if (!paidDate) {
             Swal.fire('알림', '결제일을 선택해주세요.', 'warning');
@@ -406,12 +406,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const dto = { paidDate, cardAmount, cashAmount, transferAmount, cardName };
+        const dto = {paidDate, cardAmount, cashAmount, transferAmount, cardName};
 
         try {
             const res = await fetch(`/pay/manual/update/${id}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(dto)
             });
 
@@ -467,6 +467,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     bindSearch();
 
+    let savedManualReceiptNumber = '';
+    const manualReceiptTypeRadios = document.querySelectorAll('.add-payment-modal input[name="receipt-type"]');
+    const manualReceiptNumberInput = document.querySelector('.add-payment-modal #receipt-number');
+
+    manualReceiptTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            if (this.value === 'self') {
+                if (manualReceiptNumberInput.value !== '0100001234') {
+                    savedManualReceiptNumber = manualReceiptNumberInput.value;
+                }
+                manualReceiptNumberInput.value = '0100001234';
+                manualReceiptNumberInput.readOnly = true;
+                manualReceiptNumberInput.style.backgroundColor = '#f5f5f5';
+            } else {
+                if (manualReceiptNumberInput.value === '0100001234') {
+                    manualReceiptNumberInput.value = savedManualReceiptNumber;
+                }
+                manualReceiptNumberInput.readOnly = false;
+                manualReceiptNumberInput.style.backgroundColor = '';
+                manualReceiptNumberInput.placeholder = '휴대폰번호(01012345678) 또는 사업자번호';
+            }
+        });
+    });
     /* ========================================
         📝 수기 결제 모달 - 학생 검색 및 선택
     ======================================== */
@@ -896,7 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const manualPersonalRadio = document.querySelector('.add-payment-modal input[name="receipt-type"][value="personal"]');
             if (manualPersonalRadio) manualPersonalRadio.checked = true;
 
-            const manualTaxableRadio = document.querySelector('.add-payment-modal input[name="tax-type"][value="taxable"]');
+            const manualTaxableRadio = document.querySelector('.add-payment-modal input[name="tax-type"][value="tax-free"]');
             if (manualTaxableRadio) manualTaxableRadio.checked = true;
 
             const receiptSection = document.querySelector('.add-payment-modal .cashbill-section');
@@ -979,8 +1002,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 let traderValue = '0';
                 if (receiptType === 'business') {
                     traderValue = '1';
-                } else if (receiptType === 'self') {
-                    traderValue = '2';
                 }
 
                 cashbillInfo = {
@@ -1410,7 +1431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         supplyPriceInput.value = '';
         taxPriceInput.value = '';
         document.querySelector('.add-cashbill-modal input[name="receipt-type"][value="personal"]').checked = true;
-        document.querySelector('.add-cashbill-modal input[name="tax-type"][value="taxable"]').checked = true;
+        document.querySelector('.add-cashbill-modal input[name="tax-type"][value="tax-free"]').checked = true;
 
         document.querySelectorAll('#cashbill-student-list tr').forEach(tr => {
             tr.classList.remove('selected');
