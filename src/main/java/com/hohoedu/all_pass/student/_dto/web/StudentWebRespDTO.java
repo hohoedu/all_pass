@@ -28,6 +28,7 @@ public class StudentWebRespDTO {
 
     @Data
     public static class PendingStudentRespDTO {
+        private Integer id;
         private String studentId;
         private String name;
         private String phone;
@@ -275,7 +276,7 @@ public class StudentWebRespDTO {
     }
 
     @Data
-    public static class ChangeAppIdDTO{
+    public static class ChangeAppIdDTO {
         private String studentId;
         private String newAppId;
         private String oldAppId;

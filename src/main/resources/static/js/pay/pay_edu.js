@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         monthBtn.addEventListener('click', () => {
             if (typeof monthInput.showPicker === 'function') {
-                monthInput.showPicker();       // Chrome
+                monthInput.showPicker();
             } else {
                 monthInput.focus();
-                monthInput.click();            // Safari fallback
+                monthInput.click();
             }
         });
 
@@ -62,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ===============================
-     데이터 조회
- =============================== */
+        데이터 조회
+    =============================== */
     async function fetchStudents(year, month, teacherCode) {
         try {
             tbody.style.visibility = 'hidden';
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchStudentsGlobal = fetchStudents;
 
     /* ===============================
-        렌더링 (필터링/정렬 제거)
+        렌더링
     =============================== */
     function renderStudentTable(list) {
         tbody.innerHTML = '';
@@ -134,9 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.dataset.otherSubjectType = s.otherSubjectType || '';
 
             const isPriceModified = currentFeeView === 'edu' && s.isPriceModified === 1;
-            const billPriceStyle = isPriceModified
-                ? 'color: red;'
-                : '';
+            const billPriceStyle = isPriceModified ? 'color: red;' : '';
             const billPriceTitle = isPriceModified && s.standardFee
                 ? `표준 금액: ${Number(s.standardFee).toLocaleString()}원`
                 : '';
@@ -146,19 +144,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const renderBadges = (subjectType) => {
                 if (!subjectType) return '';
-
                 const badges = [];
-
-                if (subjectType.includes('hoho')) {
-                    badges.push('<span class="badge-hoho">호</span>');
-                }
-                if (subjectType.includes('han')) {
-                    badges.push('<span class="badge-han">한</span>');
-                }
-                if (subjectType.includes('book')) {
-                    badges.push('<span class="badge-book">독</span>');
-                }
-
+                if (subjectType.includes('hoho')) badges.push('<span class="badge-hoho">호</span>');
+                if (subjectType.includes('han'))  badges.push('<span class="badge-han">한</span>');
+                if (subjectType.includes('book')) badges.push('<span class="badge-book">독</span>');
                 return badges.join('');
             };
 
@@ -171,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ${s.studentName}
         </td>
         <td>${s.subject || '-'}</td>
-        
         <td style="${billPriceStyle}" title="${billPriceTitle}">
             ${Number(s.billPrice || 0).toLocaleString()}
         </td>
@@ -198,7 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.style.visibility = 'visible';
     }
 
-// 형제 이름 보이게 하기
+    /* ===============================
+        형제 이름 툴팁
+    =============================== */
     function bindStudentNameTooltip() {
         const nameCells = tbody.querySelectorAll('.student-name-cell');
 
@@ -215,11 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cell.style.cursor = 'help';
 
-            cell.addEventListener('mouseenter', (e) => {
+            cell.addEventListener('mouseenter', () => {
                 const existingTooltip = document.querySelector('.phone-tooltip');
-                if (existingTooltip) {
-                    existingTooltip.remove();
-                }
+                if (existingTooltip) existingTooltip.remove();
 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'phone-tooltip';
@@ -237,9 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.phone-tooltip');
-                if (tooltip) {
-                    tooltip.remove();
-                }
+                if (tooltip) tooltip.remove();
             });
         });
     }
@@ -259,11 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            cell.addEventListener('mouseenter', (e) => {
+            cell.addEventListener('mouseenter', () => {
                 const existingTooltip = document.querySelector('.other-subject-tooltip');
-                if (existingTooltip) {
-                    existingTooltip.remove();
-                }
+                if (existingTooltip) existingTooltip.remove();
 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'other-subject-tooltip';
@@ -278,7 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 pointer-events: none;
                 white-space: nowrap;
             `;
-                // ⭐ " 선생님" 붙여서 표시
                 tooltip.textContent = otherTeacher ? otherTeacher + ' 선생님' : '';
 
                 document.body.appendChild(tooltip);
@@ -290,60 +273,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.other-subject-tooltip');
-                if (tooltip) {
-                    tooltip.remove();
-                }
+                if (tooltip) tooltip.remove();
             });
         });
-    }
-
-    function formatTeacher(s) {
-        return `${s.hanTeacher ? s.hanTeacher + '(한)' : ''}`
-            + (s.hanTeacher && s.bookTeacher ? ', ' : '')
-            + `${s.bookTeacher ? s.bookTeacher + '(독)' : ''}`;
     }
 
     function renderIssueStatus(issuanceStatus) {
         if (!issuanceStatus || issuanceStatus === 'nonIssue') {
             return `<span class="unissued">미발행</span>`;
         }
-        if (issuanceStatus === 'issued') {
-            return `<span class="issued">발행</span>`;
-        }
-        if (issuanceStatus === 'nonIssue_off') {
-            return `<span class="edu-issued">현장결제</span>`;
-        }
-        if (issuanceStatus === 'destroyed_off') {
-            return `<span class="edu-issued">현장결제</span>`;
-        }
-        if (issuanceStatus === 'canceled_off') {
-            return `<span class="edu-issued">현장결제</span>`;
-        }
-        if (issuanceStatus === 'destroyed') {
-            return `<span class="destroyed">파기</span>`;
-        }
-        if (issuanceStatus === 'canceled') {
-            return `<span class="canceled">취소</span>`;
-        }
-        if (issuanceStatus === 'discount') {
-            return `<span class="discount">할인</span>`;
-        }
+        if (issuanceStatus === 'issued')        return `<span class="issued">발행</span>`;
+        if (issuanceStatus === 'nonIssue_off')  return `<span class="edu-issued">현장결제</span>`;
+        if (issuanceStatus === 'destroyed_off') return `<span class="edu-issued">현장결제</span>`;
+        if (issuanceStatus === 'canceled_off')  return `<span class="edu-issued">현장결제</span>`;
+        if (issuanceStatus === 'destroyed')     return `<span class="destroyed">파기</span>`;
+        if (issuanceStatus === 'canceled')      return `<span class="canceled">취소</span>`;
+        if (issuanceStatus === 'discount')      return `<span class="discount">할인</span>`;
         return '-';
     }
 
     function renderPayStatus(totalStatus) {
-        if (totalStatus === '결제완료') {
-            return `<span class="pay-box pay-done">결제완료</span>`;
-        }
-        if (totalStatus === '부분결제') {
-            return `<span class="pay-box pay-partial">부분결제</span>`;
-        }
-        if (totalStatus === '미결제') {
-            return `<span class="pay-box pay-late">미결제</span>`;
-        }
-        if (totalStatus === '할인') {
-            return `<span class="pay-box pay-discount">할인</span>`;
-        }
+        if (totalStatus === '결제완료') return `<span class="pay-box pay-done">결제완료</span>`;
+        if (totalStatus === '부분결제') return `<span class="pay-box pay-partial">부분결제</span>`;
+        if (totalStatus === '미결제')   return `<span class="pay-box pay-late">미결제</span>`;
+        if (totalStatus === '할인')     return `<span class="pay-box pay-discount">할인</span>`;
         return '-';
     }
 
@@ -359,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
 
-            const total = tbody.querySelectorAll('.row-checkbox').length;
+            const total   = tbody.querySelectorAll('.row-checkbox').length;
             const checked = tbody.querySelectorAll('.row-checkbox:checked').length;
 
             selectAll.checked = total > 0 && total === checked;
@@ -388,38 +341,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function bindSearch() {
-
         const doSearch = () => {
-            const keyword = searchInput.value.trim();
+            const keyword    = searchInput.value.trim();
             const searchType = document.getElementById('stu-name').value;
 
             tbody.querySelectorAll('tr').forEach(tr => {
                 let targetValue = '';
 
-                if (searchType === 'name') {
-                    targetValue = tr.dataset.studentName || '';
-                } else if (searchType === 'phone') {
-                    targetValue = tr.dataset.lastPhone4 || '';
-                }
+                if (searchType === 'name')  targetValue = tr.dataset.studentName || '';
+                else if (searchType === 'phone') targetValue = tr.dataset.lastPhone4 || '';
 
-                const matched =
-                    !keyword || targetValue.includes(keyword);
-
-                tr.style.display = matched ? '' : 'none';
+                tr.style.display = (!keyword || targetValue.includes(keyword)) ? '' : 'none';
             });
         };
+
         document.getElementById('stu-name').addEventListener('change', () => {
             searchInput.value = '';
         });
+
         searchBtn.addEventListener('click', doSearch);
 
         searchInput.addEventListener('keydown', e => {
             if (e.isComposing) return;
-
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                doSearch();
-            }
+            if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
         });
     }
 
@@ -440,8 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 청구서 유효기간 세팅 ========== //
 document.addEventListener('DOMContentLoaded', () => {
-    const expireInput = document.querySelector('.expire-input');
-    const expireBtn = document.querySelector('.expire-btn');
+    const expireInput   = document.querySelector('.expire-input');
+    const expireBtn     = document.querySelector('.expire-btn');
     const expireDisplay = document.querySelector('.day-picker .day-display');
 
     const formatYYYYMMDD = (dt) => {
@@ -456,40 +400,27 @@ document.addEventListener('DOMContentLoaded', () => {
             `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일`;
     };
 
-    // 🔥 이번 달 5일 계산 함수
-    const getCurrentMonth5th = (year, month) => {
-        // month는 1~12 기준
-        return new Date(year, month - 1, 5);
-    };
+    const getCurrentMonth5th = (year, month) => new Date(year, month - 1, 5);
 
     const billingMonth = document.querySelector('.hidden-picker')?.value;
     let baseDate;
 
     if (billingMonth) {
         const [yy, mm] = billingMonth.split('-').map(Number);
-        // 🔥 청구하는 달 5일
         baseDate = getCurrentMonth5th(yy, mm);
     } else {
         const today = new Date();
-        // 🔥 현재 달 5일
-        baseDate = getCurrentMonth5th(
-            today.getFullYear(),
-            today.getMonth() + 1
-        );
+        baseDate = getCurrentMonth5th(today.getFullYear(), today.getMonth() + 1);
     }
 
     expireInput.value = formatYYYYMMDD(baseDate);
     setDisplay(baseDate);
 
-    const today = new Date();
-    expireInput.min = formatYYYYMMDD(today);
+    expireInput.min = formatYYYYMMDD(new Date());
 
     expireBtn.addEventListener('click', () => {
-        if (typeof expireInput.showPicker === 'function') {
-            expireInput.showPicker();
-        } else {
-            expireInput.click();
-        }
+        if (typeof expireInput.showPicker === 'function') expireInput.showPicker();
+        else expireInput.click();
     });
 
     expireInput.addEventListener('change', () => {
@@ -510,11 +441,8 @@ document.addEventListener('DOMContentLoaded', () => {
         claimTbody.addEventListener('change', (e) => {
             if (e.target.type === 'checkbox' && e.target.closest('.claim-frame')) {
                 const clickedCheckbox = e.target;
-
                 claimTbody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                    if (cb !== clickedCheckbox) {
-                        cb.checked = false;
-                    }
+                    if (cb !== clickedCheckbox) cb.checked = false;
                 });
             }
         });
@@ -533,9 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const targetModal = document.querySelector(`.${modalType}-modal`);
-        if (targetModal) {
-            targetModal.style.display = 'block';
-        }
+        if (targetModal) targetModal.style.display = 'block';
     }
 
     /* =========================
@@ -567,10 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =========================
         개별 조회
     ========================= */
-    const tbody = document.querySelector('#student-tbody');
+    const tbody             = document.querySelector('#student-tbody');
     const claimDetailSection = document.querySelector('.claim-frame');
-    const claimDivider = document.getElementById('claim-divider');
-    const claimButtons = document.getElementById('claim-buttons');
+    const claimDivider      = document.getElementById('claim-divider');
+    const claimButtons      = document.getElementById('claim-buttons');
 
     if (tbody && claimDetailSection) {
         tbody.addEventListener('click', async (e) => {
@@ -581,15 +507,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!targetCell) return;
 
             const cellIndex = Array.from(row.children).indexOf(targetCell);
-
             if (cellIndex === 0) return;
 
             const studentId = row.dataset.studentId;
             if (!studentId) return;
 
             const url = new URL(window.location.href);
-            const yy = url.searchParams.get('year');
-            const mm = url.searchParams.get('month');
+            const yy  = url.searchParams.get('year');
+            const mm  = url.searchParams.get('month');
 
             if (e.target.closest('#personal-pay-info')) {
                 try {
@@ -612,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 🔥 일반 row 클릭 시 → 하단 테이블 토글
+            // 일반 row 클릭 → 하단 테이블 토글
             if (row.classList.contains('selected-for-detail')) {
                 row.classList.remove('selected-for-detail');
                 claimDetailSection.style.display = 'none';
@@ -631,12 +556,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* =========================
-        청구 상세 데이터 로드 (개선됨)
+        청구 상세 데이터 로드
     ========================= */
     async function fetchBillDetail(studentId, yy, mm) {
         const claimDetailSection = document.querySelector('.claim-frame');
-        const claimDivider = document.getElementById('claim-divider');
-        const claimButtons = document.getElementById('claim-buttons');
+        const claimDivider       = document.getElementById('claim-divider');
+        const claimButtons       = document.getElementById('claim-buttons');
 
         try {
             const response = await fetch('/pay/detail/bill', {
@@ -683,20 +608,19 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach(item => {
             const tr = document.createElement('tr');
 
-            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
-            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paidDate         = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount           = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
             const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
 
-            const hasCardName = item.type === 'bill' && item.cardName;
+            const hasCardName  = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';
-            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
+            const tooltipAttr  = hasCardName ? `data-card-name="${item.cardName}"` : '';
 
-            // 🔥 데이터 속성 추가
-            tr.dataset.billId = item.billId || '';
-            tr.dataset.studentId = item.studentId || '';
+            tr.dataset.billId     = item.billId     || '';
+            tr.dataset.studentId  = item.studentId  || '';
             tr.dataset.paymentKey = item.paymentKey || '';
-            tr.dataset.billType = item.billType || '';
-            tr.dataset.status = item.status || '';
+            tr.dataset.billType   = item.billType   || '';
+            tr.dataset.status     = item.status     || '';
 
             tr.innerHTML = `
         <td class="checkbox-group">
@@ -724,14 +648,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         paymentCells.forEach(cell => {
             const cardName = cell.getAttribute('data-card-name');
-
             if (!cardName) return;
 
-            cell.addEventListener('mouseenter', (e) => {
+            cell.addEventListener('mouseenter', () => {
                 const existingTooltip = document.querySelector('.payment-tooltip');
-                if (existingTooltip) {
-                    existingTooltip.remove();
-                }
+                if (existingTooltip) existingTooltip.remove();
 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'payment-tooltip';
@@ -739,37 +660,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.body.appendChild(tooltip);
 
-                const rect = cell.getBoundingClientRect();
+                const rect         = cell.getBoundingClientRect();
                 const tooltipWidth = tooltip.offsetWidth;
-
-                const leftPosition = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-
-                tooltip.style.left = leftPosition + 'px';
-                tooltip.style.top = (rect.bottom + 5) + 'px';
+                tooltip.style.left = (rect.left + rect.width / 2 - tooltipWidth / 2) + 'px';
+                tooltip.style.top  = (rect.bottom + 5) + 'px';
             });
 
-            // 마우스 벗어났을 때
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.payment-tooltip');
-                if (tooltip) {
-                    tooltip.remove();
-                }
+                if (tooltip) tooltip.remove();
             });
         });
     }
 
     function getStatusText(status) {
         switch (status) {
-            case 'issued':
-                return '결제대기';
-            case 'approved':
-                return '결제완료';
-            case 'canceled':
-                return '결제취소';
-            case 'destroyed':
-                return '청구서파기';
-            default:
-                return '-';
+            case 'issued':    return '결제대기';
+            case 'approved':  return '결제완료';
+            case 'canceled':  return '결제취소';
+            case 'destroyed': return '청구서파기';
+            default:          return '-';
         }
     }
 
@@ -803,36 +713,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const toNumber = v => Number(v || 0);
 
-        const hanEduFee = toNumber(firstItem.hanFee);
+        const hanEduFee      = toNumber(firstItem.hanFee);
         const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
-        const bookEduFee = toNumber(firstItem.bookFee);
+        const bookEduFee     = toNumber(firstItem.bookFee);
         const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
 
-        const rows = modal.querySelectorAll('.pay-edu-table tbody tr');
+        // ✅ 인덱스 방식 대신 data-type 속성으로 안전하게 조회
+        const hanEduInput      = modal.querySelector('.edu-input[data-type="hanEdu"]');
+        const hanMaterialInput = modal.querySelector('.edu-input[data-type="hanMaterial"]');
+        const bookEduInput     = modal.querySelector('.edu-input[data-type="bookEdu"]');
+        const bookMaterialInput = modal.querySelector('.edu-input[data-type="bookMaterial"]');
 
-        // 값 세팅
-        rows[0].querySelector('.edu-input').value = hanEduFee.toLocaleString();
-        rows[0].querySelector('.edu-input').dataset.rawValue = hanEduFee;
+        hanEduInput.value           = hanEduFee.toLocaleString();
+        hanEduInput.dataset.rawValue = hanEduFee;
 
-        rows[1].querySelector('.material-input').value = hanMaterialFee.toLocaleString();
-        rows[1].querySelector('.material-input').dataset.rawValue = hanMaterialFee;
+        hanMaterialInput.value            = hanMaterialFee.toLocaleString();
+        hanMaterialInput.dataset.rawValue = hanMaterialFee;
 
-        rows[2].querySelector('.edu-input').value = bookEduFee.toLocaleString();
-        rows[2].querySelector('.edu-input').dataset.rawValue = bookEduFee;
+        bookEduInput.value            = bookEduFee.toLocaleString();
+        bookEduInput.dataset.rawValue = bookEduFee;
 
-        rows[3].querySelector('.material-input').value = bookMaterialFee.toLocaleString();
-        rows[3].querySelector('.material-input').dataset.rawValue = bookMaterialFee;
+        bookMaterialInput.value            = bookMaterialFee.toLocaleString();
+        bookMaterialInput.dataset.rawValue = bookMaterialFee;
 
         updateTotal(modal);
-
         setupInputListeners(modal);
         setupSaveButton(modal, firstItem.studentId);
+
+        // ✅ 전화번호 수정 세팅
+        setupPhoneEditor(modal, firstItem.studentId, firstItem.billingPhone);
 
         /* =========================
             하단 리스트
         ========================= */
         data.forEach((item, index) => {
-            const amount = Number(item.amount || 0).toLocaleString();
+            const amount   = Number(item.amount || 0).toLocaleString();
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
             const teachers = [item.hanTeacher, item.bookTeacher].filter(Boolean).join(', ');
 
@@ -847,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${item.classDate}</td>
                 <td>${item.studentName}</td>
                 <td>${item.subject}</td>
-                <td>${teachers}</td>   
+                <td>${teachers}</td>
                 <td>${paidDate}</td>
                 <td class="payment">${amount}</td>
                 <td class="middle">
@@ -858,6 +773,71 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    /* =========================
+        전화번호 수정
+    ========================= */
+    function setupPhoneEditor(modal, studentId, currentPhone) {
+        const phoneInput   = modal.querySelector('#modal-phone-input');
+        const phoneSaveBtn = modal.querySelector('#modal-phone-save-btn');
+        if (!phoneInput || !phoneSaveBtn) return;
+
+        phoneInput.value = formatPhoneDisplay(currentPhone || '');
+
+        phoneInput.addEventListener('input', (e) => {
+            const raw    = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = formatPhoneDisplay(raw);
+        });
+
+        // 중복 바인딩 방지 - 버튼 교체
+        const newBtn = phoneSaveBtn.cloneNode(true);
+        phoneSaveBtn.parentNode.replaceChild(newBtn, phoneSaveBtn);
+
+        newBtn.addEventListener('click', async () => {
+            const rawPhone = phoneInput.value.replace(/[^0-9]/g, '');
+
+            if (!rawPhone || rawPhone.length < 10) {
+                alert('올바른 전화번호를 입력하세요.');
+                return;
+            }
+
+            if (!confirm(`전화번호를 ${phoneInput.value} 으로 변경하시겠습니까?`)) return;
+
+            try {
+                const res = await fetch('/pay/update-phone', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({studentId, phone: rawPhone})
+                });
+
+                const result = await res.json();
+
+                if (!res.ok || !result.success) {
+                    throw new Error(result.msg || '전화번호 변경에 실패했습니다.');
+                }
+
+                alert('전화번호가 변경되었습니다.');
+
+                // 상단 테이블 갱신
+                const monthInput    = document.querySelector('.hidden-picker');
+                const teacherSelect = document.getElementById('student-filter');
+                const [year, month] = monthInput.value.split('-');
+                await fetchStudentsGlobal(year, month, teacherSelect.value);
+
+            } catch (err) {
+                console.error('❌ 전화번호 변경 오류:', err);
+                alert(err.message);
+            }
+        });
+    }
+
+    // 전화번호 자동 하이픈 포맷 (010-1234-5678)
+    function formatPhoneDisplay(phone) {
+        const raw = String(phone).replace(/[^0-9]/g, '');
+        if (raw.length <= 3)  return raw;
+        if (raw.length <= 7)  return `${raw.slice(0, 3)}-${raw.slice(3)}`;
+        return `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
     }
 
     /* =========================
@@ -885,9 +865,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const sumCell = modal.querySelector('.edu-sum');
-        if (sumCell) {
-            sumCell.textContent = total.toLocaleString();
-        }
+        if (sumCell) sumCell.textContent = total.toLocaleString();
     }
 
     /* =========================
@@ -901,16 +879,15 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.parentNode.replaceChild(newBtn, saveBtn);
 
         newBtn.addEventListener('click', async () => {
-            const rows = modal.querySelectorAll('.pay-edu-table tbody tr');
-
-            const hanEduFee = Number(rows[0].querySelector('.edu-input').dataset.rawValue || 0);
-            const hanMaterialFee = Number(rows[1].querySelector('.material-input').dataset.rawValue || 0);
-            const bookEduFee = Number(rows[2].querySelector('.edu-input').dataset.rawValue || 0);
-            const bookMaterialFee = Number(rows[3].querySelector('.material-input').dataset.rawValue || 0);
+            // ✅ data-type 속성으로 안전하게 조회 (행 인덱스 불필요)
+            const hanEduFee      = Number(modal.querySelector('.edu-input[data-type="hanEdu"]').dataset.rawValue || 0);
+            const hanMaterialFee = Number(modal.querySelector('.edu-input[data-type="hanMaterial"]').dataset.rawValue || 0);
+            const bookEduFee     = Number(modal.querySelector('.edu-input[data-type="bookEdu"]').dataset.rawValue || 0);
+            const bookMaterialFee = Number(modal.querySelector('.edu-input[data-type="bookMaterial"]').dataset.rawValue || 0);
 
             const url = new URL(window.location.href);
-            const yy = url.searchParams.get('year');
-            const mm = url.searchParams.get('month');
+            const yy  = url.searchParams.get('year');
+            const mm  = url.searchParams.get('month');
 
             if (!yy || !mm) {
                 alert('년월 정보가 없습니다.');
@@ -918,15 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!confirm('수강료를 저장하시겠습니까?')) return;
-            console.log(JSON.stringify({
-                studentId,
-                yy,
-                mm,
-                hanEduFee,
-                hanMaterialFee,
-                bookEduFee,
-                bookMaterialFee
-            }));
+
             try {
                 const response = await fetch('/pay/update-fee', {
                     method: 'POST',
@@ -950,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     modal.style.display = 'none';
 
-                    const monthInput = document.querySelector('.hidden-picker');
+                    const monthInput    = document.querySelector('.hidden-picker');
                     const teacherSelect = document.getElementById('student-filter');
                     const [year, month] = monthInput.value.split('-');
                     await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -971,35 +940,23 @@ document.addEventListener('DOMContentLoaded', () => {
     ========================= */
     function getStatus(status) {
         switch (status) {
-            case 'pending':
-                return '청구서 미발행';
-            case 'issued':
-                return '결제 대기';
-            case 'approved':
-                return '결제 완료';
-            case 'canceled':
-                return '결제 취소';
-            case 'destroyed':
-                return '청구서 파기';
-            default:
-                return '';
+            case 'pending':   return '청구서 미발행';
+            case 'issued':    return '결제 대기';
+            case 'approved':  return '결제 완료';
+            case 'canceled':  return '결제 취소';
+            case 'destroyed': return '청구서 파기';
+            default:          return '';
         }
     }
 
     function getStatusClass(status) {
         switch (status) {
-            case 'pending':
-                return 'pending';
-            case 'issued':
-                return 'standby';
-            case 'approved':
-                return 'complete';
-            case 'canceled':
-                return 'cancellation';
-            case 'destroyed':
-                return 'destroy';
-            default:
-                return '';
+            case 'pending':   return 'pending';
+            case 'issued':    return 'standby';
+            case 'approved':  return 'complete';
+            case 'canceled':  return 'cancellation';
+            case 'destroyed': return 'destroy';
+            default:          return '';
         }
     }
 });
@@ -1007,9 +964,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 금액 직접 입력하기 ========== //
 document.addEventListener('DOMContentLoaded', () => {
-    const eduFee = document.getElementById("eduFee");
-    const bookFee = document.getElementById("bookFee");
-    const priceDiv = document.querySelector(".price");
+    const eduFee     = document.getElementById("eduFee");
+    const bookFee    = document.getElementById("bookFee");
+    const priceDiv   = document.querySelector(".price");
     const priceInput = document.querySelector(".edu-input");
 
     function updatePriceState() {
@@ -1030,7 +987,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     priceInput.addEventListener("input", (e) => {
-        const cursorPos = e.target.selectionStart;
         const formatted = formatNumber(e.target.value);
         e.target.value = formatted;
         e.target.setSelectionRange(e.target.value.length, e.target.value.length);
@@ -1044,105 +1000,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 우측 버튼 클릭 ========== //
 document.addEventListener("DOMContentLoaded", () => {
-    const payIssue = document.querySelector('#pay-issue');
-    const payCancel = document.querySelector('#pay-cancel');
+    const payIssue   = document.querySelector('#pay-issue');
+    const payCancel  = document.querySelector('#pay-cancel');
     const payDestroy = document.querySelector('#pay-destory');
     const payReissue = document.querySelector('#pay-reissue');
 
     // ================================
-    // 🔥 1. 청구서 발행 (상단 테이블 체크박스 사용)
+    // 1. 청구서 발행
     // ================================
     payIssue.addEventListener('click', async () => {
 
-        // ================================
-        // 유효성 검사
-        // ================================
         const checkedBoxes = document.querySelectorAll(
             '#student-tbody input[type="checkbox"]:checked'
         );
 
-        if (checkedBoxes.length === 0) {
-            return alert('학생을 선택하세요.');
-        }
+        if (checkedBoxes.length === 0) return alert('학생을 선택하세요.');
 
-        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
+        const eduChecked  = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
-        if (!eduChecked && !bookChecked) {
-            return alert('청구 종류를 선택하세요.');
-        }
+        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm] = selectedMonth.split('-');
-        const expireDt = document.querySelector('.expire-input').value;
+        const [yy, mm]      = selectedMonth.split('-');
+        const expireDt      = document.querySelector('.expire-input').value;
 
         const studentIds = Array.from(checkedBoxes).map(
             box => box.closest('tr').dataset.studentId
         );
 
-        const includeSibling = document.querySelector('input[name="includeSibling"]').checked;
-
+        const includeSibling  = document.querySelector('input[name="includeSibling"]').checked;
         const customPriceInput = document.querySelector('.edu-input').value;
-        const customPrice = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
-        const customMessage = document.querySelector('input[name="message"]')?.value?.trim();
+        const customPrice      = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
+        const customMessage    = document.querySelector('input[name="message"]')?.value?.trim();
 
-        if (customPrice !== null && customPrice <= 0) {
-            return alert('올바른 금액을 입력하세요.');
-        }
+        if (customPrice !== null && customPrice <= 0) return alert('올바른 금액을 입력하세요.');
 
-        // ================================
-        // 발행 타입 목록
-        // ================================
         const types = [];
-        if (eduChecked) types.push({type: 'edu', label: '교육비'});
+        if (eduChecked)  types.push({type: 'edu',      label: '교육비'});
         if (bookChecked) types.push({type: 'material', label: '교재비'});
 
-        const jobId = crypto.randomUUID();
-
-        const overlay = showProgressOverlay();
+        const jobId    = crypto.randomUUID();
+        const overlay  = showProgressOverlay();
         const evtSource = new EventSource(`/pay/progress/${jobId}`);
 
-        // 리스너 먼저 등록
         evtSource.addEventListener('progress', (e) => {
             try {
                 const data = JSON.parse(e.data);
                 updateOverlayProgress(overlay, data);
-                if (data.status === 'done') {
-                    evtSource.close();
-                }
+                if (data.status === 'done') evtSource.close();
             } catch (err) {
                 console.error('[SSE] 파싱 오류:', err, '원본 데이터:', e.data);
             }
         });
 
-        evtSource.onopen = () => {
-        };
+        evtSource.onerror = () => evtSource.close();
 
-        evtSource.onerror = (e) => {
-            evtSource.close();
-        };
-
-        // 연결 대기
         await new Promise((resolve) => {
-            evtSource.onopen = () => {
-                resolve();
-            };
-            setTimeout(() => {
-                resolve();
-            }, 1500);
+            evtSource.onopen = () => resolve();
+            setTimeout(() => resolve(), 1500);
         });
 
-        // ================================
-        // 청구서 발행
-        // ================================
         let totalSuccessCount = 0;
-        let totalFailCount = 0;
-        const failMessages = [];
+        let totalFailCount    = 0;
+        const failMessages    = [];
 
         for (let i = 0; i < types.length; i++) {
             const {type, label} = types[i];
 
-            // 타입 표시 업데이트 (교육비/교재비 전환 시)
             updateOverlayLabel(overlay, `${label} 청구서 발행 중...`);
 
             const result = await sendBillsSafe({
@@ -1154,43 +1079,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 mm,
                 includeSibling,
                 customPrice,
-                jobId  // ✅ SSE 연동용 jobId
+                jobId
             });
 
             if (result.success) {
                 totalSuccessCount += result.successCount;
-                totalFailCount += result.failCount;
+                totalFailCount    += result.failCount;
             } else {
                 totalFailCount++;
                 failMessages.push(`${label}: ${result.error}`);
             }
         }
 
-        // ================================
-        // 마무리
-        // ================================
         evtSource.close();
         hideProgressOverlay(overlay);
 
         let resultMsg = `✅ 발행 완료: ${totalSuccessCount}건\n❌ 실패: ${totalFailCount}건`;
-        if (failMessages.length > 0) {
-            resultMsg += `\n\n실패 내용:\n${failMessages.join('\n')}`;
-        }
+        if (failMessages.length > 0) resultMsg += `\n\n실패 내용:\n${failMessages.join('\n')}`;
         alert(resultMsg);
 
-        // 테이블 재조회
-        const monthInput = document.querySelector('.hidden-picker');
+        const monthInput    = document.querySelector('.hidden-picker');
         const teacherSelect = document.getElementById('student-filter');
         const [year, month] = monthInput.value.split('-');
         await fetchStudentsGlobal(year, month, teacherSelect.value);
     });
 
-// ================================
-// sendBillsSafe - 에러를 throw 하지 않고 결과 반환
-// ================================
     async function sendBillsSafe(body) {
         try {
-            const res = await fetch('/pay/send', {
+            const res  = await fetch('/pay/send', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
@@ -1199,27 +1115,20 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (!res.ok || !data.success) {
-                return {
-                    success: false,
-                    error: data.msg || data.response || '청구 실패'
-                };
+                return {success: false, error: data.msg || data.response || '청구 실패'};
             }
 
             return {
                 success: true,
                 successCount: data.response?.successCount || 0,
-                failCount: data.response?.failCount || 0
+                failCount:    data.response?.failCount    || 0
             };
         } catch (e) {
             return {success: false, error: e.message || '네트워크 오류'};
         }
     }
 
-// ================================
-// 진행 오버레이 생성
-// ================================
     function showProgressOverlay() {
-        // 스피너 애니메이션 스타일 주입 (한 번만)
         if (!document.getElementById('spinner-style')) {
             const style = document.createElement('style');
             style.id = 'spinner-style';
@@ -1230,73 +1139,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const overlay = document.createElement('div');
         overlay.id = 'progress-overlay';
         overlay.style.cssText = `
-        position: fixed;
-        inset: 0;
+        position: fixed; inset: 0;
         background: rgba(0, 0, 0, 0.45);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         z-index: 99999;
     `;
 
         overlay.innerHTML = `
         <div style="
-            background: white;
-            border-radius: 12px;
-            padding: 32px 48px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            min-width: 340px;
+            background: white; border-radius: 12px;
+            padding: 32px 48px; text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2); min-width: 340px;
         ">
-            <!-- 스피너 -->
             <div style="
                 width: 40px; height: 40px;
-                border: 4px solid #e5e7eb;
-                border-top-color: #6366f1;
-                border-radius: 50%;
-                animation: spin 0.8s linear infinite;
+                border: 4px solid #e5e7eb; border-top-color: #6366f1;
+                border-radius: 50%; animation: spin 0.8s linear infinite;
                 margin: 0 auto 20px;
             "></div>
-
-            <!-- 타입 라벨 (교육비/교재비) -->
-            <p id="overlay-label" style="
-                margin: 0 0 6px;
-                font-size: 15px;
-                font-weight: 600;
-                color: #374151;
-            ">청구서 발행 중...</p>
-
-            <!-- 현재 처리 중인 학생 이름 -->
-            <p id="overlay-student" style="
-                margin: 0 0 16px;
-                font-size: 13px;
-                color: #6b7280;
-                min-height: 18px;
-            ">준비 중...</p>
-
-            <!-- 진행바 -->
-            <div style="
-                background: #e5e7eb;
-                border-radius: 999px;
-                height: 8px;
-                overflow: hidden;
-                margin-bottom: 10px;
-            ">
-                <div id="overlay-bar" style="
-                    height: 100%;
-                    width: 0%;
-                    background: #6366f1;
-                    border-radius: 999px;
-                    transition: width 0.3s ease;
-                "></div>
+            <p id="overlay-label" style="margin: 0 0 6px; font-size: 15px; font-weight: 600; color: #374151;">청구서 발행 중...</p>
+            <p id="overlay-student" style="margin: 0 0 16px; font-size: 13px; color: #6b7280; min-height: 18px;">준비 중...</p>
+            <div style="background: #e5e7eb; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 10px;">
+                <div id="overlay-bar" style="height: 100%; width: 0%; background: #6366f1; border-radius: 999px; transition: width 0.3s ease;"></div>
             </div>
-
-            <!-- 진행 카운트 -->
-            <p id="overlay-count" style="
-                margin: 0;
-                font-size: 13px;
-                color: #9ca3af;
-            ">0 / 0 (0%)</p>
+            <p id="overlay-count" style="margin: 0; font-size: 13px; color: #9ca3af;">0 / 0 (0%)</p>
         </div>
     `;
 
@@ -1304,115 +1170,75 @@ document.addEventListener("DOMContentLoaded", () => {
         return overlay;
     }
 
-// ================================
-// 오버레이 라벨 업데이트 (교육비/교재비 전환)
-// ================================
     function updateOverlayLabel(overlay, text) {
         const el = overlay.querySelector('#overlay-label');
         if (el) el.textContent = text;
     }
 
-// ================================
-// 오버레이 진행상황 업데이트 (SSE 수신 시)
-// ================================
     function updateOverlayProgress(overlay, data) {
         const {current, total, studentName, successCount, failCount, status} = data;
 
-        const bar = overlay.querySelector('#overlay-bar');
-        const count = overlay.querySelector('#overlay-count');
+        const bar     = overlay.querySelector('#overlay-bar');
+        const count   = overlay.querySelector('#overlay-count');
         const student = overlay.querySelector('#overlay-student');
-
-        const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+        const pct     = total > 0 ? Math.round((current / total) * 100) : 0;
 
         if (bar) bar.style.width = `${pct}%`;
 
         if (count) {
-            if (status === 'done') {
-                count.textContent = `완료 ✅ (성공: ${successCount}건 / 실패: ${failCount}건)`;
-            } else {
-                count.textContent = `${current} / ${total} (${pct}%)`;
-            }
+            count.textContent = status === 'done'
+                ? `완료 ✅ (성공: ${successCount}건 / 실패: ${failCount}건)`
+                : `${current} / ${total} (${pct}%)`;
         }
 
         if (student) {
-            if (status === 'done') {
-                student.textContent = '발행 완료!';
-            } else if (studentName) {
-                student.textContent = `처리 중: ${studentName}`;
-            }
+            if (status === 'done')       student.textContent = '발행 완료!';
+            else if (studentName)        student.textContent = `처리 중: ${studentName}`;
         }
     }
 
     function hideProgressOverlay(overlay) {
-        if (overlay && overlay.parentNode) {
-            overlay.parentNode.removeChild(overlay);
-        }
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
     }
 
     // ================================
-    // 🔥 2. 결제 취소 (하단 테이블 체크박스 사용)
+    // 2. 결제 취소
     // ================================
     payCancel.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) {
-            alert('취소할 청구서를 선택하세요.');
-            return;
-        }
+        if (!checkedBox) { alert('취소할 청구서를 선택하세요.'); return; }
 
-        const row = checkedBox.closest('tr');
-        const billId = row.dataset.billId;
-        const studentId = row.dataset.studentId;
-        const paymentKey = row.dataset.paymentKey;
-        const billType = row.dataset.billType;
-        const status = row.dataset.status;
+        const row         = checkedBox.closest('tr');
+        const billId      = row.dataset.billId;
+        const studentId   = row.dataset.studentId;
+        const paymentKey  = row.dataset.paymentKey;
+        const billType    = row.dataset.billType;
+        const status      = row.dataset.status;
 
-        if (status !== 'approved') {
-            alert('결제 완료된 청구서만 취소할 수 있습니다.');
-            return;
-        }
+        if (status !== 'approved') { alert('결제 완료된 청구서만 취소할 수 있습니다.'); return; }
 
         const studentName = row.querySelector('td:nth-child(2)').textContent;
         const cancelReason = prompt(`${studentName} 학생의 취소 사유를 입력해주세요.`);
 
-        if (!cancelReason || cancelReason.trim() === '') {
-            alert('취소 사유는 필수입니다.');
-            return;
-        }
+        if (!cancelReason || cancelReason.trim() === '') { alert('취소 사유는 필수입니다.'); return; }
 
-        if (!confirm(
-            `${studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n` +
-            `※ 이 작업은 되돌릴 수 없습니다.`
-        )) {
-            return;
-        }
-
-        const body = {
-            paymentKey: paymentKey,
-            cancelType: billType,
-            cancelReason: cancelReason.trim()
-        };
+        if (!confirm(`${studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n※ 이 작업은 되돌릴 수 없습니다.`)) return;
 
         try {
-            const res = await fetch('/pay/cancel', {
+            const res  = await fetch('/pay/cancel', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
+                body: JSON.stringify({paymentKey, cancelType: billType, cancelReason: cancelReason.trim()})
             });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.msg || '결제 취소에 실패했습니다.');
-            }
+            if (!res.ok) throw new Error(data.msg || '결제 취소에 실패했습니다.');
 
             alert(data.data || '결제가 취소되었습니다.');
 
-            // ✅ CSR 업데이트
             const url = new URL(window.location.href);
-            const yy = url.searchParams.get('year');
-            const mm = url.searchParams.get('month');
-            await fetchBillDetail(studentId, yy, mm);
+            await fetchBillDetail(studentId, url.searchParams.get('year'), url.searchParams.get('month'));
 
         } catch (err) {
             console.error('❌ 결제 취소 오류:', err);
@@ -1421,58 +1247,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ================================
-    // 🔥 3. 청구서 파기 (하단 테이블 체크박스 사용)
+    // 3. 청구서 파기
     // ================================
     payDestroy.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) {
-            alert('파기할 청구서를 선택하세요.');
-            return;
-        }
+        if (!checkedBox) { alert('파기할 청구서를 선택하세요.'); return; }
 
-        const row = checkedBox.closest('tr');
-        const billId = row.dataset.billId;
-        const studentId = row.dataset.studentId;
-        const paymentKey = row.dataset.paymentKey;
-        const billType = row.dataset.billType;
+        const row         = checkedBox.closest('tr');
+        const billId      = row.dataset.billId;
+        const studentId   = row.dataset.studentId;
+        const paymentKey  = row.dataset.paymentKey;
+        const billType    = row.dataset.billType;
         const studentName = row.querySelector('td:nth-child(2)').textContent;
 
-        if (!billId || !paymentKey) {
-            alert('파기 정보를 확인할 수 없습니다.');
-            return;
-        }
-
-        if (!confirm(`${studentName} 학생의 청구서를 파기하시겠습니까?`)) {
-            return;
-        }
+        if (!billId || !paymentKey) { alert('파기 정보를 확인할 수 없습니다.'); return; }
+        if (!confirm(`${studentName} 학생의 청구서를 파기하시겠습니까?`)) return;
 
         try {
-            console.log("billId" + billId, "billType" + billType)
-            const res = await fetch('/pay/destroy/bill', {
+            const res  = await fetch('/pay/destroy/bill', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    billId: billId,
-                    studentId: studentId,
-                    paymentKey: paymentKey,
-                    destroyType: billType
-                })
+                body: JSON.stringify({billId, studentId, paymentKey, destroyType: billType})
             });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.msg || '청구서 파기에 실패했습니다.');
-            }
+            if (!res.ok) throw new Error(data.msg || '청구서 파기에 실패했습니다.');
 
             alert(data.data || '청구서가 파기되었습니다.');
 
-            // ✅ CSR 업데이트
             const url = new URL(window.location.href);
-            const yy = url.searchParams.get('year');
-            const mm = url.searchParams.get('month');
-            await fetchBillDetail(studentId, yy, mm);
+            await fetchBillDetail(studentId, url.searchParams.get('year'), url.searchParams.get('month'));
 
         } catch (err) {
             console.error('❌ 청구서 파기 오류:', err);
@@ -1481,18 +1286,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ================================
-    // 🔥 4. 청구서 재발행 (하단 테이블 체크박스 사용)
+    // 4. 청구서 재발행 (단건)
     // ================================
     payReissue.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) {
-            alert('재발행할 청구서를 선택하세요.');
-            return;
-        }
+        if (!checkedBox) { alert('재발행할 청구서를 선택하세요.'); return; }
 
-        const row = checkedBox.closest('tr');
-        const billId = row.dataset.billId;
+        const row       = checkedBox.closest('tr');
+        const billId    = row.dataset.billId;
         const studentId = row.dataset.studentId;
 
         if (!billId || billId === 'null' || billId === 'undefined') {
@@ -1501,25 +1303,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res = await fetch('/pay/reissue', {
+            const res  = await fetch('/pay/reissue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({billIds: [billId]})
             });
 
             const data = await res.json();
-
-            if (!data.success) {
-                return alert(data.msg || '재발행 실패');
-            }
+            if (!data.success) return alert(data.msg || '재발행 실패');
 
             alert('재발행이 완료되었습니다.');
 
-            // ✅ CSR 업데이트
             const url = new URL(window.location.href);
-            const yy = url.searchParams.get('year');
-            const mm = url.searchParams.get('month');
-            await fetchBillDetail(studentId, yy, mm);
+            await fetchBillDetail(studentId, url.searchParams.get('year'), url.searchParams.get('month'));
 
         } catch (e) {
             console.error(e);
@@ -1527,6 +1323,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // ================================
+    // 5. 체크된 학생 일괄 재발행
+    // ================================
     const payCheckedReissue = document.querySelector('#pay-checked-reissue');
 
     payCheckedReissue.addEventListener('click', async () => {
@@ -1534,16 +1333,11 @@ document.addEventListener("DOMContentLoaded", () => {
             '#student-tbody input[type="checkbox"]:checked'
         );
 
-        if (checkedBoxes.length === 0) {
-            return alert('재발행할 학생을 선택하세요.');
-        }
+        if (checkedBoxes.length === 0) return alert('재발행할 학생을 선택하세요.');
 
         const billIds = Array.from(checkedBoxes)
             .map(cb => cb.closest('tr').dataset.billId)
             .filter(id => id && id !== 'null' && id !== 'undefined' && id !== '');
-
-        console.log('선택된 학생 수:', checkedBoxes.length);
-        console.log('재발행 대상 billIds:', billIds);
 
         if (billIds.length === 0) {
             return alert('선택된 학생 중 발행된 청구서가 없습니다.\n(미발행 상태인 학생은 재발행 불가)');
@@ -1552,22 +1346,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirm(`총 ${billIds.length}건의 청구서를 재발행하시겠습니까?`)) return;
 
         try {
-            const res = await fetch('/pay/reissue', {
+            const res  = await fetch('/pay/reissue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ billIds })
+                body: JSON.stringify({billIds})
             });
 
             const data = await res.json();
-
-            if (!data.success) {
-                return alert(data.msg || '재발행 실패');
-            }
+            if (!data.success) return alert(data.msg || '재발행 실패');
 
             alert(`재발행이 완료되었습니다. (${billIds.length}건)`);
 
-            // 테이블 재조회
-            const monthInput = document.querySelector('.hidden-picker');
+            const monthInput    = document.querySelector('.hidden-picker');
             const teacherSelect = document.getElementById('student-filter');
             const [year, month] = monthInput.value.split('-');
             await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -1578,11 +1368,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // ✅ fetchBillDetail 함수를 여기서도 접근 가능하도록 외부에 선언
+    // ================================
+    // fetchBillDetail / fillClaimDetailTable (버튼 스코프용 중복 선언)
+    // ================================
     async function fetchBillDetail(studentId, yy, mm) {
         const claimDetailSection = document.querySelector('.claim-frame');
-        const claimDivider = document.getElementById('claim-divider');
-        const claimButtons = document.getElementById('claim-buttons');
+        const claimDivider       = document.getElementById('claim-divider');
+        const claimButtons       = document.getElementById('claim-buttons');
 
         try {
             const response = await fetch('/pay/detail/bill', {
@@ -1594,7 +1386,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!response.ok) throw new Error('데이터 조회 실패');
 
             const data = await response.json();
-            console.log(data);
             fillClaimDetailTable(data.response);
 
             claimDetailSection.style.display = 'block';
@@ -1626,19 +1417,19 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach(item => {
             const tr = document.createElement('tr');
 
-            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
-            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paidDate          = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount            = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
             const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
 
-            const hasCardName = item.type === 'bill' && item.cardName;
+            const hasCardName  = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';
-            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
+            const tooltipAttr  = hasCardName ? `data-card-name="${item.cardName}"` : '';
 
-            tr.dataset.billId = item.billId || '';
-            tr.dataset.studentId = item.studentId || '';
+            tr.dataset.billId     = item.billId     || '';
+            tr.dataset.studentId  = item.studentId  || '';
             tr.dataset.paymentKey = item.paymentKey || '';
-            tr.dataset.billType = item.billType || '';
-            tr.dataset.status = item.status || '';
+            tr.dataset.billType   = item.billType   || '';
+            tr.dataset.status     = item.status     || '';
 
             tr.innerHTML = `
         <td class="checkbox-group">
@@ -1666,14 +1457,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         paymentCells.forEach(cell => {
             const cardName = cell.getAttribute('data-card-name');
-
             if (!cardName) return;
 
-            cell.addEventListener('mouseenter', (e) => {
+            cell.addEventListener('mouseenter', () => {
                 const existingTooltip = document.querySelector('.payment-tooltip');
-                if (existingTooltip) {
-                    existingTooltip.remove();
-                }
+                if (existingTooltip) existingTooltip.remove();
 
                 const tooltip = document.createElement('div');
                 tooltip.className = 'payment-tooltip';
@@ -1681,85 +1469,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.body.appendChild(tooltip);
 
-                const rect = cell.getBoundingClientRect();
+                const rect         = cell.getBoundingClientRect();
                 const tooltipWidth = tooltip.offsetWidth;
-
-                const leftPosition = rect.left + (rect.width / 2) - (tooltipWidth / 2);
-
-                tooltip.style.left = leftPosition + 'px';
-                tooltip.style.top = (rect.bottom + 5) + 'px';
+                tooltip.style.left = (rect.left + rect.width / 2 - tooltipWidth / 2) + 'px';
+                tooltip.style.top  = (rect.bottom + 5) + 'px';
             });
 
             cell.addEventListener('mouseleave', () => {
                 const tooltip = document.querySelector('.payment-tooltip');
-                if (tooltip) {
-                    tooltip.remove();
-                }
+                if (tooltip) tooltip.remove();
             });
         });
     }
 
     function getStatusText(status) {
         switch (status) {
-            case 'issued':
-                return '결제대기';
-            case 'approved':
-                return '결제완료';
-            case 'canceled':
-                return '결제취소';
-            case 'destroyed':
-                return '청구서파기';
-            default:
-                return '-';
+            case 'issued':    return '결제대기';
+            case 'approved':  return '결제완료';
+            case 'canceled':  return '결제취소';
+            case 'destroyed': return '청구서파기';
+            default:          return '-';
         }
     }
 });
 
+// ========== 엑셀 다운로드 ========== //
 async function exportFilteredDataToExcel() {
     try {
-        // 로딩 표시
         const button = event.target;
         button.disabled = true;
         button.textContent = '다운로드 중...';
 
-        // URL에서 년/월 가져오기
-        const url = new URL(window.location.href);
-        const yy = url.searchParams.get('year');
-        const mm = url.searchParams.get('month');
+        const url        = new URL(window.location.href);
+        const yy         = url.searchParams.get('year');
+        const mm         = url.searchParams.get('month');
+        const userCode   = document.getElementById('student-filter')?.value || '';
 
-        // 선생님 필터
-        const teacherSelect = document.getElementById('student-filter');
-        const userCode = teacherSelect?.value || '';
-
-        // 교육비/교재비 라디오 버튼
-        const itemType = 'EDU_FEE';
-        const centerCode = 'PUS002';
-
-        // 필터 조건 수집
         const filters = {
-            userCode: userCode,
-            centerCode: centerCode,
-            yy: yy,
-            mm: mm,
-            itemType: itemType
+            userCode,
+            centerCode: 'PUS002',
+            yy,
+            mm,
+            itemType: 'EDU_FEE'
         };
 
-        console.log('전송 데이터:', filters);
-
-        // 백엔드에서 데이터 가져오기
         const response = await fetch('/pay/api/claim/export', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(filters)
         });
 
-        if (!response.ok) {
-            throw new Error('데이터 조회 실패');
-        }
+        if (!response.ok) throw new Error('데이터 조회 실패');
 
-        const result = await response.json();
+        const result  = await response.json();
         const allData = result.response || result;
 
         if (!allData || allData.length === 0) {
@@ -1769,69 +1531,51 @@ async function exportFilteredDataToExcel() {
             return;
         }
 
-        // 데이터 구조 확인용 로그
-        console.log('받은 데이터 샘플:', allData[0]);
-        console.log('전체 데이터:', allData);
-
-        // 워크북 생성
         const wb = XLSX.utils.book_new();
 
-        // 선생님별로 데이터 그룹화
         const groupedByTeacher = groupDataByTeacher(allData);
 
-        console.log('그룹화된 데이터:', groupedByTeacher);
-
-        // 각 선생님별로 시트 생성
         Object.keys(groupedByTeacher).sort().forEach(teacherName => {
             const teacherData = groupedByTeacher[teacherName];
-            const title = `${mm}월 ${teacherName} 결제 기록`;
-            const sheetData = teacherData.map(item => {
-                // 결제금액 계산: 결제금액 - (결제금액 - 청구금액), 미납이면 0
-                const paidAmount = Number(item.paidAmount || 0);
-                const billPrice = Number(item.billPrice || 0);
+            const title       = `${mm}월 ${teacherName} 결제 기록`;
+            const sheetData   = teacherData.map(item => {
+                const paidAmount     = Number(item.paidAmount || 0);
+                const billPrice      = Number(item.billPrice  || 0);
                 const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-
                 return {
-                    '이름': item.studentName || '',
-                    '수강과목': item.subject || '',
+                    '이름':    item.studentName || '',
+                    '수강과목': item.subject     || '',
                     '청구금액': billPrice,
                     '결제금액': calculatedPaid,
                     '미납금액': Number(item.unpaidAmount || 0),
-                    '상태': item.payStatus || ''
+                    '상태':    item.payStatus   || ''
                 };
             });
 
-            const sheet = createSheetWithTitle(sheetData, title);
-            // 시트 이름은 최대 31자로 제한
+            const sheet     = createSheetWithTitle(sheetData, title);
             const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
             XLSX.utils.book_append_sheet(wb, sheet, sheetName);
         });
 
-        // 전체 시트 추가
-        const title = `${mm}월 전체 결제 기록`;
         const allSheetData = allData.map(item => {
-            // 결제금액 계산: 결제금액 - (결제금액 - 청구금액), 미납이면 0
-            const paidAmount = Number(item.paidAmount || 0);
-            const billPrice = Number(item.billPrice || 0);
+            const paidAmount     = Number(item.paidAmount || 0);
+            const billPrice      = Number(item.billPrice  || 0);
             const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-
             return {
-                '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
-                '이름': item.studentName || '',
-                '수강과목': item.subject || '',
+                '선생님':  item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
+                '이름':    item.studentName || '',
+                '수강과목': item.subject     || '',
                 '청구금액': billPrice,
                 '결제금액': calculatedPaid,
                 '미납금액': Number(item.unpaidAmount || 0),
-                '상태': item.payStatus || ''
+                '상태':    item.payStatus   || ''
             };
         });
 
-        const allSheet = createSheetWithTitle(allSheetData, title, true);
+        const allSheet = createSheetWithTitle(allSheetData, `${mm}월 전체 결제 기록`, true);
         XLSX.utils.book_append_sheet(wb, allSheet, "전체");
 
-        // 파일 다운로드
-        const fileName = `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(wb, fileName);
+        XLSX.writeFile(wb, `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
 
         button.disabled = false;
         button.textContent = '엑셀 다운로드';
@@ -1839,167 +1583,80 @@ async function exportFilteredDataToExcel() {
     } catch (error) {
         console.error('엑셀 다운로드 실패:', error);
         alert('엑셀 다운로드에 실패했습니다.');
-        button.disabled = false;
-        button.textContent = '엑셀 다운로드';
+        event.target.disabled = false;
+        event.target.textContent = '엑셀 다운로드';
     }
 }
 
-// 선생님별로 데이터 그룹화
 function groupDataByTeacher(data) {
     return data.reduce((acc, item) => {
-        // teacherName이 없으면 hanTeacher나 bookTeacher 사용
         const teacherName = item.teacherName || item.hanTeacher || item.bookTeacher || '미지정';
-        console.log('학생:', item.studentName, '-> 선생님:', teacherName, '원본:', item.teacherName);
-
-        if (!acc[teacherName]) {
-            acc[teacherName] = [];
-        }
+        if (!acc[teacherName]) acc[teacherName] = [];
         acc[teacherName].push(item);
         return acc;
     }, {});
 }
 
-// 제목이 있는 시트 생성 함수
 function createSheetWithTitle(data, title, isAllSheet = false) {
-    // 제목 행, 빈 행, 헤더 행, 데이터 행을 합친 배열 생성
-    const sheetData = [
-        [title], // 첫 번째 행: 제목
-        [], // 두 번째 행: 빈 행
-    ];
+    const sheetData = [[title], []];
 
-    // 총계 계산
     let totalCount = data.length;
-    let totalBill = 0;
-    let totalPaid = 0;
+    let totalBill  = 0;
+    let totalPaid  = 0;
     let totalUnpaid = 0;
 
-    // 데이터를 배열 형태로 변환
     if (data.length > 0) {
-        // 헤더 추가 (번호 컬럼 추가)
         const headers = ['번호', ...Object.keys(data[0])];
         sheetData.push(headers);
 
-        // 데이터 추가 (번호 포함) 및 총계 계산
         data.forEach((row, index) => {
             const originalHeaders = Object.keys(data[0]);
-            const rowData = [index + 1, ...originalHeaders.map(header => row[header])];
-            sheetData.push(rowData);
-
-            // 총계 계산
-            totalBill += row['청구금액'] || 0;
-            totalPaid += row['결제금액'] || 0;
+            sheetData.push([index + 1, ...originalHeaders.map(h => row[h])]);
+            totalBill   += row['청구금액'] || 0;
+            totalPaid   += row['결제금액'] || 0;
             totalUnpaid += row['미납금액'] || 0;
         });
 
-        // 총계 행 추가
         if (isAllSheet) {
-            // 전체 시트는 선생님 컬럼이 있어서 구조가 다름
-            sheetData.push([
-                `총원:`,
-                `${totalCount}명`,
-                '',
-                '',
-                totalBill,
-                totalPaid,
-                totalUnpaid,
-                ''
-            ]);
+            sheetData.push([`총원:`, `${totalCount}명`, '', '', totalBill, totalPaid, totalUnpaid, '']);
         } else {
-            sheetData.push([
-                `총원:`,
-                `${totalCount}명`,
-                '',
-                totalBill,
-                totalPaid,
-                totalUnpaid,
-                ''
-            ]);
+            sheetData.push([`총원:`, `${totalCount}명`, '', totalBill, totalPaid, totalUnpaid, '']);
         }
     }
 
-    // 배열을 시트로 변환
-    const ws = XLSX.utils.aoa_to_sheet(sheetData);
-
-    // 범위 가져오기
+    const ws    = XLSX.utils.aoa_to_sheet(sheetData);
     const range = XLSX.utils.decode_range(ws['!ref']);
-
-    // 금액 컬럼 인덱스 (전체 시트는 선생님 컬럼이 추가되어 다름)
-    // 청구금액, 결제금액, 미납금액 순서
     const amountColumns = isAllSheet ? [4, 5, 6] : [3, 4, 5];
 
-    // 모든 셀에 스타일 적용
     for (let R = range.s.r; R <= range.e.r; R++) {
         for (let C = range.s.c; C <= range.e.c; C++) {
             const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
-            if (!ws[cellAddress]) {
-                ws[cellAddress] = {t: 's', v: ''};
-            }
+            if (!ws[cellAddress]) ws[cellAddress] = {t: 's', v: ''};
+            if (!ws[cellAddress].s) ws[cellAddress].s = {};
 
-            // 셀 스타일 초기화
-            if (!ws[cellAddress].s) {
-                ws[cellAddress].s = {};
-            }
+            ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center', wrapText: false}};
 
-            // 가운데 정렬 적용
-            ws[cellAddress].s = {
-                alignment: {
-                    horizontal: 'center',
-                    vertical: 'center',
-                    wrapText: false
-                }
-            };
-
-            // 금액 컬럼
             if (R > 2 && amountColumns.includes(C)) {
                 const cellValue = ws[cellAddress].v;
                 if (typeof cellValue === 'number' || !isNaN(cellValue)) {
                     ws[cellAddress].t = 'n';
                     ws[cellAddress].v = Number(cellValue);
                     ws[cellAddress].z = '#,##0';
-                    ws[cellAddress].s = {
-                        alignment: {
-                            horizontal: 'center',
-                            vertical: 'center'
-                        },
-                        numFmt: '#,##0'
-                    };
+                    ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center'}, numFmt: '#,##0'};
                 }
             }
         }
     }
 
-    // 셀 병합 (전체 시트는 컬럼이 하나 더 많음)
     if (!ws['!merges']) ws['!merges'] = [];
-    const mergeEndCol = isAllSheet ? 7 : 6;
-    ws['!merges'].push({s: {r: 0, c: 0}, e: {r: 0, c: mergeEndCol}});
+    ws['!merges'].push({s: {r: 0, c: 0}, e: {r: 0, c: isAllSheet ? 7 : 6}});
 
-    // 첫 번째 행 높이 2배로 설정
     if (!ws['!rows']) ws['!rows'] = [];
     ws['!rows'][0] = {hpt: 30, hpx: 30};
 
-    // 컬럼 너비 설정
-    if (isAllSheet) {
-        ws['!cols'] = [
-            {wch: 10},  // 번호
-            {wch: 12},  // 선생님
-            {wch: 12},  // 이름
-            {wch: 20},  // 수강과목
-            {wch: 15},  // 청구금액
-            {wch: 15},  // 결제금액
-            {wch: 15},  // 미납금액
-            {wch: 12}   // 상태
-        ];
-    } else {
-        ws['!cols'] = [
-            {wch: 10},  // 번호
-            {wch: 12},  // 이름
-            {wch: 20},  // 수강과목
-            {wch: 15},  // 청구금액
-            {wch: 15},  // 결제금액
-            {wch: 15},  // 미납금액
-            {wch: 12}   // 상태
-        ];
-    }
+    ws['!cols'] = isAllSheet
+        ? [{wch: 10}, {wch: 12}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}]
+        : [{wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}];
 
     return ws;
 }
@@ -2021,8 +1678,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPayRemind.addEventListener("click", async () => {
         try {
             const monthInput = document.querySelector('.hidden-date.hidden-picker');
-            const yearMonth = {
-                year: monthInput.value.split("-")[0],
+            const yearMonth  = {
+                year:  monthInput.value.split("-")[0],
                 month: monthInput.value.split("-")[1]
             };
 
@@ -2034,15 +1691,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!res.ok) throw new Error("미납 학생 조회 실패");
 
-            const result = await res.json();
+            const result     = await res.json();
             const unpaidList = result.response || [];
 
-            if (!unpaidList.length) {
-                alert("미납 학생이 없습니다.");
-                return;
-            }
+            if (!unpaidList.length) { alert("미납 학생이 없습니다."); return; }
 
-            // ✅ 전화번호 기준으로 그룹핑 (형제 묶기)
             const phoneGroupMap = new Map();
             unpaidList.forEach(s => {
                 const phone = s.parentPhone?.replace(/[^0-9]/g, '') || 'unknown';
@@ -2075,13 +1728,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    year: yearMonth.year,
+                    year:  yearMonth.year,
                     month: yearMonth.month,
                     students: groupedList.map(g => ({
-                        studentName: g.students.join(", "),   // "홍길동, 홍길순"
-                        parentPhone: g.parentPhone,
-                        totalUnpaidAmount: g.totalUnpaidAmount, // 합산 금액
-                        paymentKeys: g.paymentKeys              // 여러 paymentKey
+                        studentName:        g.students.join(", "),
+                        parentPhone:        g.parentPhone,
+                        totalUnpaidAmount:  g.totalUnpaidAmount,
+                        paymentKeys:        g.paymentKeys
                     }))
                 })
             });

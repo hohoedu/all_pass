@@ -386,5 +386,26 @@ public class StudentController {
         }
     }
 
+    @PostMapping("/pending/cancel")
+    public ResponseEntity<Map<String, Object>> cancelPending(@RequestBody Map<String, Object> body, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Integer id = Integer.valueOf(body.get("id").toString());
+            studentService.cancelPending(id, user.getUserCode());
+            result.put("success", true);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.ok(result);
+        }
+    }
 
 }

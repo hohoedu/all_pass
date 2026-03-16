@@ -1134,7 +1134,8 @@
         edu.han_material_fee AS hanMaterialFee,
         edu.book_material_fee AS booKMaterialFee,
         edu.han_edu_fee AS hanFee,
-        edu.book_edu_fee AS bookFee
+        edu.book_edu_fee AS bookFee,
+        s.billing_phone AS billingPhone
 
         FROM erp_payment p
         LEFT JOIN (

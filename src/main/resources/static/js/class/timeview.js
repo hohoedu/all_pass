@@ -206,7 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${tt.students.map(s => `
                                 <div data-name="${s.studentName}" 
                                      data-student-id="${s.studentId}" 
-                                     data-week-no="${s.week}">
+                                     data-week-no="${s.week}"
+                                     class="${s.hasCounsel ? 'counsel-student' : ''}">
                                     ${s.studentName}
                                 </div>
                             `).join("")}

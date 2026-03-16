@@ -8,6 +8,7 @@ import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.SseEmitterHolder;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
     private final SseEmitterHolder sseEmitterHolder;
+    private final StudentService studentService;
 
     @GetMapping("/access-url")
     public ResponseEntity<?> getAccessURL(HttpSession session) {
@@ -411,6 +413,20 @@ public class PaymentController {
         result.put("message", "삭제되었습니다.");
 
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/update-phone")
+    @ResponseBody
+    public ResponseEntity<?> updatePhone(@RequestBody PaymentReqDTO.UpdateBillingPhone request) {
+        try {
+
+            log.info("requestDTO = {}", request.toString());
+            studentService.updateStudentBillingPhone(request.getStudentId(), request.getPhone());
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "msg", e.getMessage()));
+        }
     }
 
 }

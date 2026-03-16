@@ -8,26 +8,22 @@
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainAbsentSummaryDTO">
         SELECT
             -- 이번달 누적 결석
-            (
-                SELECT COUNT(*)
-                FROM erp_student_attendance ea
-                         JOIN erp_time_table t ON ea.time_table_key = t.time_table_key
-                WHERE ea.yy = #{year}
-                  AND ea.mm = #{month}
-                  AND ea.center_code = #{centerCode}
-                  AND t.user_code = #{userCode}
-                  AND ea.attendance_key = 'absent'
-            ) AS absentCount,
+            (SELECT COUNT(*)
+             FROM erp_student_attendance ea
+                      JOIN erp_time_table t ON ea.time_table_key = t.time_table_key
+             WHERE ea.yy = #{year}
+               AND ea.mm = #{month}
+               AND ea.center_code = #{centerCode}
+               AND t.user_code = #{userCode}
+               AND ea.attendance_key = 'absent') AS absentCount,
 
             -- 이번달 누적 보강 (완료된 것만)
-            (
-                SELECT COUNT(*)
-                FROM erp_remedial er
-                WHERE SUBSTRING(er.remedial_date, 1, 4) = #{year}
-                  AND SUBSTRING(er.remedial_date, 6, 2) = #{month}
-                  AND er.user_code = #{userCode}
-                  AND er.action = 1
-            ) AS remedialCount
+            (SELECT COUNT(*)
+             FROM erp_remedial er
+             WHERE SUBSTRING(er.remedial_date, 1, 4) = #{year}
+               AND SUBSTRING(er.remedial_date, 6, 2) = #{month}
+               AND er.user_code = #{userCode}
+               AND er.action = 1)                AS remedialCount
     </select>
 
     <select id="findClassSummary"
@@ -591,13 +587,19 @@
 
     <select id="findStudentsByTimeTableKey"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
-        SELECT st.student_id   AS studentId,
-               st.student_name AS studentName,
-               tta.week        AS week,
-               gc.grade_name   AS gradeName
+        SELECT st.student_id                                         AS studentId,
+               st.student_name                                       AS studentName,
+               tta.week                                              AS week,
+               gc.grade_name                                         AS gradeName,
+               CASE WHEN cn.student_id IS NOT NULL THEN 1 ELSE 0 END AS hasCounsel
         FROM erp_time_table_assign tta
                  JOIN erp_student st ON tta.student_id = st.student_id
                  JOIN erp_grade_code gc ON st.grade_key = gc.grade_key
+                 LEFT JOIN (SELECT DISTINCT student_id
+                            FROM erp_after_class_notice
+                            WHERE counsel_content IS NOT NULL
+                              AND counsel_content &lt;&gt; ''
+                              AND yy + '-' + mm = #{ym}) cn ON st.student_id = cn.student_id
         WHERE tta.time_table_key = #{timeTableKey}
         ORDER BY st.student_name
     </select>
@@ -615,6 +617,7 @@
                cc.class_name     as className,
                uc.unit_name      as unitName,
                g.grade_name      as gradeName
+
         FROM ERP_TIME_TABLE tt
                  LEFT JOIN erp_grade_code g ON tt.grade_key = g.grade_key
                  LEFT JOIN erp_class_code cc ON tt.class_key = cc.class_key
@@ -901,13 +904,14 @@
     <!-- 보강 시간 수정 -->
     <update id="updateRemedialTime">
         UPDATE erp_remedial
-        SET s_time = #{startTime},
-            updated_at    = CURRENT_TIMESTAMP
+        SET s_time     = #{startTime},
+            updated_at = CURRENT_TIMESTAMP
         WHERE remedial_key = #{remedialKey}
     </update>
 
     <delete id="deleteRemedial">
-        DELETE FROM erp_remedial
+        DELETE
+        FROM erp_remedial
         WHERE remedial_key = #{remedialKey}
     </delete>
 

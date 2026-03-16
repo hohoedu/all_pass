@@ -75,7 +75,9 @@
                                             </div>
                                             <div class="inner-grid" draggable="true"
                                                  th:attr="data-time-table-key=${tt.timeTableKey}">
-                                                <div th:each="stu : ${tt.students}" th:text="${stu.studentName}"
+                                                <div th:each="stu : ${tt.students}"
+                                                     th:text="${stu.studentName}"
+                                                     th:classappend="${stu.hasCounsel} ? ' counsel-student'"
                                                      th:attr="data-name=${stu.studentName},
                                                      data-student-id=${stu.studentId},
                                                      data-week-no=${stu.week}">

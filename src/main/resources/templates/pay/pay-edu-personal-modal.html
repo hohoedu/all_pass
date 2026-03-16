@@ -18,7 +18,39 @@
                         <div class="modal-scroll">
                             <div class="pay-details">
                                 <h4><span>학생</span>의 수강료 상세정보</h4>
-                                <div class="table-frame pay-edu-frame">
+
+                                <!-- ✅ 전화번호 수정 테이블 -->
+                                <div class="table-frame">
+                                    <table class="member-status-table pay-edu-table bt">
+                                        <colgroup>
+                                            <col width="20%">
+                                            <col width="80%">
+                                        </colgroup>
+                                        <tbody>
+                                        <tr>
+                                            <td>수강료 청구용 전화번호</td>
+                                            <td>
+                                                <div style="display: flex; gap: 8px; align-items: center;">
+                                                    <input
+                                                            type="text"
+                                                            class="basic-input phone-input"
+                                                            id="modal-phone-input"
+                                                            placeholder="전화번호를 입력하세요"
+                                                            maxlength="13"
+                                                            style="flex: 1;"
+                                                    >
+                                                    <div class="save-btn-frame" style="flex: 1; display: flex; justify-content: center;">
+                                                        <button class="save-btn" id="modal-phone-save-btn">변경</button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- ✅ 수강료 테이블 -->
+                                <div class="table-frame pay-edu-frame" style="margin-top: 16px;">
                                     <table class="member-status-table pay-edu-table bt">
                                         <colgroup>
                                             <col width="20%">
@@ -31,21 +63,18 @@
                                                 <input type="text" class="basic-input edu-input" data-type="hanEdu" data-raw-value="0">
                                             </td>
                                         </tr>
-
                                         <tr>
                                             <td>한자 교재비</td>
                                             <td>
                                                 <input type="text" class="basic-input edu-input material-input" data-type="hanMaterial" data-raw-value="0">
                                             </td>
                                         </tr>
-
                                         <tr>
                                             <td>독서 교육비</td>
                                             <td>
                                                 <input type="text" class="basic-input edu-input" data-type="bookEdu" data-raw-value="0">
                                             </td>
                                         </tr>
-
                                         <tr>
                                             <td>독서 교재비</td>
                                             <td>
@@ -59,6 +88,7 @@
                                         </tbody>
                                     </table>
                                 </div>
+
                                 <div class="save-btn-frame" style="margin-top: 30px;">
                                     <button class="save-btn">저장</button>
                                 </div>
@@ -102,18 +132,11 @@
                                             </tr>
                                             </thead>
                                             <tbody id="personal-tbody" class="stripe">
-
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </div>
-                            <!--                            <div class="invoice-btn-wrap">-->
-                            <!--                                <p class="invoice-label-text">선택한 청구서</p>-->
-                            <!--                                <button class="invoice-btn invoice-btn-red">결제 취소</button>-->
-                            <!--                                <button class="invoice-btn" disabled>청구서 파기</button>-->
-                            <!--                                <button class="invoice-btn" disabled>재발행</button>-->
-                            <!--                            </div>-->
                         </div>
                     </div>
                 </div>

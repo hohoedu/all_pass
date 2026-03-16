@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         data.forEach((student, index) => {
             const isRegistered = student.status === 'REGISTERED';
-            console.log(student.gradeKey);
             tbody.insertAdjacentHTML('beforeend', `
                 <tr data-student-id="${student.studentId || ''}"
                     data-pending-id="${student.id || ''}"
@@ -221,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('취소되었습니다.');
                     row.remove();
                 } else {
+                    console.log('취소 실패: ' + (result.message));
                     alert('취소 실패: ' + (result.message || ''));
                 }
             } catch {

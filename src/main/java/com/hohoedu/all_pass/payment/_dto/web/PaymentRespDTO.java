@@ -178,6 +178,7 @@ public class PaymentRespDTO {
         private Integer bookMaterialFee;
         private Integer hanFee;
         private Integer bookFee;
+        private String billingPhone;
     }
 
     @Data

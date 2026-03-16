@@ -23,6 +23,7 @@ public class ClassReqDTO {
         private String userCode;
         private String timeTableKey;
         private String centerCode;
+        private String subject;
     }
 
     @Data

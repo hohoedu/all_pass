@@ -2,10 +2,7 @@ package com.hohoedu.all_pass.student;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
@@ -410,6 +407,9 @@ public class StudentService {
                     request.getInactiveBookDate(),
                     request.getInactiveBookReason()
             );
+        }
+        if (request.getHanState() == 1 || request.getBookState() == 1) {
+            studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());
         }
     }
 
@@ -1261,6 +1261,33 @@ public class StudentService {
     public void updateAppIdLog(StudentWebReqDTO.UpdateAppIdLogDTO req) {
         req.setManual(true);
         studentRepository.updateAppIdLog(req);
+    }
+
+    @Transactional
+    public void cancelPending(Integer id, String userCode) {
+        int count = studentRepository.countByPendingId(id);
+        if (count == 0) {
+            throw new IllegalArgumentException("존재하지 않는 학생입니다. id=" + id);
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("userCode", userCode);
+
+        studentRepository.insertToPendingDel(id, userCode);
+
+        studentRepository.deleteByPendingId(id);
+    }
+
+    public void updateStudentBillingPhone(String studentId, String phone) {
+        // 유효성 검사
+        if (studentId == null || studentId.isBlank()) {
+            throw new IllegalArgumentException("학생 ID가 없습니다.");
+        }
+        if (phone == null || phone.replaceAll("[^0-9]", "").length() < 10) {
+            throw new IllegalArgumentException("올바른 전화번호가 아닙니다.");
+        }
+
+        studentRepository.updateStudentBillingPhone(studentId, phone);
     }
 }
 

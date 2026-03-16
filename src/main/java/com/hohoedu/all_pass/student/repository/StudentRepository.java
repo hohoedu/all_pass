@@ -132,6 +132,8 @@ public interface StudentRepository {
             @Param("inactiveBookReason") String inactiveBookReason
     );
 
+    void updatePendingIsDeletedByStudentId(String studentId);
+
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
 
     StudentWebRespDTO.TeacherDTO findTeacherAssignByStudentId(@Param("studentId") String studentId);
@@ -291,4 +293,18 @@ public interface StudentRepository {
     List<StudentWebRespDTO.SearchRespDTO> searchByStudentName(String studentName);
 
     void updateAppIdLog(StudentWebReqDTO.UpdateAppIdLogDTO req);
+
+    int countByPendingId(Integer id);
+
+    void insertToPendingDel(
+            @Param("id") Integer id,
+            @Param("userCode") String userCode);
+
+    void deleteByPendingId(Integer id);
+
+    void updateStudentBillingPhone(
+            @Param("studentId") String studentId,
+            @Param("phone") String phone);
+
+
 }

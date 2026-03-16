@@ -133,7 +133,8 @@
 
 
     <select id="findStudentByInviteCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PendingStudentRespDTO">
-        SELECT name      as name,
+        SELECT id        as id,
+               name      as name,
                phone     as phone,
                grade_key as gradeKey,
                sub_hoho  as subHoho,
@@ -144,7 +145,8 @@
     </select>
 
     <select id="findPendingStudent" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PendingStudentRespDTO">
-        select ps.student_id    AS studentId,
+        select ps.id            AS id,
+               ps.student_id    AS studentId,
                ps.name          AS name,
                ps.phone         AS phone,
                ps.grade_key     AS gradeKey,
@@ -468,6 +470,14 @@
         WHERE student_id = #{studentId};
     </update>
 
+
+    <update id="updateStudentBillingPhone">
+        UPDATE erp_student
+        SET billing_phone = #{phone},
+            updated_at    = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
     <!--  변경된 학생 상태 조회  -->
     <select id="findStatusByStudentId"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentStatusDTO">
@@ -572,6 +582,15 @@
         WHERE student_id = #{studentId}
     </update>
 
+    <update id="updatePendingIsDeletedByStudentId">
+        UPDATE erp_pending_student
+        SET status = 'ASSIGNED',
+            assigned_at = SYSDATETIME(),
+            is_deleted = 1,
+            deleted_at = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
     <select id="findTeacherAssign" resultType="com.hohoedu.all_pass.student.model.TeacherAssign">
         SELECT *
         FROM erp_teacher_assign
@@ -589,7 +608,7 @@
         SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
         FROM erp_student_transfer_schedule
         WHERE student_id = #{studentId}
-          AND from_user_code = #{fromUserCode}
+          AND from_user = #{fromUserCode}
     </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">
@@ -1236,5 +1255,44 @@
         VALUES (#{studentId}, #{prevAppId}, #{currentAppId}, #{userCode}, SYSDATETIME(), #{isManual})
     </insert>
 
+    <!-- 존재 여부 확인 -->
+    <select id="countByPendingId" parameterType="Integer" resultType="int">
+        SELECT COUNT(1)
+        FROM erp_pending_student
+        WHERE id = #{id}
+    </select>
+
+    <!-- 삭제 이력 INSERT -->
+    <insert id="insertToPendingDel" parameterType="map">
+        INSERT INTO erp_pending_student_del (del_by, del_reason, pending_student_id, name, phone, grade_key, send_key, invite_code, center_code, user_code, sub_hoho, sub_han, sub_book,
+                                             invite_sent_at, status, registered_at, assigned_at, is_deleted, deleted_at, student_id)
+        SELECT #{userCode}, '입회취소', id,
+               name,
+               phone,
+               grade_key,
+               send_key,
+               invite_code,
+               center_code,
+               user_code,
+               sub_hoho,
+               sub_han,
+               sub_book,
+               invite_sent_at,
+               status,
+               registered_at,
+               assigned_at,
+               is_deleted,
+               deleted_at,
+               student_id
+        FROM erp_pending_student
+        WHERE id = #{id}
+    </insert>
+
+    <!-- 원본 DELETE -->
+    <delete id="deleteByPendingId" parameterType="Integer">
+        DELETE
+        FROM erp_pending_student
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

@@ -329,12 +329,13 @@ public class ClassService {
     }
 
     public List<TimeTableDTO> findTimeTableWithStudents(String userCode, String year, String month) {
+        String ym = year + "-" + month;
 
         List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, year, month);
 
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableKey(tt.getTimeTableKey());
+                    .findStudentsByTimeTableKey(tt.getTimeTableKey(), ym);
 
             tt.setStudents(students);
         }
@@ -344,10 +345,10 @@ public class ClassService {
     public ClassRespDTO.TimeTableViewRespDTO findTableViewWithStudents(String year, String month, String userCode) {
 
         List<TimeTableDTO> tables = classRepository.findTimeTableBasic(userCode, year, month);
-
+        String ym = year + "-" + month;
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableKey(tt.getTimeTableKey());
+                    .findStudentsByTimeTableKey(tt.getTimeTableKey(), ym);
 
             while (students.size() < 8) {
                 ClassRespDTO.TimeTableDTO.StudentDTO empty = new ClassRespDTO.TimeTableDTO.StudentDTO();
@@ -358,7 +359,7 @@ public class ClassService {
             tt.setStudents(students);
         }
 
-        String ym = year + "-" + month;
+
         List<ClassRespDTO.StudentStatRespDTO> studentStat = classRepository.findStudentStat(userCode, ym);
         Long totalStudentsLong = tables.stream()
                 .flatMap(table -> table.getStudents().stream())
@@ -919,6 +920,7 @@ public class ClassService {
     public void updateRemedialTime(ClassReqDTO.UpdateRemedialTimeDTO dto) {
         classRepository.updateRemedialTime(dto.getRemedialKey(), dto.getStartTime());
     }
+
     public void deleteRemedial(ClassReqDTO.DeleteRemedialTimeDTO dto) {
         classRepository.deleteRemedial(dto.getRemedialKey());
     }

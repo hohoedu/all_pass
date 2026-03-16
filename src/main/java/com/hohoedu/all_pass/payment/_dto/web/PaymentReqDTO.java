@@ -272,4 +272,10 @@ public class PaymentReqDTO {
         private Long transferAmount;
         private String cardName;        // 카드사 코드
     }
+
+    @Data
+    public static class UpdateBillingPhone{
+        private String studentId;
+        private String phone;
+    }
 }

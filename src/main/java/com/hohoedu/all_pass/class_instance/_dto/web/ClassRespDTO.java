@@ -124,6 +124,7 @@ public class ClassRespDTO {
             private String status;
             private String transferType;
             private String transferDate;
+            private boolean hasCounsel;
         }
     }
 

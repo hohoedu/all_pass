@@ -4,7 +4,7 @@
 
 <mapper namespace="com.hohoedu.all_pass.notice.repository.NoticeRepository">
 
-    <insert id="insertCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeSaveReqDTO">
+    <insert id="insertCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeSaveReqDTO" useGeneratedKeys="true">
         INSERT INTO erp_center_notice
         (center_notice_key, title, sub_title, content, link_url, image, icon, view_count, user_code, center_code, created_at)
         VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{linkUrl}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
@@ -20,13 +20,12 @@
 
     <update id="updateCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeUpdateDTO">
         UPDATE erp_center_notice
-        SET
-            title = #{title},
+        SET title     = #{title},
             sub_title = #{subTitle},
-            icon = #{icon},
-            content = #{content},
-            link_url = #{linkUrl},
-            image = #{image}
+            icon      = #{icon},
+            content   = #{content},
+            link_url  = #{linkUrl},
+            image     = #{image}
         WHERE id = #{id}
           AND is_delete = 'N'
     </update>
@@ -92,15 +91,14 @@
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 공지사항 리스트 조회  -->
     <select id="findAppNoticeList" resultType="com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO$NoticeListRespDTO">
-        SELECT TOP(#{count})
-                             cn.id AS idx, center_notice_key AS noticeKey,
+        SELECT TOP(#{count}) cn.id AS idx, center_notice_key AS noticeKey,
                cn.title      AS title,
-               cn.sub_title AS subtitle,
+               cn.sub_title  AS subtitle,
                cn.content    AS content,
                cn.icon       AS subicon,
                cn.created_at AS sdate
         FROM erp_center_notice cn
-        JOIN erp_student s ON s.center_code = cn.center_code
+                 JOIN erp_student s ON s.center_code = cn.center_code
         where s.student_id = #{studentId}
 
         ORDER BY cn.created_at DESC;
