@@ -341,4 +341,5 @@ public interface PaymentRepository {
     // 매뉴얼 그룹 삭제
     void deleteManualGroup(String manualKey);
 
+    List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(@Param("ym") String ym, @Param("centerCode") String centerCode);
 }

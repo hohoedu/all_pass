@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.family.repository.FamilyRepository">
+
+    <insert id="insert" parameterType="com.hohoedu.all_pass.family.Parent" useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
+     INSERT INTO erp_parent (parent_name, parent_tel_first, parent_tel_middle, parent_tel_last, relation_key, parent_privacy_agree, signature, student_id, created_at)
+        VALUES (#{parentName}, #{parentTelFirst}, #{parentTelMiddle}, #{parentTelLast}, #{relationKey}, #{parentPrivacyAgree},#{signature}, #{studentId}, SYSDATETIME());
+    </insert>
+
+    <select id="countSiblingGroup" resultType="int">
+        SELECT COUNT(DISTINCT p.student_id)
+        FROM erp_parent p
+                 JOIN erp_student s ON p.student_id = s.student_id
+        WHERE CONCAT(p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last, '_', s.center_code) = #{groupKey}
+    </select>
+
+    <!-- 기존 sibling_key 조회 -->
+    <select id="findSiblingKey" resultType="Integer">
+        SELECT TOP 1 es.sibling_key
+        FROM erp_parent p
+                 JOIN erp_student s ON p.student_id = s.student_id
+                 JOIN erp_sibling es ON p.student_id = es.student_id
+        WHERE CONCAT(p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last, '_', s.center_code) = #{groupKey}
+    </select>
+
+    <!-- 최대 sibling_key 조회 -->
+    <select id="getMaxSiblingKey" resultType="int">
+        SELECT ISNULL(MAX(sibling_key), 20260000) FROM erp_sibling
+    </select>
+
+    <!-- 신규 그룹 전체 INSERT (아직 erp_sibling에 없는 학생만) -->
+    <insert id="insertSiblingGroup">
+        INSERT INTO erp_sibling (sibling_key, student_id, center_code, created_at)
+        SELECT #{siblingKey}, p.student_id, s.center_code, GETDATE()
+        FROM erp_parent p
+                 JOIN erp_student s ON p.student_id = s.student_id
+        WHERE CONCAT(p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last, '_', s.center_code) = #{groupKey}
+          AND p.student_id NOT IN (SELECT student_id FROM erp_sibling)
+    </insert>
+
+    <!-- 기존 그룹에 신규 학생만 INSERT -->
+    <insert id="insertSibling">
+        INSERT INTO erp_sibling (sibling_key, student_id, center_code, created_at)
+        SELECT #{siblingKey}, #{studentId}, #{centerCode}, GETDATE()
+            WHERE #{studentId} NOT IN (SELECT student_id FROM erp_sibling)
+    </insert>
+
+</mapper>

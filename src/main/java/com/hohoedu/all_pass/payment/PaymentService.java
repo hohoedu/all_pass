@@ -1937,5 +1937,23 @@ public class PaymentService {
         paymentRepository.deleteManualGroup(manualKey);
     }
 
+    public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm, UserRespDTO.LoginRespDTO user) {
+        String ym = yy + "-" + mm;
+        String centerCode = user.getCenterCode();
+
+        return paymentRepository.findCashbillPrint(ym, centerCode).stream()
+                .peek(dto -> {
+                    String num = dto.getReceiptNum() == null ? "" : dto.getReceiptNum().replaceAll("[^0-9]", "");
+                    if (num.equals("0100001234")) {
+                        // 자진발급 그대로
+                    } else if (num.length() == 11 && num.startsWith("010")) {
+                        dto.setReceiptNum(num.substring(0, 3) + "-****-" + num.substring(7));
+                    } else if (num.length() == 10) {
+                        dto.setReceiptNum(num.substring(0, 3) + "-**-" + num.substring(5));
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
 
 }

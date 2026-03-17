@@ -549,13 +549,14 @@
 
     <update id="updateHanToInactive">
         UPDATE erp_teacher_assign
-        SET han_state           = 0,
-            inactive_han_date   = #{inactiveHanDate},
-            inactive_han_reason = #{inactiveHanReason},
-            assign_han_class    = NULL,
-            assign_han_teacher  = NULL,
-            han_material_fee    = NULL,
-            updated_at          = SYSDATETIME()
+        SET han_state            = 0,
+            inactive_han_date    = #{inactiveHanDate},
+            inactive_han_reason  = #{inactiveHanReason},
+            inactive_han_teacher = #{userCode},
+            assign_han_class     = NULL,
+            assign_han_teacher   = NULL,
+            han_material_fee     = NULL,
+            updated_at           = SYSDATETIME()
         WHERE student_id = #{studentId}
     </update>
 
@@ -575,6 +576,7 @@
         SET book_state           = 0,
             inactive_book_date   = #{inactiveBookDate},
             inactive_book_reason = #{inactiveBookReason},
+            inactive_book_teacher = #{userCode},
             assign_book_class    = NULL,
             assign_book_teacher  = NULL,
             book_material_fee    = NULL,

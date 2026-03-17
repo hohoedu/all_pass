@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentMonth = now.getMonth(); // 0~11
 
         // 마감 시작일: 매월 11일 00:00
-        const deadlineStart = new Date(currentYear, currentMonth, 12, 0, 0, 0);
+        const deadlineStart = new Date(currentYear, currentMonth, 18, 0, 0, 0);
 
         // 마감 종료일: 해당 월의 마지막 날 23:59:59
         const deadlineEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);

@@ -1766,4 +1766,69 @@
         WHERE manual_key = #{manualKey}
     </delete>
 
+    <select id="findCashbillPrint" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CashbillPrintDTO">
+        WITH student_subjects AS (
+            SELECT DISTINCT
+                pc.appr_cash_num,
+                s.student_id,
+                s.student_name,
+                CASE cc.class_type WHEN 1 THEN '한자' WHEN 2 THEN '독서' END AS subject_name
+            FROM erp_payment_cashbill pc
+                     JOIN erp_payment_manual_group mg ON pc.bill_id = mg.cashbill_id
+                     JOIN erp_payment_manual pm ON mg.manual_key = pm.manual_key
+                     JOIN erp_payment p ON pm.payment_key = p.payment_key
+                     JOIN erp_student s ON pm.student_id = s.student_id
+                     JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
+                     JOIN erp_time_table t ON t.time_table_key = ta.time_table_key
+                     JOIN erp_class_code cc ON t.class_key = cc.class_key
+            WHERE cc.class_type IN (1, 2)
+              AND p.yy + '-' + p.mm = #{ym}
+              AND s.center_code = #{centerCode}
+              AND t.yy + '-' + t.mm = #{ym}
+        ),
+             student_display AS (
+                 SELECT DISTINCT
+                     appr_cash_num,
+                     student_id,
+                     student_name + '(' +
+                     STUFF((
+                               SELECT DISTINCT ', ' + ss2.subject_name
+                               FROM student_subjects ss2
+                               WHERE ss2.appr_cash_num = ss.appr_cash_num
+                                 AND ss2.student_id = ss.student_id
+                               FOR XML PATH(''), TYPE
+                         ).value('.', 'NVARCHAR(MAX)'), 1, 2, '')
+                         + ')' AS student_display
+                 FROM student_subjects ss
+             )
+        SELECT
+            STUFF((
+                      SELECT DISTINCT ', ' + sd.student_display
+                      FROM student_display sd
+                      WHERE sd.appr_cash_num = pc.appr_cash_num
+                      FOR XML PATH(''), TYPE
+                ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS 'studentInfo',
+                MAX(pc.created_at)      AS 'apprDate',
+                MAX(pc.receipt_number)  AS 'receiptNum',
+                pc.appr_cash_num        AS 'apprCashNum',
+                MAX(pc.supply_price)    AS 'supplyPrice',
+                MAX(pc.tax)             AS 'taxPrice',
+                MAX(pc.price)           AS 'totalPrice',
+                MAX(c.biz_name)         AS 'centerName',
+                MAX(c.director_name)    AS 'directorName',
+                MAX(c.biz_no)           AS 'bizNo',
+                MAX(c.center_tel)       AS 'centerTel',
+                MAX(c.center_address)   AS 'centerAddress'
+        FROM erp_payment_cashbill pc
+                 JOIN erp_payment_manual_group mg ON pc.bill_id = mg.cashbill_id
+                 JOIN erp_payment_manual pm ON mg.manual_key = pm.manual_key
+                 JOIN erp_payment p ON pm.payment_key = p.payment_key
+                 JOIN erp_student s ON pm.student_id = s.student_id
+                 JOIN erp_center c ON s.center_code = c.center_code
+        WHERE p.yy + '-' + p.mm = #{ym}
+          AND s.center_code = #{centerCode}
+        GROUP BY pc.appr_cash_num
+        ORDER BY MAX(pc.created_at) DESC
+    </select>
+
 </mapper>

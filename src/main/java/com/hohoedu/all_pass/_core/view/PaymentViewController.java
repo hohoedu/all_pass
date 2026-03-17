@@ -61,4 +61,21 @@ public class PaymentViewController {
         return "pay/pay-list";
     }
 
+    @GetMapping("/print-cashbill")
+    public String getCashbillPrint(@RequestParam String ym, Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        String yy = ym.substring(0, 4);
+        String mm = ym.substring(4, 6);
+        log.info(ym);
+        List<PaymentRespDTO.CashbillPrintDTO> printDTO = paymentService.findCashbillPrint(yy, mm, user);
+
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+        model.addAttribute("printDTO", printDTO);
+
+        return "print/print-cashbill";
+    }
+
 }

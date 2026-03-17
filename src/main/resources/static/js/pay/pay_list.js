@@ -1438,6 +1438,26 @@ document.addEventListener('DOMContentLoaded', function () {
             tr.style.backgroundColor = '';
         });
     }
+
+    document.getElementById('cashbill-print')?.addEventListener('click', () => {
+        const monthInput = document.querySelector(".hidden-date");
+        const [year, month] = monthInput.value.split("-");
+        const ym = year + month;
+        // window.open(`/pay/print-cashbill?ym=${ym}`);
+        printCashbillHistory(ym);
+    });
+
+    function printCashbillHistory(ym) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/pay/print-cashbill?ym=${ym}`;
+
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
+
+        document.body.appendChild(iframe);
+    }
 });
 
 /* ========================================
@@ -1720,4 +1740,6 @@ async function refreshCashbillHistory() {
         console.error('발행내역 새로고침 중 오류:', error);
     }
 }
+
+
 

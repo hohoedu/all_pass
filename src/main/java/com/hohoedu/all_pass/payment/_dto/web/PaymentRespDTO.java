@@ -307,6 +307,22 @@ public class PaymentRespDTO {
     }
 
     @Data
+    public static class CashbillPrintDTO {
+        private String studentInfo;   // 학생정보
+        private String apprDate;      // 거래일자
+        private String receiptNum;    // 식별번호
+        private String apprCashNum;   // 승인번호
+        private Integer supplyPrice;  // 공급가액
+        private Integer taxPrice;     // 부가세
+        private Integer totalPrice;   // 합계
+        private String centerName;       // 가맹점명
+        private String directorName;  // 대표자
+        private String bizNo;         // 사업자등록번호
+        private String centerTel;     // 전화번호
+        private String centerAddress; // 주소
+    }
+
+    @Data
     public static class CashbillCancelRespDTO {
         private Boolean success;
         private int failCount;

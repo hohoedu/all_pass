@@ -166,7 +166,6 @@ public class StudentWebRespDTO {
         private String hasApp;
         private String appId;
         private String parentPhone;
-
     }
 
 

@@ -123,6 +123,7 @@ public class StudentService {
         return studentRepository.findStudentByInviteCode(inviteCode);
     }
 
+    @Transactional
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
         int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(), parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
         if (dupStudent > 0) {
@@ -133,7 +134,6 @@ public class StudentService {
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
         String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
-        log.info(studentDTO.getSubject());
 
         studentDTO.setStudentId(code);
 
@@ -175,6 +175,13 @@ public class StudentService {
         parentDTO.setStudentId(studentDTO.getStudentId());
         parentDTO.setSignature(studentDTO.getStudentId() + "signature.png");
         familyService.parentInsert(parentDTO);
+        familyService.processSibling(
+                studentDTO.getStudentId(),
+                studentDTO.getCenterCode(),
+                parentDTO.getParentTelFirst(),
+                parentDTO.getParentTelMiddle(),
+                parentDTO.getParentTelLast()
+        );
 
         String inviteCode = studentDTO.getInviteCode();
         if (inviteCode != null && !inviteCode.isEmpty()) {
@@ -378,35 +385,45 @@ public class StudentService {
     }
 
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
-
-        // 한자 상태 업데이트
-        if (request.getHanState() == 1) {
-            studentRepository.updateHanToActive(
-                    request.getStudentId(),
-                    request.getEntryHanDate(),
-                    userCode
-            );
-        } else {
-            studentRepository.updateHanToInactive(
-                    request.getStudentId(),
-                    request.getInactiveHanDate(),
-                    request.getInactiveHanReason()
-            );
+        StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository.findTeacherAssignByStudentId(request.getStudentId());
+        if (teacherDTO == null) {
+            throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
 
-        // 독서 상태 업데이트
-        if (request.getBookState() == 1) {
-            studentRepository.updateBookToActive(
-                    request.getStudentId(),
-                    request.getEntryBookDate(),
-                    userCode
-            );
-        } else {
-            studentRepository.updateBookToInactive(
-                    request.getStudentId(),
-                    request.getInactiveBookDate(),
-                    request.getInactiveBookReason()
-            );
+        // 한자 상태 업데이트
+        if (Boolean.TRUE.equals(request.getHanChanged())) {
+            if (request.getHanState() == 1) {
+                studentRepository.updateHanToActive(
+                        request.getStudentId(),
+                        request.getEntryHanDate(),
+                        teacherDTO.getAssignHanTeacher()
+                );
+            } else {
+                studentRepository.updateHanToInactive(
+                        request.getStudentId(),
+                        request.getInactiveHanDate(),
+                        request.getInactiveHanReason(),
+                        teacherDTO.getAssignHanTeacher()
+                );
+            }
+        }
+
+        if (Boolean.TRUE.equals(request.getBookChanged())) {
+            // 독서 상태 업데이트
+            if (request.getBookState() == 1) {
+                studentRepository.updateBookToActive(
+                        request.getStudentId(),
+                        request.getEntryBookDate(),
+                        teacherDTO.getAssignBookTeacher()
+                );
+            } else {
+                studentRepository.updateBookToInactive(
+                        request.getStudentId(),
+                        request.getInactiveBookDate(),
+                        request.getInactiveBookReason(),
+                        teacherDTO.getAssignBookTeacher()
+                );
+            }
         }
         if (request.getHanState() == 1 || request.getBookState() == 1) {
             studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());

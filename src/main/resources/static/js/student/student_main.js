@@ -405,6 +405,7 @@ function renderStudentModal(data) {
     let currentAttendanceYear = new Date().getFullYear();
     let currentAttendanceMonth = new Date().getMonth() + 1;
     renderCalendar(currentAttendanceYear, currentAttendanceMonth);
+
     function renderCalendar(year, month) {
         const titleEl = document.getElementById("calendar-title");
         if (titleEl) {
@@ -1116,107 +1117,128 @@ document.addEventListener('DOMContentLoaded', function () {
     const courseStatusBtn = document.getElementById("course-status-save");
     if (courseStatusBtn) {
         courseStatusBtn.addEventListener('click', async function (e) {
-            e.preventDefault();
+                e.preventDefault();
 
-            if (!currentStudentId) {
-                alert('학생 ID를 찾을 수 없습니다.');
-                return;
-            }
-
-            const hanGroup = document.querySelector('.choose-group[data-type="han"]');
-            const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
-            const currentHanState = hanHidden?.value;
-
-            const bookGroup = document.querySelector('.choose-group[data-type="book"]');
-            const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
-            const currentBookState = bookHidden?.value;
-
-            const entryHanInput = document.getElementById('entry-han-date');
-            const entryBookInput = document.getElementById('entry-book-date');
-            const hanReasonInput = document.getElementById('han-inactive-reason');
-            const hanDateInput = document.getElementById('han-inactive-date');
-            const bookReasonInput = document.getElementById('book-inactive-reason');
-            const bookDateInput = document.getElementById('book-inactive-date');
-
-            // 상태 변경 또는 날짜 변경 감지
-            const hanStateChanged = initialHanState !== null && initialHanState !== currentHanState;
-            const hanDateChanged = initialEntryHanDate !== entryHanInput?.value;
-            const hanChanged = hanStateChanged || hanDateChanged;
-
-            const bookStateChanged = initialBookState !== null && initialBookState !== currentBookState;
-            const bookDateChanged = initialEntryBookDate !== entryBookInput?.value;
-            const bookChanged = bookStateChanged || bookDateChanged;
-
-            console.log('initialHanState:', initialHanState, 'currentHanState:', currentHanState);
-            console.log('initialBookState:', initialBookState, 'currentBookState:', currentBookState);
-            console.log('initialEntryHanDate:', initialEntryHanDate, 'currentEntryHanDate:', entryHanInput?.value);
-            console.log('initialEntryBookDate:', initialEntryBookDate, 'currentEntryBookDate:', entryBookInput?.value);
-            console.log('hanChanged:', hanChanged, 'bookChanged:', bookChanged);
-
-            const requestBody = {
-                studentId: currentStudentId,
-                hanState: currentHanState === 'active' ? 1 : 0,
-                bookState: currentBookState === 'active' ? 1 : 0,
-                hanChanged: hanChanged,
-                bookChanged: bookChanged,
-                entryHanDate: entryHanInput?.value || null,
-                entryBookDate: entryBookInput?.value || null,
-                inactiveHanDate: hanDateInput?.value || null,
-                inactiveBookDate: bookDateInput?.value || null,
-                inactiveHanReason: hanReasonInput?.value?.trim() || null,
-                inactiveBookReason: bookReasonInput?.value?.trim() || null
-            };
-
-            if (currentHanState === 'inactive' && currentBookState === 'inactive') {
-                const shouldChangeStudentStatus = await showStudentStatusModal();
-                if (!shouldChangeStudentStatus) {
+                if (!currentStudentId) {
+                    alert('학생 ID를 찾을 수 없습니다.');
                     return;
                 }
-                requestBody.changeStudentStatus = true;
-            }
 
-            try {
-                const res = await fetch('/student/update/course-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
+                const hanGroup = document.querySelector('.choose-group[data-type="han"]');
+                const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
+                const currentHanState = hanHidden?.value;
 
-                if (!res.ok) {
-                    throw new Error('수강상태 변경 실패');
+                const bookGroup = document.querySelector('.choose-group[data-type="book"]');
+                const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
+                const currentBookState = bookHidden?.value;
+
+                const entryHanInput = document.getElementById('entry-han-date');
+                const entryBookInput = document.getElementById('entry-book-date');
+                const hanReasonInput = document.getElementById('han-inactive-reason');
+                const hanDateInput = document.getElementById('han-inactive-date');
+                const bookReasonInput = document.getElementById('book-inactive-reason');
+                const bookDateInput = document.getElementById('book-inactive-date');
+
+                // 상태 변경 또는 날짜 변경 감지
+                const hanStateChanged = initialHanState !== null && initialHanState !== currentHanState;
+                const hanDateChanged = initialEntryHanDate !== entryHanInput?.value;
+                const hanChanged = hanStateChanged || hanDateChanged;
+
+                const bookStateChanged = initialBookState !== null && initialBookState !== currentBookState;
+                const bookDateChanged = initialEntryBookDate !== entryBookInput?.value;
+                const bookChanged = bookStateChanged || bookDateChanged;
+
+                const requestBody = {
+                    studentId: currentStudentId,
+                    hanState: currentHanState === 'active' ? 1 : 0,
+                    bookState: currentBookState === 'active' ? 1 : 0,
+                    hanChanged: hanChanged,
+                    bookChanged: bookChanged,
+                    entryHanDate: entryHanInput?.value || null,
+                    entryBookDate: entryBookInput?.value || null,
+                    inactiveHanDate: hanDateInput?.value || null,
+                    inactiveBookDate: bookDateInput?.value || null,
+                    inactiveHanReason: hanReasonInput?.value?.trim() || null,
+                    inactiveBookReason: bookReasonInput?.value?.trim() || null
+                };
+
+                if (currentHanState === 'inactive' && currentBookState === 'inactive') {
+                    const shouldChangeStudentStatus = await showStudentStatusModal();
+                    if (!shouldChangeStudentStatus) {
+                        return;
+                    }
+                    requestBody.changeStudentStatus = true;
                 }
 
-                alert('수강상태가 성공적으로 변경되었습니다.');
+                try {
+                    // 1️⃣ 먼저 수강상태 변경
+                    const res = await fetch('/student/update/course-status', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(requestBody)
+                    });
 
-                // 초기 상태 업데이트
-                initialHanState = currentHanState;
-                initialBookState = currentBookState;
-                initialEntryHanDate = entryHanInput?.value;
-                initialEntryBookDate = entryBookInput?.value;
+                    if (!res.ok) {
+                        throw new Error('수강상태 변경 실패');
+                    }
 
-                // 입력 초기화
-                const hanDisplay = document.querySelector('.han-date-display');
-                const bookDisplay = document.querySelector('.book-date-display');
+                    if (requestBody.changeStudentStatus) {
+                        const inactiveReason = requestBody.inactiveHanReason || requestBody.inactiveBookReason || '';
+                        const inactiveDate = requestBody.inactiveHanDate || requestBody.inactiveBookDate || null;
 
-                if (hanReasonInput) hanReasonInput.value = '';
-                if (hanDateInput) hanDateInput.value = '';
-                if (hanDisplay) hanDisplay.value = '';
-                if (bookReasonInput) bookReasonInput.value = '';
-                if (bookDateInput) bookDateInput.value = '';
-                if (bookDisplay) bookDisplay.value = '';
+                        const inactiveRes = await fetch('/student/status', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                studentId: currentStudentId,
+                                statusKey: 'PAUSED',
+                                reason: inactiveReason || '',
+                                withdrawDate: inactiveDate || null
+                            })
+                        });
+                        if (!inactiveRes.ok) {
+                            throw new Error('학생 상태 변경 실패');
+                        }
+                    }
 
-                document.querySelector('.han-inactive')?.classList.add('hide-input');
-                document.querySelector('.book-inactive')?.classList.add('hide-input');
+                    alert('수강상태가 성공적으로 변경되었습니다.');
 
-                await refreshStudentList();
+                    // 초기 상태 업데이트
+                    initialHanState = currentHanState;
+                    initialBookState = currentBookState;
+                    initialEntryHanDate = entryHanInput?.value;
+                    initialEntryBookDate = entryBookInput?.value;
 
-            } catch (err) {
-                console.error(err);
-                alert('수강상태 변경 중 오류가 발생했습니다.');
+                    // 입력 초기화
+                    const hanDisplay = document.querySelector('.han-date-display');
+                    const bookDisplay = document.querySelector('.book-date-display');
+
+                    if (hanReasonInput) hanReasonInput.value = '';
+                    if (hanDateInput) hanDateInput.value = '';
+                    if (hanDisplay) hanDisplay.value = '';
+                    if (bookReasonInput) bookReasonInput.value = '';
+                    if (bookDateInput) bookDateInput.value = '';
+                    if (bookDisplay) bookDisplay.value = '';
+
+                    document.querySelector('.han-inactive')?.classList.add('hide-input');
+                    document.querySelector('.book-inactive')?.classList.add('hide-input');
+
+                    await refreshStudentList();
+
+                    const modal = document.querySelector('.student-modal');
+                    if (modal) {
+                        modal.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                    }
+
+                } catch
+                    (err) {
+                    console.error(err);
+                    alert('수강상태 변경 중 오류가 발생했습니다.');
+                }
             }
-        });
+        )
+        ;
     }
 
 
@@ -1333,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // renderStudentModal이 호출될 때 초기 상태 저장
+// renderStudentModal이 호출될 때 초기 상태 저장
     window.saveInitialCourseState = function (hanState, bookState) {
         // 0 또는 1을 'active' 또는 'inactive'로 변환
         initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
@@ -1352,7 +1374,8 @@ document.addEventListener('DOMContentLoaded', function () {
             initialEntryBookDate
         });
     };
-});
+})
+;
 
 // ===== 교재비 & 입회날짜 변경 ===== //
 document.addEventListener("DOMContentLoaded", () => {

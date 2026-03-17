@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (totalStudentsDouble === totalStudentsLong) {
                     totalElement.textContent = `${totalStudentsLong}명`;
                 } else {
-                    totalElement.textContent = `${totalStudentsLong}명 (${totalStudentsDouble}명)`;
+                    totalElement.textContent = `${totalStudentsLong}명 (${totalStudentsDouble}강좌)`;
                 }
 
             }

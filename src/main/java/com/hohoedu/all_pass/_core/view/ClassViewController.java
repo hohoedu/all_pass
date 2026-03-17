@@ -175,6 +175,8 @@ public class ClassViewController {
         model.addAttribute("days", DAYS);
         model.addAttribute("tableMap", tableMap);
         model.addAttribute("statsMap", statsMap);
+        model.addAttribute("totalStudentsLong", viewData.getTotalStudentsLong());
+        model.addAttribute("totalStudentsDouble", viewData.getTotalStudentsDouble());
 
 
         return "print/print-timeview";

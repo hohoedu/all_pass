@@ -386,17 +386,22 @@
                  UNION ALL
 
                  -- 탈퇴
-                 Select 'inactive' as gb, es.student_name, a.*
-                 from (SELECT student_id, null as className, null as week
-                       FROM erp_teacher_assign
-                       WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
-                         AND substring(inactive_han_date, 1, 7) = #{ym}
-                       UNION ALL
-                       SELECT student_id, null, null
-                       FROM erp_teacher_assign
-                       WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
-                         AND substring(inactive_book_date, 1, 7) = #{ym}) a
-                          Join erp_student es On a.student_id = es.student_id
+                 SELECT 'inactive' as gb, es.student_name, a.*
+                 FROM (
+                          SELECT DISTINCT student_id, null as className, null as week
+                          FROM (
+                                   SELECT student_id
+                                   FROM erp_teacher_assign
+                                   WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
+                                     AND substring(inactive_han_date, 1, 7) = #{ym}
+                                   UNION ALL
+                                   SELECT student_id
+                                   FROM erp_teacher_assign
+                                   WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
+                                     AND substring(inactive_book_date, 1, 7) = #{ym}
+                               ) dedup
+                      ) a
+                          JOIN erp_student es ON a.student_id = es.student_id
 
                  UNION ALL
 

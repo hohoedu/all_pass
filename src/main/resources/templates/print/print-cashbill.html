@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>현금영수증</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: "Noto Sans KR", system-ui, Arial, sans-serif;
+            color: #111;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .sheet {
+            width: 210mm;
+            height: 297mm;
+            box-sizing: border-box;
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 6mm;
+            padding: 8mm;
+            page-break-after: always;
+        }
+
+        .sheet::before {
+            content: "";
+            position: absolute;
+            left: 8mm;
+            right: 8mm;
+            top: 50%;
+            border-top: 1px dashed rgba(0, 0, 0, .35);
+            pointer-events: none;
+        }
+
+        .sheet::after {
+            content: "";
+            position: absolute;
+            top: 8mm;
+            bottom: 8mm;
+            left: 50%;
+            border-left: 1px dashed rgba(0, 0, 0, .35);
+            pointer-events: none;
+        }
+
+        .cell {
+            box-sizing: border-box;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .receipt {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 4mm 4mm 3.5mm;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 0 3mm 0;
+        }
+
+        .infoBox {
+            background: #f3f4f6;
+            border-radius: 3px;
+            padding: 2.8mm;
+            margin-bottom: 3mm;
+        }
+
+        .infoLabel {
+            font-size: 11px;
+            font-weight: 500;
+            margin: 0 0 1.5mm 0;
+        }
+
+        .infoText {
+            font-size: 12px;
+            line-height: 1.5;
+            font-weight: 700;
+            word-break: keep-all;
+        }
+
+        .rule {
+            height: 1px;
+            background: rgba(0, 0, 0, .4);
+            margin: 2mm 0;
+        }
+
+        .dash {
+            border-top: 1px dashed rgba(0, 0, 0, .30);
+            margin: 2.2mm 0;
+        }
+
+        .kv {
+            display: flex;
+            justify-content: space-between;
+            gap: 3mm;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .k {
+            font-weight: 800;
+            min-width: 18mm;
+        }
+
+        .v {
+            font-weight: 500;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .footer {
+            margin-top: 2.2mm;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+
+        @media screen {
+            body {
+                background: #f2f3f6;
+            }
+
+            .sheet {
+                background: #fff;
+                box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+                margin: 18px auto;
+            }
+        }
+
+        @media print {
+            .sheet {
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 4개씩 한 페이지 -->
+<th:block th:with="pageSize=4">
+    <th:block th:each="page : ${#numbers.sequence(0, (printDTO.size() - 1) / pageSize)}">
+        <div class="sheet">
+            <th:block th:each="offset : ${#numbers.sequence(0, pageSize - 1)}">
+                <th:block th:with="idx=${page * pageSize + offset}, item=${idx < printDTO.size() ? printDTO[idx] : null}">
+                    <div class="cell">
+                        <section class="receipt" th:if="${item != null}">
+                            <h1 class="title">현금영수증</h1>
+                            <div class="infoBox">
+                                <div class="infoLabel">학생정보</div>
+                                <div class="infoText" th:text="${item.studentInfo}"></div>
+                            </div>
+                            <div class="rule"></div>
+                            <div class="kv">
+                                <div class="k">거래일자</div>
+                                <div class="v" th:text="${item.apprDate}"></div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">식별번호</div>
+                                <div class="v" th:text="${item.receiptNum}"></div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">승인번호</div>
+                                <div class="v" th:text="${item.apprCashNum}"></div>
+                            </div>
+                            <div class="dash"></div>
+                            <div class="kv">
+                                <div class="k">품목명</div>
+                                <div class="v">교육비</div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">매입사명</div>
+                                <div class="v">-</div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">카드사명</div>
+                                <div class="v">-</div>
+                            </div>
+                            <div class="dash"></div>
+                            <div class="kv">
+                                <div class="k">공급가액</div>
+                                <div class="v" th:text="${#numbers.formatInteger(item.supplyPrice, 0, 'COMMA') + '원'}"></div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">부가세</div>
+                                <div class="v" th:text="${#numbers.formatInteger(item.taxPrice, 0, 'COMMA') + '원'}"></div>
+                            </div>
+                            <div class="kv">
+                                <div class="k">합계</div>
+                                <div class="v" style="font-weight:900;" th:text="${#numbers.formatInteger(item.totalPrice, 0, 'COMMA') + '원'}"></div>
+                            </div>
+                            <div class="rule"></div>
+                            <div class="footer">
+                                <div th:text="'[가맹점명] ' + ${item.centerName}"></div>
+                                <div th:text="'[대표자명] ' + ${item.directorName}"></div>
+                                <div th:text="'[사업자등록번호] ' + ${item.bizNo}"></div>
+                                <div th:text="'[전화번호] ' + ${item.centerTel}"></div>
+                                <div th:text="'[주소] ' + ${item.centerAddress}"></div>
+                            </div>
+                        </section>
+                        <!-- 빈 칸 -->
+                        <section class="receipt" th:if="${item == null}"></section>
+                    </div>
+                </th:block>
+            </th:block>
+        </div>
+    </th:block>
+</th:block>
+
+<script>window.onload = () => window.print();</script>
+</body>
+</html>

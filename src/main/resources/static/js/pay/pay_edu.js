@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!subjectType) return '';
                 const badges = [];
                 if (subjectType.includes('hoho')) badges.push('<span class="badge-hoho">호</span>');
-                if (subjectType.includes('han'))  badges.push('<span class="badge-han">한</span>');
+                if (subjectType.includes('han')) badges.push('<span class="badge-han">한</span>');
                 if (subjectType.includes('book')) badges.push('<span class="badge-book">독</span>');
                 return badges.join('');
             };
@@ -282,21 +282,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!issuanceStatus || issuanceStatus === 'nonIssue') {
             return `<span class="unissued">미발행</span>`;
         }
-        if (issuanceStatus === 'issued')        return `<span class="issued">발행</span>`;
-        if (issuanceStatus === 'nonIssue_off')  return `<span class="edu-issued">현장결제</span>`;
+        if (issuanceStatus === 'issued') return `<span class="issued">발행</span>`;
+        if (issuanceStatus === 'nonIssue_off') return `<span class="edu-issued">현장결제</span>`;
         if (issuanceStatus === 'destroyed_off') return `<span class="edu-issued">현장결제</span>`;
-        if (issuanceStatus === 'canceled_off')  return `<span class="edu-issued">현장결제</span>`;
-        if (issuanceStatus === 'destroyed')     return `<span class="destroyed">파기</span>`;
-        if (issuanceStatus === 'canceled')      return `<span class="canceled">취소</span>`;
-        if (issuanceStatus === 'discount')      return `<span class="discount">할인</span>`;
+        if (issuanceStatus === 'canceled_off') return `<span class="edu-issued">현장결제</span>`;
+        if (issuanceStatus === 'destroyed') return `<span class="destroyed">파기</span>`;
+        if (issuanceStatus === 'canceled') return `<span class="canceled">취소</span>`;
+        if (issuanceStatus === 'discount') return `<span class="discount">할인</span>`;
         return '-';
     }
 
     function renderPayStatus(totalStatus) {
         if (totalStatus === '결제완료') return `<span class="pay-box pay-done">결제완료</span>`;
         if (totalStatus === '부분결제') return `<span class="pay-box pay-partial">부분결제</span>`;
-        if (totalStatus === '미결제')   return `<span class="pay-box pay-late">미결제</span>`;
-        if (totalStatus === '할인')     return `<span class="pay-box pay-discount">할인</span>`;
+        if (totalStatus === '미결제') return `<span class="pay-box pay-late">미결제</span>`;
+        if (totalStatus === '할인') return `<span class="pay-box pay-discount">할인</span>`;
         return '-';
     }
 
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.addEventListener('change', e => {
             if (!e.target.classList.contains('row-checkbox')) return;
 
-            const total   = tbody.querySelectorAll('.row-checkbox').length;
+            const total = tbody.querySelectorAll('.row-checkbox').length;
             const checked = tbody.querySelectorAll('.row-checkbox:checked').length;
 
             selectAll.checked = total > 0 && total === checked;
@@ -342,13 +342,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function bindSearch() {
         const doSearch = () => {
-            const keyword    = searchInput.value.trim();
+            const keyword = searchInput.value.trim();
             const searchType = document.getElementById('stu-name').value;
 
             tbody.querySelectorAll('tr').forEach(tr => {
                 let targetValue = '';
 
-                if (searchType === 'name')  targetValue = tr.dataset.studentName || '';
+                if (searchType === 'name') targetValue = tr.dataset.studentName || '';
                 else if (searchType === 'phone') targetValue = tr.dataset.lastPhone4 || '';
 
                 tr.style.display = (!keyword || targetValue.includes(keyword)) ? '' : 'none';
@@ -363,7 +363,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchInput.addEventListener('keydown', e => {
             if (e.isComposing) return;
-            if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                doSearch();
+            }
         });
     }
 
@@ -384,8 +387,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 청구서 유효기간 세팅 ========== //
 document.addEventListener('DOMContentLoaded', () => {
-    const expireInput   = document.querySelector('.expire-input');
-    const expireBtn     = document.querySelector('.expire-btn');
+    const expireInput = document.querySelector('.expire-input');
+    const expireBtn = document.querySelector('.expire-btn');
     const expireDisplay = document.querySelector('.day-picker .day-display');
 
     const formatYYYYMMDD = (dt) => {
@@ -493,10 +496,10 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =========================
         개별 조회
     ========================= */
-    const tbody             = document.querySelector('#student-tbody');
+    const tbody = document.querySelector('#student-tbody');
     const claimDetailSection = document.querySelector('.claim-frame');
-    const claimDivider      = document.getElementById('claim-divider');
-    const claimButtons      = document.getElementById('claim-buttons');
+    const claimDivider = document.getElementById('claim-divider');
+    const claimButtons = document.getElementById('claim-buttons');
 
     if (tbody && claimDetailSection) {
         tbody.addEventListener('click', async (e) => {
@@ -513,8 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!studentId) return;
 
             const url = new URL(window.location.href);
-            const yy  = url.searchParams.get('year');
-            const mm  = url.searchParams.get('month');
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
 
             if (e.target.closest('#personal-pay-info')) {
                 try {
@@ -560,8 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ========================= */
     async function fetchBillDetail(studentId, yy, mm) {
         const claimDetailSection = document.querySelector('.claim-frame');
-        const claimDivider       = document.getElementById('claim-divider');
-        const claimButtons       = document.getElementById('claim-buttons');
+        const claimDivider = document.getElementById('claim-divider');
+        const claimButtons = document.getElementById('claim-buttons');
 
         try {
             const response = await fetch('/pay/detail/bill', {
@@ -608,19 +611,19 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach(item => {
             const tr = document.createElement('tr');
 
-            const paidDate         = item.paidDate ? item.paidDate.split(' ')[0] : '-';
-            const amount           = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
             const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
 
-            const hasCardName  = item.type === 'bill' && item.cardName;
+            const hasCardName = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';
-            const tooltipAttr  = hasCardName ? `data-card-name="${item.cardName}"` : '';
+            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
 
-            tr.dataset.billId     = item.billId     || '';
-            tr.dataset.studentId  = item.studentId  || '';
+            tr.dataset.billId = item.billId || '';
+            tr.dataset.studentId = item.studentId || '';
             tr.dataset.paymentKey = item.paymentKey || '';
-            tr.dataset.billType   = item.billType   || '';
-            tr.dataset.status     = item.status     || '';
+            tr.dataset.billType = item.billType || '';
+            tr.dataset.status = item.status || '';
 
             tr.innerHTML = `
         <td class="checkbox-group">
@@ -660,10 +663,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.body.appendChild(tooltip);
 
-                const rect         = cell.getBoundingClientRect();
+                const rect = cell.getBoundingClientRect();
                 const tooltipWidth = tooltip.offsetWidth;
                 tooltip.style.left = (rect.left + rect.width / 2 - tooltipWidth / 2) + 'px';
-                tooltip.style.top  = (rect.bottom + 5) + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
             });
 
             cell.addEventListener('mouseleave', () => {
@@ -675,11 +678,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getStatusText(status) {
         switch (status) {
-            case 'issued':    return '결제대기';
-            case 'approved':  return '결제완료';
-            case 'canceled':  return '결제취소';
-            case 'destroyed': return '청구서파기';
-            default:          return '-';
+            case 'issued':
+                return '결제대기';
+            case 'approved':
+                return '결제완료';
+            case 'canceled':
+                return '결제취소';
+            case 'destroyed':
+                return '청구서파기';
+            default:
+                return '-';
         }
     }
 
@@ -713,27 +721,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const toNumber = v => Number(v || 0);
 
-        const hanEduFee      = toNumber(firstItem.hanFee);
+        const hanEduFee = toNumber(firstItem.hanFee);
         const hanMaterialFee = toNumber(firstItem.hanMaterialFee);
-        const bookEduFee     = toNumber(firstItem.bookFee);
+        const bookEduFee = toNumber(firstItem.bookFee);
         const bookMaterialFee = toNumber(firstItem.bookMaterialFee);
 
         // ✅ 인덱스 방식 대신 data-type 속성으로 안전하게 조회
-        const hanEduInput      = modal.querySelector('.edu-input[data-type="hanEdu"]');
+        const hanEduInput = modal.querySelector('.edu-input[data-type="hanEdu"]');
         const hanMaterialInput = modal.querySelector('.edu-input[data-type="hanMaterial"]');
-        const bookEduInput     = modal.querySelector('.edu-input[data-type="bookEdu"]');
+        const bookEduInput = modal.querySelector('.edu-input[data-type="bookEdu"]');
         const bookMaterialInput = modal.querySelector('.edu-input[data-type="bookMaterial"]');
 
-        hanEduInput.value           = hanEduFee.toLocaleString();
+        hanEduInput.value = hanEduFee.toLocaleString();
         hanEduInput.dataset.rawValue = hanEduFee;
 
-        hanMaterialInput.value            = hanMaterialFee.toLocaleString();
+        hanMaterialInput.value = hanMaterialFee.toLocaleString();
         hanMaterialInput.dataset.rawValue = hanMaterialFee;
 
-        bookEduInput.value            = bookEduFee.toLocaleString();
+        bookEduInput.value = bookEduFee.toLocaleString();
         bookEduInput.dataset.rawValue = bookEduFee;
 
-        bookMaterialInput.value            = bookMaterialFee.toLocaleString();
+        bookMaterialInput.value = bookMaterialFee.toLocaleString();
         bookMaterialInput.dataset.rawValue = bookMaterialFee;
 
         updateTotal(modal);
@@ -747,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
             하단 리스트
         ========================= */
         data.forEach((item, index) => {
-            const amount   = Number(item.amount || 0).toLocaleString();
+            const amount = Number(item.amount || 0).toLocaleString();
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
             const teachers = [item.hanTeacher, item.bookTeacher].filter(Boolean).join(', ');
 
@@ -779,14 +787,14 @@ document.addEventListener('DOMContentLoaded', () => {
         전화번호 수정
     ========================= */
     function setupPhoneEditor(modal, studentId, currentPhone) {
-        const phoneInput   = modal.querySelector('#modal-phone-input');
+        const phoneInput = modal.querySelector('#modal-phone-input');
         const phoneSaveBtn = modal.querySelector('#modal-phone-save-btn');
         if (!phoneInput || !phoneSaveBtn) return;
 
         phoneInput.value = formatPhoneDisplay(currentPhone || '');
 
         phoneInput.addEventListener('input', (e) => {
-            const raw    = e.target.value.replace(/[^0-9]/g, '');
+            const raw = e.target.value.replace(/[^0-9]/g, '');
             e.target.value = formatPhoneDisplay(raw);
         });
 
@@ -820,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('전화번호가 변경되었습니다.');
 
                 // 상단 테이블 갱신
-                const monthInput    = document.querySelector('.hidden-picker');
+                const monthInput = document.querySelector('.hidden-picker');
                 const teacherSelect = document.getElementById('student-filter');
                 const [year, month] = monthInput.value.split('-');
                 await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -835,8 +843,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 전화번호 자동 하이픈 포맷 (010-1234-5678)
     function formatPhoneDisplay(phone) {
         const raw = String(phone).replace(/[^0-9]/g, '');
-        if (raw.length <= 3)  return raw;
-        if (raw.length <= 7)  return `${raw.slice(0, 3)}-${raw.slice(3)}`;
+        if (raw.length <= 3) return raw;
+        if (raw.length <= 7) return `${raw.slice(0, 3)}-${raw.slice(3)}`;
         return `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
     }
 
@@ -872,22 +880,23 @@ document.addEventListener('DOMContentLoaded', () => {
         저장 버튼
     ========================= */
     function setupSaveButton(modal, studentId) {
-        const saveBtn = modal.querySelector('.save-btn');
+        const saveBtn = modal.querySelector('#modal-fee-save-btn');
         if (!saveBtn) return;
 
         const newBtn = saveBtn.cloneNode(true);
         saveBtn.parentNode.replaceChild(newBtn, saveBtn);
 
         newBtn.addEventListener('click', async () => {
+            console.log('저장버튼 클릭');
             // ✅ data-type 속성으로 안전하게 조회 (행 인덱스 불필요)
-            const hanEduFee      = Number(modal.querySelector('.edu-input[data-type="hanEdu"]').dataset.rawValue || 0);
+            const hanEduFee = Number(modal.querySelector('.edu-input[data-type="hanEdu"]').dataset.rawValue || 0);
             const hanMaterialFee = Number(modal.querySelector('.edu-input[data-type="hanMaterial"]').dataset.rawValue || 0);
-            const bookEduFee     = Number(modal.querySelector('.edu-input[data-type="bookEdu"]').dataset.rawValue || 0);
+            const bookEduFee = Number(modal.querySelector('.edu-input[data-type="bookEdu"]').dataset.rawValue || 0);
             const bookMaterialFee = Number(modal.querySelector('.edu-input[data-type="bookMaterial"]').dataset.rawValue || 0);
 
             const url = new URL(window.location.href);
-            const yy  = url.searchParams.get('year');
-            const mm  = url.searchParams.get('month');
+            const yy = url.searchParams.get('year');
+            const mm = url.searchParams.get('month');
 
             if (!yy || !mm) {
                 alert('년월 정보가 없습니다.');
@@ -919,7 +928,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     modal.style.display = 'none';
 
-                    const monthInput    = document.querySelector('.hidden-picker');
+                    const monthInput = document.querySelector('.hidden-picker');
                     const teacherSelect = document.getElementById('student-filter');
                     const [year, month] = monthInput.value.split('-');
                     await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -940,23 +949,35 @@ document.addEventListener('DOMContentLoaded', () => {
     ========================= */
     function getStatus(status) {
         switch (status) {
-            case 'pending':   return '청구서 미발행';
-            case 'issued':    return '결제 대기';
-            case 'approved':  return '결제 완료';
-            case 'canceled':  return '결제 취소';
-            case 'destroyed': return '청구서 파기';
-            default:          return '';
+            case 'pending':
+                return '청구서 미발행';
+            case 'issued':
+                return '결제 대기';
+            case 'approved':
+                return '결제 완료';
+            case 'canceled':
+                return '결제 취소';
+            case 'destroyed':
+                return '청구서 파기';
+            default:
+                return '';
         }
     }
 
     function getStatusClass(status) {
         switch (status) {
-            case 'pending':   return 'pending';
-            case 'issued':    return 'standby';
-            case 'approved':  return 'complete';
-            case 'canceled':  return 'cancellation';
-            case 'destroyed': return 'destroy';
-            default:          return '';
+            case 'pending':
+                return 'pending';
+            case 'issued':
+                return 'standby';
+            case 'approved':
+                return 'complete';
+            case 'canceled':
+                return 'cancellation';
+            case 'destroyed':
+                return 'destroy';
+            default:
+                return '';
         }
     }
 });
@@ -964,9 +985,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 금액 직접 입력하기 ========== //
 document.addEventListener('DOMContentLoaded', () => {
-    const eduFee     = document.getElementById("eduFee");
-    const bookFee    = document.getElementById("bookFee");
-    const priceDiv   = document.querySelector(".price");
+    const eduFee = document.getElementById("eduFee");
+    const bookFee = document.getElementById("bookFee");
+    const priceDiv = document.querySelector(".price");
     const priceInput = document.querySelector(".edu-input");
 
     function updatePriceState() {
@@ -1000,8 +1021,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ========== 우측 버튼 클릭 ========== //
 document.addEventListener("DOMContentLoaded", () => {
-    const payIssue   = document.querySelector('#pay-issue');
-    const payCancel  = document.querySelector('#pay-cancel');
+    const payIssue = document.querySelector('#pay-issue');
+    const payCancel = document.querySelector('#pay-cancel');
     const payDestroy = document.querySelector('#pay-destory');
     const payReissue = document.querySelector('#pay-reissue');
 
@@ -1016,32 +1037,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (checkedBoxes.length === 0) return alert('학생을 선택하세요.');
 
-        const eduChecked  = document.querySelector('input[name="eduFee"]').checked;
+        const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
 
         if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
-        const [yy, mm]      = selectedMonth.split('-');
-        const expireDt      = document.querySelector('.expire-input').value;
+        const [yy, mm] = selectedMonth.split('-');
+        const expireDt = document.querySelector('.expire-input').value;
 
         const studentIds = Array.from(checkedBoxes).map(
             box => box.closest('tr').dataset.studentId
         );
 
-        const includeSibling  = document.querySelector('input[name="includeSibling"]').checked;
+        const includeSibling = document.querySelector('input[name="includeSibling"]').checked;
         const customPriceInput = document.querySelector('.edu-input').value;
-        const customPrice      = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
-        const customMessage    = document.querySelector('input[name="message"]')?.value?.trim();
+        const customPrice = customPriceInput ? parseInt(customPriceInput.replace(/,/g, '')) : null;
+        const customMessage = document.querySelector('input[name="message"]')?.value?.trim();
 
         if (customPrice !== null && customPrice <= 0) return alert('올바른 금액을 입력하세요.');
 
         const types = [];
-        if (eduChecked)  types.push({type: 'edu',      label: '교육비'});
+        if (eduChecked) types.push({type: 'edu', label: '교육비'});
         if (bookChecked) types.push({type: 'material', label: '교재비'});
 
-        const jobId    = crypto.randomUUID();
-        const overlay  = showProgressOverlay();
+        const jobId = crypto.randomUUID();
+        const overlay = showProgressOverlay();
         const evtSource = new EventSource(`/pay/progress/${jobId}`);
 
         evtSource.addEventListener('progress', (e) => {
@@ -1062,8 +1083,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         let totalSuccessCount = 0;
-        let totalFailCount    = 0;
-        const failMessages    = [];
+        let totalFailCount = 0;
+        const failMessages = [];
 
         for (let i = 0; i < types.length; i++) {
             const {type, label} = types[i];
@@ -1084,7 +1105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (result.success) {
                 totalSuccessCount += result.successCount;
-                totalFailCount    += result.failCount;
+                totalFailCount += result.failCount;
             } else {
                 totalFailCount++;
                 failMessages.push(`${label}: ${result.error}`);
@@ -1098,7 +1119,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (failMessages.length > 0) resultMsg += `\n\n실패 내용:\n${failMessages.join('\n')}`;
         alert(resultMsg);
 
-        const monthInput    = document.querySelector('.hidden-picker');
+        const monthInput = document.querySelector('.hidden-picker');
         const teacherSelect = document.getElementById('student-filter');
         const [year, month] = monthInput.value.split('-');
         await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -1106,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function sendBillsSafe(body) {
         try {
-            const res  = await fetch('/pay/send', {
+            const res = await fetch('/pay/send', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
@@ -1121,7 +1142,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return {
                 success: true,
                 successCount: data.response?.successCount || 0,
-                failCount:    data.response?.failCount    || 0
+                failCount: data.response?.failCount || 0
             };
         } catch (e) {
             return {success: false, error: e.message || '네트워크 오류'};
@@ -1178,10 +1199,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateOverlayProgress(overlay, data) {
         const {current, total, studentName, successCount, failCount, status} = data;
 
-        const bar     = overlay.querySelector('#overlay-bar');
-        const count   = overlay.querySelector('#overlay-count');
+        const bar = overlay.querySelector('#overlay-bar');
+        const count = overlay.querySelector('#overlay-count');
         const student = overlay.querySelector('#overlay-student');
-        const pct     = total > 0 ? Math.round((current / total) * 100) : 0;
+        const pct = total > 0 ? Math.round((current / total) * 100) : 0;
 
         if (bar) bar.style.width = `${pct}%`;
 
@@ -1192,8 +1213,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (student) {
-            if (status === 'done')       student.textContent = '발행 완료!';
-            else if (studentName)        student.textContent = `처리 중: ${studentName}`;
+            if (status === 'done') student.textContent = '발행 완료!';
+            else if (studentName) student.textContent = `처리 중: ${studentName}`;
         }
     }
 
@@ -1207,26 +1228,35 @@ document.addEventListener("DOMContentLoaded", () => {
     payCancel.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) { alert('취소할 청구서를 선택하세요.'); return; }
+        if (!checkedBox) {
+            alert('취소할 청구서를 선택하세요.');
+            return;
+        }
 
-        const row         = checkedBox.closest('tr');
-        const billId      = row.dataset.billId;
-        const studentId   = row.dataset.studentId;
-        const paymentKey  = row.dataset.paymentKey;
-        const billType    = row.dataset.billType;
-        const status      = row.dataset.status;
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
+        const studentId = row.dataset.studentId;
+        const paymentKey = row.dataset.paymentKey;
+        const billType = row.dataset.billType;
+        const status = row.dataset.status;
 
-        if (status !== 'approved') { alert('결제 완료된 청구서만 취소할 수 있습니다.'); return; }
+        if (status !== 'approved') {
+            alert('결제 완료된 청구서만 취소할 수 있습니다.');
+            return;
+        }
 
         const studentName = row.querySelector('td:nth-child(2)').textContent;
         const cancelReason = prompt(`${studentName} 학생의 취소 사유를 입력해주세요.`);
 
-        if (!cancelReason || cancelReason.trim() === '') { alert('취소 사유는 필수입니다.'); return; }
+        if (!cancelReason || cancelReason.trim() === '') {
+            alert('취소 사유는 필수입니다.');
+            return;
+        }
 
         if (!confirm(`${studentName} 학생의 결제를 정말 취소하시겠습니까?\n\n※ 이 작업은 되돌릴 수 없습니다.`)) return;
 
         try {
-            const res  = await fetch('/pay/cancel', {
+            const res = await fetch('/pay/cancel', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({paymentKey, cancelType: billType, cancelReason: cancelReason.trim()})
@@ -1252,20 +1282,26 @@ document.addEventListener("DOMContentLoaded", () => {
     payDestroy.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) { alert('파기할 청구서를 선택하세요.'); return; }
+        if (!checkedBox) {
+            alert('파기할 청구서를 선택하세요.');
+            return;
+        }
 
-        const row         = checkedBox.closest('tr');
-        const billId      = row.dataset.billId;
-        const studentId   = row.dataset.studentId;
-        const paymentKey  = row.dataset.paymentKey;
-        const billType    = row.dataset.billType;
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
+        const studentId = row.dataset.studentId;
+        const paymentKey = row.dataset.paymentKey;
+        const billType = row.dataset.billType;
         const studentName = row.querySelector('td:nth-child(2)').textContent;
 
-        if (!billId || !paymentKey) { alert('파기 정보를 확인할 수 없습니다.'); return; }
+        if (!billId || !paymentKey) {
+            alert('파기 정보를 확인할 수 없습니다.');
+            return;
+        }
         if (!confirm(`${studentName} 학생의 청구서를 파기하시겠습니까?`)) return;
 
         try {
-            const res  = await fetch('/pay/destroy/bill', {
+            const res = await fetch('/pay/destroy/bill', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({billId, studentId, paymentKey, destroyType: billType})
@@ -1291,10 +1327,13 @@ document.addEventListener("DOMContentLoaded", () => {
     payReissue.addEventListener('click', async () => {
         const checkedBox = document.querySelector('.claim-frame input[type="checkbox"]:checked');
 
-        if (!checkedBox) { alert('재발행할 청구서를 선택하세요.'); return; }
+        if (!checkedBox) {
+            alert('재발행할 청구서를 선택하세요.');
+            return;
+        }
 
-        const row       = checkedBox.closest('tr');
-        const billId    = row.dataset.billId;
+        const row = checkedBox.closest('tr');
+        const billId = row.dataset.billId;
         const studentId = row.dataset.studentId;
 
         if (!billId || billId === 'null' || billId === 'undefined') {
@@ -1303,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res  = await fetch('/pay/reissue', {
+            const res = await fetch('/pay/reissue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({billIds: [billId]})
@@ -1346,7 +1385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirm(`총 ${billIds.length}건의 청구서를 재발행하시겠습니까?`)) return;
 
         try {
-            const res  = await fetch('/pay/reissue', {
+            const res = await fetch('/pay/reissue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({billIds})
@@ -1357,7 +1396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             alert(`재발행이 완료되었습니다. (${billIds.length}건)`);
 
-            const monthInput    = document.querySelector('.hidden-picker');
+            const monthInput = document.querySelector('.hidden-picker');
             const teacherSelect = document.getElementById('student-filter');
             const [year, month] = monthInput.value.split('-');
             await fetchStudentsGlobal(year, month, teacherSelect.value);
@@ -1373,8 +1412,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================================
     async function fetchBillDetail(studentId, yy, mm) {
         const claimDetailSection = document.querySelector('.claim-frame');
-        const claimDivider       = document.getElementById('claim-divider');
-        const claimButtons       = document.getElementById('claim-buttons');
+        const claimDivider = document.getElementById('claim-divider');
+        const claimButtons = document.getElementById('claim-buttons');
 
         try {
             const response = await fetch('/pay/detail/bill', {
@@ -1417,19 +1456,19 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach(item => {
             const tr = document.createElement('tr');
 
-            const paidDate          = item.paidDate ? item.paidDate.split(' ')[0] : '-';
-            const amount            = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
+            const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
+            const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
             const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
 
-            const hasCardName  = item.type === 'bill' && item.cardName;
+            const hasCardName = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';
-            const tooltipAttr  = hasCardName ? `data-card-name="${item.cardName}"` : '';
+            const tooltipAttr = hasCardName ? `data-card-name="${item.cardName}"` : '';
 
-            tr.dataset.billId     = item.billId     || '';
-            tr.dataset.studentId  = item.studentId  || '';
+            tr.dataset.billId = item.billId || '';
+            tr.dataset.studentId = item.studentId || '';
             tr.dataset.paymentKey = item.paymentKey || '';
-            tr.dataset.billType   = item.billType   || '';
-            tr.dataset.status     = item.status     || '';
+            tr.dataset.billType = item.billType || '';
+            tr.dataset.status = item.status || '';
 
             tr.innerHTML = `
         <td class="checkbox-group">
@@ -1469,10 +1508,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.body.appendChild(tooltip);
 
-                const rect         = cell.getBoundingClientRect();
+                const rect = cell.getBoundingClientRect();
                 const tooltipWidth = tooltip.offsetWidth;
                 tooltip.style.left = (rect.left + rect.width / 2 - tooltipWidth / 2) + 'px';
-                tooltip.style.top  = (rect.bottom + 5) + 'px';
+                tooltip.style.top = (rect.bottom + 5) + 'px';
             });
 
             cell.addEventListener('mouseleave', () => {
@@ -1484,11 +1523,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function getStatusText(status) {
         switch (status) {
-            case 'issued':    return '결제대기';
-            case 'approved':  return '결제완료';
-            case 'canceled':  return '결제취소';
-            case 'destroyed': return '청구서파기';
-            default:          return '-';
+            case 'issued':
+                return '결제대기';
+            case 'approved':
+                return '결제완료';
+            case 'canceled':
+                return '결제취소';
+            case 'destroyed':
+                return '청구서파기';
+            default:
+                return '-';
         }
     }
 });
@@ -1500,10 +1544,10 @@ async function exportFilteredDataToExcel() {
         button.disabled = true;
         button.textContent = '다운로드 중...';
 
-        const url        = new URL(window.location.href);
-        const yy         = url.searchParams.get('year');
-        const mm         = url.searchParams.get('month');
-        const userCode   = document.getElementById('student-filter')?.value || '';
+        const url = new URL(window.location.href);
+        const yy = url.searchParams.get('year');
+        const mm = url.searchParams.get('month');
+        const userCode = document.getElementById('student-filter')?.value || '';
 
         const filters = {
             userCode,
@@ -1521,7 +1565,7 @@ async function exportFilteredDataToExcel() {
 
         if (!response.ok) throw new Error('데이터 조회 실패');
 
-        const result  = await response.json();
+        const result = await response.json();
         const allData = result.response || result;
 
         if (!allData || allData.length === 0) {
@@ -1537,38 +1581,38 @@ async function exportFilteredDataToExcel() {
 
         Object.keys(groupedByTeacher).sort().forEach(teacherName => {
             const teacherData = groupedByTeacher[teacherName];
-            const title       = `${mm}월 ${teacherName} 결제 기록`;
-            const sheetData   = teacherData.map(item => {
-                const paidAmount     = Number(item.paidAmount || 0);
-                const billPrice      = Number(item.billPrice  || 0);
+            const title = `${mm}월 ${teacherName} 결제 기록`;
+            const sheetData = teacherData.map(item => {
+                const paidAmount = Number(item.paidAmount || 0);
+                const billPrice = Number(item.billPrice || 0);
                 const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
                 return {
-                    '이름':    item.studentName || '',
-                    '수강과목': item.subject     || '',
+                    '이름': item.studentName || '',
+                    '수강과목': item.subject || '',
                     '청구금액': billPrice,
                     '결제금액': calculatedPaid,
                     '미납금액': Number(item.unpaidAmount || 0),
-                    '상태':    item.payStatus   || ''
+                    '상태': item.payStatus || ''
                 };
             });
 
-            const sheet     = createSheetWithTitle(sheetData, title);
+            const sheet = createSheetWithTitle(sheetData, title);
             const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
             XLSX.utils.book_append_sheet(wb, sheet, sheetName);
         });
 
         const allSheetData = allData.map(item => {
-            const paidAmount     = Number(item.paidAmount || 0);
-            const billPrice      = Number(item.billPrice  || 0);
+            const paidAmount = Number(item.paidAmount || 0);
+            const billPrice = Number(item.billPrice || 0);
             const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
             return {
-                '선생님':  item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
-                '이름':    item.studentName || '',
-                '수강과목': item.subject     || '',
+                '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
+                '이름': item.studentName || '',
+                '수강과목': item.subject || '',
                 '청구금액': billPrice,
                 '결제금액': calculatedPaid,
                 '미납금액': Number(item.unpaidAmount || 0),
-                '상태':    item.payStatus   || ''
+                '상태': item.payStatus || ''
             };
         });
 
@@ -1601,8 +1645,8 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
     const sheetData = [[title], []];
 
     let totalCount = data.length;
-    let totalBill  = 0;
-    let totalPaid  = 0;
+    let totalBill = 0;
+    let totalPaid = 0;
     let totalUnpaid = 0;
 
     if (data.length > 0) {
@@ -1612,8 +1656,8 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
         data.forEach((row, index) => {
             const originalHeaders = Object.keys(data[0]);
             sheetData.push([index + 1, ...originalHeaders.map(h => row[h])]);
-            totalBill   += row['청구금액'] || 0;
-            totalPaid   += row['결제금액'] || 0;
+            totalBill += row['청구금액'] || 0;
+            totalPaid += row['결제금액'] || 0;
             totalUnpaid += row['미납금액'] || 0;
         });
 
@@ -1624,7 +1668,7 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
         }
     }
 
-    const ws    = XLSX.utils.aoa_to_sheet(sheetData);
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
     const range = XLSX.utils.decode_range(ws['!ref']);
     const amountColumns = isAllSheet ? [4, 5, 6] : [3, 4, 5];
 
@@ -1678,8 +1722,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnPayRemind.addEventListener("click", async () => {
         try {
             const monthInput = document.querySelector('.hidden-date.hidden-picker');
-            const yearMonth  = {
-                year:  monthInput.value.split("-")[0],
+            const yearMonth = {
+                year: monthInput.value.split("-")[0],
                 month: monthInput.value.split("-")[1]
             };
 
@@ -1691,10 +1735,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!res.ok) throw new Error("미납 학생 조회 실패");
 
-            const result     = await res.json();
+            const result = await res.json();
             const unpaidList = result.response || [];
 
-            if (!unpaidList.length) { alert("미납 학생이 없습니다."); return; }
+            if (!unpaidList.length) {
+                alert("미납 학생이 없습니다.");
+                return;
+            }
 
             const phoneGroupMap = new Map();
             unpaidList.forEach(s => {
@@ -1728,13 +1775,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    year:  yearMonth.year,
+                    year: yearMonth.year,
                     month: yearMonth.month,
                     students: groupedList.map(g => ({
-                        studentName:        g.students.join(", "),
-                        parentPhone:        g.parentPhone,
-                        totalUnpaidAmount:  g.totalUnpaidAmount,
-                        paymentKeys:        g.paymentKeys
+                        studentName: g.students.join(", "),
+                        parentPhone: g.parentPhone,
+                        totalUnpaidAmount: g.totalUnpaidAmount,
+                        paymentKeys: g.paymentKeys
                     }))
                 })
             });

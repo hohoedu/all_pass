@@ -117,7 +117,8 @@ public interface StudentRepository {
     int updateHanToInactive(
             @Param("studentId") String studentId,
             @Param("inactiveHanDate") String inactiveHanDate,
-            @Param("inactiveHanReason") String inactiveHanReason
+            @Param("inactiveHanReason") String inactiveHanReason,
+            @Param("userCode") String userCode
     );
 
     int updateBookToActive(
@@ -129,7 +130,8 @@ public interface StudentRepository {
     int updateBookToInactive(
             @Param("studentId") String studentId,
             @Param("inactiveBookDate") String inactiveBookDate,
-            @Param("inactiveBookReason") String inactiveBookReason
+            @Param("inactiveBookReason") String inactiveBookReason,
+            @Param("userCode") String userCode
     );
 
     void updatePendingIsDeletedByStudentId(String studentId);
