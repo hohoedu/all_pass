@@ -4,61 +4,25 @@ let currentStudentId = null;
 // ====== 선생님 별 학생 필터링 ====== //
 document.addEventListener("DOMContentLoaded", () => {
     const teacherFilter = document.getElementById("main-teacher-filter");
-    const subjectFilter = document.getElementById("main-subject-filter");
     const tbody = document.getElementById("main-student-tbody");
+
     if (teacherFilter) {
         teacherFilter.addEventListener("change", function () {
             const userCode = this.value;
-
-            fetch(`/student/api/label?userCode=${encodeURIComponent(userCode)}`)
-                .then(res => res.json())
-                .then(data => {
-                    subjectFilter.innerHTML = `<option value="all">전체</option>`;
-                    data.response.forEach(item => {
-                        subjectFilter.innerHTML += `<option value="${item.timeTableKey}">${item.classLabel}</option>`;
-                    });
-                })
-                .catch(() => {
-                    subjectFilter.innerHTML = `<option value="all">전체</option>`;
-                });
 
             fetch(`/student/api/students?userCode=${encodeURIComponent(userCode)}`)
                 .then(res => res.json())
                 .then(data => {
                     renderStudents(tbody, data.response);
 
-                    // ✅ 추가: 검색어가 남아있으면 새 목록에서 자동 재검색
                     if (typeof window.doSearch === "function") {
                         window.doSearch();
                     }
                 });
         });
     }
-
-    if (subjectFilter) {
-        subjectFilter.addEventListener("change", function () {
-            const timeTableKey = this.value;
-            console.log("subject 변경:", timeTableKey);
-
-            const userCodeSelect = document.getElementById("userFilter"); // select#userFilter 등
-            const userCode = userCodeSelect ? userCodeSelect.value : "all";
-
-            fetch(`/student/api/students?timeTableKey=${encodeURIComponent(timeTableKey)}&userCode=${encodeURIComponent(userCode)}`)
-                .then(res => {
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('data = ', data);
-                    renderStudents(tbody, data.response);
-                })
-                .catch(err => {
-                    subjectFilter.innerHTML = `<option value="all">전체</option>`;
-                });
-        });
-    }
 });
 
-// ============ 검색 ============ //
 // ============ 검색 ============ //
 document.addEventListener("DOMContentLoaded", () => {
     const searchBtn = document.getElementById("search-main-student");
@@ -72,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.doSearch = function () {
         const keyword = searchInput.value.trim().toLowerCase();
-        const filterType = filterSelect?.value || "name"; // ✅ "all" → "name"
+        const filterType = filterSelect?.value || "name";
         const rows = getRows();
 
         if (!keyword) {
@@ -90,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let textToSearch = "";
 
             switch (filterType) {
-                case "name":   // ✅ "all" → "name"
+                case "name":
                     textToSearch = tds[1]?.innerText.toLowerCase() || "";
                     break;
                 case "class":
@@ -165,13 +129,11 @@ function renderStudents(tbody, students = []) {
         tr.setAttribute("data-phone", (s.appId ?? "").substring(0, 8));
         const appIcon = s.hasApp === "Y"
             ? `<div class="tooltip-container">
-                 <img src="/image/in_app.png" alt="앱 연결" class="app-icon" 
-                 style="width: 25px; height: 25px;">
+                 <img src="/image/in_app.png" alt="앱 연결" class="app-icon" style="width: 25px; height: 25px;">
                  <div class="tooltip-text">${s.appId}</div>
                </div>`
             : `<div class="tooltip-container">
-                 <img src="/image/no_app.png" alt="앱 연결" class="app-icon" 
-                 style="width: 25px; height: 25px;">
+                 <img src="/image/no_app.png" alt="앱 연결" class="app-icon" style="width: 25px; height: 25px;">
                  <div class="tooltip-text">${s.appId}</div>
                </div>`;
 
@@ -185,8 +147,8 @@ function renderStudents(tbody, students = []) {
       <td>${s.school ?? ""}</td>
       <td>
         <div class="tooltip-container">
-        <img src="/image/link.png" alt="link" class="link">
-            <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
+          <img src="/image/link.png" alt="link" class="link">
+          <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
         </div>
       </td>
       <td>${appIcon}</td>
@@ -194,7 +156,6 @@ function renderStudents(tbody, students = []) {
 
         tbody.appendChild(tr);
     });
-
 }
 
 
@@ -212,13 +173,11 @@ function formatBirthDisplay(birth) {
 
     let year, month, day;
 
-    // 1️⃣ yyyy년 mm월 dd일
     let match = birth.match(/^(\d{4})\s*년\s*(\d{1,2})\s*월\s*(\d{1,2})\s*일$/);
     if (match) {
         [, year, month, day] = match;
     }
 
-    // 2️⃣ yyyy-mm-dd | yyyy/mm/dd | yyyy.mm.dd
     if (!year) {
         match = birth.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
         if (match) {
@@ -226,7 +185,6 @@ function formatBirthDisplay(birth) {
         }
     }
 
-    // 3️⃣ yyyymmdd
     if (!year) {
         match = birth.match(/^(\d{4})(\d{2})(\d{2})$/);
         if (match) {
@@ -234,7 +192,6 @@ function formatBirthDisplay(birth) {
         }
     }
 
-    // 4️⃣ yymmdd → 20yy 기준 (필요 시 기준 변경 가능)
     if (!year) {
         match = birth.match(/^(\d{2})(\d{2})(\d{2})$/);
         if (match) {
@@ -253,7 +210,6 @@ function formatBirthDisplay(birth) {
     return `${year}년 ${month}월 ${day}일`;
 }
 
-// date input용: YYMMDD -> "YYYY-MM-DD"
 function formatBirthInput(birth) {
     if (!birth || birth.length !== 6) return "";
 
@@ -367,13 +323,12 @@ function renderStudentModal(data) {
     setValue("#tab1 .s_name", info.studentName);
     setValue("#tab1 .s_subjects", [info.hanClass, info.bookClass].filter(Boolean).join(", "));
     setValue("#tab1 .s_phone", formatPhone(info.parentPhone));
-    setValue("#tab1 .s_entry_date", ""); // TODO: entryHanDate/entryBookDate 합쳐서 넣을 거면 여기 처리
+    setValue("#tab1 .s_entry_date", "");
     setValue("#tab1 .s_school", info.school);
     setValue("#tab1 .s_grade_name", info.gradeName);
     setValue("#tab1 .s_birth", formatBirthDisplay(info.birth));
     setValue("#tab1 .s_address", info.address);
     setValue("#tab1 .s_address_detail", info.addressDetail);
-
 
     // ---------------- TAB2: 기본 정보 ----------------
     setValue("#tab2 .s_name", info.studentName);
@@ -384,22 +339,20 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_birth", formatBirthDisplay(info.birth));
     setValue("#tab2 .s_billing_phone", formatPhone(info.billingPhone));
 
-
     // ---------------- TAB3: 수업 정보 ----------------
-    setValue("#tab3 .s_han_class", payment.hanClassName);
-    setValue("#tab3 .s_book_class", payment.bookClassName);
-
-    setValue("#tab3 .p_han_teacher", payment.hanTeacher);
-    setValue("#tab3 .p_book_teacher", payment.bookTeacher);
-
+    // 교육비 (readonly input이므로 setValue로 세팅)
     setValue("#tab3 .p_han_fee", formatMoney(payment.hanFee));
     setValue("#tab3 .p_book_fee", formatMoney(payment.bookFee));
-
     setValue("#tab3 .p_han_material_fee", formatMoney(payment.hanMaterialPrice));
     setValue("#tab3 .p_book_material_fee", formatMoney(payment.bookMaterialPrice));
-
     setValue("#tab3 .s_entry_han_date", formatDate(payment.entryHanDate) ?? '날짜를 선택해주세요.');
     setValue("#tab3 .s_entry_book_date", formatDate(payment.entryBookDate) ?? '날짜를 선택해주세요.');
+
+    // ▼ 드롭다운 렌더링 (단계 / 선생님)
+    renderHanClassDropdown(data.hanClasses ?? [], payment.hanClassName);
+    renderBookClassDropdown(data.bookClasses ?? [], payment.bookClassName);
+    renderHanTeacherDropdown(data.hanTeachers ?? [], payment.hanTeacher);
+    renderBookTeacherDropdown(data.bookTeachers ?? [], payment.bookTeacher);
 
     // ---------------- TAB4: 출결 정보 ----------------
     let currentAttendanceYear = new Date().getFullYear();
@@ -412,8 +365,8 @@ function renderStudentModal(data) {
             titleEl.textContent = `${year}년 ${String(month).padStart(2, "0")}월`;
         }
 
-        const firstDay = new Date(year, month - 1, 1).getDay(); // 1일 요일
-        const lastDate = new Date(year, month, 0).getDate();    // 마지막 날
+        const firstDay = new Date(year, month - 1, 1).getDay();
+        const lastDate = new Date(year, month, 0).getDate();
 
         const tbody = document.querySelector("#tab4 .calendar-table tbody");
         if (!tbody) return;
@@ -445,7 +398,6 @@ function renderStudentModal(data) {
         }
     }
 
-// 이전달 / 다음달
     document.addEventListener("DOMContentLoaded", () => {
         const prevBtn = document.getElementById("calendar-prev");
         const nextBtn = document.getElementById("calendar-next");
@@ -472,22 +424,23 @@ function renderStudentModal(data) {
             });
         }
     });
+
     // ---------------- TAB5: 상담 정보 ----------------
     renderConsult(consult ?? []);
 
-    // 5) 수강 상태 버튼 표시 + 비활성화
+    // 수강 상태 버튼 표시
     setCourseState("han", payment.hanState);
     setCourseState("book", payment.bookState);
 
-    // 6) 시작일자
+    // 시작일자
     setCourseDate("han", payment.entryHanDate);
     setCourseDate("book", payment.entryBookDate);
 
-    // 7) 회비 합계
+    // 회비 합계
     updateTotalFee(payment);
     renderFeeTable(payment);
 
-    // 8) 초기 수강 상태 저장 - 날짜도 함께 전달
+    // 초기 수강 상태 저장
     if (typeof window.saveInitialCourseState === 'function') {
         window.saveInitialCourseState(payment.hanState, payment.bookState);
     }
@@ -495,13 +448,11 @@ function renderStudentModal(data) {
     const birthInput = document.querySelector("#tab2 #birth-date");
     if (birthInput) {
         const formattedBirth = formatBirthInput(info.birth);
-
         if (formattedBirth) {
             birthInput.value = formattedBirth;
         } else {
             birthInput.value = info.birth || "";
         }
-
     }
 
     const hanInput = document.querySelector("#entry-han-date");
@@ -515,11 +466,115 @@ function renderStudentModal(data) {
     }
 }
 
+// ====== 드롭다운 렌더링 함수 ====== //
+function renderHanClassDropdown(classes, selectedName) {
+    const select = document.querySelector("#tab3 .s_han_class");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">단계 선택</option>`;
+
+    classes.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.classKey;
+        opt.textContent = c.className;
+        opt.dataset.fee = c.fee ?? 0;
+        if (c.className === selectedName) opt.selected = true; // className으로 매칭
+        select.appendChild(opt);
+    });
+
+    // 초기 교육비 세팅
+    updateHanFeeFromSelect(select);
+
+    // 이벤트 중복 방지 - 핸들러 참조 보관 후 교체
+    select.removeEventListener("change", select._hanFeeHandler);
+    select._hanFeeHandler = () => {
+        updateHanFeeFromSelect(select);
+    };
+    select.addEventListener("change", select._hanFeeHandler);
+}
+
+function updateHanFeeFromSelect(select) {
+    const selectedOpt = select.options[select.selectedIndex];
+    const fee = selectedOpt?.dataset.fee;
+    const feeInput = document.querySelector("#hanFee");
+    if (feeInput) {
+        feeInput.value = fee ? formatMoney(fee) : '';
+    }
+    updateTotalFee();
+}
+
+function renderBookClassDropdown(classes, selectedName) {
+    const select = document.querySelector("#tab3 .s_book_class");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">단계 선택</option>`;
+
+    classes.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.classKey;
+        opt.textContent = c.className;
+        opt.dataset.fee = c.fee ?? 0;
+        if (c.className === selectedName) opt.selected = true; // className으로 매칭
+        select.appendChild(opt);
+    });
+
+    // 초기 교육비 세팅
+    updateBookFeeFromSelect(select);
+
+    // 이벤트 중복 방지 - 핸들러 참조 보관 후 교체
+    select.removeEventListener("change", select._bookFeeHandler);
+    select._bookFeeHandler = () => {
+        updateBookFeeFromSelect(select);
+    };
+    select.addEventListener("change", select._bookFeeHandler);
+}
+
+function updateBookFeeFromSelect(select) {
+    const selectedOpt = select.options[select.selectedIndex];
+    const fee = selectedOpt?.dataset.fee;
+    const feeInput = document.querySelector("#bookFee");
+    if (feeInput) {
+        feeInput.value = fee ? formatMoney(fee) : '';
+    }
+    updateTotalFee();
+}
+
+// 보여주는 건 userName, 저장/전송하는 건 userCode - userName으로 매칭
+function renderHanTeacherDropdown(teachers, selectedName) {
+    const select = document.querySelector("#tab3 .p_han_teacher");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">선생님 선택</option>`;
+
+    teachers.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.userCode;       // 저장/전송용
+        opt.textContent = t.userName; // 화면 표시용
+        if (t.userName === selectedName) opt.selected = true; // userName으로 매칭
+        select.appendChild(opt);
+    });
+}
+
+// 보여주는 건 userName, 저장/전송하는 건 userCode - userName으로 매칭
+function renderBookTeacherDropdown(teachers, selectedName) {
+    const select = document.querySelector("#tab3 .p_book_teacher");
+    if (!select) return;
+
+    select.innerHTML = `<option value="">선생님 선택</option>`;
+
+    teachers.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.userCode;       // 저장/전송용
+        opt.textContent = t.userName; // 화면 표시용
+        if (t.userName === selectedName) opt.selected = true; // userName으로 매칭
+        select.appendChild(opt);
+    });
+}
+
 function renderConsult(consultList = []) {
     const tbodies = document.querySelectorAll("#consult-tbody");
     if (!tbodies.length) return;
 
-    // null, 공백 제외
     const filtered = consultList.filter(c => c.consultContent?.trim());
 
     if (!filtered.length) {
@@ -583,20 +638,14 @@ function renderFeeTable(payment) {
         tbody.appendChild(tr);
     };
 
-    // 한자
     addRow('한자(교육비)', payment.hanFee);
     addRow('한자(교재비)', payment.hanMaterialPrice);
-
-    // 독서
     addRow('독서(교육비)', payment.bookFee);
     addRow('독서(교재비)', payment.bookMaterialPrice);
 
-    // 아무 것도 없을 경우
     if (tbody.children.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td colspan="2" style="text-align:center;">회비 정보 없음</td>
-        `;
+        tr.innerHTML = `<td colspan="2" style="text-align:center;">회비 정보 없음</td>`;
         tbody.appendChild(tr);
     }
 }
@@ -617,12 +666,10 @@ function formatMoney(value) {
 function formatDate(value) {
     if (!value || typeof value !== 'string') return '';
 
-    // 이미 "yyyy년 MM월 dd일" 형식이면 그대로 반환
     if (/^\d{4}년\s?\d{1,2}월\s?\d{1,2}일$/.test(value)) {
         return value;
     }
 
-    // "yyyy-MM-dd" 형식이면 변환
     const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (match) {
         const [, y, m, d] = match;
@@ -656,8 +703,7 @@ function updateTotalFee() {
 
     const total = hanFee + bookFee + hanMat + bookMat;
 
-    document.querySelector(".dues-sum span").innerText =
-        formatMoney(total);
+    document.querySelector(".dues-sum span").innerText = formatMoney(total);
 }
 
 function setCourseDate(type, value) {
@@ -691,7 +737,6 @@ function renderGender(genderKey) {
     freshButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             const val = btn.dataset.value;
-
             freshButtons.forEach(b => b.classList.remove("active"));
             btn.classList.add("active");
             hidden.value = val;
@@ -707,14 +752,12 @@ function renderParent(initialValue) {
     const hidden = group.querySelector(".relation-hidden");
     if (!hidden) return;
 
-    // 초기 상태
     buttons.forEach(btn => {
         const val = btn.dataset.value;
         btn.classList.toggle("active", val === initialValue);
     });
     hidden.value = initialValue;
 
-    // 기존 이벤트 제거용 clone
     buttons.forEach(btn => {
         const newBtn = btn.cloneNode(true);
         btn.replaceWith(newBtn);
@@ -785,10 +828,10 @@ document.addEventListener("change", (e) => {
 async function updateStudentInfo() {
     try {
         const req = {
-            studentId: currentStudentId,                     // 필수
+            studentId: currentStudentId,
             studentName: getValue("#tab2 .s_name"),
             birth: getValue("#tab2 #birth-date"),
-            genderKey: getValue("#tab2 .gender-hidden"),     // 0 / 1
+            genderKey: getValue("#tab2 .gender-hidden"),
             school: getValue("#tab2 .s_school"),
             address: getValue("#tab2 .s_address"),
             addressDetail: getValue("#tab2 .s_address_detail"),
@@ -814,7 +857,6 @@ async function updateStudentInfo() {
         }
 
         alert("저장되었습니다.");
-        // window.location.reload();
     } catch (e) {
         console.error("updateStudentInfo 오류:", e);
         alert("저장 중 오류가 발생했습니다.");
@@ -848,7 +890,6 @@ document.addEventListener("change", (e) => {
     const display = td.querySelector(".birth-display");
     if (!display) return;
 
-    // 화면에 보여줄용 YYYY년 MM월 DD일
     const [y, m, d] = input.value.split("-");
     display.textContent = `${y}년 ${m}월 ${d}일`;
 });
@@ -864,10 +905,8 @@ function updateStatusButton(statusCode) {
             const btnStatus = btn.getAttribute('data-status');
 
             if (mode === 'current-status') {
-
                 btn.style.display = (btnStatus === statusStr) ? 'inline-block' : 'none';
             } else if (mode === 'except-current') {
-
                 btn.style.display = (btnStatus === statusStr) ? 'none' : 'inline-block';
             }
         });
@@ -883,7 +922,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!exceptCurrentContainer) return;
 
-    // 달력 아이콘 클릭 이벤트
     const calendarBtn = document.querySelector('.withdraw-date .icon-btn.calendar-open');
     if (calendarBtn) {
         calendarBtn.addEventListener('click', function () {
@@ -898,7 +936,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // 날짜 선택 시 표시 업데이트
     const withdrawDateInput = document.getElementById('withdraw-date');
     if (withdrawDateInput) {
         withdrawDateInput.addEventListener('change', function () {
@@ -997,9 +1034,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert('상태가 성공적으로 변경되었습니다.');
 
                     const s = data.response;
-                    if (!s || !s.statusKey) {
-                        return;
-                    }
+                    if (!s || !s.statusKey) return;
 
                     updateStatusButton(s.statusKey);
 
@@ -1011,7 +1046,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
 
-                    // 입력 초기화
                     reasonField.value = '';
                     const dateInput = document.getElementById('withdraw-date');
                     const display = document.querySelector('.withdraw-date .day-display');
@@ -1030,7 +1064,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ====== TAB3 수강상태 변경 로직 ====== //
 document.addEventListener('DOMContentLoaded', function () {
-    // 초기 수강 상태 저장용 변수
     let initialHanState = null;
     let initialBookState = null;
     let initialEntryHanDate = null;
@@ -1099,10 +1132,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.classList.add("active");
         hidden.value = btn.dataset.value;
 
-        const type = group.dataset.type; // 'han' or 'book'
-        const status = btn.dataset.value; // 'active' or 'inactive'
+        const type = group.dataset.type;
+        const status = btn.dataset.value;
 
-        // 미수강 입력창 표시/숨김
         const inactiveInput = document.querySelector(`.${type}-inactive`);
         if (inactiveInput) {
             if (status === 'inactive') {
@@ -1117,130 +1149,127 @@ document.addEventListener('DOMContentLoaded', function () {
     const courseStatusBtn = document.getElementById("course-status-save");
     if (courseStatusBtn) {
         courseStatusBtn.addEventListener('click', async function (e) {
-                e.preventDefault();
+            e.preventDefault();
 
-                if (!currentStudentId) {
-                    alert('학생 ID를 찾을 수 없습니다.');
+            if (!currentStudentId) {
+                alert('학생 ID를 찾을 수 없습니다.');
+                return;
+            }
+
+            const hanGroup = document.querySelector('.choose-group[data-type="han"]');
+            const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
+            const currentHanState = hanHidden?.value;
+
+            const bookGroup = document.querySelector('.choose-group[data-type="book"]');
+            const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
+            const currentBookState = bookHidden?.value;
+
+            const entryHanInput = document.getElementById('entry-han-date');
+            const entryBookInput = document.getElementById('entry-book-date');
+            const hanReasonInput = document.getElementById('han-inactive-reason');
+            const hanInactiveDateInput = document.getElementById('han-inactive-date');
+            const bookReasonInput = document.getElementById('book-inactive-reason');
+            const bookInactiveDateInput = document.getElementById('book-inactive-date');
+
+            const hanStateChanged = initialHanState !== null && initialHanState !== currentHanState;
+            const hanDateChanged = initialEntryHanDate !== entryHanInput?.value;
+            const hanChanged = hanStateChanged || hanDateChanged;
+
+            const bookStateChanged = initialBookState !== null && initialBookState !== currentBookState;
+            const bookDateChanged = initialEntryBookDate !== entryBookInput?.value;
+            const bookChanged = bookStateChanged || bookDateChanged;
+
+            const requestBody = {
+                studentId: currentStudentId,
+                hanState: currentHanState === 'active' ? 1 : 0,
+                bookState: currentBookState === 'active' ? 1 : 0,
+                hanChanged: hanChanged,
+                bookChanged: bookChanged,
+                entryHanDate: entryHanInput?.value || null,
+                entryBookDate: entryBookInput?.value || null,
+                inactiveHanDate: hanInactiveDateInput?.value || null,
+                inactiveBookDate: bookInactiveDateInput?.value || null,
+                inactiveHanReason: hanReasonInput?.value?.trim() || null,
+                inactiveBookReason: bookReasonInput?.value?.trim() || null,
+                // ▼ 단계 / 선생님 추가
+                hanClassKey: document.querySelector("#tab3 .s_han_class")?.value || null,
+                bookClassKey: document.querySelector("#tab3 .s_book_class")?.value || null,
+                hanTeacherCode: document.querySelector("#tab3 .p_han_teacher")?.value || null,
+                bookTeacherCode: document.querySelector("#tab3 .p_book_teacher")?.value || null,
+            };
+
+            if (currentHanState === 'inactive' && currentBookState === 'inactive') {
+                const shouldChangeStudentStatus = await showStudentStatusModal();
+                if (!shouldChangeStudentStatus) {
                     return;
                 }
+                requestBody.changeStudentStatus = true;
+            }
 
-                const hanGroup = document.querySelector('.choose-group[data-type="han"]');
-                const hanHidden = hanGroup?.querySelector('input[type="hidden"]');
-                const currentHanState = hanHidden?.value;
+            try {
+                const res = await fetch('/student/update/course-status', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestBody)
+                });
 
-                const bookGroup = document.querySelector('.choose-group[data-type="book"]');
-                const bookHidden = bookGroup?.querySelector('input[type="hidden"]');
-                const currentBookState = bookHidden?.value;
-
-                const entryHanInput = document.getElementById('entry-han-date');
-                const entryBookInput = document.getElementById('entry-book-date');
-                const hanReasonInput = document.getElementById('han-inactive-reason');
-                const hanDateInput = document.getElementById('han-inactive-date');
-                const bookReasonInput = document.getElementById('book-inactive-reason');
-                const bookDateInput = document.getElementById('book-inactive-date');
-
-                // 상태 변경 또는 날짜 변경 감지
-                const hanStateChanged = initialHanState !== null && initialHanState !== currentHanState;
-                const hanDateChanged = initialEntryHanDate !== entryHanInput?.value;
-                const hanChanged = hanStateChanged || hanDateChanged;
-
-                const bookStateChanged = initialBookState !== null && initialBookState !== currentBookState;
-                const bookDateChanged = initialEntryBookDate !== entryBookInput?.value;
-                const bookChanged = bookStateChanged || bookDateChanged;
-
-                const requestBody = {
-                    studentId: currentStudentId,
-                    hanState: currentHanState === 'active' ? 1 : 0,
-                    bookState: currentBookState === 'active' ? 1 : 0,
-                    hanChanged: hanChanged,
-                    bookChanged: bookChanged,
-                    entryHanDate: entryHanInput?.value || null,
-                    entryBookDate: entryBookInput?.value || null,
-                    inactiveHanDate: hanDateInput?.value || null,
-                    inactiveBookDate: bookDateInput?.value || null,
-                    inactiveHanReason: hanReasonInput?.value?.trim() || null,
-                    inactiveBookReason: bookReasonInput?.value?.trim() || null
-                };
-
-                if (currentHanState === 'inactive' && currentBookState === 'inactive') {
-                    const shouldChangeStudentStatus = await showStudentStatusModal();
-                    if (!shouldChangeStudentStatus) {
-                        return;
-                    }
-                    requestBody.changeStudentStatus = true;
+                if (!res.ok) {
+                    throw new Error('수강상태 변경 실패');
                 }
 
-                try {
-                    // 1️⃣ 먼저 수강상태 변경
-                    const res = await fetch('/student/update/course-status', {
+                if (requestBody.changeStudentStatus) {
+                    const inactiveReason = requestBody.inactiveHanReason || requestBody.inactiveBookReason || '';
+                    const inactiveDate = requestBody.inactiveHanDate || requestBody.inactiveBookDate || null;
+
+                    const inactiveRes = await fetch('/student/status', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(requestBody)
+                        body: JSON.stringify({
+                            studentId: currentStudentId,
+                            statusKey: 'PAUSED',
+                            reason: inactiveReason || '',
+                            withdrawDate: inactiveDate || null
+                        })
                     });
-
-                    if (!res.ok) {
-                        throw new Error('수강상태 변경 실패');
+                    if (!inactiveRes.ok) {
+                        throw new Error('학생 상태 변경 실패');
                     }
-
-                    if (requestBody.changeStudentStatus) {
-                        const inactiveReason = requestBody.inactiveHanReason || requestBody.inactiveBookReason || '';
-                        const inactiveDate = requestBody.inactiveHanDate || requestBody.inactiveBookDate || null;
-
-                        const inactiveRes = await fetch('/student/status', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({
-                                studentId: currentStudentId,
-                                statusKey: 'PAUSED',
-                                reason: inactiveReason || '',
-                                withdrawDate: inactiveDate || null
-                            })
-                        });
-                        if (!inactiveRes.ok) {
-                            throw new Error('학생 상태 변경 실패');
-                        }
-                    }
-
-                    alert('수강상태가 성공적으로 변경되었습니다.');
-
-                    // 초기 상태 업데이트
-                    initialHanState = currentHanState;
-                    initialBookState = currentBookState;
-                    initialEntryHanDate = entryHanInput?.value;
-                    initialEntryBookDate = entryBookInput?.value;
-
-                    // 입력 초기화
-                    const hanDisplay = document.querySelector('.han-date-display');
-                    const bookDisplay = document.querySelector('.book-date-display');
-
-                    if (hanReasonInput) hanReasonInput.value = '';
-                    if (hanDateInput) hanDateInput.value = '';
-                    if (hanDisplay) hanDisplay.value = '';
-                    if (bookReasonInput) bookReasonInput.value = '';
-                    if (bookDateInput) bookDateInput.value = '';
-                    if (bookDisplay) bookDisplay.value = '';
-
-                    document.querySelector('.han-inactive')?.classList.add('hide-input');
-                    document.querySelector('.book-inactive')?.classList.add('hide-input');
-
-                    await refreshStudentList();
-
-                    const modal = document.querySelector('.student-modal');
-                    if (modal) {
-                        modal.style.display = 'none';
-                        document.body.classList.remove('modal-open');
-                    }
-
-                } catch
-                    (err) {
-                    console.error(err);
-                    alert('수강상태 변경 중 오류가 발생했습니다.');
                 }
-            }
-        )
-        ;
-    }
 
+                alert('수강상태가 성공적으로 변경되었습니다.');
+
+                initialHanState = currentHanState;
+                initialBookState = currentBookState;
+                initialEntryHanDate = entryHanInput?.value;
+                initialEntryBookDate = entryBookInput?.value;
+
+                const hanDisplay = document.querySelector('.han-date-display');
+                const bookDisplay = document.querySelector('.book-date-display');
+
+                if (hanReasonInput) hanReasonInput.value = '';
+                if (hanInactiveDateInput) hanInactiveDateInput.value = '';
+                if (hanDisplay) hanDisplay.value = '';
+                if (bookReasonInput) bookReasonInput.value = '';
+                if (bookInactiveDateInput) bookInactiveDateInput.value = '';
+                if (bookDisplay) bookDisplay.value = '';
+
+                document.querySelector('.han-inactive')?.classList.add('hide-input');
+                document.querySelector('.book-inactive')?.classList.add('hide-input');
+
+                await refreshStudentList();
+
+                const modal = document.querySelector('.student-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert('수강상태 변경 중 오류가 발생했습니다.');
+            }
+        });
+    }
 
     async function refreshStudentList() {
         try {
@@ -1250,11 +1279,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!tbody) return;
 
-            // 현재 선택된 필터 값 가져오기
             const userCode = teacherFilter?.value || 'all';
             const timeTableKey = subjectFilter?.value || 'all';
 
-            // API 호출
             let url = '/student/api/students?';
 
             if (timeTableKey !== 'all') {
@@ -1271,7 +1298,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const data = await res.json();
 
-            // 학생 목록 다시 렌더링
             renderStudents(tbody, data.response);
 
             console.log('학생 목록 최신화 완료');
@@ -1283,15 +1309,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showStudentStatusModal() {
         return new Promise((resolve) => {
-            const modalId = 'status-change-modal-' + Date.now(); // 고유 ID
+            const modalId = 'status-change-modal-' + Date.now();
 
             const modal = `
             <div class="modal-overlay" id="${modalId}" style="
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
                 background: rgba(0, 0, 0, 0.5);
                 display: flex;
                 justify-content: center;
@@ -1312,42 +1336,27 @@ document.addEventListener('DOMContentLoaded', function () {
                         학생 상태도 함께 변경하시겠습니까?
                     </p>
                     <button class="confirm-btn" style="
-                        padding: 10px 20px;
-                        margin: 0 5px;
-                        background: #007bff;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
+                        padding: 10px 20px; margin: 0 5px;
+                        background: #007bff; color: white;
+                        border: none; border-radius: 4px; cursor: pointer;
                     ">확인</button>
                     <button class="cancel-btn" style="
-                        padding: 10px 20px;
-                        margin: 0 5px;
-                        background: #6c757d;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
+                        padding: 10px 20px; margin: 0 5px;
+                        background: #6c757d; color: white;
+                        border: none; border-radius: 4px; cursor: pointer;
                     ">취소</button>
                 </div>
-            </div>
-        `;
+            </div>`;
 
             document.body.insertAdjacentHTML('beforeend', modal);
 
             const modalElement = document.getElementById(modalId);
-            console.log('모달 생성됨:', modalElement);
 
-            // 이벤트 위임 방식으로 변경
             modalElement.addEventListener('click', (e) => {
-                console.log('클릭됨:', e.target);
-
                 if (e.target.classList.contains('confirm-btn')) {
-                    console.log('확인 버튼 클릭');
                     modalElement.remove();
                     resolve(true);
                 } else if (e.target.classList.contains('cancel-btn')) {
-                    console.log('취소 버튼 클릭');
                     modalElement.remove();
                     resolve(false);
                 }
@@ -1355,13 +1364,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-// renderStudentModal이 호출될 때 초기 상태 저장
     window.saveInitialCourseState = function (hanState, bookState) {
-        // 0 또는 1을 'active' 또는 'inactive'로 변환
         initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
         initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
 
-        // input에서 직접 읽어오기
         const hanInput = document.getElementById('entry-han-date');
         const bookInput = document.getElementById('entry-book-date');
         initialEntryHanDate = hanInput?.value || null;
@@ -1374,8 +1380,7 @@ document.addEventListener('DOMContentLoaded', function () {
             initialEntryBookDate
         });
     };
-})
-;
+});
 
 // ===== 교재비 & 입회날짜 변경 ===== //
 document.addEventListener("DOMContentLoaded", () => {
@@ -1384,7 +1389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     payBtn.addEventListener("click", async (e) => {
         e.preventDefault();
-        console.log('버튼 클릭')
+        console.log('버튼 클릭');
 
         if (!currentStudentId) {
             alert("학생을 먼저 선택해주세요.");
@@ -1393,14 +1398,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const payload = {
             studentId: currentStudentId,
-
             entryHanDate: getValue("#entry-han-date")?.trim() || null,
             entryBookDate: getValue("#entry-book-date")?.trim() || null,
-
             hanMaterialFee: parseInt(
                 (getValue("#hanMaterialFee") || "0").replace(/,/g, "")
             ) || 0,
-
             bookMaterialFee: parseInt(
                 (getValue("#bookMaterialFee") || "0").replace(/,/g, "")
             ) || 0

@@ -13,7 +13,9 @@
                 <tr>
                     <th>한자 단계</th>
                     <td>
-                        <input type="text" class="styled-input s_han_class" readonly>
+                        <select class="styled-input s_han_class" name="hanClassKey">
+                            <option value="">단계 선택</option>
+                        </select>
                     </td>
                     <th>수강 상태</th>
                     <td class="choose-group" data-type="han">
@@ -44,9 +46,10 @@
                 <tr class="han-course-info">
                     <th>담당 선생님</th>
                     <td>
-                        <input type="text" class="styled-input p_han_teacher" readonly>
+                        <select class="styled-input p_han_teacher" name="hanTeacherCode">
+                            <option value="">선생님 선택</option>
+                        </select>
                     </td>
-
                     <th>시작일자</th>
                     <td class="day-picker" style="position: relative;">
                         <div class="icon-field">
@@ -59,7 +62,6 @@
                             </div>
                         </div>
                     </td>
-
                 </tr>
                 <tr class="han-course-info">
                     <th class="tuition-fee">교육비</th>
@@ -68,12 +70,12 @@
                     </td>
                     <th>교재비</th>
                     <td>
-                        <input type="text" name="hanMaterialFee" class="no-spin  p_han_material_fee" id="hanMaterialFee">
+                        <input type="text" name="hanMaterialFee" class="no-spin p_han_material_fee" id="hanMaterialFee">
                     </td>
                 </tr>
                 </tbody>
-
             </table>
+
             <!-- 수강과목(독서) -->
             <div class="small-title">수강과목(독서)</div>
             <table class="base-info-t" style="margin-bottom: 5px;">
@@ -87,7 +89,9 @@
                 <tr>
                     <th>독서 단계</th>
                     <td>
-                        <input type="text" class="styled-input s_book_class" readonly>
+                        <select class="styled-input s_book_class" name="bookClassKey">
+                            <option value="">단계 선택</option>
+                        </select>
                     </td>
                     <th>수강 상태</th>
                     <td data-type="book">
@@ -120,7 +124,9 @@
                 <tr class="book-course-info">
                     <th>담당 선생님</th>
                     <td>
-                        <input type="text" class="styled-input p_book_teacher" readonly>
+                        <select class="styled-input p_book_teacher" name="bookTeacherCode">
+                            <option value="">선생님 선택</option>
+                        </select>
                     </td>
                     <th>시작일자</th>
                     <td class="day-picker" style="position: relative;">

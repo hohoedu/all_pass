@@ -131,6 +131,13 @@
         VALUES (#{name}, #{phone}, #{gradeKey}, #{userCode}, #{centerCode}, #{sendKey}, #{status}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
     </insert>
 
+    <select id="findSiblingByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$SiblingInfoDTO">
+        SELECT *
+        FROM erp_sibling
+        WHERE sibling_key = (SELECT sibling_key
+                             FROM erp_sibling
+                             WHERE student_id = #{studentId})
+    </select>
 
     <select id="findStudentByInviteCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PendingStudentRespDTO">
         SELECT id        as id,
@@ -526,6 +533,42 @@
         where student_id = #{studentId}
     </update>
 
+    <select id="findHanClasses" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$HanClass">
+        select cc.class_key, cc.class_name, ecfm.fee
+        from erp_class_code cc
+                 join erp_class_fee_map ecfm on cc.class_key = ecfm.class_key and center_code = #{centerCode}
+        WHERE class_type = '1'
+    </select>
+
+    <!-- 독서 단계 목록 -->
+    <select id="findBookClasses" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookClass">
+        select cc.class_key, cc.class_name, ecfm.fee
+        from erp_class_code cc join erp_class_fee_map ecfm on cc.class_key = ecfm.class_key and center_code = #{centerCode}
+        where class_type = '2'
+    </select>
+
+    <!-- 한자 담당 선생님 목록 -->
+    <select id="findHanTeachers" parameterType="string"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$HanTeacher">
+        SELECT
+            user_code AS userCode,
+            user_name AS userName
+        FROM erp_user
+        WHERE type IN ('HAN', 'ALL')
+          AND center_code = #{centerCode}
+    </select>
+
+    <!-- 독서 담당 선생님 목록 -->
+    <select id="findBookTeachers" parameterType="string"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookTeacher">
+        SELECT
+            user_code AS userCode,
+            user_name AS userName
+        FROM erp_user
+        WHERE type IN ('BOOK', 'ALL')
+          AND center_code = #{centerCode}
+    </select>
+
     <update id="updateStudentPayment">
         UPDATE erp_teacher_assign
         SET entry_han_date    = #{entryHanDate},
@@ -584,6 +627,26 @@
         WHERE student_id = #{studentId}
     </update>
 
+    <!-- 한자 단계 + 선생님 업데이트 -->
+    <update id="updateHanClassAndTeacher">
+        UPDATE erp_teacher_assign
+        SET
+        <if test="hanClassKey != null">assign_han_class = #{hanClassKey},</if>
+        <if test="hanTeacherCode != null">assign_han_teacher = #{hanTeacherCode},</if>
+        updated_at = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <!-- 독서 단계 + 선생님 업데이트 -->
+    <update id="updateBookClassAndTeacher">
+        UPDATE erp_teacher_assign
+        SET
+        <if test="bookClassKey != null">assign_book_class = #{bookClassKey},</if>
+        <if test="bookTeacherCode != null">assign_book_teacher = #{bookTeacherCode},</if>
+        updated_at = SYSDATETIME()
+        WHERE student_id = #{studentId}
+    </update>
+
     <update id="updatePendingIsDeletedByStudentId">
         UPDATE erp_pending_student
         SET status = 'ASSIGNED',
@@ -599,8 +662,7 @@
         WHERE student_id = #{studentId}
     </select>
 
-    <select id="findTeacherAssignByStudentId"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TeacherDTO">
+    <select id="findTeacherAssignByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TeacherDTO">
         SELECT *
         FROM erp_teacher_assign
         WHERE student_id = #{studentId}

@@ -88,9 +88,15 @@ public class StudentController {
 
     // 학생 개별 데이터 불러오기
     @GetMapping("/{studentId}")
-    public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId) {
+    public ResponseEntity<?> findStudentByStudentNo(@PathVariable("studentId") String studentId, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
-        StudentWebRespDTO.StudentDTO student = studentService.getStudentDetailByStudentId(studentId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        StudentWebRespDTO.StudentDTO student = studentService.getStudentDetailByStudentId(studentId, user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(student));
     }
@@ -168,6 +174,7 @@ public class StudentController {
 
             return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));
         } catch (Exception e) {
+            log.error("수강상태 변경 오류: ", e);
             return ResponseEntity.status(500).body("수강상태 변경 중 오류가 발생했습니다.");
         }
 

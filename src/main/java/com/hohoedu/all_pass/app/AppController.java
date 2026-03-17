@@ -79,7 +79,7 @@ public class AppController {
 
     @PostMapping("/token")
     public ResponseEntity<?> AppTokenSave(@RequestBody StudentAppReqDTO.AppTokenReqDTO reqDTO) {
-
+        log.info("토큰 입력 테스트");
         studentService.updateAppToken(reqDTO);
 
         return ResponseEntity.ok(AppApiUtils.successOne(null));

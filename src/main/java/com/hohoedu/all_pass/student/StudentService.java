@@ -97,19 +97,26 @@ public class StudentService {
     }
 
     // 개별 학생 조회
-    public StudentWebRespDTO.StudentDTO getStudentDetailByStudentId(String studentId) {
+    public StudentWebRespDTO.StudentDTO getStudentDetailByStudentId(String studentId, String centerCode) {
 
         StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
 //        studentRepository.findStudentAttendanceByStudentId(studentId);
         List<StudentWebRespDTO.StudentConsultDTO> consult = studentRepository.findStudentConsultByStudentId(studentId);
-
+        List<StudentWebRespDTO.HanClass> hanClasses = studentRepository.findHanClasses(centerCode);
+        List<StudentWebRespDTO.BookClass> bookClasses = studentRepository.findBookClasses(centerCode);
+        List<StudentWebRespDTO.HanTeacher> hanTeachers = studentRepository.findHanTeachers(centerCode);
+        List<StudentWebRespDTO.BookTeacher> bookTeachers = studentRepository.findBookTeachers(centerCode);
         StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
                 .studentInfo(student)
                 .studentPayment(payment)
                 .gradeCodes(grades)
                 .studentCounsult(consult)
+                .hanClasses(hanClasses)
+                .bookClasses(bookClasses)
+                .hanTeachers(hanTeachers)
+                .bookTeachers(bookTeachers)
                 .build();
         return studentDetailRespDTO;
     }
@@ -190,6 +197,7 @@ public class StudentService {
         } else {
 
             PendingStudent newPending = PendingStudent.builder()
+                    .studentId(studentDTO.getStudentId())
                     .name(studentDTO.getStudentName())
                     .phone(parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast())
                     .sendKey(KeyGenerator.generateSendKey())
@@ -384,11 +392,23 @@ public class StudentService {
         return 1;
     }
 
+
+    @Transactional
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
         StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository.findTeacherAssignByStudentId(request.getStudentId());
+        log.info(teacherDTO.toString());
         if (teacherDTO == null) {
             throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
+
+        // 프론트에서 선택한 값이 있으면 우선 사용, 없으면 teacher_assign 값 fallback
+        String hanTeacher = request.getHanTeacherCode() != null
+                ? request.getHanTeacherCode()
+                : teacherDTO.getAssignHanTeacher();
+
+        String bookTeacher = request.getBookTeacherCode() != null
+                ? request.getBookTeacherCode()
+                : teacherDTO.getAssignBookTeacher();
 
         // 한자 상태 업데이트
         if (Boolean.TRUE.equals(request.getHanChanged())) {
@@ -396,35 +416,52 @@ public class StudentService {
                 studentRepository.updateHanToActive(
                         request.getStudentId(),
                         request.getEntryHanDate(),
-                        teacherDTO.getAssignHanTeacher()
+                        hanTeacher
+
                 );
             } else {
                 studentRepository.updateHanToInactive(
                         request.getStudentId(),
                         request.getInactiveHanDate(),
                         request.getInactiveHanReason(),
-                        teacherDTO.getAssignHanTeacher()
+                        teacherDTO.getAssignHanTeacher()  // ← 수정
                 );
             }
         }
 
+        // 독서 상태 업데이트
         if (Boolean.TRUE.equals(request.getBookChanged())) {
-            // 독서 상태 업데이트
             if (request.getBookState() == 1) {
                 studentRepository.updateBookToActive(
                         request.getStudentId(),
                         request.getEntryBookDate(),
-                        teacherDTO.getAssignBookTeacher()
+                        bookTeacher
                 );
             } else {
                 studentRepository.updateBookToInactive(
                         request.getStudentId(),
                         request.getInactiveBookDate(),
                         request.getInactiveBookReason(),
-                        teacherDTO.getAssignBookTeacher()
+                        teacherDTO.getAssignBookTeacher()  // ← 수정
                 );
             }
         }
+
+        if (request.getHanClassKey() != null || request.getHanTeacherCode() != null) {
+            studentRepository.updateHanClassAndTeacher(
+                    request.getStudentId(),
+                    request.getHanClassKey(),
+                    request.getHanTeacherCode()
+            );
+        }
+        if (request.getBookClassKey() != null || request.getBookTeacherCode() != null) {
+            studentRepository.updateBookClassAndTeacher(
+                    request.getStudentId(),
+                    request.getBookClassKey(),
+                    request.getBookTeacherCode()
+            );
+        }
+
         if (request.getHanState() == 1 || request.getBookState() == 1) {
             studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());
         }
@@ -1015,22 +1052,40 @@ public class StudentService {
     }
 
     // 학생 앱 토큰 등록
+    @Transactional
     public void updateAppToken(StudentAppReqDTO.AppTokenReqDTO dto) {
+
         Student student = studentRepository.findByStudentId(dto.getId());
 
         if (student == null) {
             return;
         }
 
-        if (student.getAppToken() == null || !student.getAppToken().equals(dto.getToken())) {
-            int updateResult = studentRepository.updateAppTokenByStudentId(dto.getId(), dto.getToken());
-            if (updateResult > 0) {
-                System.out.println("토큰 등록 완료");
-            } else {
-                System.out.println("이미 등록된 토큰");
-            }
+
+        List<StudentWebRespDTO.SiblingInfoDTO> siblings = studentRepository.findSiblingByStudentId(student.getStudentId());
+        log.info(siblings.toString());
+
+        List<String> targetStudentIds = new ArrayList<>();
+        targetStudentIds.add(student.getStudentId());
+
+        log.info(targetStudentIds.toString());
+
+        for (StudentWebRespDTO.SiblingInfoDTO sibling : siblings) {
+            targetStudentIds.add(sibling.getStudentId());
+            log.info(sibling.getStudentId());
         }
 
+        // 하나의 포문으로 처리
+        for (String studentId : targetStudentIds) {
+
+            int result = studentRepository.updateAppTokenByStudentId(studentId, dto.getToken());
+
+            if (result > 0) {
+                System.out.println("토큰 업데이트 완료: " + studentId);
+            } else {
+                System.out.println("이미 동일 토큰 또는 실패: " + studentId);
+            }
+        }
     }
 
 

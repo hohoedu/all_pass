@@ -108,6 +108,14 @@ public interface StudentRepository {
 
     int updateStudentPayment(StudentWebReqDTO.StudentPaymentUpdateDTO req);
 
+    List<StudentWebRespDTO.HanClass> findHanClasses(@Param("centerCode") String centerCode);
+
+    List<StudentWebRespDTO.BookClass> findBookClasses(@Param("centerCode") String centerCode);
+
+    List<StudentWebRespDTO.HanTeacher> findHanTeachers(@Param("centerCode") String centerCode);
+
+    List<StudentWebRespDTO.BookTeacher> findBookTeachers(@Param("centerCode") String centerCode);
+
     int updateHanToActive(
             @Param("studentId") String studentId,
             @Param("entryHanDate") String entryHanDate,
@@ -132,6 +140,18 @@ public interface StudentRepository {
             @Param("inactiveBookDate") String inactiveBookDate,
             @Param("inactiveBookReason") String inactiveBookReason,
             @Param("userCode") String userCode
+    );
+
+    void updateHanClassAndTeacher(
+            @Param("studentId") String studentId,
+            @Param("hanClassKey") String hanClassKey,
+            @Param("hanTeacherCode") String hanTeacherCode
+    );
+
+    void updateBookClassAndTeacher(
+            @Param("studentId") String studentId,
+            @Param("bookClassKey") String bookClassKey,
+            @Param("bookTeacherCode") String bookTeacherCode
     );
 
     void updatePendingIsDeletedByStudentId(String studentId);
@@ -241,6 +261,9 @@ public interface StudentRepository {
             @Param("userNo") int userNo);
 
     public Student findByStudentId(
+            @Param("studentId") String studentId);
+
+    List<StudentWebRespDTO.SiblingInfoDTO> findSiblingByStudentId(
             @Param("studentId") String studentId);
 
     public int updateAppTokenByStudentId(

@@ -119,6 +119,11 @@ public class StudentWebReqDTO {
 
         private String inactiveHanReason;
         private String inactiveBookReason;
+
+        private String hanClassKey;
+        private String bookClassKey;
+        private String hanTeacherCode;
+        private String bookTeacherCode;
     }
 
     @Data

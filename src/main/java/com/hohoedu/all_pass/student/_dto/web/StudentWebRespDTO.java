@@ -27,6 +27,12 @@ public class StudentWebRespDTO {
     }
 
     @Data
+    public static class SiblingInfoDTO{
+        private String siblingKey;
+        private String studentId;
+    }
+
+    @Data
     public static class PendingStudentRespDTO {
         private Integer id;
         private String studentId;
@@ -80,6 +86,10 @@ public class StudentWebRespDTO {
         private List<StudentAttendanceDTO> studentAttendance;
         private List<StudentConsultDTO> studentCounsult;
         private List<GradeCode> gradeCodes;
+        private List<HanClass> hanClasses;   // ← 추가
+        private List<BookClass> bookClasses;  // ← 추가
+        private List<HanTeacher> hanTeachers;    // ← 추가
+        private List<BookTeacher> bookTeachers;   // ← 추가
     }
 
     @Data
@@ -130,6 +140,32 @@ public class StudentWebRespDTO {
         private String genderKey;
         private String address;
         private String addressDetail;
+    }
+
+    @Data
+    public static class HanClass {
+        private String classKey;
+        private String className;
+        private Integer fee;
+    }
+
+    @Data
+    public static class BookClass {
+        private String classKey;
+        private String className;
+        private Integer fee;
+    }
+
+    @Data
+    public static class HanTeacher {
+        private String userCode;
+        private String userName;
+    }
+
+    @Data
+    public static class BookTeacher {
+        private String userCode;
+        private String userName;
     }
 
     @Data
@@ -206,7 +242,7 @@ public class StudentWebRespDTO {
 
     @Data
     public static class TeacherDTO {
-        private Student studentId;
+        private String studentId;
         private Boolean hanState;
         private Boolean bookState;
         private String entryHanDate;
