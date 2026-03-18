@@ -153,6 +153,11 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class DeleteBackupDTO {
+
+    }
+
+    @Data
     public static class RemedialDTO {
         private String remedialKey;
         private String studentName;

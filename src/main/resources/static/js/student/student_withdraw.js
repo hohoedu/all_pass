@@ -1,14 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-
+    /* ========================
+     * 인쇄
+     * ======================== */
     const printBtn = document.getElementById('print-withdraw');
-
     printBtn.addEventListener("click", () => {
         const ym = monthPickerInput.value;
         const userCode = document.getElementById('teacher-filter')?.value || 'all';
-        const tab = activeTab; // t1~t5
-
-        // window.open(`/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`);
+        const tab = activeTab;
         printWithdraw(ym, userCode, tab);
     });
 
@@ -16,11 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = `/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`;
-
-        iframe.onload = () => {
-            iframe.contentWindow.print();
-        };
-
+        iframe.onload = () => { iframe.contentWindow.print(); };
         document.body.appendChild(iframe);
     }
 
@@ -28,11 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentMonthLabel = document.getElementById("currentMonth");
 
     const TAB_CONFIG = {
-        t1: {url: "/student/api/withdraw/join", render: renderJoinTable},
-        t2: {url: "/student/api/withdraw/withdraw", render: renderWithdrawTable},
-        t3: {url: "/student/api/withdraw/transfer-in", render: renderTransferInTable},
+        t1: {url: "/student/api/withdraw/join",         render: renderJoinTable},
+        t2: {url: "/student/api/withdraw/withdraw",     render: renderWithdrawTable},
+        t3: {url: "/student/api/withdraw/transfer-in",  render: renderTransferInTable},
         t4: {url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable},
-        t5: {url: "/student/api/withdraw/graduate", render: renderGraduateTable},
+        t5: {url: "/student/api/withdraw/graduate",     render: renderGraduateTable},
     };
 
     let activeTab = "t1";
@@ -59,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 월 변경 시 카운트 + 현재 탭 테이블 갱신
     monthPickerInput.addEventListener("change", () => {
         setMonthLabel(monthPickerInput.value);
         fetchCounts();
@@ -68,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ========================
      * 선생님 필터
-     * 변경 시 카운트 + 현재 탭 테이블 갱신
      * ======================== */
     document.getElementById("teacher-filter")?.addEventListener("change", () => {
         fetchCounts();
@@ -76,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ========================
-     * 탭 클릭 - 테이블만
+     * 탭 클릭
      * ======================== */
     document.querySelectorAll(".status-tab").forEach(tab => {
         tab.addEventListener("click", () => {
@@ -119,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data.response);
                 const c = data.response;
                 document.querySelector('.status-tab[data-tab="t1"] .count').textContent = `${c.joinCount}명`;
                 document.querySelector('.status-tab[data-tab="t2"] .count').textContent = `${c.withdrawCount}명`;
@@ -247,6 +239,46 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `).join("");
     }
+
+    /* ========================
+     * 버튼 이벤트 위임
+     * t2 탈퇴 탭 → 탈퇴 취소(복구)
+     * ======================== */
+    document.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".class-action-btn");
+        if (!btn) return;
+
+        const studentId = btn.dataset.id;
+        const panel = btn.closest(".status-panel");
+        const panelId = panel?.dataset.panel;
+
+        if (panelId === "t2") {
+            if (!confirm("탈퇴를 취소하고 복구하시겠습니까?")) return;
+
+            try {
+                const res = await fetch("/student/restore", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({studentId})
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || data.success === false) {
+                    alert(data.msg ?? "복구 중 오류가 발생했습니다.");
+                    return;
+                }
+
+                alert("복구가 완료되었습니다.");
+                fetchCounts();
+                fetchTabData("t2");
+
+            } catch (err) {
+                console.error("복구 오류:", err);
+                alert("복구 중 오류가 발생했습니다.");
+            }
+        }
+    });
 
     fetchCounts();
     fetchTabData(activeTab);

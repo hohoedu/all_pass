@@ -146,8 +146,7 @@
                                     <th:block th:each="s, iterStat : ${students}">
                                         <tr th:data-id="${s.studentId}"
                                             th:data-name="${s.studentName}"
-                                            th:data-phone="${s.phone}"
-                                            onclick="openTransferModal(this)">
+                                            th:data-phone="${s.phone}">
                                             <td class="checkbox-group">
                                                 <input type="checkbox"
                                                        class="row-checkbox"

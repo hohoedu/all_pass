@@ -224,13 +224,15 @@ public class StudentService {
 
             String userPhone = userRepository.findUserPhoneByUserCode(invite.getUserCode());
 
-            popbillService.sendJoinCompletionAlimtalk(
-                    invite.getCenterCode(),
-                    userPhone,
-                    invite.getReceiverPhone(),
-                    invite.getUserCode(),
-                    studentDTO
-            );
+            if (userPhone != null && !userPhone.isEmpty()) {
+                popbillService.sendJoinCompletionAlimtalk(
+                        invite.getCenterCode(),
+                        userPhone,
+                        invite.getReceiverPhone(),
+                        invite.getUserCode(),
+                        studentDTO
+                );
+            }
 
             PendingStudent pending = studentRepository.findPendingStudentBySendKey(invite.getSendKey());
 
@@ -401,7 +403,10 @@ public class StudentService {
             throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
 
-        // 프론트에서 선택한 값이 있으면 우선 사용, 없으면 teacher_assign 값 fallback
+        // 로그용 스냅샷 조회 (변경 전 상태 저장용)
+        StudentWebRespDTO.StudentSnapshotDTO snapshot =
+                studentRepository.findSnapshotByStudentId(request.getStudentId());
+
         String hanTeacher = request.getHanTeacherCode() != null
                 ? request.getHanTeacherCode()
                 : teacherDTO.getAssignHanTeacher();
@@ -417,14 +422,22 @@ public class StudentService {
                         request.getStudentId(),
                         request.getEntryHanDate(),
                         hanTeacher
-
                 );
             } else {
+                // 미수강 전환 시 로그 저장
+                studentRepository.insertWithdrawLog(
+                        request.getStudentId(),
+                        "han",
+                        snapshot,
+                        request.getInactiveHanReason(),
+                        request.getInactiveHanDate(),
+                        userCode
+                );
                 studentRepository.updateHanToInactive(
                         request.getStudentId(),
                         request.getInactiveHanDate(),
                         request.getInactiveHanReason(),
-                        teacherDTO.getAssignHanTeacher()  // ← 수정
+                        teacherDTO.getAssignHanTeacher()
                 );
             }
         }
@@ -438,23 +451,35 @@ public class StudentService {
                         bookTeacher
                 );
             } else {
+                // 미수강 전환 시 로그 저장
+                studentRepository.insertWithdrawLog(
+                        request.getStudentId(),
+                        "book",
+                        snapshot,
+                        request.getInactiveBookReason(),
+                        request.getInactiveBookDate(),
+                        userCode
+                );
                 studentRepository.updateBookToInactive(
                         request.getStudentId(),
                         request.getInactiveBookDate(),
                         request.getInactiveBookReason(),
-                        teacherDTO.getAssignBookTeacher()  // ← 수정
+                        teacherDTO.getAssignBookTeacher()
                 );
             }
         }
 
-        if (request.getHanClassKey() != null || request.getHanTeacherCode() != null) {
+        if (request.getHanState() == 1
+                && (request.getHanClassKey() != null || request.getHanTeacherCode() != null)) {
             studentRepository.updateHanClassAndTeacher(
                     request.getStudentId(),
                     request.getHanClassKey(),
                     request.getHanTeacherCode()
             );
         }
-        if (request.getBookClassKey() != null || request.getBookTeacherCode() != null) {
+
+        if (request.getBookState() == 1
+                && (request.getBookClassKey() != null || request.getBookTeacherCode() != null)) {
             studentRepository.updateBookClassAndTeacher(
                     request.getStudentId(),
                     request.getBookClassKey(),
@@ -466,6 +491,49 @@ public class StudentService {
             studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());
         }
     }
+
+    @Transactional
+    public void restoreStudent(String studentId, String userCode) {
+
+        // 한자/독서 탈퇴 로그 각각 조회
+        StudentWebRespDTO.WithdrawLogDTO hanLog =
+                studentRepository.findLatestWithdrawLog(studentId, "han");
+        StudentWebRespDTO.WithdrawLogDTO bookLog =
+                studentRepository.findLatestWithdrawLog(studentId, "book");
+
+        if (hanLog == null && bookLog == null) {
+            throw new Exception400("탈퇴 이력을 찾을 수 없습니다.");
+        }
+
+        // 학생 상태 ACTIVE 로 변경
+        studentRepository.updateStudentStatusDirect(studentId, "ACTIVE");
+
+        // 한자 복구
+        if (hanLog != null) {
+            studentRepository.restoreHanState(
+                    studentId,
+                    hanLog.getBeforeHanState(),
+                    hanLog.getBeforeHanClass(),
+                    hanLog.getBeforeHanTeacher(),
+                    hanLog.getBeforeEntryHanDate()
+            );
+            studentRepository.updateWithdrawLogRestored(hanLog.getId(), userCode);
+        }
+
+        // 독서 복구
+        if (bookLog != null) {
+            studentRepository.restoreBookState(
+                    studentId,
+                    bookLog.getBeforeBookState(),
+                    bookLog.getBeforeBookClass(),
+                    bookLog.getBeforeBookTeacher(),
+                    bookLog.getBeforeEntryBookDate()
+            );
+            studentRepository.updateWithdrawLogRestored(bookLog.getId(), userCode);
+        }
+    }
+
+
 
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
@@ -501,30 +569,9 @@ public class StudentService {
         User teacher = User.builder().userCode(info.getTeacherCode()).build();
         ClassCode classCode = ClassCode.builder().classKey(info.getClassKey()).build();
 
-//        if (assign == null) {
-//            TeacherAssign newAssign = TeacherAssign.builder()
-//                    .student(Student.builder().studentId(studentId).build())
-//                    .hanState(isHan)
-//                    .bookState(isBook)
-//                    .assignHanTeacher(isHan ? teacher : null)
-//                    .assignBookTeacher(isBook ? teacher : null)
-//                    .assignHanClass(isHan ? classCode : null)
-//                    .assignBookClass(isBook ? classCode : null)
-//                    .entryHanDate(isHan ? today : null)
-//                    .entryBookDate(isBook ? today : null)
-//                    .build();
-//
-//            studentRepository.insertTeacherAssign(newAssign);
-//            return;
-//        }
-
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();
 
-
-//        if (isHan == oldHan && isBook == oldBook) {
-//            return;
-//        }
 
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
         dto.setStudentId(studentId);
@@ -557,102 +604,12 @@ public class StudentService {
         return responseDTO;
     }
 
-    // 전입 전출
-//    @Transactional
-//    public void transferStudent(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
-//
-//        String[] parts = reqDto.getMoveAt().split("-");
-//        String yy = parts[0];
-//        String mm = parts[1];
-//
-//        for (String studentId : reqDto.getStudents()) {
-//
-//
-//        }
-//
-//        // 한자 과목 선택
-//        if (reqDto.getSelectedHan() != null) {
-//            for (String studentId : reqDto.getStudents()) {
-//                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
-//                if (teacher.getAssignHanTeacher().equals(reqDto.getUserCode())) {
-//                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-//                }
-//                if (teacher.getAssignHanTeacher() == null) {
-//                    throw new Exception400("등록된 한자 수업이 없습니다.");
-//                }
-//
-//                // 전입/전출 업데이트
-//                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedHan(), yy, mm);
-//
-//                // 시간표 삭제
-//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedHan(), yy, mm);
-//
-//                if (dto != null) {
-//                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-//                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
-//                }
-//
-//                // 전입 전출 히스토리 저장
-//                StudentTransferHistory history = StudentTransferHistory.builder()
-//                        .student(Student.builder().studentId(studentId).build())
-//                        .fromUser(User.builder().userCode(teacher.getAssignHanTeacher()).build())
-//                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-//                        .classCode(ClassCode.builder().classKey(teacher.getAssignHanClass()).build())
-//                        .classType(reqDto.getSelectedHan())
-//                        .transferReason(reqDto.getTransferReason())
-//                        .updatedBy(userCode)
-//                        .moveAt(reqDto.getMoveAt())
-//                        .build();
-//
-//                studentRepository.insertTransferHistory(history);
-//
-//            }
-//        }
-//        // 독서 과목 선택
-//        if (reqDto.getSelectedBook() != null) {
-//            for (String studentId : reqDto.getStudents()) {
-//                StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
-//
-//                if (teacher.getAssignBookTeacher().equals(reqDto.getUserCode())) {
-//                    throw new RuntimeException("본인에게 전입/전출 할 수는 없습니다.");
-//                }
-//
-//                if (teacher.getAssignBookTeacher() == null) {
-//                    throw new Exception400("등록된 독서 수업이 없습니다.");
-//                }
-//                // 전입/전출
-//                studentRepository.updateTransfer(studentId, reqDto.getUserCode(), reqDto.getSelectedBook(), yy, mm);
-//
-//                // 시간표 삭제
-//                StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(studentId, reqDto.getSelectedBook(), yy, mm);
-//
-//                if (dto != null) {
-//                    classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), studentId);
-//                    paymentService.deleteDetail(dto.getTimeTableKey(), studentId);
-//                }
-//
-//                // history 저장
-//                StudentTransferHistory history = StudentTransferHistory.builder()
-//                        .student(Student.builder().studentId(studentId).build())
-//                        .fromUser(User.builder().userCode(teacher.getAssignBookTeacher()).build())
-//                        .toUser(User.builder().userCode(reqDto.getUserCode()).build())
-//                        .classCode(ClassCode.builder().classKey(teacher.getAssignBookClass()).build())
-//                        .classType(reqDto.getSelectedBook())
-//                        .transferReason(reqDto.getTransferReason())
-//                        .updatedBy(userCode)
-//                        .moveAt(reqDto.getMoveAt())
-//                        .build();
-//
-//                studentRepository.insertTransferHistory(history);
-//
-//            }
-//        }
-//
-//    }
-//
+    public List<StudentWebRespDTO.TransferHistoryDTO> getHistory(String centerCode, String yearMonth) {
+        return studentRepository.selectTransferHistory(centerCode, yearMonth);
+    }
 
     @Transactional
-    public void reserveTransfer(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode) {
+    public void reserveTransfer(StudentWebReqDTO.StudentTransferDTO reqDto, String userCode, String centerCode) {
         LocalDate moveDate = LocalDate.parse(reqDto.getMoveAt());
 
         if (moveDate.isBefore(LocalDate.now())) {
@@ -687,7 +644,8 @@ public class StudentService {
                         reqDto.getUserCode(),
                         reqDto.getMoveAt(),
                         reqDto.getTransferReason(),
-                        userCode
+                        userCode,
+                        centerCode
                 );
             }
 
@@ -714,7 +672,8 @@ public class StudentService {
                         reqDto.getUserCode(),
                         reqDto.getMoveAt(),
                         reqDto.getTransferReason(),
-                        userCode
+                        userCode,
+                        centerCode
                 );
             }
         }
@@ -1075,7 +1034,6 @@ public class StudentService {
             log.info(sibling.getStudentId());
         }
 
-        // 하나의 포문으로 처리
         for (String studentId : targetStudentIds) {
 
             int result = studentRepository.updateAppTokenByStudentId(studentId, dto.getToken());
@@ -1360,6 +1318,75 @@ public class StudentService {
         }
 
         studentRepository.updateStudentBillingPhone(studentId, phone);
+    }
+
+    public List<StudentWebRespDTO.SiblingSearchRespDTO> searchSibling(String currentStudentId, String searchKey, String searchValue) {
+
+        // 현재 학생의 center_code 조회 (같은 센터 내에서만 검색)
+        String centerCode = studentRepository.getCenterCode(currentStudentId);
+
+        if ("phone".equals(searchKey)) {
+            searchValue = searchValue.replaceAll("-", "");
+        }
+
+        return studentRepository.searchFamily(searchKey, searchValue, centerCode);
+    }
+
+    public void linkFamily(StudentWebReqDTO.FamilyLinkRequest req) {
+
+        String studentId = req.getStudentId();
+        String siblingId = req.getSiblingId();
+
+        // 이미 같은 그룹인지 확인
+        if (studentRepository.existsFamilyLink(studentId, siblingId)) {
+            throw new Exception400("이미 형제로 연결된 학생입니다.");
+        }
+
+        String centerCode = studentRepository.getCenterCode(studentId);
+
+        String studentGroupKey = studentRepository.getSiblingGroupKey(studentId);
+        String siblingGroupKey = studentRepository.getSiblingGroupKey(siblingId);
+
+        if (studentGroupKey == null && siblingGroupKey == null) {
+            String newGroupKey = studentRepository.generateNewGroupKey();
+            studentRepository.insertSiblingMember(newGroupKey, studentId, centerCode);
+            studentRepository.insertSiblingMember(newGroupKey, siblingId, centerCode);
+
+        } else if (studentGroupKey != null && siblingGroupKey == null) {
+            studentRepository.insertSiblingMember(studentGroupKey, siblingId, centerCode);
+
+        } else if (studentGroupKey == null) {
+            studentRepository.insertSiblingMember(siblingGroupKey, studentId, centerCode);
+
+        } else {
+            studentRepository.mergeGroups(studentGroupKey, siblingGroupKey);
+        }
+    }
+
+    public List<StudentWebRespDTO.SiblingSearchRespDTO> getFamilyList(String studentId) {
+        return studentRepository.getSiblingList(studentId);
+    }
+
+    // 형제 연결 삭제
+    public void unlinkFamily(StudentWebReqDTO.FamilyLinkRequest req) {
+        String studentId = req.getStudentId();
+        String siblingId = req.getSiblingId();
+
+        // 그룹 내 인원 수 확인
+        String groupKey = studentRepository.getSiblingGroupKey(studentId);
+        if (groupKey == null) {
+            throw new Exception400("형제 관계가 존재하지 않습니다.");
+        }
+
+        int groupCount = studentRepository.countGroupMembers(groupKey);
+
+        if (groupCount <= 2) {
+            // 2명 이하면 그룹 전체 삭제
+            studentRepository.deleteGroup(groupKey);
+        } else {
+            // 3명 이상이면 해당 학생만 삭제
+            studentRepository.deleteSiblingMember(groupKey, siblingId);
+        }
     }
 }
 

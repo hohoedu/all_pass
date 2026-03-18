@@ -342,7 +342,8 @@
                c.center_name                                                                 AS centerName,
                s.app_id                                                                      AS appId,
                hc.class_name                                                                 AS hanClass,
-               bc.class_name                                                                 AS bookClass
+               bc.class_name                                                                 AS bookClass,
+               CASE WHEN sib.student_id IS NOT NULL THEN 'Y' ELSE 'N' END                    AS isSibling
 
         FROM ERP_STUDENT s
                  LEFT JOIN erp_status_code sc ON sc.status_key = s.status_key
@@ -354,6 +355,7 @@
                  LEFT JOIN erp_teacher_assign eta on s.student_id = eta.student_id
                  LEFT JOIN erp_class_code hc on eta.assign_han_class = hc.class_key
                  LEFT JOIN erp_class_code bc on eta.assign_book_class = bc.class_key
+                 LEFT JOIN erp_sibling sib ON sib.student_id = s.student_id
 
         WHERE s.center_code = #{centerCode}
           AND ISNULL(s.status_key, '') &lt; &gt; 'WITHDRAWN'
@@ -647,6 +649,131 @@
         WHERE student_id = #{studentId}
     </update>
 
+    <select id="findSnapshotByStudentId"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotDTO">
+        SELECT
+            s.student_id            AS studentId,
+            s.center_code           AS centerCode,
+            s.status_key            AS statusKey,
+            ta.han_state            AS hanState,
+            ta.book_state           AS bookState,
+            ta.assign_han_class     AS hanClass,
+            ta.assign_book_class    AS bookClass,
+            ta.assign_han_teacher   AS hanTeacher,
+            ta.assign_book_teacher  AS bookTeacher,
+            ta.entry_han_date       AS entryHanDate,
+            ta.entry_book_date      AS entryBookDate
+        FROM erp_student s
+                 LEFT JOIN erp_teacher_assign ta ON ta.student_id = s.student_id
+        WHERE s.student_id = #{studentId}
+    </select>
+
+    <!-- 탈퇴/미수강 로그 저장 -->
+    <insert id="insertWithdrawLog">
+        INSERT INTO erp_student_withdraw_log (
+            student_id,
+            center_code,
+            log_type,
+            before_status_key,
+            before_han_state,
+            before_book_state,
+            before_han_class,
+            before_book_class,
+            before_han_teacher,
+            before_book_teacher,
+            before_entry_han_date,
+            before_entry_book_date,
+            withdraw_date,
+            withdraw_reason,
+            withdrawn_by
+        ) VALUES (
+                     #{studentId},
+                     #{snapshot.centerCode},
+                     #{logType},
+                     #{snapshot.statusKey},
+                     #{snapshot.hanState},
+                     #{snapshot.bookState},
+                     #{snapshot.hanClass},
+                     #{snapshot.bookClass},
+                     #{snapshot.hanTeacher},
+                     #{snapshot.bookTeacher},
+                     #{snapshot.entryHanDate},
+                     #{snapshot.entryBookDate},
+                     #{withdrawDate},
+                     #{reason},
+                     #{userCode}
+                 )
+    </insert>
+
+    <select id="findLatestWithdrawLog"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawLogDTO">
+        SELECT TOP 1
+        id,
+                before_han_state        AS beforeHanState,
+               before_book_state       AS beforeBookState,
+               before_han_class        AS beforeHanClass,
+               before_book_class       AS beforeBookClass,
+               before_han_teacher      AS beforeHanTeacher,
+               before_book_teacher     AS beforeBookTeacher,
+               before_entry_han_date   AS beforeEntryHanDate,
+               before_entry_book_date  AS beforeEntryBookDate
+        FROM erp_student_withdraw_log
+        WHERE student_id  = #{studentId}
+          AND log_type    = #{logType}
+          AND restored_at IS NULL
+        ORDER BY withdrawn_at DESC
+    </select>
+
+
+    <!-- 학생 상태 직접 변경 -->
+    <update id="updateStudentStatusDirect">
+        UPDATE erp_student
+        SET status_key = #{statusKey}
+        WHERE student_id = #{studentId}
+    </update>
+
+
+    <!-- 한자 수강 복구 -->
+    <update id="restoreHanState">
+        UPDATE erp_teacher_assign
+        SET
+            han_state            = #{hanState},
+            assign_han_class     = #{hanClass},
+            assign_han_teacher   = #{hanTeacher},
+            entry_han_date       = #{entryHanDate},
+            inactive_han_teacher = NULL,
+            inactive_han_date    = NULL,
+            inactive_han_reason  = NULL,
+            updated_at           = GETDATE()
+        WHERE student_id = #{studentId}
+    </update>
+
+
+    <!-- 독서 수강 복구 -->
+    <update id="restoreBookState">
+        UPDATE erp_teacher_assign
+        SET
+            book_state            = #{bookState},
+            assign_book_class     = #{bookClass},
+            assign_book_teacher   = #{bookTeacher},
+            entry_book_date       = #{entryBookDate},
+            inactive_book_teacher = NULL,
+            inactive_book_date    = NULL,
+            inactive_book_reason  = NULL,
+            updated_at            = GETDATE()
+        WHERE student_id = #{studentId}
+    </update>
+
+
+    <!-- 복구 처리자 기록 -->
+    <update id="updateWithdrawLogRestored">
+        UPDATE erp_student_withdraw_log
+        SET
+            restored_by = #{userCode},
+            restored_at = GETDATE()
+        WHERE id = #{id}
+    </update>
+
     <update id="updatePendingIsDeletedByStudentId">
         UPDATE erp_pending_student
         SET status = 'ASSIGNED',
@@ -673,6 +800,35 @@
         FROM erp_student_transfer_schedule
         WHERE student_id = #{studentId}
           AND from_user = #{fromUserCode}
+          AND status = 'SCHEDULED'
+    </select>
+
+    <select id="selectTransferHistory" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferHistoryDTO">
+        SELECT
+            s.id                AS transferId,
+            s.move_at           AS moveAt,
+            st.student_name     AS studentName,
+            CASE
+                WHEN s.class_type = '1'  THEN '한자'
+                WHEN s.class_type = '2' THEN '독서'
+                WHEN s.class_type = 'both' THEN '한자, 독서'
+                ELSE s.class_type
+                END                 AS subject,
+            fu.user_name        AS fromTeacher,
+            tu.user_name        AS toTeacher,
+            CASE s.status
+                WHEN 'SCHEDULED' THEN '대기중'
+                WHEN 'APPLIED'   THEN '완료'
+                ELSE s.status
+                END                 AS status,
+            s.reason            AS transferReason
+        FROM erp_student_transfer_schedule s
+                 LEFT JOIN erp_student st ON st.student_id = s.student_id
+                 LEFT JOIN erp_user fu    ON fu.user_code  = s.from_user
+                 LEFT JOIN erp_user tu    ON tu.user_code  = s.to_user
+        WHERE s.center_code = #{centerCode}
+          AND LEFT(s.move_at, 7) = #{yearMonth}
+        ORDER BY s.move_at DESC
     </select>
 
     <insert id="insertTeacherAssign" parameterType="com.hohoedu.all_pass.student.model.TeacherAssign">
@@ -785,9 +941,9 @@
 
     <insert id="insertTransferSchedule">
         INSERT INTO erp_student_transfer_schedule (student_id, class_type, from_user, to_user, move_at, status, reason,
-                                                   created_by, created_at)
+                                                   created_by, created_at, center_code)
         VALUES (#{studentId}, #{classType}, #{fromUser}, #{toUser}, #{moveAt}, 'SCHEDULED', #{reason}, #{createdBy},
-                SYSDATETIME())
+                SYSDATETIME(), #{centerCode})
     </insert>
 
     <!-- 오늘 처리 대상 조회 (크론용) -->
@@ -1185,8 +1341,8 @@
                0                                                AS graduateCount
         FROM (SELECT 'entry' AS gb
               FROM erp_teacher_assign t
-              WHERE (t.assign_han_teacher = #{userCode} OR t.assign_book_teacher = #{userCode})
-                AND (SUBSTRING(t.entry_han_date, 1, 7) = #{ym} OR SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+              WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
+                 OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
               UNION ALL
               SELECT 'inactive'
               FROM erp_teacher_assign t
@@ -1239,8 +1395,8 @@
                    END         AS joinDate
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
-        WHERE (t.assign_han_teacher = #{userCode} OR t.assign_book_teacher = #{userCode})
-          AND (SUBSTRING(t.entry_han_date, 1, 7) = #{ym} OR SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+        WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
+           OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
         ORDER BY es.student_name
     </select>
 
@@ -1357,6 +1513,108 @@
         DELETE
         FROM erp_pending_student
         WHERE id = #{id}
+    </delete>
+
+    <select id="searchFamily" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$SiblingSearchRespDTO">
+        SELECT
+        s.student_id   AS studentId,
+        s.student_name AS studentName,
+        g.grade_name   AS gradeName,
+        s.school       AS school,
+        CONCAT(p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last) AS parentPhone
+        FROM erp_student s
+        LEFT JOIN erp_grade_code g
+        ON s.grade_key = g.grade_key
+        LEFT JOIN erp_parent p
+        ON s.student_id = p.student_id
+        WHERE s.center_code = #{centerCode}
+
+        <choose>
+            <when test="searchKey == 'name'">
+                AND s.student_name LIKE '%' + #{searchValue} + '%'
+            </when>
+            <when test="searchKey == 'phone'">
+                AND CONCAT(p.parent_tel_first, p.parent_tel_middle, p.parent_tel_last)
+                LIKE '%' + #{searchValue} + '%'
+            </when>
+        </choose>
+
+        ORDER BY s.student_name
+    </select>
+
+    <select id="existsFamilyLink" resultType="boolean">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+        FROM erp_sibling a
+                 JOIN erp_sibling b ON a.sibling_key = b.sibling_key
+        WHERE a.student_id = #{studentId}
+          AND b.student_id = #{siblingId}
+    </select>
+
+    <select id="getSiblingGroupKey" resultType="String">
+        SELECT TOP 1 sibling_key
+        FROM erp_sibling
+        WHERE student_id = #{studentId}
+    </select>
+
+    <select id="generateNewGroupKey" resultType="String">
+        SELECT CAST(MAX(CAST(sibling_key AS BIGINT)) + 1 AS VARCHAR)
+        FROM erp_sibling
+    </select>
+
+    <insert id="insertSiblingMember">
+        INSERT INTO erp_sibling (sibling_key, student_id, center_code, created_at)
+        VALUES (#{groupKey}, #{studentId}, #{centerCode}, GETDATE())
+    </insert>
+
+    <update id="mergeGroups">
+        UPDATE erp_sibling
+        SET sibling_key = #{targetGroupKey}
+        WHERE sibling_key = #{sourceGroupKey}
+    </update>
+
+    <select id="getCenterCode" resultType="String">
+        SELECT center_code
+        FROM erp_student
+        WHERE student_id = #{studentId}
+    </select>
+
+    <select id="getSiblingList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$SiblingSearchRespDTO">
+        SELECT
+            s.student_id   AS studentId,
+            s.student_name AS studentName,
+            g.grade_name   AS gradeName,
+            s.school       AS school
+        FROM erp_sibling sib
+                 JOIN erp_student s
+                      ON sib.student_id = s.student_id
+                 LEFT JOIN erp_grade_code g
+                           ON s.grade_key = g.grade_key
+        WHERE sib.sibling_key = (
+            SELECT TOP 1 sibling_key
+            FROM erp_sibling
+            WHERE student_id = #{studentId}
+        )
+          AND sib.student_id != #{studentId}
+    </select>
+
+    <!-- 그룹 인원 수 조회 -->
+    <select id="countGroupMembers" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_sibling
+        WHERE sibling_key = #{groupKey}
+    </select>
+
+    <!-- 그룹 전체 삭제 -->
+    <delete id="deleteGroup">
+        DELETE FROM erp_sibling
+        WHERE sibling_key = #{groupKey}
+    </delete>
+
+    <!-- 그룹에서 특정 학생만 삭제 -->
+    <delete id="deleteSiblingMember">
+        DELETE FROM erp_sibling
+        WHERE sibling_key = #{groupKey}
+          AND student_id  = #{studentId}
     </delete>
 
 </mapper>

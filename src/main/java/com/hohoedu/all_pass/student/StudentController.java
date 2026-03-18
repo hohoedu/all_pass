@@ -180,6 +180,14 @@ public class StudentController {
 
     }
 
+    @PostMapping("/restore")
+    public ResponseEntity<?> restoreStudent(@RequestBody StudentWebReqDTO.StudentRestoreDTO req, HttpSession session) {
+        String userCode = ((UserRespDTO.LoginRespDTO) session.getAttribute("user")).getUserCode();
+        studentService.restoreStudent(req.getStudentId(), userCode);
+        return ResponseEntity.ok(ApiUtils.success("복구 완료"));
+    }
+
+
     @GetMapping("/gradeCodes")
     public ResponseEntity<?> getGradeCode() {
         List<GradeCode> gradeCodes = studentService.findGrade();
@@ -210,6 +218,13 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(transferDTO));
     }
 
+    @GetMapping("/api/transfer/history")
+    public ResponseEntity<?> getTransferHistory(@RequestParam String yearMonth, HttpSession session) {
+        String centerCode = ((UserRespDTO.LoginRespDTO) session.getAttribute("user")).getCenterCode();
+        List<StudentWebRespDTO.TransferHistoryDTO> result = studentService.getHistory(centerCode, yearMonth);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
     @PostMapping("/inout")
     @ResponseBody
     public ResponseEntity<?> studentInOut(@RequestBody StudentWebReqDTO.StudentTransferDTO dto, HttpSession session) {
@@ -218,10 +233,11 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        studentService.reserveTransfer(dto, user.getUserCode());
+        studentService.reserveTransfer(dto, user.getUserCode(), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success("RESERVED"));
     }
+
 
     @PostMapping("/app_token")
     public ResponseEntity<?> getStudentAppToken(@RequestBody StudentAppReqDTO.AttendanceTokenDTO attendanceTokenDTO) {
@@ -412,4 +428,37 @@ public class StudentController {
         }
     }
 
+    /**
+     * 형제 검색
+     * GET /student/api/family-search?currentStudentId=1&searchKey=name&searchValue=홍길동
+     */
+    @GetMapping("/api/family-search")
+    public ResponseEntity<?> searchFamily(@RequestParam String currentStudentId, @RequestParam String searchKey, @RequestParam String searchValue) {
+        List<StudentWebRespDTO.SiblingSearchRespDTO> result = studentService.searchSibling(currentStudentId, searchKey, searchValue);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    /**
+     * 형제 연결
+     * POST /student/api/family-link
+     */
+    @PostMapping("/api/family-link")
+    public ResponseEntity<?> linkFamily(@RequestBody StudentWebReqDTO.FamilyLinkRequest request) {
+        studentService.linkFamily(request);
+        return ResponseEntity.ok(ApiUtils.success("형제 연결 완료"));
+    }
+
+
+    @GetMapping("/api/family-list")
+    public ResponseEntity<?> getFamilyList(@RequestParam String studentId) {
+        List<StudentWebRespDTO.SiblingSearchRespDTO> result = studentService.getFamilyList(studentId);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    // 형제 연결 삭제
+    @PostMapping("/api/family-unlink")
+    public ResponseEntity<?> unlinkFamily(@RequestBody StudentWebReqDTO.FamilyLinkRequest request) {
+        studentService.unlinkFamily(request);
+        return ResponseEntity.ok(ApiUtils.success("형제 연결 삭제 완료"));
+    }
 }

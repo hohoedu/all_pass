@@ -335,7 +335,7 @@ public class ClassService {
 
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableKey(tt.getTimeTableKey(), ym);
+                    .findStudentsByTimeTableKey(userCode, tt.getTimeTableKey(), ym);
 
             tt.setStudents(students);
         }
@@ -348,7 +348,7 @@ public class ClassService {
         String ym = year + "-" + month;
         for (ClassRespDTO.TimeTableDTO tt : tables) {
             List<ClassRespDTO.TimeTableDTO.StudentDTO> students = classRepository
-                    .findStudentsByTimeTableKey(tt.getTimeTableKey(), ym);
+                    .findStudentsByTimeTableKey(userCode, tt.getTimeTableKey(), ym);
 
             while (students.size() < 8) {
                 ClassRespDTO.TimeTableDTO.StudentDTO empty = new ClassRespDTO.TimeTableDTO.StudentDTO();

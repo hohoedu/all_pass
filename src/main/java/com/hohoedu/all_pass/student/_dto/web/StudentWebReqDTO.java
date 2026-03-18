@@ -172,4 +172,15 @@ public class StudentWebReqDTO {
         private String userCode;
         private boolean isManual;
     }
+
+    @Data
+    public static class FamilyLinkRequest {
+        private String studentId;   // 현재 학생
+        private String siblingId;   // 연결할 형제 학생
+    }
+
+    @Data
+    public static class StudentRestoreDTO {
+        private String studentId;
+    }
 }

@@ -118,9 +118,6 @@ function renderStudentTable(students) {
         tr.dataset.id = s.studentId;
         tr.dataset.name = s.studentName;
         tr.dataset.phone = (s.parentPhone ?? '').replace(/[^0-9]/g, '');
-        tr.onclick = function () {
-            openTransferModal(this);
-        };
 
         tr.innerHTML = `
             <td class="checkbox-group">
@@ -144,7 +141,6 @@ function renderStudentTable(students) {
 
     resetCheckAll();
 
-    // 🔥 정렬 유지
     if (transferSortState.key) {
         sortTransferTable(transferSortState.key);
     }
@@ -323,11 +319,9 @@ function toggleEmptyMessage(visibleCount) {
     }
 }
 
-// ====== 모달 오픈 ====== //
 function openTransferModal(row) {
-    const studentId = row.getAttribute("data-id");
-
-
+    const type = row.getAttribute("data-type");
+    if (type !== "inout") return;
     showTransferModal();
 }
 
@@ -336,8 +330,123 @@ function showTransferModal() {
     modal.style.display = "block";
     document.body.style.overflow = "hidden";
 
-    modal.querySelector(".btn-close").addEventListener("click", closeTransferModal);
+    const closeBtn = modal.querySelector(".btn-close");
+    if (closeBtn) closeBtn.onclick = closeTransferModal;
+
+    // 현재 연월 기본값
+    const today = new Date();
+    const ym = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+
+    const picker = document.getElementById("transfer-month-picker");
+    if (picker) picker.value = ym;
+
+    updateMonthDisplay(ym);
+    loadTransferHistory(ym);
 }
+
+function closeTransferModal() {
+    const modal = document.getElementById("transfer-modal");
+    if (modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+    }
+}
+
+function updateMonthDisplay(ym) {
+    const display = document.getElementById("transfer-month-display");
+    if (!display || !ym) return;
+    const [year, month] = ym.split("-");
+    display.textContent = `${year}년 ${parseInt(month)}월`;
+}
+
+// ====== 전입/전출 내역 조회 ====== //
+async function loadTransferHistory(yearMonth) {
+    try {
+        const res = await fetch(
+            `/student/api/transfer/history?yearMonth=${encodeURIComponent(yearMonth)}`
+        );
+
+        if (!res.ok) throw new Error("조회 실패");
+
+        const data = await res.json();
+        renderTransferHistory(data.response ?? []);
+
+    } catch (err) {
+        console.error("전입/전출 내역 조회 오류:", err);
+        alert("내역을 불러오는 중 오류가 발생했습니다.");
+    }
+}
+
+// ====== 전입/전출 내역 렌더링 ====== //
+function renderTransferHistory(list = []) {
+    const tbody = document.getElementById("transfer-history-tbody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">조회된 내역이 없습니다.</td></tr>`;
+        return;
+    }
+
+    list.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="checkbox-group">
+                <input type="checkbox" class="transfer-history-checkbox" value="${item.transferId}">
+            </td>
+            <td style="text-align:center;">${index + 1}</td>
+            <td style="text-align:center;">${item.moveAt ?? "-"}</td>
+            <td style="text-align:center;">${item.studentName ?? ""}</td>
+            <td style="text-align:center;">${item.subject ?? ""}</td>
+            <td style="text-align:center;">${item.fromTeacher ?? ""}</td>
+            <td style="text-align:center;">${item.toTeacher ?? ""}</td>
+            <td style="text-align:center;">${item.status ?? ""}</td>
+            <td style="text-align:center;">${item.transferReason ?? ""}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ====== 이벤트 위임 ====== //
+document.addEventListener("click", (e) => {
+
+    // 달력 아이콘 클릭
+    if (e.target.closest("#transfer-calendar-btn")) {
+        const picker = document.getElementById("transfer-month-picker");
+        if (!picker) return;
+        if (typeof picker.showPicker === "function") {
+            picker.showPicker();
+        } else {
+            picker.click();
+        }
+    }
+});
+
+document.addEventListener("change", (e) => {
+
+    // month picker 변경 → 즉시 조회
+    if (e.target.id === "transfer-month-picker") {
+        const ym = e.target.value;
+        if (!ym) return;
+        updateMonthDisplay(ym);
+        loadTransferHistory(ym);
+    }
+
+    // 전체 선택
+    if (e.target.id === "transfer-check-all") {
+        document.querySelectorAll(".transfer-history-checkbox")
+            .forEach(cb => cb.checked = e.target.checked);
+    }
+
+    // 개별 체크박스 해제 시 전체 선택 해제
+    if (e.target.classList.contains("transfer-history-checkbox")) {
+        const all = document.querySelectorAll(".transfer-history-checkbox");
+        const checked = document.querySelectorAll(".transfer-history-checkbox:checked");
+        const checkAll = document.getElementById("transfer-check-all");
+        if (checkAll) checkAll.checked = (all.length === checked.length);
+    }
+});
 
 // 전입 전출 날짜 선택
 document.addEventListener("DOMContentLoaded", () => {
@@ -413,7 +522,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await response.json();
 
             if (!response.ok || result.success === false) {
-                throw new Error(result.msg || "처리 중 오류가 발생했습니다.");
+                const errorMsg = result.msg
+                    ?? result.message
+                    ?? result.error?.message
+                    ?? "처리 중 오류가 발생했습니다.";
+                alert(errorMsg);
+                return;
             }
 
 

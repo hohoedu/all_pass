@@ -77,13 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <label style="display:block; font-size:13px; font-weight:500; margin-bottom:10px;">수강 과목 <span style="color:red">*</span></label>
                     <div style="display:flex; gap:16px; flex-wrap:wrap;">
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
-                            <input type="radio" name="modal-subject" value="hoho"> 호호
+                            <input type="checkbox" name="modal-subject" value="han"> 한스쿨
                         </label>
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
-                            <input type="radio" name="modal-subject" value="han"> 한자
-                        </label>
+                            <input type="checkbox" name="modal-subject" value="book"> 북스쿨
+                        </label> 
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
-                            <input type="radio" name="modal-subject" value="book"> 독서
+                            <input type="checkbox" name="modal-subject" value="hoho"> 호호스쿨
                         </label>
                     </div>
                 </div>
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* =================== *
-     *   발송 로직           *
+     *   발송 로직         *
      * =================== */
     async function sendJoinLink(phone, modalValues) {
         const response = await fetch("/popbill/send-join", {

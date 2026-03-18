@@ -138,21 +138,24 @@ function renderStudents(tbody, students = []) {
                </div>`;
 
         tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${s.studentName ?? ""}</td>
-      <td>${s.statusName ?? ""}</td>
-      <td>${s.entryDate ?? ""}</td>
-      <td>${[s.hanClass, s.bookClass].filter(Boolean).join(", ")}</td>
-      <td>${s.gradeName ?? ""}</td>
-      <td>${s.school ?? ""}</td>
-      <td>
-        <div class="tooltip-container">
-          <img src="/image/link.png" alt="link" class="link">
-          <div class="tooltip-text">${s.isSibling === "Y" ? "형제 있음" : "형제 없음"}</div>
-        </div>
-      </td>
-      <td>${appIcon}</td>
-    `;
+    <td>${i + 1}</td>
+    <td>${s.studentName ?? ""}</td>
+    <td>${s.statusName ?? ""}</td>
+    <td>${s.entryDate ?? ""}</td>
+    <td>${[s.hanClass, s.bookClass].filter(Boolean).join(", ")}</td>
+    <td>${s.gradeName ?? ""}</td>
+    <td>${s.school ?? ""}</td>
+    <td>
+        ${s.isSibling === "Y"
+            ? `<div class="tooltip-container">
+                   <img src="/image/link.png" alt="형제 연결" class="link" style="width: 25px; height: 25px;">
+                   <div class="tooltip-text">형제 있음</div>
+               </div>`
+            : ""
+        }
+    </td>
+    <td>${appIcon}</td>
+`;
 
         tbody.appendChild(tr);
     });
@@ -267,6 +270,7 @@ async function loadStudentDetail(studentId) {
 
         renderStudentModal(data.response);
         openStudentModal();
+        await loadCurrentSiblings(studentId);
 
     } catch (err) {
         console.error(err);
@@ -1430,4 +1434,229 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("저장 중 오류가 발생했습니다.");
         }
     });
+
+
 });
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchBtn = document.getElementById("family-search-btn");
+    if (!searchBtn) return;
+
+    searchBtn.addEventListener("click", searchFamily);
+
+    // 엔터키 지원
+    const searchInput = document.getElementById("familySearchValue");
+    if (searchInput) {
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") searchFamily();
+        });
+    }
+});
+
+async function searchFamily() {
+    const searchKey   = document.getElementById("nameSelect")?.value;
+    const searchValue = document.getElementById("familySearchValue")?.value.trim();
+
+    if (!searchValue) {
+        alert("검색어를 입력해주세요.");
+        return;
+    }
+
+    if (!currentStudentId) {
+        alert("학생을 먼저 선택해주세요.");
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `/student/api/family-search` +
+            `?currentStudentId=${encodeURIComponent(currentStudentId)}` +
+            `&searchKey=${encodeURIComponent(searchKey)}` +
+            `&searchValue=${encodeURIComponent(searchValue)}`
+        );
+
+        if (!res.ok) throw new Error("검색 실패");
+
+        const data = await res.json();
+        renderFamilySearchResult(data.response ?? []);
+
+    } catch (err) {
+        console.error("형제 검색 오류:", err);
+        alert("검색 중 오류가 발생했습니다.");
+    }
+}
+
+function renderFamilySearchResult(students = []) {
+    const resultTable = document.getElementById("family-search-result");
+    const tbody = document.getElementById("family-search-tbody");
+
+    if (!resultTable || !tbody) return;
+
+    tbody.innerHTML = "";
+    resultTable.style.display = "table";
+
+    if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:12px;">검색 결과가 없습니다.</td></tr>`;
+        return;
+    }
+
+    students.forEach(s => {
+        if (String(s.studentId) === String(currentStudentId)) return;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="text-align:center;">${s.studentName ?? ""}</td>
+            <td style="text-align:center;">${s.gradeName ?? ""}</td>
+            <td style="text-align:center;">${s.school ?? ""}</td>
+            <td style="text-align:center;">${formatPhone(s.parentPhone ?? "")}</td>
+            <td style="text-align:center;">
+                <button type="button" class="common-btn family-link-btn"
+                    style="background:#28a745; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;"
+                    data-sibling-id="${s.studentId}"
+                    data-sibling-name="${s.studentName}">
+                    연결
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll(".family-link-btn").forEach(btn => {
+        btn.addEventListener("click", () => linkFamily(btn.dataset.siblingId, btn.dataset.siblingName));
+    });
+}
+
+async function linkFamily(siblingId, siblingName) {
+    if (!confirm(`${siblingName} 학생을 형제로 연결하시겠습니까?`)) return;
+
+    try {
+        const res = await fetch("/student/api/family-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                studentId: currentStudentId,
+                siblingId: siblingId
+            })
+        });
+
+        const data = await res.json();
+
+        // ApiUtils 구조: { success, response, error }
+        if (!data.success) {
+            alert(data.error?.message ?? "연결 중 오류가 발생했습니다.");
+            return;
+        }
+
+        alert(`${siblingName} 학생과 형제 연결이 완료되었습니다.`);
+
+        updateSiblingIconInList(currentStudentId, true);
+
+        document.getElementById("familySearchValue").value = "";
+        document.getElementById("family-search-result").style.display = "none";
+        document.getElementById("family-search-tbody").innerHTML = "";
+
+        await loadCurrentSiblings(currentStudentId);
+
+    } catch (err) {
+        console.error("형제 연결 오류:", err);
+        alert("형제 연결 중 오류가 발생했습니다.");
+    }
+}
+
+async function loadCurrentSiblings(studentId) {
+    try {
+        const res = await fetch(`/student/api/family-list?studentId=${encodeURIComponent(studentId)}`);
+        const data = await res.json();
+        renderCurrentSiblings(data.response ?? []);
+    } catch (err) {
+        console.error("형제 목록 조회 오류:", err);
+    }
+}
+
+function renderCurrentSiblings(siblings = []) {
+    const tbody = document.getElementById("current-sibling-tbody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (siblings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">형제 없음</td></tr>`;
+        return;
+    }
+
+    siblings.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td style="text-align:center;">${s.studentName ?? ""}</td>
+            <td style="text-align:center;">${s.gradeName ?? ""}</td>
+            <td style="text-align:center;">${s.school ?? ""}</td>
+            <td style="text-align:center;">
+                <button type="button" class="common-btn"
+                    style="background:#dc3545; color:#fff; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;"
+                    data-sibling-id="${s.studentId}"
+                    data-sibling-name="${s.studentName}">
+                    삭제
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => unlinkFamily(btn.dataset.siblingId, btn.dataset.siblingName));
+    });
+}
+
+async function unlinkFamily(siblingId, siblingName) {
+    if (!confirm(`${siblingName} 학생과의 형제 연결을 삭제하시겠습니까?`)) return;
+
+    try {
+        const res = await fetch("/student/api/family-unlink", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                studentId: currentStudentId,
+                siblingId: siblingId
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+            alert(data.msg ?? "삭제 중 오류가 발생했습니다.");
+            return;
+        }
+
+        alert(`${siblingName} 학생과의 형제 연결이 삭제되었습니다.`);
+        await loadCurrentSiblings(currentStudentId);
+
+// 형제 없으면 아이콘 제거
+        const siblings = document.getElementById("current-sibling-tbody");
+        const hasRemaining = siblings && siblings.querySelector("button") !== null;
+        updateSiblingIconInList(currentStudentId, hasRemaining);
+
+    } catch (err) {
+        console.error("형제 삭제 오류:", err);
+        alert("삭제 중 오류가 발생했습니다.");
+    }
+}
+
+function updateSiblingIconInList(studentId, hasSibling) {
+    const row = document.querySelector(`#main-student-tbody tr[data-id='${studentId}']`);
+    if (!row) return;
+
+    const td = row.querySelectorAll("td")[7]; // 형제 연결 컬럼
+    if (!td) return;
+
+    if (hasSibling) {
+        td.innerHTML = `
+            <div class="tooltip-container">
+                <img src="/image/link.png" alt="형제 연결" class="link" style="width: 25px; height: 25px;">
+                <div class="tooltip-text">형제 있음</div>
+            </div>
+        `;
+    } else {
+        td.innerHTML = "";
+    }
+}

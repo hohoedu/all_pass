@@ -237,6 +237,20 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
+    // 전체 이력 조회 (월 파라미터 없이 전체 반환)
+//    @GetMapping("/api/delete/log")
+//    public ResponseEntity<?> deleteLog() {
+//        List<DeleteBackupDTO> list = backupRepository.findAllBackupList();
+//        return ResponseEntity.ok(ApiUtils.success(list));
+//    }
+//
+//    // 복구
+//    @PostMapping("/api/restore")
+//    public ResponseEntity<?> restore(@RequestBody Map<String, String> req) {
+//        classService.restoreBackup(req.get("backupKey"));
+//        return ResponseEntity.ok(ApiUtils.success(true));
+//    }
+
 
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/label")

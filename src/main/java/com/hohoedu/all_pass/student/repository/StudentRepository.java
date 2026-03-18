@@ -154,6 +154,47 @@ public interface StudentRepository {
             @Param("bookTeacherCode") String bookTeacherCode
     );
 
+    StudentWebRespDTO.StudentSnapshotDTO findSnapshotByStudentId(
+            @Param("studentId") String studentId);
+
+    void insertWithdrawLog(
+            @Param("studentId")    String studentId,
+            @Param("logType")      String logType,
+            @Param("snapshot")     StudentWebRespDTO.StudentSnapshotDTO snapshot,
+            @Param("reason")       String reason,
+            @Param("withdrawDate") String withdrawDate,
+            @Param("userCode")     String userCode);
+
+    StudentWebRespDTO.WithdrawLogDTO findLatestWithdrawLog(
+            @Param("studentId") String studentId,
+            @Param("logType")   String logType);
+
+    // 학생 상태 직접 변경
+    void updateStudentStatusDirect(
+            @Param("studentId") String studentId,
+            @Param("statusKey") String statusKey);
+
+    // 한자 수강 복구
+    void restoreHanState(
+            @Param("studentId")    String studentId,
+            @Param("hanState")     Integer hanState,
+            @Param("hanClass")     String hanClass,
+            @Param("hanTeacher")   String hanTeacher,
+            @Param("entryHanDate") String entryHanDate);
+
+    // 독서 수강 복구
+    void restoreBookState(
+            @Param("studentId")     String studentId,
+            @Param("bookState")     Integer bookState,
+            @Param("bookClass")     String bookClass,
+            @Param("bookTeacher")   String bookTeacher,
+            @Param("entryBookDate") String entryBookDate);
+
+    // 복구 처리자 기록
+    void updateWithdrawLogRestored(
+            @Param("id")       Long id,
+            @Param("userCode") String userCode);
+
     void updatePendingIsDeletedByStudentId(String studentId);
 
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
@@ -192,7 +233,8 @@ public interface StudentRepository {
             @Param("toUser") String toUser,
             @Param("moveAt") String moveAt,
             @Param("reason") String reason,
-            @Param("createdBy") String createdBy
+            @Param("createdBy") String createdBy,
+            @Param("centerCode") String centerCode
     );
 
     List<StudentTransferSchedule> findTodaySchedules(String today);
@@ -200,6 +242,10 @@ public interface StudentRepository {
     void markAsApplied(Integer id);
 
     public void insertTransferHistory(StudentTransferHistory dto);
+
+    List<StudentWebRespDTO.TransferHistoryDTO> selectTransferHistory(
+            @Param("centerCode") String centerCode,
+            @Param("yearMonth") String yearMonth);
 
     public boolean existsByYm(String ym);
 
@@ -331,5 +377,43 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("phone") String phone);
 
+    List<StudentWebRespDTO.SiblingSearchRespDTO> searchFamily(
+            @Param("searchKey") String searchKey,
+            @Param("searchValue") String searchValue,
+            @Param("centerCode") String centerCode
+    );
 
+    boolean existsFamilyLink(
+            @Param("studentId") String studentId,
+            @Param("siblingId") String siblingId
+    );
+
+    String getSiblingGroupKey(@Param("studentId") String studentId);
+
+    void insertSiblingMember(
+            @Param("groupKey") String groupKey,
+            @Param("studentId") String studentId,
+            @Param("centerCode") String centerCode
+    );
+
+    String generateNewGroupKey();
+
+    void mergeGroups(
+            @Param("targetGroupKey") String targetGroupKey,
+            @Param("sourceGroupKey") String sourceGroupKey
+    );
+
+    String getCenterCode(@Param("studentId") String studentId);
+
+
+    List<StudentWebRespDTO.SiblingSearchRespDTO> getSiblingList(@Param("studentId") String studentId);
+
+    int countGroupMembers(@Param("groupKey") String groupKey);
+
+    void deleteGroup(@Param("groupKey") String groupKey);
+
+    void deleteSiblingMember(
+            @Param("groupKey") String groupKey,
+            @Param("studentId") String studentId
+    );
 }

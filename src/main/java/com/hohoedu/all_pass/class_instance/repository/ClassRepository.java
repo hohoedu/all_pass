@@ -136,7 +136,7 @@ public interface ClassRepository {
             @Param("mm") String mm
     );
 
-    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String timeTableKey, String ym);
+    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String userCode, String timeTableKey, String ym);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 

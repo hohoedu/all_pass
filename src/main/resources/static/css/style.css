@@ -4639,7 +4639,7 @@ input[type="time" i] {
     background: #9c9c9c;
 }
 
-.last-data {
+.last-data, .del-history {
     background: #009844;
 }
 

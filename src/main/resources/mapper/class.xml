@@ -604,7 +604,8 @@
                             FROM erp_after_class_notice
                             WHERE counsel_content IS NOT NULL
                               AND counsel_content &lt;&gt; ''
-                              AND yy + '-' + mm = #{ym}) cn ON st.student_id = cn.student_id
+                              AND yy + '-' + mm = #{ym}
+                              AND user_code = #{userCode}) cn ON st.student_id = cn.student_id
         WHERE tta.time_table_key = #{timeTableKey}
         ORDER BY st.student_name
     </select>

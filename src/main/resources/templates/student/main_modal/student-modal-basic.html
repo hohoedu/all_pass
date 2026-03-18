@@ -122,7 +122,38 @@
                         <input type="tel" name="cashReceipt" class="s_billing_phone" placeholder="010-1234-5678"
                                style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
                     </td>
+                </tr>
 
+                </tbody>
+            </table>
+            <div class="save-btn-frame">
+                <button type="submit" class="save-btn" id="update-btn">저장</button>
+            </div>
+            <!-- 형제 정보 -->
+            <table class="base-info-t">
+                <div class="small-title">형제 정보</div>
+                <tbody>
+                <tr>
+                    <th>현재 형제</th>
+                    <td>
+                        <table class="base-info-t" id="current-sibling-table" style="width:100%; text-align:center;">
+                            <thead>
+                            <tr>
+                                <th style="text-align:center;">이름</th>
+                                <th style="text-align:center;">학년</th>
+                                <th style="text-align:center;">학교</th>
+                                <th style="text-align:center;">삭제</th>
+                            </tr>
+                            </thead>
+                            <tbody id="current-sibling-tbody">
+                            <tr>
+                                <td colspan="4" style="text-align:center;">형제 없음</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
                     <th>형제 연결</th>
                     <td>
                         <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
@@ -130,19 +161,37 @@
                                 <option value="name">이름</option>
                                 <option value="phone">전화번호</option>
                             </select>
-                            <input type="text" name="familySearchValue"
+                            <input type="text" id="familySearchValue" name="familySearchValue"
                                    style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                            <div class="explore common-btn">검색</div>
+                            <div class="explore common-btn" id="family-search-btn">검색</div>
                         </div>
 
-                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                            저장할 연락처
-                            <input type="text" name="familySavePhone"
-                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                        </div>
+                        <!-- 검색 결과 테이블 -->
+                        <table class="base-info-t" id="family-search-result" style="display:none; margin-top:10px; width:100%; text-align:center;">
+                            <thead>
+                            <tr>
+                                <th style="text-align:center;">이름</th>
+                                <th style="text-align:center;">학년</th>
+                                <th style="text-align:center;">학교</th>
+                                <th style="text-align:center;">전화번호</th>
+                                <th style="text-align:center;">연결</th>
+                            </tr>
+                            </thead>
+                            <tbody id="family-search-tbody">
+                            </tbody>
+                        </table>
                     </td>
                 </tr>
+                </tbody>
+            </table>
+            <table>
+                <thead>
 
+                </thead>
+                <tbody>
+                <tr>
+
+                </tr>
                 </tbody>
             </table>
             <!--            &lt;!&ndash; 입회 정보 &ndash;&gt;-->
@@ -175,9 +224,6 @@
             <!--                </tbody>-->
             <!--            </table>-->
 
-            <div class="save-btn-frame">
-                <button type="submit" class="save-btn" id="update-btn">저장</button>
-            </div>
 
         </div>
     </div>

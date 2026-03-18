@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,8 +42,7 @@
                             <div class="stu-left">
                                 <div class="basic-select sl1">
                                     <select name="teacher" id="teacher-filter">
-                                        <option
-                                                th:each="teacher : ${teachers}"
+                                        <option th:each="teacher : ${teachers}"
                                                 th:value="${teacher.userCode}"
                                                 th:text="${teacher.userName + ' 선생님'}">
                                         </option>
@@ -85,6 +83,7 @@
                     </div>
 
                     <div class="status-panels">
+
                         <!-- 입회 -->
                         <div class="status-panel is-active" data-panel="t1">
                             <div class="mt">
@@ -248,6 +247,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </section>
             </div>

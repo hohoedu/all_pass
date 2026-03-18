@@ -9,10 +9,7 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 public class StudentWebRespDTO {
@@ -27,7 +24,7 @@ public class StudentWebRespDTO {
     }
 
     @Data
-    public static class SiblingInfoDTO{
+    public static class SiblingInfoDTO {
         private String siblingKey;
         private String studentId;
     }
@@ -202,6 +199,7 @@ public class StudentWebRespDTO {
         private String hasApp;
         private String appId;
         private String parentPhone;
+        private String isSibling;
     }
 
 
@@ -234,6 +232,17 @@ public class StudentWebRespDTO {
     }
 
     @Data
+    public static class TransferHistoryDTO {
+        private String moveAt;
+        private String studentName;
+        private String subject;
+        private String fromTeacher;
+        private String toTeacher;
+        private String status;
+        private String transferReason;
+    }
+
+    @Data
     public static class TransferTimeTableInfoDTO {
         private String userCode;
         private String timeTableKey;
@@ -251,6 +260,36 @@ public class StudentWebRespDTO {
         private String assignHanClass;
         private String assignBookTeacher;
         private String assignBookClass;
+    }
+
+
+    @Data
+    public static class StudentSnapshotDTO {
+        private String  studentId;
+        private String  centerCode;
+        private String  statusKey;
+        private Integer hanState;
+        private Integer bookState;
+        private String  hanClass;
+        private String  bookClass;
+        private String  hanTeacher;
+        private String  bookTeacher;
+        private String  entryHanDate;
+        private String  entryBookDate;
+    }
+
+    @Data
+    public static class WithdrawLogDTO {
+        private Long    id;
+        private String  studentId;
+        private Integer beforeHanState;
+        private Integer beforeBookState;
+        private String  beforeHanClass;
+        private String  beforeBookClass;
+        private String  beforeHanTeacher;
+        private String  beforeBookTeacher;
+        private String  beforeEntryHanDate;
+        private String  beforeEntryBookDate;
     }
 
     @Data
@@ -315,6 +354,16 @@ public class StudentWebRespDTO {
         private String studentId;
         private String newAppId;
         private String oldAppId;
+    }
+
+    @Data
+    public static class SiblingSearchRespDTO {
+        private String studentId;
+        private String studentName;
+        private String gradeName;
+        private String school;
+        private String parentPhone;
+        private String isSibling;
     }
 
 }
