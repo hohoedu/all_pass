@@ -316,6 +316,13 @@
         WHERE ta.student_id = #{studentId}
     </select>
 
+    <select id="findStudentAttendanceByStudentId" parameterType="String"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentAttendanceDTO">
+        SELECT * FROM erp_student_attendance
+        WHERE student_id = #{studentId}
+        AND yy= '2026' AND mm = '03'
+    </select>
+
     <select id="findStudentConsultByStudentId" parameterType="String"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentConsultDTO">
         SELECT CONCAT(yy, '년 ', dayname) AS consultDate,

@@ -417,4 +417,14 @@ public class ClassRespDTO {
         private boolean checked;
     }
 
+    @Data
+    public static class RemedialSendDTO{
+        private String studentname;
+        private String studentId;
+        private String appToken;
+        private String remedialDate;
+        private String sTime;
+
+    }
+
 }

@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.firebase.FcmDTO;
+import com.hohoedu.all_pass._core.firebase.FcmService;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -47,6 +48,7 @@ import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.threeten.bp.LocalDate;
 
 @Slf4j
@@ -61,6 +63,7 @@ public class ClassService {
     private final GradeJpaRepository gradeJpaRepository;
     private final StudentService studentService;
     private final PaymentService paymentService;
+    private final FcmService fcmService;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -919,6 +922,26 @@ public class ClassService {
 
     public void updateRemedialTime(ClassReqDTO.UpdateRemedialTimeDTO dto) {
         classRepository.updateRemedialTime(dto.getRemedialKey(), dto.getStartTime());
+        // 보강 알림 발송
+        ClassRespDTO.RemedialSendDTO response = classRepository.findAppTokenByRemedialKey(dto.getRemedialKey());
+        if (response != null
+                && StringUtils.hasText(response.getAppToken())
+                && StringUtils.hasText(response.getStudentname())
+                && StringUtils.hasText(response.getRemedialDate())
+                && !response.getRemedialDate().equals("9999-12-31")
+                && StringUtils.hasText(response.getSTime())) {
+
+            String content = response.getStudentname() + " 학생의 보강 수업이 "
+                    + response.getRemedialDate().substring(5, 7) + "월 "
+                    + response.getRemedialDate().substring(8, 10) + "일 "
+                    + response.getSTime() + "에 진행될 예정이에요. \n⏰시간에 맞춰 도착해 주세요.";
+
+            fcmService.sendMessage(response.getAppToken(), "보강 안내", content);
+
+        } else {
+
+        }
+
     }
 
     public void deleteRemedial(ClassReqDTO.DeleteRemedialTimeDTO dto) {

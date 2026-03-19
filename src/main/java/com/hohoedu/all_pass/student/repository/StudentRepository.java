@@ -42,6 +42,8 @@ public interface StudentRepository {
 
     public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
 
+    List<StudentWebRespDTO.StudentAttendanceDTO> findStudentAttendanceByStudentId(@Param("studentId") String studentId);
+
     public List<StudentWebRespDTO.StudentConsultDTO> findStudentConsultByStudentId(@Param("studentId") String studentId);
 
     void createPendingStudent(PendingStudent pendingStudent);
@@ -158,16 +160,16 @@ public interface StudentRepository {
             @Param("studentId") String studentId);
 
     void insertWithdrawLog(
-            @Param("studentId")    String studentId,
-            @Param("logType")      String logType,
-            @Param("snapshot")     StudentWebRespDTO.StudentSnapshotDTO snapshot,
-            @Param("reason")       String reason,
+            @Param("studentId") String studentId,
+            @Param("logType") String logType,
+            @Param("snapshot") StudentWebRespDTO.StudentSnapshotDTO snapshot,
+            @Param("reason") String reason,
             @Param("withdrawDate") String withdrawDate,
-            @Param("userCode")     String userCode);
+            @Param("userCode") String userCode);
 
     StudentWebRespDTO.WithdrawLogDTO findLatestWithdrawLog(
             @Param("studentId") String studentId,
-            @Param("logType")   String logType);
+            @Param("logType") String logType);
 
     // 학생 상태 직접 변경
     void updateStudentStatusDirect(
@@ -176,23 +178,23 @@ public interface StudentRepository {
 
     // 한자 수강 복구
     void restoreHanState(
-            @Param("studentId")    String studentId,
-            @Param("hanState")     Integer hanState,
-            @Param("hanClass")     String hanClass,
-            @Param("hanTeacher")   String hanTeacher,
+            @Param("studentId") String studentId,
+            @Param("hanState") Integer hanState,
+            @Param("hanClass") String hanClass,
+            @Param("hanTeacher") String hanTeacher,
             @Param("entryHanDate") String entryHanDate);
 
     // 독서 수강 복구
     void restoreBookState(
-            @Param("studentId")     String studentId,
-            @Param("bookState")     Integer bookState,
-            @Param("bookClass")     String bookClass,
-            @Param("bookTeacher")   String bookTeacher,
+            @Param("studentId") String studentId,
+            @Param("bookState") Integer bookState,
+            @Param("bookClass") String bookClass,
+            @Param("bookTeacher") String bookTeacher,
             @Param("entryBookDate") String entryBookDate);
 
     // 복구 처리자 기록
     void updateWithdrawLogRestored(
-            @Param("id")       Long id,
+            @Param("id") Long id,
             @Param("userCode") String userCode);
 
     void updatePendingIsDeletedByStudentId(String studentId);

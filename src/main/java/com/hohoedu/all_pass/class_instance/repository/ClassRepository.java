@@ -207,6 +207,8 @@ public interface ClassRepository {
             @Param("remedialKey") String remedialKey,
             @Param("startTime") String startTime);
 
+    ClassRespDTO.RemedialSendDTO findAppTokenByRemedialKey(@Param("remedialKey") String remedialKey);
+
 
     public void deleteRemedial(
             @Param("remedialKey") String remedialKey);

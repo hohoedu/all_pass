@@ -102,7 +102,7 @@ public class StudentService {
         StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
-//        studentRepository.findStudentAttendanceByStudentId(studentId);
+        List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentRepository.findStudentAttendanceByStudentId(studentId);
         List<StudentWebRespDTO.StudentConsultDTO> consult = studentRepository.findStudentConsultByStudentId(studentId);
         List<StudentWebRespDTO.HanClass> hanClasses = studentRepository.findHanClasses(centerCode);
         List<StudentWebRespDTO.BookClass> bookClasses = studentRepository.findBookClasses(centerCode);
@@ -112,12 +112,14 @@ public class StudentService {
                 .studentInfo(student)
                 .studentPayment(payment)
                 .gradeCodes(grades)
+                .studentAttendance(attendance)
                 .studentCounsult(consult)
                 .hanClasses(hanClasses)
                 .bookClasses(bookClasses)
                 .hanTeachers(hanTeachers)
                 .bookTeachers(bookTeachers)
                 .build();
+        log.info(studentDetailRespDTO.toString());
         return studentDetailRespDTO;
     }
 

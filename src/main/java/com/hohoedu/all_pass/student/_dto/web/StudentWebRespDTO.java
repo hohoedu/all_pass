@@ -110,7 +110,11 @@ public class StudentWebRespDTO {
 
     @Data
     public static class StudentAttendanceDTO {
-
+        private String studentId;
+        private String inTime;
+        private String outTime;
+        private String attendance;
+        private String attendanceDate;
     }
 
     @Data

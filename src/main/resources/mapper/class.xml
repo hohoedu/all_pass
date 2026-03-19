@@ -915,6 +915,15 @@
         WHERE remedial_key = #{remedialKey}
     </update>
 
+    <select id="findAppTokenByRemedialKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemedialSendDTO">
+        select s.student_id, s.student_name, s.app_token, r.remedial_date, r.s_time
+        from erp_remedial r
+                 join erp_student s on r.student_id = s.student_id
+        where remedial_key = #{remedialKey}
+    </select>
+
+
+
     <delete id="deleteRemedial">
         DELETE
         FROM erp_remedial
