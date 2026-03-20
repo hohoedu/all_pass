@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.notice._dto.web;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
@@ -36,6 +37,21 @@ public class NoticeReqDTO {
         private String content;       // 내용
         private String linkUrl;       // 링크 URL (link_url)
         private String image;         // 이미지 경로
+    }
+
+    @Data
+    @Builder
+    public static class  RemedialNoticeDTO {
+        private String centerCode;
+        private String centerNoticeKey;
+        private String title;
+        private String subTitle;
+        private String content;
+        private String icon;
+        private String linkUrl;
+        private String image;
+        private Integer viewCount;
+        private String userCode;
     }
 
 }

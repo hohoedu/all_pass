@@ -418,13 +418,14 @@ public class ClassRespDTO {
     }
 
     @Data
-    public static class RemedialSendDTO{
+    public static class RemedialSendDTO {
         private String studentname;
         private String studentId;
         private String appToken;
         private String remedialDate;
         private String sTime;
-
+        private String userCode;
+        private String centerCode;
     }
 
 }

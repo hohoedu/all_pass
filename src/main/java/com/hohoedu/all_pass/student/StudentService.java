@@ -150,8 +150,10 @@ public class StudentService {
             String formattedBirth = convertBirthToFullDate(studentDTO.getBirth());
             studentDTO.setBirth(formattedBirth);
         }
+        String billingPhone = parentDTO.getParentTelFirst()+parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
 
         String phoneNumber = parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
+
         Integer maxSuffix = studentRepository.findMaxAppIdSuffix(phoneNumber);
 
         int nextSuffix = (maxSuffix == null) ? 0 : maxSuffix + 1;
@@ -161,6 +163,7 @@ public class StudentService {
         studentDTO.setAppId(appId);
         studentDTO.setAppPassword(DigestUtils.sha256Hex(parentDTO.getParentTelLast()));
         studentDTO.setEntryHanDate(today);
+        studentDTO.setBillingPhone(billingPhone);
 
         switch (studentDTO.getSubject()) {
             case "hoho" -> {

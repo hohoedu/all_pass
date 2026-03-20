@@ -32,6 +32,7 @@ public class StudentWebReqDTO {
         private boolean subHoho;
         private boolean subHan;
         private boolean subBook;
+        private String billingPhone;
     }
 
     @Data

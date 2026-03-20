@@ -13,6 +13,9 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
+import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
+import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
+import com.hohoedu.all_pass.notice.repository.NoticeRepository;
 import com.hohoedu.all_pass.payment.Payment;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment.model.PaymentDetail;
@@ -64,6 +67,7 @@ public class ClassService {
     private final StudentService studentService;
     private final PaymentService paymentService;
     private final FcmService fcmService;
+    private final NoticeRepository noticeRepository;
 
     public List<ClassRespDTO.MainClassSummaryDTO> getClassSummary(String centerCode, String userCode) {
 
@@ -920,6 +924,7 @@ public class ClassService {
         classRepository.updateRemedialDate(dto.getRemedialKey(), dto.getRemedialDate());
     }
 
+    @Transactional
     public void updateRemedialTime(ClassReqDTO.UpdateRemedialTimeDTO dto) {
         classRepository.updateRemedialTime(dto.getRemedialKey(), dto.getStartTime());
         // 보강 알림 발송
@@ -930,19 +935,41 @@ public class ClassService {
                 && StringUtils.hasText(response.getRemedialDate())
                 && !response.getRemedialDate().equals("9999-12-31")
                 && StringUtils.hasText(response.getSTime())) {
-
+            String month = String.valueOf(Integer.parseInt(response.getRemedialDate().substring(5, 7)));
+            String day = String.valueOf(Integer.parseInt(response.getRemedialDate().substring(8, 10)));
             String content = response.getStudentname() + " 학생의 보강 수업이 "
-                    + response.getRemedialDate().substring(5, 7) + "월 "
-                    + response.getRemedialDate().substring(8, 10) + "일 "
+                    + month + "월 "
+                    + day + "일 "
                     + response.getSTime() + "에 진행될 예정이에요. \n⏰시간에 맞춰 도착해 주세요.";
 
-            fcmService.sendMessage(response.getAppToken(), "보강 안내", content);
+            boolean isSend = fcmService.sendMessage(response.getAppToken(), "보강 안내", content);
 
-        } else {
-
+            if (isSend) {
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String centerNoticeKey = response.getUserCode() + now.format(formatter);
+                NoticeReqDTO.RemedialNoticeDTO remedialNoticeDTO = NoticeReqDTO.RemedialNoticeDTO.builder()
+                        .centerNoticeKey(centerNoticeKey)
+                        .title("보강 안내")
+                        .content(content)
+                        .subTitle(month + "월 "
+                                + day + "일 보강 안내")
+                        .icon("1")
+                        .centerCode(response.getCenterCode())
+                        .userCode(response.getUserCode())
+                        .build();
+                noticeRepository.insertRemedialNotice(remedialNoticeDTO);
+                noticeRepository.insertRemedialNoticeMap(remedialNoticeDTO.getCenterNoticeKey(), response.getStudentId());
+            }
         }
-
     }
+
+    private int saveRemeialSend(String userCode) {
+
+
+        return 1;
+    }
+
 
     public void deleteRemedial(ClassReqDTO.DeleteRemedialTimeDTO dto) {
         classRepository.deleteRemedial(dto.getRemedialKey());

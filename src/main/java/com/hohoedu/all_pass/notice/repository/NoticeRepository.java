@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.notice.repository;
 
-import com.hohoedu.all_pass.notice.CenterNotice;
 import com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
@@ -14,7 +13,14 @@ public interface NoticeRepository {
     int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto);
 
     int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO);
+
     int deleteCenterNotice(Integer id);
+
+    int insertRemedialNotice(NoticeReqDTO.RemedialNoticeDTO dto);
+
+    int insertRemedialNoticeMap(
+            @Param("centerNoticeKey") String centerNoticeKey,
+            @Param("studentId") String studentId);
 
     List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(
             @Param("centerCode") String centerCode,
