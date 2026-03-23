@@ -22,8 +22,8 @@ public class ConsultReqDTO {
     @Data
     public static class GetConsultReqDTO {
         private String userCode;
-        private String startYm;
-        private String endYm;
+        private String startDate;
+        private String endDate;
 
     }
 

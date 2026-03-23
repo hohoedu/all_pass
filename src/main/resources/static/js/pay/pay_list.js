@@ -1361,7 +1361,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (receiptType === 'business') {
             traderValue = '1';
         } else if (receiptType === 'self') {
-            traderValue = '2';
+            traderValue = '0';
         }
 
         return {

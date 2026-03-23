@@ -7,358 +7,104 @@
     <style>
         :root {
             --font: "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --ink: #111;
-            --muted: #666;
-            --line: #d9d9d9;
-
-            --soft-green: #eaf7ef;
-            --deep-green: #2c941b;
-            --txt-green: #588c39;
-            --soft-pink: #fdecef;
-            --deep-pink: #c5446d;
-            --txt-pink: #b16081;
-            --soft-blue: #edf4ff;
-            --deep-blue: #4e5aa6;
-            --txt-blue: #5b66aa;
-            --soft-orange: #fff4e7;
-            --deep-orange: #d68f26;
-            --txt-orange: #c38528;
-            --soft-gray: #f6f6f6;
-            --deep-gray: #828282;
-            --txt-gray: #898989;
-
+            --ink: #111; --muted: #666; --line: #d9d9d9;
+            --soft-green: #eaf7ef; --deep-green: #2c941b; --txt-green: #588c39;
+            --soft-pink: #fdecef;  --deep-pink: #c5446d;  --txt-pink: #b16081;
+            --soft-blue: #edf4ff;  --deep-blue: #4e5aa6;  --txt-blue: #5b66aa;
+            --soft-orange: #fff4e7; --deep-orange: #d68f26; --txt-orange: #c38528;
+            --soft-gray: #f6f6f6;  --deep-gray: #828282;  --txt-gray: #898989;
             --gap: 10px;
         }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: var(--font);
-            color: var(--ink);
-            background: #fff;
-        }
-
-        .wrap {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 18px 20px 24px;
-        }
-
-        .top {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 900;
-            letter-spacing: -.2px;
-        }
-
-        .meta {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--muted);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        /* ===== Summary tabs ===== */
-        .tabs {
-            display: flex;
-            gap: var(--gap);
-            justify-content: center;
-            margin: 10px 0 14px;
-        }
-
-        .tab {
-            border: 0;
-            border-radius: 12px;
-            padding: 10px 16px;
-            min-width: 150px;
-            max-width: 200px;
-            flex: 1 1 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 900;
-            background: var(--soft-gray);
-            color: var(--txt-gray);
-        }
-
-        .tab[data-k="join"] {
-            background: var(--soft-green);
-            color: var(--txt-green);
-        }
-
-        .tab[data-k="leave"] {
-            background: var(--soft-pink);
-            color: var(--txt-pink);
-        }
-
-        .tab[data-k="movein"] {
-            background: var(--soft-blue);
-            color: var(--txt-blue);
-        }
-
-        .tab[data-k="moveout"] {
-            background: var(--soft-orange);
-            color: var(--txt-orange);
-        }
-
-        .tab[data-k="grad"] {
-            background: var(--soft-gray);
-            color: var(--txt-gray);
-        }
-
-
-        .page {
-            border-top: 2px solid #3b3b3b;
-            padding-top: 14px;
-            margin-top: 10px;
-        }
-
-        .page--next {
-            break-before: page;
-            page-break-before: always;
-        }
-
-        .page-head {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .page-title {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 900;
-        }
-
-        .page-sub {
-            font-size: 12.5px;
-            color: var(--muted);
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .teacher-block {
-            margin-top: 12px;
-            border: 1px solid var(--line);
-            border-radius: 0;
-            overflow: hidden;
-        }
-
-        .teacher-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 10px 12px;
-            background: #fafafa;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .teacher-name {
-            font-weight: 900;
-        }
-
-        .teacher-count {
-            color: var(--muted);
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        /* ===== Tables ===== */
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            table-layout: fixed;
-            border: 0;
-            border-radius: 0;
-        }
-
-        th, td {
-            padding: 9px 10px;
-            font-size: 13px;
-            line-height: 1.35;
-            vertical-align: middle;
-            text-align: center;
-
-            border: 0;
-            border-bottom: 1px solid var(--line);
-            border-right: 1px solid var(--line);
-        }
-
-        th {
-            background: #f3f4f6;
-            font-weight: 900;
-        }
-
-        tr > *:first-child {
-            border-left: 0 !important;
-        }
-
-        tr > *:last-child {
-            border-right: 0 !important;
-        }
-
-        tbody tr:last-child > * {
-            border-bottom: 0 !important;
-        }
-
-
-        .td-text {
-            text-align: left;
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        .td-text p {
-            margin: 0;
-        }
-
-
-        .empty {
-            text-align: center !important;
-            color: #777;
-            padding: 14px !important;
-        }
-
-        /* ===== Print ===== */
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: var(--font); color: var(--ink); background: #fff; }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 18px 20px 24px; }
+        .top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+        .title { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -.2px; }
+        .meta { display: flex; align-items: center; gap: 10px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+        .page { border-top: 2px solid #3b3b3b; padding-top: 14px; margin-top: 10px; }
+        .page--next { break-before: page; page-break-before: always; }
+        .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .page-title { margin: 0; font-size: 15px; font-weight: 900; }
+        .page-sub { font-size: 12.5px; color: var(--muted); font-weight: 700; white-space: nowrap; }
+        .teacher-block { margin-top: 12px; border: 1px solid var(--line); border-radius: 0; overflow: hidden; }
+        .teacher-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: #fafafa; border-bottom: 1px solid var(--line); }
+        .teacher-name { font-weight: 900; }
+        .teacher-count { color: var(--muted); font-weight: 800; white-space: nowrap; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; border: 0; }
+        th, td { padding: 9px 10px; font-size: 13px; line-height: 1.35; vertical-align: middle; text-align: center; border: 0; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+        th { background: #f3f4f6; font-weight: 900; }
+        tr > *:first-child { border-left: 0 !important; }
+        tr > *:last-child { border-right: 0 !important; }
+        tbody tr:last-child > * { border-bottom: 0 !important; }
+        .td-text { text-align: left; white-space: normal; word-break: break-word; }
+        .td-text p { margin: 0; }
+        .empty { text-align: center !important; color: #777; padding: 14px !important; }
         @media print {
-            @page {
-                size: A4 landscape;
-                margin: 10mm;
-            }
-
-            * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .wrap {
-                max-width: none;
-                padding: 0;
-            }
-
-            thead {
-                display: table-header-group;
-            }
-
-            tfoot {
-                display: table-footer-group;
-            }
-
-
-            .teacher-block {
-                break-inside: auto;
-                page-break-inside: auto;
-            }
+            @page { size: A4 landscape; margin: 10mm; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .wrap { max-width: none; padding: 0; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            .teacher-block { break-inside: auto; page-break-inside: auto; }
         }
     </style>
 </head>
-
 <body>
 <div class="wrap">
     <header class="top">
         <h1 class="title" th:text="${tabName} + ' 현황'">현황</h1>
-        <div class="meta">
-            <span th:text="${ym}"></span>
-        </div>
+        <div class="meta"><span th:text="${ym}"></span></div>
     </header>
 
     <!-- ===== 입회 ===== -->
-    <section class="page" th:if="${tab == 't1'}">
+    <section class="page" th:if="${tab == 'all' and !#maps.isEmpty(joinGrouped)}">
         <div class="page-head">
             <h2 class="page-title">입회 리스트</h2>
             <div class="page-sub">선생님별 입회 학생 목록</div>
         </div>
-
-        <!-- 선생님별 그룹핑 -->
-        <th:block th:with="grouped=${#lists.isEmpty(list) ? {} : list}">
-            <article class="teacher-block"
-                     th:each="entry : ${groupedByTeacher}">
-                <div class="teacher-head">
-                    <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
-                    <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
-                </div>
-                <table>
-                    <colgroup>
-                        <col style="width:6%">
-                        <col style="width:12%">
-                        <col style="width:16%">
-                        <col style="width:10%">
-                        <col style="width:14%">
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>이름</th>
-                        <th>수강과목</th>
-                        <th>학년</th>
-                        <th>입회일</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="s, stat : ${entry.value}">
-                        <td th:text="${stat.index + 1}"></td>
-                        <td th:text="${s.studentName}"></td>
-                        <td th:text="${s.className}"></td>
-                        <td th:text="${s.gradeName}"></td>
-                        <td th:text="${s.joinDate}"></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(entry.value)}">
-                        <td colspan="5" class="empty">해당 월의 입회 학생이 없습니다.</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </article>
-        </th:block>
-    </section>
-
-    <!-- ===== 탈퇴 ===== -->
-    <section class="page" th:if="${tab == 't2'}">
-        <div class="page-head">
-            <h2 class="page-title">탈퇴 리스트</h2>
-            <div class="page-sub">선생님별 탈퇴 학생 목록</div>
-        </div>
-        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+        <article class="teacher-block" th:each="entry : ${joinGrouped}">
             <div class="teacher-head">
                 <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
                 <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
             </div>
             <table>
                 <colgroup>
-                    <col style="width:6%">
-                    <col style="width:12%">
-                    <col style="width:14%">
-                    <col style="width:10%">
-                    <col style="width:12%">
-                    <col style="width:12%">
-                    <col style="width:34%">
+                    <col style="width:6%"><col style="width:12%"><col style="width:16%"><col style="width:10%"><col style="width:14%">
                 </colgroup>
                 <thead>
-                <tr>
-                    <th>No</th>
-                    <th>이름</th>
-                    <th>수강과목</th>
-                    <th>학년</th>
-                    <th>입회일</th>
-                    <th>탈퇴일</th>
-                    <th>탈퇴사유</th>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
                 </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- ===== 탈퇴 ===== -->
+    <section class="page page--next" th:if="${tab == 'all' and !#maps.isEmpty(withdrawGrouped)}">
+        <div class="page-head">
+            <h2 class="page-title">탈퇴 리스트</h2>
+            <div class="page-sub">선생님별 탈퇴 학생 목록</div>
+        </div>
+        <article class="teacher-block" th:each="entry : ${withdrawGrouped}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:12%"><col style="width:14%">
+                    <col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:22%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th><th>탈퇴일</th><th>수강기간</th><th>탈퇴사유</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="s, stat : ${entry.value}">
@@ -368,10 +114,8 @@
                     <td th:text="${s.gradeName}"></td>
                     <td th:text="${s.joinDate}"></td>
                     <td th:text="${s.withdrawDate}"></td>
+                    <td th:text="${s.attendMonths} + '개월'"></td>
                     <td class="td-text"><p th:text="${s.reason}"></p></td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(entry.value)}">
-                    <td colspan="7" class="empty">해당 월의 탈퇴 학생이 없습니다.</td>
                 </tr>
                 </tbody>
             </table>
@@ -379,40 +123,24 @@
     </section>
 
     <!-- ===== 전입 ===== -->
-    <section class="page" th:if="${tab == 't3'}">
+    <section class="page page--next" th:if="${tab == 'all' and !#maps.isEmpty(transferInGrouped)}">
         <div class="page-head">
             <h2 class="page-title">전입 리스트</h2>
             <div class="page-sub">선생님별 전입 학생 목록</div>
         </div>
-        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+        <article class="teacher-block" th:each="entry : ${transferInGrouped}">
             <div class="teacher-head">
                 <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
                 <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
             </div>
             <table>
                 <colgroup>
-                    <col style="width:6%">
-                    <col style="width:11%">
-                    <col style="width:14%">
-                    <col style="width:11%">
-                    <col style="width:11%">
-                    <col style="width:8%">
-                    <col style="width:11%">
-                    <col style="width:10%">
-                    <col style="width:18%">
+                    <col style="width:6%"><col style="width:11%"><col style="width:14%">
+                    <col style="width:11%"><col style="width:11%"><col style="width:8%">
+                    <col style="width:11%"><col style="width:10%"><col style="width:18%">
                 </colgroup>
                 <thead>
-                <tr>
-                    <th>No</th>
-                    <th>이름</th>
-                    <th>수강과목</th>
-                    <th>전입선생님</th>
-                    <th>전출선생님</th>
-                    <th>학년</th>
-                    <th>입회일</th>
-                    <th>전입일</th>
-                    <th>전입사유</th>
-                </tr>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>전입선생님</th><th>전출선생님</th><th>학년</th><th>입회일</th><th>전입일</th><th>전입사유</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="s, stat : ${entry.value}">
@@ -425,9 +153,6 @@
                     <td th:text="${s.joinDate}"></td>
                     <td th:text="${s.transferDate}"></td>
                     <td class="td-text"><p th:text="${s.reason}"></p></td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(entry.value)}">
-                    <td colspan="9" class="empty">해당 월의 전입 학생이 없습니다.</td>
                 </tr>
                 </tbody>
             </table>
@@ -435,40 +160,24 @@
     </section>
 
     <!-- ===== 전출 ===== -->
-    <section class="page" th:if="${tab == 't4'}">
+    <section class="page page--next" th:if="${tab == 'all' and !#maps.isEmpty(transferOutGrouped)}">
         <div class="page-head">
             <h2 class="page-title">전출 리스트</h2>
             <div class="page-sub">선생님별 전출 학생 목록</div>
         </div>
-        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+        <article class="teacher-block" th:each="entry : ${transferOutGrouped}">
             <div class="teacher-head">
                 <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
                 <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
             </div>
             <table>
                 <colgroup>
-                    <col style="width:6%">
-                    <col style="width:11%">
-                    <col style="width:14%">
-                    <col style="width:11%">
-                    <col style="width:11%">
-                    <col style="width:8%">
-                    <col style="width:11%">
-                    <col style="width:10%">
-                    <col style="width:18%">
+                    <col style="width:6%"><col style="width:11%"><col style="width:14%">
+                    <col style="width:11%"><col style="width:11%"><col style="width:8%">
+                    <col style="width:11%"><col style="width:10%"><col style="width:18%">
                 </colgroup>
                 <thead>
-                <tr>
-                    <th>No</th>
-                    <th>이름</th>
-                    <th>수강과목</th>
-                    <th>전입선생님</th>
-                    <th>전출선생님</th>
-                    <th>학년</th>
-                    <th>입회일</th>
-                    <th>전출일</th>
-                    <th>전출사유</th>
-                </tr>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>전입선생님</th><th>전출선생님</th><th>학년</th><th>입회일</th><th>전출일</th><th>전출사유</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="s, stat : ${entry.value}">
@@ -482,45 +191,29 @@
                     <td th:text="${s.transferDate}"></td>
                     <td class="td-text"><p th:text="${s.reason}"></p></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(entry.value)}">
-                    <td colspan="9" class="empty">해당 월의 전출 학생이 없습니다.</td>
-                </tr>
                 </tbody>
             </table>
         </article>
     </section>
 
     <!-- ===== 졸업 ===== -->
-    <section class="page" th:if="${tab == 't5'}">
+    <section class="page page--next" th:if="${tab == 'all' and !#maps.isEmpty(graduateGrouped)}">
         <div class="page-head">
             <h2 class="page-title">졸업 리스트</h2>
             <div class="page-sub">선생님별 졸업 학생 목록</div>
         </div>
-        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+        <article class="teacher-block" th:each="entry : ${graduateGrouped}">
             <div class="teacher-head">
                 <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
                 <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
             </div>
             <table>
                 <colgroup>
-                    <col style="width:6%">
-                    <col style="width:12%">
-                    <col style="width:16%">
-                    <col style="width:10%">
-                    <col style="width:14%">
-                    <col style="width:14%">
-                    <col style="width:16%">
+                    <col style="width:6%"><col style="width:12%"><col style="width:16%">
+                    <col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:16%">
                 </colgroup>
                 <thead>
-                <tr>
-                    <th>No</th>
-                    <th>이름</th>
-                    <th>수강과목</th>
-                    <th>학년</th>
-                    <th>입회일</th>
-                    <th>졸업일</th>
-                    <th>사유</th>
-                </tr>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th><th>졸업일</th><th>사유</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="s, stat : ${entry.value}">
@@ -532,13 +225,231 @@
                     <td th:text="${s.graduateDate}"></td>
                     <td class="td-text"><p th:text="${s.reason}"></p></td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(entry.value)}">
-                    <td colspan="7" class="empty">해당 월의 졸업 학생이 없습니다.</td>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- ===== 상담 ===== -->
+    <section class="page page--next" th:if="${tab == 'all' and !#maps.isEmpty(consultGrouped)}">
+        <div class="page-head">
+            <h2 class="page-title">상담 리스트</h2>
+            <div class="page-sub">선생님별 상담 목록</div>
+        </div>
+        <article class="teacher-block" th:each="entry : ${consultGrouped}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:5%"><col style="width:10%"><col style="width:10%">
+                    <col style="width:8%"><col style="width:10%"><col style="width:10%">
+                    <col style="width:10%"><col style="width:37%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>No</th><th>상담일</th><th>이름</th><th>학년</th>
+                    <th>학교</th><th>연락처</th><th>진행상황</th><th>상담내용</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.consultDate}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.school}"></td>
+                    <td th:text="${s.phone}"></td>
+                    <td th:text="${s.progressName}"></td>
+                    <td class="td-text"><p th:text="${s.content}"></p></td>
                 </tr>
                 </tbody>
             </table>
         </article>
     </section>
+
+    <!-- ===== 단일 탭 (t1~t5) ===== -->
+
+    <!-- 입회 -->
+    <section class="page" th:if="${tab == 't1'}">
+        <div class="page-head">
+            <h2 class="page-title">입회 리스트</h2>
+            <div class="page-sub">선생님별 입회 학생 목록</div>
+        </div>
+        <div th:if="${#maps.isEmpty(groupedByTeacher)}" class="empty" style="padding:20px; text-align:center; color:#777;">해당 월의 입회 학생이 없습니다.</div>
+        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:12%"><col style="width:16%"><col style="width:10%"><col style="width:14%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- 탈퇴 -->
+    <section class="page" th:if="${tab == 't2'}">
+        <div class="page-head">
+            <h2 class="page-title">탈퇴 리스트</h2>
+            <div class="page-sub">선생님별 탈퇴 학생 목록</div>
+        </div>
+        <div th:if="${#maps.isEmpty(groupedByTeacher)}" class="empty" style="padding:20px; text-align:center; color:#777;">해당 월의 탈퇴 학생이 없습니다.</div>
+        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:12%"><col style="width:14%">
+                    <col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:22%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th><th>탈퇴일</th><th>수강기간</th><th>탈퇴사유</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
+                    <td th:text="${s.withdrawDate}"></td>
+                    <td th:text="${s.attendMonths} + '개월'"></td>
+                    <td class="td-text"><p th:text="${s.reason}"></p></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- 전입 -->
+    <section class="page" th:if="${tab == 't3'}">
+        <div class="page-head">
+            <h2 class="page-title">전입 리스트</h2>
+            <div class="page-sub">선생님별 전입 학생 목록</div>
+        </div>
+        <div th:if="${#maps.isEmpty(groupedByTeacher)}" class="empty" style="padding:20px; text-align:center; color:#777;">해당 월의 전입 학생이 없습니다.</div>
+        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:11%"><col style="width:14%">
+                    <col style="width:11%"><col style="width:11%"><col style="width:8%">
+                    <col style="width:11%"><col style="width:10%"><col style="width:18%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>전입선생님</th><th>전출선생님</th><th>학년</th><th>입회일</th><th>전입일</th><th>전입사유</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.transferInTeacher}"></td>
+                    <td th:text="${s.transferOutTeacher}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
+                    <td th:text="${s.transferDate}"></td>
+                    <td class="td-text"><p th:text="${s.reason}"></p></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- 전출 -->
+    <section class="page" th:if="${tab == 't4'}">
+        <div class="page-head">
+            <h2 class="page-title">전출 리스트</h2>
+            <div class="page-sub">선생님별 전출 학생 목록</div>
+        </div>
+        <div th:if="${#maps.isEmpty(groupedByTeacher)}" class="empty" style="padding:20px; text-align:center; color:#777;">해당 월의 전출 학생이 없습니다.</div>
+        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:11%"><col style="width:14%">
+                    <col style="width:11%"><col style="width:11%"><col style="width:8%">
+                    <col style="width:11%"><col style="width:10%"><col style="width:18%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>전입선생님</th><th>전출선생님</th><th>학년</th><th>입회일</th><th>전출일</th><th>전출사유</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.transferInTeacher}"></td>
+                    <td th:text="${s.transferOutTeacher}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
+                    <td th:text="${s.transferDate}"></td>
+                    <td class="td-text"><p th:text="${s.reason}"></p></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
+    <!-- 졸업 -->
+    <section class="page" th:if="${tab == 't5'}">
+        <div class="page-head">
+            <h2 class="page-title">졸업 리스트</h2>
+            <div class="page-sub">선생님별 졸업 학생 목록</div>
+        </div>
+        <div th:if="${#maps.isEmpty(groupedByTeacher)}" class="empty" style="padding:20px; text-align:center; color:#777;">해당 월의 졸업 학생이 없습니다.</div>
+        <article class="teacher-block" th:each="entry : ${groupedByTeacher}">
+            <div class="teacher-head">
+                <div class="teacher-name" th:text="${entry.key} + ' 선생님'"></div>
+                <div class="teacher-count" th:text="'총 ' + ${#lists.size(entry.value)} + '명'"></div>
+            </div>
+            <table>
+                <colgroup>
+                    <col style="width:6%"><col style="width:12%"><col style="width:16%">
+                    <col style="width:10%"><col style="width:14%"><col style="width:14%"><col style="width:16%">
+                </colgroup>
+                <thead>
+                <tr><th>No</th><th>이름</th><th>수강과목</th><th>학년</th><th>입회일</th><th>졸업일</th><th>사유</th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${entry.value}">
+                    <td th:text="${stat.index + 1}"></td>
+                    <td th:text="${s.studentName}"></td>
+                    <td th:text="${s.className}"></td>
+                    <td th:text="${s.gradeName}"></td>
+                    <td th:text="${s.joinDate}"></td>
+                    <td th:text="${s.graduateDate}"></td>
+                    <td class="td-text"><p th:text="${s.reason}"></p></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+
 </div>
 <script>window.onload = () => window.print();</script>
 </body>

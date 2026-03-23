@@ -10,13 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function getMonthRange(monthsAgo) {
+    function getDateRange(monthsAgo) {
         const today = new Date();
-        const past = new Date(today);
+        const past  = new Date(today);
         past.setMonth(today.getMonth() - monthsAgo);
+
+        function formatDate(d) {
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
         return {
-            startYm: formatYM(past),
-            endYm: formatYM(today)
+            startDate: formatDate(past),
+            endDate:   formatDate(today)
         };
     }
 
@@ -34,13 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function getProgressText(progressKey) {
         switch (progressKey) {
             case 'waiting':
-                return '수업대기';
+                return '대기';
             case 'confirmed':
-                return '수업확정';
+                return '입회';
             case 'ended':
                 return '종료';
             default:
-                return '상담진행';
+                return '문의';
         }
     }
 
@@ -48,23 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const excelBtn = document.getElementById("consult-excel");
 
     printBtn.addEventListener("click", () => {
-        // alert("상담 문의 출력은 현재 작업 중입니다.")
-        // const ym = document.getElementById('monthPickerInput').value.replace('-', '');
-        // const userCode = document.getElementById('teacher-select')?.value;
-        // const centerCode = document.getElementById('')
-
-
         const displayText = periodDisplay.textContent;
-        const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
-
+        const matches = displayText.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);
         const userCode = teacherFilter.value;
+
+        console.log("displayText:", displayText);  // 날짜 텍스트 확인
+        console.log("matches:", matches);           // 정규식 매칭 확인
+        console.log("userCode:", userCode);         // userCode 확인
 
         let url = `/consult/print-consult?userCode=${userCode}`;
         if (matches) {
-            url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
+            url += `&startDate=${matches[1]}&endDate=${matches[2]}`;
         }
 
-        // window.open(url);
+        console.log("url:", url);  // 최종 URL 확인
         printConsult(url);
     });
 
@@ -363,9 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${progressText}
                             </button>
                             <ul class="dropdown-status">
-                                <li data-status="counseling">상담진행</li>
-                                <li data-status="waiting">수업대기</li>
-                                <li data-status="confirmed">수업확정</li>
+                                <li data-status="confirmed">입회</li>
+                                <li data-status="waiting">대기</li>
+                                <li data-status="counseling">문의</li>
                                 <li data-status="ended">종료</li>
                             </ul>
                         </div>
@@ -382,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         attachTextareaEvents();
         attachJoinLinkEvents();
     }
+
     function attachJoinLinkEvents() {
         consultTableBody.querySelectorAll('.join-link').forEach(btn => {
             btn.addEventListener('click', async function (e) {
@@ -414,7 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const response = await fetch('/popbill/send-join', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             source: 'CONSULT',
                             phone,
@@ -441,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
     function attachTextareaEvents() {
         const textareas = consultTableBody.querySelectorAll('.comment-text');
 
@@ -597,139 +601,125 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    let allConsultData = [];
+
+    const PROGRESS_ORDER = {
+        'counseling': 1,
+        'waiting': 2,
+        'confirmed': 3,
+        'ended': 4
+    };
+
     // 데이터 조회
-    async function fetchConsults(startYm, endYm, userCode) {
+    async function fetchConsults(startDate, endDate, userCode) {
         try {
-
-            const requestBody = {
-                startYm: startYm,
-                endYm: endYm,
-                userCode: userCode
-            };
-
             const res = await fetch('/consult/search', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(requestBody)
+                body: JSON.stringify({ startDate, endDate, userCode })
             });
-
-            if (!res.ok) {
-                console.error("서버 조회 실패:", res.status);
-                return;
-            }
+            if (!res.ok) { console.error("서버 조회 실패:", res.status); return; }
 
             const data = await res.json();
-            console.log(data.response);
-            renderConsultTable(data.response);
+            allConsultData = data.response ?? [];
+            applyProgressSort();
         } catch (err) {
             console.error("조회 실패:", err);
         }
     }
 
+    function applyProgressSort() {
+        const sortVal = document.getElementById('progress-sort')?.value || 'all';
+
+        let sorted;
+        if (sortVal === 'all') {
+            sorted = [...allConsultData];
+        } else {
+            const top    = allConsultData.filter(item => (item.progressKey || 'counseling') === sortVal);
+            const others = allConsultData.filter(item => (item.progressKey || 'counseling') !== sortVal);
+            sorted = [...top, ...others];
+        }
+
+        renderConsultTable(sorted);
+    }
+
+    document.getElementById('progress-sort')?.addEventListener('change', () => {
+        applyProgressSort();
+    });
+
     /* =================== *
      *   기간 필터          *
      * =================== */
-    const radios = document.querySelectorAll('input[name="period"]');
-    const periodDisplay = document.getElementById('period-display');
-    const calendarFilterBtn = document.getElementById('calendar-btn');
-    const calendarInput = document.getElementById('calendar-input');
-    const teacherFilter = document.getElementById('consult-teacher-filter');
-
-    // 초기 로드 시 기본 기간으로 조회
-    async function initPeriodFilter() {
-        const defaultRadio = document.querySelector('input[name="period"][value="3m"]');
-        const userCode = teacherFilter.value;
-
-        if (defaultRadio) {
-            defaultRadio.checked = true;
-            const range = getMonthRange(3);
-            periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
-            await fetchConsults(range.startYm, range.endYm, userCode);
-        }
-    }
+    const radios            = document.querySelectorAll('input[name="period"]');
+    const periodDisplay     = document.getElementById('period-display');
+    const periodDisplayWrap = document.getElementById('period-display-wrap');
+    const customRangeWrap   = document.getElementById('custom-range-wrap');
+    const customStart       = document.getElementById('custom-start');
+    const customEnd         = document.getElementById('custom-end');
+    const customSearchBtn   = document.getElementById('custom-search-btn');
+    const teacherFilter     = document.getElementById('consult-teacher-filter');
 
     // 라디오 버튼 변경
     radios.forEach(radio => {
-        radio.addEventListener("change", async (e) => {
+        radio.addEventListener('change', async (e) => {
             const val = e.target.value;
-            const userCode = teacherFilter.value;
-            let range;
 
-            if (val === "1y") {
-                range = getMonthRange(12);
-            } else if (val === "6m") {
-                range = getMonthRange(6);
-            } else if (val === "3m") {
-                range = getMonthRange(3);
-            } else if (val === "custom") {
-                periodDisplay.textContent = "직접 날짜를 선택하세요";
+            if (val === 'custom') {
+                periodDisplayWrap.style.display = 'none';
+                customRangeWrap.style.display   = 'flex';
                 return;
             }
 
-            periodDisplay.textContent = `${range.startYm} ~ ${range.endYm}`;
-            await fetchConsults(range.startYm, range.endYm, userCode);
+            periodDisplayWrap.style.display = '';
+            customRangeWrap.style.display   = 'none';
+
+            const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
+            const range  = getDateRange(months);
+            periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
+            await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
         });
     });
 
-    // 일자지정 버튼
-    calendarFilterBtn?.addEventListener("click", async () => {
-        const customRadio = document.getElementById("period-custom");
-        if (!customRadio.checked) {
-            customRadio.checked = true;
-            customRadio.dispatchEvent(new Event("change"));
-        }
-        calendarInput.showPicker();
+    // 일자지정 조회 버튼
+    customSearchBtn?.addEventListener('click', async () => {
+        const startDate = customStart.value;
+        const endDate   = customEnd.value;
+
+        if (!startDate || !endDate) { alert('시작일과 종료일을 선택해주세요.'); return; }
+        if (startDate > endDate)    { alert('시작일이 종료일보다 늦을 수 없습니다.'); return; }
+
+        periodDisplay.textContent = `${startDate} ~ ${endDate}`;
+        await fetchConsults(startDate, endDate, teacherFilter.value);
     });
 
-    // 달력 입력
-    calendarInput?.addEventListener("change", async (e) => {
-        const selectedMonth = e.target.value;
-        const userCode = teacherFilter.value;
-        if (!selectedMonth) return;
-
-        const today = new Date();
-        const endYm = formatYM(today);
-        const startYm = selectedMonth;
-
-        periodDisplay.textContent = `${startYm} ~ ${endYm}`;
-        await fetchConsults(startYm, endYm, userCode);
-    });
-
-
+    // 선생님 필터 변경
     teacherFilter?.addEventListener('change', async () => {
-        const userCode = teacherFilter.value;
+        const val = document.querySelector('input[name="period"]:checked')?.value;
+        if (!val) return;
 
-        // 현재 선택된 기간 가져오기
-        const checkedRadio = document.querySelector('input[name="period"]:checked');
-        if (!checkedRadio) return;
-
-        const val = checkedRadio.value;
-        let range;
-
-        if (val === "1y") {
-            range = getMonthRange(12);
-        } else if (val === "6m") {
-            range = getMonthRange(6);
-        } else if (val === "3m") {
-            range = getMonthRange(3);
-        } else if (val === "custom") {
-            // 커스텀 기간인 경우 periodDisplay에서 파싱
-            const displayText = periodDisplay.textContent;
-            const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
-            if (matches) {
-                range = {
-                    startYm: matches[1],
-                    endYm: matches[2]
-                };
-            } else {
-                return;
-            }
+        if (val === 'custom') {
+            const startDate = customStart.value;
+            const endDate   = customEnd.value;
+            if (startDate && endDate) await fetchConsults(startDate, endDate, teacherFilter.value);
+            return;
         }
 
-        await fetchConsults(range.startYm, range.endYm, userCode);
+        const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
+        const range  = getDateRange(months);
+        periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
+        await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
     });
-    // 초기 데이터 로드
-    initPeriodFilter();
+
+    // 초기 로드 (3개월 기본)
+    (async () => {
+        const defaultRadio = document.querySelector('input[name="period"][value="3m"]');
+        if (defaultRadio) {
+            defaultRadio.checked = true;
+            const range = getDateRange(3);
+            periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
+            await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
+        }
+    })();
 
     /* =================== *
      *   체크박스 관리       *

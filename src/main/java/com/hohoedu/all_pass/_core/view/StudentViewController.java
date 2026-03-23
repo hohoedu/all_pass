@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
+import com.hohoedu.all_pass.consult.ConsultService;
+import com.hohoedu.all_pass.consult._dto.ConsultRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.student.model.PendingStudent;
@@ -29,6 +31,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRe
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.threeten.bp.LocalDate;
 
 @Controller
 @RequestMapping("/student")
@@ -38,6 +41,7 @@ public class StudentViewController {
     private final StudentService studentService;
     private final ClassService classService;
     private final UserService userService;
+    private final ConsultService consultService;
 
     // 학생 등록
     @GetMapping("/web/join")
@@ -157,6 +161,35 @@ public class StudentViewController {
         req.setYm(ym);
         req.setUserCode(userCode);
 
+        if ("all".equals(tab)) {
+            model.addAttribute("joinGrouped", studentService.findJoinList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정")));
+            model.addAttribute("withdrawGrouped", studentService.findWithdrawList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정")));
+            model.addAttribute("transferInGrouped", studentService.findTransferInList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정")));
+            model.addAttribute("transferOutGrouped", studentService.findTransferOutList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정")));
+            model.addAttribute("graduateGrouped", studentService.findGraduateList(req).stream()
+                    .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정")));
+
+            // 상담 - 해당 월 첫날 ~ 마지막날
+            LocalDate firstDay = LocalDate.parse(ym + "-01");
+            String startDate = firstDay.toString();
+            String endDate   = firstDay.withDayOfMonth(firstDay.lengthOfMonth()).toString();
+
+            Map<String, List<ConsultRespDTO.ConsultPrintDTO>> consultGrouped =
+                    consultService.findConsultForPrint(userCode, startDate, endDate)
+                            .stream()
+                            .collect(Collectors.groupingBy(s -> s.getUsername() != null ? s.getUsername() : "미지정"));
+
+            model.addAttribute("consultGrouped", consultGrouped);
+            model.addAttribute("tab", "all");
+            model.addAttribute("tabName", "전체");
+            model.addAttribute("ym", ym);
+            return "print/print-student-withdrawal";
+        }
+
         String tabName = switch (tab) {
             case "t1" -> "입회";
             case "t2" -> "탈퇴";
@@ -187,7 +220,6 @@ public class StudentViewController {
 
         return "print/print-student-withdrawal";
     }
-
     // 전입 전출 현황 출력화면
     @GetMapping("/print-transfer")
     public String getStudentTransferPrintPage() {

@@ -31,25 +31,24 @@
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
         SELECT
-        c.id AS id,
-        c.student_name AS studentName,
-        c.consult_date AS consultDate,
-        c.school AS school,
-        c.phone AS phone,
-        c.content AS content,
-        c.grade_key AS gradeKey,
-        g.grade_name AS gradeName,
-        i.inflow_route_name AS inflowRouteName,
-        c.progress_key AS progressKey
+        c.id                  AS id,
+        c.student_name        AS studentName,
+        c.consult_date        AS consultDate,
+        c.school              AS school,
+        c.phone               AS phone,
+        c.content             AS content,
+        c.grade_key           AS gradeKey,
+        g.grade_name          AS gradeName,
+        i.inflow_route_name   AS inflowRouteName,
+        c.progress_key        AS progressKey
         FROM ERP_CONSULT c
         JOIN erp_grade_code g ON c.grade_key = g.grade_key
         LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         <where>
             c.center_code = #{centerCode}
             AND c.user_code = #{userCode}
-            <if test="startYm != null and endYm != null">
-                AND c.consult_date BETWEEN CONCAT(#{startYm}, '-01')
-                AND EOMONTH(CONCAT(#{endYm}, '-01'))
+            <if test="startDate != null and endDate != null">
+                AND c.consult_date BETWEEN #{startDate} AND #{endDate}
             </if>
         </where>
         ORDER BY c.consult_date DESC
@@ -99,13 +98,15 @@
                phone                 AS phone,
                content               AS content,
                eir.inflow_route_name AS inflowRouteName,
-               epc.progress_name     AS progressName
+               epc.progress_name     AS progressName,
+               con.progress_key      AS progressKey
         from erp_consult con
                  left join erp_grade_code gc on con.grade_key = gc.grade_key
                  left join erp_inflow_route eir on con.inflow_route_key = eir.inflow_route_key
                  left join erp_progress_code epc on con.progress_key = epc.progress_key
                  join erp_user u on con.user_code = u.user_code
         where con.user_code = #{userCode}
+          AND con.consult_date BETWEEN #{startDate} AND #{endDate}
         order by consultDate desc
     </select>
 

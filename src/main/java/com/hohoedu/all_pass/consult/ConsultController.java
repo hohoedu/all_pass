@@ -53,10 +53,8 @@ public class ConsultController {
                     .build();
         }
 
-        String startYm = req.getStartYm();
-        String endYm = req.getEndYm();
-
-        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(startYm, endYm, user.getCenterCode(), req.getUserCode());
+        List<ConsultRespDTO.ConsultDTO> response = consultService.findByPeriod(
+                req.getStartDate(), req.getEndDate(), user.getCenterCode(), req.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }

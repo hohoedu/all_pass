@@ -1,8 +1,10 @@
 package com.hohoedu.all_pass.consult;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -52,10 +54,10 @@ public class ConsultService {
         return response;
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startYm, String endYm, String centerCode, String userCode) {
+    public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startDate, String endDate, String centerCode, String userCode) {
         Map<String, Object> params = new HashMap<>();
-        params.put("startYm", startYm);
-        params.put("endYm", endYm);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
         params.put("centerCode", centerCode);
         params.put("userCode", userCode);
         List<ConsultRespDTO.ConsultDTO> response = consultRepository.findByPeriod(params);
@@ -98,12 +100,25 @@ public class ConsultService {
         consultRepository.updateConsult(reqDTO);
     }
 
-    public List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode) {
+    public List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode, String startDate, String endDate) {
 
-        return consultRepository.findConsultForPrint(userCode);
+        Map<String, Integer> progressOrder = Map.of(
+                "confirmed",  1,
+                "waiting",    2,
+                "counseling", 3,
+                "ended",      4
+        );
+
+        return consultRepository.findConsultForPrint(userCode, startDate, endDate)
+                .stream()
+                .sorted(Comparator.comparingInt(dto -> {
+                    String key = dto.getProgressKey();
+                    return key != null ? progressOrder.getOrDefault(key, 99) : 99;
+                }))
+                .collect(Collectors.toList());
     }
 
-    public String getUserName(String userCode){
+    public String getUserName(String userCode) {
         return consultRepository.findUserNameByUserCode(userCode);
     }
 }

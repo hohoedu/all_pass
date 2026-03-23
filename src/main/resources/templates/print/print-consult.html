@@ -238,9 +238,9 @@
             <td class="center" th:text="${c.inflowRouteName}"></td>
             <td class="center">
         <span th:classappend="
-          ${c.progressName == '상담진행'} ? 'badge b-yellow' :
-          (${c.progressName == '수업대기'} ? 'badge b-orange' :
-          (${c.progressName == '수업확정'} ? 'badge b-green' :
+          ${c.progressName == '문의'} ? 'badge b-yellow' :
+          (${c.progressName == '대기'} ? 'badge b-orange' :
+          (${c.progressName == '입회'} ? 'badge b-green' :
           'badge b-gray'))"
               th:text="${c.progressName}">
         </span>

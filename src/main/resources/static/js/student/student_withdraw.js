@@ -14,8 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function printWithdraw(ym, userCode, tab) {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=${tab}`;
-        iframe.onload = () => { iframe.contentWindow.print(); };
+        iframe.src = `/student/print-withdraw?ym=${ym}&userCode=${userCode}&tab=all`;
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
         document.body.appendChild(iframe);
     }
 
@@ -23,11 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentMonthLabel = document.getElementById("currentMonth");
 
     const TAB_CONFIG = {
-        t1: {url: "/student/api/withdraw/join",         render: renderJoinTable},
-        t2: {url: "/student/api/withdraw/withdraw",     render: renderWithdrawTable},
-        t3: {url: "/student/api/withdraw/transfer-in",  render: renderTransferInTable},
+        t1: {url: "/student/api/withdraw/join", render: renderJoinTable},
+        t2: {url: "/student/api/withdraw/withdraw", render: renderWithdrawTable},
+        t3: {url: "/student/api/withdraw/transfer-in", render: renderTransferInTable},
         t4: {url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable},
-        t5: {url: "/student/api/withdraw/graduate",     render: renderGraduateTable},
+        t5: {url: "/student/api/withdraw/graduate", render: renderGraduateTable},
     };
 
     let activeTab = "t1";
@@ -176,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${s.gradeName ?? ""}</td>
                     <td>${s.joinDate ?? ""}</td>
                     <td>${s.withdrawDate ?? ""}</td>
+                    <td>${s.attendMonths + "개월" ?? ""}</td>
                     <td><p>${s.reason ?? ""}</p></td>
                     <td><button class="class-action-btn" data-id="${s.studentId}">탈퇴 취소</button></td>
                 </tr>

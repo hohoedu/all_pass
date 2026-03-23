@@ -1496,7 +1496,7 @@
                 SYSDATETIME())
     </insert>
 
-    <update id="updateCashbillI nfo">
+    <update id="updateCashbillInfo">
         UPDATE erp_payment_manual
         SET cashbill_bill_id   = #{billId},
             cashbill_issued_at = SYSDATETIME()
@@ -1623,6 +1623,7 @@
                  JOIN erp_payment p on cash.payment_key = p.payment_key
                  JOIN erp_student s on cash.student_id = s.student_id
         where p.center_code = #{centerCode}
+        ORDER BY cash.created_at DESC
 
     </select>
 

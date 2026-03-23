@@ -233,7 +233,7 @@ public class PaymentReqDTO {
         private String supplyPrice;     // 공급가액
         private String tax;             // 세금
         private String taxType;         // 과세구분
-        private String trader;          // 발급 구분 (0: 개인, 1: 사업자, 2: 자진발급)
+        private String trader;          // 발급 구분 (0: 개인, 1: 사업자)
     }
 
     @Data

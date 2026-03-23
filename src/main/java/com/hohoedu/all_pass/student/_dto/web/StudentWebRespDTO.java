@@ -343,6 +343,7 @@ public class StudentWebRespDTO {
         private String transferDate;
         private String graduateDate;
         private String reason;
+        private String attendMonths;
     }
 
     @Data

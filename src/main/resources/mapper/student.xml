@@ -1382,6 +1382,7 @@
     <select id="selectJoinList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id   AS studentId,
                es.student_name AS studentName,
+               gc.grade_name   AS gradeName,
                CASE
                    WHEN t.assign_han_teacher = #{userCode}
                        THEN (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_han_class)
@@ -1402,6 +1403,7 @@
                    END         AS joinDate
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
+                 JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
         WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
            OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
         ORDER BY es.student_name
@@ -1412,6 +1414,7 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                           AS studentId,
                es.student_name                                         AS studentName,
+               gc.grade_name                                           AS gradeName,
                CASE
                    WHEN t.inactive_han_teacher = #{userCode}
                        THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher)
@@ -1420,9 +1423,14 @@
                    END                                                 AS teacherName,
                COALESCE(t.entry_han_date, t.entry_book_date)           AS joinDate,
                COALESCE(t.inactive_han_date, t.inactive_book_date)     AS withdrawDate,
+               DATEDIFF(
+                   MONTH, COALESCE(t.entry_han_date, t.entry_book_date),
+                          COALESCE(t.inactive_han_date, t.inactive_book_date)
+               )                                                       AS attendMonths,
                COALESCE(t.inactive_han_reason, t.inactive_book_reason) AS reason
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
+                 JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
         WHERE (t.inactive_han_teacher = #{userCode} OR t.inactive_book_teacher = #{userCode})
           AND (SUBSTRING(t.inactive_han_date, 1, 7) = #{ym}
             OR SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
@@ -1434,13 +1442,22 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                                                AS studentId,
                es.student_name                                                              AS studentName,
+               gc.grade_name                                                                AS gradeName,
                (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
+               CASE
+                   WHEN t.assign_han_teacher = #{userCode}
+                       THEN (t.entry_han_date)
+                   WHEN t.assign_book_teacher = #{userCode}
+                       THEN (t.entry_book_date)
+                   END                                                                      AS joinDate,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
                th.move_at                                                                   AS transferDate,
                th.transfer_reason                                                           AS reason
         FROM erp_student_transfer_history th
                  JOIN erp_student es ON th.student_id = es.student_id
+                 JOIN erp_teacher_assign t ON es.student_id = t.student_id
+                 JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
         WHERE th.to_user_code = #{userCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
         ORDER BY es.student_name
@@ -1451,13 +1468,22 @@
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                                                AS studentId,
                es.student_name                                                              AS studentName,
+               gc.grade_name                                                                AS gradeName,
                (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
+               CASE
+                   WHEN t.assign_han_teacher = th.to_user_code
+                       THEN t.entry_han_date
+                   WHEN t.assign_book_teacher = th.to_user_code
+                       THEN t.entry_book_date
+                   END AS joinDate,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
                th.move_at                                                                   AS transferDate,
                th.transfer_reason                                                           AS reason
         FROM erp_student_transfer_history th
                  JOIN erp_student es ON th.student_id = es.student_id
+                 JOIN erp_teacher_assign t ON es.student_id = t.student_id
+                 JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
         WHERE th.from_user_code = #{userCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
         ORDER BY es.student_name

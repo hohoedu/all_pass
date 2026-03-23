@@ -29,7 +29,8 @@ public interface ConsultRepository {
 
     void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
-    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode);
-
+    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(@Param("userCode") String userCode,
+                                                             @Param("startDate") String startDate,
+                                                             @Param("endDate") String endDate);
     String findUserNameByUserCode(String userCode);
 }
