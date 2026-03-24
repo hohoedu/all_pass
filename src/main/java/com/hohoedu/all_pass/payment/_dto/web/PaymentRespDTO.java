@@ -308,6 +308,7 @@ public class PaymentRespDTO {
 
     @Data
     public static class CashbillPrintDTO {
+        private String billId;
         private String studentInfo;   // 학생정보
         private String apprDate;      // 거래일자
         private String receiptNum;    // 식별번호

@@ -343,7 +343,9 @@ public class ClassController {
                     .build();
         }
 
-        log.info(dtoList.get(0).getReview());
+        log.info(dtoList.get(0).getYear());
+        log.info(dtoList.get(0).getMonth());
+        log.info(dtoList.get(0).getWeek());
         classService.insertAfterClassNoticeList(dtoList, user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(true));
@@ -423,7 +425,7 @@ public class ClassController {
     }
 
     @PostMapping("/remedial/delete")
-    public ResponseEntity<?> deleteRemedial(@RequestBody ClassReqDTO.DeleteRemedialTimeDTO dto){
+    public ResponseEntity<?> deleteRemedial(@RequestBody ClassReqDTO.DeleteRemedialTimeDTO dto) {
         classService.deleteRemedial(dto);
         return ResponseEntity.ok(ApiUtils.success(true));
     }

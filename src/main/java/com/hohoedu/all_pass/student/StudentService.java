@@ -494,6 +494,7 @@ public class StudentService {
 
         if (request.getHanState() == 1 || request.getBookState() == 1) {
             studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());
+            studentRepository.updateStudentStatusToActive(request.getStudentId());
         }
     }
 

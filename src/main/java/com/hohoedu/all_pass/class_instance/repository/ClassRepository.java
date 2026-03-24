@@ -97,6 +97,11 @@ public interface ClassRepository {
 
     public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
+    void restoreStudent(@Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId);
+
+    int existsAssignHistory(@Param("timeTableKey") String timeTableKey,
+                            @Param("studentId") String studentId);
     ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(
             @Param("timeTableKey") String timeTableKey,
             @Param("studentId") String studentId,

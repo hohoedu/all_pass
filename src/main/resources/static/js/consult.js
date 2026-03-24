@@ -9,6 +9,56 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}`;
     }
 
+    /* =================== *
+ *   검색 기능          *
+ * =================== */
+    const searchTypeSelect = document.getElementById('stu-name');
+    const searchInput      = document.getElementById('search-name');
+    const searchBtn        = document.querySelector('.explore');
+
+    searchBtn?.addEventListener('click', () => {
+        applySearch();
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') applySearch();
+    });
+
+    searchTypeSelect?.addEventListener('change', () => {
+        if (searchInput?.value.trim()) {
+            applySearch();
+        }
+    });
+
+    function applySearch() {
+        const type    = searchTypeSelect?.value || 'name';
+        const keyword = searchInput?.value.trim().toLowerCase();
+
+        if (!keyword) {
+            applyProgressSort();
+            return;
+        }
+
+        // 1차: 검색 조건에 맞는 항목 필터
+        const matched = allConsultData.filter(item => {
+            switch (type) {
+                case 'name':
+                    return (item.studentName || '').toLowerCase().includes(keyword);
+                case 'school':
+                    return (item.school || '').toLowerCase().includes(keyword);
+                case 'phone':
+                    return (item.phone || '').replace(/-/g, '').includes(keyword.replace(/-/g, ''));
+                default:
+                    return true;
+            }
+        });
+
+        const matchedPhones = new Set(matched.map(item => item.phone).filter(Boolean));
+
+        const filtered = allConsultData.filter(item => matchedPhones.has(item.phone));
+
+        renderConsultTable(filtered);
+    }
 
     function getDateRange(monthsAgo) {
         const today = new Date();
@@ -622,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await res.json();
             allConsultData = data.response ?? [];
-            applyProgressSort();
+            applySearch();
         } catch (err) {
             console.error("조회 실패:", err);
         }

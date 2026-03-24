@@ -199,6 +199,8 @@ public interface StudentRepository {
 
     void updatePendingIsDeletedByStudentId(String studentId);
 
+    void updateStudentStatusToActive(String studentId);
+
     TeacherAssign findTeacherAssign(@Param("studentId") String studentId);
 
     StudentWebRespDTO.TeacherDTO findTeacherAssignByStudentId(@Param("studentId") String studentId);

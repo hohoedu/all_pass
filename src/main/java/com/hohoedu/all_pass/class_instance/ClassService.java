@@ -420,47 +420,46 @@ public class ClassService {
     @Transactional
     public void registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode) {
 
-        boolean success = addStudent(dto);
-        if (!success) {
-            throw new IllegalStateException("정원 초과");
+        // 히스토리 먼저 확인
+        boolean restored = classRepository.existsAssignHistory(dto.getTimeTableKey(), dto.getStudentId()) > 0;
+
+        if (restored) {
+            // 정원 체크만 하고 히스토리에서 복구 (assign 포함)
+            int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
+            if (count >= 10) throw new IllegalStateException("정원 초과");
+
+            classRepository.restoreStudent(dto.getTimeTableKey(), dto.getStudentId());
+
+        } else {
+            // 신규 등록 기존 로직 그대로
+            boolean success = addStudent(dto);
+            if (!success) throw new IllegalStateException("정원 초과");
+
+            classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
+            classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
         }
 
-        // 월간 평가 생성
-        classRepository.insertMonthlyScore(dto.getStudentId(), dto.getYy(), dto.getMm(), dto.getTimeTableKey());
-
-        // 출결 생성
-        classRepository.createAttendance(dto.getStudentId(), dto.getTimeTableKey(), centerCode, dto.getYy(), dto.getMm());
-
-        // 기본 수업 정보
+        // 공통 실행
         ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
-
-        // 담당 선생님 배정 및 수업 변경
         studentService.assignTeacher(dto.getStudentId(), info);
 
-        // student_class 생성
         ClassRespDTO.ClassInfoDTO classInfo = findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(), dto.getStudentId(), centerCode);
 
         Integer baseFee = classInfo.getClassFee();
-        if (baseFee == null) {
-            throw new IllegalArgumentException("classFee가 null 입니다.");
-        }
+        if (baseFee == null) throw new IllegalArgumentException("classFee가 null 입니다.");
+
         int weekNo = Integer.parseInt(dto.getWeekNo());
         BigDecimal result = BigDecimal.valueOf(baseFee)
                 .multiply(BigDecimal.valueOf(weekNo))
                 .divide(BigDecimal.valueOf(4), 0, RoundingMode.DOWN);
-
         classInfo.setClassFee(result.intValue());
 
         if (!classInfo.getClassKey().equals("HL")) {
-            // 결제 + 상세
             String paymentKey = paymentService.createPayment(dto.getStudentId(), dto.getYy(), dto.getMm(), centerCode, userCode);
             paymentService.createPaymentDetail(paymentKey, classInfo, userCode);
-
             paymentService.processPresetPaymentIfExists(dto.getStudentId(), paymentKey, classInfo.getClassFee(), userCode, centerCode, dto.getYy(), dto.getMm());
         }
-
     }
-
 
     @Transactional
     public void copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
@@ -525,8 +524,9 @@ public class ClassService {
     }
 
     public void deleteStudent(String timeTableKey, String studentId) {
+
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
-        paymentService.deleteDetail(timeTableKey, studentId);
+//        paymentService.deleteDetail(timeTableKey, studentId);
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode, Map<String, String> req) {

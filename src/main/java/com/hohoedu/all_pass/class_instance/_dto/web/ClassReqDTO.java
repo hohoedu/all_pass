@@ -357,6 +357,7 @@ public class ClassReqDTO {
         private String afterClassKey;
         private String year;
         private String month;
+        private String day;
         private String week;
         private String dayname;
         private String content;

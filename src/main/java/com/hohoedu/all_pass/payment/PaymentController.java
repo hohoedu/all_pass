@@ -313,14 +313,15 @@ public class PaymentController {
     }
 
     @PostMapping("/api/cashbill/history")
-    public ResponseEntity<?> getCashbillHistory(HttpSession session) {
+    public ResponseEntity<?> getCashbillHistory(@RequestBody PaymentReqDTO.YearMonthDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentService.getCashbillHistory(user.getCenterCode());
+
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentService.getCashbillHistory(user.getCenterCode(), dto.getYear(), dto.getMonth());
         log.info(response.toString());
         return ResponseEntity.ok(ApiUtils.success(response));
     }

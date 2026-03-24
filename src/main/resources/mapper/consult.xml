@@ -31,27 +31,32 @@
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
         SELECT
-        c.id                  AS id,
-        c.student_name        AS studentName,
-        c.consult_date        AS consultDate,
-        c.school              AS school,
-        c.phone               AS phone,
-        c.content             AS content,
-        c.grade_key           AS gradeKey,
-        g.grade_name          AS gradeName,
-        i.inflow_route_name   AS inflowRouteName,
-        c.progress_key        AS progressKey
+        c.id AS id,
+        c.student_name AS studentName,
+        c.consult_date AS consultDate,
+        c.school AS school,
+        c.phone AS phone,
+        c.content AS content,
+        c.grade_key AS gradeKey,
+        g.grade_name AS gradeName,
+        i.inflow_route_name AS inflowRouteName,
+        c.progress_key AS progressKey,
+        u.user_name AS userName
         FROM ERP_CONSULT c
         JOIN erp_grade_code g ON c.grade_key = g.grade_key
         LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
-        <where>
-            c.center_code = #{centerCode}
-            AND c.user_code = #{userCode}
-            <if test="startDate != null and endDate != null">
-                AND c.consult_date BETWEEN #{startDate} AND #{endDate}
-            </if>
-        </where>
-        ORDER BY c.consult_date DESC
+        LEFT JOIN erp_user u ON c.user_code = u.user_code
+        WHERE c.center_code = #{centerCode}
+        AND c.phone IN (
+        SELECT DISTINCT phone
+        FROM ERP_CONSULT
+        WHERE center_code = #{centerCode}
+        AND user_code = #{userCode}
+        <if test="startDate != null and endDate != null">
+            AND consult_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+        )
+        ORDER BY MAX(c.consult_date) OVER (PARTITION BY c.phone) DESC, c.phone, c.consult_date DESC
     </select>
 
     <delete id="deleteByIds" parameterType="list">
@@ -107,7 +112,7 @@
                  join erp_user u on con.user_code = u.user_code
         where con.user_code = #{userCode}
           AND con.consult_date BETWEEN #{startDate} AND #{endDate}
-        order by consultDate desc
+        order by MAX(con.consult_date) OVER (PARTITION BY con.phone) DESC, con.phone, con.consult_date DESC
     </select>
 
     <select id="findUserNameByUserCode" resultType="String">

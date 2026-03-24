@@ -190,6 +190,13 @@
                             <div class="">
                                 <div class="claim-list">
                                     <h3 class="claim-sub">발행내역 조회</h3>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span id="cashbill-history-month-text" style="font-size: 14px; font-weight: 500;"></span>
+                                        <input type="month" id="cashbill-history-month" class="hidden-date" style="width: 0; opacity: 0; position: absolute; pointer-events: none;">
+                                        <button type="button" class="icon-btn" id="cashbill-history-calendar-btn">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
                                     <a class="print" id="cashbill-print">인쇄</a>
                                 </div>
                                 <div class="modal-scroll bt">
@@ -210,7 +217,9 @@
                                             </colgroup>
                                             <thead>
                                             <tr>
-                                                <th></th>
+                                                <th class="checkbox-group" >
+                                                    <input type="checkbox" id="cashbill-check-all" title="전체선택">
+                                                </th>
                                                 <th>No</th>
                                                 <th>발행일시</th>
                                                 <th>이름</th>

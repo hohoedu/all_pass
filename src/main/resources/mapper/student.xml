@@ -790,6 +790,12 @@
         WHERE student_id = #{studentId}
     </update>
 
+    <update id="updateStudentStatusToActive">
+        UPDATE erp_student
+        SET status_key = 'ACTIVE'
+        WHERE student_id = #{studentId}
+    </update>
+
     <select id="findTeacherAssign" resultType="com.hohoedu.all_pass.student.model.TeacherAssign">
         SELECT *
         FROM erp_teacher_assign

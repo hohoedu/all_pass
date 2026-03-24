@@ -2,6 +2,8 @@ package com.hohoedu.all_pass.payment._dto.app;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class PaymentAppRespDTO {
 
@@ -18,5 +20,21 @@ public class PaymentAppRespDTO {
         // indate => 결제 날짜
         // inmoney => 결제 금액
         // gubun  => 청구 종류 (교육비 / 교재비)
+    }
+
+    @Data
+    public static class StudentDTO {
+        private String studentId;
+        private String studentName;
+        private String phone;
+        private boolean subHoho;
+        private boolean subHan;
+        private boolean subBook;
+        private List<String> subjects;
+        private List<String> siblings;     // [2, 3]
+        private int tuition;
+        private int arrears;
+        private int textbookFee;
+        private boolean textbookPaid;
     }
 }

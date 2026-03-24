@@ -15,16 +15,15 @@ import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -276,5 +275,12 @@ public class AppController {
         String json = new ObjectMapper().writeValueAsString(response);
 
         return ResponseEntity.ok(json);
+    }
+
+    @GetMapping("/pay/search")
+    public ResponseEntity<?> search(@RequestParam String keyword, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        List<PaymentAppRespDTO.StudentDTO> response = paymentService.search(keyword, user);
+        return ResponseEntity.ok(response);
     }
 }

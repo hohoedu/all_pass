@@ -1090,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 month: monthInput.value.split("-")[1]
             };
 
-            // 1. 발급 대상 학생 조회 (기존 로직)
+            // 1. 발급 대상 학생 조회
             const studentsRes = await fetch("/pay/api/cashbill/students", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -1108,6 +1108,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 cashbillSearchInput.value = '';
             }
 
+            // 2. 발행내역 월 선택기 초기화 (최초 1회만 이벤트 바인딩)
+            const historyMonthInput = document.getElementById('cashbill-history-month');
+            const historyMonthText = document.getElementById('cashbill-history-month-text');
+            const historyCalendarBtn = document.getElementById('cashbill-history-calendar-btn');
+
+            if (historyMonthInput && !historyMonthInput._initialized) {
+                historyMonthInput._initialized = true;
+
+                historyCalendarBtn?.addEventListener('click', () => {
+                    if (typeof historyMonthInput.showPicker === 'function') {
+                        historyMonthInput.showPicker();
+                    } else {
+                        historyMonthInput.focus();
+                        historyMonthInput.click();
+                    }
+                });
+
+                historyMonthInput.addEventListener('change', async () => {
+                    const [y, m] = historyMonthInput.value.split('-');
+                    historyMonthText.textContent = `${y}년 ${parseInt(m)}월`;
+
+                    try {
+                        const res = await fetch("/pay/api/cashbill/history", {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({year: y, month: m})
+                        });
+                        if (res.ok) {
+                            const result = await res.json();
+                            renderCashbillHistory(result.response || []);
+                        }
+                    } catch (err) {
+                        console.error('발행내역 조회 오류:', err);
+                    }
+                });
+            }
+
+            // 모달 열릴 때마다 현재 페이지 월로 초기값 세팅
+            if (historyMonthInput) {
+                historyMonthInput.value = monthInput.value;
+                const [hy, hm] = historyMonthInput.value.split('-');
+                if (historyMonthText) historyMonthText.textContent = `${hy}년 ${parseInt(hm)}월`;
+            }
+
+            // 3. 발행내역 조회
             try {
                 const historyRes = await fetch("/pay/api/cashbill/history", {
                     method: "POST",
@@ -1440,17 +1485,28 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.getElementById('cashbill-print')?.addEventListener('click', () => {
+        const historyMonthInput = document.getElementById('cashbill-history-month');
         const monthInput = document.querySelector(".hidden-date");
-        const [year, month] = monthInput.value.split("-");
+        const targetMonth = historyMonthInput?.value || monthInput.value;
+        const [year, month] = targetMonth.split("-");
         const ym = year + month;
-        // window.open(`/pay/print-cashbill?ym=${ym}`);
-        printCashbillHistory(ym);
+
+        const selectedIds = [...document.querySelectorAll('.cashbill-checkbox:checked')]
+            .map(cb => cb.dataset.cashbillId)
+            .filter(Boolean);
+
+        // 선택된 항목 없으면 ids 파라미터 없이 전체 출력
+        const idsParam = selectedIds.length > 0 ? selectedIds.join(',') : null;
+
+        printCashbillHistory(ym, idsParam);
     });
 
-    function printCashbillHistory(ym) {
+    function printCashbillHistory(ym, ids) {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
-        iframe.src = `/pay/print-cashbill?ym=${ym}`;
+        iframe.src = ids
+            ? `/pay/print-cashbill?ym=${ym}&ids=${ids}`
+            : `/pay/print-cashbill?ym=${ym}`;
 
         iframe.onload = () => {
             iframe.contentWindow.print();
@@ -1466,7 +1522,12 @@ document.addEventListener('DOMContentLoaded', function () {
 const renderCashbillHistory = (historyList) => {
     const historyTbody = document.getElementById('cashbill-history-tbody');
     if (!historyTbody) return;
-
+    const theadCheckboxCell = document.querySelector('#cashbill-history-tbody')
+        ?.closest('table')
+        ?.querySelector('thead tr th:first-child');
+    if (theadCheckboxCell) {
+        theadCheckboxCell.innerHTML = `<input type="checkbox" id="cashbill-check-all" title="전체선택">`;
+    }
     historyTbody.innerHTML = "";
 
     if (!historyList || historyList.length === 0) {
@@ -1527,25 +1588,33 @@ const renderCashbillHistory = (historyList) => {
 
         historyTbody.appendChild(tr);
     });
-    setupSingleCheckbox();
+    setupMultiCheckbox();
 };
 
-function setupSingleCheckbox() {
-    const checkboxes = document.querySelectorAll('.cashbill-checkbox:not([disabled])');
+function setupMultiCheckbox() {
+    const allCheckbox = document.getElementById('cashbill-check-all');
+    const checkboxes = [...document.querySelectorAll('.cashbill-checkbox:not([disabled])')];
 
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            if (this.checked) {
-                checkboxes.forEach(otherCheckbox => {
-                    if (otherCheckbox !== this) {
-                        otherCheckbox.checked = false;
-                    }
-                });
-            }
-        });
+    if (!allCheckbox || checkboxes.length === 0) return;
+
+    // 중복 리스너 방지: cloneNode로 초기화
+    checkboxes.forEach(checkbox => checkbox.replaceWith(checkbox.cloneNode(true)));
+
+    const freshCheckboxes = [...document.querySelectorAll('.cashbill-checkbox:not([disabled])')];
+
+    const syncAllCheckbox = () => {
+        const allChecked = freshCheckboxes.every(cb => cb.checked);
+        allCheckbox.checked = allChecked;
+    };
+
+    freshCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', syncAllCheckbox);
+    });
+
+    allCheckbox.addEventListener('change', function () {
+        freshCheckboxes.forEach(cb => { cb.checked = this.checked; });
     });
 }
-
 /* ========================================
     💰 현금영수증 취소 기능
 ======================================== */

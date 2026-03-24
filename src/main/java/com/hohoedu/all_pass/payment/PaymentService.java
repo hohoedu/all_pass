@@ -1799,8 +1799,8 @@ public class PaymentService {
         return response;
     }
 
-    public List<PaymentRespDTO.CashBillHistoryDTO> getCashbillHistory(String centerCode) {
-        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode);
+    public List<PaymentRespDTO.CashBillHistoryDTO> getCashbillHistory(String centerCode, String year, String month) {
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode, year, month);
         return response;
     }
 
@@ -1955,5 +1955,21 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
+    public List<PaymentAppRespDTO.StudentDTO> search(String keyword, UserRespDTO.LoginRespDTO user) {
+        List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode());
+
+        // 각 학생의 형제 ID, 수강과목 세팅
+        for (PaymentAppRespDTO.StudentDTO s : students) {
+            List<String> siblingIds = paymentRepository.getSiblingIds(s.getStudentId());
+            s.setSiblings(siblingIds != null ? siblingIds : Collections.emptyList());
+
+            List<String> subjects = new ArrayList<>();
+            if (s.isSubHan()) subjects.add("한스쿨");
+            if (s.isSubBook()) subjects.add("북스쿨");
+            if (s.isSubHoho()) subjects.add("호호스쿨");
+            s.setSubjects(subjects);
+        }
+        return students;
+    }
 
 }

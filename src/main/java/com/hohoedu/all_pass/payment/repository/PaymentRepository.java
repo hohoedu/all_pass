@@ -305,7 +305,9 @@ public interface PaymentRepository {
     List<PaymentRespDTO.ClaimDto> getPaymentInfo(PaymentReqDTO.ClaimFilterDTO dto);
 
     List<PaymentRespDTO.CashBillHistoryDTO> findCashbillHistory(
-            @Param("centerCode") String centerCode
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("month") String month
     );
 
     PaymentCashbill findCashbillByBillId(@Param("billId") String billId);
@@ -342,4 +344,9 @@ public interface PaymentRepository {
     void deleteManualGroup(String manualKey);
 
     List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(@Param("ym") String ym, @Param("centerCode") String centerCode);
+
+    List<PaymentAppRespDTO.StudentDTO> searchStudents(@Param("keyword") String keyword,
+                                                      @Param("centerCode") String centerCode);
+
+    List<String> getSiblingIds(@Param("studentId") String studentId);
 }

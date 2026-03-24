@@ -1006,6 +1006,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 수업 후 코멘트 저장만 수행 (푸시 없이)
 async function saveAfterClassNotice(checkedRows) {
+    const [yy, mm, dd] = state.date.split("-");
+
     const notices = checkedRows.map(row => {
         const contentTextarea = row.querySelector(".record-content");
         const reviewTextarea = row.querySelectorAll(".comment-text")[1]; // 두 번째 textarea가 리뷰
@@ -1019,7 +1021,10 @@ async function saveAfterClassNotice(checkedRows) {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
-            week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+            year: yy,                             // 추가
+            month: mm,                             // 추가
+            day: dd,
+            week: state.week,
             content: contentTextarea?.value,
             word: contentWord.value || "",
             review: reviewTextarea?.value || "",

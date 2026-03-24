@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO, RedirectAttributes redirectAttributes) {
+    public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO, @RequestParam(required = false) String redirectUrl, RedirectAttributes redirectAttributes) {
 
         try {
             LoginRespDTO dto = userService.login(loginDTO);
@@ -64,9 +64,12 @@ public class UserController {
             securityContext.setAuthentication(authentication);
 
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-
+            log.info(redirectUrl);
 //            paymentService.destroyExpiredBills();
-
+            if (redirectUrl != null && !redirectUrl.isEmpty()) {
+                log.info("주소 가져옴");
+                return "redirect:" + redirectUrl;
+            }
             return "redirect:/";
 
         } catch (Exception e) {

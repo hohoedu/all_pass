@@ -14,6 +14,7 @@ import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,6 +34,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class MainViewController {
@@ -204,5 +206,16 @@ public class MainViewController {
     public String getAppId(HttpSession session) {
 
         return "app_id_temp";
+    }
+
+    @GetMapping("/pay")
+    public String getPaySearchPage(HttpSession session, HttpServletRequest request) {
+        log.info("request.getRequestURI = " + request.getRequestURI());
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login?redirectUrl=" + request.getRequestURI();
+        }
+
+        return "pay/pay-search";
     }
 }

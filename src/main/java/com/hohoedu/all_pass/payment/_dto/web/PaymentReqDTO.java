@@ -278,4 +278,11 @@ public class PaymentReqDTO {
         private String studentId;
         private String phone;
     }
+
+
+    @Data
+    public static class YearMonthDTO{
+        private String year;
+        private String month;
+    }
 }

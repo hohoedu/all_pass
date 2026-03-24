@@ -230,6 +230,21 @@
         values (#{studentId}, #{timeTableKey}, #{weekNo});
     </insert>
 
+    <!-- 히스토리 존재 여부 확인 -->
+    <select id="existsAssignHistory" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_time_table_assign_history
+        WHERE time_table_key = #{timeTableKey}
+          AND student_id = #{studentId}
+    </select>
+
+    <!-- 프로시저 호출 -->
+    <update id="restoreStudent" parameterType="map" statementType="CALLABLE">
+        EXEC sp_restore_student
+        #{timeTableKey},
+        #{studentId}
+    </update>
+
     <select id="findClassInfoByTimeTableKeyAndStudentId"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
         SELECT t.time_table_key AS timeTableKey,
@@ -343,23 +358,25 @@
           AND t.mm = #{mm}
     </select>
 
-    <delete id="deleteByKeyAndStudentId" parameterType="String">
-        DELETE
-        FROM erp_time_table_assign
+    <update id="deleteByKeyAndStudentId" parameterType="map" statementType="CALLABLE">
+        EXEC sp_delete_student
+        #{timeTableKey},
+        #{studentId}
+    </update>
+
+    <select id="existsAttendanceHistory" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_student_attendance_history
         WHERE time_table_key = #{timeTableKey}
           AND student_id = #{studentId}
+    </select>
 
-        DELETE
-        FROM erp_student_attendance
+    <select id="existsMonthlyScoreHistory" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_monthly_score_history
         WHERE time_table_key = #{timeTableKey}
           AND student_id = #{studentId}
-
-        DELETE
-        FROM erp_monthly_score
-        WHERE time_table_key = #{timeTableKey}
-          AND student_id = #{studentId}
-
-    </delete>
+    </select>
 
     <select id="findStudentStat" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$StudentStatRespDTO">
         Select a.*
@@ -387,20 +404,16 @@
 
                  -- 탈퇴
                  SELECT 'inactive' as gb, es.student_name, a.*
-                 FROM (
-                          SELECT DISTINCT student_id, null as className, null as week
-                          FROM (
-                                   SELECT student_id
-                                   FROM erp_teacher_assign
-                                   WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
-                                     AND substring(inactive_han_date, 1, 7) = #{ym}
-                                   UNION ALL
-                                   SELECT student_id
-                                   FROM erp_teacher_assign
-                                   WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
-                                     AND substring(inactive_book_date, 1, 7) = #{ym}
-                               ) dedup
-                      ) a
+                 FROM (SELECT DISTINCT student_id, null as className, null as week
+                       FROM (SELECT student_id
+                             FROM erp_teacher_assign
+                             WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
+                               AND substring(inactive_han_date, 1, 7) = #{ym}
+                             UNION ALL
+                             SELECT student_id
+                             FROM erp_teacher_assign
+                             WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
+                               AND substring(inactive_book_date, 1, 7) = #{ym}) dedup) a
                           JOIN erp_student es ON a.student_id = es.student_id
 
                  UNION ALL
@@ -921,7 +934,6 @@
                  join erp_student s on r.student_id = s.student_id
         where remedial_key = #{remedialKey}
     </select>
-
 
 
     <delete id="deleteRemedial">

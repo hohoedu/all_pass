@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -62,14 +64,25 @@ public class PaymentViewController {
     }
 
     @GetMapping("/print-cashbill")
-    public String getCashbillPrint(@RequestParam String ym, Model model, HttpSession session) {
+    public String getCashbillPrint(@RequestParam String ym,
+                                   @RequestParam(required = false) String ids,
+                                   Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) return "redirect:/login";
 
         String yy = ym.substring(0, 4);
         String mm = ym.substring(4, 6);
-        log.info(ym);
+        log.info("ym: {}, ids: {}", ym, ids);
+
         List<PaymentRespDTO.CashbillPrintDTO> printDTO = paymentService.findCashbillPrint(yy, mm, user);
+
+        // ids 파라미터가 있으면 선택된 항목만 필터링
+        if (ids != null && !ids.isBlank()) {
+            List<String> selectedIds = Arrays.asList(ids.split(","));
+            printDTO = printDTO.stream()
+                    .filter(dto -> selectedIds.contains(String.valueOf(dto.getBillId())))
+                    .collect(Collectors.toList());
+        }
 
         model.addAttribute("yy", yy);
         model.addAttribute("mm", mm);

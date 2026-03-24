@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <link rel="stylesheet" th:href="@{/css/pay_search.css}">
+    <title>호호서당 수강료 조회</title>
+</head>
+<body>
+<div class="app">
+    <div id="header" class="header centered">
+        <div class="title">원생 조회</div>
+        <div class="search">
+            <input id="searchInput" class="input" placeholder="이름 또는 전화번호 입력"/>
+            <button id="searchBtn" class="btn">조회</button>
+        </div>
+    </div>
+
+    <div id="list" class="list"></div>
+
+    <div id="sheetBackdrop" class="sheet-backdrop"></div>
+
+    <section id="detailSheet" class="sheet" aria-hidden="true">
+        <div class="sheet-inner">
+            <div class="sheet-handle"></div>
+            <div class="sheet-top">
+                <div>
+                    <div class="sheet-title">수강료 상세</div>
+                    <div class="sheet-sub">교재비는 본사 결제 항목으로 소계에 포함되지 않습니다.</div>
+                </div>
+                <button id="closeSheetBtn" class="close-btn" type="button">×</button>
+            </div>
+
+            <div class="hero">
+                <div class="hero-top">
+                    <div>
+                        <div class="hero-label">최종 납부 금액</div>
+                        <div id="sheetFinalAmount" class="hero-amount">0원</div>
+                    </div>
+                    <div class="hero-badge">
+                        <span class="hero-badge-k">형제 포함</span>
+                        <span id="heroFamilyCount" class="hero-badge-v">0명</span>
+                    </div>
+                </div>
+                <div class="hero-note">4월 수강료 기준 금액과 전월 미납금, 형제 금액을 모두 포함한 합계입니다.</div>
+            </div>
+
+            <div class="info-card">
+                <div class="grid">
+                    <div class="info-box">
+                        <div class="info-k">원생명</div>
+                        <div id="sheetStudentName" class="info-v">-</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-k">연락처</div>
+                        <div id="sheetStudentPhone" class="info-v">-</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-k">수강과목</div>
+                        <div id="sheetStudentSubjects" class="info-v subjects-inline">-</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-k">형제</div>
+                        <div id="sheetStudentSiblings" class="info-v">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div class="section-title">본인 수강료</div>
+                    <div class="section-caption">4월 수강료 기준</div>
+                </div>
+                <div id="mainPriceList" class="price-list"></div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div class="section-title">형제 수강료</div>
+                </div>
+                <div id="familyList"></div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-head">
+                    <div class="section-title">총합 요약</div>
+                </div>
+                <div id="summaryPriceList" class="price-list"></div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="closeSheetBtnBottom" class="btn-secondary" type="button">닫기</button>
+            <button id="openRegisterBtn" class="btn-primary" type="button">납부내역 등록</button>
+        </div>
+    </section>
+
+    <section id="registerSheet" class="sheet" aria-hidden="true">
+        <div class="sheet-inner">
+            <div class="sheet-handle"></div>
+            <div class="sheet-top">
+                <div>
+                    <div class="sheet-title">납부내역 등록</div>
+                    <div class="sheet-sub">오프라인 현장 결제 후 시스템에 등록하는 단계입니다.</div>
+                </div>
+                <button id="closeRegisterBtn" class="close-btn" type="button">×</button>
+            </div>
+
+            <div class="pay-summary">
+                <div class="pay-summary-card">
+                    <div class="pay-summary-label">원생</div>
+                    <div id="registerStudentName" class="pay-summary-value">-</div>
+                </div>
+                <div class="pay-summary-card">
+                    <div class="pay-summary-label">최종 결제 금액</div>
+                    <div id="registerFinalAmount" class="pay-summary-value">0원</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">결제 정보</div>
+                <div class="field">
+                    <label class="label" for="paymentDate">결제일</label>
+                    <input id="paymentDate" class="date-input" type="date"/>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-title">결제 방법 및 금액</div>
+                <div class="method-list">
+                    <div id="cardMethod" class="method-card">
+                        <div class="method-head">
+                            <label class="check"><input id="useCard" type="checkbox"/> 오프라인 카드</label>
+                        </div>
+                        <div class="method-body">
+                            <div class="field">
+                                <label class="label" for="cardCompany">카드사</label>
+                                <select id="cardCompany" class="select-input">
+                                    <option value="">카드사 선택</option>
+                                    <option>신한카드</option>
+                                    <option>국민카드</option>
+                                    <option>삼성카드</option>
+                                    <option>현대카드</option>
+                                    <option>롯데카드</option>
+                                    <option>하나카드</option>
+                                    <option>우리카드</option>
+                                    <option>농협카드</option>
+                                    <option>기타</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label class="label" for="cardAmount">금액</label>
+                                <input id="cardAmount" class="money-input js-money" inputmode="numeric" placeholder="0"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cashMethod" class="method-card">
+                        <div class="method-head">
+                            <label class="check"><input id="useCash" type="checkbox"/> 현금</label>
+                        </div>
+                        <div class="method-body">
+                            <div class="field">
+                                <label class="label" for="cashAmount">금액</label>
+                                <input id="cashAmount" class="money-input js-money" inputmode="numeric" placeholder="0"/>
+                            </div>
+                            <div class="field">
+                                <label class="label">과세구분</label>
+                                <select id="cashTaxType" class="select-input">
+                                    <option value="비과세" selected>비과세</option>
+                                    <option value="과세">과세</option>
+                                </select>
+                            </div>
+                            <div id="cashReceiptDetail" style="display:none; gap:10px;" class="field">
+                                <label class="label">발급구분</label>
+                                <select id="cashIssueType" class="select-input">
+                                    <option value="개인">개인</option>
+                                    <option value="사업자">사업자</option>
+                                    <option value="자진발급">자진발급</option>
+                                </select>
+                                <div id="cashReceiptNumberWrap">
+                                    <label class="label" for="cashReceiptNumber">발급번호</label>
+                                    <input id="cashReceiptNumber" class="date-input" inputmode="numeric" placeholder="전화번호 또는 사업자번호"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="transferMethod" class="method-card">
+                        <div class="method-head">
+                            <label class="check"><input id="useTransfer" type="checkbox"/> 계좌이체</label>
+                        </div>
+                        <div class="method-body">
+                            <div class="field">
+                                <label class="label" for="transferAmount">금액</label>
+                                <input id="transferAmount" class="money-input js-money" inputmode="numeric" placeholder="0"/>
+                            </div>
+                            <div class="field">
+                                <label class="label">과세구분</label>
+                                <select id="transferTaxType" class="select-input">
+                                    <option value="비과세" selected>비과세</option>
+                                    <option value="과세">과세</option>
+                                </select>
+                            </div>
+                            <div id="transferReceiptDetail" style="display:none; gap:10px;" class="field">
+                                <label class="label">발급구분</label>
+                                <select id="transferIssueType" class="select-input">
+                                    <option value="개인">개인</option>
+                                    <option value="사업자">사업자</option>
+                                    <option value="자진발급">자진발급</option>
+                                </select>
+                                <div id="transferReceiptNumberWrap">
+                                    <label class="label" for="transferReceiptNumber">발급번호</label>
+                                    <input id="transferReceiptNumber" class="date-input" inputmode="numeric" placeholder="전화번호 또는 사업자번호"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-row">
+                    <div class="status-label">입력된 결제 합계</div>
+                    <div id="enteredAmount" class="status-value">0원</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-label">최종 결제 금액</div>
+                    <div id="expectedAmount" class="status-value">0원</div>
+                </div>
+                <div id="registerStatus" class="status-help">결제 방법을 선택하고 금액을 입력해주세요.</div>
+            </div>
+        </div>
+        <div class="actions">
+            <button id="backToDetailBtn" class="btn-secondary" type="button">이전</button>
+            <button id="saveRegisterBtn" class="btn-primary" type="button">저장</button>
+        </div>
+    </section>
+</div>
+<script th:src="@{/js/pay/pay_search.js}"></script>
+</body>
+</html>
