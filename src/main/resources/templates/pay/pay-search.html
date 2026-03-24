@@ -163,22 +163,15 @@
                                 <label class="label" for="cashAmount">금액</label>
                                 <input id="cashAmount" class="money-input js-money" inputmode="numeric" placeholder="0"/>
                             </div>
-                            <div class="field">
-                                <label class="label">과세구분</label>
-                                <select id="cashTaxType" class="select-input">
-                                    <option value="비과세" selected>비과세</option>
-                                    <option value="과세">과세</option>
-                                </select>
-                            </div>
-                            <div id="cashReceiptDetail" style="display:none; gap:10px;" class="field">
-                                <label class="label">발급구분</label>
+                            <!-- 과세구분 셀렉트 제거 -->
+                            <div id="cashReceiptDetail" class="field" style="flex-direction:column; gap:10px;">
+                                <label class="label">현금영수증 발급</label>
                                 <select id="cashIssueType" class="select-input">
-                                    <option value="개인">개인</option>
-                                    <option value="사업자">사업자</option>
+                                    <option value="개인">개인 (휴대폰번호)</option>
+                                    <option value="사업자">사업자 (사업자번호)</option>
                                     <option value="자진발급">자진발급</option>
                                 </select>
                                 <div id="cashReceiptNumberWrap">
-                                    <label class="label" for="cashReceiptNumber">발급번호</label>
                                     <input id="cashReceiptNumber" class="date-input" inputmode="numeric" placeholder="전화번호 또는 사업자번호"/>
                                 </div>
                             </div>
@@ -194,22 +187,14 @@
                                 <label class="label" for="transferAmount">금액</label>
                                 <input id="transferAmount" class="money-input js-money" inputmode="numeric" placeholder="0"/>
                             </div>
-                            <div class="field">
-                                <label class="label">과세구분</label>
-                                <select id="transferTaxType" class="select-input">
-                                    <option value="비과세" selected>비과세</option>
-                                    <option value="과세">과세</option>
-                                </select>
-                            </div>
-                            <div id="transferReceiptDetail" style="display:none; gap:10px;" class="field">
-                                <label class="label">발급구분</label>
+                            <div id="transferReceiptDetail" class="field" style="flex-direction:column; gap:10px;">
+                                <label class="label">현금영수증 발급</label>
                                 <select id="transferIssueType" class="select-input">
-                                    <option value="개인">개인</option>
-                                    <option value="사업자">사업자</option>
+                                    <option value="개인">개인 (휴대폰번호)</option>
+                                    <option value="사업자">사업자 (사업자번호)</option>
                                     <option value="자진발급">자진발급</option>
                                 </select>
                                 <div id="transferReceiptNumberWrap">
-                                    <label class="label" for="transferReceiptNumber">발급번호</label>
                                     <input id="transferReceiptNumber" class="date-input" inputmode="numeric" placeholder="전화번호 또는 사업자번호"/>
                                 </div>
                             </div>

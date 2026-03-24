@@ -1,11 +1,81 @@
 const students = [
-    {id: 1, name: '김민지', phone: '010-2222-3333', subjects: ['한스쿨', '북스쿨'], siblings: [2], tuition: 220000, arrears: 50000, textbookFee: 30000, textbookPaid: true},
-    {id: 2, name: '김서준', phone: '010-2222-3334', subjects: ['북스쿨'], siblings: [1], tuition: 180000, arrears: 0, textbookFee: 20000, textbookPaid: false},
-    {id: 3, name: '김민지', phone: '010-7777-1004', subjects: ['호호스쿨'], siblings: [], tuition: 160000, arrears: 30000, textbookFee: 15000, textbookPaid: true},
-    {id: 4, name: '이서준', phone: '010-5555-1212', subjects: ['한스쿨'], siblings: [5, 6], tuition: 250000, arrears: 0, textbookFee: 30000, textbookPaid: false},
-    {id: 5, name: '이서연', phone: '010-5555-1213', subjects: ['북스쿨'], siblings: [4, 6], tuition: 90000, arrears: 10000, textbookFee: 20000, textbookPaid: true},
-    {id: 6, name: '이도윤', phone: '010-5555-1214', subjects: ['호호스쿨'], siblings: [4, 5], tuition: 210000, arrears: 20000, textbookFee: 15000, textbookPaid: false},
-    {id: 7, name: '박지호', phone: '010-8888-0001', subjects: ['한스쿨'], siblings: [], tuition: 130000, arrears: 0, textbookFee: 30000, textbookPaid: true}
+    {
+        id: 1,
+        name: '김민지',
+        phone: '010-2222-3333',
+        subjects: ['한스쿨', '북스쿨'],
+        siblings: [2],
+        tuition: 220000,
+        arrears: 50000,
+        textbookFee: 30000,
+        textbookPaid: true
+    },
+    {
+        id: 2,
+        name: '김서준',
+        phone: '010-2222-3334',
+        subjects: ['북스쿨'],
+        siblings: [1],
+        tuition: 180000,
+        arrears: 0,
+        textbookFee: 20000,
+        textbookPaid: false
+    },
+    {
+        id: 3,
+        name: '김민지',
+        phone: '010-7777-1004',
+        subjects: ['호호스쿨'],
+        siblings: [],
+        tuition: 160000,
+        arrears: 30000,
+        textbookFee: 15000,
+        textbookPaid: true
+    },
+    {
+        id: 4,
+        name: '이서준',
+        phone: '010-5555-1212',
+        subjects: ['한스쿨'],
+        siblings: [5, 6],
+        tuition: 250000,
+        arrears: 0,
+        textbookFee: 30000,
+        textbookPaid: false
+    },
+    {
+        id: 5,
+        name: '이서연',
+        phone: '010-5555-1213',
+        subjects: ['북스쿨'],
+        siblings: [4, 6],
+        tuition: 90000,
+        arrears: 10000,
+        textbookFee: 20000,
+        textbookPaid: true
+    },
+    {
+        id: 6,
+        name: '이도윤',
+        phone: '010-5555-1214',
+        subjects: ['호호스쿨'],
+        siblings: [4, 5],
+        tuition: 210000,
+        arrears: 20000,
+        textbookFee: 15000,
+        textbookPaid: false
+    },
+    {
+        id: 7,
+        name: '박지호',
+        phone: '010-8888-0001',
+        subjects: ['한스쿨'],
+        siblings: [],
+        tuition: 130000,
+        arrears: 0,
+        textbookFee: 30000,
+        textbookPaid: true
+    }
 ];
 
 let currentList = [];
@@ -42,15 +112,11 @@ const enteredAmount = document.getElementById('enteredAmount');
 const expectedAmount = document.getElementById('expectedAmount');
 const registerStatus = document.getElementById('registerStatus');
 const paymentDate = document.getElementById('paymentDate');
-const cashTaxType = document.getElementById('cashTaxType');
 const cashIssueType = document.getElementById('cashIssueType');
 const cashReceiptDetail = document.getElementById('cashReceiptDetail');
-const cashReceiptNumberWrap = document.getElementById('cashReceiptNumberWrap');
 const cashReceiptNumber = document.getElementById('cashReceiptNumber');
-const transferTaxType = document.getElementById('transferTaxType');
 const transferIssueType = document.getElementById('transferIssueType');
 const transferReceiptDetail = document.getElementById('transferReceiptDetail');
-const transferReceiptNumberWrap = document.getElementById('transferReceiptNumberWrap');
 const transferReceiptNumber = document.getElementById('transferReceiptNumber');
 
 function formatWon(value) {
@@ -86,7 +152,7 @@ function getSubjectClass(subject) {
 }
 
 function getStudentById(id) {
-    return students.find(student => student.id === id);
+    return currentList.find(s => String(s.studentId) === String(id));
 }
 
 function updateHeaderState(isDefault) {
@@ -182,7 +248,7 @@ function selectStudent(index) {
     const student = currentList[index];
     if (!student) return;
 
-    const family = student.siblings.map(getStudentById).filter(Boolean);
+    const family = student.siblingDetails || [];
     const ownTotal = student.tuition + student.arrears;
     const familyTotal = family.reduce((sum, member) => sum + member.tuition + member.arrears, 0);
     const finalTotal = ownTotal + familyTotal;
@@ -191,7 +257,7 @@ function selectStudent(index) {
     selectedFamily = family;
     selectedFinalTotal = finalTotal;
 
-    document.getElementById('sheetStudentName').textContent = student.name;
+    document.getElementById('sheetStudentName').textContent = student.studentName;
     document.getElementById('sheetStudentPhone').textContent = student.phone;
     document.getElementById('sheetStudentSubjects').innerHTML = student.subjects.map(sub => `<span class="tag ${getSubjectClass(sub)}">${sub}</span>`).join('');
     document.getElementById('sheetStudentSiblings').textContent = family.length ? family.length + '명' : '없음';
@@ -231,7 +297,7 @@ function selectStudent(index) {
           <div class="family-card">
             <div class="family-top">
               <div>
-                <div class="family-name">${member.name}</div>
+                <div class="family-name">${member.studentName}</div>
                 <div class="family-meta">${member.phone} · ${member.subjects.join(', ')}</div>
               </div>
               <div class="family-total-chip">${formatWon(memberTotal)}</div>
@@ -276,7 +342,7 @@ function selectStudent(index) {
 
 function prepareRegisterSheet() {
     if (!selectedStudent) return;
-    document.getElementById('registerStudentName').textContent = selectedStudent.name;
+    document.getElementById('registerStudentName').textContent = selectedStudent.studentName;
     document.getElementById('registerFinalAmount').textContent = formatWon(selectedFinalTotal);
     expectedAmount.textContent = formatWon(selectedFinalTotal);
     paymentDate.value = getToday();
@@ -288,20 +354,22 @@ function prepareRegisterSheet() {
     cardAmount.value = '';
     cashAmount.value = '';
     transferAmount.value = '';
-    cashTaxType.value = '비과세';
+
+    // 현금 영수증 초기화
     cashIssueType.value = '개인';
     cashReceiptNumber.value = '';
+    cashReceiptNumber.readOnly = false;
     cashReceiptDetail.style.display = 'none';
-    cashReceiptNumberWrap.style.display = 'block';
-    transferTaxType.value = '비과세';
+
+    // 계좌이체 영수증 초기화
     transferIssueType.value = '개인';
     transferReceiptNumber.value = '';
+    transferReceiptNumber.readOnly = false;
     transferReceiptDetail.style.display = 'none';
-    transferReceiptNumberWrap.style.display = 'block';
 
-    syncMethodCard(cardMethod, useCard.checked);
-    syncMethodCard(cashMethod, useCash.checked);
-    syncMethodCard(transferMethod, useTransfer.checked);
+    syncMethodCard(cardMethod, false);
+    syncMethodCard(cashMethod, false);
+    syncMethodCard(transferMethod, false);
     updateRegisterStatus();
 }
 
@@ -330,6 +398,20 @@ function updateRegisterStatus() {
         return;
     }
     registerStatus.textContent = `최종 결제 금액보다 ${formatWon(total - selectedFinalTotal)} 초과되었습니다.`;
+}
+
+function applyIssueType(issueType, receiptNumberEl) {
+    if (issueType === '자진발급') {
+        receiptNumberEl.value = '0100001234';
+        receiptNumberEl.readOnly = true;
+    } else if (issueType === '개인') {
+        receiptNumberEl.value = selectedStudent?.phone || '';
+        receiptNumberEl.readOnly = false;
+    } else {
+        // 사업자
+        receiptNumberEl.value = '';
+        receiptNumberEl.readOnly = false;
+    }
 }
 
 async function runSearch() {
@@ -385,34 +467,31 @@ backToDetailBtn.addEventListener('click', openDetailSheet);
         syncMethodCard(cardMethod, useCard.checked);
         syncMethodCard(cashMethod, useCash.checked);
         syncMethodCard(transferMethod, useTransfer.checked);
+
+        if (useCash.checked) {
+            cashReceiptDetail.style.display = 'flex';
+            applyIssueType(cashIssueType.value, cashReceiptNumber);
+        } else {
+            cashReceiptDetail.style.display = 'none';
+        }
+
+        if (useTransfer.checked) {
+            transferReceiptDetail.style.display = 'flex';
+            applyIssueType(transferIssueType.value, transferReceiptNumber);
+        } else {
+            transferReceiptDetail.style.display = 'none';
+        }
+
         updateRegisterStatus();
     });
 });
 
-cashTaxType.addEventListener('change', () => {
-    cashReceiptDetail.style.display = cashTaxType.value === '과세' ? 'grid' : 'none';
-    if (cashTaxType.value === '비과세') {
-        cashReceiptNumber.value = '';
-        cashIssueType.value = '개인';
-    }
-});
-
 cashIssueType.addEventListener('change', () => {
-    cashReceiptNumberWrap.style.display = cashIssueType.value === '자진발급' ? 'none' : 'block';
-    if (cashIssueType.value === '자진발급') cashReceiptNumber.value = '';
-});
-
-transferTaxType.addEventListener('change', () => {
-    transferReceiptDetail.style.display = transferTaxType.value === '과세' ? 'grid' : 'none';
-    if (transferTaxType.value === '비과세') {
-        transferReceiptNumber.value = '';
-        transferIssueType.value = '개인';
-    }
+    applyIssueType(cashIssueType.value, cashReceiptNumber);
 });
 
 transferIssueType.addEventListener('change', () => {
-    transferReceiptNumberWrap.style.display = transferIssueType.value === '자진발급' ? 'none' : 'block';
-    if (transferIssueType.value === '자진발급') transferReceiptNumber.value = '';
+    applyIssueType(transferIssueType.value, transferReceiptNumber);
 });
 
 [cardAmount, cashAmount, transferAmount].forEach((input) => {
@@ -421,6 +500,8 @@ transferIssueType.addEventListener('change', () => {
         updateRegisterStatus();
     });
 });
+
+
 
 cardCompany.addEventListener('change', updateRegisterStatus);
 

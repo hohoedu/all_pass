@@ -2,6 +2,7 @@ package com.hohoedu.all_pass.payment._dto.app;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -31,10 +32,11 @@ public class PaymentAppRespDTO {
         private boolean subHan;
         private boolean subBook;
         private List<String> subjects;
-        private List<String> siblings;     // [2, 3]
+        private List<String> siblings;
         private int tuition;
         private int arrears;
         private int textbookFee;
         private boolean textbookPaid;
+        private List<StudentDTO> siblingDetails = new ArrayList<>();
     }
 }

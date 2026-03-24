@@ -1958,18 +1958,32 @@ public class PaymentService {
     public List<PaymentAppRespDTO.StudentDTO> search(String keyword, UserRespDTO.LoginRespDTO user) {
         List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode());
 
-        // 각 학생의 형제 ID, 수강과목 세팅
         for (PaymentAppRespDTO.StudentDTO s : students) {
             List<String> siblingIds = paymentRepository.getSiblingIds(s.getStudentId());
             s.setSiblings(siblingIds != null ? siblingIds : Collections.emptyList());
 
-            List<String> subjects = new ArrayList<>();
-            if (s.isSubHan()) subjects.add("한스쿨");
-            if (s.isSubBook()) subjects.add("북스쿨");
-            if (s.isSubHoho()) subjects.add("호호스쿨");
-            s.setSubjects(subjects);
+            s.setSubjects(buildSubjects(s));
+
+            // ✅ 형제 상세 정보 세팅
+            List<PaymentAppRespDTO.StudentDTO> siblingDetails = new ArrayList<>();
+            for (String siblingId : s.getSiblings()) {
+                PaymentAppRespDTO.StudentDTO sibling = paymentRepository.getStudentById(siblingId, user.getCenterCode());
+                if (sibling != null) {
+                    sibling.setSubjects(buildSubjects(sibling));
+                    siblingDetails.add(sibling);
+                }
+            }
+            s.setSiblingDetails(siblingDetails);
         }
         return students;
+    }
+
+    private List<String> buildSubjects(PaymentAppRespDTO.StudentDTO s) {
+        List<String> subjects = new ArrayList<>();
+        if (s.isSubHan()) subjects.add("한스쿨");
+        if (s.isSubBook()) subjects.add("북스쿨");
+        if (s.isSubHoho()) subjects.add("호호스쿨");
+        return subjects;
     }
 
 }

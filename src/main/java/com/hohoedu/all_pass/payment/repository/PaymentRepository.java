@@ -348,5 +348,8 @@ public interface PaymentRepository {
     List<PaymentAppRespDTO.StudentDTO> searchStudents(@Param("keyword") String keyword,
                                                       @Param("centerCode") String centerCode);
 
+    PaymentAppRespDTO.StudentDTO getStudentById(@Param("studentId") String studentId,
+                                                @Param("centerCode") String centerCode);
+
     List<String> getSiblingIds(@Param("studentId") String studentId);
 }

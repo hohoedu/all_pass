@@ -1825,4 +1825,20 @@
           AND student_id != #{studentId}
     </select>
 
+    <select id="getStudentById" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$StudentDTO">
+        SELECT student_id    AS studentId,
+               student_name  AS studentName,
+               billing_phone AS phone,
+               sub_hoho      AS subHoho,
+               sub_han       AS subHan,
+               sub_book      AS subBook,
+               '50000'       AS arrears,
+               '150000'      AS tuition,
+               '30000'       AS textbookFee,
+               'true'        AS textbookPaid
+        FROM erp_student s
+        WHERE s.student_id = #{studentId}
+          AND s.center_code = #{centerCode}
+    </select>
+
 </mapper>
