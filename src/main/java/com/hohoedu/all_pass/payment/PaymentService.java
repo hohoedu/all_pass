@@ -225,27 +225,6 @@ public class PaymentService {
         paymentRepository.insertPaymentHistory(dto);
     }
 
-    /**
-     * 만료된 청구서 자동 파기 (스케줄러)
-     * <p>
-     * 기능: expire_date가 지났지만 상태가 'issued'인 청구서를 'destroyed'로 변경
-     * <p>
-     * 실행 시점: 로그인 시 1회 실행
-     * <p>
-     * 처리 내용:
-     * - erp_payment_bill 테이블에서 만료된 청구서 조회
-     * - 상태를 'destroyed'로 업데이트
-     * <p>
-     * 🔥 개선: 파기 후 교육비 bill인 경우 payment 상태 재계산
-     */
-    @Transactional
-    public void destroyExpiredBills() {
-        int count = paymentRepository.updateExpiredBillsToDestroyed();
-        log.info("만료된 청구서 {} 건 파기 처리", count);
-
-        // TODO: 파기된 교육비 bill의 payment 재계산
-        // 현재는 bill이 이미 destroyed로 변경된 후라 paymentKey 조회 필요
-    }
 
     /**
      * billId 생성 (유니크 ID)
@@ -1132,7 +1111,6 @@ public class PaymentService {
      */
 
     @Transactional
-//    public PaymentRespDTO.ManualPaymentRespDTO insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
     public String insertPaymentManual(PaymentReqDTO.ManualPaymentReqDTO reqDTO) {
 
         // 학생 정보
@@ -1144,14 +1122,11 @@ public class PaymentService {
 
         // 실제 결제된 총 금액
         int totalPaidAmount = reqDTO.getCardAmount() + reqDTO.getCashAmount() + reqDTO.getTransferAmount();
-        log.info("totalPaidAmount = {}", totalPaidAmount);
-        // 결제 수단 판단
+
         boolean hasCard = reqDTO.getCardAmount() != 0;
         boolean hasCash = reqDTO.getCashAmount() != 0;
         boolean hasTransfer = reqDTO.getTransferAmount() != 0;
-        log.info("hasCard = {}", hasCard);
-        log.info("hasCash = {}", hasCash);
-        log.info("hasTransfer = {}", hasTransfer);
+
         String method;
         if (hasCard && !hasCash && !hasTransfer) {
             method = "CARD";
@@ -1162,9 +1137,8 @@ public class PaymentService {
         } else {
             method = "MIXED";
         }
-        log.info("method = {}", method);
 
-        // 4. 🔍 각 학생의 청구금액을 DB에서 조회 (안전하게)
+        // 4. 🔍 각 학생의 청구금액을 DB에서 조회
         int totalBillAmount = 0;
 
         for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
@@ -1191,7 +1165,6 @@ public class PaymentService {
 
         // manual_key 생성
         String manualKey = KeyGenerator.generateManualKey(reqDTO.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
-        log.info("생성된 manualKey: {}", manualKey);
 
         // 학생 이름 조회
         List<String> studentNames = new ArrayList<>();
@@ -1234,7 +1207,7 @@ public class PaymentService {
             Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
 
             Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(), studentInfo.getStudentId());
-
+            log.info("eduFee = {}", eduFee);
             int studentTotalPaid = 0;
             int studentCardAmount = 0;
             int studentCashAmount = 0;
@@ -1255,7 +1228,7 @@ public class PaymentService {
             }
 
             studentTotalPaid = studentCardAmount + studentCashAmount + studentTransferAmount;
-
+            log.info("studentTotalPaid = {}", studentTotalPaid);
             // 이 학생의 청구금액을 초과했는지 확인
             int studentActualPayment = studentTotalPaid;
             String studentStatus;
@@ -1292,8 +1265,11 @@ public class PaymentService {
                 }
             } else if (studentTotalPaid == eduFee) {
                 studentStatus = "approved";
+                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(), 0, method);
             } else {
                 studentStatus = "partial";
+                int unpaidAmount = eduFee - studentTotalPaid;
+                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(), unpaidAmount, method);
             }
 
             log.info("학생 ID: {}, 청구: {}, 할당: {}, 저장: {}, 선납금: {}, 상태: {}",
@@ -1955,8 +1931,8 @@ public class PaymentService {
                 .collect(Collectors.toList());
     }
 
-    public List<PaymentAppRespDTO.StudentDTO> search(String keyword, UserRespDTO.LoginRespDTO user) {
-        List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode());
+    public List<PaymentAppRespDTO.StudentDTO> search(String keyword, UserRespDTO.LoginRespDTO user, String ym) {
+        List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode(), ym);
 
         for (PaymentAppRespDTO.StudentDTO s : students) {
             List<String> siblingIds = paymentRepository.getSiblingIds(s.getStudentId());
@@ -1964,10 +1940,9 @@ public class PaymentService {
 
             s.setSubjects(buildSubjects(s));
 
-            // ✅ 형제 상세 정보 세팅
             List<PaymentAppRespDTO.StudentDTO> siblingDetails = new ArrayList<>();
             for (String siblingId : s.getSiblings()) {
-                PaymentAppRespDTO.StudentDTO sibling = paymentRepository.getStudentById(siblingId, user.getCenterCode());
+                PaymentAppRespDTO.StudentDTO sibling = paymentRepository.getStudentById(siblingId, user.getCenterCode(), ym);
                 if (sibling != null) {
                     sibling.setSubjects(buildSubjects(sibling));
                     siblingDetails.add(sibling);

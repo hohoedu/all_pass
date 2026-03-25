@@ -278,9 +278,9 @@ public class AppController {
     }
 
     @GetMapping("/pay/search")
-    public ResponseEntity<?> search(@RequestParam String keyword, HttpSession session) {
+    public ResponseEntity<?> search(@RequestParam String keyword, @RequestParam String ym, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        List<PaymentAppRespDTO.StudentDTO> response = paymentService.search(keyword, user);
+        List<PaymentAppRespDTO.StudentDTO> response = paymentService.search(keyword, user, ym);
         return ResponseEntity.ok(response);
     }
 }

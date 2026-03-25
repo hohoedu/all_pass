@@ -5,10 +5,10 @@ const students = [
         phone: '010-2222-3333',
         subjects: ['한스쿨', '북스쿨'],
         siblings: [2],
-        tuition: 220000,
-        arrears: 50000,
-        textbookFee: 30000,
-        textbookPaid: true
+        tuition: 220000,    //결제 금액
+        arrears: 50000,     // 미납 금액
+        textbookFee: 30000, // 교재비
+        textbookPaid: true  // 교재비 결제 현황
     },
     {
         id: 2,
@@ -83,6 +83,8 @@ let searchTimer = null;
 let selectedStudent = null;
 let selectedFamily = [];
 let selectedFinalTotal = 0;
+let currentYm = '';
+let currentMm = '';
 
 const headerEl = document.getElementById('header');
 const listEl = document.getElementById('list');
@@ -142,6 +144,21 @@ function getToday() {
     const m = String(now.getMonth() + 1).padStart(2, '0');
     const d = String(now.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+}
+
+function getBillingYm() {
+    const ymd = getToday();
+    const [year, month, day] = ymd.split('-');
+    let yy = year;
+    let mm = month;
+
+    if (parseInt(day) > 20) {
+        const next = new Date(parseInt(year), parseInt(month), 1);
+        yy = String(next.getFullYear());
+        mm = String(next.getMonth() + 1).padStart(2, '0');
+    }
+
+    return {ym: yy + mm, mm};
 }
 
 function getSubjectClass(subject) {
@@ -355,13 +372,11 @@ function prepareRegisterSheet() {
     cashAmount.value = '';
     transferAmount.value = '';
 
-    // 현금 영수증 초기화
     cashIssueType.value = '개인';
     cashReceiptNumber.value = '';
     cashReceiptNumber.readOnly = false;
     cashReceiptDetail.style.display = 'none';
 
-    // 계좌이체 영수증 초기화
     transferIssueType.value = '개인';
     transferReceiptNumber.value = '';
     transferReceiptNumber.readOnly = false;
@@ -400,6 +415,7 @@ function updateRegisterStatus() {
     registerStatus.textContent = `최종 결제 금액보다 ${formatWon(total - selectedFinalTotal)} 초과되었습니다.`;
 }
 
+// 현금 영수증 발급 구분
 function applyIssueType(issueType, receiptNumberEl) {
     if (issueType === '자진발급') {
         receiptNumberEl.value = '0100001234';
@@ -408,14 +424,16 @@ function applyIssueType(issueType, receiptNumberEl) {
         receiptNumberEl.value = selectedStudent?.phone || '';
         receiptNumberEl.readOnly = false;
     } else {
-        // 사업자
         receiptNumberEl.value = '';
         receiptNumberEl.readOnly = false;
     }
 }
 
+// 학생 검색 API 요청
 async function runSearch() {
     const keyword = searchInputEl.value.trim();
+    const {ym} = getBillingYm();
+
     listEl.classList.add('is-searching');
     window.clearTimeout(searchTimer);
 
@@ -427,7 +445,7 @@ async function runSearch() {
         }
 
         try {
-            const res = await fetch(`/app/pay/search?keyword=${encodeURIComponent(keyword)}`);
+            const res = await fetch(`/app/pay/search?keyword=${encodeURIComponent(keyword)}&ym=${encodeURIComponent(ym)}`);
             const result = await res.json();
             console.log(result);
             render(result, false);
@@ -442,6 +460,13 @@ async function runSearch() {
 
 render([], true);
 paymentDate.value = getToday();
+
+const {ym, mm} = getBillingYm();
+currentYm = ym;
+currentMm = mm;
+document.querySelector('.section-caption').textContent = `${parseInt(mm)}월 수강료 기준`;
+document.querySelector('.hero-note').textContent = `${parseInt(mm)}월 수강료 기준 금액과 전월 미납금, 형제 금액을 모두 포함한 합계입니다.`;
+
 
 searchBtnEl.onclick = runSearch;
 searchInputEl.addEventListener('keydown', (e) => {
@@ -502,7 +527,6 @@ transferIssueType.addEventListener('change', () => {
 });
 
 
-
 cardCompany.addEventListener('change', updateRegisterStatus);
 
 saveRegisterBtn.addEventListener('click', () => {
@@ -511,12 +535,79 @@ saveRegisterBtn.addEventListener('click', () => {
         + (useTransfer.checked ? getMoneyValue(transferAmount) : 0);
 
     const message = `필요 결제 금액: ${formatWon(selectedFinalTotal)}
-  입력 금액 합계: ${formatWon(total)}
-  
-  저장하시겠습니까?`;
+
+입력 금액 합계: ${formatWon(total)}
+
+저장하시겠습니까?`;
 
     if (confirm(message)) {
-        alert('오프라인 납부내역이 등록되었습니다.');
+        const allStudents = [
+            {
+                studentId: selectedStudent.studentId,
+                paymentKey: selectedStudent.paymentKey,
+                originalAmount: selectedStudent.tuition
+            },
+            ...selectedFamily.map(m => ({
+                studentId: m.studentId,
+                paymentKey: m.paymentKey,
+                originalAmount: m.tuition
+            }))
+        ].filter(s => s.paymentKey && s.originalAmount > 0);
+
+        let cashbillInfo = null;
+        const hasCashOrTransfer = useCash.checked || useTransfer.checked;
+
+        if (hasCashOrTransfer) {
+            const issueType = useCash.checked ? cashIssueType.value : transferIssueType.value;
+            const receiptNum = useCash.checked ? cashReceiptNumber.value : transferReceiptNumber.value;
+            const cashAmt = useCash.checked ? getMoneyValue(cashAmount) : getMoneyValue(transferAmount);
+
+            const receiptTypeMap = {'개인': 'personal', '사업자': 'business', '자진발급': 'self'};
+            const receiptType = receiptTypeMap[issueType] || 'personal';
+            const trader = receiptType === 'business' ? '1' : '0';
+
+            cashbillInfo = {
+                studentId: selectedStudent.studentId,
+                paymentKey: selectedStudent.paymentKey,
+                receiptNumber: receiptNum.replace(/[^0-9]/g, ''),
+                issueDate: paymentDate.value,
+                price: String(cashAmt),
+                receiptType: receiptType,
+                supplyPrice: String(cashAmt),
+                tax: '0',
+                taxType: 'tax-free',
+                trader: trader
+            };
+        }
+
+        const payload = {
+            students: allStudents,
+            cardAmount: useCard.checked ? getMoneyValue(cardAmount) : 0,
+            cashAmount: useCash.checked ? getMoneyValue(cashAmount) : 0,
+            transferAmount: useTransfer.checked ? getMoneyValue(transferAmount) : 0,
+            cardName: cardCompany.value,
+            paidDate: paymentDate.value,
+            yy: currentYm.slice(0, 4),
+            mm: currentYm.slice(4, 6),
+            cashbillInfo: cashbillInfo
+        };
+
+        fetch('/pay/manual', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+            .then(res => {
+                console.log(res);
+                if (!res.ok) throw new Error('서버 오류');
+                alert('오프라인 납부내역이 등록되었습니다.');
+                closeAllSheets();
+                runSearch();
+            })
+            .catch(e => {
+                console.error('등록 실패', e);
+                alert('등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+            });
     }
 });
 

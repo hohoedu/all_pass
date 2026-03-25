@@ -6,6 +6,7 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
@@ -209,13 +210,16 @@ public class MainViewController {
     }
 
     @GetMapping("/pay")
-    public String getPaySearchPage(HttpSession session, HttpServletRequest request) {
-        log.info("request.getRequestURI = " + request.getRequestURI());
+    public String getPaySearchPage(HttpSession session, HttpServletRequest request, Model model) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login?redirectUrl=" + request.getRequestURI();
         }
+        List<CardCode> cardList = paymentService.findCardCode();
+        model.addAttribute("cardList", cardList);
 
         return "pay/pay-search";
     }
+
 }

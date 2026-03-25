@@ -150,7 +150,7 @@ public class StudentService {
             String formattedBirth = convertBirthToFullDate(studentDTO.getBirth());
             studentDTO.setBirth(formattedBirth);
         }
-        String billingPhone = parentDTO.getParentTelFirst()+parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
+        String billingPhone = parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
 
         String phoneNumber = parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
 
@@ -540,7 +540,6 @@ public class StudentService {
     }
 
 
-
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
         TeacherAssign old = studentRepository.findTeacherAssign(req.getStudentId());
@@ -761,7 +760,6 @@ public class StudentService {
             throw new RuntimeException("잘못된 요청 데이터입니다.");
         }
 
-        // 먼저 해당 날짜에 이미 등원 처리된 기록이 있는지 확인
         List<StudentAttendance> existingAttendance = studentRepository.findByStudentAndDate(
                 student.getStudentId(),
                 dto.getYmd()
@@ -780,6 +778,9 @@ public class StudentService {
         String month = String.format("%02d", today.getMonthValue());
         String todayDayname = getDayname(today.getDayOfWeek());
 
+        // 체크인 시간
+        LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
+
         // ✅ 1. 현재 월 주차에서 날짜 매칭 확인
         List<ClassWeek> weekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), year, month);
         String week = null;
@@ -787,7 +788,7 @@ public class StudentService {
             week = findWeekByDate(today, weekList);
         }
 
-        // ✅ 2. 현재 월에서 매칭 없으면 → 전월로 재조회 + year, month도 전월로 변경
+        // ✅ 2. 현재 월에서 매칭 없으면 → 전월로 재조회
         if (week == null) {
             LocalDate prevMonth = today.minusMonths(1);
             String prevYear = String.valueOf(prevMonth.getYear());
@@ -801,7 +802,6 @@ public class StudentService {
             }
 
             if (week != null) {
-                // 전월 주차에서 찾았으므로 year, month 전월로 변경
                 year = prevYear;
                 month = prevMonthStr;
                 log.info("[체크인 주차계산] 전월({}-{})에서 찾음 → {}", year, month, week);
@@ -822,13 +822,62 @@ public class StudentService {
                 .filter(t -> todayDayname.equals(t.getDayname()))
                 .collect(Collectors.toList());
 
+        // ✅ 4. 오늘 정규 수업 없으면 → 보강 확인
         if (todayClasses.isEmpty()) {
-            throw new RuntimeException("오늘은 수업이 없는 날입니다.");
+            List<StudentAppRespDTO.RemedialDTO> remedialList = studentRepository.findRemedialByStudentAndDate(
+                    student.getStudentId(),
+                    dto.getYmd()
+            );
+
+            if (remedialList == null || remedialList.isEmpty()) {
+                throw new RuntimeException("오늘은 수업이 없는 날입니다.");
+            }
+            boolean alreadyCheckedIn = remedialList.stream()
+                    .anyMatch(r -> r.getInTime() != null && !r.getInTime().isEmpty());
+            if (alreadyCheckedIn) {
+                return "7777";
+            }
+
+            for (StudentAppRespDTO.RemedialDTO remedial : remedialList) {
+
+                // 지각/정상 판단
+                LocalTime start = LocalTime.parse(remedial.getSTime());
+                String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
+
+                // 1. erp_remedial UPDATE (보강 출결 시간)
+                studentRepository.checkinRemedialAttendance(
+                        remedial.getRemedialKey(),
+                        dto.getHhmm(),
+                        attendanceKey
+                );
+
+                // 2. 결석일 주차 정보 조회 (erp_class_week 기준)
+                StudentAppRespDTO.AttendanceInfoDTO weekInfo =
+                        studentRepository.findWeekInfoByDate(remedial.getAbsenceDate(), dto.getCenterCode());
+
+                if (weekInfo == null) {
+                    log.warn("결석일 주차 정보 없음 - studentId: {}, absenceDate: {}",
+                            student.getStudentId(), remedial.getAbsenceDate());
+                    continue;
+                }
+
+                // 3. erp_student_attendance is_remedial = 1 UPDATE
+                studentRepository.updateIsRemedial(
+                        student.getStudentId(),
+                        remedial.getTimeTableKey(),
+                        weekInfo.getWeek(),
+                        weekInfo.getYy(),
+                        weekInfo.getMm()
+                );
+
+                log.info("보강 체크인 완료 - studentId: {}, remedialKey: {}, attendanceKey: {}",
+                        student.getStudentId(), remedial.getRemedialKey(), attendanceKey);
+            }
+
+            return "0000";
         }
 
-        LocalTime checkInTime = LocalTime.parse(dto.getHhmm());
-
-        int totalUpdated = 0;
+        // ✅ 5. 정규 수업 체크인
         for (ClassRespDTO.TimeRangeDTO targetClass : todayClasses) {
             LocalTime start = LocalTime.parse(targetClass.getStartTime());
             String attendanceKey = checkInTime.isAfter(start) ? "late" : "present";
@@ -845,9 +894,8 @@ public class StudentService {
                     targetClass.getTimeTableKey()
             );
 
-            if (updated > 0) {
-                totalUpdated += updated;
-            }
+            log.info("정규 체크인 - studentId: {}, timeTableKey: {}, attendanceKey: {}, updated: {}",
+                    student.getStudentId(), targetClass.getTimeTableKey(), attendanceKey, updated);
         }
 
         return "0000";
@@ -859,37 +907,59 @@ public class StudentService {
             throw new RuntimeException("잘못된 요청 데이터입니다.");
         }
 
-        // 오늘 날짜의 모든 출석 기록 조회
         List<StudentAttendance> attendanceList = studentRepository.findByStudentAndDate(
                 student.getStudentId(),
                 dto.getYmd()
         );
 
-        if (attendanceList == null || attendanceList.isEmpty()) {
+        // 정규 수업 하원 처리
+        if (attendanceList != null && !attendanceList.isEmpty()) {
+            boolean alreadyCheckedOut = attendanceList.stream()
+                    .anyMatch(attendance -> attendance.getOutTime() != null);
+
+            if (alreadyCheckedOut) {
+                return "6666";
+            }
+
+            int totalUpdated = studentRepository.checkoutStudentAttendance(
+                    student.getStudentId(),
+                    dto.getHhmm(),
+                    dto.getYmd()
+            );
+
+            if (totalUpdated > 0) {
+                log.info("[체크아웃] 정규 수업 {}개 교시 하원 완료. studentId={}", totalUpdated, student.getStudentId());
+                return "0000";
+            }
+        }
+
+        // 정규 수업 기록 없으면 → 보강 하원 확인
+        List<StudentAppRespDTO.RemedialDTO> remedialList = studentRepository.findRemedialByStudentAndDate(
+                student.getStudentId(),
+                dto.getYmd()
+        );
+
+        if (remedialList == null || remedialList.isEmpty()) {
             log.info("[체크아웃] 등원 기록 없음. studentId={}, ymd={}", student.getStudentId(), dto.getYmd());
             return "8888";
         }
 
-        // 이미 하원 처리된 교시가 있는지 확인
-        boolean alreadyCheckedOut = attendanceList.stream()
-                .anyMatch(attendance -> attendance.getOutTime() != null);
+        // 보강 하원 처리
+        for (StudentAppRespDTO.RemedialDTO remedial : remedialList) {
+            // 이미 하원 처리된 경우
+            if (remedial.getOutTime() != null && !remedial.getOutTime().isEmpty()) {
+                return "6666";
+            }
 
-        if (alreadyCheckedOut) {
-            return "6666";
+            studentRepository.checkoutRemedialAttendance(
+                    remedial.getRemedialKey(),
+                    dto.getHhmm()
+            );
+
+            log.info("[체크아웃] 보강 하원 완료 - studentId: {}, remedialKey: {}",
+                    student.getStudentId(), remedial.getRemedialKey());
         }
 
-        // 해당 날짜의 모든 교시 하원 처리
-        int totalUpdated = studentRepository.checkoutStudentAttendance(
-                student.getStudentId(),
-                dto.getHhmm(),
-                dto.getYmd()
-        );
-
-        if (totalUpdated == 0) {
-            throw new RuntimeException("하원 처리에 실패했습니다.");
-        }
-
-        log.info("[체크아웃] 총 {}개 교시 하원 완료. studentId={}", totalUpdated, student.getStudentId());
         return "0000";
     }
 
@@ -1235,6 +1305,8 @@ public class StudentService {
                     dto.getTimeTableKey(),
                     dto.getAbsenceDate(),
                     dto.getWeek(),
+                    dto.getYy(),
+                    dto.getMm(),
                     userCode
             );
 

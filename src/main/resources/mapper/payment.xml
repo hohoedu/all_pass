@@ -1799,20 +1799,53 @@
 
 
     <select id="searchStudents" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$StudentDTO">
-        SELECT student_id    AS studentId,
-               student_name  AS studentName,
-               billing_phone AS phone,
-               sub_hoho      AS subHoho,
-               sub_han       AS subHan,
-               sub_book      AS subBook,
-               '50000'       AS arrears,
-               '150000'      AS tuition,
-               '30000'       AS textbookFee,
-               'true'        AS textbookPaid
+        SELECT s.student_id                                                             AS studentId,
+               s.student_name                                                           AS studentName,
+               s.billing_phone                                                          AS phone,
+               p.payment_key                                                            AS paymentKey,
+               s.sub_hoho                                                               AS subHoho,
+               s.sub_han                                                                AS subHan,
+               s.sub_book                                                               AS subBook,
+               ISNULL((SELECT SUM(pb.amount)
+                       FROM erp_payment_bill pb
+                       WHERE pb.student_id = s.student_id
+                         AND pb.bill_type = 'EDU_FEE'
+                         AND pb.status = 'issued'
+                         AND pb.yy + pb.mm NOT IN (#{ym})
+                         AND s.center_code = #{centerCode}), 0)                         AS arrears,
+               ISNULL((SELECT SUM(pd.amount)
+                       FROM erp_payment_detail pd
+                                JOIN erp_payment p2 ON p.payment_key = pd.payment_key
+                       WHERE p2.yy + p2.mm = #{ym}
+                         AND pd.item_type = 'EDU_FEE'
+                         AND p2.student_id = s.student_id), 0)                          AS tuition,
+               ISNULL((SELECT SUM(pd.amount)
+                       FROM erp_payment_detail pd
+                                JOIN erp_payment p2 ON p2.payment_key = pd.payment_key
+                       WHERE p2.yy + p2.mm = #{ym}
+                         AND pd.item_type = 'BOOK_FEE'
+                         AND p2.student_id = s.student_id), 0)                          AS textbookFee,
+               ISNULL((SELECT CASE WHEN pb.status = 'approved' THEN 'true' ELSE 'false' END
+                       FROM erp_payment_bill pb
+                       WHERE pb.student_id = s.student_id
+                         AND pb.yy + pb.mm = #{ym}
+                         AND pb.bill_type = 'BOOK_FEE'
+                         AND pb.bill_id = (SELECT MAX(pb2.bill_id)
+                                           FROM erp_payment_bill pb2
+                                           WHERE pb2.student_id = s.student_id
+                                             AND pb2.yy + pb2.mm = #{ym}
+                                             AND pb2.bill_type = 'BOOK_FEE')), 'false') AS textbookPaid
         FROM erp_student s
+                 LEFT JOIN erp_payment p on s.student_id = p.student_id AND p.yy + p.mm = #{ym}
         WHERE (student_name LIKE CONCAT('%', #{keyword}, '%')
             OR REPLACE(billing_phone, '-', '') LIKE CONCAT('%', #{keyword}, '%'))
           AND s.center_code = #{centerCode}
+          AND s.status_key = 'ACTIVE'
+          AND NOT EXISTS (SELECT 1
+                          FROM erp_payment p
+                          WHERE p.student_id = s.student_id
+                            AND p.yy + p.mm = #{ym}
+                            AND p.status = 'approved');
     </select>
 
     <!-- 형제 ID 조회 -->
@@ -1826,17 +1859,44 @@
     </select>
 
     <select id="getStudentById" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$StudentDTO">
-        SELECT student_id    AS studentId,
-               student_name  AS studentName,
-               billing_phone AS phone,
-               sub_hoho      AS subHoho,
-               sub_han       AS subHan,
-               sub_book      AS subBook,
-               '50000'       AS arrears,
-               '150000'      AS tuition,
-               '30000'       AS textbookFee,
-               'true'        AS textbookPaid
+        SELECT s.student_id                                                             AS studentId,
+               s.student_name                                                           AS studentName,
+               s.billing_phone                                                          AS phone,
+               p.payment_key                                                            AS paymentKey,
+               s.sub_hoho                                                               AS subHoho,
+               s.sub_han                                                                AS subHan,
+               s.sub_book                                                               AS subBook,
+               ISNULL((SELECT SUM(pb.amount)
+                       FROM erp_payment_bill pb
+                       WHERE pb.student_id = s.student_id
+                         AND pb.bill_type = 'EDU_FEE'
+                         AND pb.status = 'issued'
+                         AND pb.yy + pb.mm NOT IN (#{ym})
+                         AND s.center_code = #{centerCode}), 0)                         AS arrears,
+               ISNULL((SELECT SUM(pd.amount)
+                       FROM erp_payment_detail pd
+                                JOIN erp_payment p2 ON p2.payment_key = pd.payment_key
+                       WHERE p2.yy + p2.mm = #{ym}
+                         AND pd.item_type = 'EDU_FEE'
+                         AND p2.student_id = s.student_id), 0)                          AS tuition,
+               ISNULL((SELECT SUM(pd.amount)
+                       FROM erp_payment_detail pd
+                                JOIN erp_payment p2 ON p2.payment_key = pd.payment_key
+                       WHERE p2.yy + p2.mm = #{ym}
+                         AND pd.item_type = 'BOOK_FEE'
+                         AND p2.student_id = s.student_id), 0)                          AS textbookFee,
+               ISNULL((SELECT CASE WHEN pb.status = 'approved' THEN 'true' ELSE 'false' END
+                       FROM erp_payment_bill pb
+                       WHERE pb.student_id = s.student_id
+                         AND pb.yy + pb.mm = #{ym}
+                         AND pb.bill_type = 'BOOK_FEE'
+                         AND pb.bill_id = (SELECT MAX(pb2.bill_id)
+                                           FROM erp_payment_bill pb2
+                                           WHERE pb2.student_id = s.student_id
+                                             AND pb2.yy + pb2.mm = #{ym}
+                                             AND pb2.bill_type = 'BOOK_FEE')), 'false') AS textbookPaid
         FROM erp_student s
+                 LEFT JOIN erp_payment p on s.student_id = p.student_id AND p.yy + p.mm = #{ym}
         WHERE s.student_id = #{studentId}
           AND s.center_code = #{centerCode}
     </select>

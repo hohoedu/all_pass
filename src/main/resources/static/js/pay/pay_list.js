@@ -1616,7 +1616,7 @@ function setupMultiCheckbox() {
     });
 }
 /* ========================================
-    💰 현금영수증 취소 기능
+    현금영수증 취소 기능
 ======================================== */
 document.addEventListener('DOMContentLoaded', function () {
     const cancelCashbillBtn = document.getElementById('cancel-cashbill');

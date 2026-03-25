@@ -35,6 +35,24 @@ public class StudentAppReqDTO {
         private String appId;
     }
 
+    @Data
+    public static class RemedialDTO {
+        private String remedialKey;
+        private String timeTableKey;
+        private String absenceDate;
+        private String week;
+        private String yy;
+        private String mm;
+        private String sTime;
+    }
+
+    @Data
+    public static class AttendanceInfoDTO {
+        private String week;
+        private String yy;
+        private String mm;
+    }
+
 
     @Data
     public static class AppTokenReqDTO {

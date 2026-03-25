@@ -136,15 +136,10 @@
                                 <label class="label" for="cardCompany">카드사</label>
                                 <select id="cardCompany" class="select-input">
                                     <option value="">카드사 선택</option>
-                                    <option>신한카드</option>
-                                    <option>국민카드</option>
-                                    <option>삼성카드</option>
-                                    <option>현대카드</option>
-                                    <option>롯데카드</option>
-                                    <option>하나카드</option>
-                                    <option>우리카드</option>
-                                    <option>농협카드</option>
-                                    <option>기타</option>
+                                    <option th:each="c : ${cardList}"
+                                            th:value="${c.cardCode}"
+                                            th:text="${c.cardName}">
+                                    </option>
                                 </select>
                             </div>
                             <div class="field">

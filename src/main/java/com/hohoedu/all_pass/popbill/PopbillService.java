@@ -62,7 +62,6 @@ public class PopbillService {
                     config.getPopbillId()
             );
 
-            log.info("팝빌 접속 URL 발급 성공: {}", url);
             return url;
 
         } catch (PopbillException e) {

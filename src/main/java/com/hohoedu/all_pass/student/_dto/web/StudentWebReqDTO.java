@@ -146,6 +146,8 @@ public class StudentWebReqDTO {
         private String timeTableKey;
         private String absenceDate;
         private String week;
+        private String yy;
+        private String mm;
         private String centerCode;
         private String attendanceName;
         private String inTime;

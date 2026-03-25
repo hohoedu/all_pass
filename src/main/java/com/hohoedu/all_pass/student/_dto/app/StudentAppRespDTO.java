@@ -68,6 +68,26 @@ public class StudentAppRespDTO {
     }
 
     @Data
+    public static class RemedialDTO {
+        private String remedialKey;
+        private String timeTableKey;
+        private String absenceDate;
+        private String week;
+        private String yy;
+        private String mm;
+        private String sTime;
+        private String inTime;
+        private String outTime;
+    }
+
+    @Data
+    public static class AttendanceInfoDTO {
+        private String week;
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class AppTokenRespDTO {
         private String centerCode;
         private String stuId;

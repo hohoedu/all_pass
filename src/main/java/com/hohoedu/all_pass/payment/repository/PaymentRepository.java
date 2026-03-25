@@ -345,11 +345,15 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(@Param("ym") String ym, @Param("centerCode") String centerCode);
 
-    List<PaymentAppRespDTO.StudentDTO> searchStudents(@Param("keyword") String keyword,
-                                                      @Param("centerCode") String centerCode);
+    List<PaymentAppRespDTO.StudentDTO> searchStudents(
+            @Param("keyword") String keyword,
+            @Param("centerCode") String centerCode,
+            @Param("ym") String ym);
 
-    PaymentAppRespDTO.StudentDTO getStudentById(@Param("studentId") String studentId,
-                                                @Param("centerCode") String centerCode);
+    PaymentAppRespDTO.StudentDTO getStudentById(
+            @Param("studentId") String studentId,
+            @Param("centerCode") String centerCode,
+            @Param("ym") String ym);
 
     List<String> getSiblingIds(@Param("studentId") String studentId);
 }

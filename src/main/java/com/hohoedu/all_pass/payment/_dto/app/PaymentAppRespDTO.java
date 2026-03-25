@@ -27,6 +27,7 @@ public class PaymentAppRespDTO {
     public static class StudentDTO {
         private String studentId;
         private String studentName;
+        private String paymentKey;
         private String phone;
         private boolean subHoho;
         private boolean subHan;

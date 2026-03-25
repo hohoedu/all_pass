@@ -560,12 +560,14 @@ async function updateAttendance(button) {
 
     button.disabled = true;
     button.textContent = '처리중...';
-
+    const [yy, mm] = state.date.split('-');
     const data = {
         attendanceKey: newStatus,
         studentId: studentId,
         timeTableKey: state.timeTableKey,
         week: state.week,
+        yy: yy,
+        mm: mm,
         centerCode: row.dataset.centerCode,
         attendanceName: newStatus,
         inTime: newStartTime || null,

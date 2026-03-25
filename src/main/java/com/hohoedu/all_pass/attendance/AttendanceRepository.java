@@ -35,7 +35,9 @@ public interface AttendanceRepository {
     int bulkInsertRemedialForClass(
             @Param("timeTableKey") String timeTableKey,
             @Param("absenceDate") String absenceDate,
-            @Param("week") String week);
+            @Param("week") String week,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
 
     @Update("EXEC sp_set_session_context @key = #{key}, @value = #{value}")
     void setSessionContext(@Param("key") String key, @Param("value") String value);
@@ -45,6 +47,8 @@ public interface AttendanceRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("absenseDate") String absenceDate,
             @Param("week") String week,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
             @Param("userCode") String userCode);
 
     int deleteRemedialForStudent(@Param("studentId") String studentId,

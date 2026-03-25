@@ -40,6 +40,12 @@ public class Remedial {
     @Column(name = "action", nullable = false)
     private boolean action;
 
+    @Column(name = "yy", nullable = false)
+    private String yy;
+
+    @Column(name = "mm", nullable = false)
+    private String mm;
+
     @Column(name = "week", nullable = false)
     private String week;
 
@@ -65,12 +71,14 @@ public class Remedial {
 
     @Builder
     public Remedial(String remedialKey, String remedialSubject, String absenceDate, String remedialDate,
-                    boolean action, String week, Student student, User user, TimeTable timeTable) {
+                    boolean action, String yy, String mm, String week, Student student, User user, TimeTable timeTable) {
         this.remedialKey = remedialKey;
         this.remedialSubject = remedialSubject;
         this.absenceDate = absenceDate;
         this.remedialDate = remedialDate;
         this.action = action;
+        this.yy = yy;
+        this.mm = mm;
         this.week = week;
         this.student = student;
         this.user = user;

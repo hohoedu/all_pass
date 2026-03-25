@@ -5,6 +5,7 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
+import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
@@ -276,6 +277,11 @@ public interface StudentRepository {
             @Param("timeTableKey") String timeTableKey);
 
     // 출석 insert
+
+    public List<StudentAttendance> findByStudentAndDate(
+            @Param("studentId") String studentId,
+            @Param("attendanceDate") String attendanceDate);
+
     public int checkinStudentAttendance(
             @Param("studentId") String studentId,
             @Param("attendanceDate") String attendanceDate,
@@ -287,11 +293,37 @@ public interface StudentRepository {
             @Param("mm") String mm,
             @Param("timeTableKey") String timeTableKey);
 
-    // 하원 여부 체크
-    //TODO: 수정 필요
-    public List<StudentAttendance> findByStudentAndDate(
+    List<StudentAppRespDTO.RemedialDTO> findRemedialByStudentAndDate(
             @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate);
+            @Param("ymd") String ymd
+    );
+
+    int checkinRemedialAttendance(
+            @Param("remedialKey") String remedialKey,
+            @Param("inTime") String inTime,
+            @Param("attendanceKey") String attendanceKey
+    );
+
+    int checkoutRemedialAttendance(
+            @Param("remedialKey") String remedialKey,
+            @Param("outTime") String outTime
+    );
+
+    int updateIsRemedial(
+            @Param("studentId") String studentId,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("week") String week,
+            @Param("yy") String yy,
+            @Param("mm") String mm
+    );
+
+    StudentAppRespDTO.AttendanceInfoDTO findWeekInfoByDate(
+            @Param("absenceDate") String absenceDate,
+            @Param("centerCode") String centerCode
+    );
+
+    // 하원 여부 체크
+
 
     // 하원 update
     public int checkoutStudentAttendance(
