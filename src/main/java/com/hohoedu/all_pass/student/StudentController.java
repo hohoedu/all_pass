@@ -320,6 +320,14 @@ public class StudentController {
         }
     }
 
+
+    @PostMapping("/cancel-join")
+    public ResponseEntity<?> cancelJoin(@RequestBody Map<String, Object> body) {
+        String studentId = body.get("studentId").toString();
+        studentService.cancelJoin(studentId);
+        return ResponseEntity.ok(ApiUtils.success("입회가 취소되었습니다."));
+    }
+
     @PostMapping("/api/withdraw/counts")
     public ResponseEntity<?> getWithdrawCounts(@RequestBody StudentWebReqDTO.WithdrawReqDTO req, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

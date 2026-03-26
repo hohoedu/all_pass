@@ -1331,6 +1331,14 @@ public class StudentService {
         }
     }
 
+
+    public void cancelJoin(String studentId) {
+        if (studentRepository.countStudent(studentId) == 0) {
+            throw new IllegalArgumentException("존재하지 않는 학생입니다.");
+        }
+        studentRepository.cancelJoinStudent(studentId);
+    }
+
     public StudentWebRespDTO.WithdrawCountDTO findWithdrawCounts(StudentWebReqDTO.WithdrawReqDTO req) {
         return studentRepository.selectWithdrawCounts(req);
     }

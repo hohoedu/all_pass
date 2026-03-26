@@ -261,6 +261,10 @@ public interface StudentRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("week") String week);
 
+    int countStudent(String studentId);
+
+    void cancelJoinStudent(String studentId);
+
     // 출석 여부 체크
     public Integer countByStudentAndDate(
             @Param("studentId") String studentId,

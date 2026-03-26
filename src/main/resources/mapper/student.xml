@@ -1006,7 +1006,7 @@
     </select>
 
     <select id="findAppIdByLog" resultType="String">
-        SELECT student_id as studentId
+        SELECT TOP 1 student_id as studentId
         FROM erp_change_app_id
         WHERE old_app_id = #{appId}
     </select>
@@ -1066,7 +1066,6 @@
             out_time            = null,
             attendance_date     = #{attendanceDate},
             attendance_key      = #{attendanceKey},
-            is_remedial         = #{isRemedial},
             check_in_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND week = #{week}
@@ -1415,6 +1414,19 @@
         FROM erp_grade_code
         WHERE grade_key = #{gradeKey}
     </select>
+
+
+    <select id="countStudent" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_student
+        WHERE student_id = #{studentId}
+    </select>
+
+    <select id="cancelJoinStudent" statementType="CALLABLE">
+        EXEC sp_cancel_join_student
+        #{studentId}
+    </select>
+
 
     <select id="selectWithdrawCounts"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawCountDTO">

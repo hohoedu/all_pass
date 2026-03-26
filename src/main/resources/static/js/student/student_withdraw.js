@@ -255,6 +255,49 @@ document.addEventListener("DOMContentLoaded", () => {
         const panel = btn.closest(".status-panel");
         const panelId = panel?.dataset.panel;
 
+        if (panelId === "t1") {
+            const result = await Swal.fire({
+                title: "입회 취소",
+                html: `
+                <p>해당 학생의 <strong>모든 데이터가 삭제</strong>됩니다.</p>
+                <p style="color:#e53e3e; margin-top:8px;">
+                    ⚠️ 삭제된 데이터는 <strong>복구할 수 없습니다.</strong>
+                </p>
+            `,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#e53e3e",
+                cancelButtonColor: "#aaa",
+                confirmButtonText: "삭제",
+                cancelButtonText: "취소",
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch("/student/cancel-join", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ studentId }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || data.success === false) {
+                    Swal.fire("오류", data.msg ?? "삭제 중 오류가 발생했습니다.", "error");
+                    return;
+                }
+
+                await Swal.fire("삭제 완료", "입회가 취소되었습니다.", "success");
+                fetchCounts();
+                fetchTabData("t1");
+
+            } catch (err) {
+                console.error("입회 취소 오류:", err);
+                Swal.fire("오류", "삭제 중 오류가 발생했습니다.", "error");
+            }
+        }
+
         if (panelId === "t2") {
             if (!confirm("탈퇴를 취소하고 복구하시겠습니까?")) return;
 
