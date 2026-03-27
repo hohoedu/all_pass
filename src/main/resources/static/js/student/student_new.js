@@ -298,13 +298,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const birthInput = modal.querySelector('#birth-date');
         if (birthInput) birthInput.value = formatBirthInput(info.birth) || info.birth || '';
 
-        // TAB3 수강정보
-        setValue('#new-tab3 .s_han_class', payment.hanClassName);
-        setValue('#new-tab3 .s_book_class', payment.bookClassName);
-        setValue('#new-tab3 .p_han_teacher', payment.hanTeacher);
-        setValue('#new-tab3 .p_book_teacher', payment.bookTeacher);
-        setValue('#new-tab3 .p_han_fee', formatMoney(payment.hanFee));
-        setValue('#new-tab3 .p_book_fee', formatMoney(payment.bookFee));
+        // TAB3 수강정보 - ▼ 드롭다운 렌더링 (단계 / 선생님)
+        renderHanClassDropdown(data.hanClasses ?? [], payment.hanClassName);
+        renderBookClassDropdown(data.bookClasses ?? [], payment.bookClassName);
+        renderHanTeacherDropdown(data.hanTeachers ?? [], payment.hanTeacher);
+        renderBookTeacherDropdown(data.bookTeachers ?? [], payment.bookTeacher);
+
         setValue('#new-tab3 .p_han_material_fee', formatMoney(payment.hanMaterialPrice));
         setValue('#new-tab3 .p_book_material_fee', formatMoney(payment.bookMaterialPrice));
         setValue('#new-tab3 .s_entry_han_date', formatDateDisplay(payment.entryHanDate) || '날짜를 선택하세요.');
@@ -324,6 +323,109 @@ document.addEventListener('DOMContentLoaded', () => {
             window.saveInitialCourseState(payment.hanState, payment.bookState);
         }
     }
+
+
+    // ============================================= //
+    //         TAB3 드롭다운 렌더링 함수               //
+    // ============================================= //
+
+    function renderHanClassDropdown(classes, selectedName) {
+        const select = modal.querySelector('#new-tab3 .s_han_class');
+        if (!select) return;
+
+        select.innerHTML = `<option value="">단계 선택</option>`;
+
+        classes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.classKey;
+            opt.textContent = c.className;
+            opt.dataset.fee = c.fee ?? 0;
+            if (c.className === selectedName) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        updateHanFeeFromSelect(select);
+
+        select.removeEventListener('change', select._hanFeeHandler);
+        select._hanFeeHandler = () => updateHanFeeFromSelect(select);
+        select.addEventListener('change', select._hanFeeHandler);
+    }
+
+    function updateHanFeeFromSelect(select) {
+        const selectedOpt = select.options[select.selectedIndex];
+        const fee = selectedOpt?.dataset?.fee;  // ?. 추가
+        const feeInput = modal.querySelector('#hanFee');
+        if (feeInput) feeInput.value = fee ? formatMoney(fee) : '';
+        updateTotalFee();
+    }
+
+
+    function renderBookClassDropdown(classes, selectedName) {
+        const select = modal.querySelector('#new-tab3 .s_book_class');
+        if (!select) return;
+
+        select.innerHTML = `<option value="">단계 선택</option>`;
+
+        classes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.classKey;
+            opt.textContent = c.className;
+            opt.dataset.fee = c.fee ?? 0;
+            if (c.className === selectedName) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        updateBookFeeFromSelect(select);
+
+        select.removeEventListener('change', select._bookFeeHandler);
+        select._bookFeeHandler = () => updateBookFeeFromSelect(select);
+        select.addEventListener('change', select._bookFeeHandler);
+    }
+
+    function updateBookFeeFromSelect(select) {
+        const selectedOpt = select.options[select.selectedIndex];
+        const fee = selectedOpt?.dataset?.fee;  // ?. 추가
+        const feeInput = modal.querySelector('#bookFee');
+        if (feeInput) feeInput.value = fee ? formatMoney(fee) : '';
+        updateTotalFee();
+    }
+
+    // 보여주는 건 userName, 저장/전송하는 건 userCode
+    function renderHanTeacherDropdown(teachers, selectedName) {
+        const select = modal.querySelector('#new-tab3 .p_han_teacher');
+        if (!select) return;
+
+        select.innerHTML = `<option value="">선생님 선택</option>`;
+
+        teachers.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.userCode;
+            opt.textContent = t.userName;
+            if (t.userName === selectedName) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+    // 보여주는 건 userName, 저장/전송하는 건 userCode
+    function renderBookTeacherDropdown(teachers, selectedName) {
+        const select = modal.querySelector('#new-tab3 .p_book_teacher');
+        if (!select) return;
+
+        select.innerHTML = `<option value="">선생님 선택</option>`;
+
+        teachers.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.userCode;
+            opt.textContent = t.userName;
+            if (t.userName === selectedName) opt.selected = true;
+            select.appendChild(opt);
+        });
+    }
+
+
+    // ============================================= //
+    //                  모달 렌더링 (상태/성별 등)      //
+    // ============================================= //
 
     function renderStatusButton(statusKey) {
         const statusStr = String(statusKey ?? '');
@@ -787,6 +889,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 inactiveBookDate: modal.querySelector('#book-inactive-date')?.value || null,
                 inactiveHanReason: modal.querySelector('#han-inactive-reason')?.value?.trim() || null,
                 inactiveBookReason: modal.querySelector('#book-inactive-reason')?.value?.trim() || null,
+                // ▼ 단계 / 선생님 추가
+                hanClassKey: modal.querySelector('#new-tab3 .s_han_class')?.value || null,
+                bookClassKey: modal.querySelector('#new-tab3 .s_book_class')?.value || null,
+                hanTeacherCode: modal.querySelector('#new-tab3 .p_han_teacher')?.value || null,
+                bookTeacherCode: modal.querySelector('#new-tab3 .p_book_teacher')?.value || null,
             };
 
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {

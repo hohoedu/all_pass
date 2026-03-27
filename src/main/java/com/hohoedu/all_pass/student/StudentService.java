@@ -30,6 +30,7 @@ import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -1336,7 +1337,25 @@ public class StudentService {
         if (studentRepository.countStudent(studentId) == 0) {
             throw new IllegalArgumentException("존재하지 않는 학생입니다.");
         }
-        studentRepository.cancelJoinStudent(studentId);
+        try {
+            studentRepository.cancelJoinStudent(studentId);
+        } catch (Exception e) {
+            Throwable cause = e;
+            while (cause != null) {
+                String msg = cause.getMessage();
+                log.info(msg);
+                if (msg != null) {
+                    if (msg.contains("결제 이력이 있습니다. 결제를 먼저 취소해주세요.")) {
+                        throw new IllegalArgumentException("결제 내역이 있습니다. 결제를 먼저 취소해주세요.");
+                    }
+                    if (msg.contains("수업 이력이 존재하는 학생은 입회 취소가 불가합니다.")) {
+                        throw new IllegalArgumentException("수업 이력이 존재하는 학생은 입회 취소가 불가합니다.");
+                    }
+                }
+                cause = cause.getCause();
+            }
+            throw new RuntimeException("입회 취소 처리 중 오류가 발생했습니다.", e);
+        }
     }
 
     public StudentWebRespDTO.WithdrawCountDTO findWithdrawCounts(StudentWebReqDTO.WithdrawReqDTO req) {

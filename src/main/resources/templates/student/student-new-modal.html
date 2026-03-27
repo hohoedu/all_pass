@@ -24,7 +24,7 @@
                     <div class="modal-scroll">
                         <div class="modal-inner">
 
-                            <!-- 상태 변경 버튼 (submit 제외 / 별도 API 처리) -->
+                            <!-- 상태 변경 버튼 -->
                             <div class="btn-group">
                                 <div class="status-buttons" data-visibility="except-current">
                                     <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>
@@ -38,7 +38,6 @@
                             <div class="reason-input">
                                 <div class="s_student_no" style="display:none;"></div>
 
-                                <!-- 날짜 입력칸 + 달력 아이콘 -->
                                 <div class="withdraw-date hide-input" style="display: flex; gap: 10px; align-items: center; margin-right: 10px;">
                                     <div style="position: relative;">
                                         <div class="day-display">날짜를 선택해주세요</div>
@@ -49,13 +48,11 @@
                                     </button>
                                 </div>
 
-                                <!-- 사유 입력칸 + 변경 버튼 -->
                                 <div style="display: flex; gap: 10px; align-items: center;">
                                     <input type="text" id="reason" name="reasonInput" placeholder="사유를 입력해주세요">
                                     <button type="button" class="change-btn" id="status-change">변경</button>
                                 </div>
                             </div>
-
 
                             <!-- 기본 정보 -->
                             <table class="base-info-t">
@@ -167,35 +164,6 @@
 
                                 </tbody>
                             </table>
-                            <!--            &lt;!&ndash; 입회 정보 &ndash;&gt;-->
-                            <!--            <h4 class="small-title">입회 정보</h4>-->
-                            <!--            <table class="base-info-t">-->
-                            <!--                <tbody>-->
-                            <!--                <tr>-->
-                            <!--                    <th>한자 입회</th>-->
-                            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
-                            <!--                        <div class="birth-display s_entry_han_date"></div>-->
-                            <!--                        <div>-->
-                            <!--                            <input type="date" class="hidden-date" id="entry-han-date" name="s_entry_han_date">-->
-                            <!--                            <button type="button" class="icon-btn">-->
-                            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
-                            <!--                            </button>-->
-                            <!--                        </div>-->
-                            <!--                    </td>-->
-
-                            <!--                    <th>독서 입회</th>-->
-                            <!--                    <td class="icon-field day-picker" style="position: relative;">-->
-                            <!--                        <div class="birth-display s_entry_book_date"></div>-->
-                            <!--                        <div>-->
-                            <!--                            <input type="date" class="hidden-date" id="entry-book-date" name="s_entry_book_date">-->
-                            <!--                            <button type="button" class="icon-btn">-->
-                            <!--                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">-->
-                            <!--                            </button>-->
-                            <!--                        </div>-->
-                            <!--                    </td>-->
-                            <!--                </tr>-->
-                            <!--                </tbody>-->
-                            <!--            </table>-->
 
                             <div class="save-btn-frame">
                                 <button type="submit" class="save-btn" id="update-btn">저장</button>
@@ -221,7 +189,9 @@
                                 <tr>
                                     <th>한자 단계</th>
                                     <td>
-                                        <input type="text" class="styled-input s_han_class" readonly>
+                                        <select class="styled-input s_han_class" name="hanClassKey">
+                                            <option value="">단계 선택</option>
+                                        </select>
                                     </td>
                                     <th>수강 상태</th>
                                     <td class="choose-group" data-type="han">
@@ -252,9 +222,10 @@
                                 <tr class="han-course-info">
                                     <th>담당 선생님</th>
                                     <td>
-                                        <input type="text" class="styled-input p_han_teacher" readonly>
+                                        <select class="styled-input p_han_teacher" name="hanTeacherCode">
+                                            <option value="">선생님 선택</option>
+                                        </select>
                                     </td>
-
                                     <th>시작일자</th>
                                     <td class="day-picker" style="position: relative;">
                                         <div class="icon-field">
@@ -267,7 +238,6 @@
                                             </div>
                                         </div>
                                     </td>
-
                                 </tr>
                                 <tr class="han-course-info">
                                     <th class="tuition-fee">교육비</th>
@@ -276,12 +246,12 @@
                                     </td>
                                     <th>교재비</th>
                                     <td>
-                                        <input type="text" name="hanMaterialFee" class="no-spin  p_han_material_fee" id="hanMaterialFee">
+                                        <input type="text" name="hanMaterialFee" class="no-spin p_han_material_fee" id="hanMaterialFee">
                                     </td>
                                 </tr>
                                 </tbody>
-
                             </table>
+
                             <!-- 수강과목(독서) -->
                             <div class="small-title">수강과목(독서)</div>
                             <table class="base-info-t" style="margin-bottom: 5px;">
@@ -295,7 +265,9 @@
                                 <tr>
                                     <th>독서 단계</th>
                                     <td>
-                                        <input type="text" class="styled-input s_book_class" readonly>
+                                        <select class="styled-input s_book_class" name="bookClassKey">
+                                            <option value="">단계 선택</option>
+                                        </select>
                                     </td>
                                     <th>수강 상태</th>
                                     <td data-type="book">
@@ -328,7 +300,9 @@
                                 <tr class="book-course-info">
                                     <th>담당 선생님</th>
                                     <td>
-                                        <input type="text" class="styled-input p_book_teacher" readonly>
+                                        <select class="styled-input p_book_teacher" name="bookTeacherCode">
+                                            <option value="">선생님 선택</option>
+                                        </select>
                                     </td>
                                     <th>시작일자</th>
                                     <td class="day-picker" style="position: relative;">
@@ -355,6 +329,7 @@
                                 </tr>
                                 </tbody>
                             </table>
+
                             <div class="dues-sum">
                                 <p>회비 합계<span> 0</span>원</p>
                             </div>
