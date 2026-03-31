@@ -546,6 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 claimDetailSection.style.display = 'none';
                 if (claimDivider) claimDivider.style.display = 'none';
                 if (claimButtons) claimButtons.style.display = 'none';
+                const nameEl = document.getElementById('claim-student-name');
+                if (nameEl) nameEl.style.display = 'none';
                 return;
             }
 
@@ -597,6 +599,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!claimTbody) return;
 
         claimTbody.innerHTML = '';
+        const nameEl = document.getElementById('claim-student-name');
+        if (nameEl) {
+            const studentName = data && data.length > 0 ? data[0].studentName : '';
+            if (studentName) {
+                nameEl.textContent = `${studentName} 청구 내역`;
+                nameEl.style.display = 'block';
+            } else {
+                nameEl.style.display = 'none';
+            }
+        }
 
         if (!data || data.length === 0) {
             claimTbody.innerHTML = `
@@ -629,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="checkbox-group">
             <input type="checkbox" class="claim-checkbox">
         </td>
-        <td>${item.studentName || '-'}</td>
+        <td>${formatYm(item.ym)}</td>
         <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
         <td>${item.expireDate || '-'}</td>
         <td>${paidDate}</td>
@@ -644,6 +656,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         bindPaymentMethodTooltip();
+    }
+
+    function formatYm(ym) {
+        if (!ym) return "-";
+
+        const [year, m] = ym.split("-");
+        const month = m?.padStart(2, "0");
+
+        return `${year}년 ${month}월`;
     }
 
     function bindPaymentMethodTooltip() {
@@ -1442,7 +1463,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!claimTbody) return;
 
         claimTbody.innerHTML = '';
-
+        const nameEl = document.getElementById('claim-student-name');
+        if (nameEl) {
+            const studentName = data && data.length > 0 ? data[0].studentName : '';
+            if (studentName) {
+                nameEl.textContent = `${studentName} 청구 내역`;
+                nameEl.style.display = 'block';
+            } else {
+                nameEl.style.display = 'none';
+            }
+        }
         if (!data || data.length === 0) {
             claimTbody.innerHTML = `
         <tr>
@@ -1474,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <td class="checkbox-group">
             <input type="checkbox" class="claim-checkbox">
         </td>
-        <td>${item.studentName || '-'}</td>
+        <td>${item.ym || '-'}</td>
         <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
         <td>${item.expireDate || '-'}</td>
         <td>${paidDate}</td>

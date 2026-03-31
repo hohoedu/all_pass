@@ -84,8 +84,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-async function loadRemedialData(year, month) {
+async function loadRemedialData(year, month, userCode) {
     try {
+        // userCode 없으면 select에서 현재 선택값 가져오기
+        if (!userCode) {
+            userCode = document.getElementById("remedial-teacher-filter")?.value ?? "";
+        }
         const response = await fetch('/class/remedial/list', {
             method: 'POST',
             headers: {
@@ -93,7 +97,8 @@ async function loadRemedialData(year, month) {
             },
             body: JSON.stringify({
                 year: year,
-                month: month
+                month: month,
+                userCode: userCode,
             })
         });
 
@@ -236,6 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         }
     });
+
+    const teacherFilter = document.getElementById("remedial-teacher-filter");
+    if (teacherFilter) {
+        teacherFilter.addEventListener("change", () => {
+            const { year, month } = getYearMonthFromURL();
+            const userCode = teacherFilter.value;
+            loadRemedialData(year, month, userCode);
+        });
+    }
 });
 
 // 보강 날짜 변경 이벤트 바인딩

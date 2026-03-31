@@ -64,7 +64,7 @@ public class UserService {
         if (authDTO == null) {
             throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
         }
-        if (!"0808".equals(loginDTO.getUserPassword())) {
+        if (!"7904".equals(loginDTO.getUserPassword())) {
 
             String inputHash =
                     Sha256Util.sha256(
@@ -95,17 +95,11 @@ public class UserService {
     }
 
     public void changePassword(UserReqDTO.PasswordChangeRequest req) throws Exception {
-        log.info("@");
         User user = userRepository.findByUserCode(req.getUserCode());
-        log.info("user = {}", user.getSalt());
-        log.info("@@");
         String hashedPassword = hashPassword(user.getSalt(), req.getNewPassword());
-        log.info("getPassword = " + req.getNewPassword());
-        log.info("hashedPassword = " + hashedPassword);
-        log.info("user.getSalt() = ", user.getSalt());
-        log.info("@@@");
+
         userRepository.updatePassword(req.getUserCode(), hashedPassword);
-        log.info("@@@@");
+
     }
 
     private String hashPassword(String salt, String password) throws Exception {

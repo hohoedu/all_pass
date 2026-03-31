@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!searchBtn || !searchInput || !tbody) return;
 
-    const getRows = () => Array.from(tbody.querySelectorAll("tr"));
+    const getRows = () => Array.from(tbody.querySelectorAll("tr:not(.empty-search-row)"));
 
     window.doSearch = function () {
         const keyword = searchInput.value.trim().toLowerCase();
@@ -111,10 +111,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     searchInput.addEventListener("input", () => {
-        if (searchInput.value.trim() === "") {
-            getRows().forEach(tr => (tr.style.display = ""));
-            tbody.querySelector(".empty-search-row")?.remove();
-        }
+        window.doSearch();
+    });
+
+    filterSelect?.addEventListener("change", () => {
+        window.doSearch();
     });
 });
 
@@ -361,47 +362,143 @@ function renderStudentModal(data) {
     // ---------------- TAB4: 출결 정보 ----------------
     let currentAttendanceYear = new Date().getFullYear();
     let currentAttendanceMonth = new Date().getMonth() + 1;
-    renderCalendar(currentAttendanceYear, currentAttendanceMonth);
+    let currentAttendanceData = data.studentAttendance ?? [];
 
-    function renderCalendar(year, month) {
-        const titleEl = document.getElementById("calendar-title");
-        if (titleEl) {
-            titleEl.textContent = `${year}년 ${String(month).padStart(2, "0")}월`;
-        }
+    renderCalendar(currentAttendanceYear, currentAttendanceMonth, currentAttendanceData);
+
+    const prevBtn = document.getElementById("calendar-prev");
+    const nextBtn = document.getElementById("calendar-next");
+
+    if (prevBtn) {
+        prevBtn.onclick = async () => {
+            currentAttendanceMonth--;
+            if (currentAttendanceMonth < 1) {
+                currentAttendanceMonth = 12;
+                currentAttendanceYear--;
+            }
+            currentAttendanceData = await fetchAttendance(currentStudentId, currentAttendanceYear, currentAttendanceMonth);
+            renderCalendar(currentAttendanceYear, currentAttendanceMonth, currentAttendanceData);
+        };
+    }
+
+    if (nextBtn) {
+        nextBtn.onclick = async () => {
+            currentAttendanceMonth++;
+            if (currentAttendanceMonth > 12) {
+                currentAttendanceMonth = 1;
+                currentAttendanceYear++;
+            }
+            currentAttendanceData = await fetchAttendance(currentStudentId, currentAttendanceYear, currentAttendanceMonth);
+            renderCalendar(currentAttendanceYear, currentAttendanceMonth, currentAttendanceData);
+        };
+    }
+
+    function renderCalendar(year, month, attendanceList = []) {
+        // ── 타이틀 업데이트 (tab4 + tab1 공통) ──
+        document.querySelectorAll("#calendar-title").forEach(el => {
+            el.textContent = `${year}년 ${String(month).padStart(2, "0")}월`;
+        });
+
+        // ── 출결 데이터 → 일(day) 기준 맵 생성 ──
+        // attendanceDate 형식: "YYYY-MM-DD" 또는 "YYYY년 MM월 DD일" 등을 처리
+        const attendanceMap = {};
+        attendanceList.forEach(a => {
+            if (!a.attendanceDate) return;
+
+            let day = null;
+
+            // YYYY-MM-DD
+            const dashMatch = a.attendanceDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (dashMatch) {
+                const [, y, m, d] = dashMatch;
+                if (parseInt(y) === year && parseInt(m) === month) {
+                    day = parseInt(d, 10);
+                }
+            }
+
+            // YYYY년 MM월 DD일
+            const korMatch = a.attendanceDate.match(/^(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
+            if (!day && korMatch) {
+                const [, y, m, d] = korMatch;
+                if (parseInt(y) === year && parseInt(m) === month) {
+                    day = parseInt(d, 10);
+                }
+            }
+
+            if (day) {
+                attendanceMap[day] = a;
+            }
+        });
+
+        // ── 달력 tbody 렌더링 (tab4 + tab1 두 곳 모두) ──
+        const tbodies = document.querySelectorAll(".calendar-table tbody");
+        if (!tbodies.length) return;
 
         const firstDay = new Date(year, month - 1, 1).getDay();
         const lastDate = new Date(year, month, 0).getDate();
 
-        const tbody = document.querySelector("#tab4 .calendar-table tbody");
-        if (!tbody) return;
+        tbodies.forEach(tbody => {
+            tbody.innerHTML = "";
 
-        tbody.innerHTML = "";
+            let day = 1;
+            for (let row = 0; row < 6; row++) {
+                if (day > lastDate) break;
 
-        let day = 1;
-        for (let row = 0; row < 6; row++) {
-            if (day > lastDate) break;
+                const tr = document.createElement("tr");
 
-            const tr = document.createElement("tr");
+                for (let col = 0; col < 7; col++) {
+                    const td = document.createElement("td");
 
-            for (let col = 0; col < 7; col++) {
-                const td = document.createElement("td");
+                    if ((row === 0 && col < firstDay) || day > lastDate) {
+                        td.innerHTML = "";
+                    } else {
+                        const att = attendanceMap[day];
 
-                if (row === 0 && col < firstDay) {
-                    td.innerHTML = "";
-                } else if (day > lastDate) {
-                    td.innerHTML = "";
-                } else {
-                    td.textContent = day;
-                    day++;
+                        if (att) {
+                            // 출결 상태에 따른 색상 분기
+                            // attendance 값 예시: "O"(출석), "L"(지각), "A"(결석) 등 — 실제 코드값에 맞게 조정
+                            let colorClass = "green";
+                            if (att.attendance === "L") colorClass = "orange";
+                            else if (att.attendance === "A") colorClass = "red";
+
+                            const timeLabel = att.inTime && att.outTime
+                                ? `${att.inTime}~${att.outTime}`
+                                : att.inTime
+                                    ? `${att.inTime}~`
+                                    : "";
+
+                            td.innerHTML = `${day}${timeLabel
+                                ? `<br><span class="event ${colorClass}">${timeLabel}</span>`
+                                : ""}`;
+                        } else {
+                            td.textContent = day;
+                        }
+
+                        day++;
+                    }
+
+                    tr.appendChild(td);
                 }
 
-                tr.appendChild(td);
+                tbody.appendChild(tr);
             }
-
-            tbody.appendChild(tr);
+        });
+    }
+    async function fetchAttendance(studentId, year, month) {
+        try {
+            const yy = String(year);
+            const mm = String(month).padStart(2, "0");
+            const res = await fetch(
+                `/student/api/attendance?studentId=${encodeURIComponent(studentId)}&yy=${yy}&mm=${mm}`
+            );
+            if (!res.ok) throw new Error("출결 조회 실패");
+            const data = await res.json();
+            return data.response ?? [];
+        } catch (err) {
+            console.error("출결 조회 오류:", err);
+            return [];
         }
     }
-
     document.addEventListener("DOMContentLoaded", () => {
         const prevBtn = document.getElementById("calendar-prev");
         const nextBtn = document.getElementById("calendar-next");

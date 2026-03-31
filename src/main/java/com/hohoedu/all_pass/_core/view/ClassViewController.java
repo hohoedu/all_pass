@@ -317,6 +317,7 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
+        List<User> users = userService.findByCenterCode(user);
 
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month, user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
@@ -329,6 +330,7 @@ public class ClassViewController {
 
         model.addAttribute("rightRemedials", rightRemedials);
         model.addAttribute("leftRemedials", leftRemedials);
+        model.addAttribute("users", users);
         return "class/remedial";
     }
 

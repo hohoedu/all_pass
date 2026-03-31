@@ -142,6 +142,7 @@ public class ClassReqDTO {
     public static class GetRemedialDTO {
         private String year;
         private String month;
+        private String userCode;
     }
 
     @Data

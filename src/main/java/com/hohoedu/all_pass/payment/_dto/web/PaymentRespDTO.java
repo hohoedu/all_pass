@@ -115,6 +115,7 @@ public class PaymentRespDTO {
         private String paymentKey;
         private String studentId;
         private String studentName;
+        private String studyMonth;
         private String type;
         private String billType;
         private Integer amount;

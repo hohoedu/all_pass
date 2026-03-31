@@ -372,12 +372,16 @@ public class ClassController {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+            return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
 
-        List<RemedialDTO> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), user.getUserCode());
+        String userCode = (dto.getUserCode() != null && !dto.getUserCode().isBlank())
+                ? dto.getUserCode()
+                : user.getUserCode();
+
+        List<RemedialDTO> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), userCode);
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }

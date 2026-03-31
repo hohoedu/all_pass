@@ -99,14 +99,15 @@ public class StudentService {
 
     // 개별 학생 조회
     public StudentWebRespDTO.StudentDTO getStudentDetailByStudentId(String studentId, String centerCode) {
-
+        String year = String.valueOf(org.threeten.bp.LocalDate.now().getYear());
+        String month = String.format("%02d", org.threeten.bp.LocalDate.now().getMonthValue());
         StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
-        List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentRepository.findStudentAttendanceByStudentId(studentId);
+        List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentRepository.findStudentAttendanceByStudentId(studentId, year, month);
         List<StudentWebRespDTO.StudentConsultDTO> consult = studentRepository.findStudentConsultByStudentId(studentId);
-        List<StudentWebRespDTO.HanClass> hanClasses = studentRepository.findHanClasses(centerCode);
-        List<StudentWebRespDTO.BookClass> bookClasses = studentRepository.findBookClasses(centerCode);
+        List<StudentWebRespDTO.HanClass> hanClasses = studentRepository.findHanClasses(centerCode, studentId);
+        List<StudentWebRespDTO.BookClass> bookClasses = studentRepository.findBookClasses(centerCode, studentId);
         List<StudentWebRespDTO.HanTeacher> hanTeachers = studentRepository.findHanTeachers(centerCode);
         List<StudentWebRespDTO.BookTeacher> bookTeachers = studentRepository.findBookTeachers(centerCode);
         StudentWebRespDTO.StudentDTO studentDetailRespDTO = StudentWebRespDTO.StudentDTO.builder()
@@ -131,6 +132,10 @@ public class StudentService {
     public StudentWebRespDTO.PendingStudentRespDTO findStudentByInviteCode(String inviteCode) {
 
         return studentRepository.findStudentByInviteCode(inviteCode);
+    }
+
+    public List<StudentWebRespDTO.StudentAttendanceDTO> getAttendanceByMonth(String studentId, String yy, String mm) {
+        return studentRepository.findStudentAttendanceByStudentId(studentId, yy, mm);
     }
 
     @Transactional

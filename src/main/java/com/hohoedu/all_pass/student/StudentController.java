@@ -101,6 +101,18 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(student));
     }
 
+    @GetMapping("/api/attendance")
+    @ResponseBody
+    public ResponseEntity<?> getAttendance(
+            @RequestParam String studentId,
+            @RequestParam String yy,
+            @RequestParam String mm
+    ) {
+        List<StudentWebRespDTO.StudentAttendanceDTO> attendance =
+                studentService.getAttendanceByMonth(studentId, yy, mm);
+        return ResponseEntity.ok(ApiUtils.success(attendance));
+    }
+
 
     // 학생 등록
     @PostMapping("/join")
@@ -154,7 +166,6 @@ public class StudentController {
 
     @PostMapping("/update/payment")
     public ResponseEntity<?> updatePayment(@RequestBody StudentWebReqDTO.StudentPaymentUpdateDTO req) {
-        log.info("req = {}", req);
         studentService.updatePaymentInfo(req);
         return ResponseEntity.ok(ApiUtils.success(null));
     }

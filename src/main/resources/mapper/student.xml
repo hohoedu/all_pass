@@ -127,8 +127,8 @@
 
     <insert id="insertPendingStudent" parameterType="com.hohoedu.all_pass.student.model.PendingStudent" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_pending_student
-        (name, phone, grade_key, user_code, center_code, send_key, status, sub_hoho, sub_han, sub_book, registered_at, is_deleted)
-        VALUES (#{name}, #{phone}, #{gradeKey}, #{userCode}, #{centerCode}, #{sendKey}, #{status}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
+        (name, student_id, phone, grade_key, user_code, center_code, invite_code, send_key, status, sub_hoho, sub_han, sub_book, registered_at, is_deleted)
+        VALUES (#{name}, #{studentId}, #{phone}, #{gradeKey}, #{userCode}, #{centerCode}, #{inviteCode}, #{sendKey}, #{status}, #{subHoho}, #{subHan}, #{subBook}, SYSDATETIME(), 0)
     </insert>
 
     <select id="findSiblingByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$SiblingInfoDTO">
@@ -290,6 +290,7 @@
 
     <select id="findStudentPaymentByStudentId" parameterType="String"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentPaymentDTO">
+
         SELECT ta.han_state         AS hanState,
                ta.book_state        AS bookState,
                ta.han_material_fee  AS hanMaterialPrice,
@@ -310,9 +311,10 @@
                  LEFT JOIN erp_class_code bc ON ta.assign_book_class = bc.class_key
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
-                 LEFT JOIN erp_class_fee_map hf ON ta.assign_han_class = hf.class_key AND s.center_code = hf.center_code
-                 LEFT JOIN erp_class_fee_map bf
-                           ON ta.assign_book_class = bf.class_key AND s.center_code = bf.center_code
+                 LEFT JOIN erp_class_fee_map_copy hf ON ta.assign_han_class = hf.class_key AND s.center_code = hf.center_code
+            AND <![CDATA[((s.is_hoho = 1 AND hf.category = 'hoho') OR (s.is_hoho = 0 AND hf.category <> 'hoho'))]]>
+                 LEFT JOIN erp_class_fee_map_copy bf ON ta.assign_book_class = bf.class_key AND s.center_code = bf.center_code
+            AND<![CDATA[ ((s.is_hoho = 1 AND bf.category = 'hoho') OR (s.is_hoho = 0 AND bf.category <> 'hoho'))]]>
         WHERE ta.student_id = #{studentId}
     </select>
 
@@ -321,8 +323,9 @@
         SELECT *
         FROM erp_student_attendance
         WHERE student_id = #{studentId}
-          AND yy = '2026'
-          AND mm = '03'
+          AND yy = #{year}
+          AND mm = #{month}
+        ORDER BY attendance_date ASC
     </select>
 
     <select id="findStudentConsultByStudentId" parameterType="String"
@@ -545,18 +548,22 @@
     </update>
 
     <select id="findHanClasses" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$HanClass">
-        select cc.class_key, cc.class_name, ecfm.fee
-        from erp_class_code cc
-                 join erp_class_fee_map ecfm on cc.class_key = ecfm.class_key and center_code = #{centerCode}
-        WHERE class_type = '1'
+        SELECT cc.class_key, cc.class_name, ecfm.fee
+        FROM erp_class_code cc
+                 JOIN erp_class_fee_map_copy ecfm ON cc.class_key = ecfm.class_key AND ecfm.center_code = #{centerCode}
+                 JOIN erp_student s ON s.student_id = #{studentId}
+        WHERE cc.class_type = '1'
+          AND ((s.is_hoho = 1 AND ecfm.category = 'hoho') OR (s.is_hoho = 0 AND ecfm.category IN ('han', 'book')))
     </select>
 
     <!-- 독서 단계 목록 -->
     <select id="findBookClasses" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookClass">
-        select cc.class_key, cc.class_name, ecfm.fee
-        from erp_class_code cc
-                 join erp_class_fee_map ecfm on cc.class_key = ecfm.class_key and center_code = #{centerCode}
-        where class_type = '2'
+        SELECT cc.class_key, cc.class_name, ecfm.fee
+        FROM erp_class_code cc
+                 JOIN erp_class_fee_map_copy ecfm ON cc.class_key = ecfm.class_key AND ecfm.center_code = #{centerCode}
+                 JOIN erp_student s ON s.student_id = #{studentId}
+        WHERE cc.class_type = '2'
+          AND ((s.is_hoho = 1 AND ecfm.category = 'hoho') OR (s.is_hoho = 0 AND ecfm.category IN ('han', 'book')))
     </select>
 
     <!-- 한자 담당 선생님 목록 -->

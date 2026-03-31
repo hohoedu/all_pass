@@ -43,7 +43,10 @@ public interface StudentRepository {
 
     public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
 
-    List<StudentWebRespDTO.StudentAttendanceDTO> findStudentAttendanceByStudentId(@Param("studentId") String studentId);
+    List<StudentWebRespDTO.StudentAttendanceDTO> findStudentAttendanceByStudentId(
+            @Param("studentId") String studentId,
+            @Param("year") String year,
+            @Param("month") String month);
 
     public List<StudentWebRespDTO.StudentConsultDTO> findStudentConsultByStudentId(@Param("studentId") String studentId);
 
@@ -111,9 +114,9 @@ public interface StudentRepository {
 
     int updateStudentPayment(StudentWebReqDTO.StudentPaymentUpdateDTO req);
 
-    List<StudentWebRespDTO.HanClass> findHanClasses(@Param("centerCode") String centerCode);
+    List<StudentWebRespDTO.HanClass> findHanClasses(@Param("centerCode") String centerCode, @Param("studentId") String studentId);
 
-    List<StudentWebRespDTO.BookClass> findBookClasses(@Param("centerCode") String centerCode);
+    List<StudentWebRespDTO.BookClass> findBookClasses(@Param("centerCode") String centerCode, @Param("studentId") String studentId);
 
     List<StudentWebRespDTO.HanTeacher> findHanTeachers(@Param("centerCode") String centerCode);
 

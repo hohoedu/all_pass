@@ -1136,40 +1136,20 @@
     <!--  앱 납부내역 조회  -->
     <select id="findPaymentDetailsByStudentId"
             resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
-        SELECT TOP ${count} *
-        FROM (select p.bill_id           AS billId,
-                     (p.yy + '-' + p.mm) AS inym,
-                     'S'                 AS gb,
-                     p.approved_date     AS indate,
-                     p.han_amount        AS inmoney,
+        SELECT TOP 16 *
+        FROM (select ep.id,
+                     ep.yy + '-' + ep.mm            as inym,
+                     'I'                            as gb,
+                     SUBSTRING(epc.appr_date, 0, 9) as indate,
+                     ep.amount,
                      CASE
-                         WHEN p.product_name = '교육비' THEN 'S'
-                         WHEN p.product_name = '교재비' THEN 'B'
-                         ELSE null
-                         END             AS gubun,
-                     p.created_at
-              from erp_payment p
-              WHERE p.han_amount IS NOT NULL
-                AND p.student_id = #{studentId}
-                AND P.approved_date IS NOT NULL
-
-              UNION ALL
-
-              select p.bill_id           AS billId,
-                     (p.yy + '-' + p.mm) AS inym,
-                     'I'                 AS gb,
-                     p.approved_date     AS indate,
-                     p.book_amount       AS inmoney,
-                     CASE
-                         WHEN p.product_name = '교육비' THEN 'S'
-                         WHEN p.product_name = '교재비' THEN 'B'
-                         ELSE null
-                         END             AS gubun,
-                     p.created_at
-              from erp_payment p
-              WHERE p.book_amount IS NOT NULL
-                AND p.student_id = #{studentId}) AS combined AND P.approved_date IS NOT NULL
-        ORDER BY combined.billId ASC;
+                         WHEN ep.bill_type = 'EDU_FEE' THEN 'S'
+                         WHEN ep.bill_type = 'BOOK_FEE' THEN 'B'
+                         END                        AS gubun
+              from erp_payment_bill ep
+                       join erp_payment_callback epc on ep.bill_id = epc.bill_id
+              where student_id = #{studentId}) AS combined
+        ORDER BY combined.id ASC;
 
     </select>
 
