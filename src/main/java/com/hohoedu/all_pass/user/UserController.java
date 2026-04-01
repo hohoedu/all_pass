@@ -67,7 +67,6 @@ public class UserController {
             log.info(redirectUrl);
 //            paymentService.destroyExpiredBills();
             if (redirectUrl != null && !redirectUrl.isEmpty()) {
-                log.info("주소 가져옴");
                 return "redirect:" + redirectUrl;
             }
             return "redirect:/";

@@ -705,6 +705,21 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
+        const savePayBtn = document.getElementById('save-pay');
+
+        payRadios.forEach((radio, index) => {
+            radio.addEventListener('change', () => {
+                if (!savePayBtn) return;
+                // index 0 = 오프라인 카드 → "저장"
+                // index 1 = 현금, index 2 = 계좌이체 → "저장후 현금영수증 발급"
+                if (index === 0) {
+                    savePayBtn.textContent = '저장';
+                } else {
+                    savePayBtn.textContent = '저장후 현금영수증 발급';
+                }
+            });
+        });
+
         payInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
                 const amount = Number(e.target.value) || 0;
