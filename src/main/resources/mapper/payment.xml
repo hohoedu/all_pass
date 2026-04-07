@@ -1205,7 +1205,11 @@
         UNION ALL
 
         SELECT pm.bill_id                                           as billId,
-               'manual'                                             as type,
+               <![CDATA[
+               CASE
+                   WHEN card_amount <> 0 THEN 'card'
+                   WHEN cash_amount <> 0 THEN 'cash'
+                   WHEN transfer_amount <> 0 THEN 'transfer' end    as type,]]>
                pm.payment_key,
                pm.student_id                                        as student_id,
                s.student_name                                       as studentName,

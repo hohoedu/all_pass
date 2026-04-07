@@ -56,11 +56,28 @@
                                     <input type="date" id="custom-start" class="basic-input" style="padding:4px 8px;">
                                     <span>~</span>
                                     <input type="date" id="custom-end" class="basic-input" style="padding:4px 8px;">
-                                    <div class="common-btn" id="custom-search-btn">조회</div>
+                                    <div class="explore common-btn" id="custom-search-btn" style="white-space: nowrap">조회</div>
                                 </div>
                             </div>
 
                             <div class="stu-left">
+                                <div class="basic-select sl1">
+                                    <select name="type" id="consult-type-filter">
+                                        <option value="all">과목</option>
+                                        <option value="hoho">호호스쿨</option>
+                                        <option value="han">한스쿨</option>
+                                        <option value="book">북스쿨</option>
+                                    </select>
+                                </div>
+                                <div class="basic-select sl1">
+                                    <select name="progress" id="consult-progress-filter">
+                                        <option value="all">상태</option>
+                                        <option value="counseling">문의</option>
+                                        <option value="waiting">대기</option>
+                                        <option value="confirmed">입회</option>
+                                        <option value="ended">종료</option>
+                                    </select>
+                                </div>
                                 <div class="basic-select sl1">
                                     <select name="teacherNo" id="consult-teacher-filter">
                                         <th:block th:each="teacher : ${teachers}">
@@ -114,17 +131,7 @@
                                         <th>학년</th>
                                         <th>연락처</th>
                                         <th>메모사항</th>
-                                        <th>
-                                            진행상황
-                                            <select id="progress-sort" style="font-size:11px; margin-left:4px;"
-                                                    onclick="event.stopPropagation()">
-                                                <option value="all">전체</option>
-                                                <option value="confirmed">입회</option>
-                                                <option value="waiting">대기</option>
-                                                <option value="counseling">문의</option>
-                                                <option value="ended">종료</option>
-                                            </select>
-                                        </th>
+                                        <th>진행상황</th>
                                         <th>등록폼 발송/입회일</th>
                                     </tr>
                                     </thead>

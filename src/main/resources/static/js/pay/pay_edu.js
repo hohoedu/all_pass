@@ -625,7 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
             const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
-            const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
+            const paymentMethodMap = {
+                bill: '온라인 카드',
+                cash: '현금',
+                card: '오프라인 카드',
+                transfer: '계좌이체'
+            };
+            const paymentMethodText = paymentMethodMap[item.type] ?? '알 수 없음';
 
             const hasCardName = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';
@@ -1488,7 +1494,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const paidDate = item.paidDate ? item.paidDate.split(' ')[0] : '-';
             const amount = item.amount ? Number(item.amount).toLocaleString() + '원' : '-';
-            const paymentMethodText = item.type === 'bill' ? '온라인 카드' : '현장결제';
+            const paymentMethodMap = {
+                bill: '온라인 카드',
+                cash: '현금',
+                card: '오프라인 카드',
+                transfer: '계좌이체'
+            };
+            const paymentMethodText = paymentMethodMap[item.type] ?? '알 수 없음';
 
             const hasCardName = item.type === 'bill' && item.cardName;
             const tooltipStyle = hasCardName ? 'position: relative;' : '';

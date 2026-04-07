@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.hohoedu.all_pass.consult._dto.ConsultReqDTO;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.format.DateTimeFormatter;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -61,6 +63,7 @@ public class ConsultService {
         params.put("centerCode", centerCode);
         params.put("userCode", userCode);
         List<ConsultRespDTO.ConsultDTO> response = consultRepository.findByPeriod(params);
+        log.info(response.toString());
         DateTimeFormatter inputFormatter =
                 DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
 
@@ -103,10 +106,10 @@ public class ConsultService {
     public List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(String userCode, String startDate, String endDate) {
 
         Map<String, Integer> progressOrder = Map.of(
-                "confirmed",  1,
-                "waiting",    2,
+                "confirmed", 1,
+                "waiting", 2,
                 "counseling", 3,
-                "ended",      4
+                "ended", 4
         );
 
         return consultRepository.findConsultForPrint(userCode, startDate, endDate)
@@ -120,5 +123,10 @@ public class ConsultService {
 
     public String getUserName(String userCode) {
         return consultRepository.findUserNameByUserCode(userCode);
+    }
+
+
+    public void updateSendKey(String consultId, String sendKey){
+        consultRepository.updateSendKey(consultId, sendKey);
     }
 }

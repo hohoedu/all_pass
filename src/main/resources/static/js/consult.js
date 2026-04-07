@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
      *   검색 기능          *
      * =================== */
     const searchTypeSelect = document.getElementById('stu-name');
-    const searchInput      = document.getElementById('search-name');
-    const searchBtn        = document.querySelector('.explore');
+    const searchInput = document.getElementById('search-name');
+    const searchBtn = document.querySelector('.explore');
 
     searchBtn?.addEventListener('click', () => {
         applySearch();
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ★ student.js 방식: 데이터 재조회 없이 DOM 행을 hide/show
     function applySearch() {
-        const type    = searchTypeSelect?.value || 'name';
+        const type = searchTypeSelect?.value || 'name';
         const keyword = searchInput?.value.trim().toLowerCase();
 
         // 1) 진행상황 정렬 기준으로 먼저 렌더링 (항상 최신 정렬 유지)
@@ -95,16 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getDateRange(monthsAgo) {
         const today = new Date();
-        const past  = new Date(today);
+        const past = new Date(today);
         past.setMonth(today.getMonth() - monthsAgo);
 
         function formatDate(d) {
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
         return {
             startDate: formatDate(past),
-            endDate:   formatDate(today)
+            endDate: formatDate(today)
         };
     }
 
@@ -121,10 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getProgressText(progressKey) {
         switch (progressKey) {
-            case 'waiting':   return '대기';
-            case 'confirmed': return '입회';
-            case 'ended':     return '종료';
-            default:          return '문의';
+            case 'waiting':
+                return '대기';
+            case 'confirmed':
+                return '입회';
+            case 'ended':
+                return '종료';
+            default:
+                return '문의';
         }
     }
 
@@ -135,11 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayText = periodDisplay.textContent;
         const matches = displayText.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);
         const userCode = teacherFilter.value;
+        const typeSort = document.getElementById('consult-type-filter')?.value || 'all';
+        const progressSort = document.getElementById('consult-progress-filter')?.value || 'all';
 
         let url = `/consult/print-consult?userCode=${userCode}`;
-        if (matches) {
-            url += `&startDate=${matches[1]}&endDate=${matches[2]}`;
-        }
+        if (matches) url += `&startDate=${matches[1]}&endDate=${matches[2]}`;
+        url += `&typeSort=${typeSort}&progressSort=${progressSort}`;
+
         printConsult(url);
     });
 
@@ -147,7 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = url;
-        iframe.onload = () => { iframe.contentWindow.print(); };
+        iframe.onload = () => {
+            iframe.contentWindow.print();
+        };
         document.body.appendChild(iframe);
     }
 
@@ -172,8 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = modal?.querySelector('.save-btn');
     const modalContent = modal?.querySelector('.consult-record');
 
-    modal?.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); return false; });
-    modalContent?.addEventListener('click', (e) => { e.stopPropagation(); });
+    modal?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    });
+    modalContent?.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
 
     let isEditMode = false;
     let editingId = null;
@@ -199,13 +213,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fillModalData(data) {
-        modal.querySelector('[name="studentName"]').value   = data.studentName || '';
-        modal.querySelector('[name="consultDate"]').value   = data.consultDate || '';
-        modal.querySelector('[name="school"]').value        = data.school || '';
-        modal.querySelector('[name="gradeKey"]').value      = data.gradeKey || '';
-        modal.querySelector('[name="parentPhone"]').value   = data.phone || '';
+        modal.querySelector('[name="studentName"]').value = data.studentName || '';
+        modal.querySelector('[name="consultDate"]').value = data.consultDate || '';
+        modal.querySelector('[name="school"]').value = data.school || '';
+        modal.querySelector('[name="gradeKey"]').value = data.gradeKey || '';
+        modal.querySelector('[name="parentPhone"]').value = data.phone || '';
         modal.querySelector('[name="inflowRouteKey"]').value = data.inflowRouteKey || '';
-        modal.querySelector('[name="content"]').value       = data.content || '';
+        modal.querySelector('[name="content"]').value = data.content || '';
 
         if (data.consultDate) {
             const [year, month, day] = data.consultDate.split('-');
@@ -214,24 +228,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearModalData() {
-        modal.querySelector('[name="studentName"]').value   = '';
-        modal.querySelector('[name="consultDate"]').value   = '';
-        modal.querySelector('[name="school"]').value        = '';
-        modal.querySelector('[name="gradeKey"]').value      = '';
-        modal.querySelector('[name="parentPhone"]').value   = '';
+        modal.querySelector('[name="studentName"]').value = '';
+        modal.querySelector('[name="consultDate"]').value = '';
+        modal.querySelector('[name="school"]').value = '';
+        modal.querySelector('[name="gradeKey"]').value = '';
+        modal.querySelector('[name="parentPhone"]').value = '';
         modal.querySelector('[name="inflowRouteKey"]').value = '';
-        modal.querySelector('[name="content"]').value       = '';
+        modal.querySelector('[name="content"]').value = '';
         dateDisplay.textContent = '';
     }
 
-    consultAddBtn?.addEventListener('click', () => { openModal(); });
-    closeBtn?.addEventListener('click', (e) => { e.preventDefault(); closeModal(); });
+    consultAddBtn?.addEventListener('click', () => {
+        openModal();
+    });
+    closeBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal();
+    });
 
-    const dateInput   = modal?.querySelector('input[name="consultDate"]');
+    const dateInput = modal?.querySelector('input[name="consultDate"]');
     const dateDisplay = modal?.querySelector('.day-display');
     const calendarBtn = modal?.querySelector('.birth-btn');
 
-    calendarBtn?.addEventListener('click', () => { dateInput.showPicker?.(); dateInput.click(); });
+    calendarBtn?.addEventListener('click', () => {
+        dateInput.showPicker?.();
+        dateInput.click();
+    });
 
     dateInput?.addEventListener('change', () => {
         const selected = dateInput.value;
@@ -260,28 +282,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveBtn?.addEventListener('click', async () => {
         try {
-            const studentName    = modal.querySelector('[name="studentName"]')?.value.trim();
-            const consultDate    = modal.querySelector('[name="consultDate"]')?.value;
-            const school         = modal.querySelector('[name="school"]')?.value.trim();
-            const consultType    = modal.querySelector('[name="consultType"]:checked')?.value || '';
-            const gradeKey       = modal.querySelector('[name="gradeKey"]')?.value;
-            const phone          = modal.querySelector('[name="parentPhone"]')?.value.replace(/-/g, '');
+            const studentName = modal.querySelector('[name="studentName"]')?.value.trim();
+            const consultDate = modal.querySelector('[name="consultDate"]')?.value;
+            const school = modal.querySelector('[name="school"]')?.value.trim();
+            const consultType = modal.querySelector('[name="consultType"]:checked')?.value || '';
+            const gradeKey = modal.querySelector('[name="gradeKey"]')?.value;
+            const phone = modal.querySelector('[name="parentPhone"]')?.value.replace(/-/g, '');
             const inflowRouteKey = modal.querySelector('[name="inflowRouteKey"]')?.value;
-            const content        = modal.querySelector('[name="content"]')?.value.trim();
+            const content = modal.querySelector('[name="content"]')?.value.trim();
 
-            if (!studentName)  { alert('학생명을 입력해주세요.'); modal.querySelector('[name="studentName"]')?.focus(); return; }
-            if (!consultDate)  { alert('상담일을 선택해주세요.'); modal.querySelector('[name="consultDate"]')?.focus(); return; }
-            if (!school)       { alert('학교명을 입력해주세요.'); modal.querySelector('[name="school"]')?.focus(); return; }
-            if (!gradeKey)     { alert('학년을 선택해주세요.'); modal.querySelector('[name="gradeKey"]')?.focus(); return; }
-            if (!phone)        { alert('전화번호를 입력해주세요.'); modal.querySelector('[name="parentPhone"]')?.focus(); return; }
+            if (!studentName) {
+                alert('학생명을 입력해주세요.');
+                modal.querySelector('[name="studentName"]')?.focus();
+                return;
+            }
+            if (!consultDate) {
+                alert('상담일을 선택해주세요.');
+                modal.querySelector('[name="consultDate"]')?.focus();
+                return;
+            }
+            if (!school) {
+                alert('학교명을 입력해주세요.');
+                modal.querySelector('[name="school"]')?.focus();
+                return;
+            }
+            if (!gradeKey) {
+                alert('학년을 선택해주세요.');
+                modal.querySelector('[name="gradeKey"]')?.focus();
+                return;
+            }
+            if (!phone) {
+                alert('전화번호를 입력해주세요.');
+                modal.querySelector('[name="parentPhone"]')?.focus();
+                return;
+            }
             if (!/^[0-9]{10,11}$/.test(phone)) {
                 alert('올바른 전화번호 형식이 아닙니다. (10-11자리 숫자)');
                 modal.querySelector('[name="parentPhone"]')?.focus();
                 return;
             }
-            if (!content)      { alert('상담 내용을 입력해주세요.'); modal.querySelector('[name="content"]')?.focus(); return; }
+            if (!content) {
+                alert('상담 내용을 입력해주세요.');
+                modal.querySelector('[name="content"]')?.focus();
+                return;
+            }
 
-            const data = { studentName, consultDate, school, gradeKey, phone, inflowRouteKey, content, consultType };
+            const data = {studentName, consultDate, school, gradeKey, phone, inflowRouteKey, content, consultType};
             if (isEditMode && editingId) data.id = editingId;
 
             const url = isEditMode ? '/consult/update' : '/consult/save';
@@ -291,7 +337,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(data)
             });
 
-            if (!res.ok) { alert(isEditMode ? '수정 실패' : '저장 실패'); return; }
+            if (!res.ok) {
+                alert(isEditMode ? '수정 실패' : '저장 실패');
+                return;
+            }
 
             alert(isEditMode ? '수정 완료' : '저장 완료');
             window.location.reload();
@@ -312,65 +361,73 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!data || data.length === 0) {
             consultTableBody.innerHTML = `
-                <tr>
-                    <td colspan="10" style="text-align:center;">
-                        조회된 데이터가 없습니다.
-                    </td>
-                </tr>`;
+            <tr>
+                <td colspan="10" style="text-align:center;">
+                    조회된 데이터가 없습니다.
+                </td>
+            </tr>`;
             return;
         }
 
         data.forEach((item, index) => {
-            const progressKey  = item.progressKey || 'counseling';
+            const progressKey = item.progressKey || 'counseling';
             const progressText = getProgressText(progressKey);
-            // ★ data-original 속성을 렌더링 시점에 세팅 (textarea 수정 감지에 필요)
             const escapedContent = (item.content || '').replace(/"/g, '&quot;');
 
+            let lastTdHtml = '';
+            if (item.registerDate) {
+                const datePart = item.registerDate.split(' ')[0];
+                lastTdHtml = `<span class="register-day">${datePart}</span>`;
+            } else {
+                lastTdHtml = `<div class="join-link common-btn">가입링크 발송</div>`;
+            }
+
             consultTableBody.insertAdjacentHTML('beforeend', `
-                <tr data-id="${item.id || ""}"
-                    data-student-name="${item.studentName || ""}"
-                    data-consult-date="${item.consultDate || ""}"
-                    data-school="${item.school || ""}"
-                    data-grade-key="${item.gradeKey || ""}"
-                    data-phone="${item.phone || ""}"
-                    data-inflow-route-key="${item.inflowRouteKey || ""}"
-                    data-content="${escapedContent}"
-                    data-progress-key="${progressKey}"
-                    class="consult-row">
-                    <td class="checkbox-group" onclick="event.stopPropagation()">
-                        <input type="checkbox">
-                    </td>
-                    <td>${index + 1}</td>
-                    <td>${item.consultDate || ""}</td>
-                    <td>${item.studentName || ""}</td>
-                    <td>${item.school || ""}</td>
-                    <td>${item.gradeName || ""}</td>
-                    <td>${item.phone || ""}</td>
-                    <td onclick="event.stopPropagation()">
-                        <div class="memo-etc text-middle consult-memo">
-                            <textarea class="comment-text"
-                                data-original="${escapedContent}">${item.content || ""}</textarea>
-                            <div class="common-btn consult-fix" style="display:none;">수정</div>
-                        </div>
-                    </td>
-                    <td onclick="event.stopPropagation()">
-                        <div class="select-arrow">
-                            <button class="select-status" data-status="${progressKey}">
-                                ${progressText}
-                            </button>
-                            <ul class="dropdown-status">
-                                <li data-status="confirmed">입회</li>
-                                <li data-status="waiting">대기</li>
-                                <li data-status="counseling">문의</li>
-                                <li data-status="ended">종료</li>
-                            </ul>
-                        </div>
-                    </td>
-                    <td onclick="event.stopPropagation()">
-                        <div class="join-link common-btn">가입링크 발송</div>
-                    </td>
-                </tr>
-            `);
+            <tr data-id="${item.id || ""}"
+                data-student-name="${item.studentName || ""}"
+                data-consult-date="${item.consultDate || ""}"
+                data-school="${item.school || ""}"
+                data-grade-key="${item.gradeKey || ""}"
+                data-phone="${item.phone || ""}"
+                data-inflow-route-key="${item.inflowRouteKey || ""}"
+                data-content="${escapedContent}"
+                data-progress-key="${progressKey}"
+                data-type="${item.type || ""}"
+                class="consult-row">
+                <td class="checkbox-group" onclick="event.stopPropagation()">
+                    <input type="checkbox">
+                </td>
+                <td>${index + 1}</td>
+                <td>${item.consultDate || ""}</td>
+                <td>${item.studentName || ""}</td>
+                <td>${item.school || ""}</td>
+                <td>${item.gradeName || ""}</td>
+                <td>${item.phone || ""}</td>
+                <td onclick="event.stopPropagation()">
+                    <div class="memo-etc text-middle consult-memo">
+                        <textarea class="comment-text"
+                            data-original="${escapedContent}">${item.content || ""}</textarea>
+                        <div class="common-btn consult-fix" style="display:none;">수정</div>
+                    </div>
+                </td>
+                <td onclick="event.stopPropagation()">
+                    <div class="select-arrow">
+                        <button class="select-status" data-status="${progressKey}">
+                            ${progressText}
+                        </button>
+                        <ul class="dropdown-status">
+                            <li data-status="confirmed">입회</li>
+                            <li data-status="waiting">대기</li>
+                            <li data-status="counseling">문의</li>
+                            <li data-status="ended">종료</li>
+                        </ul>
+                    </div>
+                </td>
+                <td onclick="event.stopPropagation()">
+                    ${lastTdHtml}
+                </td>
+            </tr>
+        `);
         });
 
         attachRowClickEvents();
@@ -384,18 +441,26 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', async function (e) {
                 e.stopPropagation();
 
-                const row         = this.closest('tr');
-                const rawPhone    = row.dataset.phone || '';
+                const row = this.closest('tr');
+                const rawPhone = row.dataset.phone || '';
                 const studentName = row.dataset.studentName || '';
-                const gradeKey    = row.dataset.gradeKey || '';
-                const consultId   = row.dataset.id || '';
+                const gradeKey = row.dataset.gradeKey || '';
+                const consultId = row.dataset.id || '';
+                const type = row.dataset.type || '';
 
                 let phone = rawPhone.replace(/-/g, '').trim();
 
-                if (!/^[0-9]+$/.test(phone))               { alert('전화번호는 숫자만 입력해 주세요.'); return; }
-                if (phone.startsWith('010') && phone.length === 11) { /* 정상 */ }
-                else if (phone.length === 8)                { phone = '010' + phone; }
-                else                                        { alert('올바른 전화번호가 아닙니다.'); return; }
+                if (!/^[0-9]+$/.test(phone)) {
+                    alert('전화번호는 숫자만 입력해 주세요.');
+                    return;
+                }
+                if (phone.startsWith('010') && phone.length === 11) { /* 정상 */
+                } else if (phone.length === 8) {
+                    phone = '010' + phone;
+                } else {
+                    alert('올바른 전화번호가 아닙니다.');
+                    return;
+                }
 
                 if (!confirm(`${studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
 
@@ -405,7 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
                             source: 'CONSULT', phone, name: studentName,
-                            gradeKey, consultId, subHoho: false, subHan: false, subBook: false
+                            gradeKey, consultId,
+                            subHoho: type === 'hoho',
+                            subHan: type === 'han',
+                            subBook: type === 'book'
                         })
                     });
                     const result = await response.json();
@@ -428,8 +496,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const updateBtn = textarea.nextElementSibling;
             updateBtn.addEventListener('click', function () {
-                const row        = this.closest('.consult-row');
-                const consultId  = row.getAttribute('data-id');
+                const row = this.closest('.consult-row');
+                const consultId = row.getAttribute('data-id');
                 const consultDate = row.getAttribute('data-consult-date');
                 const newContent = textarea.value;
 
@@ -444,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/consult/content-update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ consultId, consultDate, content })
+                body: JSON.stringify({consultId, consultDate, content})
             });
 
             if (response.ok) {
@@ -469,15 +537,15 @@ document.addEventListener('DOMContentLoaded', () => {
         consultTableBody.querySelectorAll('.consult-row').forEach(row => {
             row.addEventListener('click', function () {
                 openModal({
-                    id:             this.dataset.id,
-                    studentName:    this.dataset.studentName,
-                    consultDate:    this.dataset.consultDate,
-                    school:         this.dataset.school,
-                    gradeKey:       this.dataset.gradeKey,
-                    phone:          this.dataset.phone,
+                    id: this.dataset.id,
+                    studentName: this.dataset.studentName,
+                    consultDate: this.dataset.consultDate,
+                    school: this.dataset.school,
+                    gradeKey: this.dataset.gradeKey,
+                    phone: this.dataset.phone,
                     inflowRouteKey: this.dataset.inflowRouteKey,
-                    content:        this.dataset.content,
-                    progressKey:    this.dataset.progressKey
+                    content: this.dataset.content,
+                    progressKey: this.dataset.progressKey
                 });
             });
         });
@@ -488,7 +556,9 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', function (e) {
                 e.stopPropagation();
                 const dropdown = this.nextElementSibling;
-                document.querySelectorAll('.dropdown-status').forEach(dd => { dd.style.display = 'none'; });
+                document.querySelectorAll('.dropdown-status').forEach(dd => {
+                    dd.style.display = 'none';
+                });
                 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
             });
         });
@@ -498,13 +568,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.stopPropagation();
 
                 const selectWrap = this.closest('.select-arrow');
-                const button     = selectWrap.querySelector('.select-status');
-                const status     = this.dataset.status;
-                const text       = this.textContent;
-                const tr         = this.closest('tr');
-                const id         = tr?.dataset.id;
+                const button = selectWrap.querySelector('.select-status');
+                const status = this.dataset.status;
+                const text = this.textContent;
+                const tr = this.closest('tr');
+                const id = tr?.dataset.id;
 
-                if (!id) { console.warn("data-id 없음"); return; }
+                if (!id) {
+                    console.warn("data-id 없음");
+                    return;
+                }
 
                 button.textContent = text;
                 button.setAttribute('data-status', status);
@@ -516,7 +589,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({id, progressKey: status})
                     });
-                    if (!res.ok) alert('진행상황 변경 실패');
+                    if (!res.ok) {
+                        alert('진행상황 변경 실패');
+                    } else {
+                        alert('상담 상태가 변경되었습니다.')
+                    }
+
                 } catch (err) {
                     console.error(err);
                     alert('서버 통신 오류가 발생했습니다.');
@@ -525,7 +603,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-status').forEach(dd => { dd.style.display = 'none'; });
+            document.querySelectorAll('.dropdown-status').forEach(dd => {
+                dd.style.display = 'none';
+            });
         });
     }
 
@@ -536,50 +616,96 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/consult/search', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ startDate, endDate, userCode })
+                body: JSON.stringify({startDate, endDate, userCode})
             });
-            if (!res.ok) { console.error("서버 조회 실패:", res.status); return; }
 
             const data = await res.json();
+
+
             allConsultData = data.response ?? [];
-            applySearch();   // 검색 키워드 상태를 유지하면서 렌더링
+            applySearch();
         } catch (err) {
-            console.error("조회 실패:", err);
+            console.error("조회 실패:", err);            // ← 에러 확인
         }
     }
 
-    // applyProgressSort 는 순수하게 정렬 후 렌더링만 담당
     function applyProgressSort() {
-        const sortVal = document.getElementById('progress-sort')?.value || 'all';
+        const progressVal = document.getElementById('consult-progress-filter')?.value || 'all';
+        const typeVal = document.getElementById('consult-type-filter')?.value || 'all';
 
-        let sorted;
-        if (sortVal === 'all') {
-            sorted = [...allConsultData];
-        } else {
-            const top    = allConsultData.filter(item => (item.progressKey || 'counseling') === sortVal);
-            const others = allConsultData.filter(item => (item.progressKey || 'counseling') !== sortVal);
-            sorted = [...top, ...others];
-        }
+        // 상태 선택 시 선택값이 맨 앞, 나머지는 문의-대기-종료-입회 고정 순
+        const baseProgressOrder = ['counseling', 'waiting', 'ended', 'confirmed'];
+        const baseTypeOrder = ['hoho', 'han', 'book'];
 
+        const progressOrder = progressVal === 'all'
+            ? null  // 전체: 상태 그룹핑 없이 날짜순만
+            : [progressVal, ...baseProgressOrder.filter(s => s !== progressVal)];
+
+        const typeOrder = typeVal === 'all'
+            ? null
+            : [typeVal, ...baseTypeOrder.filter(t => t !== typeVal)];
+
+        // ★ 전화번호 기준으로 그룹핑
+        const phoneMap = new Map();
+        allConsultData.forEach(item => {
+            const phone = item.phone || '';
+            if (!phoneMap.has(phone)) phoneMap.set(phone, []);
+            phoneMap.get(phone).push(item);
+        });
+
+        // ★ 그룹 내부: 최신 날짜 먼저
+        phoneMap.forEach(records => {
+            records.sort((a, b) => (b.consultDate || '').localeCompare(a.consultDate || ''));
+        });
+
+        // ★ 그룹 메타데이터: 그룹의 대표값은 최신 레코드 기준
+        const groups = Array.from(phoneMap.values()).map(records => ({
+            records,
+            maxDate: records[0].consultDate || '',
+            latestStatus: records[0].progressKey || 'counseling',
+            latestType: records[0].type || '',
+        }));
+
+        // ★ 그룹 정렬
+        groups.sort((a, b) => {
+            // 1) 과목 필터 선택 시
+            if (typeOrder) {
+                const aT = typeOrder.indexOf(a.latestType);
+                const bT = typeOrder.indexOf(b.latestType);
+                if (aT !== bT) return aT - bT;
+            }
+
+            // 2) 상태 필터 선택 시
+            if (progressOrder) {
+                const aP = progressOrder.indexOf(a.latestStatus);
+                const bP = progressOrder.indexOf(b.latestStatus);
+                if (aP !== bP) return aP - bP;
+            }
+
+            // 3) 최종: 최신 날짜 먼저 (기본 + 각 그룹 내)
+            return b.maxDate.localeCompare(a.maxDate);
+        });
+
+        // ★ 그룹 → 평탄화
+        const sorted = groups.flatMap(g => g.records);
         renderConsultTable(sorted);
     }
 
-    // ★ 진행상황 정렬 변경 → 검색 상태 유지하면서 재정렬
-    document.getElementById('progress-sort')?.addEventListener('change', () => {
-        applySearch();
-    });
+    document.getElementById('consult-progress-filter')?.addEventListener('change', () => applySearch());
+    document.getElementById('consult-type-filter')?.addEventListener('change', () => applySearch());
+
 
     /* =================== *
      *   기간 필터          *
      * =================== */
-    const radios            = document.querySelectorAll('input[name="period"]');
-    const periodDisplay     = document.getElementById('period-display');
+    const radios = document.querySelectorAll('input[name="period"]');
+    const periodDisplay = document.getElementById('period-display');
     const periodDisplayWrap = document.getElementById('period-display-wrap');
-    const customRangeWrap   = document.getElementById('custom-range-wrap');
-    const customStart       = document.getElementById('custom-start');
-    const customEnd         = document.getElementById('custom-end');
-    const customSearchBtn   = document.getElementById('custom-search-btn');
-    const teacherFilter     = document.getElementById('consult-teacher-filter');
+    const customRangeWrap = document.getElementById('custom-range-wrap');
+    const customStart = document.getElementById('custom-start');
+    const customEnd = document.getElementById('custom-end');
+    const customSearchBtn = document.getElementById('custom-search-btn');
+    const teacherFilter = document.getElementById('consult-teacher-filter');
 
     radios.forEach(radio => {
         radio.addEventListener('change', async (e) => {
@@ -587,15 +713,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (val === 'custom') {
                 periodDisplayWrap.style.display = 'none';
-                customRangeWrap.style.display   = 'flex';
+                customRangeWrap.style.display = 'flex';
                 return;
             }
 
             periodDisplayWrap.style.display = '';
-            customRangeWrap.style.display   = 'none';
+            customRangeWrap.style.display = 'none';
 
             const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
-            const range  = getDateRange(months);
+            const range = getDateRange(months);
             periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
             await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
         });
@@ -603,10 +729,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     customSearchBtn?.addEventListener('click', async () => {
         const startDate = customStart.value;
-        const endDate   = customEnd.value;
+        const endDate = customEnd.value;
 
-        if (!startDate || !endDate) { alert('시작일과 종료일을 선택해주세요.'); return; }
-        if (startDate > endDate)    { alert('시작일이 종료일보다 늦을 수 없습니다.'); return; }
+        if (!startDate || !endDate) {
+            alert('시작일과 종료일을 선택해주세요.');
+            return;
+        }
+        if (startDate > endDate) {
+            alert('시작일이 종료일보다 늦을 수 없습니다.');
+            return;
+        }
 
         periodDisplay.textContent = `${startDate} ~ ${endDate}`;
         await fetchConsults(startDate, endDate, teacherFilter.value);
@@ -618,13 +750,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (val === 'custom') {
             const startDate = customStart.value;
-            const endDate   = customEnd.value;
+            const endDate = customEnd.value;
             if (startDate && endDate) await fetchConsults(startDate, endDate, teacherFilter.value);
             return;
         }
 
         const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
-        const range  = getDateRange(months);
+        const range = getDateRange(months);
         periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
         await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
     });
@@ -643,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* =================== *
      *   체크박스 관리       *
      * =================== */
-    const table          = document.querySelector('.consult-table');
+    const table = document.querySelector('.consult-table');
     const headerCheckbox = table?.querySelector('thead input[type="checkbox"]');
 
     headerCheckbox?.addEventListener('change', () => {
@@ -666,13 +798,19 @@ document.addEventListener('DOMContentLoaded', () => {
     deleteBtn?.addEventListener('click', async () => {
         const checked = document.querySelectorAll('.consult-table tbody input[type="checkbox"]:checked');
 
-        if (checked.length === 0) { alert('삭제할 상담기록을 선택하세요.'); return; }
+        if (checked.length === 0) {
+            alert('삭제할 상담기록을 선택하세요.');
+            return;
+        }
 
         const ids = Array.from(checked)
             .map(chk => chk.closest('tr')?.dataset.id)
             .filter(Boolean);
 
-        if (ids.length === 0) { alert('선택된 데이터에 ID가 없습니다.'); return; }
+        if (ids.length === 0) {
+            alert('선택된 데이터에 ID가 없습니다.');
+            return;
+        }
         if (!confirm(`${ids.length}건의 상담기록을 삭제하시겠습니까?`)) return;
 
         try {
@@ -682,7 +820,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(ids)
             });
 
-            if (!res.ok) { alert('삭제 실패: ' + await res.text()); return; }
+            if (!res.ok) {
+                alert('삭제 실패: ' + await res.text());
+                return;
+            }
 
             alert('삭제 완료');
             location.reload();

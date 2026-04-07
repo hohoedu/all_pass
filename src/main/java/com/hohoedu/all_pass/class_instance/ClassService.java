@@ -526,7 +526,7 @@ public class ClassService {
     public void deleteStudent(String timeTableKey, String studentId) {
 
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
-//        paymentService.deleteDetail(timeTableKey, studentId);
+        paymentService.deleteDetail(timeTableKey, studentId);
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode, Map<String, String> req) {

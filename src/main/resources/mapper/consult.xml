@@ -21,13 +21,16 @@
                c.grade_key         AS gradeKey,
                g.grade_name        AS gradeName,
                i.inflow_route_name AS inflowRouteName,
-               c.progress_key      AS progressKey
+               c.progress_key      AS progressKey,
+               c.consult_type      AS type
         FROM ERP_CONSULT c
                  JOIN erp_grade_code g ON c.grade_key = g.grade_key
                  LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         WHERE c.center_code = #{centerCode}
           AND c.user_code = #{userCode}
+        ORDER BY consult_date desc
     </select>
+
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
         SELECT
@@ -41,11 +44,14 @@
         g.grade_name AS gradeName,
         i.inflow_route_name AS inflowRouteName,
         c.progress_key AS progressKey,
-        u.user_name AS userName
+        u.user_name AS userName,
+        c.consult_type AS type,
+        eps.registered_at AS registerDate
         FROM ERP_CONSULT c
         JOIN erp_grade_code g ON c.grade_key = g.grade_key
         LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         LEFT JOIN erp_user u ON c.user_code = u.user_code
+        LEFT JOIN erp_pending_student eps ON eps.send_key = c.send_key
         WHERE c.center_code = #{centerCode}
         AND c.phone IN (
         SELECT DISTINCT phone
@@ -56,7 +62,10 @@
             AND consult_date BETWEEN #{startDate} AND #{endDate}
         </if>
         )
-        ORDER BY MAX(c.consult_date) OVER (PARTITION BY c.phone) DESC, c.phone, c.consult_date DESC
+        <if test="startDate != null and endDate != null">
+            AND c.consult_date BETWEEN #{startDate} AND #{endDate}
+        </if>
+        ORDER BY c.consult_date DESC
     </select>
 
     <delete id="deleteByIds" parameterType="list">
@@ -104,7 +113,8 @@
                content               AS content,
                eir.inflow_route_name AS inflowRouteName,
                epc.progress_name     AS progressName,
-               con.progress_key      AS progressKey
+               con.progress_key      AS progressKey,
+               con.consult_type      AS type
         from erp_consult con
                  left join erp_grade_code gc on con.grade_key = gc.grade_key
                  left join erp_inflow_route eir on con.inflow_route_key = eir.inflow_route_key
@@ -120,4 +130,10 @@
         FROM erp_user
         where user_code = #{userCode}
     </select>
+
+    <update id = "updateSendKey">
+        UPDATE erp_consult
+        SET send_key = #{sendKey}
+        where id = #{consultId}
+    </update>
 </mapper>

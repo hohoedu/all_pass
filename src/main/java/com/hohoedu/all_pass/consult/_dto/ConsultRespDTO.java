@@ -17,6 +17,8 @@ public class ConsultRespDTO {
         private String progressKey;
         private String content;
         private String sendAt;
+        private String type;
+        private String registerDate;
     }
 
     @Data
@@ -34,5 +36,6 @@ public class ConsultRespDTO {
         private String progressKey;
         private String progressName;
         private String sendAt;
+        private String type;
     }
 }

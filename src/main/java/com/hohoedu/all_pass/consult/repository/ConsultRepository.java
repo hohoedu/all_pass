@@ -32,5 +32,11 @@ public interface ConsultRepository {
     List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(@Param("userCode") String userCode,
                                                              @Param("startDate") String startDate,
                                                              @Param("endDate") String endDate);
+
     String findUserNameByUserCode(String userCode);
+
+    void updateSendKey(
+            @Param("consultId") String consultId,
+            @Param("sendKey") String sendKey
+    );
 }

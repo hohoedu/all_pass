@@ -5,9 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,6 +66,8 @@ public class ConsultViewController {
     public String getPrintTimeView(@RequestParam(required = false) String startDate,
                                    @RequestParam(required = false) String endDate,
                                    @RequestParam(required = false) String userCode,
+                                   @RequestParam(defaultValue = "all") String typeSort,
+                                   @RequestParam(defaultValue = "all") String progressSort,
                                    Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -81,6 +81,31 @@ public class ConsultViewController {
         }
 
         List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(userCode, startDate, endDate);
+
+        List<String> typeOrder = List.of("hoho", "han", "book");
+        List<String> progressOrder = List.of("confirmed", "waiting", "counseling", "ended");
+
+        if (!typeSort.equals("all")) {
+            typeOrder = new ArrayList<>(typeOrder);
+            typeOrder.remove(typeSort);
+            typeOrder.add(0, typeSort);
+        }
+        if (!progressSort.equals("all")) {
+            progressOrder = new ArrayList<>(progressOrder);
+            progressOrder.remove(progressSort);
+            progressOrder.add(0, progressSort);
+        }
+
+        List<String> finalTypeOrder = typeOrder;
+        List<String> finalProgressOrder = progressOrder;
+
+        consults.sort(Comparator
+                .comparingInt((ConsultRespDTO.ConsultPrintDTO c) ->
+                        finalTypeOrder.indexOf(c.getType()) == -1 ? 99 : finalTypeOrder.indexOf(c.getType()))
+                .thenComparingInt(c ->
+                        finalProgressOrder.indexOf(c.getProgressKey()) == -1 ? 99 : finalProgressOrder.indexOf(c.getProgressKey()))
+        );
+
         String userName = consultService.getUserName(userCode);
         model.addAttribute("consults", consults);
         model.addAttribute("days", DAYS);

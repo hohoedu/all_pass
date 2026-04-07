@@ -5,6 +5,7 @@ import com.google.protobuf.Api;
 import com.hohoedu.all_pass._core.handler.GlobalExceptionHandler;
 import com.hohoedu.all_pass._core.utils.Aes256Util;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass.consult.ConsultService;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.PendingStudent;
@@ -28,6 +29,7 @@ public class PopbillController {
 
     private final PopbillService popbillService;
     private final StudentService studentService;
+    private final ConsultService consultService;
 
     @ResponseBody
     @PostMapping("/insert/config")
@@ -104,6 +106,8 @@ public class PopbillController {
                     .build();
 
             studentService.createPendingStudent(pendingStudent);
+
+            consultService.updateSendKey(request.getConsultId(), inviteDTO.getSendKey());
 
             return ResponseEntity.ok(ApiUtils.success("알림톡이 발송되었습니다."));
 
