@@ -645,7 +645,7 @@
              ),
              manualPayments AS (
                  SELECT payment_key,
-                        SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                        SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                  FROM erp_payment_manual
                  GROUP BY payment_key
              ),
@@ -1141,7 +1141,8 @@
                      ep.yy + '-' + ep.mm            as inym,
                      'I'                            as gb,
                      SUBSTRING(epc.appr_date, 0, 9) as indate,
-                     ep.amount,
+                     status                         as state,
+                     ep.amount                      as inmoney,
                      CASE
                          WHEN ep.bill_type = 'EDU_FEE' THEN 'S'
                          WHEN ep.bill_type = 'BOOK_FEE' THEN 'B'
@@ -1149,8 +1150,7 @@
               from erp_payment_bill ep
                        join erp_payment_callback epc on ep.bill_id = epc.bill_id
               where student_id = #{studentId}) AS combined
-        ORDER BY combined.id ASC;
-
+        ORDER BY combined.id desc;
     </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
@@ -1207,9 +1207,11 @@
         SELECT pm.bill_id                                           as billId,
                <![CDATA[
                CASE
+                   WHEN pm.preset_id IS NOT NULL THEN 'preset'
                    WHEN card_amount <> 0 THEN 'card'
                    WHEN cash_amount <> 0 THEN 'cash'
-                   WHEN transfer_amount <> 0 THEN 'transfer' end    as type,]]>
+                   WHEN transfer_amount <> 0 THEN 'transfer'
+                   END                                              as type,]]>
                pm.payment_key,
                pm.student_id                                        as student_id,
                s.student_name                                       as studentName,

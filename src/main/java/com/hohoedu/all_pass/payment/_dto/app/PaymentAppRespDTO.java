@@ -14,6 +14,7 @@ public class PaymentAppRespDTO {
         private String gb;
         private String indate;
         private String inmoney;
+        private String state;
         private String gubun;
 
         // inym => 수업 년월

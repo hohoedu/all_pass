@@ -103,6 +103,11 @@ public class ManageService {
 
     }
 
+    public String getOrderDeadline(String centerCode){
+        String result = manageRepository.findOrderDeadline(centerCode);
+        return result;
+    }
+
 
     public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
 

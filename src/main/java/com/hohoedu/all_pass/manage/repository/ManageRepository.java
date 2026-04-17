@@ -30,6 +30,10 @@ public interface ManageRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    String findOrderDeadline(
+            @Param("centerCode") String centerCode
+    );
+
     List<ManageRespDTO.ReorderListDTO> findReorderList(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,

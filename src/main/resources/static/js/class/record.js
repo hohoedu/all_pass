@@ -699,7 +699,6 @@ document.addEventListener('change', function (e) {
 document.addEventListener('click', function (e) {
     if (e.target.closest('.class-guide')) {
         const activeClass = document.querySelector('#record-class-list .class-btn.active');
-        const activeWeek = document.querySelector('.week-selector .week-btn.active');
 
         if (!activeClass) {
             console.warn('[GUIDE MODAL] 활성화된 클래스가 없습니다.');
@@ -713,7 +712,7 @@ document.addEventListener('click', function (e) {
         const unitKey = activeClass.dataset.unitKey;
         const classKey = activeClass.dataset.classKey;
         const timeTableKey = activeClass.dataset.timeTableKey;
-        const week = activeWeek?.dataset.week;
+        const week = state.week;
         console.log('[GUIDE MODAL] unitKey:', unitKey, 'classKey:', classKey, 'week:', week, 'timeTableKey:', timeTableKey);
 
         const requestBody = ({});
@@ -721,7 +720,7 @@ document.addEventListener('click', function (e) {
         fetch(`/class/api/record/before-class`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({unitKey: unitKey, classKey: classKey, timeTableKey: timeTableKey, week: week})
+                body: JSON.stringify({unitKey: unitKey, classKey: classKey, timeTableKey: timeTableKey, week: state.week})
             }
         )
             .then(res => {
@@ -854,7 +853,7 @@ async function insertBeforeClassNotice(checkedRows) {
     const notices = rows.map(row => ({
         studentId: row.getAttribute("data-student-id"),
         timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
-        week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+        week: state.week,
         classDate: document.getElementById("record_calendar")?.value || "",
         content: modalContent,
     }));
@@ -1063,7 +1062,8 @@ async function insertAfterClassNotice(checkedRows) {
             studentId: row.getAttribute("data-student-id"),
             timeTableKey: document.querySelector(".class-btn.active")?.getAttribute("data-time-table-key"),
             afterClassKey: row.getAttribute("data-after-class-key"),
-            week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+            // week: document.querySelector(".week-btn.active")?.getAttribute("data-week"),
+            week: state.week,
             content: contentTextarea.value,
             word: row.querySelector(".record-word")?.value || "",
             review: reviewTextarea?.value || "",

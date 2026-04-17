@@ -578,7 +578,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('데이터 조회 실패');
 
             const data = await response.json();
-            console.log(data);
             fillClaimDetailTable(data.response);
 
             claimDetailSection.style.display = 'block';
@@ -629,7 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 bill: '온라인 카드',
                 cash: '현금',
                 card: '오프라인 카드',
-                transfer: '계좌이체'
+                transfer: '계좌이체',
+                preset: '이월',
             };
             const paymentMethodText = paymentMethodMap[item.type] ?? '알 수 없음';
 

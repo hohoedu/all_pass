@@ -61,6 +61,12 @@
         ORDER BY cc.id, uc.id
     </select>
 
+    <select id="findOrderDeadline" resultType="String">
+        SELECT dead_line_at
+        FROM erp_order_deadline
+        where center_code = #{centerCode}
+    </select>
+
     <insert id="insertReorder">
         INSERT INTO erp_reorder (user_code, center_code, yy, mm, reorder_type, class_key, unit_key, count, reason, created_at, confirmed)
         VALUES (#{userCode}, #{centerCode}, #{yy}, #{mm}, #{reorderType}, #{classKey}, #{unitKey}, #{count}, #{reason}, SYSDATETIME(), 'unchecked')

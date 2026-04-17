@@ -34,7 +34,8 @@ public class UserRespDTO {
         private Integer roleNum;
 
         @Builder
-        public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String type, String centerCode, String centerName, String regionName, Integer roleNum) {
+        public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String type,
+                            String centerCode, String centerName, String regionName, Integer roleNum) {
             this.userCode = userCode;
             this.userId = userId;
             this.userName = userName;

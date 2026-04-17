@@ -56,7 +56,7 @@
                0,
                #{week},
                #{yy},
-               #{mm}
+               #{mm},
                SYSDATETIME(),
                tt.user_code,
                CONCAT(

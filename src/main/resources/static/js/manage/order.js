@@ -282,12 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!groupMap.has(key)) {
                 groupMap.set(key, {
-                    className:    item.className,
-                    unitName:     item.unitName,
+                    className: item.className,
+                    unitName: item.unitName,
                     studentCount: 0,   // base
                     teacherCount: 0,   // (없으면 0)
-                    addCount:     0,   // add - return
-                    totalCount:   0
+                    addCount: 0,   // add - return
+                    totalCount: 0
                 });
             }
 
@@ -311,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             sumStudent += group.studentCount;
             sumTeacher += group.teacherCount;
-            sumAdd     += group.addCount;
-            sumTotal   += group.totalCount;
+            sumAdd += group.addCount;
+            sumTotal += group.totalCount;
 
             // 추가 표시: 음수면 -N, 양수면 N
             const addDisplay = group.addCount < 0
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <col width="15%">
                 </colgroup>
                 <thead>
-                    <tr>
+                    <tr> 
                         <th rowspan="2">단계</th>
                         <th rowspan="2">교재</th>
                         <th colspan="4">수량</th>
@@ -376,30 +376,37 @@ document.addEventListener('DOMContentLoaded', () => {
      * =============================== */
     const saveBtn = document.querySelector(".save-btn");
 
-    function checkOrderDeadline() {
+    async function fetchDeadlineDay() {
+        const res = await fetch('/manage/order/deadline', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) return 10;
+
+        const data = await res.json();
+        console.log(data.response); // ✅ "20" 같은 문자열
+        return parseInt(data.response) || 10; // ✅ 숫자로 변환, 실패 시 기본값 15
+    }
+
+    async function checkOrderDeadline() {
+        const deadlineDay = await fetchDeadlineDay();
+
         const now = new Date();
         const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth(); // 0~11
+        const currentMonth = now.getMonth();
 
-        // 마감 시작일: 매월 11일 00:00
-        const deadlineStart = new Date(currentYear, currentMonth, 18, 0, 0, 0);
-
-        // 마감 종료일: 해당 월의 마지막 날 23:59:59
+        const deadlineStart = new Date(currentYear, currentMonth, deadlineDay, 23, 59, 59);
         const deadlineEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
 
         const isDeadlinePeriod = now >= deadlineStart && now <= deadlineEnd;
 
-        if (isDeadlinePeriod) {
-            saveBtn.disabled = true;
-            saveBtn.classList.add('disabled');
-            saveBtn.style.opacity = '0.5';
-            saveBtn.style.cursor = 'not-allowed';
-        } else {
-            saveBtn.disabled = false;
-            saveBtn.classList.remove('disabled');
-            saveBtn.style.opacity = '1';
-            saveBtn.style.cursor = 'pointer';
-        }
+        saveBtn.disabled = isDeadlinePeriod;
+        saveBtn.classList.toggle('disabled', isDeadlinePeriod);
+        saveBtn.style.opacity = isDeadlinePeriod ? '0.5' : '1';
+        saveBtn.style.cursor = isDeadlinePeriod ? 'not-allowed' : 'pointer';
 
         return isDeadlinePeriod;
     }
@@ -465,14 +472,13 @@ document.addEventListener('DOMContentLoaded', () => {
     checkOrderDeadline();
 
     saveBtn.addEventListener("click", async () => {
-        // 마감 기간인지 체크
-        if (checkOrderDeadline()) {
+        // ✅ await 추가 (없으면 Promise 객체가 반환되어 항상 truthy)
+        if (await checkOrderDeadline()) {
             showDeadlineModal();
             return;
         }
-        if (!confirm("교재를 주문하시겠습니까?")) {
-            return;
-        }
+
+        if (!confirm("교재를 주문하시겠습니까?")) return;
 
 
         try {

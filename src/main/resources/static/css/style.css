@@ -5096,6 +5096,27 @@ input[type="time" i] {
 }
 
 /* ======================= bfclass page ======================= */
+
+
+/* 앱발송 태그 */
+.mini-badge {
+    display: inline-block;
+    font-size: 10px;
+    color: #185FA5;
+    background: #E6F1FB;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+    vertical-align: middle;
+    font-weight: 400;
+}
+
+
+textarea.record-content,
+textarea.record-review {
+    background-color: #E6F1FB !important;
+}
+
 .class-header {
     display: flex;
     justify-content: space-between;
@@ -5386,6 +5407,7 @@ input[type="time" i] {
 .after-comment {
     width: 280px;
     height: 170px;
+    background-color: #E6F1FB !important;
 }
 
 .comment-wrapper {

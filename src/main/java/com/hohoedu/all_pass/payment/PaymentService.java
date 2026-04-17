@@ -35,11 +35,13 @@ import org.springframework.web.client.RestTemplate;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
 
-import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -52,6 +54,8 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final StudentRepository studentRepository;
     private final SseEmitterHolder sseEmitterHolder;
+    private final AtomicInteger billCounter = new AtomicInteger(0);
+    private volatile long currentSecond = Instant.now().getEpochSecond();
 
 
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode) {
@@ -241,27 +245,52 @@ public class PaymentService {
      * 예시: ABC1a2b3c041
      *
      * @param prefix - 센터별 접두사
-     * @param index  - 순번 (가구별로 증가)
      * @param type   - "edu" 또는 "material"
      * @return 생성된 청구서 ID
      */
-    private String generateBillId(String prefix, int index, String type) {
+    private String generateBillId(String prefix, String type) {
 
-        LocalDate now = LocalDate.now();
+        int index;
+        long nowSecond;
+        LocalTime localTime;
+
+        // ===== 1. 시간 + index를 하나의 블록에서 처리 =====
+        synchronized (this) {
+            Instant now = Instant.now();
+
+            nowSecond = now.getEpochSecond();
+            localTime = LocalTime.ofInstant(now, ZoneId.systemDefault());
+
+            if (nowSecond != currentSecond) {
+                billCounter.set(0);
+                currentSecond = nowSecond;
+            }
+
+            index = billCounter.getAndIncrement();
+
+            if (index >= 1000) {
+                throw new RuntimeException("1초당 billId 1000건 초과");
+            }
+        }
+
+        // ===== 2. 기존 로직 =====
+        LocalDate nowDate = LocalDate.now();
         LocalDate base = LocalDate.of(2025, 1, 1);
 
-        long diffDays = ChronoUnit.DAYS.between(base, now);
-        int secondsOfDay = LocalTime.now().toSecondOfDay();
+        long diffDays = ChronoUnit.DAYS.between(base, nowDate);
+        int secondsOfDay = localTime.toSecondOfDay();
 
         String dayCode = Long.toString(diffDays, 36);
         String timeCode = Integer.toString(secondsOfDay, 36);
 
-        // 고정 자리수 맞추기
-        String indexStr = String.format("%02d", index);
+        String indexStr = String.format("%03d", index);
         String typeCode = type.equals("edu") ? "1" : "0";
 
-
-        return prefix + String.format("%" + 3 + "s", dayCode).replace(" ", "0") + String.format("%" + 4 + "s", timeCode).replace(" ", "0") + indexStr + typeCode;
+        return prefix
+                + String.format("%3s", dayCode).replace(" ", "0")
+                + String.format("%3s", timeCode).replace(" ", "0")
+                + indexStr
+                + typeCode;
     }
 
     /**
@@ -572,8 +601,7 @@ public class PaymentService {
             boolean hasAdditionalCharge = group.stream().anyMatch(PaymentRespDTO.PayTargetDTO::isAdditionalCharge);
 
             try {
-                String indexStr = String.format("%02d", seq++);
-                String billId = generateBillId(conf.getPreBillId(), Integer.parseInt(indexStr), billType);
+                String billId = generateBillId(conf.getPreBillId(), billType);
 
                 String raw = billId + "," + sendPhone + "," + totalPrice;
                 String hash = DigestUtils.sha256Hex(raw);

@@ -1247,14 +1247,32 @@
 
     <select id="findAttendanceList"
             resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceListRespDTO">
-        SELECT CASE t.dayname
-                   WHEN 'mon' THEN ecw.mon
-                   WHEN 'tue' THEN ecw.tue
-                   WHEN 'wed' THEN ecw.wed
-                   WHEN 'thu' THEN ecw.thu
-                   WHEN 'fri' THEN ecw.fri
-                   WHEN 'sat' THEN ecw.sat
-                   WHEN 'sun' THEN ecw.sun
+        SELECT CASE
+                   WHEN sa.student_id IN ('DAE0012603262D574',
+                                          'DAE001260326C1369',
+                                          'DAE001260326C1369',
+                                          'DAE001260326902E7',
+                                          'DAE0012604028231B',
+                                          'DAE0012604026A01C')
+                       AND #{mm} = '04'
+                       THEN CASE t.dayname
+                                WHEN 'mon' THEN CAST(DATEADD(DAY, -7, ecw.mon) AS DATE)
+                                WHEN 'tue' THEN CAST(DATEADD(DAY, -7, ecw.tue) AS DATE)
+                                WHEN 'wed' THEN CAST(DATEADD(DAY, -7, ecw.wed) AS DATE)
+                                WHEN 'thu' THEN CAST(DATEADD(DAY, -7, ecw.thu) AS DATE)
+                                WHEN 'fri' THEN CAST(DATEADD(DAY, -7, ecw.fri) AS DATE)
+                                WHEN 'sat' THEN CAST(DATEADD(DAY, -7, ecw.sat) AS DATE)
+                                WHEN 'sun' THEN CAST(DATEADD(DAY, -7, ecw.sun) AS DATE)
+                       END
+                   ELSE CASE t.dayname
+                            WHEN 'mon' THEN ecw.mon
+                            WHEN 'tue' THEN ecw.tue
+                            WHEN 'wed' THEN ecw.wed
+                            WHEN 'thu' THEN ecw.thu
+                            WHEN 'fri' THEN ecw.fri
+                            WHEN 'sat' THEN ecw.sat
+                            WHEN 'sun' THEN ecw.sun
+                       END
                    END                 AS ymd,
                t.dayname,
                ISNULL(sa.in_time, '')  AS stime,

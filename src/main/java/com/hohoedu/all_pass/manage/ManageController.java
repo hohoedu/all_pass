@@ -85,6 +85,20 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
+    @PostMapping("/order/deadline")
+    public ResponseEntity<?> getOrderDeadline(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        String response = manageService.getOrderDeadline(user.getCenterCode());
+        log.info(response);
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
 
     @PostMapping("/reorder/save")
     public ResponseEntity<?> insertReorder(@RequestBody ManageReqDTO.InsertReorderDTO reqDTO, HttpSession session) {
