@@ -1072,7 +1072,7 @@
         SET in_time             = #{inTime},
             out_time            = null,
             attendance_date     = #{attendanceDate},
-            attendance_key      = #{attendanceKey},
+            attendance_key      = CAST(SYSDATETIME() AS DATE),
             check_in_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND week = #{week}

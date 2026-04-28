@@ -280,17 +280,12 @@ public class PaymentService {
         long diffDays = ChronoUnit.DAYS.between(base, nowDate);
         int secondsOfDay = localTime.toSecondOfDay();
 
-        String dayCode = Long.toString(diffDays, 36);
-        String timeCode = Integer.toString(secondsOfDay, 36);
-
-        String indexStr = String.format("%03d", index);
+        String dayCode = String.format("%3s", Long.toString(diffDays, 36)).replace(" ", "0");
+        String timeCode = String.format("%4s", Integer.toString(secondsOfDay, 36)).replace(" ", "0");
+        String indexStr = String.format("%2s", Integer.toString(index, 36)).replace(" ", "0");
         String typeCode = type.equals("edu") ? "1" : "0";
 
-        return prefix
-                + String.format("%3s", dayCode).replace(" ", "0")
-                + String.format("%3s", timeCode).replace(" ", "0")
-                + indexStr
-                + typeCode;
+        return prefix + dayCode + timeCode + indexStr + typeCode;
     }
 
     /**

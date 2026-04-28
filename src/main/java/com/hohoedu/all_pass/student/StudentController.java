@@ -258,7 +258,7 @@ public class StudentController {
 
     @PostMapping("/attendance")
     public ResponseEntity<?> studentAttendance(@RequestBody StudentAppReqDTO.StudentAttendanceDTO dto) {
-
+        log.info("dto = {}", dto);
         Student studentInfo = studentService.findByStudentId(dto.getStudentId());
         log.info("studentInfo = {}", studentInfo);
 

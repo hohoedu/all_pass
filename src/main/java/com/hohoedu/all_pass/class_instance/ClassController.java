@@ -8,7 +8,6 @@ import java.util.Set;
 import com.google.protobuf.Api;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
-
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
@@ -76,17 +75,17 @@ public class ClassController {
 
     @PostMapping("/week/get")
     public ResponseEntity<?> getWeekData(@RequestBody ClassReqDTO.GetWeekDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user =
-                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
-        List<ClassRespDTO.ClassWeekDTO> list = classService.getClassWeek(reqDTO.getYear(), reqDTO.getMonth(), user.getCenterCode());
+        List<ClassRespDTO.ClassWeekDTO> list = classService.getClassWeek(reqDTO.getYear(), reqDTO.getMonth(),
+                user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(list));
     }
 
-
     // 시간표 등록
     @PostMapping("/register")
-    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
+    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO,
+            HttpSession session) {
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
@@ -117,7 +116,8 @@ public class ClassController {
     // 학생 수업 등록
     @PostMapping("/add_student")
     @ResponseBody
-    public ResponseEntity<?> timeTableAssginStudent(HttpSession session, @RequestBody ClassReqDTO.AddStudentList reqDTO) {
+    public ResponseEntity<?> timeTableAssginStudent(HttpSession session,
+            @RequestBody ClassReqDTO.AddStudentList reqDTO) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -146,25 +146,28 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        List<ClassRespDTO.ComClassStudentDTO> response = classService.findComClassStudentsByTimeTableKey(request.get("timeTableKey"), user.getUserCode());
+        List<ClassRespDTO.ComClassStudentDTO> response = classService
+                .findComClassStudentsByTimeTableKey(request.get("timeTableKey"), user.getUserCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-//    @PostMapping("/comclass/updateAssign")
-//    public ResponseEntity<?> updateTimeTableAssign(@RequestBody ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
-//        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-//                    .header(HttpHeaders.LOCATION, "/login")
-//                    .build();
-//        }
-//
-//        int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(), user.getCenterCode());
-//
-//        return ResponseEntity.ok(ApiUtils.success(response + "건"));
-//    }
-
+    // @PostMapping("/comclass/updateAssign")
+    // public ResponseEntity<?> updateTimeTableAssign(@RequestBody
+    // ClassReqDTO.AssignUpdateDTO reqDTO, HttpSession session) {
+    // UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
+    // session.getAttribute("user");
+    // if (user == null) {
+    // return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+    // .header(HttpHeaders.LOCATION, "/login")
+    // .build();
+    // }
+    //
+    // int response = classService.updateTimeTableAssign(reqDTO, user.getUserCode(),
+    // user.getCenterCode());
+    //
+    // return ResponseEntity.ok(ApiUtils.success(response + "건"));
+    // }
 
     @PostMapping("/delete/student")
     public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
@@ -176,8 +179,7 @@ public class ClassController {
 
     @PostMapping("/api/load_time_table")
     public ResponseEntity<?> loadTimeTable(HttpSession session, @RequestBody Map<String, String> request) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
@@ -189,12 +191,10 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(tables));
     }
 
-
     @PostMapping("/api/copy/last-timetable")
     public ResponseEntity<?> copyLastTimetable(@RequestBody Map<String, String> req, HttpSession session) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
@@ -205,22 +205,21 @@ public class ClassController {
                 user.getUserCode(),
                 user.getCenterCode(),
                 req.get("year"),
-                req.get("month")
-        );
+                req.get("month"));
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
     @PostMapping("/timetable/view")
     public ResponseEntity<?> viewTimeTable(@RequestBody ClassReqDTO.TimeTaleViewReqDTO reqDTO, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
         String userCode = reqDTO.getUserCode() == null ? user.getUserCode() : reqDTO.getUserCode();
-        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(reqDTO.getYear(), reqDTO.getMonth(), userCode);
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(reqDTO.getYear(),
+                reqDTO.getMonth(), userCode);
 
         return ResponseEntity.ok(ApiUtils.success(viewData));
     }
@@ -238,19 +237,18 @@ public class ClassController {
     }
 
     // 전체 이력 조회 (월 파라미터 없이 전체 반환)
-//    @GetMapping("/api/delete/log")
-//    public ResponseEntity<?> deleteLog() {
-//        List<DeleteBackupDTO> list = backupRepository.findAllBackupList();
-//        return ResponseEntity.ok(ApiUtils.success(list));
-//    }
-//
-//    // 복구
-//    @PostMapping("/api/restore")
-//    public ResponseEntity<?> restore(@RequestBody Map<String, String> req) {
-//        classService.restoreBackup(req.get("backupKey"));
-//        return ResponseEntity.ok(ApiUtils.success(true));
-//    }
-
+    // @GetMapping("/api/delete/log")
+    // public ResponseEntity<?> deleteLog() {
+    // List<DeleteBackupDTO> list = backupRepository.findAllBackupList();
+    // return ResponseEntity.ok(ApiUtils.success(list));
+    // }
+    //
+    // // 복구
+    // @PostMapping("/api/restore")
+    // public ResponseEntity<?> restore(@RequestBody Map<String, String> req) {
+    // classService.restoreBackup(req.get("backupKey"));
+    // return ResponseEntity.ok(ApiUtils.success(true));
+    // }
 
     // ================ 수업 일지 컨트롤러 =====================//
     @PostMapping("/api/record/label")
@@ -283,10 +281,10 @@ public class ClassController {
         ClassRespDTO.RecordBundleDTO response = classService.getTimeTableByKey(
                 dto.getUserCode(),
                 dto.getTimeTableKey(),
-                dto.getDate(),  // week 대신 date 사용
+                dto.getDate(), // week 대신 date 사용
                 dto.getClassKey(),
                 dto.getUnitKey(),
-                user.getCenterCode()  // centerCode 추가
+                user.getCenterCode() // centerCode 추가
         );
         return ResponseEntity.ok(ApiUtils.success(response));
     }
@@ -303,7 +301,8 @@ public class ClassController {
 
     // 알림 발송 이후 내용 저장
     @PostMapping("/api/before-notice/insert")
-    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, HttpSession session) {
+    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList,
+            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -318,7 +317,7 @@ public class ClassController {
         return ResponseEntity.ok("ok");
     }
 
-    //알림발송 이후 출결 업데이트
+    // 알림발송 이후 출결 업데이트
     @PostMapping("/api/attendance/insert")
     public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.updateAttendanceDTO> dtos) {
         log.info("이거지?");
@@ -327,14 +326,14 @@ public class ClassController {
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
                     dto.getAttendanceDate(),
-                    dto.getWeek()
-            );
+                    dto.getWeek());
         }
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
     @PostMapping("/api/after-notice/insert")
-    public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList, HttpSession session) {
+    public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList,
+            HttpSession session) {
         log.info(dtoList.get(0).getWord());
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -358,12 +357,10 @@ public class ClassController {
             classService.updateAfterSend(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
-                    dto.getWeek()
-            );
+                    dto.getWeek());
         }
         return ResponseEntity.ok(ApiUtils.success(true));
     }
-
 
     // ================ 보강 관리 컨트롤러 =====================//
     @PostMapping("/remedial/list")
@@ -388,10 +385,9 @@ public class ClassController {
 
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
-                                            @RequestParam(value = "year") String year,
-                                            @RequestParam(value = "month") String month,
-                                            HttpSession session) {
-
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month,
+            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -446,7 +442,8 @@ public class ClassController {
                     .build();
         }
 
-        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(), dto.getDayname(), user.getCenterCode());
+        List<TimeTableLabelDTO> label = classService.getMonthlyClassList(dto.getUserCode(), dto.getYy(), dto.getMm(),
+                dto.getDayname(), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(label));
     }
@@ -476,7 +473,6 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-
     @PostMapping("/api/monthly/save")
     public ResponseEntity<?> saveMonthlyReport(@RequestBody ClassReqDTO.MonthlySaveRequestDTO dto) {
         try {
@@ -487,18 +483,16 @@ public class ClassController {
             classService.saveMonthlyComments(students);
 
             return ResponseEntity.ok(ApiUtils.success(Map.of(
-                    "message", students.size() + "명의 코멘트가 저장되었습니다."
-            )));
+                    "message", students.size() + "명의 코멘트가 저장되었습니다.")));
 
         } catch (Exception e) {
             log.error("월간평가 코멘트 저장 오류", e);
             return ResponseEntity.badRequest().body(ApiUtils.error(
-                    "저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST
-            ));
+                    "저장 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST));
         }
     }
 
-    // 월간 평가 (유아)
+    // 월간 학습내용 (유아)
     @PostMapping("/infant/labels")
     public ResponseEntity<?> getInfantClassLabel(@RequestBody ClassReqDTO.InfantClassLabelsDTO dto) {
 
@@ -555,16 +549,18 @@ public class ClassController {
 
     @PostMapping("/infant/save")
     public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session) {
+        System.out.println("컨트롤러 여기까지!!!! ==================");
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(ApiUtils.error("UNAUTHORIZED", HttpStatus.UNAUTHORIZED));
             }
+            log.info("reqDTO = {}", reqDTO.toString());
 
             String centerCode = user.getCenterCode();
             String userCode = user.getUserCode();
-
+System.out.println("컨트롤러 여기까지!!!! ==================");
             classService.saveInfantNotice(reqDTO, centerCode, userCode);
 
             return ResponseEntity.ok(ApiUtils.success("success"));

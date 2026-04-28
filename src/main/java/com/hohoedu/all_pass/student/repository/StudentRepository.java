@@ -291,7 +291,6 @@ public interface StudentRepository {
 
     public int checkinStudentAttendance(
             @Param("studentId") String studentId,
-            @Param("attendanceDate") String attendanceDate,
             @Param("inTime") String inTime,
             @Param("endTime") String endTime,
             @Param("attendanceKey") String attendanceKey,

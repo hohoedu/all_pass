@@ -890,7 +890,6 @@ public class StudentService {
 
             int updated = studentRepository.checkinStudentAttendance(
                     student.getStudentId(),
-                    dto.getYmd(),
                     dto.getHhmm(),
                     targetClass.getEndTime(),
                     attendanceKey,
@@ -1318,7 +1317,7 @@ public class StudentService {
 
         }
 
-        // 5. 결석 해제 → 보강 삭제 (하드 딜리트)
+        // 5. 결석 해제 → 보강 삭제
         if ("absent".equals(prevKey) && !"absent".equals(newKey)) {
             attendanceRepository.deleteRemedialForStudent(
                     dto.getStudentId(),

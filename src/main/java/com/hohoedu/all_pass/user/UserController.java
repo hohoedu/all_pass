@@ -111,17 +111,13 @@ public class UserController {
     @PostMapping("/password")
     public ResponseEntity<?> changePassword(@RequestBody UserReqDTO.PasswordChangeRequest request, HttpSession session) {
         try {
-            log.info("!");
             LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
 
-            log.info("!!");
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("success", false, "message", "로그인이 필요합니다."));
             }
-            log.info("!!!!");
             request.setUserCode(user.getUserCode());
-            log.info("!!!!!");
             userService.changePassword(request);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "비밀번호가 변경되었습니다."));

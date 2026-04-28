@@ -184,7 +184,6 @@ public class ClassReqDTO {
         private String remedialKey;
     }
 
-
     @Data
     public static class TeacherAssignUpdateDTO {
         private String studentId;
@@ -286,7 +285,6 @@ public class ClassReqDTO {
         private String yy;
     }
 
-
     @Data
     public static class InfantSaveReqDTO {
 
@@ -333,6 +331,23 @@ public class ClassReqDTO {
             private String storyComment;
             private String clean;
             private String insung;
+
+            // ✅ 공통 태그
+            private String part1Tag1;
+            private String part1Tag2;
+            private String part1Tag3;
+            private String part2Tag1;
+            private String part2Tag2;
+            private String part2Tag3;
+            private String part3Tag1;
+            private String part3Tag2;
+            private String part3Tag3;
+            private String part4Tag1;
+            private String part4Tag2;
+            private String part4Tag3;
+            private String part5Tag1;
+            private String part5Tag2;
+            private String part5Tag3;
         }
     }
 

@@ -168,7 +168,6 @@ public class PaymentController {
         String userCode = user.getRoleKey().equals("ADMIN") || user.getRoleKey().equals("MANAGER") ? paymentReqDTO.getUserCode() : user.getUserCode();
 
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode(), paymentReqDTO.getItemType());
-        log.info("students = {}", students);
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 

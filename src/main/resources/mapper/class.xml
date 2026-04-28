@@ -174,9 +174,9 @@
             keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table
         (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at,
-         time_table_key, center_code)
+         time_table_key, center_code, subject)
         values (#{yy}, #{mm}, #{dayname}, #{periodNo}, #{startTime}, #{endTime}, #{classKey}, #{unitKey}, #{gradeKey},
-                #{userCode}, SYSDATETIME(), #{timeTableKey}, #{centerCode});
+                #{userCode}, SYSDATETIME(), #{timeTableKey}, #{centerCode}, #{subject});
     </insert>
 
     <!--시간표 수정 -->
@@ -1464,24 +1464,26 @@
 
     <update id="updateInfantHanNotice">
         UPDATE erp_infant_han_notice
-        SET main_title  = #{dto.detail.classLabel},
-            subtitle    = #{dto.detail.subject},
-            title1      = #{dto.detail.storyComment},
-            title2      = #{dto.detail.workBook},
-            title3      = #{dto.detail.hanjaSong},
+        SET updated_at  = SYSDATETIME(),
+            update_user = #{userCode},
+            part1_tag_1 = #{dto.detail.part1Tag1}, part1_tag_2 = #{dto.detail.part1Tag2}, part1_tag_3 = #{dto.detail.part1Tag3},
+            part2_tag_1 = #{dto.detail.part2Tag1}, part2_tag_2 = #{dto.detail.part2Tag2}, part2_tag_3 = #{dto.detail.part2Tag3},
+            part3_tag_1 = #{dto.detail.part3Tag1}, part3_tag_2 = #{dto.detail.part3Tag2}, part3_tag_3 = #{dto.detail.part3Tag3},
+            part4_tag_1 = #{dto.detail.part4Tag1}, part4_tag_2 = #{dto.detail.part4Tag2}, part4_tag_3 = #{dto.detail.part4Tag3},
+            part5_tag_1 = #{dto.detail.part5Tag1}, part5_tag_2 = #{dto.detail.part5Tag2}, part5_tag_3 = #{dto.detail.part5Tag3},
+            main_title  = #{dto.detail.subject},
+            subtitle    = #{dto.detail.classLabel},
             img_url     = #{dto.detail.imagePath},
-            part2_title = #{dto.detail.story},
-            part1_note  = #{dto.detail.newWord},
-            part2_note  = #{dto.detail.story} + '(' + #{dto.detail.subStory} + ')',
-            part3_note  = #{dto.detail.idiom} + '(' + #{dto.detail.subIdiom} + ')',
+            title1      = #{dto.detail.newWord},
+            title2      = #{dto.detail.subStory},
+            title3      = #{dto.detail.idiom},
+            part1_note  = #{dto.detail.hanjaSong},
+            part2_note  = #{dto.detail.workBook},
+            part3_note  = #{dto.detail.storyComment},
             part4_note  = #{dto.detail.clean},
             part5_note  = #{dto.detail.insung},
-
-            updated_at  = SYSDATETIME(),
-            update_user = #{userCode},
             is_send     = #{finalIsSend}
-
-        WHERE student_id = #{studentId}
+        WHERE student_id     = #{studentId}
           AND time_table_key = #{dto.timeTableKey}
     </update>
 
@@ -1498,82 +1500,81 @@
             part3_note  = #{dto.detail.thinkTalk},
             part4_note  = #{dto.detail.goldenbell},
             part5_note  = #{dto.detail.findDiff},
-
+            part1_tag_1 = #{dto.detail.part1Tag1}, part1_tag_2 = #{dto.detail.part1Tag2}, part1_tag_3 = #{dto.detail.part1Tag3},
+            part2_tag_1 = #{dto.detail.part2Tag1}, part2_tag_2 = #{dto.detail.part2Tag2}, part2_tag_3 = #{dto.detail.part2Tag3},
+            part3_tag_1 = #{dto.detail.part3Tag1}, part3_tag_2 = #{dto.detail.part3Tag2}, part3_tag_3 = #{dto.detail.part3Tag3},
+            part4_tag_1 = #{dto.detail.part4Tag1}, part4_tag_2 = #{dto.detail.part4Tag2}, part4_tag_3 = #{dto.detail.part4Tag3},
+            part5_tag_1 = #{dto.detail.part5Tag1}, part5_tag_2 = #{dto.detail.part5Tag2}, part5_tag_3 = #{dto.detail.part5Tag3},
             updated_at  = SYSDATETIME(),
             update_user = #{userCode},
             is_send     = #{finalIsSend}
-
         WHERE student_id = #{studentId}
           AND time_table_key = #{dto.timeTableKey}
     </update>
 
     <insert id="insertInfantHanNotice">
-        INSERT INTO erp_infant_han_notice (main_title, subtitle, title1, title2, title3,
-                                           img_url,
-                                           part1_title, part2_title, part3_title, part4_title, part5_title,
-                                           part1_note, part2_note, part3_note, part4_note, part5_note,
-                                           part1_tag_1, part1_tag_2, part1_tag_3,
-                                           part2_tag_1, part2_tag_2, part2_tag_3,
-                                           part3_tag_1, part3_tag_2, part3_tag_3,
-                                           part4_tag_1, part4_tag_2, part4_tag_3,
-                                           part5_tag_1, part5_tag_2, part5_tag_3,
-                                           created_at, updated_at, update_user,
-                                           student_id, time_table_key, center_code, user_code, send_id, yy, mm, is_send)
-        VALUES (#{dto.detail.classLabel},
-                #{dto.detail.subject},
-                #{dto.detail.storyComment},
-                #{dto.detail.workBook},
-                #{dto.detail.hanjaSong},
-                #{dto.detail.imagePath},
-                '신습한자', #{dto.detail.story}, '인성 한자성어', '문장이해', '바른인성',
-                #{dto.detail.newWord},
-                #{dto.detail.story} + '(' + #{dto.detail.subStory} + ')',
-                #{dto.detail.idiom} + '(' + #{dto.detail.subIdiom} + ')',
-                #{dto.detail.clean},
-                #{dto.detail.insung},
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
-                #{dto.isSend})
+        INSERT INTO erp_infant_han_notice (
+            send_id, created_at, updated_at, center_code, update_user,
+            student_id, time_table_key, user_code,
+            part1_tag_1, part1_tag_2, part1_tag_3,
+            part2_tag_1, part2_tag_2, part2_tag_3,
+            part3_tag_1, part3_tag_2, part3_tag_3,
+            part4_tag_1, part4_tag_2, part4_tag_3,
+            part5_tag_1, part5_tag_2, part5_tag_3,
+            main_title, part1_title, part2_title, part3_title, part4_title, part5_title,
+            subtitle, img_url,
+            title1, title2, title3,
+            part1_note, part2_note, part3_note, part4_note, part5_note,
+            yy, mm, is_send
+        )
+        VALUES (
+                   #{sendId}, SYSDATETIME(), SYSDATETIME(), #{centerCode}, #{userCode},
+                   #{studentId}, #{dto.timeTableKey}, #{userCode},
+                   #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
+                   #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
+                   #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
+                   #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
+                   #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
+                   #{dto.detail.subject}, '의미표현', '어휘활용', '문장이해', '창의놀이', '바른인성',
+                   #{dto.detail.classLabel}, #{dto.detail.imagePath},
+                   #{dto.detail.newWord}, #{dto.detail.subStory}, #{dto.detail.idiom},
+                   #{dto.detail.hanjaSong}, #{dto.detail.workBook}, #{dto.detail.storyComment}, #{dto.detail.clean}, #{dto.detail.insung},
+                   #{dto.yy}, #{dto.mm}, #{dto.isSend}
+               )
     </insert>
 
     <insert id="insertInfantBookNotice">
-        INSERT INTO erp_infant_book_notice (main_title, subtitle, title1, title2, title3,
-                                            img_url,
-                                            part1_title, part2_title, part3_title, part4_title, part5_title,
-                                            part1_note, part2_note, part3_note, part4_note, part5_note,
-                                            part1_tag_1, part1_tag_2, part1_tag_3,
-                                            part2_tag_1, part2_tag_2, part2_tag_3,
-                                            part3_tag_1, part3_tag_2, part3_tag_3,
-                                            part4_tag_1, part4_tag_2, part4_tag_3,
-                                            part5_tag_1, part5_tag_2, part5_tag_3,
-                                            created_at, updated_at, update_user,
-                                            student_id, time_table_key, center_code, user_code, send_id, yy, mm,
-                                            is_send)
-        VALUES (#{dto.detail.subject},
-                #{dto.detail.content},
-                #{dto.detail.story},
-                #{dto.detail.knowledgeBoard},
-                #{dto.detail.thinkTalk},
-                #{dto.detail.imagePath},
-                '동화이해', '지식탐구', '창의표현', '통합사고', '스마트놀이',
-                #{dto.detail.story},
-                #{dto.detail.knowledgeBoard},
-                #{dto.detail.thinkTalk},
-                #{dto.detail.goldenbell},
-                #{dto.detail.findDiff},
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                NULL, NULL, NULL,
-                SYSDATETIME(), SYSDATETIME(), #{userCode},
-                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
-                #{dto.isSend})
+    INSERT INTO erp_infant_book_notice (main_title, subtitle, title1, title2, title3,
+                                        img_url,
+                                        part1_title, part2_title, part3_title, part4_title, part5_title,
+                                        part1_note, part2_note, part3_note, part4_note, part5_note,
+                                        part1_tag_1, part1_tag_2, part1_tag_3,
+                                        part2_tag_1, part2_tag_2, part2_tag_3,
+                                        part3_tag_1, part3_tag_2, part3_tag_3,
+                                        part4_tag_1, part4_tag_2, part4_tag_3,
+                                        part5_tag_1, part5_tag_2, part5_tag_3,
+                                        created_at, updated_at, update_user,
+                                        student_id, time_table_key, center_code, user_code, send_id, yy, mm, is_send)
+    VALUES (#{dto.detail.subject},
+            #{dto.detail.content},
+            #{dto.detail.story},
+            #{dto.detail.knowledgeBoard},
+            #{dto.detail.thinkTalk},
+            #{dto.detail.imagePath},
+            '동화이해', '지식탐구', '창의표현', '통합사고', '스마트놀이',
+            #{dto.detail.story},
+            #{dto.detail.knowledgeBoard},
+            #{dto.detail.thinkTalk},
+            #{dto.detail.goldenbell},
+            #{dto.detail.findDiff},
+            #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
+            #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
+            #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
+            #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
+            #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
+            SYSDATETIME(), SYSDATETIME(), #{userCode},
+            #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
+            #{dto.isSend})
     </insert>
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->

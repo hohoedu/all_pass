@@ -55,10 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("click", (e) => {
     if (!e.target.classList.contains("hashtag")) return;
 
-    const clicked    = e.target;
-    const hashBlock  = clicked.closest(".hash-block");
-    const tagDesc    = clicked.closest(".tag-desc");
-    const textSpan   = tagDesc.querySelector("span:first-child");
+    const clicked = e.target;
+    const hashBlock = clicked.closest(".hash-block");
+    const tagDesc = clicked.closest(".tag-desc");
+    const textSpan = tagDesc.querySelector("span:first-child");
     const colorClasses = ["hash-blue", "hash-orange", "hash-pink", "hash-purple", "hash-green"];
 
     // 원본 컬러 태그 + 텍스트 최초 1회 저장
@@ -66,7 +66,7 @@ document.addEventListener("click", (e) => {
         const originalColored = hashBlock.querySelector(".hashtag[class*='hash-']");
         if (originalColored) {
             const foundColor = colorClasses.find(c => originalColored.classList.contains(c));
-            hashBlock.dataset.colorClass  = foundColor;
+            hashBlock.dataset.colorClass = foundColor;
             hashBlock.dataset.originalTag = originalColored.innerText.trim();
         }
     }
@@ -74,7 +74,7 @@ document.addEventListener("click", (e) => {
         tagDesc.dataset.originalText = textSpan.innerText;
     }
 
-    const colorClass      = hashBlock.dataset.colorClass;
+    const colorClass = hashBlock.dataset.colorClass;
     const isAlreadyActive = clicked.classList.contains("active");
 
     // 같은 hash-block 내 전체 초기화
@@ -99,7 +99,7 @@ document.addEventListener("click", (e) => {
 });
 
 function infantSelectAllCheckbox() {
-    const selectAll  = document.querySelector("#infant-select-all");
+    const selectAll = document.querySelector("#infant-select-all");
     const checkboxes = document.querySelectorAll(".infant-row-checkbox");
 
     if (!selectAll || checkboxes.length === 0) return;
@@ -141,7 +141,7 @@ function requestClassLabels(yy, mm, teacher) {
     fetch(`/class/infant/labels`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ yy, mm, userCode: teacher })
+        body: JSON.stringify({yy, mm, userCode: teacher})
     })
         .then(res => res.json())
         .then(data => {
@@ -221,7 +221,7 @@ function requestInfantDetail(label, year) {
     })
         .then(res => res.json())
         .then(data => {
-            const type   = data.response.type;
+            const type = data.response.type;
             const detail = data.response.data;
             renderStudents(detail.students);
             renderIntroSection(type, detail);
@@ -242,7 +242,7 @@ function renderStudents(students) {
     }
 
     students.forEach(s => {
-        const disabled         = s.appToken == null ? "disabled" : "";
+        const disabled = s.appToken == null ? "disabled" : "";
         const disabledRowClass = s.appToken == null ? "disabled-row" : "";
 
         let statusImg;
@@ -289,9 +289,9 @@ function renderTags(tags) {
 }
 
 function renderIntroSection(type, detail) {
-    const container    = document.querySelector(".third-frame");
+    const container = document.querySelector(".third-frame");
     const existingBook = container.querySelector(".book-intro-lesson");
-    const existingHan  = container.querySelector(".han-intro-lesson");
+    const existingHan = container.querySelector(".han-intro-lesson");
 
     if (!type || !detail) {
         const emptyHTML = `
@@ -301,7 +301,7 @@ function renderIntroSection(type, detail) {
                 </div>
             </div>`;
         if (existingBook) existingBook.innerHTML = emptyHTML;
-        if (existingHan)  existingHan.innerHTML  = emptyHTML;
+        if (existingHan) existingHan.innerHTML = emptyHTML;
         return;
     }
 
@@ -358,37 +358,37 @@ function renderIntroSection(type, detail) {
         {
             title: "동화이해 활동", color: "tag-blue", text: detail.story,
             hashtags: [
-                { text: "#위인동화", color: "hash-blue", content: detail.story },
-                { text: "#한글알기",                    content: detail.hangul },
+                {text: "#위인동화", color: "hash-blue", content: detail.story},
+                {text: "#한글알기", content: detail.hangul},
             ],
         },
         {
             title: "지식탐구 활동", color: "tag-orange", text: detail.knowledgeBoard,
             hashtags: [
-                { text: "#워크북",                         content: detail.workbook },
-                { text: "#지식활동", color: "hash-orange", content: detail.knowledgeBoard },
+                {text: "#워크북", content: detail.workbook},
+                {text: "#지식활동", color: "hash-orange", content: detail.knowledgeBoard},
             ],
         },
         {
             title: "창의표현 활동", color: "tag-pink", text: detail.thinkTalk,
             hashtags: [
-                { text: "#스토리동요",                    content: detail.song },
-                { text: "#생각말하기", color: "hash-pink", content: detail.thinkTalk },
-                { text: "#공감독서",                      content: detail.empathy },
+                {text: "#스토리동요", content: detail.song},
+                {text: "#생각말하기", color: "hash-pink", content: detail.thinkTalk},
+                {text: "#공감독서", content: detail.empathy},
             ],
         },
         {
             title: "통합사고 활동", color: "tag-purple", text: detail.goldenbell,
             hashtags: [
-                { text: "#골든벨", color: "hash-purple", content: detail.goldenbell },
+                {text: "#골든벨", color: "hash-purple", content: detail.goldenbell},
             ],
         },
         {
             title: "스마트놀이 활동", color: "tag-green", text: detail.findDiff,
             hashtags: [
-                { text: "#다른그림찾기", color: "hash-green", content: detail.findDiff },
-                { text: "#동화꾸미기",                       content: detail.makeStory },
-                { text: "#그림맞추기",                       content: detail.picMatch },
+                {text: "#다른그림찾기", color: "hash-green", content: detail.findDiff},
+                {text: "#동화꾸미기", content: detail.makeStory},
+                {text: "#그림맞추기", content: detail.picMatch},
             ],
         },
     ];
@@ -398,36 +398,36 @@ function renderIntroSection(type, detail) {
         {
             title: "의미표현 활동", color: "tag-blue", text: detail.hanjaSong,
             hashtags: [
-                { text: "#워크북",     color: "hash-blue", content: detail.workBook },
-                { text: "#한글놀이터",                     content: detail.hangulPlayground },
+                {text: "#워크북", color: "hash-blue", content: detail.workBook},
+                {text: "#한글놀이터", content: detail.hangulPlayground},
             ],
         },
         {
             title: "어휘활용 활동", color: "tag-orange", text: detail.workBook,
             hashtags: [
-                { text: "#자원송", color: "hash-orange", content: detail.resourceSong },
-                { text: "#한자송",                       content: detail.hanjaSong },
+                {text: "#자원송", color: "hash-orange", content: detail.resourceSong},
+                {text: "#한자송", content: detail.hanjaSong},
             ],
         },
         {
             title: "문장이해 활동", color: "tag-pink", text: detail.storyComment,
             hashtags: [
-                { text: "#한자동화",    color: "hash-pink", content: detail.story },
-                { text: "#뜻을 알아요",                    content: detail.storyComment },
+                {text: "#한자동화", color: "hash-pink", content: detail.story},
+                {text: "#뜻을 알아요", content: detail.storyComment},
             ],
         },
         {
             title: "창의놀이 활동", color: "tag-purple", text: detail.clean,
             hashtags: [
-                { text: "#인성이야기", color: "hash-purple", content: detail.insung },
-                { text: "#바른약속",                         content: detail.promise },
+                {text: "#인성이야기", color: "hash-purple", content: detail.insung},
+                {text: "#바른약속", content: detail.promise},
             ],
         },
         {
             title: "바른인성 활동", color: "tag-green", text: detail.insung,
             hashtags: [
-                { text: "#쓱싹쓱싹", color: "hash-green", content: detail.clean },
-                { text: "#한자창조",                       content: detail.note },
+                {text: "#쓱싹쓱싹", color: "hash-green", content: detail.clean},
+                {text: "#한자창조", content: detail.note},
             ],
         },
     ];
@@ -448,82 +448,136 @@ function renderIntroSection(type, detail) {
 }
 
 function getLessonType() {
-    if (document.querySelector(".han-intro-lesson"))  return "HAN";
+    if (document.querySelector(".han-intro-lesson")) return "HAN";
     if (document.querySelector(".book-intro-lesson")) return "BOOK";
     return null;
 }
 
-function collectHanData() {
-    const wrap = document.querySelector(".han-intro-lesson");
-    if (!wrap) return null;
-    const text = (sel) => wrap.querySelector(sel)?.innerText.trim() || "";
-    return {
-        classLabel:    text(".book-kind"),
-        subject:       text(".book-name span:nth-of-type(2)"),
-        imagePath:     wrap.querySelector(".han-intro-book img")?.src?.split("/").pop() || "",
-        newWord:       text(".hanja-row:nth-of-type(1) .hanja-text"),
-        story:         text(".hanja-row:nth-of-type(2) .hanja-label"),
-        subStory:      text(".hanja-row:nth-of-type(2) .hanja-text").replace(/.*\(|\)/g, ""),
-        idiom:         text(".hanja-row:nth-of-type(3) .hanja-text").split("(")[0].trim(),
-        subIdiom:      text(".hanja-row:nth-of-type(3) .hanja-text").replace(/.*\(|\)/g, ""),
-        hanjaSong:     text(".tag-row:nth-of-type(1) .tag-desc span"),
-        workBook:      text(".tag-row:nth-of-type(2) .tag-desc span"),
-        storyComment:  text(".tag-row:nth-of-type(3) .tag-desc span"),
-        clean:         text(".tag-row:nth-of-type(4) .tag-desc span"),
-        insung:        text(".tag-row:nth-of-type(5) .tag-desc span"),
-    };
+// 헬퍼 추가
+function getTagsOrdered(wrap, rowIndex) {
+    const row = wrap.querySelector(`.tag-row:nth-of-type(${rowIndex})`);
+    if (!row) return [null, null, null];
+
+    const colorClasses = ["hash-blue", "hash-orange", "hash-pink", "hash-purple", "hash-green"];
+    const tags = [...row.querySelectorAll(".hashtag")];
+
+    const hasActive = tags.some(t => t.classList.contains("active"));
+
+    let active, inactive;
+
+    if (hasActive) {
+        active = tags.filter(t => t.classList.contains("active"));
+        inactive = tags.filter(t => !t.classList.contains("active"));
+    } else {
+        active = tags.filter(t => colorClasses.some(c => t.classList.contains(c)));
+        inactive = tags.filter(t => !colorClasses.some(c => t.classList.contains(c)));
+    }
+
+    const ordered = [...active, ...inactive];
+    return [
+        ordered[0] ? "c" + ordered[0].innerText.trim() : null,
+        ordered[1] ? ordered[1].innerText.trim() : null,
+        ordered[2] ? ordered[2].innerText.trim() : null,
+    ];
 }
 
 function collectBookData() {
     const wrap = document.querySelector(".book-intro-lesson");
     if (!wrap) return null;
     const text = (sel) => wrap.querySelector(sel)?.innerText.trim() || "";
+    const p1 = getTagsOrdered(wrap, 1);
+    const p2 = getTagsOrdered(wrap, 2);
+    const p3 = getTagsOrdered(wrap, 3);
+    const p4 = getTagsOrdered(wrap, 4);
+    const p5 = getTagsOrdered(wrap, 5);
     return {
-        classLabel:    text(".book-kind"),
-        subject:       text(".book-name span:nth-of-type(2)"),
-        imagePath:     wrap.querySelector(".book-intro-book img")?.src?.split("/").pop() || "",
-        content:       text(".hanja-row .hanja-text"),
-        story:         text(".tag-row:nth-of-type(1) .tag-desc span"),
+        classLabel: text(".book-kind"),
+        subject: text(".book-name span:nth-of-type(2)"),
+        imagePath: wrap.querySelector(".book-intro-book img")?.src?.split("/").pop() || "",
+        content: text(".hanja-row .hanja-text"),
+        story: text(".tag-row:nth-of-type(1) .tag-desc span"),
         knowledgeBoard: text(".tag-row:nth-of-type(2) .tag-desc span"),
-        thinkTalk:     text(".tag-row:nth-of-type(3) .tag-desc span"),
-        goldenbell:    text(".tag-row:nth-of-type(4) .tag-desc span"),
-        findDiff:      text(".tag-row:nth-of-type(5) .tag-desc span"),
+        thinkTalk: text(".tag-row:nth-of-type(3) .tag-desc span"),
+        goldenbell: text(".tag-row:nth-of-type(4) .tag-desc span"),
+        findDiff: text(".tag-row:nth-of-type(5) .tag-desc span"),
+        part1Tag1: p1[0], part1Tag2: p1[1], part1Tag3: p1[2],
+        part2Tag1: p2[0], part2Tag2: p2[1], part2Tag3: p2[2],
+        part3Tag1: p3[0], part3Tag2: p3[1], part3Tag3: p3[2],
+        part4Tag1: p4[0], part4Tag2: p4[1], part4Tag3: p4[2],
+        part5Tag1: p5[0], part5Tag2: p5[1], part5Tag3: p5[2],
+    };
+}
+
+function collectHanData() {
+    const wrap = document.querySelector(".han-intro-lesson");
+    if (!wrap) return null;
+    const text = (sel) => wrap.querySelector(sel)?.innerText.trim() || "";
+    const p1 = getTagsOrdered(wrap, 1);
+    const p2 = getTagsOrdered(wrap, 2);
+    const p3 = getTagsOrdered(wrap, 3);
+    const p4 = getTagsOrdered(wrap, 4);
+    const p5 = getTagsOrdered(wrap, 5);
+    return {
+        classLabel: text(".book-kind"),
+        subject: text(".book-name span:nth-of-type(2)"),
+        imagePath: wrap.querySelector(".han-intro-book img")?.src?.split("/").pop() || "",
+        newWord: text(".hanja-row:nth-of-type(1) .hanja-text"),
+        story: text(".hanja-row:nth-of-type(2) .hanja-label"),
+        subStory: text(".hanja-row:nth-of-type(2) .hanja-text").replace(/.*\(|\)/g, ""),
+        idiom: text(".hanja-row:nth-of-type(3) .hanja-text").split("(")[0].trim(),
+        subIdiom: text(".hanja-row:nth-of-type(3) .hanja-text").replace(/.*\(|\)/g, ""),
+        hanjaSong: text(".tag-row:nth-of-type(1) .tag-desc span"),
+        workBook: text(".tag-row:nth-of-type(2) .tag-desc span"),
+        storyComment: text(".tag-row:nth-of-type(3) .tag-desc span"),
+        clean: text(".tag-row:nth-of-type(4) .tag-desc span"),
+        insung: text(".tag-row:nth-of-type(5) .tag-desc span"),
+        part1Tag1: p1[0], part1Tag2: p1[1], part1Tag3: p1[2],
+        part2Tag1: p2[0], part2Tag2: p2[1], part2Tag3: p2[2],
+        part3Tag1: p3[0], part3Tag2: p3[1], part3Tag3: p3[2],
+        part4Tag1: p4[0], part4Tag2: p4[1], part4Tag3: p4[2],
+        part5Tag1: p5[0], part5Tag2: p5[1], part5Tag3: p5[2],
     };
 }
 
 function collectLessonData() {
     const type = getLessonType();
     if (!type) return null;
-    return { type, detail: type === "HAN" ? collectHanData() : collectBookData() };
+    return {type, detail: type === "HAN" ? collectHanData() : collectBookData()};
 }
 
 function collectSelectedStudents() {
     return [...document.querySelectorAll(".infant-row-checkbox:checked")].map(cb => ({
-        studentId:   cb.dataset.id,
+        studentId: cb.dataset.id,
         studentName: cb.dataset.name,
-        appToken:    cb.dataset.token || null
+        appToken: cb.dataset.token || null
     }));
 }
 
 async function saveInfantContent(isSend) {
     try {
-        const lesson   = collectLessonData();
+        const lesson = collectLessonData();
         const students = collectSelectedStudents();
-        if (!lesson)              { alert("수업 정보가 없습니다."); return; }
-        if (!students.length)     { alert("학생을 선택하세요."); return; }
+        if (!lesson) {
+            alert("수업 정보가 없습니다.");
+            return;
+        }
+        if (!students.length) {
+            alert("학생을 선택하세요.");
+            return;
+        }
 
-        const saveRes  = await fetch("/class/infant/save", {
+        const saveRes = await fetch("/class/infant/save", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
-                type:         lesson.type,
-                detail:       lesson.detail,
+                type: lesson.type,
+                detail: lesson.detail,
                 students,
-                classKey:     document.querySelector(".class-btn.active")?.dataset.classKey,
-                unitKey:      document.querySelector(".class-btn.active")?.dataset.unitKey,
+                classKey: document.querySelector(".class-btn.active")?.dataset.classKey,
+                unitKey: document.querySelector(".class-btn.active")?.dataset.unitKey,
                 timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
-                yy:           document.querySelector(".hidden-date").value.split("-")[0],
-                mm:           document.querySelector(".hidden-date").value.split("-")[1],
+                yy: document.querySelector(".hidden-date").value.split("-")[0],
+                mm: document.querySelector(".hidden-date").value.split("-")[1],
                 isSend
             })
         });
@@ -541,26 +595,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sendBtn.addEventListener("click", async () => {
         try {
-            const lesson   = collectLessonData();
+            const lesson = collectLessonData();
             const students = collectSelectedStudents();
-            if (!lesson)          { alert("수업 정보가 없습니다."); return; }
-            if (!students.length) { alert("학생을 선택하세요."); return; }
+            if (!lesson) {
+                alert("수업 정보가 없습니다.");
+                return;
+            }
+            if (!students.length) {
+                alert("학생을 선택하세요.");
+                return;
+            }
             if (!confirm(`${students.length}명의 학생에게 알림을 발송하시겠습니까?`)) return;
 
             const sendRequestBody = {
-                students:     selectedStudents.map(s => ({ studentId: s.id, token: s.appToken })),
-                classType:    lesson.type,
+                students: selectedStudents.map(s => ({studentId: s.id, token: s.appToken})),
+                classType: lesson.type,
                 timeTableKey: document.querySelector(".class-btn.active")?.dataset.timeTableKey,
-                title:        "학습 내용",
-                body:         "내용이 입력되었습니다."
+                title: "학습 내용",
+                body: "내용이 입력되었습니다."
             };
 
-            let sendSuccess  = false;
+            let sendSuccess = false;
             const appTargets = sendRequestBody.students.filter(s => s.token);
 
             if (appTargets.length > 0) {
                 try {
-                    const sendRes  = await fetch("/api/push/infant", {
+                    const sendRes = await fetch("/api/push/infant", {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify(sendRequestBody)
@@ -572,7 +632,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            if (!sendSuccess) { alert("알림 전송에 실패했습니다."); return; }
+            if (!sendSuccess) {
+                alert("알림 전송에 실패했습니다.");
+                return;
+            }
 
             const saveSuccess = await saveInfantContent(true);
             if (saveSuccess) {
@@ -603,10 +666,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     saveBtn.addEventListener("click", async () => {
         try {
-            const lesson   = collectLessonData();
+            const lesson = collectLessonData();
             const students = collectSelectedStudents();
-            if (!lesson)          { alert("수업 정보가 없습니다."); return; }
-            if (!students.length) { alert("학생을 선택하세요."); return; }
+            if (!lesson) {
+                alert("수업 정보가 없습니다.");
+                return;
+            }
+            if (!students.length) {
+                alert("학생을 선택하세요.");
+                return;
+            }
             if (!confirm("내용을 저장하시겠습니까?")) return;
 
             const saveSuccess = await saveInfantContent(false);
