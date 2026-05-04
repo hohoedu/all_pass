@@ -483,7 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // ---------------------------------------------------------
         const dataURL = canvas.toDataURL("image/png");
         const blob = await (await fetch(dataURL)).blob();
-
+        console.log("서명 이미지 크기:", (blob.size / 1024).toFixed(2), "KB");
         // ---------------------------------------------------------
         // 3) 서명 업로드
         // ---------------------------------------------------------

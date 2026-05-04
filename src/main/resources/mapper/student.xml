@@ -1631,9 +1631,17 @@
 
     <!-- 삭제 이력 INSERT -->
     <insert id="insertToPendingDel" parameterType="map">
-        INSERT INTO erp_pending_student_del (del_by, del_reason, pending_student_id, name, phone, grade_key, send_key, invite_code, center_code, user_code, sub_hoho, sub_han,
+        INSERT INTO erp_pending_student_del (
+                                             del_by,
+                                             del_reason,
+                                             pending_student_id,
+                                             name,
+                                             phone,
+                                             grade_key,
+                                             send_key, invite_code, center_code, user_code, sub_hoho, sub_han,
                                              sub_book,
-                                             invite_sent_at, status, registered_at, assigned_at, is_deleted, deleted_at, student_id)
+                                             invite_sent_at, status,
+                                             registered_at, assigned_at, is_deleted, deleted_at, student_id)
         SELECT #{userCode},
                '입회취소',
                id,

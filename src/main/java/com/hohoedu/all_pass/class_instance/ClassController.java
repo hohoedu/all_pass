@@ -320,7 +320,7 @@ public class ClassController {
     // 알림발송 이후 출결 업데이트
     @PostMapping("/api/attendance/insert")
     public ResponseEntity<?> updateStudentAttendance(@RequestBody List<ClassReqDTO.updateAttendanceDTO> dtos) {
-        log.info("이거지?");
+
         for (ClassReqDTO.updateAttendanceDTO dto : dtos) {
             classService.updateAttendance(
                     dto.getStudentId(),
@@ -549,7 +549,7 @@ public class ClassController {
 
     @PostMapping("/infant/save")
     public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session) {
-        System.out.println("컨트롤러 여기까지!!!! ==================");
+    
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
@@ -560,7 +560,6 @@ public class ClassController {
 
             String centerCode = user.getCenterCode();
             String userCode = user.getUserCode();
-System.out.println("컨트롤러 여기까지!!!! ==================");
             classService.saveInfantNotice(reqDTO, centerCode, userCode);
 
             return ResponseEntity.ok(ApiUtils.success("success"));
