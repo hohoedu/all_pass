@@ -3,6 +3,8 @@ package com.hohoedu.all_pass.user._dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @Data
 public class UserRespDTO {
 
@@ -35,7 +37,7 @@ public class UserRespDTO {
 
         @Builder
         public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String type,
-                            String centerCode, String centerName, String regionName, Integer roleNum) {
+                String centerCode, String centerName, String regionName, Integer roleNum) {
             this.userCode = userCode;
             this.userId = userId;
             this.userName = userName;
@@ -47,6 +49,26 @@ public class UserRespDTO {
             this.roleNum = roleNum;
         }
 
+    }
+
+    @Data
+    public static class UserListRespDTO {
+        private String userId;
+        private String userName;
+        private String roleKey;
+        private String userPhone;
+        private Boolean useYn;
+        private Boolean isHan;
+        private Boolean isBook;
+        private Timestamp createdAt;
+    }
+
+    @Data
+    public static class MenuListDTO {
+        private String menuId;
+        private String menuName;
+        private String parentId;
+        private String menuType;
     }
 
 }

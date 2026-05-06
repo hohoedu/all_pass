@@ -13,6 +13,8 @@ import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.notice.NoticeService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class ManageViewController {
     private final ClassService classService;
     private final NoticeService noticeService;
     private final ManageService manageService;
+    private final UserService userService;
 
     @GetMapping("/order")
     public String getManageOrderPage(
@@ -68,15 +71,13 @@ public class ManageViewController {
                 userCode,
                 centerCode,
                 year,
-                month
-        );
+                month);
 
         List<ManageRespDTO.SavedOrderListDTO> savedOrderList = manageService.getSavedOrderList(
                 userCode,
                 centerCode,
                 year,
-                month
-        );
+                month);
 
         model.addAttribute("baseOrderList", baseOrderList);
         model.addAttribute("savedOrderList", savedOrderList);
@@ -95,8 +96,8 @@ public class ManageViewController {
 
         String userCode = user.getUserCode();
         String cneterCode = user.getCenterCode();
-        LocalDate now = LocalDate.now();            // 이번 달
-        LocalDate prev = now.minusMonths(1);        // 지난 달
+        LocalDate now = LocalDate.now(); // 이번 달
+        LocalDate prev = now.minusMonths(1); // 지난 달
 
         String startYear = String.valueOf(prev.getYear());
         String startMonth = String.format("%02d", prev.getMonthValue());
@@ -105,12 +106,14 @@ public class ManageViewController {
         String endMonth = String.format("%02d", now.getMonthValue());
 
         List<ClassCode> classCodes = classService.findClassCode();
-        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnitsOverPeriod(cneterCode, startYear, startMonth, endYear, endMonth);
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnitsOverPeriod(cneterCode,
+                startYear, startMonth, endYear, endMonth);
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
         String classCodesJson = mapper.writeValueAsString(classCodes);
 
-        List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(userCode, cneterCode, endYear, endMonth);
+        List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(userCode, cneterCode, endYear,
+                endMonth);
 
         model.addAttribute("reorderList", reorderList);
         model.addAttribute("classCodes", classCodes);
@@ -127,10 +130,8 @@ public class ManageViewController {
             return "redirect:/login";
         }
 
-
         List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeService.findCenterNoticeByCenterCode(user);
         List<NoticeRespDTO.NoticeStudentDTO> studentList = noticeService.findStudentByUserCode(user);
-
 
         model.addAttribute("noticeList", noticeList);
         model.addAttribute("studentList", studentList);
@@ -146,11 +147,19 @@ public class ManageViewController {
     }
 
     @GetMapping("/teacher")
-    public String getManageTeacherPage(HttpSession session) {
+    public String getManageTeacherPage(HttpSession session, Model model) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        List<UserRespDTO.UserListRespDTO> users = userService.findAllBycenterCode(user.getCenterCode());
+        List<UserRespDTO.MenuListDTO> menus = userService.findMenus();
+
+        model.addAttribute("users", users);
+        model.addAttribute("menus", menus);
+
+        log.info("userModel = {}", model);
+        log.info("menuModel = {}", menus);
         return "manage/teacher";
     }
 

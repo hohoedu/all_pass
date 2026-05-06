@@ -1071,8 +1071,8 @@
         UPDATE erp_student_attendance
         SET in_time             = #{inTime},
             out_time            = null,
-            attendance_date     = #{attendanceDate},
-            attendance_key      = CAST(SYSDATETIME() AS DATE),
+            attendance_date     = CAST(SYSDATETIME() AS DATE),
+            attendance_key      = #{attendanceKey},
             check_in_updated_at = SYSDATETIME()
         WHERE student_id = #{studentId}
           AND week = #{week}

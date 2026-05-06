@@ -19,6 +19,7 @@ import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO.MenuListDTO;
 import com.hohoedu.all_pass.user.repository.UserJpaRepository;
 import com.hohoedu.all_pass.user.repository.UserRepository;
 
@@ -39,7 +40,8 @@ public class UserService {
     }
 
     public List<User> findByCenterCode(LoginRespDTO dto) {
-        List<User> user = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType(), dto.getUserCode());
+        List<User> user = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType(),
+                dto.getUserCode());
         return user;
     }
 
@@ -66,20 +68,16 @@ public class UserService {
         }
         if (!"7904".equals(loginDTO.getUserPassword())) {
 
-            String inputHash =
-                    Sha256Util.sha256(
-                            loginDTO.getUserPassword(),
-                            authDTO.getSalt()
-                    );
+            String inputHash = Sha256Util.sha256(
+                    loginDTO.getUserPassword(),
+                    authDTO.getSalt());
 
             if (!MessageDigest.isEqual(
                     inputHash.getBytes(StandardCharsets.UTF_8),
-                    authDTO.getPasswordHash().getBytes(StandardCharsets.UTF_8)
-            )) {
+                    authDTO.getPasswordHash().getBytes(StandardCharsets.UTF_8))) {
                 throw new CustomRestfulException(
                         "아이디 또는 비밀번호를 확인해주세요.",
-                        HttpStatus.FORBIDDEN
-                );
+                        HttpStatus.FORBIDDEN);
             }
         }
 
@@ -87,8 +85,7 @@ public class UserService {
         if (!authDTO.getCenterCode().equals(loginDTO.getCenterCode())) {
             throw new CustomRestfulException(
                     "지점 코드가 일치하지 않습니다.",
-                    HttpStatus.FORBIDDEN
-            );
+                    HttpStatus.FORBIDDEN);
         }
 
         return userRepository.findUserByUserId(authDTO.getUserId());
@@ -119,5 +116,15 @@ public class UserService {
         }
 
         return hexString.toString().toUpperCase();
+    }
+
+    public List<UserRespDTO.UserListRespDTO> findAllBycenterCode(String centerCode) {
+        List<UserRespDTO.UserListRespDTO> users = userRepository.findAllByCenterCode(centerCode);
+        return users;
+    }
+
+    public List<UserRespDTO.MenuListDTO> findMenus() {
+       List<UserRespDTO.MenuListDTO> menus = userRepository.findMenus();
+        return menus;
     }
 }

@@ -53,6 +53,9 @@ public class User {
     @Column(name = "user_phone")
     private String userPhone;
 
+    @Column(name = "use_yn")
+    private Boolean useYn;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_key", referencedColumnName = "role_key", nullable = false)
     private UserRoleCode role;
@@ -66,7 +69,7 @@ public class User {
     private LocalDateTime createdAt;
 
     @Builder
-    public User(String userCode, String userId, String userName, String userPhone, String passwordHash, String salt, String type,
+    public User(String userCode, String userId, String userName, String userPhone, String passwordHash, String salt, String type, Boolean useYn,
                 UserRoleCode role, Center center) {
         this.userCode = userCode;
         this.userId = userId;
@@ -75,6 +78,7 @@ public class User {
         this.userPhone = userPhone;
         this.salt = salt;
         this.type = type;
+        this.useYn = useYn;
         this.role = role;
         this.center = center;
     }

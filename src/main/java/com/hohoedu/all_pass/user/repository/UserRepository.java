@@ -12,28 +12,30 @@ import com.hohoedu.all_pass.user.User;
 @Mapper
 public interface UserRepository {
 
-    public void insert(User user);
+        public void insert(User user);
 
-    public List<User> findUserByCenterCode(
-            @Param("centerCode") String centerCode,
-            @Param("roleNum") Integer roleNum,
-            @Param("type") String type,
-            @Param("userCode") String userCode
-    );
+        public List<User> findUserByCenterCode(
+                        @Param("centerCode") String centerCode,
+                        @Param("roleNum") Integer roleNum,
+                        @Param("type") String type,
+                        @Param("userCode") String userCode);
 
-    List<User> findAllUserCode(
-            @Param("centerCode") String centerCode
-    );
+        List<User> findAllUserCode(
+                        @Param("centerCode") String centerCode);
 
-    UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
+        UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
 
-    UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);
+        UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);
 
-    public Center findCenterByCenterCode(@Param("centerCode") String centerCode);
+        public Center findCenterByCenterCode(@Param("centerCode") String centerCode);
 
-    User findByUserCode(String userCode);
+        User findByUserCode(String userCode);
 
-    String findUserPhoneByUserCode(String userCode);
+        String findUserPhoneByUserCode(String userCode);
 
-    void updatePassword(String userCode, String hashedPassword);
+        void updatePassword(String userCode, String hashedPassword);
+
+        List<UserRespDTO.UserListRespDTO> findAllByCenterCode(String centerCode);
+
+        List<UserRespDTO.MenuListDTO> findMenus();
 }

@@ -93,4 +93,16 @@
         where user_code = #{userCode}
     </update>
 
+    <select id="findAllByCenterCode" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$UserListRespDTO">
+        SELECT user_id, user_name, role_key, user_phone, use_yn, is_han, is_book, created_at
+        FROM erp_user
+        WHERE center_code = #{centerCode}
+    </select>
+
+    <select id = "findMenus" resultType = "com.hohoedu.all_pass.user._dto.UserRespDTO$MenuListDTO">
+        SELECT * 
+        FROM erp_menus
+        order by sort_order
+    </select>
+
 </mapper>
