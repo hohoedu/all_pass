@@ -408,12 +408,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const billingMonth = document.querySelector('.hidden-picker')?.value;
     let baseDate;
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     if (billingMonth) {
         const [yy, mm] = billingMonth.split('-').map(Number);
         baseDate = getCurrentMonth5th(yy, mm);
     } else {
-        const today = new Date();
         baseDate = getCurrentMonth5th(today.getFullYear(), today.getMonth() + 1);
+    }
+
+    if (baseDate < today) {
+        baseDate = new Date(today);
+        baseDate.setDate(today.getDate() + 3);
     }
 
     expireInput.value = formatYYYYMMDD(baseDate);

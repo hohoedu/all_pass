@@ -80,4 +80,25 @@ public class ManageRespDTO {
         private Map<String, String> hohoFeeMap;
     }
 
+    @Data
+    public static class TeacherDetailDTO {
+        private String userId;
+        private String userName;
+        private String roleKey;
+        private boolean isHan;
+        private boolean isBook;
+        private boolean isClinic;
+        private boolean useYn;
+        private List<MenuPermissionDTO> menuPermissions;
+
+        @Data
+        public static class MenuPermissionDTO {
+            private String menuId;
+            private boolean canRead;
+            private boolean canWrite;
+            private boolean canDelete;
+        }
+    }
+
+
 }

@@ -17,293 +17,294 @@
 </head>
 
 <body>
-    <div class="main-container">
-        <div class="main-frame">
-            <!-- left nav bar -->
-            <div id="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
-            <main class="main-info">
-                <div class="student-frame line-second-frame">
-                    <!-- section:left -->
-                    <section class="manager-list">
-                        <div class="manager-list-frame">
-                            <div class="common-title">
-                                <h2>선생님 관리</h2>
+<div class="main-container">
+    <div class="main-frame">
+        <!-- left nav bar -->
+        <div id="sidebar-load" th:replace="~{sidebar :: sidebar}"></div>
+        <main class="main-info">
+            <div class="student-frame line-second-frame">
+                <!-- section:left -->
+                <section class="manager-list">
+                    <div class="manager-list-frame">
+                        <div class="common-title">
+                            <input type="hidden" id="sessionUserCode" th:value="${session.user.userCode}">
+                            <h2>선생님 관리</h2>
+                            <button id="addTeacherBtn" class="common-btn teacher-regist">선생님 신규 등록</button>
+                        </div>
+                        <div class="manager-contents">
+                            <div class="manager-top">
+                                <div class="table-frame manage-tbl-frame mt">
+                                    <table class="basic-table yh">
+                                        <colgroup>
+                                            <col width="10%">
+                                            <col width="15%">
+                                            <col width="15%">
+                                            <col width="20%">
+                                            <col width="20%">
+                                        </colgroup>
+                                        <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th><img th:src="@{/image/sort_checked.svg}" alt=""
+                                                     class="svg-sort">이름
+                                            </th>
+                                            <th>ID</th>
+                                            <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">생성일자
+                                            </th>
+                                            <th>사용여부</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody class="stripe">
+                                        <tr th:each="user, stat : ${users}"
+                                            th:attr="data-user-code=${user.userCode}"
+                                            class="teacher-row"
+                                            style="cursor: pointer;">
+                                            <td th:text="${stat.index + 1}"></td>
+                                            <td class="manage-icon">
+                                                <!-- roleKey가 ADMIN이면 icon-ad, 나머지(TEACHER/clinic)는 icon-op -->
+                                                <img th:src="${user.roleKey == 'ADMIN'} ? @{/image/icon-ad.png} : @{/image/icon-op.png}"
+                                                     alt="">
+                                                <span th:text="${user.userName}"></span>
+                                            </td>
+                                            <td th:text="${user.userId}"></td>
+                                            <td th:text="${#strings.substring(user.createdAt, 0, 10)}"></td>
+                                            <td>
+                                                <div th:class="${user.useYn} ? 'pay-box pay-done' : 'pay-box pay-late'"
+                                                     th:text="${user.useYn} ? '사용' : '미사용'"
+                                                     style="padding: 0px;">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="manager-contents">
-                                <div class="manager-top">
-                                    <div class="table-frame manage-tbl-frame mt">
-                                        <table class="basic-table yh">
-                                            <colgroup>
-                                                <col width="10%">
-                                                <col width="15%">
-                                                <col width="15%">
-                                                <col width="20%">
-                                                <col width="20%">
-                                            </colgroup>
-                                            <thead>
-                                                <tr>
-                                                    <th>No</th>
-                                                    <th><img th:src="@{/image/sort_checked.svg}" alt=""
-                                                            class="svg-sort">이름</th>
-                                                    <th>ID</th>
-                                                    <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">생성일자
-                                                    </th>
-                                                    <th>사용여부</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="stripe">
-                                                <tr th:each="user, stat : ${users}" style="cursor: pointer;">
-                                                    <td th:text="${stat.index + 1}"></td>
-                                                    <td class="manage-icon">
-                                                        <!-- roleKey가 ADMIN이면 icon-ad, 나머지(TEACHER/clinic)는 icon-op -->
-                                                        <img th:src="${user.roleKey == 'ADMIN'} ? @{/image/icon-ad.png} : @{/image/icon-op.png}"
-                                                            alt="">
-                                                        <span th:text="${user.userName}"></span>
-                                                    </td>
-                                                    <td th:text="${user.userId}"></td>
-                                                    <td th:text="${#strings.substring(user.createdAt, 0, 10)}"></td>
-                                                    <td>
-                                                        <div th:class="${user.useYn} ? 'pay-box pay-done' : 'pay-box pay-late'"
-                                                            th:text="${user.useYn} ? '사용' : '미사용'"
-                                                            style="padding: 0px;">
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                            <!--                            <div class="authorization">-->
+                            <!--                                <p class="manage-icon"><img th:src="@{/image/icon-ad.png}"-->
+                            <!--                                                            alt=""><strong>운영자</strong> : 모든 권한이 부여되며계정-->
+                            <!--                                    삭제가 불가능합니다.</p>-->
+                            <!--                                <p class="manage-icon"><img th:src="@{/image/icon-op.png}"-->
+                            <!--                                                            alt=""><strong>관리자</strong> : 아래 등급의 권한 부여가-->
+                            <!--                                    가능합니다.-->
+                            <!--                                </p>-->
+                            <!--                            </div>-->
+                        </div>
+                    </div>
+                </section>
+                <!-- section:gray-line -->
+                <div class="divider"></div>
+                <!-- section:right top -->
+                <section class="manager-info">
+                    <div class="common-title">
+                        <h2>상세 설정</h2>
+                    </div>
+                    <table class="member-info-table">
+                        <colgroup>
+                            <col class="col-label">
+                            <col class="col-content">
+                            <col class="col-label">
+                            <col class="col-content">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td class="cell-label">선생님 구분</td>
+                            <td class="cell-content">
+                                <div class="kind-charge">
+                                    <div class="checkbox-group round mr">
+                                        <input type="checkbox" id="chk-manager" name="manager">관리자
+                                    </div>
+                                    <div class="checkbox-group round mr">
+                                        <input type="checkbox" id="chk-teacher" name="teacher">선생님
                                     </div>
                                 </div>
-                                <div class="authorization">
-                                    <p class="manage-icon"><img th:src="@{/image/icon-ad.png}"
-                                            alt=""><strong>운영자</strong> : 모든 권한이 부여되며계정
-                                        삭제가 불가능합니다.</p>
-                                    <p class="manage-icon"><img th:src="@{/image/icon-op.png}"
-                                            alt=""><strong>관리자</strong> : 아래 등급의 권한 부여가
-                                        가능합니다.
-                                    </p>
+                            </td>
+                            <td class="cell-label cell-label-mid">사용 여부</td>
+                            <td class="cell-content">
+                                <label class="switch">
+                                    <input type="checkbox" id="chk-use-yn">
+                                    <span class="slider"></span>
+                                </label>
+                                <span id="use-yn-label">미사용</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="cell-label">이름</td>
+                            <td class="cell-content" id="display-name"></td>
+                            <td class="cell-label cell-label-mid">아이디</td>
+                            <td class="cell-content" id="display-id"></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-label">비밀번호 변경</td>
+                            <td class="cell-content cell-full" colspan="3">
+                                <div class="password-row">
+                                    <span class="pw-label">비밀번호</span>
+                                    <input id="newPassword" type="password" class="basic-input pw-input">
+                                    <span class="pw-label">비밀번호 확인</span>
+                                    <input id="confirmPassword" type="password" class="basic-input pw-input">
+                                    <button id="changePasswordBtn" class="explore common-btn pw-btn">변경</button>
                                 </div>
-                            </div>
-                        </div>
-                    </section>
-                    <!-- section:gray-line -->
-                    <div class="divider"></div>
-                    <!-- section:right top -->
-                    <section class="manager-info">
-                        <div class="common-title">
-                            <h2>상세 설정</h2>
-                        </div>
-                        <table class="member-status-table pay-edu-table bt">
-                            <colgroup>
-                                <col width="20%">
-                                <col width="80%">
-                            </colgroup>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="cell-label">수업종류</td>
+                            <td class="cell-content cell-full" colspan="3">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" name="classType" id="hanja" checked>
+                                    <label for="hanja" class="class-label">한자수업</label>
+                                    <input type="checkbox" name="classType" id="read">
+                                    <label for="read" class="class-label">독서수업</label>
+                                    <input type="checkbox" name="classType" id="readClinic">
+                                    <label for="readClinic" class="class-label">독서 클리닉</label>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <!-- right bottom -->
+                    <div class="menu-permission-wrap">
+                        <table class="member-switch-table menu-permission-table">
+                            <thead>
+                            <tr>
+                                <th>메뉴명</th>
+                                <th>전체</th>
+                                <th>읽기</th>
+                                <th>쓰기</th>
+                                <th>삭제</th>
+                            </tr>
+                            </thead>
                             <tbody>
-                                <tr>
-                                    <td>청구 종류</td>
-                                    <td>
-                                        <div class="kind-charge">
-                                            <div class="checkbox-group round mr">
-                                                <input type="checkbox" name="manager" checked>관리자
-                                            </div>
-                                            <div class="checkbox-group round mr">
-                                                <input type="checkbox" name="teacher">선생님
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>사용 여부</td>
-                                    <td>
-                                        <label class="switch">
-                                            <input type="checkbox" checked>
-                                            <span class="slider"></span>
-                                        </label>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>이름</td>
-                                    <td>
-                                        김호삼
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>아이디</td>
-                                    <td>
-                                        hoho3
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>비밀번호 변경</td>
-                                    <td>
-                                        <div style="display: flex; white-space: nowrap; align-items: center">
-                                            <span style="flex: 1;">비밀번호</span>
-                                            <input id="newPassword" style="flex:1; margin-left: 5px" type="password"
-                                                class="basic-input">
+                            <tr th:each="menu : ${menus}"
+                                th:classappend="${menu.menuId == menu.parentId} ? 'parent-menu' : 'child-menu'"
+                                th:attr="data-menu-id=${menu.menuId}, data-parent-id=${menu.parentId}">
 
-                                            <span style="flex: 1; margin-left: 5px">비밀번호 확인</span>
-                                            <input id="confirmPassword" style="flex:1;margin-left: 5px" type="password"
-                                                class="basic-input">
-                                            <button id="changePasswordBtn"
-                                                style="flex: 1;margin-left: 5px;justify-content: center"
-                                                class="explore common-btn sl4">변경</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>수업종류</td>
-                                    <td>
-                                        <div class="checkbox-group">
-                                            <input type="checkbox" name="classType" id="hanja" checked>
-                                            <label for="word" style="width: auto; margin-right: 10px;">한자수업</label>
-                                            <input type="checkbox" name="classType" id="read">
-                                            <label for="read" style="width: auto; margin-right: 10px;">독서수업</label>
-                                            <input type="checkbox" name="classType" id="readClinic">
-                                            <label for="readClinic">독·클</label>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <td>
+                                    <span th:if="${menu.menuId == menu.parentId}" class="menu-toggle-icon">▶</span>
+                                    <span class="teacher-name"
+                                          th:classappend="${menu.menuId != menu.parentId} ? 'is-child'"
+                                          th:text="${menu.menuName}"></span>
+                                </td>
+                                <td><label class="switch"><input type="checkbox" class="chk-all"><span class="slider"></span></label></td>
+                                <td><label class="switch"><input type="checkbox" class="chk-read"><span class="slider"></span></label></td>
+                                <td><label class="switch"><input type="checkbox" class="chk-write"><span class="slider"></span></label></td>
+                                <td><label class="switch"><input type="checkbox" class="chk-delete"><span class="slider"></span></label></td>
+                            </tr>
                             </tbody>
                         </table>
-                        <!-- right bottom -->
-                        <div class="menu-permission-wrap">
-                            <table class="member-switch-table menu-permission-table">
-                                <thead>
-                                    <tr>
-                                        <th>메뉴명</th>
-                                        <th>전체</th>
-                                        <th>읽기</th>
-                                        <th>쓰기</th>
-                                        <th>삭제</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="menu : ${menus}">
-                                        <td>
-                                            <div class="teacher-space">
-                                                <!-- 자식 메뉴는 들여쓰기 -->
-                                                <span class="teacher-name"
-                                                    th:style="${menu.menuId == menu.parentId} ? '' : 'padding-left: 15px;'"
-                                                    th:text="${menu.menuName}">
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="teacher-space">
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider"></span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="teacher-space">
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider"></span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="teacher-space">
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider"></span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="teacher-space">
-                                                <label class="switch">
-                                                    <input type="checkbox">
-                                                    <span class="slider"></span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="permission-btn-wrap">
+                            <button id="copyPermissionBtn" class="permission-btn btn-destroy">권한 복사</button>
+                            <button id="savePermissionBtn" class="permission-btn btn-issue">권한 저장</button>
                         </div>
-                    </section>
-                </div>
-            </main>
-        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     </div>
+</div>
 
-    <!-- modal: delete -->
-    <div class="modal delete-modal">
-        <div class="modal-content delete-modal-content">
-            <div class="modal-header line-modal-header">
-                <h2>
-                    항목 삭제
-                </h2>
-                <a href="#" class="btn-close"></a>
-            </div>
-            <hr class="modal-line">
-            </hr>
-            <div class="modal-notice">
-                <p>'운영자'또는 사용여부가 '사용중'인 경우에는<br>
-                    삭제가 불가능합니다.</p>
-            </div>
-            <div class="save-btn-frame">
-                <button type="submit" class="save-btn">저장하기</button>
-            </div>
+<!-- modal: delete -->
+<div class="modal delete-modal">
+    <div class="modal-content delete-modal-content">
+        <div class="modal-header line-modal-header">
+            <h2>
+                항목 삭제
+            </h2>
+            <a href="#" class="btn-close"></a>
+        </div>
+        <hr class="modal-line">
+        </hr>
+        <div class="modal-notice">
+            <p>'운영자'또는 사용여부가 '사용중'인 경우에는<br>
+                삭제가 불가능합니다.</p>
+        </div>
+        <div class="save-btn-frame">
+            <button type="submit" class="save-btn">저장하기</button>
         </div>
     </div>
-    <!-- modal: add -->
-    <!-- <div class="modal manager-modal">
-  <div class="modal-content manager-modal-content">
-    <div class="modal-header line-modal-header">
-      <h2>
-        관리자 추가
-      </h2>
-      <a href="#" class="btn-close"></a>
+</div>
+<!-- modal: add -->
+<div class="modal manager-modal">
+    <div class="modal-content manager-modal-content">
+        <div class="modal-header line-modal-header">
+            <h2>선생님 등록</h2>
+            <a href="#" class="btn-close"></a>
+        </div>
+        <div class="modal-notice">
+            <table class="register-table">
+                <tbody>
+                <tr>
+                    <td class="reg-label">아이디</td>
+                    <td class="reg-content">
+                        <input type="text" id="add-id" class="basic-input" placeholder="아이디를 입력해주세요">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">비밀번호</td>
+                    <td class="reg-content">
+                        <input type="password" id="add-password" class="basic-input" placeholder="비밀번호를 입력해주세요">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">비밀번호 확인</td>
+                    <td class="reg-content">
+                        <input type="password" id="add-password-chk" class="basic-input" placeholder="비밀번호를 다시 입력해주세요">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">이름</td>
+                    <td class="reg-content">
+                        <input type="text" id="add-name" class="basic-input" placeholder="이름을 입력해주세요">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">전화번호</td>
+                    <td class="reg-content">
+                        <input type="text" id="add-phone" class="basic-input" placeholder="전화번호를 입력해주세요">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">구분</td>
+                    <td class="reg-content">
+                        <div class="radio-group" style="justify-content: flex-start">
+                            <input type="radio" name="addRoleKey" id="add-manager" value="ADMIN">
+                            <label for="add-manager">관리자</label>
+                            <input type="radio" name="addRoleKey" id="add-teacher" value="TEACHER" checked>
+                            <label for="add-teacher">선생님</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">사용여부</td>
+                    <td class="reg-content">
+                        <div class="radio-group" style="justify-content: flex-start">
+                            <input type="radio" name="addUseYn" id="add-use-y" value="true" checked>
+                            <label for="add-use-y">사용</label>
+                            <input type="radio" name="addUseYn" id="add-use-n" value="false">
+                            <label for="add-use-n">미사용</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="reg-label">수업종류</td>
+                    <td class="reg-content">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="add-han" checked>
+                            <label for="add-han" class="class-label">한자</label>
+                            <input type="checkbox" id="add-book" checked>
+                            <label for="add-book" class="class-label">독서</label>
+                            <input type="checkbox" id="add-clinic">
+                            <label for="add-clinic" class="class-label">독서 클리닉</label>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="save-btn-frame">
+            <button id="addTeacherSaveBtn" type="button" class="save-btn">저장하기</button>
+        </div>
     </div>
-    <hr class="modal-line"></hr>
-    <div class="modal-notice">
-      <div>
-        <div class="form-row manager-row">
-          <label>구분</label>
-          <div class="radio-group">
-            <input type="radio" name="" id="" checked>
-            <label>관리자</label>
-            <input type="radio" name="" id="">
-            <label>선생님</label>
-          </div>
-        </div>
-        <div class="form-row manager-row">
-          <label>사용여부</label>
-          <div class="radio-group">
-            <input type="radio" name="" id="" checked>
-            <label>사용중</label>
-            <input type="radio" name="" id="">
-            <label>미사용</label>
-          </div>
-        </div>
-        <div class="form-row manager-row">
-          <label for="manager-name2">이름</label>
-          <input type="text" id="manager-name2" name="manangerName" class="basic-input" placeholder="이름을 입력해주세요">
-        </div>
-        <div class="form-row manager-row">
-          <label for="manager-id2">아이디</label>
-          <input type="text" id="manager-id2" name="managerId" class="basic-input" placeholder="아이디를 입력해주세요">
-        </div>
-        <div class="form-row manager-row">
-          <label for="manager-password2">비밀번호</label>
-          <input type="password" id="manager-password2" name="managerPassword" class="basic-input" placeholder="비밀번호를 입력해주세요">
-        </div>
-        <div class="checkbox-group">
-          <input type="checkbox" name="" id="" checked>
-          <label style="width: auto; margin-right: 10px;">한스쿨/북스쿨</label>
-          <input type="checkbox" name="" id="">
-          <label>독·클</label>
-        </div>
-      </div>
-    </div>
-    <div class="save-btn-frame">
-      <button type="submit" class="save-btn">저장하기</button>
-    </div>
-  </div>
-</div> -->
+</div>
 </body>
 
 </html>

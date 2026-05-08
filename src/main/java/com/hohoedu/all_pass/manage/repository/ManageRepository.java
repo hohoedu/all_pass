@@ -84,4 +84,15 @@ public interface ManageRepository {
     List<Map<String, String>> findAllUnitNames();
 
     int cancelReorder(Integer id);
+
+    ManageRespDTO.TeacherDetailDTO findUserByUserCode(String userCode);
+
+    List<ManageRespDTO.TeacherDetailDTO.MenuPermissionDTO> findMenuAuthByUserCode(String userCode);
+
+    List<String> findAllMenuIds();
+
+    void deletePermissionByUserCode(String userCode);
+    void insertPermissions(@Param("userCode") String userCode,
+                           @Param("permissions") List<ManageReqDTO.PermissionReqDTO.MenuPermissionDTO> permissions);
+
 }

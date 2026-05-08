@@ -12,6 +12,7 @@ import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.InviteTracking;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.hohoedu.all_pass.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class ManageService {
     private final ManageRepository manageRepository;
     private final PopbillService popbillService;
     private final ClassService classService;
+    private final UserRepository userRepository;
 
     public List<ManageRespDTO.BasicOrderListDTO> getBasicOrderList(String userCode, String centerCode, String year, String month) {
 
@@ -103,7 +105,7 @@ public class ManageService {
 
     }
 
-    public String getOrderDeadline(String centerCode){
+    public String getOrderDeadline(String centerCode) {
         String result = manageRepository.findOrderDeadline(centerCode);
         return result;
     }
@@ -118,7 +120,6 @@ public class ManageService {
         String centerCode = user.getCenterCode();
 
         for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
-            log.info(req.getReorderType());
             manageRepository.insertReorder(userCode, centerCode, yy, mm, req.getReorderType(), item.getClassKey(), item.getUnitKey(), item.getCount(), item.getReason());
         }
         processAddReorder(req, user);
@@ -129,7 +130,7 @@ public class ManageService {
     private void processAddReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
         try {
 
-            String orderContent = buildOrderContent(req.getItems());
+            String orderContent = buildOrderContent(req.getReorderType(), req.getItems());
 
             popbillService.sendAddReorderAlimtalk(
                     user,
@@ -143,7 +144,7 @@ public class ManageService {
         }
     }
 
-    private String buildOrderContent(List<ManageReqDTO.InsertReorderDTO.ReorderItemDTO> items) {
+    private String buildOrderContent(String reorderType, List<ManageReqDTO.InsertReorderDTO.ReorderItemDTO> items) {
         List<Map<String, String>> classResults = manageRepository.findAllClassNames();
         Map<String, String> classNameMap = classResults.stream()
                 .collect(Collectors.toMap(
@@ -157,9 +158,13 @@ public class ManageService {
                         map -> (String) map.get("unitKey"),
                         map -> (String) map.get("unitName")
                 ));
+        String typeLabel = "ADD".equals(reorderType) ? "추가 주문" : "반품";
 
         // 2. 주문 내용 생성
         StringBuilder content = new StringBuilder();
+
+
+        content.append("(").append(typeLabel).append(")\n");
 
         for (int i = 0; i < items.size(); i++) {
             ManageReqDTO.InsertReorderDTO.ReorderItemDTO item = items.get(i);
@@ -175,7 +180,7 @@ public class ManageService {
                     .append("권");
 
             if (i < items.size() - 1) {
-                content.append(",\n");  // 쉼표 대신 줄바꿈
+                content.append(",\n");
             }
         }
 
@@ -190,8 +195,6 @@ public class ManageService {
         }
         return "9999";
     }
-
-    ;
 
     // 센터별 수업료 조회
     public List<PaymentRespDTO.ClassFeeMapDTO> findClassFeeMapByCenterCode(String centerCode) {
@@ -261,5 +264,30 @@ public class ManageService {
                         PaymentRespDTO.ClassFeeMapDTO::getClassKey,
                         PaymentRespDTO.ClassFeeMapDTO::getFee
                 ));
+    }
+
+    public ManageRespDTO.TeacherDetailDTO findUserByUserCode(String userCode) {
+
+        ManageRespDTO.TeacherDetailDTO detail = manageRepository.findUserByUserCode(userCode);
+
+        detail.setMenuPermissions(manageRepository.findMenuAuthByUserCode(userCode));
+
+        return detail;
+
+    }
+
+    @Transactional
+    public void savePermission(String userCode, ManageReqDTO.PermissionReqDTO permission) {
+
+        manageRepository.deletePermissionByUserCode(userCode);
+
+        if (!permission.getPermissions().isEmpty()) {
+            manageRepository.insertPermissions(userCode, permission.getPermissions());
+        }
+
+    }
+
+    public List<String> getReadableMenus(String userCode) {
+        return userRepository.findReadableMenus(userCode);
     }
 }

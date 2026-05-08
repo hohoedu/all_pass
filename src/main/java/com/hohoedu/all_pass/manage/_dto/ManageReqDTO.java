@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.manage._dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -69,6 +70,20 @@ public class ManageReqDTO {
             private String classKey;
             private String unitKey;
 
+        }
+    }
+
+    @Data
+    public static class PermissionReqDTO {
+        private List<MenuPermissionDTO> permissions;
+
+        @Data
+        @Builder
+        public static class MenuPermissionDTO {
+            private String menuId;
+            private boolean canRead;
+            private boolean canWrite;
+            private boolean canDelete;
         }
     }
 

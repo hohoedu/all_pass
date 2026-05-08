@@ -35,12 +35,12 @@
     <insert id="bulkInsertAbsentForClass">
       <![CDATA[
         UPDATE erp_student_attendance
-        SET attendance_date     = #{attendanceDate},
-            attendance_key      = 'absent'
+        SET attendance_date = #{attendanceDate},
+            attendance_key  = 'absent'
         WHERE week = #{week}
           AND in_time IS NULL
           AND time_table_key = #{timeTableKey}
-
+          AND attendance_key = 'before'
         ]]>
     </insert>
 

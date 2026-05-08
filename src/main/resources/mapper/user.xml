@@ -5,11 +5,30 @@
 <mapper
         namespace="com.hohoedu.all_pass.user.repository.UserRepository">
 
-    <insert id="insert" parameterType="com.hohoedu.all_pass.user.User" useGeneratedKeys="true"
-            keyProperty="userNo" keyColumn="user_no">
-        insert into erp_user(user_id, password, username, user_role_no, center_no, created_at)
-        values (#{userId}, #{password}, #{username}, #{userRole.userRoleNo}, #{centerCode.centerNo}, CURRENT_TIMESTAMP);
+    <insert id="insertUser" parameterType="com.hohoedu.all_pass.user._dto.UserReqDTO$UserInsert">
+        INSERT INTO erp_user (user_code, user_id, user_name, user_phone, password_hash, salt, type, use_yn,
+                              is_han, is_book, is_clinic, role_key, center_code, created_at)
+        VALUES (#{userCode},
+                #{userId},
+                #{userName},
+                #{userPhone},
+                #{passwordHash},
+                #{salt},
+                #{type},
+                #{useYn},
+                #{han},
+                #{book},
+                #{clinic},
+                #{roleKey},
+                #{centerCode},
+                SYSDATETIME())
     </insert>
+
+    <select id="existsByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_user
+        WHERE user_id = #{userId}
+    </select>
 
 
     <select id="findAllCount" resultType="int">
@@ -34,12 +53,20 @@
         WHERE u.user_id = #{userId}
     </select>
 
+    <select id="findReadableMenus" resultType="String">
+        SELECT menu_id
+        FROM erp_menu_auth
+        WHERE user_code = #{userCode}
+          AND can_read = 'Y'
+    </select>
+
     <select id="findByLoginInfo" parameterType="String" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$UserAuthDTO">
         SELECT u.user_code     as userCode,
                u.user_id       as userId,
                u.password_hash as passwordHash,
                u.center_code   as centerCode,
-               u.salt          as salt
+               u.salt          as salt,
+               u.use_yn        as useYn
         FROM ERP_USER u
         WHERE u.user_id = #{userId}
     </select>
@@ -94,13 +121,21 @@
     </update>
 
     <select id="findAllByCenterCode" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$UserListRespDTO">
-        SELECT user_id, user_name, role_key, user_phone, use_yn, is_han, is_book, created_at
+        SELECT user_code,
+               user_id,
+               user_name,
+               role_key,
+               user_phone,
+               use_yn,
+               is_han,
+               is_book,
+               created_at
         FROM erp_user
         WHERE center_code = #{centerCode}
     </select>
 
-    <select id = "findMenus" resultType = "com.hohoedu.all_pass.user._dto.UserRespDTO$MenuListDTO">
-        SELECT * 
+    <select id="findMenus" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$MenuListDTO">
+        SELECT *
         FROM erp_menus
         order by sort_order
     </select>

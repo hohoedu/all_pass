@@ -170,5 +170,41 @@ public class ManageController {
         }
     }
 
+    @GetMapping("/teacher/{userCode}")
+    public ResponseEntity<?> getTeacher(@PathVariable String userCode, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        ManageRespDTO.TeacherDetailDTO response = manageService.findUserByUserCode(userCode);
+        log.info(response.toString());
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/teacher/{userCode}/permission")
+    public ResponseEntity<?> getTeacherPermission(@PathVariable String userCode, @RequestBody ManageReqDTO.PermissionReqDTO dto, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        manageService.savePermission(userCode, dto);
+
+        UserRespDTO.LoginRespDTO sessionUser = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (sessionUser != null && sessionUser.getUserCode().equals(userCode)) {
+            List<String> readableMenus = manageService.getReadableMenus(userCode);
+            session.setAttribute("readableMenus", readableMenus);
+        }
+
+        return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
+    }
+
 
 }

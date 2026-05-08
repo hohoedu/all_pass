@@ -5,6 +5,7 @@ import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -56,7 +57,7 @@ public class UserController {
         try {
             LoginRespDTO dto = userService.login(loginDTO);
             session.setAttribute("user", dto);
-
+            session.setAttribute("readableMenus", dto.getReadableMenus());
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     dto.getUserId(), null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
@@ -64,8 +65,7 @@ public class UserController {
             securityContext.setAuthentication(authentication);
 
             session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
-            log.info(redirectUrl);
-//            paymentService.destroyExpiredBills();
+
             if (redirectUrl != null && !redirectUrl.isEmpty()) {
                 return "redirect:" + redirectUrl;
             }
@@ -78,24 +78,21 @@ public class UserController {
         }
     }
 
-    @ResponseBody
-    @PostMapping("/join")
-    public void joinUser() {
-        User user = User.builder()
-                .userCode("love")
-                .passwordHash("4321")
-                .userName("러브")
-                .role(UserRoleCode.builder().roleKey("ULS001love").build())
-                .center(Center.builder().centerCode("ULS001").build())
-                .build();
-
-        userService.insert(user);
-
+    @PostMapping("/register")
+    public ResponseEntity<?> registerTeacher(@RequestBody UserReqDTO.UserRegisterDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        userService.registerTeacher(dto, user);
+        return ResponseEntity.ok(ApiUtils.success(null));
     }
 
     @GetMapping("/logout")
     public String logout() {
-        session.invalidate(); // 세션 완전 제거
+        session.invalidate();
         return "redirect:/login";
     }
 

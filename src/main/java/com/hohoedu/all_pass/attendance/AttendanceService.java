@@ -127,9 +127,9 @@ public class AttendanceService {
 
         for (ClassRespDTO.FinishClassDTO tt : finished) {
             try {
+                attendanceRepository.updateLatenessForClass(tt.getTimeTableKey(), today);
                 attendanceRepository.bulkInsertAbsentForClass(tt.getTimeTableKey(), today, tt.getWeek());
                 attendanceRepository.bulkInsertRemedialForClass(tt.getTimeTableKey(), today, tt.getWeek(), tt.getYy(), tt.getMm());
-                attendanceRepository.updateLatenessForClass(tt.getTimeTableKey(), today);
 
                 processed++;
                 details.add(ProcessedClassDTO.processedOf(tt));

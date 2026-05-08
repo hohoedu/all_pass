@@ -178,4 +178,42 @@
         where id = #{id}
     </update>
 
+    <select id="findUserByUserCode" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$TeacherDetailDTO">
+        SELECT user_code, user_id, user_name, role_key, is_han, is_book, is_clinic, use_yn
+        FROM erp_user
+        where user_code = #{userCode}
+    </select>
+
+    <select id="findMenuAuthByUserCode" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$TeacherDetailDTO$MenuPermissionDTO">
+        SELECT menu_id,
+               CASE WHEN can_read = 'Y' THEN 1 ELSE 0 END   as canRead,
+               CASE WHEN can_write = 'Y' THEN 1 ELSE 0 END  as canWrite,
+               CASE WHEN can_delete = 'Y' THEN 1 ELSE 0 END as canDelete
+        FROM erp_menu_auth
+        WHERE user_code = #{userCode}
+    </select>
+
+    <select id="findAllMenuIds">
+        SELECT menu_id FROM erp_menus
+    </select>
+
+    <delete id="deletePermissionByUserCode">
+        DELETE FROM erp_menu_auth
+        WHERE user_code = #{userCode}
+    </delete>
+
+    <insert id="insertPermissions">
+        INSERT INTO erp_menu_auth (user_code, menu_id, can_read, can_write, can_delete)
+        VALUES
+        <foreach collection="permissions" item="perm" separator=",">
+            (
+            #{userCode},
+            #{perm.menuId},
+            CASE WHEN #{perm.canRead}   = 1 THEN 'Y' ELSE 'N' END,
+            CASE WHEN #{perm.canWrite}  = 1 THEN 'Y' ELSE 'N' END,
+            CASE WHEN #{perm.canDelete} = 1 THEN 'Y' ELSE 'N' END
+            )
+        </foreach>
+    </insert>
+
 </mapper>

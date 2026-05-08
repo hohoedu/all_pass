@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 public class UserRespDTO {
@@ -11,9 +12,11 @@ public class UserRespDTO {
     @Data
     public static class UserAuthDTO {
         private String userId;
+        private String userCode;
         private String passwordHash;
         private String centerCode;
         private String salt;
+        private Boolean useYn;
 
         @Builder
         public UserAuthDTO(String userId, String passwordHash, String centerCode) {
@@ -34,6 +37,7 @@ public class UserRespDTO {
         private String centerName;
         private String regionName;
         private Integer roleNum;
+        private List<String> readableMenus;
 
         @Builder
         public LoginRespDTO(String userCode, String userId, String userName, String roleKey, String type,
@@ -53,6 +57,7 @@ public class UserRespDTO {
 
     @Data
     public static class UserListRespDTO {
+        private String userCode;
         private String userId;
         private String userName;
         private String roleKey;

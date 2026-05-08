@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.classKey = initActiveClass.dataset.classKey || null;
         state.unitKey = initActiveClass.dataset.unitKey || null;
         state.classType = initActiveClass.dataset.classType || null;
+        toggleCommentBtn();
     }
 
     const initActiveWeek = weekWrap?.querySelector('.week-btn.active');
@@ -142,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.classKey = el?.dataset?.classKey || null;
         state.unitKey = el?.dataset?.unitKey || null;
         state.classType = el?.dataset?.classType || null;
+        toggleCommentBtn();
         loadStudentList();
     };
 
@@ -220,7 +222,7 @@ async function loadOverviewFromState() {
         state.classKey = String(firstClassKey);
         state.unitKey = String(firstUnitKey);
         state.classType = String(firstClassType);
-
+        toggleCommentBtn();
         // 학생 목록 조회 (한 번만 호출)
         await loadStudentList(firstTimeTableKey);
 
@@ -362,53 +364,39 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
 
 // 출석 - 드롭다운과 변경 버튼 추가
         tr.innerHTML += `
-    <td>
-        <div>
-            <!-- 출석 상태 드롭다운 -->
-            <select class="status-badge ${statusClass} stbox" 
-                    data-student-id="${s.studentId}" 
-                     data-attendance-key="${statusClass ?? ''}"
-                    data-original="${attendance}"
-                    style="width: 100%; text-align: center; cursor: pointer;">
-                <option value="present" ${attendance === '출석 완료' ? 'selected' : ''}>출석 완료</option>
-                <option value="late" ${attendance === '지각' ? 'selected' : ''}>지각</option>
-                <option value="absent" ${attendance === '결석' ? 'selected' : ''}>결석</option>
-                <option value="before" ${attendance === '수업 전' ? 'selected' : ''}>수업 전</option>
-            </select>
+        <td>
+            <div>
+                <!-- 출석 상태 드롭다운 -->
+                <select class="status-badge ${statusClass} stbox" 
+                        data-student-id="${s.studentId}" 
+                        data-attendance-key="${statusClass ?? ''}"
+                        data-original="${attendance}"
+                        style="width: 100%; text-align: center; cursor: pointer;">
+                    <option value="present" ${attendance === '출석 완료' ? 'selected' : ''}>출석 완료</option>
+                    <option value="late" ${attendance === '지각' ? 'selected' : ''}>지각</option>
+                    <option value="absent" ${attendance === '결석' ? 'selected' : ''}>결석</option>
+                    <option value="before" ${attendance === '수업 전' ? 'selected' : ''}>수업 전</option>
+                </select>
 
-            <div class="time-boxes">
-                <div class="time-start">
-                    등원
-                    <input type="text" 
-                           class="time_input start-time"
-                           value="${s.inTime ?? ''}"
-                           data-original="${s.inTime ?? ''}"
-                           placeholder="00:00"
-                           inputmode="numeric" 
-                           maxlength="5"/>
+                <div class="time-boxes">
+                    <div class="time-start"> 등원
+                        <input type="text" class="time_input start-time" value="${s.inTime ?? ''}" data-original="${s.inTime ?? ''}" placeholder="00:00" inputmode="numeric" maxlength="5"/>
+                    </div>
+                    <div class="time-end"> 하원
+                        <input type="text" class="time_input end-time" value="${s.outTime ?? ''}" data-original="${s.outTime ?? ''}" placeholder="00:00" inputmode="numeric" maxlength="5"/>
+                    </div>
                 </div>
-                <div class="time-end">
-                    하원
-                    <input type="text" 
-                           class="time_input end-time"
-                           value="${s.outTime ?? ''}"
-                           data-original="${s.outTime ?? ''}"
-                           placeholder="00:00"
-                           inputmode="numeric" 
-                           maxlength="5"/>
-                </div>
-            </div>
             
-            <!-- 변경 버튼 -->
-            <button type="button" 
+                <!-- 변경 버튼 -->
+                <button type="button" 
                     class="btn-update-attendance stbox"
                     data-student-id="${s.studentId}"
                     data-attendance-key="${s.attendanceKey ?? ''}"
                     style="width: 100%; margin-top: 8px; padding: 6px; background: #c8c8c8; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                변경
-            </button>
-        </div>
-    </td>`;
+                    변경
+                </button>
+            </div>
+        </td>`;
 
         // 보강일자
         tr.innerHTML += `
@@ -427,73 +415,76 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
 
         // 특이사항
         tr.innerHTML += `
-<td>
-    <ul class="tag-list">
-        ${tagItems}
-        <li class="remarks">
-            <img src="/image/add.png" alt="">
-        </li>
-    </ul>
-  </td>`;
+        <td>
+            <ul class="tag-list">
+                ${tagItems}
+                <li class="remarks">
+                <img src="/image/add.png" alt="">
+                </li>
+            </ul>
+        </td>`;
 
         // 상담기록
         const counselType = afterClass?.counselType || '';
         const counselContent = afterClass?.counselContent || '';
 
         tr.innerHTML += `
-  <td class="cell-middle">
-    <div class="counsel-box">
-      <div class="counsel-type">
-        <button class="${counselType === '전화' ? 'active' : ''}">전화</button>
-        <button class="${counselType === '문자' ? 'active' : ''}">문자</button>
-        <button class="${counselType === '대면' ? 'active' : ''}">대면</button>
-      </div>
-      <textarea placeholder="내용을 입력해주세요.">${counselContent}</textarea>
-    </div>
-  </td>
+        <td class="cell-middle">
+            <div class="counsel-box">
+                <div class="counsel-type">
+                    <button class="${counselType === '전화' ? 'active' : ''}">전화</button>
+                    <button class="${counselType === '문자' ? 'active' : ''}">문자</button>
+                    <button class="${counselType === '대면' ? 'active' : ''}">대면</button>
+                </div>
+                <textarea placeholder="내용을 입력해주세요.">${counselContent}</textarea>
+            </div>
+        </td>
 `;
 
         // 수업 후 코멘트 (각 학생별 afterClass 데이터 사용)
         const originalContent = afterClass?.content ? afterClass.content.replace(/<br\s*\/?>/gi, "\n") : "";
         tr.innerHTML += `
-            <td>
-                <div class="cell-middle">
-                    <div class="after-comment">
-                        <textarea class="comment-text record-content" 
+        <td>
+            <div class="cell-middle">
+                <div class="after-comment">
+                    <textarea class="comment-text record-content" 
                             placeholder="내용을 입력해주세요."
                             data-original-content="${originalContent.replace(/"/g, '&quot;')}">${originalContent}</textarea>
-                    </div>
                 </div>
-                <input type="hidden" class="record-word" value="${afterClass?.word ?? ''}">
-            </td>`;
+            </div>
+            <input type="hidden" class="record-word" value="${afterClass?.word ?? ''}">
+        </td>`;
 
         const originalReview = afterClass?.review ? afterClass.review.replace(/<br\s*\/?>/gi, "\n") : "";
         tr.innerHTML += `
-            <td>
-                <div class="cell-middle">
-                    <div class="after-comment">
-                        <textarea class="comment-text record-review"
+        <td>
+            <div class="cell-middle">
+                <div class="after-comment">
+                    <textarea class="comment-text record-review"
                             placeholder="선생님의 코멘트를 입력해주세요.">${originalReview}</textarea>
-                    </div>
                 </div>
-            </td>`;
+            </div>
+        </td>`;
 
         // 발송여부
         const beforeSendSrc = s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png';
         const afterSendSrc = s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png';
+
+        const isInfant = String(state.classKey).length === 1;
+
         if (s.appToken == null || s.appToken == '') {
             tr.innerHTML += `
-    <td class="send-ornot">
-      <img src="/image/no-smartphones.png" alt="">
-    </td>`;
+            <td class="send-ornot">
+                <img src="/image/no-smartphones.png" alt="">
+            </td>`;
         } else {
             tr.innerHTML += `
-    <td class="send-ornot">
-      <span>
-        <img src="${beforeSendSrc}" alt="">
-        <img src="${afterSendSrc}" alt="">
-      </span>
-    </td>`;
+            <td class="send-ornot">
+                <span>
+                    <img src="${beforeSendSrc}" alt="">
+                    ${isInfant ? '' : `<img src="${afterSendSrc}" alt="">`}
+                </span>
+            </td>`;
         }
         frag.appendChild(tr);
     });
@@ -910,6 +901,15 @@ async function insertStudentAttendance() {
 
     } catch (err) {
         console.error("출결 insert 에러:", err);
+    }
+}
+
+
+function toggleCommentBtn() {
+    const isInfant = String(state.classKey).length === 1;
+    const commentBtn = document.querySelector('.class-comment');
+    if (commentBtn) {
+        commentBtn.style.display = isInfant ? 'none' : '';
     }
 }
 

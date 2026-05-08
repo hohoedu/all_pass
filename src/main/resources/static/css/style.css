@@ -426,7 +426,7 @@ input[type="text"]:focus {
 }
 
 .checkbox-group2 input[type="checkbox"],
-/* .radio-group input[type="radio"], */
+    /* .radio-group input[type="radio"], */
 .join-group input[type="checkbox"] {
     margin-right: 5px;
 }
@@ -631,7 +631,8 @@ table .checkbox-group {
 .add-payment,
 .notice-regist,
 .notice-update,
-.week-setting {
+.week-setting,
+.teacher-regist{
     background: #009844;
 }
 
@@ -1076,7 +1077,7 @@ table .checkbox-group {
     border-right: 1px dashed #ddd;
 }
 
-.manual-payment-table tr+tr td {
+.manual-payment-table tr + tr td {
     border-top: 1px dashed #bbb;
 }
 
@@ -1153,8 +1154,8 @@ table .checkbox-group {
     color: #65688b;
 }
 
-#login-form>input[type="text"],
-#login-form>input[type="password"] {
+#login-form > input[type="text"],
+#login-form > input[type="password"] {
     width: 100%;
     padding: 15px;
     font-size: 14px;
@@ -1165,11 +1166,11 @@ table .checkbox-group {
     background: #EEF3FF;
 }
 
-#login-form>input[type="text"] {
+#login-form > input[type="text"] {
     margin-bottom: 20px;
 }
 
-#login-form>input[type="text"]:focus,
+#login-form > input[type="text"]:focus,
 input[type="password"]:focus,
 .join-group input[type="text"]:focus {
     outline: none;
@@ -1237,7 +1238,7 @@ input[type="checkbox"]:checked::after {
     background: #fff;
 }
 
-.menu-container>div {
+.menu-container > div {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -1332,7 +1333,7 @@ input[type="checkbox"]:checked::after {
     text-decoration: underline;
 }
 
-.menu-notice>img {
+.menu-notice > img {
     margin-right: 15px;
     width: 30px;
 }
@@ -1399,7 +1400,7 @@ input[type="checkbox"]:checked::after {
     margin: 10px 0px 25px 0px;
 }
 
-.menu-item>button {
+.menu-item > button {
     padding: 10px 30px;
     border-radius: 30px;
     border: none;
@@ -1411,19 +1412,19 @@ input[type="checkbox"]:checked::after {
     font-size: 18px;
 }
 
-.menu-item>button a {
+.menu-item > button a {
     color: #fff;
 }
 
-.menu-item>button:hover {
+.menu-item > button:hover {
     background-color: #084ab8;
 }
 
-.menu-item:nth-child(2)>button:hover {
+.menu-item:nth-child(2) > button:hover {
     background-color: #c03d60;
 }
 
-.menu-item:nth-child(3)>button:hover {
+.menu-item:nth-child(3) > button:hover {
     background-color: #2c813c;
 }
 
@@ -1981,7 +1982,7 @@ textarea {
     align-items: stretch;
 }
 
-.class-status>article:not(.unpaid-card, .status-card) {
+.class-status > article:not(.unpaid-card, .status-card) {
     background: #fff;
 }
 
@@ -2218,7 +2219,7 @@ textarea {
     flex-direction: column;
 }
 
-.status-card>div {
+.status-card > div {
     width: 100%;
 }
 
@@ -2295,7 +2296,8 @@ textarea {
     margin-top: 15px;
 }
 
-.unpaid-tbody {}
+.unpaid-tbody {
+}
 
 .class-tbody,
 .unpaid-tbody {
@@ -2439,7 +2441,7 @@ textarea {
 }
 
 /* ======================= student-main page ======================= */
-.student-frame>section {
+.student-frame > section {
     background: #fff;
     padding: 20px 15px 0 15px;
 }
@@ -2882,10 +2884,10 @@ textarea {
     width: 100%;
     height: 2px;
     background: repeating-linear-gradient(to right,
-            lightgray,
-            lightgray 5px,
-            transparent 5px,
-            transparent 10px);
+    lightgray,
+    lightgray 5px,
+    transparent 5px,
+    transparent 10px);
     margin: 20px 0px;
 }
 
@@ -3344,7 +3346,7 @@ textarea#consult-memo {
     /* display: block; */
 }
 
-.modal>div {
+.modal > div {
     background: #fff;
     border-radius: 5px;
     position: absolute;
@@ -3365,7 +3367,7 @@ textarea#consult-memo {
 
 .manager-modal-content {
     width: 600px;
-    height: 430px;
+
 }
 
 .manager-modal-content .form-row:first-child {
@@ -3377,7 +3379,7 @@ textarea#consult-memo {
     width: 100%;
 }
 
-.manager-modal .modal-notice>div {
+.manager-modal .modal-notice > div {
     width: 70%;
     font-size: 15px;
     margin: 20px 0px;
@@ -3413,7 +3415,6 @@ textarea#consult-memo {
 }
 
 .delete-modal-content,
-.manager-modal-content,
 .time-change-modal-content {
     padding: 15px;
 }
@@ -3432,6 +3433,38 @@ textarea#consult-memo {
     align-items: center;
     flex-direction: column;
     text-align: left;
+}
+
+.register-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1px solid #949cb4;
+    border-bottom: 1px solid #949cb4;
+}
+
+.register-table td {
+    padding: 14px 15px;
+    border-bottom: 1px dashed #d6d6d6;
+    vertical-align: middle;
+}
+
+.register-table .reg-label {
+    background-color: #ececec;
+    color: #686868;
+    font-weight: 500;
+    text-align: center;
+    border-right: 1px solid #949cb4;
+    white-space: nowrap;
+    width: 30%;
+}
+
+.register-table .reg-content {
+    background-color: #f7f7f7;
+    width: 70%;
+}
+
+.register-table .basic-input {
+    width: 100%;
 }
 
 .modal-header h2 {
@@ -3776,12 +3809,87 @@ textarea#consult-memo {
     transition: 0.4s;
 }
 
-input:checked+.slider {
+input:checked + .slider {
     background-color: #4a3ecb;
 }
 
-input:checked+.slider::before {
+input:checked + .slider::before {
     transform: translateX(22px);
+}
+
+.teacher-row.is-selected td {
+    background-color: #e8eaf6;
+    font-weight: 600;
+}
+
+/* 테이블 기본 */
+.member-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border-top: 1px solid #949cb4;
+    border-bottom: 1px solid #949cb4;
+    color: #323232;
+}
+
+/* 공통 셀 */
+.member-info-table th,
+.member-info-table td {
+    padding: 20px 15px;
+    border-bottom: 1px dashed #d6d6d6;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.cell-label-mid {
+    border-left: 1px solid #949cb4;
+}
+
+.member-info-table .cell-label {
+    background-color: #ececec;
+    color: #686868;
+    font-weight: 500;
+    text-align: center;
+    border-right: 1px solid #949cb4;
+    white-space: nowrap;
+}
+
+/* 컨텐츠 셀 (짝수 컬럼 - 2, 4번째) */
+.member-info-table .cell-content {
+    background-color: #ffffff;
+    color: #323232;
+    font-weight: 400;
+}
+
+/* colspan 풀너비 셀 */
+.member-info-table .cell-full {
+    background-color: #ffffff;
+}
+
+/* 비밀번호 행 */
+.member-info-table .password-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.member-info-table .pw-label {
+    color: #686868;
+}
+
+.member-info-table .pw-input {
+    flex: 2;
+}
+
+.member-info-table .pw-btn {
+    justify-content: center;
+}
+
+/* 수업종류 라벨 */
+.member-info-table .class-label {
+    width: auto;
+    margin-right: 10px;
 }
 
 /* right bottom */
@@ -3828,12 +3936,35 @@ input:checked+.slider::before {
     width: 100%;
 }
 
+.menu-permission-table tr.parent-menu {
+    cursor: pointer;
+}
+
+.menu-toggle-icon {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    color: #949cb4;
+}
+
+.menu-permission-table tr.parent-menu.is-open .menu-toggle-icon {
+    transform: rotate(90deg);
+}
+
+.teacher-name.is-child {
+    padding-left: 20px;
+    color: #8f8f8f;
+}
+
+
 .menu-permission-table thead,
 .menu-permission-table tbody tr {
     display: table;
     width: 100%;
     table-layout: fixed;
 }
+
 
 /* 메뉴명 줄바꿈 방지 */
 .menu-permission-table .teacher-name {
@@ -3847,6 +3978,28 @@ input:checked+.slider::before {
 
 .teacher-name {
     font-weight: 500;
+}
+
+.permission-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.permission-btn-wrap .permission-btn {
+    width: 120px;
+    height: 42px;
+    border-radius: 6px;
+}
+
+.menu-permission-table thead th:nth-child(3),
+.menu-permission-table thead th:nth-child(4),
+.menu-permission-table thead th:nth-child(5),
+.menu-permission-table tbody td:nth-child(3),
+.menu-permission-table tbody td:nth-child(4),
+.menu-permission-table tbody td:nth-child(5) {
+    display: none;
 }
 
 /* ======================= student-inout page ======================= */
@@ -4396,11 +4549,11 @@ input:checked+.slider::before {
     max-height: 70vh;
 }
 
-.time-chocie-frame>table {
+.time-chocie-frame > table {
     line-height: 1.6em;
 }
 
-.time-chocie-frame>table td:first-child {
+.time-chocie-frame > table td:first-child {
     font-weight: 600;
 }
 
@@ -4764,7 +4917,7 @@ input[type="time" i] {
 }
 
 /* 선택된 라디오 옆의 라벨 */
-.tab-radio input[type="radio"]:checked+label {
+.tab-radio input[type="radio"]:checked + label {
     background: #4c3fbc;
     color: #fff;
     border-color: transparent;
@@ -4785,11 +4938,11 @@ input[type="time" i] {
     align-items: center;
 }
 
-.time-boxes>div:first-child {
+.time-boxes > div:first-child {
     margin-bottom: 10px;
 }
 
-.time-boxes>div {
+.time-boxes > div {
     border-radius: 5px;
 }
 
@@ -4806,7 +4959,7 @@ input[type="time" i] {
     justify-content: center;
 }
 
-.mini-select>.basic-select {
+.mini-select > .basic-select {
     width: calc(50% - 2.5px);
     /* gap이 5px이니까 절반에서 gap 절반씩 뺌 */
 }
@@ -4971,7 +5124,7 @@ input[type="time" i] {
     grid-template-columns: 1fr 1fr;
 }
 
-.inner-grid>div {
+.inner-grid > div {
     border-bottom: 1px dashed;
     border-color: inherit;
     border-right: 1px dashed;
@@ -4980,25 +5133,25 @@ input[type="time" i] {
     font-size: 13px;
 }
 
-.inner-grid>div:nth-last-child(-n+2) {
+.inner-grid > div:nth-last-child(-n+2) {
     border-bottom: none;
 }
 
-.inner-grid>div:nth-child(2n) {
+.inner-grid > div:nth-child(2n) {
     border-right: none;
 }
 
 /* 마지막 줄은 border 제거 */
-.inner-grid>div.col-span-2 {
+.inner-grid > div.col-span-2 {
     border-bottom: none;
     grid-column: span 2;
 }
 
-.timetable-lookup-box.blue .inner-grid>div {
+.timetable-lookup-box.blue .inner-grid > div {
     border-color: #60c0d4;
 }
 
-.timetable-lookup-box.pink .inner-grid>div {
+.timetable-lookup-box.pink .inner-grid > div {
     border-color: #eb8baf;
 }
 
@@ -5169,7 +5322,7 @@ textarea.record-review {
 /* class-log-left */
 .class-log-left {
     background-color: #f4f3fa;
-    padding: 16px;
+    padding: 14px;
     width: 160px;
     border-radius: 8px;
 }
@@ -7292,7 +7445,7 @@ td.middle {
     color: #949CB4 !important;
 }
 
-.tution-table tr>td[rowspan] {
+.tution-table tr > td[rowspan] {
     background: #F7F7F7 !important;
     font-weight: bold;
 }

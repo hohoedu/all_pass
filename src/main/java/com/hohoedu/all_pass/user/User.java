@@ -56,6 +56,15 @@ public class User {
     @Column(name = "use_yn")
     private Boolean useYn;
 
+    @Column(name = "is_han")
+    private Boolean isHan;
+
+    @Column(name = "is_book")
+    private Boolean isBook;
+
+    @Column(name = "is_clinic")
+    private Boolean isClinic;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_key", referencedColumnName = "role_key", nullable = false)
     private UserRoleCode role;
@@ -70,7 +79,7 @@ public class User {
 
     @Builder
     public User(String userCode, String userId, String userName, String userPhone, String passwordHash, String salt, String type, Boolean useYn,
-                UserRoleCode role, Center center) {
+                Boolean isHan, Boolean isBook, Boolean isClinic, UserRoleCode role, Center center) {
         this.userCode = userCode;
         this.userId = userId;
         this.userName = userName;
@@ -79,6 +88,9 @@ public class User {
         this.salt = salt;
         this.type = type;
         this.useYn = useYn;
+        this.isHan = isHan;
+        this.isBook = isBook;
+        this.isClinic = isClinic;
         this.role = role;
         this.center = center;
     }
