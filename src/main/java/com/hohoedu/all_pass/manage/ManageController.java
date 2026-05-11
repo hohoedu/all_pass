@@ -206,5 +206,13 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success("저장되었습니다."));
     }
 
+    @PostMapping("/teacher/copy-permission")
+    public ResponseEntity<?> copyTeacherPermission(@RequestBody ManageReqDTO.PermissionCopyReqDTO dto) {
+
+        manageService.copyUserPermission(dto.getSourceUserCode(), dto.getTargetUserCode());
+
+        return ResponseEntity.ok(ApiUtils.success(dto));
+    }
+
 
 }

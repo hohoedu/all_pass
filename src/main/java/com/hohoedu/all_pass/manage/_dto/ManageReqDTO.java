@@ -87,4 +87,10 @@ public class ManageReqDTO {
         }
     }
 
+    @Data
+    public static class PermissionCopyReqDTO {
+        private String sourceUserCode;
+        private String targetUserCode;
+    }
+
 }

@@ -58,17 +58,17 @@ public class PaymentService {
     private volatile long currentSecond = Instant.now().getEpochSecond();
 
 
-    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode) {
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode, String roleKey) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
-        return paymentRepository.findPaymentSummary(centerCode, userCode, year, month, year, 1);
+        return paymentRepository.findPaymentSummary(centerCode, userCode,roleKey, year, month, year, 1);
     }
 
     // 기간별 미납 조회
-    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode) {
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode, String roleKey) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
-        return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, year, month);
+        return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, roleKey, year, month);
     }
 
     /**

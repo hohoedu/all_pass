@@ -114,14 +114,13 @@
                                 <div style="display: flex">
                                     <div class="filter-group" data-group="subject">
                                         <span class="filter-label">과목별</span>
-                                        <button class="filter-btn fbl" data-value="한자">한자</button>
-                                        <button class="filter-btn fbl" data-value="독서">독서</button>
+                                        <button class="filter-btn fbl" data-value="1">한자</button>
+                                        <button class="filter-btn fbl" data-value="2">독서</button>
                                     </div>
                                     <div class="filter-group" data-group="class">
                                         <span class="filter-label" style="margin-left: 10px;">수업별</span>
                                         <select id="classSelect" class="filter-select">
                                             <option value="">과목을 선택하세요</option>
-                                            <!-- 모달 열릴 때 옵션이 동적으로 추가됨 -->
                                         </select>
                                     </div>
                                 </div>
@@ -154,7 +153,12 @@
                                         </tr>
                                         </thead>
                                         <tbody id="student-tbody" class="stripe">
-                                        <tr th:each="student : ${studentList}">
+                                        <tr th:each="student : ${studentList}"
+                                            th:attr="data-grade=${student.grade},
+             data-han-class=${student.hanClassName},
+             data-han-class-type=${student.hanClassType},
+             data-book-class=${student.bookClassName},
+             data-book-class-type=${student.bookClassType}">
                                             <td class="checkbox-group">
                                                 <input type="checkbox"
                                                        th:value="${student.studentId}"
@@ -165,12 +169,8 @@
                                             <td th:text="${student.subject}"></td>
                                             <td th:text="${student.grade}"></td>
                                             <td>
-                                                <img th:if="${student.appToken != null}"
-                                                     th:src="@{/image/in_app.png}"
-                                                     style="width: 20px;">
-                                                <img th:if="${student.appToken == null}"
-                                                     th:src="@{/image/no_app.png}"
-                                                     style="width: 20px;">
+                                                <img th:if="${student.appToken != null}" th:src="@{/image/in_app.png}" style="width: 20px;">
+                                                <img th:if="${student.appToken == null}" th:src="@{/image/no_app.png}" style="width: 20px;">
                                             </td>
                                         </tr>
 
@@ -184,7 +184,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="save-btn-frame" style="margin-top: 30px;">
+                <div class="save-btn-frame" style="margin-top: 30px; margin-bottom: 30px">
                     <button class="common-btn regist-btn" id="saveNotice">저장</button>
                 </div>
             </div>

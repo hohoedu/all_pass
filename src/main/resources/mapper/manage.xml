@@ -39,7 +39,7 @@
           AND mm = #{mm}
     </select>
 
-    <select id ="findOrderDetailList">
+    <select id="findOrderDetailList">
         select cc.id, uc.id, cc.class_name as className, o.class_key as classKey, uc.unit_name as unitName, o.unit_key as unitKey, o.total_count as count, 'base' as type
         from erp_order o
             JOIN erp_class_code cc
@@ -179,7 +179,14 @@
     </update>
 
     <select id="findUserByUserCode" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$TeacherDetailDTO">
-        SELECT user_code, user_id, user_name, role_key, is_han, is_book, is_clinic, use_yn
+        SELECT user_code,
+               user_id,
+               user_name,
+               role_key,
+               is_han,
+               is_book,
+               is_clinic,
+               use_yn
         FROM erp_user
         where user_code = #{userCode}
     </select>
@@ -194,11 +201,13 @@
     </select>
 
     <select id="findAllMenuIds">
-        SELECT menu_id FROM erp_menus
+        SELECT menu_id
+        FROM erp_menus
     </select>
 
     <delete id="deletePermissionByUserCode">
-        DELETE FROM erp_menu_auth
+        DELETE
+        FROM erp_menu_auth
         WHERE user_code = #{userCode}
     </delete>
 
@@ -209,11 +218,17 @@
             (
             #{userCode},
             #{perm.menuId},
-            CASE WHEN #{perm.canRead}   = 1 THEN 'Y' ELSE 'N' END,
-            CASE WHEN #{perm.canWrite}  = 1 THEN 'Y' ELSE 'N' END,
+            CASE WHEN #{perm.canRead} = 1 THEN 'Y' ELSE 'N' END,
+            CASE WHEN #{perm.canWrite} = 1 THEN 'Y' ELSE 'N' END,
             CASE WHEN #{perm.canDelete} = 1 THEN 'Y' ELSE 'N' END
             )
         </foreach>
     </insert>
+
+    <update id="copyUserPermission" parameterType="map" statementType="CALLABLE">
+        EXEC dbo.usp_CopyUserPermissions
+        #{sourceUserCode},
+        #{targetUserCode}
+    </update>
 
 </mapper>

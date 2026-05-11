@@ -290,4 +290,8 @@ public class ManageService {
     public List<String> getReadableMenus(String userCode) {
         return userRepository.findReadableMenus(userCode);
     }
+
+    public void copyUserPermission(String sourceUserCode, String targetUserCode) {
+        manageRepository.copyUserPermission(sourceUserCode, targetUserCode);
+    }
 }

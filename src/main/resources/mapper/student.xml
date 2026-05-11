@@ -1534,20 +1534,38 @@
                        THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher)
                    WHEN t.inactive_book_teacher = #{userCode}
                        THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_book_teacher)
-                   END                                                 AS teacherName,
-               COALESCE(t.entry_han_date, t.entry_book_date)           AS joinDate,
-               COALESCE(t.inactive_han_date, t.inactive_book_date)     AS withdrawDate,
+                   END                                                     AS teacherName,
+               CASE
+                   WHEN t.inactive_han_teacher = #{userCode} THEN t.entry_han_date
+                   WHEN t.inactive_book_teacher = #{userCode} THEN t.entry_book_date
+                   END                                                     AS joinDate,
+               CASE
+                   WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_date
+                   WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_date
+                   END                                                     AS withdrawDate,
                DATEDIFF(
-                   MONTH, COALESCE(t.entry_han_date, t.entry_book_date),
-                          COALESCE(t.inactive_han_date, t.inactive_book_date)
+                   MONTH,
+                       CASE
+                           WHEN t.inactive_han_teacher = #{userCode} THEN t.entry_han_date
+                           WHEN t.inactive_book_teacher = #{userCode} THEN t.entry_book_date
+                           END,
+                       CASE
+                           WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_date
+                           WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_date
+                           END
                )                                                       AS attendMonths,
-               COALESCE(t.inactive_han_reason, t.inactive_book_reason) AS reason
+               CASE
+                   WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_reason
+                   WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_reason
+                   END                                                     AS reason
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
-        WHERE (t.inactive_han_teacher = #{userCode} OR t.inactive_book_teacher = #{userCode})
-          AND (SUBSTRING(t.inactive_han_date, 1, 7) = #{ym}
-            OR SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
+        WHERE (
+                  (t.inactive_han_teacher = #{userCode} AND SUBSTRING(t.inactive_han_date, 1, 7) = #{ym})
+                      OR
+                  (t.inactive_book_teacher = #{userCode} AND SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
+                  )
         ORDER BY es.student_name
     </select>
 

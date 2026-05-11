@@ -2,7 +2,10 @@ package com.hohoedu.all_pass._core.utils;
 
 import com.hohoedu.all_pass.popbill.PopbillConfig;
 import com.hohoedu.all_pass.popbill.repository.PopbillRepository;
+import com.popbill.api.BaseService;
+import com.popbill.api.BaseServiceImp;
 import com.popbill.api.KakaoService;
+import com.popbill.api.PopbillException;
 import com.popbill.api.kakao.KakaoServiceImp;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,5 +49,29 @@ public class PopbillServiceFactory {
         kakaoService.setUseLocalTimeYN(useLocalTimeYn);
 
         return kakaoService;
+    }
+
+    public BaseService getBaseService(String centerCode) {
+        PopbillConfig popbillConfig = popbillRepository.findPopbillConfig(centerCode);
+        String secretKey = Aes256Util.decrypt(popbillConfig.getEncryptedKey(), aesKey);
+
+        KakaoServiceImp baseService = new KakaoServiceImp();
+        baseService.setLinkID(popbillConfig.getLinkId());
+        baseService.setSecretKey(secretKey);
+        baseService.setTest(true);
+
+        return baseService;
+    }
+
+    public String getChargeUrl(String centerCode, String userId) throws PopbillException {
+
+        PopbillConfig popbillConfig = popbillRepository.findPopbillConfig(centerCode);
+        String secretKey = Aes256Util.decrypt(popbillConfig.getEncryptedKey(), aesKey);
+        KakaoServiceImp baseService = new KakaoServiceImp();
+        baseService.setLinkID(popbillConfig.getLinkId());
+        baseService.setSecretKey(secretKey);
+        baseService.setTest(true);
+
+        return baseService.getChargeURL(centerCode, userId);
     }
 }

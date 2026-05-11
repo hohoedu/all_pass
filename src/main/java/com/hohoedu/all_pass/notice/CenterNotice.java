@@ -30,8 +30,7 @@ public class CenterNotice {
     @Column(nullable = false)
     private String subTitle;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, name = "content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Column(name = "image")

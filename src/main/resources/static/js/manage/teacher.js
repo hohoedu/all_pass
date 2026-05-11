@@ -343,12 +343,80 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 // ── 권한 복사 ─────────────────────────────────────────────────────────────
+    const copyModal = document.querySelector('.copy-permission-modal');
+    let selectedTargetCode = null;
+
     document.getElementById('copyPermissionBtn').addEventListener('click', () => {
         if (!selectedUserCode) {
             alert('선생님을 선택해주세요.');
             return;
         }
-        alert('권한 복사 기능은 준비 중입니다.');
+
+        selectedTargetCode = null;
+
+        // sourceUser 이름 표시
+        const sourceName = document.getElementById('display-name').textContent;
+        document.getElementById('copySourceName').textContent = sourceName;
+
+        // 선생님 목록 생성 (현재 선택된 유저 제외)
+        const listEl = document.getElementById('copyTargetList');
+        listEl.innerHTML = '';
+
+        document.querySelectorAll('.teacher-row').forEach(row => {
+            const userCode = row.dataset.userCode;
+            if (userCode === selectedUserCode) return;
+
+            const name = row.querySelector('.manage-icon span').textContent.trim();
+
+            const item = document.createElement('div');
+            item.style.cssText = 'padding:10px 14px; cursor:pointer; border-bottom:1px solid #f0f0f0;';
+            item.textContent = name;
+            item.dataset.userCode = userCode;
+
+            item.addEventListener('click', () => {
+                listEl.querySelectorAll('div').forEach(d => d.style.background = '');
+                item.style.background = '#e8f0fe';
+                selectedTargetCode = userCode;
+            });
+
+            listEl.appendChild(item);
+        });
+
+        copyModal.classList.add('is-open');
+    });
+    document.getElementById('copyPermissionCancelBtn').addEventListener('click', () => {
+        copyModal.classList.remove('is-open');  // ← 변경
+    });
+
+// 복사하기
+    document.getElementById('copyPermissionConfirmBtn').addEventListener('click', async () => {
+        if (!selectedTargetCode) {
+            alert('복사할 대상을 선택해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/manage/teacher/copy-permission', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    sourceUserCode: selectedUserCode,
+                    targetUserCode: selectedTargetCode
+                })
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('권한이 복사되었습니다.');
+                copyModal.style.display = 'none';
+                location.reload();
+            } else {
+                alert(result.message || '권한 복사에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('서버 오류가 발생했습니다.');
+        }
     });
 
 // ── 권한 수집 ─────────────────────────────────────────────────────────────

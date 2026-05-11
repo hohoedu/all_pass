@@ -1,76 +1,39 @@
 <div th:fragment="attendance" id="tab4" class="tab">
     <div class="modal-scroll">
         <div class="card-common" style="border: none;">
-            <div class="small-title" style="margin-bottom: 30px;">출결</div>
-            <form action="" class="student-form">
-                <div class="calendar-header" style="display:flex; align-items:center; justify-content:center; gap:20px; margin-bottom:10px;">
-                    <button type="button" id="calendar-prev">&#8249;</button>
-                    <span id="calendar-title" style="font-weight:bold;"></span>
-                    <button type="button" id="calendar-next">&#8250;</button>
-                </div>
-                <div class="calendar-container">
-                    <table class="calendar-table">
-                        <thead>
-                        <tr>
-                            <th>일</th>
-                            <th>월</th>
-                            <th>화</th>
-                            <th>수</th>
-                            <th>목</th>
-                            <th>금</th>
-                            <th>토</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>1</td>
-                            <td>2<br><span class="event green">13:50-16:00</span></td>
-                            <td>3</td>
-                            <td>4</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>6</td>
-                            <td>7</td>
-                            <td>8</td>
-                            <td>9<br><span class="event green">13:47-16:00</span></td>
-                            <td>10</td>
-                            <td>11</td>
-                        </tr>
-                        <tr>
-                            <td>12</td>
-                            <td>13</td>
-                            <td>14</td>
-                            <td>15</td>
-                            <td>16</td>
-                            <td>17</td>
-                            <td>18<br><span class="event orange">16:50-20:00</span></td>
-                        </tr>
-                        <tr>
-                            <td>19</td>
-                            <td>20</td>
-                            <td>21</td>
-                            <td>22</td>
-                            <td>23<br><span class="event green">13:50~</span></td>
-                            <td>24</td>
-                            <td>25</td>
-                        </tr>
-                        <tr>
-                            <td>26</td>
-                            <td>27</td>
-                            <td>28</td>
-                            <td>29</td>
-                            <td>30</td>
-                            <td>31</td>
-                            <td></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </form>
+            <div class="small-title" style="margin-bottom: 20px;">출결</div>
+
+            <!-- 월 네비게이션 -->
+            <div class="att-nav-wrap">
+                <button type="button" id="calendar-prev" class="att-nav-btn">&#8249;</button>
+                <span id="calendar-title" class="att-nav-title"></span>
+                <button type="button" id="calendar-next" class="att-nav-btn">&#8250;</button>
+            </div>
+
+            <!-- 출결 상태 범례 -->
+            <div class="att-legend">
+                <span class="att-badge att-present">출석</span>
+                <span class="att-badge att-late">지각</span>
+                <span class="att-badge att-absent">결석</span>
+            </div>
+
+            <!-- 달력 -->
+            <div class="calendar-container">
+                <table class="calendar-table">
+                    <thead>
+                    <tr>
+                        <th>일</th>
+                        <th>월</th>
+                        <th>화</th>
+                        <th>수</th>
+                        <th>목</th>
+                        <th>금</th>
+                        <th>토</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

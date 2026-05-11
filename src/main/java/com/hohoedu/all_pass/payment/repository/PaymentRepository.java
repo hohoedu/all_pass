@@ -21,6 +21,7 @@ public interface PaymentRepository {
     List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummary(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
+            @Param("roleKey") String roleKey,
             @Param("year") String year,
             @Param("month") String month,
             @Param("startYear") String startYear,
@@ -29,6 +30,7 @@ public interface PaymentRepository {
     List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummaryByPeriod(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
+            @Param("roleKey") String roleKey,
             @Param("year") String year,
             @Param("month") String month);
 

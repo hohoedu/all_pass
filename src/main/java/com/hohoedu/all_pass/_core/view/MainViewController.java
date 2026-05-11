@@ -91,11 +91,11 @@ public class MainViewController {
 
         // 이번달 미납
         List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary =
-                paymentService.getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode());
+                paymentService.getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
 
         // 전체 기간 미납
         List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary =
-                paymentService.getPaymentSummary(user.getCenterCode(), user.getUserCode());
+                paymentService.getPaymentSummary(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
 
         // 이번달 결석/보강 현황
         ClassRespDTO.MainAbsentSummaryDTO absentSummary =

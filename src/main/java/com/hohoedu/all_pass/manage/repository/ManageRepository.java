@@ -92,7 +92,10 @@ public interface ManageRepository {
     List<String> findAllMenuIds();
 
     void deletePermissionByUserCode(String userCode);
+
     void insertPermissions(@Param("userCode") String userCode,
                            @Param("permissions") List<ManageReqDTO.PermissionReqDTO.MenuPermissionDTO> permissions);
 
+    void copyUserPermission(@Param("sourceUserCode") String sourceUserCode,
+                            @Param("targetUserCode") String targetUserCode);
 }

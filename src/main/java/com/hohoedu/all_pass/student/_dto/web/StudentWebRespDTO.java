@@ -113,7 +113,7 @@ public class StudentWebRespDTO {
         private String studentId;
         private String inTime;
         private String outTime;
-        private String attendance;
+        private String attendanceKey;
         private String attendanceDate;
     }
 

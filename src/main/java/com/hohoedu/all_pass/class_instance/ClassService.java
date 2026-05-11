@@ -707,6 +707,7 @@ public class ClassService {
 
         return response;
     }
+
     private boolean isDateMatch(Object dateObj, java.time.LocalDate target) {
         if (dateObj == null || target == null) return false;
         String dateStr = target.toString();
@@ -954,12 +955,17 @@ public class ClassService {
                 && StringUtils.hasText(response.getSTime())) {
             String month = String.valueOf(Integer.parseInt(response.getRemedialDate().substring(5, 7)));
             String day = String.valueOf(Integer.parseInt(response.getRemedialDate().substring(8, 10)));
-            String content = response.getStudentname() + " 학생의 보강 수업이 "
+            String pushContent = response.getStudentname() + " 학생의 보강 수업이 "
                     + month + "월 "
                     + day + "일 "
-                    + response.getSTime() + "에 진행될 예정이에요. \n⏰시간에 맞춰 도착해 주세요.";
+                    + response.getSTime() + "에 진행될 예정이에요.\n⏰시간에 맞춰 도착해 주세요.";
 
-            boolean isSend = fcmService.sendMessage(response.getAppToken(), "보강 안내", content);
+            String content = response.getStudentname() + " 학생의 보강 수업이<br>"
+                    + month + "월 "
+                    + day + "일 "
+                    + response.getSTime() + "에 진행될 예정이에요.<br>⏰시간에 맞춰 도착해 주세요.";
+
+            boolean isSend = fcmService.sendMessage(response.getAppToken(), "보강 안내", pushContent);
 
             if (isSend) {
                 LocalDateTime now = LocalDateTime.now();

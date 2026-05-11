@@ -64,20 +64,19 @@
         SELECT s.student_id   AS studentId,
                s.student_name AS studentName,
                s.app_token    AS appToken,
-               CASE
-                   WHEN ta.assign_han_class IS NULL THEN bc.class_name
-                   WHEN ta.assign_book_class IS NULL THEN hc.class_name
-                   ELSE CONCAT(hc.class_name, ', ', bc.class_name)
-                   END        AS subject,
+               hc.class_name  AS hanClassName,
+               hc.class_type  AS hanClassType,
+               bc.class_name  AS bookClassName,
+               bc.class_type  AS bookClasstype,
                gc.grade_name  AS grade
         FROM erp_student s
                  JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_class_code hc ON ta.assign_han_class = hc.class_key
                  LEFT JOIN erp_class_code bc ON ta.assign_book_class = bc.class_key
                  JOIN erp_grade_code gc ON s.grade_key = gc.grade_key
-        WHERE (ta.assign_han_teacher = #{userCode}
-            OR ta.assign_book_teacher = #{userCode})
-          and s.center_code = #{centerCode}
+        WHERE (ta.assign_han_teacher = #{userCode} OR ta.assign_book_teacher = #{userCode})
+          AND s.center_code = #{centerCode}
+        ORDER BY s.student_name ASC
     </select>
 
     <select id="findCenterNoticeByNoticeId" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$CenterNoticeDetailDTO">

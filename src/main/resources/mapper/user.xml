@@ -77,8 +77,10 @@
                  JOIN erp_user_role_code r ON u.role_key = r.role_key
         where center_code = #{centerCode}
           AND (#{roleNum} = 4
+            OR #{userCode} = 'PUS002jumnea'
             OR (#{roleNum} = 3 AND (#{type} = 'all' OR u.type = #{type}))
-            OR (#{roleNum} = 2 AND u.user_code = #{userCode})
+            OR (#{roleNum} = 2 AND (#{type} = 'all' OR u.type = #{type}))
+            OR (#{roleNum} = 1 AND u.user_code = #{userCode})
             )
     </select>
 

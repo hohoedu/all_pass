@@ -363,7 +363,7 @@ function renderStudentModal(data) {
     let currentAttendanceYear = new Date().getFullYear();
     let currentAttendanceMonth = new Date().getMonth() + 1;
     let currentAttendanceData = data.studentAttendance ?? [];
-
+    console.log("출결 데이터:", currentAttendanceData);
     renderCalendar(currentAttendanceYear, currentAttendanceMonth, currentAttendanceData);
 
     const prevBtn = document.getElementById("calendar-prev");
@@ -455,11 +455,16 @@ function renderStudentModal(data) {
                         const att = attendanceMap[day];
 
                         if (att) {
-                            // 출결 상태에 따른 색상 분기
-                            // attendance 값 예시: "O"(출석), "L"(지각), "A"(결석) 등 — 실제 코드값에 맞게 조정
+                            // attendance_key: 'present'(출석), 'late'(지각), 'absent'(결석)
                             let colorClass = "green";
-                            if (att.attendance === "L") colorClass = "orange";
-                            else if (att.attendance === "A") colorClass = "red";
+                            let statusLabel = "";
+                            if (att.attendanceKey === "late") {
+                                colorClass = "orange";
+                                // statusLabel = " · 지각";
+                            } else if (att.attendanceKey === "absent") {
+                                colorClass = "red";
+                                // statusLabel = " · 결석";
+                            }
 
                             const timeLabel = att.inTime && att.outTime
                                 ? `${att.inTime}~${att.outTime}`
@@ -468,8 +473,10 @@ function renderStudentModal(data) {
                                     : "";
 
                             td.innerHTML = `${day}${timeLabel
-                                ? `<br><span class="event ${colorClass}">${timeLabel}</span>`
-                                : ""}`;
+                                ? `<br><span class="event ${colorClass}">${timeLabel}${statusLabel}</span>`
+                                : att.attendanceKey === "absent"
+                                    ? `<br><span class="event ${colorClass}">결석</span>`
+                                    : ""}`;
                         } else {
                             td.textContent = day;
                         }
@@ -684,7 +691,8 @@ function renderConsult(consultList = []) {
         });
         return;
     }
-    const rows = filtered.map(c => {
+
+    const allRows = filtered.map(c => {
         const dateOnly = c.consultDate?.replace(/(\d{4}년 \d{2}월 \d{2}일).*/, '$1') ?? "";
         return `
         <tr>
@@ -692,9 +700,14 @@ function renderConsult(consultList = []) {
             <td>${c.consultContent}</td>
         </tr>
     `;
-    }).join("");
+    });
 
-    tbodies.forEach(tbody => tbody.innerHTML = rows);
+    tbodies.forEach(tbody => {
+        const isTab1 = tbody.closest("#tab1") !== null;
+        tbody.innerHTML = isTab1
+            ? allRows.slice(0, 3).join("")     // tab1: 최근 3건
+            : allRows.join("");                 // tab5: 전체
+    });
 }
 
 function setCourseState(type, state) {

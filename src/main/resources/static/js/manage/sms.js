@@ -9,6 +9,142 @@ document.addEventListener("DOMContentLoaded", () => {
     let mode = "create";
     let currentNoticeId = null; // 수정할 공지 ID 저장
 
+    // ========== 필터 상태 ==========
+    const activeFilters = {
+        grades: new Set(),   // 다중 선택
+        subject: null,
+        class: null
+    };
+
+    // ========== classSelect 목록 구성 ==========
+    function populateClassSelect(classType = null) {
+        const classSelect = document.getElementById('classSelect');
+        const rows = document.querySelectorAll('#student-tbody tr[data-grade]');
+
+        const classNames = new Set();
+        rows.forEach(row => {
+            const hanType = row.dataset.hanClassType;
+            const bookType = row.dataset.bookClassType;
+            const hanName = row.dataset.hanClass;
+            const bookName = row.dataset.bookClass;
+
+            if (!classType) {
+                if (hanName && hanName !== 'null') classNames.add(hanName);
+                if (bookName && bookName !== 'null') classNames.add(bookName);
+            } else {
+                if (hanType === classType && hanName && hanName !== 'null') classNames.add(hanName);
+                if (bookType === classType && bookName && bookName !== 'null') classNames.add(bookName);
+            }
+        });
+
+        classSelect.innerHTML = '<option value="">전체</option>';
+        classNames.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            classSelect.appendChild(opt);
+        });
+
+        activeFilters.class = null;
+    }
+
+    // ========== 필터 적용 ==========
+    function applyFilters() {
+        const rows = document.querySelectorAll('#student-tbody tr');
+
+        rows.forEach(row => {
+            const rowGrade     = row.getAttribute('data-grade');
+            const rowHanClass  = row.getAttribute('data-han-class');
+            const rowHanType   = row.getAttribute('data-han-class-type');
+            const rowBookClass = row.getAttribute('data-book-class');
+            const rowBookType  = row.getAttribute('data-book-class-type');
+
+            if (!rowGrade) return;
+
+            const gradeMatch   = activeFilters.grades.size === 0 || activeFilters.grades.has(rowGrade);
+            const subjectMatch = !activeFilters.subject
+                || rowHanType === activeFilters.subject
+                || rowBookType === activeFilters.subject;
+            const classMatch   = !activeFilters.class
+                || rowHanClass === activeFilters.class
+                || rowBookClass === activeFilters.class;
+
+            const visible = gradeMatch && subjectMatch && classMatch;
+            row.style.display = visible ? '' : 'none';
+
+            if (!visible) {
+                const cb = row.querySelector('input[type="checkbox"]');
+                if (cb) cb.checked = false;
+            }
+        });
+
+        syncSelectAll();
+    }
+
+    // ========== 전체 선택 체크박스 동기화 ==========
+    function syncSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (!selectAllCheckbox) return;
+
+        const visibleCheckboxes = Array.from(
+            document.querySelectorAll('#student-tbody input[type="checkbox"]:not(:disabled)')
+        ).filter(cb => cb.closest('tr').style.display !== 'none');
+
+        if (visibleCheckboxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            return;
+        }
+
+        selectAllCheckbox.checked = visibleCheckboxes.every(cb => cb.checked);
+    }
+
+    // ========== 학년별 필터 버튼 ==========
+    document.querySelectorAll('.filter-group[data-group="grade"] .filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const value = this.dataset.value;
+
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+                activeFilters.grades.delete(value);
+            } else {
+                this.classList.add('active');
+                activeFilters.grades.add(value);
+            }
+
+            applyFilters();
+        });
+    });
+
+    // ========== 과목별 필터 버튼 (단일 선택) ==========
+    document.querySelectorAll('.filter-group[data-group="subject"] .filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const isActive = this.classList.contains('active');
+
+            document.querySelectorAll('.filter-group[data-group="subject"] .filter-btn')
+                .forEach(b => b.classList.remove('active'));
+
+            if (isActive) {
+                activeFilters.subject = null;
+                populateClassSelect();
+            } else {
+                this.classList.add('active');
+                activeFilters.subject = this.dataset.value; // "1" or "2"
+                populateClassSelect(this.dataset.value);
+            }
+
+            applyFilters();
+        });
+    });
+
+    // ========== 수업별 셀렉트 ==========
+    const classSelect = document.getElementById('classSelect');
+    if (classSelect) {
+        classSelect.addEventListener('change', function () {
+            activeFilters.class = this.value || null;
+            applyFilters();
+        });
+    }
+
     // ========== 함수 정의 먼저 ==========
     function clearForm() {
         currentNoticeId = null; // ID 초기화
@@ -26,6 +162,17 @@ document.addEventListener("DOMContentLoaded", () => {
             selected.dataset.value = "1";
             selected.innerHTML = `<img src="/image/notice01.png" alt=""> 아이콘 1<span class="arrow"><i class="xi-angle-down"></i></span>`;
         }
+
+        // 필터 초기화
+        activeFilters.grade.clear();
+        activeFilters.subject = null;
+        activeFilters.class = null;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#student-tbody tr').forEach(r => r.style.display = '');
+        document.querySelectorAll('#student-tbody input[type="checkbox"]').forEach(cb => cb.checked = false);
+        const selectAllCheckbox = document.getElementById('selectAll');
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        populateClassSelect();
     }
 
     function fillForm(data) {
@@ -204,13 +351,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ========== 체크박스 전체 선택 ==========
     const selectAllCheckbox = document.getElementById('selectAll');
-    const studentCheckboxes = document.querySelectorAll('#student-tbody input[type="checkbox"]:not(:disabled)');
 
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', function () {
-            studentCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
+            const visibleCheckboxes = Array.from(
+                document.querySelectorAll('#student-tbody input[type="checkbox"]:not(:disabled)')
+            ).filter(cb => cb.closest('tr').style.display !== 'none');
+
+            visibleCheckboxes.forEach(cb => cb.checked = this.checked);
         });
     }
 
@@ -218,8 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (studentTbody) {
         studentTbody.addEventListener('change', function (e) {
             if (e.target.type === 'checkbox') {
-                const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
-                if (selectAllCheckbox) selectAllCheckbox.checked = allChecked;
+                syncSelectAll();
             }
         });
     }
@@ -477,5 +624,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
+    // ========== 초기 classSelect 구성 ==========
+    populateClassSelect();
 
 });

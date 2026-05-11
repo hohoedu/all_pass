@@ -26,7 +26,7 @@
                              WHERE (t.yy * 100 + t.mm) BETWEEN (#{startYear} * 100 + #{startMonth})
                                  AND (#{year} * 100 + #{month})
                                AND t.center_code = #{centerCode}
-                               AND t.user_code = #{userCode}
+                               AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
                                AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
                              GROUP BY s.student_id, s.student_name, p.payment_key,
                                       p.yy, p.mm,
@@ -54,7 +54,7 @@
                                WHERE (t.yy * 100 + t.mm) BETWEEN (#{startYear} * 100 + #{startMonth})
                                    AND (#{year} * 100 + #{month})
                                  AND t.center_code = #{centerCode}
-                                 AND t.user_code = #{userCode}),
+                                 AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})),
              unpaidSummary AS (SELECT pb.student_id,
                                       pb.student_name,
                                       pb.payment_key,
@@ -127,7 +127,7 @@
                              WHERE t.yy = #{year}
                                AND t.mm = #{month}
                                AND t.center_code = #{centerCode}
-                               AND t.user_code = #{userCode}
+                               AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
                                AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
                              GROUP BY s.student_id, s.student_name, p.payment_key,
                                       p.yy, p.mm,
@@ -155,8 +155,8 @@
                                WHERE t.yy = #{year}
                                  AND t.mm = #{month}
                                  AND t.center_code = #{centerCode}
-                                 AND t.user_code = #{userCode}),
-             unpaidSummary AS (SELECT pb.student_id,
+                                 AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})),
+            unpaidSummary AS (SELECT pb.student_id,
                                       pb.student_name,
                                       pb.payment_key,
                                       pb.yy,
@@ -1824,7 +1824,11 @@
                           FROM erp_payment p
                           WHERE p.student_id = s.student_id
                             AND p.yy + p.mm = #{ym}
-                            AND p.status = 'approved');
+                            AND p.status = 'approved')
+          AND NOT EXISTS (SELECT 1
+                          FROM erp_payment_manual pm
+                          WHERE pm.student_id = s.student_id
+                            AND pm.yy + pm.mm = '202605');
     </select>
 
     <!-- 형제 ID 조회 -->

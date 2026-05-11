@@ -56,7 +56,18 @@ public class NoticeRespDTO {
         private String studentId;
         private String studentName;
         private String appToken;
-        private String subject;
+        private String hanClassName;
+        private String bookClassName;
+        private String hanClassType;
+        private String bookClassType;
         private String grade;
+
+        public String getSubject() {
+            if (hanClassName != null && bookClassName != null)
+                return hanClassName + ", " + bookClassName;
+            if (hanClassName != null) return hanClassName;
+            if (bookClassName != null) return bookClassName;
+            return "";
+        }
     }
 }

@@ -10,6 +10,8 @@ import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.PendingStudent;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.popbill.api.PopbillException;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -42,15 +45,17 @@ public class PopbillController {
             return ResponseEntity.ok(ApiUtils.success("입력 성공"));
 
         } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
 
         } catch (Exception e) {
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiUtils.error("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiUtils.error("서버 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
-
+    // 팝빌 URL 접근
     @GetMapping("/access-url")
     public ResponseEntity<?> getAccessURL(HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -87,8 +92,7 @@ public class PopbillController {
                     request.getPhone(),
                     user.getRegionName(),
                     user.getCenterName(),
-                    user.getUserCode()
-            );
+                    user.getUserCode());
 
             PendingStudent pendingStudent = PendingStudent.builder()
                     .name(request.getName())
@@ -120,21 +124,19 @@ public class PopbillController {
 
     @PostMapping("/remind/send")
     public ResponseEntity<?> sendRemind(@RequestBody PopbillReqDTO.RemindReqDTO request,
-                                        HttpSession session) {
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        log.info("컨트롤러 오류??");
 
         try {
             int successCount = popbillService.sendRemindTalk(user.getCenterCode(), request);
 
             return ResponseEntity.ok(ApiUtils.success(
-                    String.format("알림톡 발송이 완료되었습니다. (%d건)", successCount)
-            ));
+                    String.format("알림톡 발송이 완료되었습니다. (%d건)", successCount)));
 
         } catch (Exception e) {
             log.error("알림톡 발송 중 오류 발생", e);
@@ -142,4 +144,33 @@ public class PopbillController {
                     .body(ApiUtils.error("알림톡 발송 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
+
+    @GetMapping("/point")
+    public ResponseEntity<?> getPopbillPoint(@RequestParam String param) {
+
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @GetMapping("/charge-url")
+    public ResponseEntity<?> getChargeUrl(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        try {
+            String url = popbillService.getChargeUrl(user.getCenterCode());
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("url", url);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, url)
+                    .build();
+        } catch (PopbillException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
 }
