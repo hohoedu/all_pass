@@ -1459,17 +1459,21 @@
                SUM(CASE WHEN gb = 'inactive' THEN 1 ELSE 0 END) AS withdrawCount,
                SUM(CASE WHEN gb = 'move_in' THEN 1 ELSE 0 END)  AS transferInCount,
                SUM(CASE WHEN gb = 'move_out' THEN 1 ELSE 0 END) AS transferOutCount,
-               0                                                AS graduateCount
+               0                                                 AS graduateCount
         FROM (SELECT 'entry' AS gb
               FROM erp_teacher_assign t
               WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
                  OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+
               UNION ALL
+
               SELECT 'inactive'
               FROM erp_teacher_assign t
-              WHERE (t.inactive_han_teacher = #{userCode} OR t.inactive_book_teacher = #{userCode})
-                AND (SUBSTRING(t.inactive_han_date, 1, 7) = #{ym} OR SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
+              WHERE (t.inactive_han_teacher = #{userCode} AND SUBSTRING(t.inactive_han_date, 1, 7) = #{ym})  -- 수정
+                 OR (t.inactive_book_teacher = #{userCode} AND SUBSTRING(t.inactive_book_date, 1, 7) = #{ym}) -- 수정
+
               UNION ALL
+
               SELECT 'move_in'
               FROM erp_student_transfer_history
               WHERE to_user_code = #{userCode}
