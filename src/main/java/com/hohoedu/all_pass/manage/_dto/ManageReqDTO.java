@@ -55,6 +55,12 @@ public class ManageReqDTO {
     }
 
     @Data
+    public static class OrderListReqDTO {
+        private String yy;
+        private String mm;
+    }
+
+    @Data
     public static class CancelReorderDTO {
         private Integer id;
     }

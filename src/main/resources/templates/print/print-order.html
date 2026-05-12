@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 내역서</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script th:src="@{/js/manage/order.js}" defer></script>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm 10mm;
+            }
+
+            html, body {
+                background: #FFFFFF !important;
+            }
+
+            .report-wrap {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+
+            .report-table thead th {
+                position: static !important;
+            }
+
+            .report-table tfoot {
+                display: table-row-group;
+            }
+
+            .toolbar {
+                display: none !important;
+            }
+        }</style>
+</head>
+
+<body style="background: #f0f0f0">
+
+
+<div class="report-wrap">
+    <div class="toolbar" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="month-title2 month-today">
+            <div style="position: relative;">
+                <div class="day-display">
+                    <input type="month" class="hidden-date hidden-picker" id="print-month-picker"/>
+                    <button type="button" class="icon-btn calendar-open" id="print-calendar-btn">
+                        <img th:src="@{/image/calendar.png}" alt="달력">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <button class="print" onclick="window.print()">인쇄</button>
+    </div>
+    <div class="report-title"
+         id="reportTitle"
+         th:data-center="${centerName}"
+         th:text="${yy} + '년 ' + ${mm} + '월 ' + ${centerName} + ' 주문 내역서 집계'">
+    </div>
+    <div class="report-meta">
+        <span th:text="'출력일시 ' + ${printDate}"></span>
+    </div>
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th style="width:52px">선생님</th>
+            <th style="width:110px">단계</th>
+            <th style="width:68px">교재</th>
+            <th style="width:56px">학생수량</th>
+            <th style="width:56px">선생님수량</th>
+            <th style="width:56px">추가수량</th>
+            <th style="width:48px">합계</th>
+            <th style="width:48px">시간표</th>
+        </tr>
+        </thead>
+
+        <!-- 선생님별 tbody -->
+        <tbody th:each="teacher : ${response}">
+        <tr th:each="row, stat : ${teacher.rows}" class="row-data">
+            <td th:if="${stat.first}"
+                th:rowspan="${#lists.size(teacher.rows)}"
+                class="cell-teacher"
+                th:text="${teacher.userName}"></td>
+            <td class="cell-left" th:text="${row.className}"></td>
+            <td th:text="${row.unitName}"></td>
+            <td th:text="${row.studentCount}"></td>
+            <td th:text="${row.teacherCount}"></td>
+            <td th:text="${row.addCount}"></td>
+            <td class="col-total" th:text="${row.totalCount}"></td>
+            <td class="col-timetable" th:text="${row.timeTable}"></td>
+        </tr>
+        <tr class="row-subtotal">
+            <td colspan="3" class="cell-label"
+                th:text="'　' + ${teacher.userName} + ' 계'"></td>
+            <td th:text="${teacher.sumStudent}"></td>
+            <td th:text="${teacher.sumTeacher}"></td>
+            <td th:text="${teacher.sumAdd}"></td>
+            <td class="col-total" th:text="${teacher.sumTotal}"></td>
+            <td class="col-timetable" th:text="${teacher.sumTimeTable}"></td>
+        </tr>
+        </tbody>
+
+        <tfoot id="tableFoot">
+        <tr class="row-grand-total">
+            <td colspan="3" class="cell-label">총 계</td>
+            <td th:text="${grandStudent}"></td>
+            <td>0</td>
+            <td th:text="${grandAdd}"></td>
+            <td class="col-total" th:text="${grandTotal}"></td>
+            <td class="col-timetable" th:text="${grandTimeTable}"></td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+
+</body>
+</html>

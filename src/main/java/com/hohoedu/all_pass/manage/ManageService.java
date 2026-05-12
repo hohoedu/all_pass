@@ -24,6 +24,7 @@ import org.threeten.bp.format.DateTimeFormatter;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,6 +104,34 @@ public class ManageService {
 
         return reorderListDTO;
 
+    }
+
+    public List<ManageRespDTO.TeacherOrderGroupDTO> getCenterOrderList(String ym, String centerCode) {
+        List<ManageRespDTO.CenterOrderListDTO> flatList = manageRepository.findCenterOrderList(ym, centerCode);
+
+        // userName 기준 그룹핑 (SQL 정렬 순서 유지)
+        Map<String, List<ManageRespDTO.CenterOrderListDTO>> grouped = flatList.stream()
+                .collect(Collectors.groupingBy(
+                        ManageRespDTO.CenterOrderListDTO::getUserName,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        return grouped.entrySet().stream().map(entry -> {
+            ManageRespDTO.TeacherOrderGroupDTO g = new ManageRespDTO.TeacherOrderGroupDTO();
+            g.setUserName(entry.getKey());
+            g.setRows(entry.getValue());
+            g.setSumStudent(entry.getValue().stream().mapToInt(ManageRespDTO.CenterOrderListDTO::getStudentCount).sum());
+            g.setSumTeacher(entry.getValue().stream().mapToInt(ManageRespDTO.CenterOrderListDTO::getTeacherCount).sum());
+            g.setSumAdd    (entry.getValue().stream().mapToInt(ManageRespDTO.CenterOrderListDTO::getAddCount).sum());
+            g.setSumTotal  (entry.getValue().stream().mapToInt(ManageRespDTO.CenterOrderListDTO::getTotalCount).sum());
+            g.setSumTimeTable(entry.getValue().stream().mapToInt(ManageRespDTO.CenterOrderListDTO::getTimeTable).sum());
+            return g;
+        }).collect(Collectors.toList());
+    }
+
+    public List<ManageRespDTO.CenterOrderListDTO> getCenterOrderListFlat(String ym, String centerCode) {
+        return manageRepository.findCenterOrderList(ym, centerCode);
     }
 
     public String getOrderDeadline(String centerCode) {

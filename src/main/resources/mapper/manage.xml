@@ -125,6 +125,56 @@
         </foreach>
     </insert>
 
+
+    <select id="findCenterOrderList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$CenterOrderListDTO">
+        SELECT c.class_name                                           AS className,
+               uc.unit_name                                           AS unitName,
+               COALESCE(o.base_count, 0)                              AS studentCount,
+               0                                                      AS teacherCount,
+               COALESCE(r.reorder_sum, 0)                             AS addCount,
+               COALESCE(o.base_count, 0) + COALESCE(r.reorder_sum, 0) AS totalCount,
+               COALESCE(t.assign_count, 0)                            AS timeTable,
+               u.user_name                                            AS userName
+        FROM (SELECT user_code, class_key, unit_key
+              FROM erp_order
+              WHERE center_code = #{centerCode}
+                AND yy + mm = #{ym}
+              UNION
+              SELECT user_code, class_key, unit_key
+              FROM erp_reorder
+              WHERE center_code = #{centerCode}
+                AND yy + mm = #{ym}
+                AND confirmed = 'checked') base
+                 LEFT JOIN erp_order o
+                           ON o.user_code = base.user_code
+                               AND o.class_key = base.class_key
+                               AND o.unit_key = base.unit_key
+                               AND o.center_code = #{centerCode}
+                               AND o.yy + o.mm = #{ym}
+                 LEFT JOIN (SELECT user_code, class_key, unit_key, SUM(CASE WHEN reorder_type = 'RETURN' THEN -count ELSE count END) AS reorder_sum
+                            FROM erp_reorder
+                            WHERE center_code = #{centerCode}
+                              AND yy + mm = #{ym}
+                              AND confirmed = 'checked'
+                            GROUP BY user_code, class_key, unit_key) r
+                           ON r.user_code = base.user_code
+                               AND r.class_key = base.class_key
+                               AND r.unit_key = base.unit_key
+                 LEFT JOIN (SELECT tt.user_code, tt.class_key, tt.unit_key, COUNT(*) AS assign_count
+                            FROM erp_time_table_assign ta
+                                     JOIN erp_time_table tt ON ta.time_table_key = tt.time_table_key
+                            WHERE tt.center_code = #{centerCode}
+                              AND tt.yy + tt.mm = #{ym}
+                            GROUP BY tt.user_code, tt.class_key, tt.unit_key) t ON t.user_code = base.user_code
+            AND t.class_key = base.class_key
+            AND t.unit_key = base.unit_key
+                 JOIN erp_class_code c ON base.class_key = c.class_key
+                 JOIN erp_unit_code uc ON base.unit_key = uc.unit_key
+                 JOIN erp_user u ON base.user_code = u.user_code
+        ORDER BY u.user_name, c.class_name ASC, uc.id DESC
+
+    </select>
+
     <select id="findClassFeeMapByCenterCode" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$ClassFeeMapDTO">
         SELECT cf.class_key  AS classKey,
                cf.unit_key   AS unitKey,

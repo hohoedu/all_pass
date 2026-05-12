@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.threeten.bp.LocalDate;
+import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 
 import java.util.List;
@@ -86,6 +87,35 @@ public class ManageViewController {
 
         return "manage/order";
     }
+
+    @GetMapping("/order/print")
+    public String getOrderListPage(@RequestParam String yy, @RequestParam String mm, Model model, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        String ym = yy + mm;
+        List<ManageRespDTO.TeacherOrderGroupDTO> response = manageService.getCenterOrderList(ym, user.getCenterCode());
+
+// 총계
+        int grandStudent   = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumStudent).sum();
+        int grandAdd       = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumAdd).sum();
+        int grandTotal     = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumTotal).sum();
+        int grandTimeTable = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumTimeTable).sum();
+
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+        model.addAttribute("centerName", user.getCenterName()); // 센터명
+        model.addAttribute("response", response);
+        model.addAttribute("grandStudent",   grandStudent);
+        model.addAttribute("grandAdd",       grandAdd);
+        model.addAttribute("grandTotal",     grandTotal);
+        model.addAttribute("grandTimeTable", grandTimeTable);
+        model.addAttribute("printDate", LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        return "print/print-order";
+    }
+
 
     @GetMapping("/reorder")
     public String getManageReorderPage(Model model, HttpSession session) throws JsonProcessingException {

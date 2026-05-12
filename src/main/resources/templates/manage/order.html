@@ -101,6 +101,10 @@
                     <!-- 고정 타이틀 -->
                     <div class="common-title">
                         <h2>주문 내역</h2>
+                        <div class="common-btn center-order-list" id="center-order-list"
+                             th:if="${session.user != null and session.user.roleKey == 'ADMIN'}">
+                            주문 내역 조회
+                        </div>
                     </div>
 
                     <!-- 위아래 50/50 래퍼 -->

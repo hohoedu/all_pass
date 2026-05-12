@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    if (document.getElementById('reportTitle')) {
+        initPrintPage();
+        return;
+    }
+    
     function getUrlParam(key) {
         return new URLSearchParams(window.location.search).get(key);
     }
@@ -526,4 +532,156 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
+    /* =============================== *
+ *  주문 내역 조회 (인쇄 페이지)
+ * =============================== */
+    const centerOrderListBtn = document.getElementById('center-order-list');
+
+    if (centerOrderListBtn) {
+        centerOrderListBtn.addEventListener('click', () => {
+            const yy = yearSelect.value;
+            const mm = monthSelect.value;
+
+            if (!yy || !mm) {
+                alert('년월을 선택해주세요.');
+                return;
+            }
+
+            window.open(
+                `/manage/order/print?yy=${yy}&mm=${mm}`,
+                '_blank',
+                'width=900,height=800,scrollbars=yes'
+            );
+        });
+    }
+
+    /* =============================== *
+    *  인쇄 페이지 (print-order.html)
+    * =============================== */
+    function initPrintPage() {
+        const params = new URLSearchParams(window.location.search);
+        const yy = params.get('yy');
+        const mm = params.get('mm');
+
+        // 캘린더 피커 초기화
+        const picker = document.getElementById('print-month-picker');
+        const calBtn = document.getElementById('print-calendar-btn');
+
+        picker.value = `${yy}-${mm}`;
+
+        const now = new Date();
+        picker.max = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        calBtn.addEventListener('click', () => picker.showPicker());
+
+        picker.addEventListener('change', () => {
+            const [year, month] = picker.value.split('-');
+            fetchAndRender(year, month);
+        });
+    }
+
+    function fetchAndRender(yy, mm) {
+        fetch('/manage/order/print/data', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({yy, mm})
+        })
+            .then(res => res.json())
+            .then(data => {
+
+                const table = document.querySelector('.report-table');
+                table.querySelectorAll('tbody').forEach(tb => tb.remove());
+
+                document.getElementById('tableFoot').innerHTML = '';
+
+                const titleEl = document.getElementById('reportTitle');
+                titleEl.textContent = `${yy}년 ${mm}월 ${titleEl.dataset.center} 주문 내역서 집계`;
+
+                // URL 업데이트 (새로고침 없이)
+                const params = new URLSearchParams(window.location.search);
+                params.set('yy', yy);
+                params.set('mm', mm);
+                history.replaceState(null, '', '?' + params.toString());
+
+                renderPrintReport(data.response);
+            })
+            .catch(err => console.error('데이터 로드 실패:', err));
+    }
+
+    function renderPrintReport(list) {
+        if (!list || list.length === 0) return;
+
+        const table = document.querySelector('.report-table');
+        const tfoot = document.getElementById('tableFoot');
+
+        function tdCell(val, cls = '') {
+            const d = val === 0 ? `<span class="zero">0</span>` : val;
+            return `<td class="${cls}">${d}</td>`;
+        }
+
+        // 선생님별 그룹핑
+        const teacherMap = new Map();
+        list.forEach(item => {
+            if (!teacherMap.has(item.userName)) {
+                teacherMap.set(item.userName, []);
+            }
+            teacherMap.get(item.userName).push([
+                item.className,
+                item.unitName,
+                item.studentCount || 0,
+                item.teacherCount || 0,
+                item.addCount || 0,
+                item.totalCount || 0,
+                item.timeTable || 0
+            ]);
+        });
+
+        const total = [0, 0, 0, 0, 0];
+
+        teacherMap.forEach((rows, teacherName) => {
+            const tbody = document.createElement('tbody');
+            table.insertBefore(tbody, tfoot);
+
+            rows.forEach((row, idx) => {
+                const [단계, 교재, 학생, 선생님, 추가, 합계, 시간표] = row;
+                const tr = document.createElement('tr');
+                tr.className = 'row-data';
+                tr.innerHTML = `
+                ${idx === 0 ? `<td class="cell-teacher" rowspan="${rows.length}">${teacherName}</td>` : ''}
+                <td class="cell-left">${단계}</td>
+                <td>${교재}</td>
+                ${tdCell(학생)} ${tdCell(선생님)} ${tdCell(추가)}
+                ${tdCell(합계, 'col-total')}
+                ${tdCell(시간표, 'col-timetable')}
+            `;
+                tbody.appendChild(tr);
+            });
+
+            // 소계
+            const s = i => rows.reduce((a, r) => a + r[i], 0);
+            const sr = document.createElement('tr');
+            sr.className = 'row-subtotal';
+            sr.innerHTML = `
+            <td colspan="3" class="cell-label">&nbsp;&nbsp;${teacherName} 계</td>
+            ${tdCell(s(2))} ${tdCell(s(3))} ${tdCell(s(4))}
+            ${tdCell(s(5), 'col-total')}
+            ${tdCell(s(6), 'col-timetable')}
+        `;
+            tbody.appendChild(sr);
+
+            [2, 3, 4, 5, 6].forEach((col, i) => total[i] += s(col));
+        });
+
+        // 총계 → tfoot
+        const gr = document.createElement('tr');
+        gr.className = 'row-grand-total';
+        gr.innerHTML = `
+        <td colspan="3" class="cell-label">총   계</td>
+        ${tdCell(total[0])} ${tdCell(total[1])} ${tdCell(total[2])}
+        ${tdCell(total[3], 'col-total')}
+        ${tdCell(total[4], 'col-timetable')}
+    `;
+        tfoot.appendChild(gr);
+    }
 });

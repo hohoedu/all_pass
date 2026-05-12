@@ -148,6 +148,26 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
+    @PostMapping("/order/print/data")
+    @ResponseBody
+    public ResponseEntity<?> getOrderPrintData(@RequestBody ManageReqDTO.OrderListReqDTO dto, HttpSession session) {
+        log.info("dto = {}", dto);
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        String ym = dto.getYy() + dto.getMm();
+        List<ManageRespDTO.CenterOrderListDTO> response = manageService.getCenterOrderListFlat(ym, user.getCenterCode());
+        System.out.println("======================================================================================");
+        log.info(response.toString());
+        System.out.println("======================================================================================");
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+
     @PostMapping("/fee/insert")
     public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO, HttpSession session) {
 

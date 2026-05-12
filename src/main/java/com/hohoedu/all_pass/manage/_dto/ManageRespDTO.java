@@ -70,6 +70,29 @@ public class ManageRespDTO {
     }
 
     @Data
+    public static class CenterOrderListDTO {
+        private String className;
+        private String unitName;
+        private int studentCount;
+        private int teacherCount;
+        private int addCount;
+        private int totalCount;
+        private int timeTable;
+        private String userName;
+    }
+
+    @Data
+    public static class TeacherOrderGroupDTO {
+        private String userName;
+        private List<CenterOrderListDTO> rows;
+        private int sumStudent;
+        private int sumTeacher;
+        private int sumAdd;
+        private int sumTotal;
+        private int sumTimeTable;
+    }
+
+    @Data
     @Builder
     public static class TuitionRespDTO {
         private List<ClassCode> hanClasses;

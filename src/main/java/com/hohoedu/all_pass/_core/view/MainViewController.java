@@ -81,29 +81,39 @@ public class MainViewController {
         String year = String.valueOf(LocalDate.now().getYear());
         String month = String.format("%02d", LocalDate.now().getMonthValue());
 
-        // 오늘 수업 목록
+        long t, total = System.currentTimeMillis();
+
+        t = System.currentTimeMillis();
         List<ClassRespDTO.MainClassSummaryDTO> classSummary =
                 classService.getClassSummary(user.getCenterCode(), user.getUserCode());
+        log.info("[PERF] getClassSummary: {}ms", System.currentTimeMillis() - t);
 
-        // 오늘 보강 목록
+        t = System.currentTimeMillis();
         List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary =
                 classService.getRemedialSummary(user.getCenterCode());
+        log.info("[PERF] getRemedialSummary: {}ms", System.currentTimeMillis() - t);
 
-        // 이번달 미납
+        t = System.currentTimeMillis();
         List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary =
                 paymentService.getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
+        log.info("[PERF] getPaymentSummaryByPeriod: {}ms", System.currentTimeMillis() - t);
 
-        // 전체 기간 미납
+        t = System.currentTimeMillis();
         List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary =
                 paymentService.getPaymentSummary(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
+        log.info("[PERF] getPaymentSummary: {}ms", System.currentTimeMillis() - t);
 
-        // 이번달 결석/보강 현황
+        t = System.currentTimeMillis();
         ClassRespDTO.MainAbsentSummaryDTO absentSummary =
                 classService.getAbsentSummary(user.getCenterCode(), user.getUserCode(), year, month);
+        log.info("[PERF] getAbsentSummary: {}ms", System.currentTimeMillis() - t);
 
-        // 학생 현황
+        t = System.currentTimeMillis();
         StudentWebRespDTO.MainStudentStatusDTO studentStatus =
                 studentService.getStudentStatus(user.getCenterCode(), user.getUserCode(), year, month);
+        log.info("[PERF] getStudentStatus: {}ms", System.currentTimeMillis() - t);
+
+        log.info("[PERF] ===== TOTAL: {}ms =====", System.currentTimeMillis() - total);
 
         model.addAttribute("user", user);
         model.addAttribute("classSummary", classSummary);
