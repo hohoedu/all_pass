@@ -3,7 +3,6 @@ package com.hohoedu.all_pass._core.firebase;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class FcmDTO {
@@ -22,15 +21,14 @@ public class FcmDTO {
         private String body;
     }
 
-
     @Data
     public static class MonthlyFcmDTO {
         private List<String> tokens;
         private String title;
         private String body;
-        private List<StudentDTO> students;  // 추가
-        private String yy;                  // 추가
-        private String mm;                  // 추가
+        private List<StudentDTO> students; // 추가
+        private String yy; // 추가
+        private String mm; // 추가
 
         @Data
         public static class StudentDTO {
@@ -39,7 +37,6 @@ public class FcmDTO {
             private String timeTableKey;
         }
     }
-
 
     @Data
     public static class InfantFcmDTO {
@@ -59,5 +56,3 @@ public class FcmDTO {
         }
     }
 }
-
-

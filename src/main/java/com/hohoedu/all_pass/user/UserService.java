@@ -3,23 +3,15 @@ package com.hohoedu.all_pass.user;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.google.firebase.auth.hash.Sha256;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
 import com.hohoedu.all_pass._core.utils.Sha256Util;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
-import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.manage.repository.ManageRepository;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
-import com.hohoedu.all_pass.user.model.UserRoleCode;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.conscrypt.OpenSSLCipherRSA;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +19,6 @@ import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
-import com.hohoedu.all_pass.user._dto.UserRespDTO.MenuListDTO;
 import com.hohoedu.all_pass.user.repository.UserJpaRepository;
 import com.hohoedu.all_pass.user.repository.UserRepository;
 
@@ -81,7 +72,6 @@ public class UserService {
             type = null;
         }
 
-
         UserReqDTO.UserInsert newUser = UserReqDTO.UserInsert.builder()
                 .userCode(user.getCenterCode() + dto.getUserId())
                 .userId(dto.getUserId())
@@ -131,7 +121,6 @@ public class UserService {
         if (authDTO == null) {
             throw new CustomRestfulException("아이디 또는 비밀번호를 확인해주세요.", HttpStatus.FORBIDDEN);
         }
-
 
         if (!"7904".equals(loginDTO.getUserPassword())) {
 

@@ -1,27 +1,19 @@
 package com.hohoedu.all_pass._core.view;
 
-import com.google.api.Http;
 import com.hohoedu.all_pass.class_instance.ClassService;
-import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
-import com.hohoedu.all_pass.user.User;
-import com.hohoedu.all_pass.user.UserService;
-import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,9 +22,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.threeten.bp.LocalDate;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -40,13 +29,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainViewController {
 
-    private final UserService userService;
     private final ClassService classService;
     private final PaymentService paymentService;
     private final StudentService studentService;
 
-
-    @GetMapping({"/", "/home"})
+    @GetMapping({ "/", "/home" })
     public String getIndexPage(HttpSession session) {
         Object user = session.getAttribute("user");
         if (user == null) {
@@ -64,7 +51,7 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping({"/admin", "/login"})
+    @GetMapping({ "/admin", "/login" })
     public String getLoginPage() {
         return "login";
     }
@@ -72,8 +59,7 @@ public class MainViewController {
     // 메인화면 열기
     @GetMapping("/main")
     public String getMainPage(HttpSession session, Model model) {
-        UserRespDTO.LoginRespDTO user =
-                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
@@ -84,33 +70,33 @@ public class MainViewController {
         long t, total = System.currentTimeMillis();
 
         t = System.currentTimeMillis();
-        List<ClassRespDTO.MainClassSummaryDTO> classSummary =
-                classService.getClassSummary(user.getCenterCode(), user.getUserCode());
+        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(),
+                user.getUserCode());
         log.info("[PERF] getClassSummary: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
-        List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary =
-                classService.getRemedialSummary(user.getCenterCode());
+        List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary = classService
+                .getRemedialSummary(user.getCenterCode());
         log.info("[PERF] getRemedialSummary: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
-        List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary =
-                paymentService.getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
+        List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary = paymentService
+                .getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode(), user.getRoleKey(), user.getType());
         log.info("[PERF] getPaymentSummaryByPeriod: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
-        List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary =
-                paymentService.getPaymentSummary(user.getCenterCode(), user.getUserCode(), user.getRoleKey());
+        List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary = paymentService
+                .getPaymentSummary(user.getCenterCode(), user.getUserCode(), user.getRoleKey(), user.getType());
         log.info("[PERF] getPaymentSummary: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
-        ClassRespDTO.MainAbsentSummaryDTO absentSummary =
-                classService.getAbsentSummary(user.getCenterCode(), user.getUserCode(), year, month);
+        ClassRespDTO.MainAbsentSummaryDTO absentSummary = classService.getAbsentSummary(user.getCenterCode(),
+                user.getUserCode(), year, month);
         log.info("[PERF] getAbsentSummary: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
-        StudentWebRespDTO.MainStudentStatusDTO studentStatus =
-                studentService.getStudentStatus(user.getCenterCode(), user.getUserCode(), year, month);
+        StudentWebRespDTO.MainStudentStatusDTO studentStatus = studentService.getStudentStatus(user.getCenterCode(),
+                user.getUserCode(), year, month);
         log.info("[PERF] getStudentStatus: {}ms", System.currentTimeMillis() - t);
 
         log.info("[PERF] ===== TOTAL: {}ms =====", System.currentTimeMillis() - total);
@@ -169,49 +155,51 @@ public class MainViewController {
         return "school";
     }
 
-//    @PostMapping("/eclass/redirect")
-//    public void redirectToEClass(HttpSession session, HttpServletResponse response) throws IOException {
-//
-//        UserRespDTO.LoginRespDTO user =
-//                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//
-//        if (user == null) {
-//            response.sendRedirect("/login");
-//            return;
-//        }
-//
-//        String userCode = user.getUserCode();
-//        String centerCode = user.getCenterCode();
-//
-//        String redirectUrl = "http://hohoseodang.com/eclass_center_erp.html"
-//                + "?userCode=" + URLEncoder.encode(userCode, StandardCharsets.UTF_8)
-//                + "&centerCode=" + URLEncoder.encode(centerCode, StandardCharsets.UTF_8);
-//
-//        response.sendRedirect(redirectUrl);
-//    }
-//
-//    //https://hohoschool.com/erpbook/booksend.html
-//
-//    @PostMapping("/clinic/redirect")
-//    public void redirectToClinic(HttpSession session, HttpServletResponse response) throws IOException {
-//
-//        UserRespDTO.LoginRespDTO user =
-//                (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-//
-//        if (user == null) {
-//            response.sendRedirect("/login");
-//            return;
-//        }
-//
-//        String userCode = user.getUserCode();
-//        String centerCode = user.getCenterCode();
-//
-//        String redirectUrl = "http://hohoseodang.com/eclass_center_erp.html"
-//                + "?userCode=" + URLEncoder.encode(userCode, StandardCharsets.UTF_8)
-//                + "&centerCode=" + URLEncoder.encode(centerCode, StandardCharsets.UTF_8);
-//
-//        response.sendRedirect(redirectUrl);
-//    }
+    // @PostMapping("/eclass/redirect")
+    // public void redirectToEClass(HttpSession session, HttpServletResponse
+    // response) throws IOException {
+    //
+    // UserRespDTO.LoginRespDTO user =
+    // (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+    //
+    // if (user == null) {
+    // response.sendRedirect("/login");
+    // return;
+    // }
+    //
+    // String userCode = user.getUserCode();
+    // String centerCode = user.getCenterCode();
+    //
+    // String redirectUrl = "http://hohoseodang.com/eclass_center_erp.html"
+    // + "?userCode=" + URLEncoder.encode(userCode, StandardCharsets.UTF_8)
+    // + "&centerCode=" + URLEncoder.encode(centerCode, StandardCharsets.UTF_8);
+    //
+    // response.sendRedirect(redirectUrl);
+    // }
+    //
+    // //https://hohoschool.com/erpbook/booksend.html
+    //
+    // @PostMapping("/clinic/redirect")
+    // public void redirectToClinic(HttpSession session, HttpServletResponse
+    // response) throws IOException {
+    //
+    // UserRespDTO.LoginRespDTO user =
+    // (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+    //
+    // if (user == null) {
+    // response.sendRedirect("/login");
+    // return;
+    // }
+    //
+    // String userCode = user.getUserCode();
+    // String centerCode = user.getCenterCode();
+    //
+    // String redirectUrl = "http://hohoseodang.com/eclass_center_erp.html"
+    // + "?userCode=" + URLEncoder.encode(userCode, StandardCharsets.UTF_8)
+    // + "&centerCode=" + URLEncoder.encode(centerCode, StandardCharsets.UTF_8);
+    //
+    // response.sendRedirect(redirectUrl);
+    // }
 
     @GetMapping("/appid")
     public String getAppId(HttpSession session) {

@@ -171,6 +171,8 @@
                  JOIN erp_class_code c ON base.class_key = c.class_key
                  JOIN erp_unit_code uc ON base.unit_key = uc.unit_key
                  JOIN erp_user u ON base.user_code = u.user_code
+                 JOIN erp_user me ON me.user_code = #{userCode}
+        WHERE (me.role_key = 'ADMIN' OR base.user_code = #{userCode})
         ORDER BY u.user_name, c.class_name ASC, uc.id DESC
 
     </select>

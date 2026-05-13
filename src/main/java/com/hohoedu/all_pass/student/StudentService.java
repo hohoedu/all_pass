@@ -30,7 +30,6 @@ import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +37,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import com.hohoedu.all_pass.class_instance.repository.ClassCodeJpaRepository;
 import com.hohoedu.all_pass.family.model.RelationCode;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
@@ -62,7 +60,6 @@ public class StudentService {
     private final GradeJpaRepository gradeJpaRepository;
     private final RelationJpaRepository relationJpaRepository;
     private final UserRepository userRepository;
-    private final ClassCodeJpaRepository classCodeJpaRepository;
     private final SnapshotRepository snapshotRepository;
     private final SnapshotJpaRepository snapshotJpaRepository;
     private final CenterRepository centerRepository;
@@ -77,10 +74,11 @@ public class StudentService {
         return studentRepository.findStudentStatus(centerCode, userCode, year, month);
     }
 
+    public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode,
+            String userCode) {
 
-    public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode, String userCode) {
-
-        List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month, centerCode, userCode);
+        List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month,
+                centerCode, userCode);
 
         return student;
     }
@@ -104,7 +102,8 @@ public class StudentService {
         StudentWebRespDTO.StudentInfoDTO student = studentRepository.findStudentInfoByStudentId(studentId);
         List<GradeCode> grades = gradeJpaRepository.findAll();
         StudentWebRespDTO.StudentPaymentDTO payment = studentRepository.findStudentPaymentByStudentId(studentId);
-        List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentRepository.findStudentAttendanceByStudentId(studentId, year, month);
+        List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentRepository
+                .findStudentAttendanceByStudentId(studentId, year, month);
         List<StudentWebRespDTO.StudentConsultDTO> consult = studentRepository.findStudentConsultByStudentId(studentId);
         List<StudentWebRespDTO.HanClass> hanClasses = studentRepository.findHanClasses(centerCode, studentId);
         List<StudentWebRespDTO.BookClass> bookClasses = studentRepository.findBookClasses(centerCode, studentId);
@@ -140,7 +139,8 @@ public class StudentService {
 
     @Transactional
     public String studentInsert(StudentWebReqDTO.StudentJoinDTO studentDTO, StudentWebReqDTO.ParentJoinDTO parentDTO) {
-        int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(), parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
+        int dupStudent = studentRepository.checkDuplicateStudent(studentDTO.getStudentName(),
+                parentDTO.getParentTelMiddle(), parentDTO.getParentTelLast());
         if (dupStudent > 0) {
             throw new DuplicateStudentException("이미 등록된 학생입니다.");
         }
@@ -148,7 +148,8 @@ public class StudentService {
         String today = DateConfig.currentYearMonth().get("today");
         String random = UUID.randomUUID().toString().replace("-", "");
         String last5 = random.substring(random.length() - 5).toUpperCase();
-        String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd")) + last5;
+        String code = studentDTO.getCenterCode() + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"))
+                + last5;
 
         studentDTO.setStudentId(code);
 
@@ -156,7 +157,8 @@ public class StudentService {
             String formattedBirth = convertBirthToFullDate(studentDTO.getBirth());
             studentDTO.setBirth(formattedBirth);
         }
-        String billingPhone = parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
+        String billingPhone = parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle()
+                + parentDTO.getParentTelLast();
 
         String phoneNumber = parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast();
 
@@ -198,8 +200,7 @@ public class StudentService {
                 studentDTO.getCenterCode(),
                 parentDTO.getParentTelFirst(),
                 parentDTO.getParentTelMiddle(),
-                parentDTO.getParentTelLast()
-        );
+                parentDTO.getParentTelLast());
 
         String inviteCode = studentDTO.getInviteCode();
         if (inviteCode != null && !inviteCode.isEmpty()) {
@@ -210,7 +211,8 @@ public class StudentService {
             PendingStudent newPending = PendingStudent.builder()
                     .studentId(studentDTO.getStudentId())
                     .name(studentDTO.getStudentName())
-                    .phone(parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle() + parentDTO.getParentTelLast())
+                    .phone(parentDTO.getParentTelFirst() + parentDTO.getParentTelMiddle()
+                            + parentDTO.getParentTelLast())
                     .sendKey(KeyGenerator.generateSendKey())
                     .gradeKey(studentDTO.getGradeKey())
                     .userCode(studentDTO.getUserCode())
@@ -241,8 +243,7 @@ public class StudentService {
                         userPhone,
                         invite.getReceiverPhone(),
                         invite.getUserCode(),
-                        studentDTO
-                );
+                        studentDTO);
             }
 
             PendingStudent pending = studentRepository.findPendingStudentBySendKey(invite.getSendKey());
@@ -252,8 +253,7 @@ public class StudentService {
                         invite.getSendKey(),
                         studentDTO.getStudentId(),
                         studentDTO.getStudentName(),
-                        studentDTO.getGradeKey()
-                );
+                        studentDTO.getGradeKey());
             } else {
                 PendingStudent newPending = PendingStudent.builder()
                         .name(studentDTO.getStudentName())
@@ -277,9 +277,9 @@ public class StudentService {
         }
     }
 
-
     private String convertBirthToFullDate(String birth) {
-        if (birth == null || birth.length() != 6) return null;
+        if (birth == null || birth.length() != 6)
+            return null;
 
         String yy = birth.substring(0, 2);
         String mm = birth.substring(2, 4);
@@ -299,7 +299,6 @@ public class StudentService {
         return gradeCodes;
     }
 
-
     public List<RelationCode> findRelation() {
 
         List<RelationCode> relationCodes = relationJpaRepository.findAll();
@@ -314,11 +313,13 @@ public class StudentService {
     }
 
     public List<User> findTeacher(UserRespDTO.LoginRespDTO dto) {
-        List<User> users = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType(), dto.getUserCode());
+        List<User> users = userRepository.findUserByCenterCode(dto.getCenterCode(), dto.getRoleNum(), dto.getType(),
+                dto.getUserCode());
         return users;
     }
 
-    public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO, String userCode) {
+    public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO,
+            String userCode) {
         String today = DateConfig.currentYearMonth().get("today");
         historyDTO.setUserCode(userCode);
         if (historyDTO.getStatusKey().equals("ACTIVE")) {
@@ -333,7 +334,6 @@ public class StudentService {
             System.out.println("업데이트 성공");
         }
 
-
         int insertResult = studentRepository.statusHistoryInsert(historyDTO);
         if (insertResult == 0) {
             System.out.println("인서트 실패");
@@ -345,7 +345,6 @@ public class StudentService {
 
         return respDTO;
     }
-
 
     @Transactional
     public int updateStudentInfo(StudentWebReqDTO.StudentUpdateDTO req) {
@@ -366,9 +365,7 @@ public class StudentService {
 
         req.setAppId(appId);
 
-
         studentRepository.updateStudentInfo(req);
-
 
         studentRepository.updateParent(first, middle, last, req.getRelationKey(), req.getStudentId());
 
@@ -376,7 +373,6 @@ public class StudentService {
 
         return 1;
     }
-
 
     @Transactional
     public int updatePaymentInfo(StudentWebReqDTO.StudentPaymentUpdateDTO dto) {
@@ -387,36 +383,34 @@ public class StudentService {
         if (dto.getHanMaterialFee() != null) {
             paymentRepository.updatePaymentDetailBookFee(
                     dto.getStudentId(),
-                    "1",  // 한자
+                    "1", // 한자
                     dto.getHanMaterialFee(),
-                    dto.getPaymentKey()
-            );
+                    dto.getPaymentKey());
         }
 
         // 3. payment_detail BOOK_FEE 수정 - 독서
         if (dto.getBookMaterialFee() != null) {
             paymentRepository.updatePaymentDetailBookFee(
                     dto.getStudentId(),
-                    "2",  // 독서
+                    "2", // 독서
                     dto.getBookMaterialFee(),
-                    dto.getPaymentKey()
-            );
+                    dto.getPaymentKey());
         }
         return 1;
     }
 
-
     @Transactional
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
-        StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository.findTeacherAssignByStudentId(request.getStudentId());
+        StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository
+                .findTeacherAssignByStudentId(request.getStudentId());
         log.info(teacherDTO.toString());
         if (teacherDTO == null) {
             throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
 
         // 로그용 스냅샷 조회 (변경 전 상태 저장용)
-        StudentWebRespDTO.StudentSnapshotDTO snapshot =
-                studentRepository.findSnapshotByStudentId(request.getStudentId());
+        StudentWebRespDTO.StudentSnapshotDTO snapshot = studentRepository
+                .findSnapshotByStudentId(request.getStudentId());
 
         String hanTeacher = request.getHanTeacherCode() != null
                 ? request.getHanTeacherCode()
@@ -432,8 +426,7 @@ public class StudentService {
                 studentRepository.updateHanToActive(
                         request.getStudentId(),
                         request.getEntryHanDate(),
-                        hanTeacher
-                );
+                        hanTeacher);
             } else {
                 // 미수강 전환 시 로그 저장
                 studentRepository.insertWithdrawLog(
@@ -442,14 +435,12 @@ public class StudentService {
                         snapshot,
                         request.getInactiveHanReason(),
                         request.getInactiveHanDate(),
-                        userCode
-                );
+                        userCode);
                 studentRepository.updateHanToInactive(
                         request.getStudentId(),
                         request.getInactiveHanDate(),
                         request.getInactiveHanReason(),
-                        teacherDTO.getAssignHanTeacher()
-                );
+                        teacherDTO.getAssignHanTeacher());
             }
         }
 
@@ -459,8 +450,7 @@ public class StudentService {
                 studentRepository.updateBookToActive(
                         request.getStudentId(),
                         request.getEntryBookDate(),
-                        bookTeacher
-                );
+                        bookTeacher);
             } else {
                 // 미수강 전환 시 로그 저장
                 studentRepository.insertWithdrawLog(
@@ -469,14 +459,12 @@ public class StudentService {
                         snapshot,
                         request.getInactiveBookReason(),
                         request.getInactiveBookDate(),
-                        userCode
-                );
+                        userCode);
                 studentRepository.updateBookToInactive(
                         request.getStudentId(),
                         request.getInactiveBookDate(),
                         request.getInactiveBookReason(),
-                        teacherDTO.getAssignBookTeacher()
-                );
+                        teacherDTO.getAssignBookTeacher());
             }
         }
 
@@ -485,8 +473,7 @@ public class StudentService {
             studentRepository.updateHanClassAndTeacher(
                     request.getStudentId(),
                     request.getHanClassKey(),
-                    request.getHanTeacherCode()
-            );
+                    request.getHanTeacherCode());
         }
 
         if (request.getBookState() == 1
@@ -494,8 +481,7 @@ public class StudentService {
             studentRepository.updateBookClassAndTeacher(
                     request.getStudentId(),
                     request.getBookClassKey(),
-                    request.getBookTeacherCode()
-            );
+                    request.getBookTeacherCode());
         }
 
         if (request.getHanState() == 1 || request.getBookState() == 1) {
@@ -508,10 +494,8 @@ public class StudentService {
     public void restoreStudent(String studentId, String userCode) {
 
         // 한자/독서 탈퇴 로그 각각 조회
-        StudentWebRespDTO.WithdrawLogDTO hanLog =
-                studentRepository.findLatestWithdrawLog(studentId, "han");
-        StudentWebRespDTO.WithdrawLogDTO bookLog =
-                studentRepository.findLatestWithdrawLog(studentId, "book");
+        StudentWebRespDTO.WithdrawLogDTO hanLog = studentRepository.findLatestWithdrawLog(studentId, "han");
+        StudentWebRespDTO.WithdrawLogDTO bookLog = studentRepository.findLatestWithdrawLog(studentId, "book");
 
         if (hanLog == null && bookLog == null) {
             throw new Exception400("탈퇴 이력을 찾을 수 없습니다.");
@@ -527,8 +511,7 @@ public class StudentService {
                     hanLog.getBeforeHanState(),
                     hanLog.getBeforeHanClass(),
                     hanLog.getBeforeHanTeacher(),
-                    hanLog.getBeforeEntryHanDate()
-            );
+                    hanLog.getBeforeEntryHanDate());
             studentRepository.updateWithdrawLogRestored(hanLog.getId(), userCode);
         }
 
@@ -539,12 +522,10 @@ public class StudentService {
                     bookLog.getBeforeBookState(),
                     bookLog.getBeforeBookClass(),
                     bookLog.getBeforeBookTeacher(),
-                    bookLog.getBeforeEntryBookDate()
-            );
+                    bookLog.getBeforeEntryBookDate());
             studentRepository.updateWithdrawLogRestored(bookLog.getId(), userCode);
         }
     }
-
 
     public void insertTeacherAssign(StudentWebReqDTO.StudentUpdateDTO req) {
 
@@ -569,7 +550,8 @@ public class StudentService {
 
     public void assignTeacher(String studentId, ClassRespDTO.BasicTimeTableInfo info) {
 
-        if (info == null) return;
+        if (info == null)
+            return;
 
         TeacherAssign assign = studentRepository.findTeacherAssign(studentId);
         String today = LocalDate.now().toString();
@@ -582,7 +564,6 @@ public class StudentService {
 
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();
-
 
         ClassReqDTO.TeacherAssignUpdateDTO dto = new ClassReqDTO.TeacherAssignUpdateDTO();
         dto.setStudentId(studentId);
@@ -609,7 +590,6 @@ public class StudentService {
         studentRepository.updateTeacherAssign(dto);
     }
 
-
     public List<StudentTransferDTO> findInOutByStudentId(Integer studentId) {
         List<StudentTransferDTO> responseDTO = studentRepository.findInOutByStudentId(studentId);
         return responseDTO;
@@ -629,8 +609,7 @@ public class StudentService {
 
         for (String studentId : reqDto.getStudents()) {
 
-            StudentWebRespDTO.TeacherDTO teacher =
-                    studentRepository.findTeacherAssignByStudentId(studentId);
+            StudentWebRespDTO.TeacherDTO teacher = studentRepository.findTeacherAssignByStudentId(studentId);
 
             if (reqDto.getSelectedHan() != null) {
                 if (teacher.getAssignHanTeacher() == null) {
@@ -642,8 +621,7 @@ public class StudentService {
 
                 // 중복 체크
                 boolean hanExists = studentRepository.existsTransferSchedule(
-                        studentId, teacher.getAssignHanTeacher()
-                );
+                        studentId, teacher.getAssignHanTeacher());
                 if (hanExists) {
                     throw new Exception400("이미 전입/전출이 등록되었습니다.");
                 }
@@ -656,8 +634,7 @@ public class StudentService {
                         reqDto.getMoveAt(),
                         reqDto.getTransferReason(),
                         userCode,
-                        centerCode
-                );
+                        centerCode);
             }
 
             if (reqDto.getSelectedBook() != null) {
@@ -670,8 +647,7 @@ public class StudentService {
 
                 // 중복 체크
                 boolean bookExists = studentRepository.existsTransferSchedule(
-                        studentId, teacher.getAssignBookTeacher()
-                );
+                        studentId, teacher.getAssignBookTeacher());
                 if (bookExists) {
                     throw new Exception400("이미 전입/전출이 등록되었습니다.");
                 }
@@ -684,8 +660,7 @@ public class StudentService {
                         reqDto.getMoveAt(),
                         reqDto.getTransferReason(),
                         userCode,
-                        centerCode
-                );
+                        centerCode);
             }
         }
     }
@@ -711,17 +686,14 @@ public class StudentService {
                     t.getToUser(),
                     t.getClassType(),
                     yy,
-                    mm
-            );
+                    mm);
 
             // 2. 시간표 / 결제 정리
-            StudentWebRespDTO.TransferTimeTableInfoDTO dto =
-                    classRepository.findTimeTableKeyByStudentId(
-                            t.getStudentId(),
-                            t.getClassType(),
-                            yy,
-                            mm
-                    );
+            StudentWebRespDTO.TransferTimeTableInfoDTO dto = classRepository.findTimeTableKeyByStudentId(
+                    t.getStudentId(),
+                    t.getClassType(),
+                    yy,
+                    mm);
 
             if (dto != null) {
                 classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), t.getStudentId());
@@ -768,8 +740,7 @@ public class StudentService {
 
         List<StudentAttendance> existingAttendance = studentRepository.findByStudentAndDate(
                 student.getStudentId(),
-                dto.getYmd()
-        );
+                dto.getYmd());
 
         if (existingAttendance != null && !existingAttendance.isEmpty()) {
             boolean alreadyCheckedIn = existingAttendance.stream()
@@ -802,7 +773,8 @@ public class StudentService {
 
             log.info("[체크인 주차계산] 현재 월 매칭 없음 → 전월({}-{}) 조회", prevYear, prevMonthStr);
 
-            List<ClassWeek> prevWeekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), prevYear, prevMonthStr);
+            List<ClassWeek> prevWeekList = classRepository.findClassWeekByCenter(dto.getCenterCode(), prevYear,
+                    prevMonthStr);
             if (prevWeekList != null && !prevWeekList.isEmpty()) {
                 week = findWeekByDate(today, prevWeekList);
             }
@@ -819,7 +791,8 @@ public class StudentService {
         }
 
         // ✅ 3. 결정된 year, month 기준으로 수업 시간 조회
-        List<ClassRespDTO.TimeRangeDTO> timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year, month);
+        List<ClassRespDTO.TimeRangeDTO> timeDTO = studentRepository.getStartClassTime(student.getStudentId(), year,
+                month);
         if (timeDTO == null || timeDTO.isEmpty()) {
             throw new RuntimeException("수업 시간이 설정되지 않았습니다.");
         }
@@ -832,8 +805,7 @@ public class StudentService {
         if (todayClasses.isEmpty()) {
             List<StudentAppRespDTO.RemedialDTO> remedialList = studentRepository.findRemedialByStudentAndDate(
                     student.getStudentId(),
-                    dto.getYmd()
-            );
+                    dto.getYmd());
 
             if (remedialList == null || remedialList.isEmpty()) {
                 throw new RuntimeException("오늘은 수업이 없는 날입니다.");
@@ -854,12 +826,11 @@ public class StudentService {
                 studentRepository.checkinRemedialAttendance(
                         remedial.getRemedialKey(),
                         dto.getHhmm(),
-                        attendanceKey
-                );
+                        attendanceKey);
 
                 // 2. 결석일 주차 정보 조회 (erp_class_week 기준)
-                StudentAppRespDTO.AttendanceInfoDTO weekInfo =
-                        studentRepository.findWeekInfoByDate(remedial.getAbsenceDate(), dto.getCenterCode());
+                StudentAppRespDTO.AttendanceInfoDTO weekInfo = studentRepository
+                        .findWeekInfoByDate(remedial.getAbsenceDate(), dto.getCenterCode());
 
                 if (weekInfo == null) {
                     log.warn("결석일 주차 정보 없음 - studentId: {}, absenceDate: {}",
@@ -873,8 +844,7 @@ public class StudentService {
                         remedial.getTimeTableKey(),
                         weekInfo.getWeek(),
                         weekInfo.getYy(),
-                        weekInfo.getMm()
-                );
+                        weekInfo.getMm());
 
                 log.info("보강 체크인 완료 - studentId: {}, remedialKey: {}, attendanceKey: {}",
                         student.getStudentId(), remedial.getRemedialKey(), attendanceKey);
@@ -896,8 +866,7 @@ public class StudentService {
                     week,
                     year,
                     month,
-                    targetClass.getTimeTableKey()
-            );
+                    targetClass.getTimeTableKey());
 
             log.info("정규 체크인 - studentId: {}, timeTableKey: {}, attendanceKey: {}, updated: {}",
                     student.getStudentId(), targetClass.getTimeTableKey(), attendanceKey, updated);
@@ -914,8 +883,7 @@ public class StudentService {
 
         List<StudentAttendance> attendanceList = studentRepository.findByStudentAndDate(
                 student.getStudentId(),
-                dto.getYmd()
-        );
+                dto.getYmd());
 
         // 정규 수업 하원 처리
         if (attendanceList != null && !attendanceList.isEmpty()) {
@@ -929,8 +897,7 @@ public class StudentService {
             int totalUpdated = studentRepository.checkoutStudentAttendance(
                     student.getStudentId(),
                     dto.getHhmm(),
-                    dto.getYmd()
-            );
+                    dto.getYmd());
 
             if (totalUpdated > 0) {
                 log.info("[체크아웃] 정규 수업 {}개 교시 하원 완료. studentId={}", totalUpdated, student.getStudentId());
@@ -941,8 +908,7 @@ public class StudentService {
         // 정규 수업 기록 없으면 → 보강 하원 확인
         List<StudentAppRespDTO.RemedialDTO> remedialList = studentRepository.findRemedialByStudentAndDate(
                 student.getStudentId(),
-                dto.getYmd()
-        );
+                dto.getYmd());
 
         if (remedialList == null || remedialList.isEmpty()) {
             log.info("[체크아웃] 등원 기록 없음. studentId={}, ymd={}", student.getStudentId(), dto.getYmd());
@@ -958,8 +924,7 @@ public class StudentService {
 
             studentRepository.checkoutRemedialAttendance(
                     remedial.getRemedialKey(),
-                    dto.getHhmm()
-            );
+                    dto.getHhmm());
 
             log.info("[체크아웃] 보강 하원 완료 - studentId: {}, remedialKey: {}",
                     student.getStudentId(), remedial.getRemedialKey());
@@ -1014,7 +979,7 @@ public class StudentService {
         }
     }
 
-    //========================================================================================
+    // ========================================================================================
 
     /**
      * (A) 특정 월 실시간 집계 후 스냅샷 저장/갱신
@@ -1062,15 +1027,13 @@ public class StudentService {
                         s.getActiveCount(),
                         s.getRestCount(),
                         s.getWithdrawnCount(),
-                        s.getWaitCount()
-                ))
+                        s.getWaitCount()))
                 .toList();
     }
 
     private int toInt(Object v) {
         return v == null ? 0 : ((Number) v).intValue();
     }
-
 
     public void saveSnapshot(String ym) {
         studentRepository.insertSnapshotIfNotExists(ym);
@@ -1101,8 +1064,8 @@ public class StudentService {
             return;
         }
 
-
-        List<StudentWebRespDTO.SiblingInfoDTO> siblings = studentRepository.findSiblingByStudentId(student.getStudentId());
+        List<StudentWebRespDTO.SiblingInfoDTO> siblings = studentRepository
+                .findSiblingByStudentId(student.getStudentId());
         log.info(siblings.toString());
 
         List<String> targetStudentIds = new ArrayList<>();
@@ -1127,7 +1090,6 @@ public class StudentService {
         }
     }
 
-
     // ================================== app ================================== //
 
     public StudentAppRespDTO.AppLoginRespDTO checkAppIdAndPassword(String appId, String password) {
@@ -1148,9 +1110,7 @@ public class StudentService {
         String ihak = studentRepository.getBookCodeByClassType(
                 row.getStudentId(),
                 year,
-                month
-        );
-
+                month);
 
         StudentAppRespDTO.AppLoginRespDTO respDTO = StudentAppRespDTO.AppLoginRespDTO.builder()
                 .stuid(row.getStudentId())
@@ -1168,10 +1128,8 @@ public class StudentService {
         return respDTO;
     }
 
-
     public StudentAppRespDTO.AppLoginRespDTO loginSkip(String appId) {
         StudentAppRespDTO.AppLoginViewDTO row = studentRepository.appLogin(appId);
-
 
         // 형제 정보 조회
         String siblingKey = studentRepository.findSiblingKeyByStudentId(row.getStudentId());
@@ -1184,9 +1142,7 @@ public class StudentService {
         String ihak = studentRepository.getBookCodeByClassType(
                 row.getStudentId(),
                 year,
-                month
-        );
-
+                month);
 
         StudentAppRespDTO.AppLoginRespDTO respDTO = StudentAppRespDTO.AppLoginRespDTO.builder()
                 .stuid(row.getStudentId())
@@ -1207,8 +1163,8 @@ public class StudentService {
     public List<StudentAppRespDTO.AttendanceListRespDTO> findAttendanceList(StudentAppReqDTO.AttendanceListReqDTO dto) {
         String yy = dto.getYm().substring(0, 4);
         String mm = dto.getYm().substring(4, 6);
-        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList =
-                studentRepository.findAttendanceList(dto.getId(), yy, mm);
+        List<StudentAppRespDTO.AttendanceListRespDTO> attendanceList = studentRepository.findAttendanceList(dto.getId(),
+                yy, mm);
         attendanceList.stream()
                 .peek(schedule -> {
                     schedule.setDayname(convertDaynameToKorean(schedule.getDayname()));
@@ -1246,15 +1202,15 @@ public class StudentService {
         };
     }
 
-    public List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(StudentAppReqDTO.StudentAttendanceMainDTO dto) {
+    public List<StudentAppRespDTO.AttendanceMainRespDTO> findAttendanceMain(
+            StudentAppReqDTO.StudentAttendanceMainDTO dto) {
         return studentRepository.findAttendanceMain(dto.getId());
     }
 
-
     public List<StudentAppRespDTO.AppSiblingRespDTO> findSibling(StudentAppReqDTO.SiblingReqDTO reqDTO) {
 
-        List<StudentAppRespDTO.AppSiblingRespDTO> siblings =
-                studentRepository.findSiblingBySiblingKey(reqDTO.getSibling());
+        List<StudentAppRespDTO.AppSiblingRespDTO> siblings = studentRepository
+                .findSiblingBySiblingKey(reqDTO.getSibling());
 
         // 각 형제의 ihak(book_code) 조회
         LocalDate now = LocalDate.now();
@@ -1265,8 +1221,7 @@ public class StudentService {
             String ihak = studentRepository.getBookCodeByClassType(
                     sibling.getStuid(),
                     year,
-                    month
-            );
+                    month);
             sibling.setIhak(ihak);
         }
 
@@ -1283,8 +1238,7 @@ public class StudentService {
         String prevKey = studentRepository.findAttendanceKey(
                 dto.getStudentId(),
                 dto.getTimeTableKey(),
-                dto.getWeek()
-        );
+                dto.getWeek());
 
         // 2. 출석, 지각으로 변경시 등원 시간 없으면 수업 시작시간을 기본값으로 지정
         if (("present".equals(dto.getAttendanceKey()) || "late".equals(dto.getAttendanceKey()))
@@ -1312,8 +1266,7 @@ public class StudentService {
                     dto.getWeek(),
                     dto.getYy(),
                     dto.getMm(),
-                    userCode
-            );
+                    userCode);
 
         }
 
@@ -1322,8 +1275,7 @@ public class StudentService {
             attendanceRepository.deleteRemedialForStudent(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
-                    dto.getWeek()
-            );
+                    dto.getWeek());
         }
     }
 
@@ -1335,7 +1287,6 @@ public class StudentService {
             return "SYSTEM";
         }
     }
-
 
     public void cancelJoin(String studentId) {
         if (studentRepository.countStudent(studentId) == 0) {
@@ -1429,7 +1380,8 @@ public class StudentService {
         studentRepository.updateStudentBillingPhone(studentId, phone);
     }
 
-    public List<StudentWebRespDTO.SiblingSearchRespDTO> searchSibling(String currentStudentId, String searchKey, String searchValue) {
+    public List<StudentWebRespDTO.SiblingSearchRespDTO> searchSibling(String currentStudentId, String searchKey,
+            String searchValue) {
 
         // 현재 학생의 center_code 조회 (같은 센터 내에서만 검색)
         String centerCode = studentRepository.getCenterCode(currentStudentId);
@@ -1498,4 +1450,3 @@ public class StudentService {
         }
     }
 }
-

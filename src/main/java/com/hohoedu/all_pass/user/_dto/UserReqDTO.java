@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.user._dto;
 
-import com.fasterxml.jackson.core.ErrorReportConfiguration;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;

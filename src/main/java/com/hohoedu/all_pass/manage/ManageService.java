@@ -106,10 +106,9 @@ public class ManageService {
 
     }
 
-    public List<ManageRespDTO.TeacherOrderGroupDTO> getCenterOrderList(String ym, String centerCode) {
-        List<ManageRespDTO.CenterOrderListDTO> flatList = manageRepository.findCenterOrderList(ym, centerCode);
+    public List<ManageRespDTO.TeacherOrderGroupDTO> getCenterOrderList(String ym, String centerCode, String userCode) {
+        List<ManageRespDTO.CenterOrderListDTO> flatList = manageRepository.findCenterOrderList(ym, centerCode, userCode);
 
-        // userName 기준 그룹핑 (SQL 정렬 순서 유지)
         Map<String, List<ManageRespDTO.CenterOrderListDTO>> grouped = flatList.stream()
                 .collect(Collectors.groupingBy(
                         ManageRespDTO.CenterOrderListDTO::getUserName,
@@ -130,8 +129,8 @@ public class ManageService {
         }).collect(Collectors.toList());
     }
 
-    public List<ManageRespDTO.CenterOrderListDTO> getCenterOrderListFlat(String ym, String centerCode) {
-        return manageRepository.findCenterOrderList(ym, centerCode);
+    public List<ManageRespDTO.CenterOrderListDTO> getCenterOrderListFlat(String ym, String centerCode, String userCode) {
+        return manageRepository.findCenterOrderList(ym, centerCode, userCode);
     }
 
     public String getOrderDeadline(String centerCode) {

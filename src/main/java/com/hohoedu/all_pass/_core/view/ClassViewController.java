@@ -1,19 +1,13 @@
 package com.hohoedu.all_pass._core.view;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.Http;
-import com.google.api.client.json.Json;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
-import com.hohoedu.all_pass.class_instance.model.ClassWeek;
-import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +23,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import com.hohoedu.all_pass.class_instance.model.UnitCode;
-import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
@@ -53,11 +45,11 @@ public class ClassViewController {
     private final UserService userService;
     private final ClassService classService;
     private final StudentService studentService;
-    private final ClassRepository classRepository;
 
     // 시간표 등록
     @GetMapping("/timetable")
-    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) throws JsonProcessingException {
+    public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model,
+            HttpSession session) throws JsonProcessingException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -65,14 +57,17 @@ public class ClassViewController {
         }
         List<ClassCode> classCodes = classService.findClassCode();
         List<GradeCode> grades = classService.findGrade();
-        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnits(user.getCenterCode(), year, month);
+        Map<String, List<ClassRespDTO.ClassUnitDTO>> classUnitMap = classService.findClassUnits(user.getCenterCode(),
+                year, month);
         ObjectMapper mapper = new ObjectMapper();
         String classUnits = mapper.writeValueAsString(classUnitMap);
         String classCodesJson = mapper.writeValueAsString(classCodes);
 
-        List<StudentWebRespDTO.StudentsListDTO> students = studentService.findStudentByCenterCode(year, month, user.getCenterCode(), user.getUserCode());
+        List<StudentWebRespDTO.StudentsListDTO> students = studentService.findStudentByCenterCode(year, month,
+                user.getCenterCode(), user.getUserCode());
 
-        List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService.findComClassStudentsByUserCode(user.getUserCode(), year, month);
+        List<ClassRespDTO.ComClassStudentDTO> comclassInfos = classService
+                .findComClassStudentsByUserCode(user.getUserCode(), year, month);
 
         String comclassInfosJson = mapper.writeValueAsString(comclassInfos);
 
@@ -100,7 +95,8 @@ public class ClassViewController {
 
     // 시간표 조회
     @GetMapping("/timeview")
-    public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model, HttpSession session) {
+    public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -110,13 +106,13 @@ public class ClassViewController {
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
-        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(year, month, user.getUserCode());
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(year, month,
+                user.getUserCode());
 
         Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
                 .collect(Collectors.groupingBy(
                         TimeTableDTO::getDayname,
-                        Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())
-                ));
+                        Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())));
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
 
         Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
@@ -133,17 +129,17 @@ public class ClassViewController {
     }
 
     @GetMapping("/print-timeview")
-    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model, HttpSession session) {
+    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
         String yy = ym.substring(0, 4);
         String mm = ym.substring(4, 6);
-        String centerCode = userCode.substring(0, 6);
         // 센터 선생님 목록
         List<User> users = userService.findAllUserCode(user);
-//        List<User> users = userService.findByCenterCodeDev();
+        // List<User> users = userService.findByCenterCodeDev();
 
         // 선택된 선생님
         User selectedUser = users.stream()
@@ -154,15 +150,12 @@ public class ClassViewController {
         // 시간표 조회
         ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(yy, mm, userCode);
 
-        Map<String, Map<String, TimeTableDTO>> tableMap =
-                viewData.getTables().stream()
-                        .collect(Collectors.groupingBy(
-                                TimeTableDTO::getDayname,
-                                Collectors.toMap(
-                                        TimeTableDTO::getPeriodNo,
-                                        Function.identity()
-                                )
-                        ));
+        Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
+                .collect(Collectors.groupingBy(
+                        TimeTableDTO::getDayname,
+                        Collectors.toMap(
+                                TimeTableDTO::getPeriodNo,
+                                Function.identity())));
 
         DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
         Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
@@ -178,10 +171,8 @@ public class ClassViewController {
         model.addAttribute("totalStudentsLong", viewData.getTotalStudentsLong());
         model.addAttribute("totalStudentsDouble", viewData.getTotalStudentsDouble());
 
-
         return "print/print-timeview";
     }
-
 
     // 수업 일지 페이지
     @GetMapping("/record")
@@ -205,14 +196,13 @@ public class ClassViewController {
                 date -> classService.getClassWeek(
                         String.valueOf(date.getYear()),
                         String.format("%02d", date.getMonthValue()),
-                        user.getCenterCode()
-                )
-        );
-        if (activeWeek == null) activeWeek = "ju_1";
+                        user.getCenterCode()));
+        if (activeWeek == null)
+            activeWeek = "ju_1";
 
         // ✅ 2. 주차가 전월에서 찾아진 경우 → 전월 기준으로 yy, mm 교체
-        boolean isCurrentMonthMatch = weeks.stream().anyMatch(w ->
-                isDateMatch(w.getMon(), today) || isDateMatch(w.getTue(), today) ||
+        boolean isCurrentMonthMatch = weeks.stream()
+                .anyMatch(w -> isDateMatch(w.getMon(), today) || isDateMatch(w.getTue(), today) ||
                         isDateMatch(w.getWed(), today) || isDateMatch(w.getThu(), today) ||
                         isDateMatch(w.getFri(), today) || isDateMatch(w.getSat(), today) ||
                         isDateMatch(w.getSun(), today));
@@ -242,7 +232,8 @@ public class ClassViewController {
                     ? bundle.getAfterClass()
                     : new ClassRespDTO.AfterClassRespDTO());
 
-            if (bundle.getWeek() != null) activeWeek = bundle.getWeek();
+            if (bundle.getWeek() != null)
+                activeWeek = bundle.getWeek();
         } else {
             model.addAttribute("students", Collections.emptyList());
             model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
@@ -256,7 +247,8 @@ public class ClassViewController {
         return "class/record";
     }
 
-    private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate, Function<LocalDate, List<ClassRespDTO.ClassWeekDTO>> weeksFetcher) {
+    private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate,
+            Function<LocalDate, List<ClassRespDTO.ClassWeekDTO>> weeksFetcher) {
         // 현재 월에서 먼저 탐색
         Optional<String> result = findWeekInList(weeks, targetDate);
         if (result.isPresent()) {
@@ -273,22 +265,21 @@ public class ClassViewController {
 
     private Optional<String> findWeekInList(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate) {
         return weeks.stream()
-                .filter(week ->
-                        isDateMatch(week.getMon(), targetDate) ||
-                                isDateMatch(week.getTue(), targetDate) ||
-                                isDateMatch(week.getWed(), targetDate) ||
-                                isDateMatch(week.getThu(), targetDate) ||
-                                isDateMatch(week.getFri(), targetDate) ||
-                                isDateMatch(week.getSat(), targetDate) ||
-                                isDateMatch(week.getSun(), targetDate)
-                )
+                .filter(week -> isDateMatch(week.getMon(), targetDate) ||
+                        isDateMatch(week.getTue(), targetDate) ||
+                        isDateMatch(week.getWed(), targetDate) ||
+                        isDateMatch(week.getThu(), targetDate) ||
+                        isDateMatch(week.getFri(), targetDate) ||
+                        isDateMatch(week.getSat(), targetDate) ||
+                        isDateMatch(week.getSun(), targetDate))
                 .map(ClassRespDTO.ClassWeekDTO::getWeek)
                 .findFirst();
     }
 
     // 날짜 비교 헬퍼 메서드
     private boolean isDateMatch(Object dateObj, LocalDate targetDate) {
-        if (dateObj == null) return false;
+        if (dateObj == null)
+            return false;
 
         if (dateObj instanceof LocalDate) {
             return targetDate.equals(dateObj);
@@ -296,7 +287,8 @@ public class ClassViewController {
 
         if (dateObj instanceof String) {
             String dateStr = (String) dateObj;
-            if (dateStr == null || dateStr.trim().isEmpty()) return false;
+            if (dateStr == null || dateStr.trim().isEmpty())
+                return false;
 
             try {
                 LocalDate date = LocalDate.parse(dateStr);
@@ -311,7 +303,8 @@ public class ClassViewController {
 
     // 보강 페이지
     @GetMapping("/remedial")
-    public String getClassRemedialPage(Model model, @RequestParam("year") String year, @RequestParam("month") String month, HttpSession session) {
+    public String getClassRemedialPage(Model model, @RequestParam("year") String year,
+            @RequestParam("month") String month, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -405,7 +398,6 @@ public class ClassViewController {
         label.setYy(yy);
         String classKey = label.getClassKey();
 
-
         Set<String> hanKeys = Set.of("Y", "P", "S");
 
         Set<String> bookKeys = Set.of("K", "M", "J");
@@ -425,7 +417,6 @@ public class ClassViewController {
         } catch (Exception e) {
             model.addAttribute("errorMessage", "수업 세부 정보를 불러오는 중 오류가 발생했습니다.");
         }
-
 
         return "class/infant";
     }

@@ -3,7 +3,6 @@ package com.hohoedu.all_pass._core.utils;
 import com.hohoedu.all_pass.popbill.PopbillConfig;
 import com.hohoedu.all_pass.popbill.repository.PopbillRepository;
 import com.popbill.api.BaseService;
-import com.popbill.api.BaseServiceImp;
 import com.popbill.api.KakaoService;
 import com.popbill.api.PopbillException;
 import com.popbill.api.kakao.KakaoServiceImp;

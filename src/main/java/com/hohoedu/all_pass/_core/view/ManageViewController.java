@@ -95,7 +95,7 @@ public class ManageViewController {
             return "redirect:/login";
         }
         String ym = yy + mm;
-        List<ManageRespDTO.TeacherOrderGroupDTO> response = manageService.getCenterOrderList(ym, user.getCenterCode());
+        List<ManageRespDTO.TeacherOrderGroupDTO> response = manageService.getCenterOrderList(ym, user.getCenterCode(), user.getUserCode());
 
 // 총계
         int grandStudent   = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumStudent).sum();

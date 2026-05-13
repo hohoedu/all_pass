@@ -5,7 +5,7 @@
 =============================== */
 let currentFeeView = 'edu';
 let currentStudents = [];
-let currentSort = {key: null, order: 'asc'};
+let currentSort = { key: null, order: 'asc' };
 let fetchStudentsGlobal;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch('/pay/students', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     year,
                     month: String(month).padStart(2, '0'),
@@ -484,8 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/pay/edu-personal', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({studentId: 'all'})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId: 'all' })
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -530,8 +530,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const response = await fetch('/pay/edu-personal', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({studentId, yy, mm})
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ studentId, yy, mm })
                     });
 
                     if (!response.ok) throw new Error('데이터 조회 실패');
@@ -578,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/pay/detail/bill', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({studentId, yy, mm})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId, yy, mm })
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -849,8 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/pay/update-phone', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({studentId, phone: rawPhone})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, phone: rawPhone })
                 });
 
                 const result = await res.json();
@@ -942,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/pay/update-fee', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         studentId,
                         yy,
@@ -1092,8 +1092,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (customPrice !== null && customPrice <= 0) return alert('올바른 금액을 입력하세요.');
 
         const types = [];
-        if (eduChecked) types.push({type: 'edu', label: '교육비'});
-        if (bookChecked) types.push({type: 'material', label: '교재비'});
+        if (eduChecked) types.push({ type: 'edu', label: '교육비' });
+        if (bookChecked) types.push({ type: 'material', label: '교재비' });
 
         const jobId = crypto.randomUUID();
         const overlay = showProgressOverlay();
@@ -1121,7 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const failMessages = [];
 
         for (let i = 0; i < types.length; i++) {
-            const {type, label} = types[i];
+            const { type, label } = types[i];
 
             updateOverlayLabel(overlay, `${label} 청구서 발행 중...`);
 
@@ -1163,14 +1163,14 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/send', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
 
             const data = await res.json();
 
             if (!res.ok || !data.success) {
-                return {success: false, error: data.msg || data.response || '청구 실패'};
+                return { success: false, error: data.msg || data.response || '청구 실패' };
             }
 
             return {
@@ -1179,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 failCount: data.response?.failCount || 0
             };
         } catch (e) {
-            return {success: false, error: e.message || '네트워크 오류'};
+            return { success: false, error: e.message || '네트워크 오류' };
         }
     }
 
@@ -1231,7 +1231,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateOverlayProgress(overlay, data) {
-        const {current, total, studentName, successCount, failCount, status} = data;
+        const { current, total, studentName, successCount, failCount, status } = data;
 
         const bar = overlay.querySelector('#overlay-bar');
         const count = overlay.querySelector('#overlay-count');
@@ -1292,8 +1292,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/cancel', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({paymentKey, cancelType: billType, cancelReason: cancelReason.trim()})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentKey, cancelType: billType, cancelReason: cancelReason.trim() })
             });
 
             const data = await res.json();
@@ -1337,8 +1337,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/destroy/bill', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({billId, studentId, paymentKey, destroyType: billType})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ billId, studentId, paymentKey, destroyType: billType })
             });
 
             const data = await res.json();
@@ -1375,11 +1375,22 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // ✅ 변경: 재발행 안내 컨펌
+        const confirmed = confirm(
+            '[ 청구서 재발행 ]\n\n' +
+            '재발행은 이미 발송된 청구서와 동일한 금액 및 내용으로\n' +
+            '알림톡을 다시 발송하는 기능입니다.\n\n' +
+            '※ 금액이나 내용을 변경하려면\n' +
+            '   "청구서 파기 → 발행"을 이용해 주세요.\n\n' +
+            '재발행하시겠습니까?'
+        );
+        if (!confirmed) return;
+
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({billIds: [billId]})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ billIds: [billId] })
             });
 
             const data = await res.json();
@@ -1416,13 +1427,22 @@ document.addEventListener("DOMContentLoaded", () => {
             return alert('선택된 학생 중 발행된 청구서가 없습니다.\n(미발행 상태인 학생은 재발행 불가)');
         }
 
-        if (!confirm(`총 ${billIds.length}건의 청구서를 재발행하시겠습니까?`)) return;
+        // ✅ 변경: 재발행 안내 컨펌
+        const confirmed = confirm(
+            `[ 청구서 재발행 - 총 ${billIds.length}건 ]\n\n` +
+            '재발행은 이미 발송된 청구서와 동일한 금액 및 내용으로\n' +
+            '알림톡을 다시 발송하는 기능입니다.\n\n' +
+            '※ 금액이나 내용을 변경하려면\n' +
+            '   "청구서 파기 → 발행"을 이용해 주세요.\n\n' +
+            `${billIds.length}건 모두 재발행하시겠습니까?`
+        );
+        if (!confirmed) return;
 
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({billIds})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ billIds })
             });
 
             const data = await res.json();
@@ -1452,8 +1472,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/pay/detail/bill', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({studentId, yy, mm})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId, yy, mm })
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -1608,7 +1628,7 @@ async function exportFilteredDataToExcel() {
 
         const response = await fetch('/pay/api/claim/export', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(filters)
         });
 
@@ -1723,11 +1743,11 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
 
     for (let R = range.s.r; R <= range.e.r; R++) {
         for (let C = range.s.c; C <= range.e.c; C++) {
-            const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
-            if (!ws[cellAddress]) ws[cellAddress] = {t: 's', v: ''};
+            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+            if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
             if (!ws[cellAddress].s) ws[cellAddress].s = {};
 
-            ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center', wrapText: false}};
+            ws[cellAddress].s = { alignment: { horizontal: 'center', vertical: 'center', wrapText: false } };
 
             if (R > 2 && amountColumns.includes(C)) {
                 const cellValue = ws[cellAddress].v;
@@ -1735,21 +1755,21 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
                     ws[cellAddress].t = 'n';
                     ws[cellAddress].v = Number(cellValue);
                     ws[cellAddress].z = '#,##0';
-                    ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center'}, numFmt: '#,##0'};
+                    ws[cellAddress].s = { alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0' };
                 }
             }
         }
     }
 
     if (!ws['!merges']) ws['!merges'] = [];
-    ws['!merges'].push({s: {r: 0, c: 0}, e: {r: 0, c: isAllSheet ? 7 : 6}});
+    ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: isAllSheet ? 7 : 6 } });
 
     if (!ws['!rows']) ws['!rows'] = [];
-    ws['!rows'][0] = {hpt: 30, hpx: 30};
+    ws['!rows'][0] = { hpt: 30, hpx: 30 };
 
     ws['!cols'] = isAllSheet
-        ? [{wch: 10}, {wch: 12}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}]
-        : [{wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}];
+        ? [{ wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }]
+        : [{ wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
 
     return ws;
 }
@@ -1778,7 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch("/pay/api/remind/unpaid-students", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(yearMonth)
             });
 
@@ -1822,7 +1842,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const sendRes = await fetch("/popbill/remind/send", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     year: yearMonth.year,
                     month: yearMonth.month,

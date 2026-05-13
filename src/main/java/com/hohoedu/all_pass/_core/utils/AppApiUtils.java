@@ -94,7 +94,7 @@ public final class AppApiUtils {
 
     @Getter
     @AllArgsConstructor
-    public static class LoginApiEnvelope<String> {
+    public static class LoginApiEnvelope<T> {
         private String result;
         private String message;
 

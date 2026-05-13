@@ -15,10 +15,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
-import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
-import com.hohoedu.all_pass.user.model.UserRoleCode;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

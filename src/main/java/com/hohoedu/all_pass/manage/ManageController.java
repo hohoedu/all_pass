@@ -160,10 +160,8 @@ public class ManageController {
         }
 
         String ym = dto.getYy() + dto.getMm();
-        List<ManageRespDTO.CenterOrderListDTO> response = manageService.getCenterOrderListFlat(ym, user.getCenterCode());
-        System.out.println("======================================================================================");
-        log.info(response.toString());
-        System.out.println("======================================================================================");
+        List<ManageRespDTO.CenterOrderListDTO> response = manageService.getCenterOrderListFlat(ym, user.getCenterCode(), user.getUserCode());
+        
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 

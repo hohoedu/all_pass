@@ -32,7 +32,8 @@ public interface ManageRepository {
 
     List<ManageRespDTO.CenterOrderListDTO> findCenterOrderList(
             @Param("ym") String ym,
-            @Param("centerCode") String centerCode
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode
     );
 
     String findOrderDeadline(

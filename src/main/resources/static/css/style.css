@@ -7295,6 +7295,42 @@ textarea.record-review {
     background-color: #fff;
 }
 
+.reissue-tooltip-wrap {
+    position: relative;
+}
+
+.reissue-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #1f2937;
+    color: #f9fafb;
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    border-radius: 8px;
+    width: 210px;
+    text-align: left;
+    white-space: normal;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    pointer-events: none;
+}
+
+.reissue-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    border: 6px solid transparent;
+    border-top-color: #1f2937;
+}
+
+.reissue-tooltip-wrap:hover .reissue-tooltip {
+    display: block;
+}
+
 /* modal: 수강료 상세 내역 */
 .pay-details {
     width: 70%;
