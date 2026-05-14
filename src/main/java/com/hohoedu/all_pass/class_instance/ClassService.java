@@ -122,8 +122,8 @@ public class ClassService {
     }
 
     public ClassRespDTO.MainAbsentSummaryDTO getAbsentSummary(
-            String centerCode, String userCode, String year, String month) {
-        return classRepository.findAbsentSummary(centerCode, userCode, year, month);
+            String centerCode, String userCode, String roleKey, String year, String month) {
+        return classRepository.findAbsentSummary(centerCode, userCode, roleKey, year, month);
     }
 
     public void saveClassWeek(ClassReqDTO.WeekReqDTO dto, String centerCode) {

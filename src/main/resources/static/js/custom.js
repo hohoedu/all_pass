@@ -550,5 +550,206 @@ function convertStrong(text) {
 }
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    const select = document.getElementById("main-teacher-select");
+    if (!select) return;
+
+    select.addEventListener("change", function () {
+        const userCode = this.value;
+
+        showLoading();
+
+        fetch(`/center/main/summary?userCode=${userCode}`)
+            .then(res => res.json())
+            .then(data => {
+                try {
+                    bindClassSummary(data.classSummary);
+                } catch (e) {
+                    console.error('classSummary 오류:', e);
+                }
+                try {
+                    bindRemedialSummary(data.remedialSummary);
+                } catch (e) {
+                    console.error('remedialSummary 오류:', e);
+                }
+                try {
+                    bindAllUnpaidSummary(data.allUnpaidSummary);
+                } catch (e) {
+                    console.error('allUnpaidSummary 오류:', e);
+                }
+                try {
+                    bindPaymentSummary(data.paymentSummary);
+                } catch (e) {
+                    console.error('paymentSummary 오류:', e);
+                }
+                try {
+                    bindAbsentSummary(data.absentSummary);
+                } catch (e) {
+                    console.error('absentSummary 오류:', e);
+                }
+                try {
+                    bindStudentStatus(data.studentStatus);
+                } catch (e) {
+                    console.error('studentStatus 오류:', e);
+                }
+            }).finally(() => hideLoading());
+    });
+});
+
+function showLoading() {
+    let overlay = document.getElementById('loading-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.innerHTML = '<div class="loading-spinner"></div><p>데이터를 불러오는 중...</p>';
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function formatComma(num) {
+    if (num == null) return '0';
+    return Number(num).toLocaleString('ko-KR');
+}
+
+function bindClassSummary(list) {
+    const tbody = document.querySelector('.class-tbody-scroll .class-tbody tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">조회된 수업이 없습니다.</td></tr>';
+        return;
+    }
+
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.startTime ?? '-'}</td>
+            <td>${item.className ?? ''}</td>
+            <td>${item.countStudent ?? 0}</td>
+            <td>${item.userName ?? ''}</td>
+            <td>
+                <button class="class-action-btn" data-key="${item.timeTableKey}">수업 관리</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function bindRemedialSummary(list) {
+    const tbody = document.querySelector('.makeup-tbody-scroll .class-tbody tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">조회된 보강이 없습니다.</td></tr>';
+        return;
+    }
+
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.startTime ?? '-'}</td>
+            <td>${item.remedialSubject ?? ''}</td>
+            <td>${item.countStudent ?? 0}</td>
+            <td>${item.userName ?? ''}</td>
+            <td class="checkbox-group"><input type="checkbox"></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function bindAllUnpaidSummary(list) {
+    const count = document.querySelector('.unpaid-card .payment-area:first-child .unpaid-amount');
+    const rate = document.querySelector('.unpaid-card .payment-area:first-child .unpaid.percent span');
+    const tbody = document.querySelector('.unpaid-card .payment-area:first-child tbody');
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        if (count) count.textContent = '0';
+        if (rate) rate.textContent = '0%';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">미납 내역이 없습니다.</td></tr>';
+        return;
+    }
+
+    if (count) count.textContent = list[0].unpaidCount ?? 0;
+    if (rate) rate.textContent = (list[0].unpaidRate != null ? Number(list[0].unpaidRate).toFixed(1) : '0') + '%';
+
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.yy}년 ${item.mm}월</td>
+            <td>${item.billExpireAt ?? '-'}</td>
+            <td>${item.studentName ?? ''}</td>
+            <td>${item.itemType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+            <td>${formatComma(item.billPrice)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function bindPaymentSummary(list) {
+    const count = document.querySelector('.unpaid-card .payment-area:last-child .unpaid-amount');
+    const rate = document.querySelector('.unpaid-card .payment-area:last-child .unpaid.percent span');
+    const tbody = document.querySelector('.unpaid-card .payment-area:last-child tbody');
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        if (count) count.textContent = '0';
+        if (rate) rate.textContent = '0%';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">미납 내역이 없습니다.</td></tr>';
+        return;
+    }
+
+    if (count) count.textContent = list[0].unpaidCount ?? 0;
+    if (rate) rate.textContent = (list[0].unpaidRate != null ? Number(list[0].unpaidRate).toFixed(1) : '0') + '%';
+
+    tbody.innerHTML = '';
+    list.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.billExpireAt ?? '-'}</td>
+            <td>${item.studentName ?? ''}</td>
+            <td>${item.itemType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+            <td>${formatComma(item.billPrice)}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function bindAbsentSummary(data) {
+    const absentCount = data?.absentCount ?? 0;
+    const remedialCount = data?.completeRemedialCount ?? 0;
+
+    // pax 표시 (숫자/숫자)
+    const paxSpans = document.querySelectorAll('.absence-desc .pax span');
+    if (paxSpans[0]) paxSpans[0].textContent = absentCount;
+    if (paxSpans[1]) paxSpans[1].textContent = remedialCount;
+
+    // 결석/보강 박스
+    const boxes = document.querySelectorAll('.class-box p:last-child span');
+    if (boxes[0]) boxes[0].textContent = absentCount;
+    if (boxes[1]) boxes[1].textContent = remedialCount;
+}
+
+function bindStudentStatus(data) {
+    // 전체 학생 수
+    const numEl = document.querySelector('.student-desc .pax .number');
+    if (numEl) numEl.textContent = data?.totalCount ?? 0;
+
+    // 입회/탈퇴/전입/전출
+    const counts = document.querySelectorAll('.student-status-boxes .count');
+    if (counts[0]) counts[0].textContent = data?.entryCount ?? 0;
+    if (counts[1]) counts[1].textContent = data?.withdrawCount ?? 0;
+    if (counts[2]) counts[2].textContent = data?.transferInCount ?? 0;
+    if (counts[3]) counts[3].textContent = data?.transferOutCount ?? 0;
+}
 
 

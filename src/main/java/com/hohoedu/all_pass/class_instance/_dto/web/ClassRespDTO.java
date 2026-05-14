@@ -34,7 +34,7 @@ public class ClassRespDTO {
     @Data
     public static class MainAbsentSummaryDTO {
         private Integer absentCount;    // 이번달 누적 결석
-        private Integer remedialCount;  // 이번달 누적 보강
+        private Integer completeRemedialCount;  // 이번달 누적 보강
     }
 
     @Data

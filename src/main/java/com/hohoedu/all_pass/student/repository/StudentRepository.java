@@ -5,7 +5,6 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.StudentAttendance;
-import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
@@ -16,22 +15,23 @@ import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
-import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentTransferDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StatusHistoryDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO.StudentJoinDTO;
-import org.springframework.security.core.parameters.P;
 
 @Mapper
 public interface StudentRepository {
+
+    int countPendingStudents(String centerCode);
 
     StudentWebRespDTO.MainStudentStatusDTO findStudentStatus(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
             @Param("year") String year,
-            @Param("month") String month);
+            @Param("month") String month,
+            @Param("roleKey") String roleKey);
 
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(
             @Param("year") String year,

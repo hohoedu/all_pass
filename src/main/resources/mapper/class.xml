@@ -14,16 +14,27 @@
              WHERE ea.yy = #{year}
                AND ea.mm = #{month}
                AND ea.center_code = #{centerCode}
-               AND t.user_code = #{userCode}
-               AND ea.attendance_key = 'absent') AS absentCount,
+               AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
+               AND ea.attendance_key = 'absent'
+            ) AS absentCount,
 
-            -- 이번달 누적 보강 (완료된 것만)
+            -- 이번달 완료 보강
             (SELECT COUNT(*)
              FROM erp_remedial er
-             WHERE SUBSTRING(er.remedial_date, 1, 4) = #{year}
-               AND SUBSTRING(er.remedial_date, 6, 2) = #{month}
-               AND er.user_code = #{userCode}
-               AND er.action = 1)                AS remedialCount
+             WHERE yy = #{year} AND mm = #{month}
+               AND (#{roleKey} = 'ADMIN' OR er.user_code = #{userCode})
+               AND SUBSTRING(er.user_code, 1, 6) = #{centerCode}
+               AND er.action = 1
+            )                AS completeRemedialCount,
+
+            -- 이번달 예정 보강
+            (SELECT COUNT (*)
+             FROM erp_remedial er
+             WHERE yy = #{year} AND mm = #{month}
+               AND (#{roleKey} = 'ADMIN' OR er.user_code = #{userCode})
+               AND SUBSTRING(er.user_code, 1, 6) = #{centerCode}
+               AND er.action = 0
+            ) AS intendedRemedialCount
     </select>
 
     <select id="findClassSummary"

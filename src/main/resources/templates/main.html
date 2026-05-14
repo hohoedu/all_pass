@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,12 +12,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <title>대시 보드</title>
     <style>
-        .main-container, .main-frame, .sidebar-load,
-        .main-info, .student-frame, .student-frame > section {
+        .main-container,
+        .main-frame,
+        .sidebar-load,
+        .main-info,
+        .student-frame,
+        .student-frame > section {
             background: #f7f7f7;
         }
     </style>
 </head>
+
 <body>
 <div class="main-container">
     <div class="main-frame">
@@ -33,10 +39,17 @@
                                     <h2 id="main-month-title"></h2>
                                 </div>
                                 <div class="basic-select">
-                                    <select name="teacher" id="main-teacher-select" style="width: 200px;">
-                                        <th:block th:each="u : ${user}">
+                                    <select name="teacher" id="main-teacher-select" style="width: 200px;"
+                                            th:disabled="${user.roleKey != 'ADMIN'}">
+
+                                        <th:block th:if="${user.roleKey == 'ADMIN'}">
+                                            <option value="all" th:selected="${!isMeInList}">전체</option>
+                                        </th:block>
+
+                                        <th:block th:each="u : ${users}">
                                             <option th:value="${u.userCode}"
-                                                    th:text="${u.userName + ' 선생님'}">
+                                                    th:text="${u.userName + ' 선생님'}"
+                                                    th:selected="${u.userCode == user.userCode}">
                                             </option>
                                         </th:block>
                                     </select>
@@ -115,10 +128,9 @@
                                     <div class="payment-chart">
                                         <div class="unpaid-stats">
                                             <div class="all-amounts">
-                                                <span class="unpaid-amount"
-                                                      th:text="${not #lists.isEmpty(allUnpaidSummary)
+                                                    <span class="unpaid-amount" th:text="${not #lists.isEmpty(allUnpaidSummary)
                                                           ? allUnpaidSummary[0].unpaidCount : 0}">
-                                                </span>
+                                                    </span>
                                                 <span class="all-amount">건</span>
                                             </div>
                                             <div class="unpaid percent">
@@ -126,12 +138,13 @@
                                                 <span th:text="${not #lists.isEmpty(allUnpaidSummary)
                                                     ? #numbers.formatDecimal(allUnpaidSummary[0].unpaidRate, 1, 1) + '%'
                                                     : '0%'}">
-                                                </span>
+                                                    </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="unpaid-list">
-                                        <div class="unpaid-frame" style="border-top: none; max-height: 200px; overflow-y: auto;">
+                                        <div class="unpaid-frame"
+                                             style="border-top: none; max-height: 200px; overflow-y: auto;">
                                             <table class="class-status-table">
                                                 <thead>
                                                 <tr>
@@ -145,10 +158,15 @@
                                                 <tbody>
                                                 <tr th:each="item : ${allUnpaidSummary}">
                                                     <td th:text="${item.yy + '년 ' + item.mm + '월'}"></td>
-                                                    <td th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}"></td>
+                                                    <td
+                                                            th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
+                                                    </td>
                                                     <td th:text="${item.studentName}"></td>
-                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}"></td>
-                                                    <td th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}"></td>
+                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
+                                                    </td>
+                                                    <td
+                                                            th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
+                                                    </td>
                                                 </tr>
                                                 <tr th:if="${#lists.isEmpty(allUnpaidSummary)}">
                                                     <td colspan="5" style="text-align:center; padding:20px;">
@@ -174,10 +192,9 @@
                                     <div class="payment-chart">
                                         <div class="unpaid-stats">
                                             <div class="all-amounts">
-                                                <span class="unpaid-amount"
-                                                      th:text="${not #lists.isEmpty(paymentSummary)
+                                                    <span class="unpaid-amount" th:text="${not #lists.isEmpty(paymentSummary)
                                                           ? paymentSummary[0].unpaidCount : 0}">
-                                                </span>
+                                                    </span>
                                                 <span class="all-amount">건</span>
                                             </div>
                                             <div class="unpaid percent">
@@ -185,12 +202,13 @@
                                                 <span th:text="${not #lists.isEmpty(paymentSummary)
                                                     ? #numbers.formatDecimal(paymentSummary[0].unpaidRate, 1, 1) + '%'
                                                     : '0%'}">
-                                                </span>
+                                                    </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="unpaid-list">
-                                        <div class="unpaid-frame" style="border-top: none; max-height: 200px; overflow-y: auto;">
+                                        <div class="unpaid-frame"
+                                             style="border-top: none; max-height: 200px; overflow-y: auto;">
                                             <table class="class-status-table">
                                                 <thead>
                                                 <tr>
@@ -202,10 +220,15 @@
                                                 </thead>
                                                 <tbody>
                                                 <tr th:each="item : ${paymentSummary}">
-                                                    <td th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}"></td>
+                                                    <td
+                                                            th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
+                                                    </td>
                                                     <td th:text="${item.studentName}"></td>
-                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}"></td>
-                                                    <td th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}"></td>
+                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
+                                                    </td>
+                                                    <td
+                                                            th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
+                                                    </td>
                                                 </tr>
                                                 <tr th:if="${#lists.isEmpty(paymentSummary)}">
                                                     <td colspan="4" style="text-align:center; padding:20px;">
@@ -276,9 +299,11 @@
                                 <div class="absence-desc">
                                     <p class="subtitle">이번달 결석/보강 현황</p>
                                     <p class="pax">
-                                        <span th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>
+                                            <span
+                                                    th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>
                                         /
-                                        <span th:text="${absentSummary != null ? absentSummary.remedialCount : 0}">0</span>
+                                        <span
+                                                th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>
                                     </p>
                                 </div>
                                 <div class="class-button">
@@ -289,13 +314,15 @@
                                 <div class="class-box">
                                     <p>결석</p>
                                     <p>
-                                        <span th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>명
+                                            <span
+                                                    th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>명
                                     </p>
                                 </div>
                                 <div class="class-box">
                                     <p>보강</p>
                                     <p>
-                                        <span th:text="${absentSummary != null ? absentSummary.remedialCount : 0}">0</span>명
+                                            <span
+                                                    th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>명
                                     </p>
                                 </div>
                             </div>
@@ -307,10 +334,10 @@
                                 <div class="student-desc">
                                     <p class="subtitle">학생 현황</p>
                                     <p class="pax">
-                                        <span class="number"
-                                              th:text="${studentStatus != null ? studentStatus.totalCount : 0}">
-                                            0
-                                        </span>명
+                                            <span class="number"
+                                                  th:text="${studentStatus != null ? studentStatus.totalCount : 0}">
+                                                0
+                                            </span>명
                                     </p>
                                 </div>
                                 <div class="class-button">
@@ -357,4 +384,5 @@
     </div>
 </div>
 </body>
+
 </html>

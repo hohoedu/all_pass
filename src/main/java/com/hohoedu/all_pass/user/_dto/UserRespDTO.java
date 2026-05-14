@@ -62,6 +62,7 @@ public class UserRespDTO {
         private String userName;
         private String roleKey;
         private String userPhone;
+        private String type;
         private Boolean useYn;
         private Boolean isHan;
         private Boolean isBook;

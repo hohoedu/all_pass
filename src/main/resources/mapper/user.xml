@@ -92,7 +92,9 @@
                u.user_name,
                u.center_code,
                u.role_key,
-               u.type
+               u.type,
+               u.is_han,
+               u.is_book
         from ERP_USER u
         where center_code = #{centerCode}
     </select>
@@ -131,6 +133,7 @@
                use_yn,
                is_han,
                is_book,
+               type,
                created_at
         FROM erp_user
         WHERE center_code = #{centerCode}

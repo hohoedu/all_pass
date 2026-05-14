@@ -7,6 +7,8 @@ import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.threeten.bp.LocalDate;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -32,8 +35,9 @@ public class MainViewController {
     private final ClassService classService;
     private final PaymentService paymentService;
     private final StudentService studentService;
+    private final UserService userService;
 
-    @GetMapping({ "/", "/home" })
+    @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session) {
         Object user = session.getAttribute("user");
         if (user == null) {
@@ -51,7 +55,7 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping({ "/admin", "/login" })
+    @GetMapping({"/admin", "/login"})
     public String getLoginPage() {
         return "login";
     }
@@ -91,17 +95,23 @@ public class MainViewController {
 
         t = System.currentTimeMillis();
         ClassRespDTO.MainAbsentSummaryDTO absentSummary = classService.getAbsentSummary(user.getCenterCode(),
-                user.getUserCode(), year, month);
+                user.getUserCode(), user.getRoleKey(), year, month);
         log.info("[PERF] getAbsentSummary: {}ms", System.currentTimeMillis() - t);
 
         t = System.currentTimeMillis();
         StudentWebRespDTO.MainStudentStatusDTO studentStatus = studentService.getStudentStatus(user.getCenterCode(),
-                user.getUserCode(), year, month);
+                user.getUserCode(), user.getRoleKey(), year, month);
         log.info("[PERF] getStudentStatus: {}ms", System.currentTimeMillis() - t);
 
         log.info("[PERF] ===== TOTAL: {}ms =====", System.currentTimeMillis() - total);
 
+        List<User> users = userService.findActiveUser(user);
+        boolean isMeInList = users.stream()
+                .anyMatch(u -> u.getUserCode().equals(user.getUserCode()));
+
         model.addAttribute("user", user);
+        model.addAttribute("users", users);
+        model.addAttribute("isMeInList", isMeInList);
         model.addAttribute("classSummary", classSummary);
         model.addAttribute("remedialSummary", remedialSummary);
         model.addAttribute("paymentSummary", paymentSummary);

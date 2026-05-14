@@ -5,118 +5,85 @@
 <mapper
         namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
+    <select id="countPendingStudents" resultType="int">
+        select count(*) from erp_pending_student
+        where center_code = #{centerCode} and is_deleted = '0'
+
+    </select>
+
     <select id="findStudentStatus"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentStatusDTO">
+        -- @formatter:off
         SELECT
-        -- 전체 학생 수 (yy/mm 조건 추가)
-            (SELECT COUNT(DISTINCT s.student_id)
-             FROM erp_student s
-             WHERE s.status_key
-                != 'WITHDRAWN' AND EXISTS ( SELECT 1 FROM erp_time_table_assign ta JOIN erp_time_table t ON ta.time_table_key = t.time_table_key WHERE ta.student_id = s.student_id AND t.center_code = #{centerCode} AND t.user_code = #{userCode} AND t.yy = #{year} AND t.mm = #{month} ) ) AS totalCount
-             ,
+        -- 전체 학생 수
+            (
+                SELECT COUNT(DISTINCT s.student_id)
+                FROM erp_student s
+                WHERE s.status_key != 'WITHDRAWN'
+                AND EXISTS (
+                SELECT 1
+                FROM erp_time_table_assign ta
+                JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                WHERE ta.student_id = s.student_id
+                AND t.center_code = #{centerCode}
+                AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
+                AND t.yy = #{year}
+                AND t.mm = #{month}
+                )
+                ) AS totalCount,
 
         -- 이번달 입회
              (
-        SELECT COUNT (DISTINCT ta.student_id)
+        SELECT COUNT(DISTINCT ta.student_id)
         FROM erp_teacher_assign ta
         WHERE (
-            ta.assign_han_teacher = #{userCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.entry_han_date
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.entry_han_date
-            , 120)
-            , 6
-            , 2) = #{month}
+            (#{roleKey} = 'ADMIN' OR ta.assign_han_teacher = #{userCode})
+          AND SUBSTRING(CONVERT(VARCHAR, ta.entry_han_date, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, ta.entry_han_date, 120), 6, 2) = #{month}
             )
            OR (
-            ta.assign_book_teacher = #{userCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.entry_book_date
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.entry_book_date
-            , 120)
-            , 6
-            , 2) = #{month}
+            (#{roleKey} = 'ADMIN' OR ta.assign_book_teacher = #{userCode})
+          AND SUBSTRING(CONVERT(VARCHAR, ta.entry_book_date, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, ta.entry_book_date, 120), 6, 2) = #{month}
             )
-            ) AS entryCount
-            ,
+            ) AS entryCount,
 
         -- 이번달 탈퇴
             (
-        SELECT COUNT (DISTINCT ta.student_id)
+        SELECT COUNT(DISTINCT ta.student_id)
         FROM erp_teacher_assign ta
         WHERE (
-            ta.assign_han_teacher = #{userCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.inactive_han_date
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.inactive_han_date
-            , 120)
-            , 6
-            , 2) = #{month}
+            (#{roleKey} = 'ADMIN' OR ta.assign_han_teacher = #{userCode})
+          AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_han_date, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_han_date, 120), 6, 2) = #{month}
             )
            OR (
-            ta.assign_book_teacher = #{userCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.inactive_book_date
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , ta.inactive_book_date
-            , 120)
-            , 6
-            , 2) = #{month}
+            (#{roleKey} = 'ADMIN' OR ta.assign_book_teacher = #{userCode})
+          AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_book_date, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, ta.inactive_book_date, 120), 6, 2) = #{month}
             )
-            ) AS withdrawCount
-            ,
+            ) AS withdrawCount,
 
         -- 이번달 전입
             (
-        SELECT COUNT (*)
+        SELECT COUNT(*)
         FROM erp_student_transfer_history
-        WHERE to_user_code = #{userCode}
+        WHERE (#{roleKey} = 'ADMIN' OR to_user_code = #{userCode})
           AND center_code = #{centerCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , move_at
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , move_at
-            , 120)
-            , 6
-            , 2) = #{month}
-            ) AS transferInCount
-            ,
+          AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
+            ) AS transferInCount,
 
         -- 이번달 전출
             (
-        SELECT COUNT (*)
+        SELECT COUNT(*)
         FROM erp_student_transfer_history
-        WHERE from_user_code = #{userCode}
+        WHERE (#{roleKey} = 'ADMIN' OR from_user_code = #{userCode})
           AND center_code = #{centerCode}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , move_at
-            , 120)
-            , 1
-            , 4) = #{year}
-          AND SUBSTRING (CONVERT (VARCHAR
-            , move_at
-            , 120)
-            , 6
-            , 2) = #{month}
+          AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
+          AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
             ) AS transferOutCount
+        -- @formatter:on
     </select>
 
     <insert id="createPendingStudent" parameterType="com.hohoedu.all_pass.student.model.PendingStudent" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
@@ -809,7 +776,7 @@
     </select>
 
     <select id="existsTransferSchedule" resultType="boolean">
-        SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+        SELECT CASE WHEN COUNT(1) > 1 THEN 1 ELSE 0 END
         FROM erp_student_transfer_schedule
         WHERE student_id = #{studentId}
           AND from_user = #{fromUserCode}
@@ -937,16 +904,14 @@
             <when test="classType == 1">
                 UPDATE erp_teacher_assign
                 SET assign_han_teacher = #{userCode},
-                assign_han_class = null,
-                han_material_fee = 0
+                assign_han_class = null
                 WHERE student_id = #{studentId}
             </when>
             <!-- class_type이 2이면 독서 관련 컬럼 업데이트 -->
             <when test="classType == 2">
                 UPDATE erp_teacher_assign
                 SET assign_book_teacher = #{userCode},
-                assign_book_class = null,
-                book_material_fee = 0
+                assign_book_class = null
                 WHERE student_id = #{studentId}
             </when>
         </choose>

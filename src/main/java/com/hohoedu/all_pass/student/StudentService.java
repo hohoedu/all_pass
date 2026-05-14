@@ -70,8 +70,8 @@ public class StudentService {
     private final PopbillService popbillService;
 
     public StudentWebRespDTO.MainStudentStatusDTO getStudentStatus(
-            String centerCode, String userCode, String year, String month) {
-        return studentRepository.findStudentStatus(centerCode, userCode, year, month);
+            String centerCode, String userCode, String roleKey, String year, String month) {
+        return studentRepository.findStudentStatus(centerCode, userCode, year, month, roleKey);
     }
 
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode,
@@ -403,7 +403,7 @@ public class StudentService {
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
         StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository
                 .findTeacherAssignByStudentId(request.getStudentId());
-        log.info(teacherDTO.toString());
+        
         if (teacherDTO == null) {
             throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
@@ -559,8 +559,8 @@ public class StudentService {
         boolean isHan = "1".equals(info.getClassType());
         boolean isBook = "2".equals(info.getClassType());
 
-        User teacher = User.builder().userCode(info.getTeacherCode()).build();
-        ClassCode classCode = ClassCode.builder().classKey(info.getClassKey()).build();
+        User.builder().userCode(info.getTeacherCode()).build();
+        ClassCode.builder().classKey(info.getClassKey()).build();
 
         boolean oldHan = assign.getHanState() != null && assign.getHanState();
         boolean oldBook = assign.getBookState() != null && assign.getBookState();

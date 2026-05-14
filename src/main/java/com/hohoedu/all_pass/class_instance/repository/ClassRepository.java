@@ -35,6 +35,7 @@ public interface ClassRepository {
     ClassRespDTO.MainAbsentSummaryDTO findAbsentSummary(
             @Param("centerCode") String centerCode,
             @Param("userCode") String userCode,
+            @Param("roleKey") String roleKey,
             @Param("year") String year,
             @Param("month") String month);
 

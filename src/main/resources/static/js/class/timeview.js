@@ -242,18 +242,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectedUserGroup = document.getElementById("teacher-select")?.selectedOptions[0]?.dataset.groupType;
 
             // 권한 체크
+            // let hasPermission = false;
+            //
+            // if (sessionRoleKey === 'ADMIN') {
+            //     hasPermission = true;
+            // } else if (sessionRoleKey === 'MANAGER') {
+            //     if (sessionType === 'ALL') {
+            //         hasPermission = true;
+            //     } else if (sessionType === 'BOOK' && selectedUserGroup === 'BOOK') {
+            //         hasPermission = true;
+            //     } else if (sessionType === 'HAN' && selectedUserGroup === 'HAN') {
+            //         hasPermission = true;
+            //     }
+            // } else if (sessionUserCode === selectedUserCode) {
+            //     hasPermission = true;
+            // }
             let hasPermission = false;
 
-            if (sessionRoleKey === 'ADMIN') {
+            if (sessionRoleKey === 'ADMIN' || sessionRoleKey === 'MANAGER') {
                 hasPermission = true;
-            } else if (sessionRoleKey === 'MANAGER') {
-                if (sessionType === 'ALL') {
-                    hasPermission = true;
-                } else if (sessionType === 'BOOK' && selectedUserGroup === 'BOOK') {
-                    hasPermission = true;
-                } else if (sessionType === 'HAN' && selectedUserGroup === 'HAN') {
-                    hasPermission = true;
-                }
             } else if (sessionUserCode === selectedUserCode) {
                 hasPermission = true;
             }
