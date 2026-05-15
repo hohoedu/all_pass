@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.consult;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;

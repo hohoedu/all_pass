@@ -5,7 +5,6 @@ import java.util.List;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 
-import com.hohoedu.all_pass.class_instance.TimeTable;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.data.repository.query.Param;
 

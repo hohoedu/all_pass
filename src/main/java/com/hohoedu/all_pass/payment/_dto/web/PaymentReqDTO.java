@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.util.List;

@@ -102,12 +102,12 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findAllUserCode(user);
+        List<User> users = userService.findActiveUser(user);
         model.addAttribute("users", users);
         model.addAttribute("days", DAYS);
 
         ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(year, month,
-                user.getUserCode());
+                user.getUserCode(), user.getCenterCode());
 
         Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
                 .collect(Collectors.groupingBy(
@@ -148,7 +148,8 @@ public class ClassViewController {
                 .orElse(null);
 
         // 시간표 조회
-        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(yy, mm, userCode);
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(yy, mm, userCode,
+                user.getCenterCode());
 
         Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
                 .collect(Collectors.groupingBy(
@@ -215,7 +216,7 @@ public class ClassViewController {
             log.info("[페이지로딩] 전월 기준으로 변경: {}-{}", yy, mm);
         }
 
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findActiveUser(user);
         List<ClassRespDTO.RecordLabelDTO> labels = classService.getTimeTableByUserCode(
                 currentDate, dayName, user.getUserCode(), user.getCenterCode());
 
@@ -310,7 +311,7 @@ public class ClassViewController {
             return "redirect:/login";
         }
 
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findActiveUser(user);
 
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month, user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
@@ -338,7 +339,7 @@ public class ClassViewController {
 
         log.info(user.getUserName());
         // 센터별 선생님 목록
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findActiveUser(user);
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
@@ -370,7 +371,7 @@ public class ClassViewController {
         String yy = DateConfig.currentYearMonth().get("currentYear");
         String mm = DateConfig.currentYearMonth().get("currentMonth");
 
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findActiveUser(user);
         model.addAttribute("users", users);
 
         ClassReqDTO.InfantClassLabelsDTO classInfantDTO = new ClassReqDTO.InfantClassLabelsDTO();

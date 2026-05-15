@@ -2,7 +2,6 @@ package com.hohoedu.all_pass.admin._dto;
 
 import lombok.Data;
 
-import java.sql.Timestamp;
 
 @Data
 public class AdminRespDTO {

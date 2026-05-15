@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass._core.view;
 
-import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.user.User;
@@ -39,7 +38,7 @@ public class PaymentViewController {
         }
 //        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
 
-        List<User> users = userService.findByCenterCode(user);
+        List<User> users = userService.findActiveUser(user);
 //        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode(), "EDU_FEE");
 
         model.addAttribute("user", user);

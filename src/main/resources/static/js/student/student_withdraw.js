@@ -25,11 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentMonthLabel = document.getElementById("currentMonth");
 
     const TAB_CONFIG = {
-        t1: {url: "/student/api/withdraw/join", render: renderJoinTable},
-        t2: {url: "/student/api/withdraw/withdraw", render: renderWithdrawTable},
-        t3: {url: "/student/api/withdraw/transfer-in", render: renderTransferInTable},
-        t4: {url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable},
-        t5: {url: "/student/api/withdraw/graduate", render: renderGraduateTable},
+        t1: { url: "/student/api/withdraw/join", render: renderJoinTable },
+        t2: { url: "/student/api/withdraw/withdraw", render: renderWithdrawTable },
+        t3: { url: "/student/api/withdraw/transfer-in", render: renderTransferInTable },
+        t4: { url: "/student/api/withdraw/transfer-out", render: renderTransferOutTable },
+        t5: { url: "/student/api/withdraw/graduate", render: renderGraduateTable },
     };
 
     let activeTab = "t1";
@@ -97,8 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
      * 공통 요청 파라미터
      * ======================== */
     function getReq() {
+        const select = document.getElementById("teacher-filter");
+        const selectedValue = select?.value || "all";
         return {
-            userCode: document.getElementById("teacher-filter")?.value || "all",
+            userCode: selectedValue,
+            roleKey: selectedValue === "all" ? "ADMIN" : "TEACHER",
             ym: monthPickerInput.value || defaultMonth,
         };
     }
@@ -109,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function fetchCounts() {
         fetch("/student/api/withdraw/counts", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(getReq()),
         })
             .then(res => res.json())
@@ -133,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         fetch(config.url, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(getReq()),
         })
             .then(res => res.json())
@@ -304,8 +307,8 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const res = await fetch("/student/restore", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({studentId})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ studentId })
                 });
 
                 const data = await res.json();

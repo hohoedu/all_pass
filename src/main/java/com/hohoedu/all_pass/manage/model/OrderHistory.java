@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.manage.model;
 
-import com.hohoedu.all_pass.class_instance.TimeTable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

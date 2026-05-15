@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.notice;
 
-import com.google.type.DateTime;
 import com.hohoedu.all_pass._core.firebase.FcmService;
 import com.hohoedu.all_pass.notice._dto.app.NoticeAppReqDTO;
 import com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO;
@@ -10,16 +9,10 @@ import com.hohoedu.all_pass.notice.repository.NoticeRepository;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
 

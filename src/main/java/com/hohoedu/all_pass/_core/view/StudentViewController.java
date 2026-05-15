@@ -4,14 +4,12 @@ import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass.consult.ConsultService;
 import com.hohoedu.all_pass.consult._dto.ConsultRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
-import com.hohoedu.all_pass.student.model.PendingStudent;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
@@ -27,7 +25,6 @@ import com.hohoedu.all_pass.family.model.RelationCode;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.MainStudentDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentInOutDTO;
-import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO.StudentSnapshotRespDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.user.User;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,7 +56,8 @@ public class StudentViewController {
     }
 
     @GetMapping("/mobile/join")
-    public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode, @RequestParam(required = false) String invite, Model model, HttpSession session) {
+    public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode,
+            @RequestParam(required = false) String invite, Model model, HttpSession session) {
 
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
@@ -75,7 +73,6 @@ public class StudentViewController {
         return "student/join";
     }
 
-
     // 학생 정보 메인
     @GetMapping("/main")
     public String getStudentMainPage(HttpSession session, Model model) {
@@ -85,7 +82,7 @@ public class StudentViewController {
             return "redirect:/login";
         }
         List<MainStudentDTO> students = studentService.getStudentsByUserCode(user.getUserCode(), user.getCenterCode());
-        List<User> teachers = studentService.findTeacher(user);
+        List<User> teachers = userService.findActiveUser(user);
         List<TimeTableLabelDTO> labels = classService.getAllClassLabel(user.getUserCode());
         model.addAttribute("user", user);
         model.addAttribute("labels", labels);
@@ -98,12 +95,12 @@ public class StudentViewController {
     // 신규 입회 등록 관리
     @GetMapping("/new")
     public String getStudentNewPage(Model model, HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-        List<StudentWebRespDTO.PendingStudentRespDTO> students = studentService.findPendingStudent(user.getCenterCode());
+        List<StudentWebRespDTO.PendingStudentRespDTO> students = studentService
+                .findPendingStudent(user.getCenterCode());
 
         model.addAttribute("students", students);
 
@@ -114,21 +111,20 @@ public class StudentViewController {
     @GetMapping("/transfer")
     public String getStudentInoutPage(Model model, HttpSession session) {
 
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
         List<StudentInOutDTO> students = studentService.findAllInOut(user.getCenterCode(), user.getUserCode());
-//        List<StudentInOutDTO> students = studentService.findStudentByUserCode(userCode);
-        List<User> teachers = studentService.findTeacher(user);
-        List<User> users = userService.findAllUserCode(user);
-//        List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);
-//        model.addAttribute("labels", labels);
+        // List<StudentInOutDTO> students =
+        // studentService.findStudentByUserCode(userCode);
+        List<User> teachers = userService.findActiveUser(user);
+        // List<TimeTableLabelDTO> labels = classService.getAllClassLabel(userCode);
+        // model.addAttribute("labels", labels);
         model.addAttribute("students", students);
         model.addAttribute("teachers", teachers);
-        model.addAttribute("users", users);
+
         return "student/student-inout";
     }
 
@@ -136,12 +132,18 @@ public class StudentViewController {
     @GetMapping("/withdraw")
     public String getStudentWithdrawPage(Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         YearMonth ym = YearMonth.now();
 
-        List<User> teachers = studentService.findTeacher(user);
+        List<User> teachers = userService.findActiveUser(user);
+
+        boolean isMeInList = teachers.stream()
+                .anyMatch(t -> t.getUserCode().equals(user.getUserCode()));
+        model.addAttribute("user", user);
         model.addAttribute("teachers", teachers);
+        model.addAttribute("isMeInList", isMeInList);
         model.addAttribute("selectedMonthValue", ym.toString());
 
         return "student/student_withdrawal";
@@ -155,7 +157,8 @@ public class StudentViewController {
             Model model, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         StudentWebReqDTO.WithdrawReqDTO req = new StudentWebReqDTO.WithdrawReqDTO();
         req.setYm(ym);
@@ -167,21 +170,23 @@ public class StudentViewController {
             model.addAttribute("withdrawGrouped", studentService.findWithdrawList(req).stream()
                     .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정")));
             model.addAttribute("transferInGrouped", studentService.findTransferInList(req).stream()
-                    .collect(Collectors.groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정")));
+                    .collect(Collectors
+                            .groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정")));
             model.addAttribute("transferOutGrouped", studentService.findTransferOutList(req).stream()
-                    .collect(Collectors.groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정")));
+                    .collect(Collectors
+                            .groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정")));
             model.addAttribute("graduateGrouped", studentService.findGraduateList(req).stream()
                     .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정")));
 
             // 상담 - 해당 월 첫날 ~ 마지막날
             LocalDate firstDay = LocalDate.parse(ym + "-01");
             String startDate = firstDay.toString();
-            String endDate   = firstDay.withDayOfMonth(firstDay.lengthOfMonth()).toString();
+            String endDate = firstDay.withDayOfMonth(firstDay.lengthOfMonth()).toString();
 
-            Map<String, List<ConsultRespDTO.ConsultPrintDTO>> consultGrouped =
-                    consultService.findConsultForPrint(userCode, startDate, endDate)
-                            .stream()
-                            .collect(Collectors.groupingBy(s -> s.getUsername() != null ? s.getUsername() : "미지정"));
+            Map<String, List<ConsultRespDTO.ConsultPrintDTO>> consultGrouped = consultService
+                    .findConsultForPrint(userCode, startDate, endDate)
+                    .stream()
+                    .collect(Collectors.groupingBy(s -> s.getUsername() != null ? s.getUsername() : "미지정"));
 
             model.addAttribute("consultGrouped", consultGrouped);
             model.addAttribute("tab", "all");
@@ -205,9 +210,11 @@ public class StudentViewController {
             case "t2" -> studentService.findWithdrawList(req).stream()
                     .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정"));
             case "t3" -> studentService.findTransferInList(req).stream()
-                    .collect(Collectors.groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정"));
+                    .collect(Collectors
+                            .groupingBy(s -> s.getTransferInTeacher() != null ? s.getTransferInTeacher() : "미지정"));
             case "t4" -> studentService.findTransferOutList(req).stream()
-                    .collect(Collectors.groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정"));
+                    .collect(Collectors
+                            .groupingBy(s -> s.getTransferOutTeacher() != null ? s.getTransferOutTeacher() : "미지정"));
             case "t5" -> studentService.findGraduateList(req).stream()
                     .collect(Collectors.groupingBy(s -> s.getTeacherName() != null ? s.getTeacherName() : "미지정"));
             default -> new HashMap<>();
@@ -220,6 +227,7 @@ public class StudentViewController {
 
         return "print/print-student-withdrawal";
     }
+
     // 전입 전출 현황 출력화면
     @GetMapping("/print-transfer")
     public String getStudentTransferPrintPage() {
@@ -230,7 +238,8 @@ public class StudentViewController {
     @GetMapping("/overview")
     public String getStudentOverview(HttpSession session, Model model) {
         var user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         List<User> users = userService.findByCenterCode(user);
         model.addAttribute("users", users);

@@ -8,14 +8,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.threeten.bp.LocalDateTime;
 
 import java.sql.Timestamp;
 
 @Entity
 @Getter
 @Table(name = "erp_before_class_notice", uniqueConstraints = {
-        @UniqueConstraint(name = "uq_before_class_notice_key", columnNames = "before_class_notice_key")})
+        @UniqueConstraint(name = "uq_before_class_notice_key", columnNames = "before_class_notice_key") })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BeforeClassNotice {
 
@@ -60,7 +59,8 @@ public class BeforeClassNotice {
     private Timestamp createdAt;
 
     @Builder
-    public BeforeClassNotice(String content, String classTime, String dayname, String classDate, String classType, String week, User user, Student student, TimeTable timeTable, Timestamp createdAt) {
+    public BeforeClassNotice(String content, String classTime, String dayname, String classDate, String classType,
+            String week, User user, Student student, TimeTable timeTable, Timestamp createdAt) {
         this.content = content;
         this.classTime = classTime;
         this.dayname = dayname;
@@ -73,4 +73,3 @@ public class BeforeClassNotice {
         this.createdAt = createdAt;
     }
 }
-

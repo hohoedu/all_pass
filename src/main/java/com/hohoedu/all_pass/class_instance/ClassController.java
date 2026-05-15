@@ -5,24 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.protobuf.Api;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import com.hohoedu.all_pass.class_instance.model.ClassWeek;
-import com.hohoedu.all_pass.payment.PaymentService;
-import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByClassCodeDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
@@ -35,8 +29,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RecordLabelDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.RemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelDTO;
-import com.hohoedu.all_pass.class_instance.model.TimeTableCode;
-import com.hohoedu.all_pass.student.StudentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -219,7 +211,7 @@ public class ClassController {
         }
         String userCode = reqDTO.getUserCode() == null ? user.getUserCode() : reqDTO.getUserCode();
         ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(reqDTO.getYear(),
-                reqDTO.getMonth(), userCode);
+                reqDTO.getMonth(), userCode, user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(viewData));
     }
@@ -396,7 +388,7 @@ public class ClassController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        int response = classService.updateRemedialAction(dto);
+        classService.updateRemedialAction(dto);
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(year, month, user.getUserCode());
         List<RemedialDTO> rightRemedials = remedials.stream()
                 .filter(RemedialDTO::isAction)
@@ -549,7 +541,7 @@ public class ClassController {
 
     @PostMapping("/infant/save")
     public ResponseEntity<?> saveInfantNotice(@RequestBody ClassReqDTO.InfantSaveReqDTO reqDTO, HttpSession session) {
-    
+
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {

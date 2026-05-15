@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -28,26 +27,23 @@ public class AppService {
         resp.setMm(first.getMm());
 
         // data 리스트 가공
-        List<ClassAppRespDTO.BookListMainRespDTO.BookMainList> dataList =
-                raws.stream()
-                        .map(row -> {
-                            ClassAppRespDTO.BookListMainRespDTO.BookMainList item =
-                                    new ClassAppRespDTO.BookListMainRespDTO.BookMainList();
+        List<ClassAppRespDTO.BookListMainRespDTO.BookMainList> dataList = raws.stream()
+                .map(row -> {
+                    ClassAppRespDTO.BookListMainRespDTO.BookMainList item = new ClassAppRespDTO.BookListMainRespDTO.BookMainList();
 
-                            item.setWeek_subject(row.getWeekSubject());
-                            item.setWeek_title(row.getWeekTitle());
-                            item.setWeek_publisher(row.getWeekPublisher());
-                            item.setWeek_bookimg(row.getWeekBookimg());
+                    item.setWeek_subject(row.getWeekSubject());
+                    item.setWeek_title(row.getWeekTitle());
+                    item.setWeek_publisher(row.getWeekPublisher());
+                    item.setWeek_bookimg(row.getWeekBookimg());
 
-                            return item;
-                        })
-                        .toList();
+                    return item;
+                })
+                .toList();
 
         resp.setData(dataList);
 
         return resp;
     }
-
 
     // 도서 상세 화면
     public ClassAppRespDTO.BookListRespDTO getBookInfo(ClassAppReqDTO.BooklistReqDTO dto) {
@@ -62,27 +58,22 @@ public class AppService {
         resp.setHak_info(first.getHakInfo());
 
         // data 리스트 가공
-        List<ClassAppRespDTO.BookListRespDTO.BookList> dataList =
-                raws.stream()
-                        .map(row -> {
-                            ClassAppRespDTO.BookListRespDTO.BookList item =
-                                    new ClassAppRespDTO.BookListRespDTO.BookList();
+        List<ClassAppRespDTO.BookListRespDTO.BookList> dataList = raws.stream()
+                .map(row -> {
+                    ClassAppRespDTO.BookListRespDTO.BookList item = new ClassAppRespDTO.BookListRespDTO.BookList();
 
-                            item.setWeek_subject(row.getWeekSubject());
-                            item.setWeek_title(row.getWeekTitle());
-                            item.setWeek_publisher(row.getWeekPublisher());
-                            item.setWeek_bookimg(row.getWeekBookimg());
+                    item.setWeek_subject(row.getWeekSubject());
+                    item.setWeek_title(row.getWeekTitle());
+                    item.setWeek_publisher(row.getWeekPublisher());
+                    item.setWeek_bookimg(row.getWeekBookimg());
 
-                            return item;
-                        })
-                        .toList();
+                    return item;
+                })
+                .toList();
 
         resp.setBooks(dataList);
 
         return resp;
     }
-
-
-
 
 }

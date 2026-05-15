@@ -97,6 +97,7 @@
                u.is_book
         from ERP_USER u
         where center_code = #{centerCode}
+        and use_yn = '1'
     </select>
 
 

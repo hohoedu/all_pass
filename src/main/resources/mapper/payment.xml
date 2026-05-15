@@ -1134,23 +1134,42 @@
 
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 납부내역 조회  -->
-    <select id="findPaymentDetailsByStudentId"
-            resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
-        SELECT TOP 16 *
-        FROM (select ep.id,
-                     ep.yy + '-' + ep.mm            as inym,
-                     'I'                            as gb,
-                     SUBSTRING(epc.appr_date, 0, 9) as indate,
-                     status                         as state,
-                     ep.amount                      as inmoney,
-                     CASE
-                         WHEN ep.bill_type = 'EDU_FEE' THEN 'S'
-                         WHEN ep.bill_type = 'BOOK_FEE' THEN 'B'
-                         END                        AS gubun
-              from erp_payment_bill ep
-                       join erp_payment_callback epc on ep.bill_id = epc.bill_id
-              where student_id = #{studentId}) AS combined
-        ORDER BY combined.id desc;
+    <select id="findPaymentDetailsByStudentId" resultType="com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO$PaymentDetailRespDTO">
+        ;
+        WITH paymint_date AS (SELECT epb.payment_key,
+                                     MAX(SUBSTRING(epc.appr_date, 0, 9)) AS indate
+                              FROM erp_payment_bill epb
+                                       JOIN erp_payment_callback epc ON epc.bill_id = epb.bill_id
+                              WHERE epb.status = 'approved'
+                              GROUP BY epb.payment_key),
+             manual_date AS (SELECT payment_key,
+                                    MAX(REPLACE(paid_date, '-', '')) AS indate
+                             FROM erp_payment_manual
+                             WHERE status IN ('approved', 'partial')
+                             GROUP BY payment_key)
+        SELECT TOP(16) ep.yy + '-' + ep.mm        AS inym, CASE epd.class_type
+                                                               WHEN '1' THEN 'S'
+                                                               WHEN '2' THEN 'I'
+                                                               ELSE '호호'
+            END AS gb,
+               ISNULL(pd.indate, md.indate) AS indate,
+               CAST(epd.amount AS VARCHAR)  AS inmoney,
+               ep.status                    AS state,
+               CASE epd.item_type
+                   WHEN 'EDU_FEE' THEN 'S'
+                   WHEN 'BOOK_FEE' THEN 'B'
+                   END                      AS gubun,
+               ISNULL(ecc.class_name, '-')  AS className
+        FROM erp_payment ep
+                 JOIN erp_payment_detail epd ON epd.payment_key = ep.payment_key
+                 LEFT JOIN erp_time_table ett ON ett.time_table_key = epd.time_table_key
+                 LEFT JOIN erp_class_code ecc ON ecc.class_key = ett.class_key
+                 LEFT JOIN paymint_date pd ON pd.payment_key = ep.payment_key
+                 LEFT JOIN manual_date md ON md.payment_key = ep.payment_key
+        WHERE ep.student_id = #{studentId}
+          AND ep.status IN ('approved', 'partial', 'issued')
+          AND epd.amount > 0
+        ORDER BY ISNULL(pd.indate, md.indate) DESC, ep.payment_key DESC
     </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">

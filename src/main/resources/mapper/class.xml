@@ -39,26 +39,23 @@
 
     <select id="findClassSummary"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainClassSummaryDTO">
-        SElECT
-        t.time_table_key AS timeTableKey,
-        t.start_time AS startTime,
-        CONCAT(cc.class_name, ' ', uc.unit_name) AS className,
-        COUNT(ta.student_id) AS countStudent,
-        u.user_name AS userName
+        SELECT t.time_table_key                         AS timeTableKey,
+               t.start_time                             AS startTime,
+               CONCAT(cc.class_name, ' ', uc.unit_name) AS className,
+               COUNT(ta.student_id)                     AS countStudent,
+               u.user_name                              AS userName
         FROM erp_time_table t
-        LEFT JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
-        LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
-        LEFT JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
-        JOIN erp_user u ON t.user_code = u.user_code
+                 LEFT JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 LEFT JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+                 JOIN erp_user u ON t.user_code = u.user_code
         WHERE t.yy = #{year}
-        AND t.mm = #{month}
-        AND t.dayname = #{dayname}
-        <if test="userCode != null and userCode != 'all'">
-            AND t.user_code = #{userCode}
-        </if>
-        AND u.center_code = #{centerCode}
+          AND t.mm = #{month}
+          AND t.dayname = #{dayname}
+          AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
+          AND u.center_code = #{centerCode}
         GROUP BY t.time_table_key, t.start_time, cc.class_name, uc.unit_name, u.user_name
-        ORDER BY startTime ASC;
+        ORDER BY userName, startTime ASC;
 
     </select>
 
@@ -390,81 +387,89 @@
     </select>
 
     <select id="findStudentStat" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$StudentStatRespDTO">
-        Select a.*
-        from (
+        SELECT a.*
+        FROM (
                  -- 입회
-                 Select 'entry' as gb, es.student_name, a.*
-                 from (Select student_id,
-                              Case
-                                  WHEN han_state = 1 Then
-                                          (Select c.class_name + ',' from erp_class_code c where c.class_key = t.assign_han_class)
-                                  else ''
-                                  end +
-                              Case
-                                  WHEN book_state = 1 Then
-                                          (Select c.class_name + ' ' from erp_class_code c where c.class_key = t.assign_book_class)
-                                  else ' '
-                                  end className,
-                              null as 'week'
-                       from erp_teacher_assign t
-                       where (assign_han_teacher = #{userCode} and substring(entry_han_date, 1, 7) = #{ym})
-                          or (assign_book_teacher = #{userCode} and substring(entry_book_date, 1, 7) = #{ym})) a
-                          Join erp_student es On a.student_id = es.student_id
+                 SELECT 'entry'                                                                           AS gb,
+                        es.student_name,
+                        t.student_id,
+                        ISNULL(CASE WHEN t.han_state = 1 THEN cc_han.class_name + ',' ELSE '' END, '') +
+                        ISNULL(CASE WHEN t.book_state = 1 THEN cc_book.class_name + ' ' ELSE ' ' END, '') AS className,
+                        NULL                                                                              AS week
+                 FROM erp_teacher_assign t
+                          JOIN erp_student es ON t.student_id = es.student_id
+                          LEFT JOIN erp_class_code cc_han ON cc_han.class_key = t.assign_han_class
+                          LEFT JOIN erp_class_code cc_book ON cc_book.class_key = t.assign_book_class
+                 WHERE es.center_code = #{centerCode}
+                   AND (
+                     (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
+                         OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+                     )
 
                  UNION ALL
 
                  -- 탈퇴
-                 SELECT 'inactive' as gb, es.student_name, a.*
-                 FROM (SELECT DISTINCT student_id, null as className, null as week
-                       FROM (SELECT student_id
-                             FROM erp_teacher_assign
-                             WHERE (#{userCode} = 'all' OR inactive_han_teacher = #{userCode})
-                               AND substring(inactive_han_date, 1, 7) = #{ym}
-                             UNION ALL
-                             SELECT student_id
-                             FROM erp_teacher_assign
-                             WHERE (#{userCode} = 'all' OR inactive_book_teacher = #{userCode})
-                               AND substring(inactive_book_date, 1, 7) = #{ym}) dedup) a
-                          JOIN erp_student es ON a.student_id = es.student_id
+                 SELECT DISTINCT 'inactive' AS gb,
+                                 es.student_name,
+                                 wl.student_id,
+                                 NULL       AS className,
+                                 NULL       AS week
+                 FROM erp_student_withdraw_log wl
+                          JOIN erp_student es ON wl.student_id = es.student_id
+                 WHERE wl.withdraw_date IS NOT NULL
+                   AND SUBSTRING(wl.withdraw_date, 1, 7) = #{ym}
+                   AND (
+                     (wl.log_type = 'han' AND wl.before_han_teacher = #{userCode})
+                         OR (wl.log_type = 'book' AND wl.before_book_teacher = #{userCode})
+                     )
 
                  UNION ALL
 
-                 Select 'move_in' as gb, es.student_name, a.*
-                 from (Select student_id,
-                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
-                              null as 'week'
-                       from erp_student_transfer_history t
-                       where to_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}) a
-                          Join erp_student es On a.student_id = es.student_id
+                 -- 전입
+                 SELECT 'move_in'     AS gb,
+                        es.student_name,
+                        th.student_id,
+                        cc.class_name AS className,
+                        NULL          AS week
+                 FROM erp_student_transfer_history th
+                          JOIN erp_student es ON th.student_id = es.student_id
+                          LEFT JOIN erp_class_code cc ON cc.class_key = th.class_key
+                 WHERE th.to_user_code = #{userCode}
+                   AND th.center_code = #{centerCode}
+                   AND SUBSTRING(th.move_at, 1, 7) = #{ym}
 
                  UNION ALL
 
                  -- 전출
-                 Select 'move_out' as gb, es.student_name, a.*
-                 from (Select student_id,
-                              class = (Select c.class_name from erp_class_code c where c.class_key = t.class_key),
-                              null as 'week'
-                       from erp_student_transfer_history t
-                       where from_user_code = #{userCode}
-                         and substring(move_at, 1, 7) = #{ym}) a
-                          Join erp_student es On a.student_id = es.student_id
+                 SELECT 'move_out'    AS gb,
+                        es.student_name,
+                        th.student_id,
+                        cc.class_name AS className,
+                        NULL          AS week
+                 FROM erp_student_transfer_history th
+                          JOIN erp_student es ON th.student_id = es.student_id
+                          LEFT JOIN erp_class_code cc ON cc.class_key = th.class_key
+                 WHERE th.from_user_code = #{userCode}
+                   AND th.center_code = #{centerCode}
+                   AND SUBSTRING(th.move_at, 1, 7) = #{ym}
 
                  UNION ALL
-                 -- 주(1,2,3)
-                 Select 'week' as gb, es.student_name, a.*
-                 from (Select etta.student_id,
-                              className = (Select c.class_name from erp_class_code c where c.class_key = a.class_key),
-                              '(' + etta.week + '주)' as 'week'
 
-                       from (Select class_key, time_table_key
-                             from erp_time_table
-                             where yy + '-' + mm = #{ym}
-                               and user_code = #{userCode}) a
-                                Join erp_time_table_assign etta On a.time_table_key = etta.time_table_key
-                       where etta.week in (1, 2, 3)) a
-                          Join erp_student es On a.student_id = es.student_id) a
-        Order by a.gb, a.student_name
+                 -- 주(1,2,3)
+                 SELECT 'week'                 AS gb,
+                        es.student_name,
+                        etta.student_id,
+                        cc.class_name          AS className,
+                        '(' + etta.week + '주)' AS week
+                 FROM erp_time_table t
+                          JOIN erp_time_table_assign etta ON t.time_table_key = etta.time_table_key
+                          JOIN erp_student es ON etta.student_id = es.student_id
+                          LEFT JOIN erp_class_code cc ON cc.class_key = t.class_key
+                 WHERE t.yy + '-' + t.mm = #{ym}
+                   AND t.user_code = #{userCode}
+                   AND t.center_code = #{centerCode}
+                   AND etta.week IN (1, 2, 3)) a
+        ORDER BY a.gb, a.student_name
 
     </select>
 
@@ -491,6 +496,29 @@
           AND mm = #{month}
           AND user_code = #{userCode}
         ORDER BY dayname, period_no
+    </select>
+
+    <select id="findStudentsByTimeTables" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+        SELECT tta.time_table_key AS timeTableKey,
+        st.student_id AS studentId,
+        st.student_name AS studentName,
+        tta.week AS week,
+        gc.grade_name AS gradeName,
+        CASE WHEN cn.student_id IS NOT NULL THEN 1 ELSE 0 END AS hasCounsel
+        FROM erp_time_table_assign tta
+        JOIN erp_student st ON tta.student_id = st.student_id
+        JOIN erp_grade_code gc ON st.grade_key = gc.grade_key
+        LEFT JOIN (SELECT DISTINCT student_id
+        FROM erp_after_class_notice
+        WHERE counsel_content IS NOT NULL
+        AND counsel_content != ''
+        AND yy + '-' + mm = #{ym}
+        AND user_code = #{userCode}) cn ON st.student_id = cn.student_id
+        WHERE tta.time_table_key IN
+        <foreach collection="timeTableKeys" item="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
+        ORDER BY st.student_name
     </select>
 
     <select id="findTimeTableStudents"

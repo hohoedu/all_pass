@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.payment.model;
 
-import com.hohoedu.all_pass.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

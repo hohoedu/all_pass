@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass.admin;
 
-import com.google.api.Http;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.admin._dto.AdminReqDTO;

@@ -2,7 +2,6 @@ package com.hohoedu.all_pass.admin;
 
 import com.hohoedu.all_pass.admin._dto.AdminReqDTO;
 import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
-import com.hohoedu.all_pass.admin.model.BookSuggest;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +31,7 @@ public class AdminService {
                         m.getMonth(),
                         classKey,
                         m.getUnit_key(),
-                        m.getSub_unit_key()
-                );
+                        m.getSub_unit_key());
             }
         }
         return count;
@@ -47,31 +45,26 @@ public class AdminService {
             return null;
         }
 
-        Map<String, List<AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO>> grouped =
-                list.stream()
-                        .collect(Collectors.groupingBy(
-                                AdminRespDTO.PersonYearDTO::getClassKey,
-                                LinkedHashMap::new,
-                                Collectors.mapping(row -> {
-                                    AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO m =
-                                            new AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO();
-                                    m.setMonth(row.getMm());
-                                    m.setUnit_key(row.getUnitKey());
-                                    m.setSub_unit_key(row.getSubUnitKey());
-                                    return m;
-                                }, Collectors.toList())
-                        ));
+        Map<String, List<AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO>> grouped = list.stream()
+                .collect(Collectors.groupingBy(
+                        AdminRespDTO.PersonYearDTO::getClassKey,
+                        LinkedHashMap::new,
+                        Collectors.mapping(row -> {
+                            AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO m = new AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO();
+                            m.setMonth(row.getMm());
+                            m.setUnit_key(row.getUnitKey());
+                            m.setSub_unit_key(row.getSubUnitKey());
+                            return m;
+                        }, Collectors.toList())));
 
-        List<AdminReqDTO.PersonSettingDTO.EbookClassDTO> classes =
-                grouped.entrySet().stream()
-                        .map(e -> {
-                            AdminReqDTO.PersonSettingDTO.EbookClassDTO c =
-                                    new AdminReqDTO.PersonSettingDTO.EbookClassDTO();
-                            c.setClass_key(e.getKey());
-                            c.setMonths(e.getValue());
-                            return c;
-                        })
-                        .collect(Collectors.toList());
+        List<AdminReqDTO.PersonSettingDTO.EbookClassDTO> classes = grouped.entrySet().stream()
+                .map(e -> {
+                    AdminReqDTO.PersonSettingDTO.EbookClassDTO c = new AdminReqDTO.PersonSettingDTO.EbookClassDTO();
+                    c.setClass_key(e.getKey());
+                    c.setMonths(e.getValue());
+                    return c;
+                })
+                .collect(Collectors.toList());
 
         // 3) 최종 DTO 구성
         AdminReqDTO.PersonSettingDTO dto = new AdminReqDTO.PersonSettingDTO();
@@ -81,7 +74,6 @@ public class AdminService {
 
         return dto;
     }
-
 
     public void saveBookSuggest(AdminReqDTO.BookSuggestSaveReqDTO req) {
         log.info("service: saveBookSuggest");
@@ -118,8 +110,7 @@ public class AdminService {
                             "MERGE 결과 0건 - classKey=" + classKey
                                     + ", yy=" + dto.getYy()
                                     + ", mm=" + dto.getMm()
-                                    + ", week=" + dto.getWeek()
-                    );
+                                    + ", week=" + dto.getWeek());
                 }
             }
         }

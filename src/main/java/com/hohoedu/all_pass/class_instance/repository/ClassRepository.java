@@ -8,469 +8,451 @@ import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
-import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.hohoedu.all_pass.class_instance.TimeTable;
-import com.hohoedu.all_pass.user.User;
-import org.springframework.security.core.parameters.P;
 
 @Mapper
 public interface ClassRepository {
 
-    List<ClassRespDTO.MainClassSummaryDTO> findClassSummary(
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("dayname") String dayname,
-            @Param("userCode") String userCode,
-            @Param("centerCode") String centerCode
-    );
-
-    List<ClassRespDTO.MainRemedialSummaryDTO> findRemedialSummary(
-            @Param("today") String today,
-            @Param("centerCode") String centerCode);
-
-    ClassRespDTO.MainAbsentSummaryDTO findAbsentSummary(
-            @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode,
-            @Param("roleKey") String roleKey,
-            @Param("year") String year,
-            @Param("month") String month);
-
-    List<ClassRespDTO.ClassWeekDTO> getClassWeek(
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("centerCode") String centerCode
-    );
-
-    void insertClassWeek(ClassReqDTO.SetWeekDTO dto);
-
-    void updateClassWeek(ClassReqDTO.SetWeekDTO dto);
-
-    int existsTimeTable(
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-
-    public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
-
-    List<ClassRespDTO.ClassUnitDTO> findClassUnitMap();
-
-    List<ClassRespDTO.ClassUnitDTO> findPersonUnit(
-            @Param("centerCode") String centerCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("classKey") String classKey
-    );
-
-    List<ClassRespDTO.ClassUnitDTO> findPersonUnitsInRange(
-            @Param("centerCode") String centerCode,
-            @Param("startYear") String startYear,
-            @Param("startMonth") String startMonth,
-            @Param("endYear") String endYear,
-            @Param("endMonth") String endMonth,
-            @Param("classKey") String classKey
-    );
-
-    public void createTimeTableKey(TimeTableCode entity);
-
-    public ClassRespDTO.TimeTableDTO existsByYearAndMonthAndPeriodNo(
-            @Param("periodNo") String periodNo,
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("dayname") String dayname,
-            @Param("userCode") String userCode);
-
-    public int updateClass(
-            @Param("dto") ClassReqDTO.ClassRegisterDTO dto,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("userCode") String userCode);
-
-    public int updateLabel(
-            @Param("label") String label,
-            @Param("timeTableKey") String timeTableKey);
-
-    int existsSameClassType(ClassReqDTO.AddStudentDTO dto);
-
-    public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
-
-    void restoreStudent(@Param("timeTableKey") String timeTableKey,
-                        @Param("studentId") String studentId);
-
-    int existsAssignHistory(@Param("timeTableKey") String timeTableKey,
-                            @Param("studentId") String studentId);
-    ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("studentId") String studentId,
-            @Param("centerCode") String centerCode);
-
-    List<ClassRespDTO.StudentStatRespDTO> findStudentStat(
-            @Param("userCode") String userCode,
-            @Param("ym") String ym);
-
-    void insertMonthlyScore(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("timeTableKey") String timeTableKey);
-
-    List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
-            @Param("userCode") String userCode,
-            @Param("year") String year,
-            @Param("month") String month);
-
-    List<ClassRespDTO.TimeTableDTO.StudentDTO> findTimeTableStudents(
-            String userCode,
-            List<String> timeTableKeys
-    );
-
-    Map<String, Object> findUnitByClassAndUnit(
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey
-    );
-
-    Map<String, Object> findNextUnitById(@Param("id") int id);
-
-    Map<String, String> findReadingMapping(
-            @Param("classKey") String classKey,
-            @Param("centerCode") String centerCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String userCode, String timeTableKey, String ym);
-
-    public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
-
-    StudentWebRespDTO.TransferTimeTableInfoDTO findTimeTableKeyByStudentId(
-            @Param("studentId") String studentId,
-            @Param("classType") String classType,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    int deleteByKeyAndStudentId(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("studentId") String studentId);
-
-    int deleteTimeTableRow(
-            @Param("timeTableKey") String timeTableKey);
-
-    List<TimeTable> findTimeTable(
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("userNo") String userNo);
-
-    List<TimeTableCode> findTimeTableCodeByUserCode(
-            @Param("userCode") String userCode);
-
-    List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("userCode") String userCode
-    );
-
-    List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByUserCode(
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    int updateTimeTableAssign(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("studentId") String studentId,
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey);
-
-    // 날짜별 선생님별 수업 조회
-    List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("dayName") String dayName,
-            @Param("userCode") String userCode,
-            @Param("centerCode") String centerCode);
-
-    public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("week") String week);
-
-    public List<ClassRespDTO.RemedialDTO> findRemedialByUserCode(
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("userCode") String userCode
-    );
-
-    public int updateRemedialAction(
-            @Param("remedialKey") String remedialKey,
-            @Param("action") boolean action);
-
-    public void updateRemedialDate(
-            @Param("remedialKey") String remedialKey,
-            @Param("remedialDate") String remedialDate);
-
-    public void updateRemedialTime(
-            @Param("remedialKey") String remedialKey,
-            @Param("startTime") String startTime);
-
-    ClassRespDTO.RemedialSendDTO findAppTokenByRemedialKey(@Param("remedialKey") String remedialKey);
-
-
-    public void deleteRemedial(
-            @Param("remedialKey") String remedialKey);
-
-    // 선생님별 클래스 코드 조회
-    public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("count") String count);
-
-    public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCodeAndDayname(
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("dayname") String dayname,
-            @Param("centerCode") String centerCode);
-
-    List<ClassRespDTO.TimeTableLabelDTO> findInfantClassLabel(
-            @Param("userCode") String userCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-    public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey,
-            @Param("week") String week,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy);
-
-    public void createAttendance(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("centerCode") String centerCode,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    List<ClassWeek> findClassWeekByCenter(
-            @Param("centerCode") String centerCode,
-            @Param("year") String year,
-            @Param("month") String month);
-
-    void updateAttendance(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("attendanceDate") String attendanceDate,
-            @Param("week") String week);
-
-    void updateAfterSend(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("week") String week);
-
-    public ClassRespDTO.AfterClassRespDTO findAfterClass(
-            @Param("userCode") String userCode,
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey,
-            @Param("week") String week,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy);
-
-    ClassRespDTO.AfterClassRespDTO findAfterClassNotice(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("week") String week
-    );
-
-    public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
-            @Param("timeTableKey") String timeTableKey);
-
-    int updateMonthlyScore(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
-
-    List<String> getMonthlyAllCorrectFeedback(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-
-    Map<String, String> getMonthlyFeedback(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-    MonthlyResult findMonthlyResult(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-    void insertMonthlyResult(MonthlyResult monthlyResult);
-
-    void updateMonthlyResult(MonthlyResult monthlyResult);
-
-    List<Map<String, Object>> findMonthlyPreview(ClassReqDTO.MonthlyPreviewDTO dto);
-
-    ClassAppRespDTO.MonthlyReportRespDTO findMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO dto);
-
-    int updateMonthlySendStatus(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
-
-    int updateMonthlyComment(ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO dto);
-
-    ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    ClassAppRespDTO.MonthlyBukiRespDTO findAppInfantBuki(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm);
-
-    List<ClassAppRespDTO.BeforeClassRespDTO> findBeforeClassByStudentId(
-            @Param("studentId") String studentId,
-            @Param("count") int count);
-
-    List<ClassAppRespDTO.AfterClassRespDTO> findAfterClassByStudentId(
-            @Param("studentId") String studentIdm,
-            @Param("count") int count);
-
-    List<ClassAppRespDTO.AfterClassDetailRespDTO> findAfterClassDetail(
-            @Param("studentId") String studentId,
-            @Param("classType") String classType,
-            @Param("yy") String yy,
-            @Param("mm") String mm,
-            @Param("week") String week);
-
-    public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
-
-    ClassRespDTO.InfantHanDTO findInfantHan(
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey,
-            @Param("year") String year);
-
-    ClassRespDTO.InfantBookDTO findInfantBook(
-            @Param("classKey") String classKey,
-            @Param("unitKey") String unitKey,
-            @Param("year") String year);
-
-    List<ClassRespDTO.InfantHanDTO.StudentInfo> findInfantHanStudents(String TimeTableKey);
-
-    List<ClassRespDTO.InfantBookDTO.StudentInfo> findInfantBookStudents(String TimeTableKey);
-
-    int existsInfantSendHistory(
-            @Param("studentId") String studentId,
-            @Param("timeTableKey") String timeTableKey
-    );
-
-    int createInfantSendHistory(InfantSendHistory history);
-
-    int countInfantHan(@Param("studentId") String studentId,
-                       @Param("timeTableKey") String timeTableKey);
-
-    int countInfantBook(@Param("studentId") String studentId,
+        List<ClassRespDTO.MainClassSummaryDTO> findClassSummary(
+                        @Param("year") String year,
+                        @Param("month") String month,
+                        @Param("dayname") String dayname,
+                        @Param("userCode") String userCode,
+                        @Param("centerCode") String centerCode,
+                        @Param("roleKey") String roleKey);
+
+        List<ClassRespDTO.MainRemedialSummaryDTO> findRemedialSummary(
+                        @Param("today") String today,
+                        @Param("centerCode") String centerCode);
+
+        ClassRespDTO.MainAbsentSummaryDTO findAbsentSummary(
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("roleKey") String roleKey,
+                        @Param("year") String year,
+                        @Param("month") String month);
+
+        List<ClassRespDTO.ClassWeekDTO> getClassWeek(
+                        @Param("year") String year,
+                        @Param("month") String month,
+                        @Param("centerCode") String centerCode);
+
+        void insertClassWeek(ClassReqDTO.SetWeekDTO dto);
+
+        void updateClassWeek(ClassReqDTO.SetWeekDTO dto);
+
+        int existsTimeTable(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        public void registerClass(ClassReqDTO.ClassRegisterDTO classRegister);
+
+        List<ClassRespDTO.ClassUnitDTO> findClassUnitMap();
+
+        List<ClassRespDTO.ClassUnitDTO> findPersonUnit(
+                        @Param("centerCode") String centerCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("classKey") String classKey);
+
+        List<ClassRespDTO.ClassUnitDTO> findPersonUnitsInRange(
+                        @Param("centerCode") String centerCode,
+                        @Param("startYear") String startYear,
+                        @Param("startMonth") String startMonth,
+                        @Param("endYear") String endYear,
+                        @Param("endMonth") String endMonth,
+                        @Param("classKey") String classKey);
+
+        public void createTimeTableKey(TimeTableCode entity);
+
+        public ClassRespDTO.TimeTableDTO existsByYearAndMonthAndPeriodNo(
+                        @Param("periodNo") String periodNo,
+                        @Param("year") String year,
+                        @Param("month") String month,
+                        @Param("dayname") String dayname,
+                        @Param("userCode") String userCode);
+
+        public int updateClass(
+                        @Param("dto") ClassReqDTO.ClassRegisterDTO dto,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("userCode") String userCode);
+
+        public int updateLabel(
+                        @Param("label") String label,
                         @Param("timeTableKey") String timeTableKey);
 
-    Integer findInfantSendId(@Param("studentId") String studentId,
-                             @Param("timeTableKey") String timeTableKey);
+        int existsSameClassType(ClassReqDTO.AddStudentDTO dto);
 
-    Boolean findInfantHanIsSend(@Param("studentId") String studentId,
-                                @Param("timeTableKey") String timeTableKey);
+        public void addStudent(ClassReqDTO.AddStudentDTO addStudentDTO);
 
-    Boolean findInfantBookIsSend(@Param("studentId") String studentId,
-                                 @Param("timeTableKey") String timeTableKey);
+        void restoreStudent(@Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId);
 
-    // INSERT 메서드
-    void insertInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
-                               @Param("centerCode") String centerCode,
-                               @Param("userCode") String userCode,
-                               @Param("studentId") String studentId,
-                               @Param("sendId") Integer sendId,
-                               @Param("isSend") Boolean isSend);
+        int existsAssignHistory(@Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId);
 
-    void insertInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
-                                @Param("centerCode") String centerCode,
-                                @Param("userCode") String userCode,
-                                @Param("studentId") String studentId,
-                                @Param("sendId") Integer sendId,
-                                @Param("isSend") Boolean isSend);
+        ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId,
+                        @Param("centerCode") String centerCode);
 
-    // ✅ UPDATE 메서드 (finalIsSend 파라미터 추가!)
-    void updateInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
-                               @Param("centerCode") String centerCode,
-                               @Param("userCode") String userCode,
-                               @Param("studentId") String studentId,
-                               @Param("sendId") Integer sendId,
-                               @Param("finalIsSend") Boolean finalIsSend);
+        List<ClassRespDTO.StudentStatRespDTO> findStudentStat(
+                        @Param("userCode") String userCode,
+                        @Param("ym") String ym,
+                        @Param("centerCode") String centerCode);
 
-    void updateInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
-                                @Param("centerCode") String centerCode,
-                                @Param("userCode") String userCode,
-                                @Param("studentId") String studentId,
-                                @Param("sendId") Integer sendId,
-                                @Param("finalIsSend") Boolean finalIsSend);
+        void insertMonthlyScore(
+                        @Param("studentId") String studentId,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("timeTableKey") String timeTableKey);
 
+        List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
+                        @Param("userCode") String userCode,
+                        @Param("year") String year,
+                        @Param("month") String month);
 
-    public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
+        List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTables(
+                        @Param("timeTableKeys") List<String> timeTableKeys,
+                        @Param("userCode") String userCode,
+                        @Param("ym") String ym);
 
-    public void upsertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
+        List<ClassRespDTO.TimeTableDTO.StudentDTO> findTimeTableStudents(
+                        String userCode,
+                        List<String> timeTableKeys);
 
-    List<UnitCode> findUnitCodeForPerson();
+        Map<String, Object> findUnitByClassAndUnit(
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey);
 
-    List<ClassCode> findClassListExcludeMid();
+        Map<String, Object> findNextUnitById(@Param("id") int id);
 
-    List<UnitCode> findHanLevelCode();
+        Map<String, String> findReadingMapping(
+                        @Param("classKey") String classKey,
+                        @Param("centerCode") String centerCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
 
-    ClassRespDTO.BasicTimeTableInfo findBasicTimeTableInfo(
-            @Param("timeTableKey") String timeTableKey,
-            @Param("centerCode") String centerCode);
+        List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String userCode, String timeTableKey,
+                        String ym);
 
-    List<ClassAppRespDTO.ClinicListRespDTO> findClinicList(
-            @Param("studentId") String studentId,
-            @Param("ym") String ym
-    );
+        public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 
-    List<ClassAppRespDTO.ClinicResultRespDTO> findClinicResult(
-            @Param("studentId") String studentId,
-            @Param("yy") String yy,
-            @Param("mm") String mm
-    );
+        StudentWebRespDTO.TransferTimeTableInfoDTO findTimeTableKeyByStudentId(
+                        @Param("studentId") String studentId,
+                        @Param("classType") String classType,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
 
-    List<ClassAppRespDTO.ClinicTotalRespDTO> findClinicTotal(
-            @Param("studentId") String studnetId,
-            @Param("sYear") String sYear,
-            @Param("sMonth") String sMonth,
-            @Param("eYear") String eYear,
-            @Param("eMonth") String eMonth
-    );
+        int deleteByKeyAndStudentId(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId);
 
-    AfterClassNotice findByTimeTableKeyAndWeek(String timeTableKey, String week);
+        int deleteTimeTableRow(
+                        @Param("timeTableKey") String timeTableKey);
 
+        List<TimeTable> findTimeTable(
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("userNo") String userNo);
 
-    List<ClassRespDTO.RemarksItemDTO> selectAllItems();
+        List<TimeTableCode> findTimeTableCodeByUserCode(
+                        @Param("userCode") String userCode);
 
-    List<String> selectCheckedKeys(ClassReqDTO.RemarksRequestDTO dto);
+        List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("userCode") String userCode);
 
-    void deleteRemarks(ClassReqDTO.RemarksSaveDTO dto);
+        List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByUserCode(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
 
-    void insertRemarks(ClassReqDTO.RemarksSaveDTO dto);
+        int updateTimeTableAssign(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("studentId") String studentId,
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey);
+
+        // 날짜별 선생님별 수업 조회
+        List<ClassRespDTO.RecordLabelDTO> findTimeTableByUserCode(
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("dayName") String dayName,
+                        @Param("userCode") String userCode,
+                        @Param("centerCode") String centerCode);
+
+        public List<ClassRespDTO.RecordStudentDTO> findRecordStudentByKey(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("week") String week);
+
+        public List<ClassRespDTO.RemedialDTO> findRemedialByUserCode(
+                        @Param("year") String year,
+                        @Param("month") String month,
+                        @Param("userCode") String userCode);
+
+        public int updateRemedialAction(
+                        @Param("remedialKey") String remedialKey,
+                        @Param("action") boolean action);
+
+        public void updateRemedialDate(
+                        @Param("remedialKey") String remedialKey,
+                        @Param("remedialDate") String remedialDate);
+
+        public void updateRemedialTime(
+                        @Param("remedialKey") String remedialKey,
+                        @Param("startTime") String startTime);
+
+        ClassRespDTO.RemedialSendDTO findAppTokenByRemedialKey(@Param("remedialKey") String remedialKey);
+
+        public void deleteRemedial(
+                        @Param("remedialKey") String remedialKey);
+
+        // 선생님별 클래스 코드 조회
+        public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCode(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("count") String count);
+
+        public List<ClassRespDTO.TimeTableLabelDTO> findClassLabelByUserCodeAndDayname(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("dayname") String dayname,
+                        @Param("centerCode") String centerCode);
+
+        List<ClassRespDTO.TimeTableLabelDTO> findInfantClassLabel(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey,
+                        @Param("week") String week,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy);
+
+        public void createAttendance(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("centerCode") String centerCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        List<ClassWeek> findClassWeekByCenter(
+                        @Param("centerCode") String centerCode,
+                        @Param("year") String year,
+                        @Param("month") String month);
+
+        void updateAttendance(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("attendanceDate") String attendanceDate,
+                        @Param("week") String week);
+
+        void updateAfterSend(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("week") String week);
+
+        public ClassRespDTO.AfterClassRespDTO findAfterClass(
+                        @Param("userCode") String userCode,
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey,
+                        @Param("week") String week,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy);
+
+        ClassRespDTO.AfterClassRespDTO findAfterClassNotice(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("week") String week);
+
+        public List<ClassRespDTO.MonthlyStudentDTO> findStudentByClassCode(
+                        @Param("timeTableKey") String timeTableKey);
+
+        int updateMonthlyScore(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
+
+        List<String> getMonthlyAllCorrectFeedback(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        Map<String, String> getMonthlyFeedback(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        MonthlyResult findMonthlyResult(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        void insertMonthlyResult(MonthlyResult monthlyResult);
+
+        void updateMonthlyResult(MonthlyResult monthlyResult);
+
+        List<Map<String, Object>> findMonthlyPreview(ClassReqDTO.MonthlyPreviewDTO dto);
+
+        ClassAppRespDTO.MonthlyReportRespDTO findMonthlyReport(ClassAppReqDTO.MonthlyResultReqDTO dto);
+
+        int updateMonthlySendStatus(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        int updateMonthlyComment(ClassReqDTO.MonthlySaveRequestDTO.MonthlySaveDTO dto);
+
+        ClassAppRespDTO.MonthlyHaniRespDTO findAppInfantHani(
+                        @Param("studentId") String studentId,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        ClassAppRespDTO.MonthlyBukiRespDTO findAppInfantBuki(
+                        @Param("studentId") String studentId,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        public List<ClassAppRespDTO.ClassInfoRespDTO> findClassInfoByStudentId(
+                        @Param("studentId") String studentId,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        List<ClassAppRespDTO.BeforeClassRespDTO> findBeforeClassByStudentId(
+                        @Param("studentId") String studentId,
+                        @Param("count") int count);
+
+        List<ClassAppRespDTO.AfterClassRespDTO> findAfterClassByStudentId(
+                        @Param("studentId") String studentIdm,
+                        @Param("count") int count);
+
+        List<ClassAppRespDTO.AfterClassDetailRespDTO> findAfterClassDetail(
+                        @Param("studentId") String studentId,
+                        @Param("classType") String classType,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("week") String week);
+
+        public ClassRespDTO.RawClassDTO findClassByTimeTableKey(@Param("timeTableKey") String timeTableKey);
+
+        ClassRespDTO.InfantHanDTO findInfantHan(
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey,
+                        @Param("year") String year);
+
+        ClassRespDTO.InfantBookDTO findInfantBook(
+                        @Param("classKey") String classKey,
+                        @Param("unitKey") String unitKey,
+                        @Param("year") String year);
+
+        List<ClassRespDTO.InfantHanDTO.StudentInfo> findInfantHanStudents(String TimeTableKey);
+
+        List<ClassRespDTO.InfantBookDTO.StudentInfo> findInfantBookStudents(String TimeTableKey);
+
+        int existsInfantSendHistory(
+                        @Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        int createInfantSendHistory(InfantSendHistory history);
+
+        int countInfantHan(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        int countInfantBook(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        Integer findInfantSendId(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        Boolean findInfantHanIsSend(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        Boolean findInfantBookIsSend(@Param("studentId") String studentId,
+                        @Param("timeTableKey") String timeTableKey);
+
+        // INSERT 메서드
+        void insertInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("studentId") String studentId,
+                        @Param("sendId") Integer sendId,
+                        @Param("isSend") Boolean isSend);
+
+        void insertInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("studentId") String studentId,
+                        @Param("sendId") Integer sendId,
+                        @Param("isSend") Boolean isSend);
+
+        // ✅ UPDATE 메서드 (finalIsSend 파라미터 추가!)
+        void updateInfantHanNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("studentId") String studentId,
+                        @Param("sendId") Integer sendId,
+                        @Param("finalIsSend") Boolean finalIsSend);
+
+        void updateInfantBookNotice(@Param("dto") ClassReqDTO.InfantSaveReqDTO dto,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("studentId") String studentId,
+                        @Param("sendId") Integer sendId,
+                        @Param("finalIsSend") Boolean finalIsSend);
+
+        public void insertBeforeClassNotice(ClassReqDTO.BeforeClassNoticeDTO dto);
+
+        public void upsertAfterClassNotice(ClassReqDTO.AfterClassNoticeDTO dto);
+
+        List<UnitCode> findUnitCodeForPerson();
+
+        List<ClassCode> findClassListExcludeMid();
+
+        List<UnitCode> findHanLevelCode();
+
+        ClassRespDTO.BasicTimeTableInfo findBasicTimeTableInfo(
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("centerCode") String centerCode);
+
+        List<ClassAppRespDTO.ClinicListRespDTO> findClinicList(
+                        @Param("studentId") String studentId,
+                        @Param("ym") String ym);
+
+        List<ClassAppRespDTO.ClinicResultRespDTO> findClinicResult(
+                        @Param("studentId") String studentId,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm);
+
+        List<ClassAppRespDTO.ClinicTotalRespDTO> findClinicTotal(
+                        @Param("studentId") String studnetId,
+                        @Param("sYear") String sYear,
+                        @Param("sMonth") String sMonth,
+                        @Param("eYear") String eYear,
+                        @Param("eMonth") String eMonth);
+
+        AfterClassNotice findByTimeTableKeyAndWeek(String timeTableKey, String week);
+
+        List<ClassRespDTO.RemarksItemDTO> selectAllItems();
+
+        List<String> selectCheckedKeys(ClassReqDTO.RemarksRequestDTO dto);
+
+        void deleteRemarks(ClassReqDTO.RemarksSaveDTO dto);
+
+        void insertRemarks(ClassReqDTO.RemarksSaveDTO dto);
 }

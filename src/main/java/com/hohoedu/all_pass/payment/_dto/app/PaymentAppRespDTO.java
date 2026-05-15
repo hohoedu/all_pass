@@ -16,12 +16,14 @@ public class PaymentAppRespDTO {
         private String inmoney;
         private String state;
         private String gubun;
+        private String className; 
 
         // inym => 수업 년월
         // gb => 수업 종류 (한/북)
         // indate => 결제 날짜
         // inmoney => 결제 금액
         // gubun  => 청구 종류 (교육비 / 교재비)
+        // className => 수강 과목
     }
 
     @Data

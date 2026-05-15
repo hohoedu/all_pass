@@ -9,14 +9,12 @@ import java.util.Map;
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
 import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ProcessedClassDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
-import com.hohoedu.all_pass.class_instance.model.ClassWeek;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import com.hohoedu.all_pass.class_instance.TimeTable;
 
 import lombok.RequiredArgsConstructor;
 

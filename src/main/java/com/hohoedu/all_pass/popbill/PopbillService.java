@@ -14,7 +14,6 @@ import com.popbill.api.KakaoService;
 import com.popbill.api.PopbillException;
 import com.popbill.api.kakao.*;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ public class PopbillService {
 
         private final PopbillRepository popbillRepository;
         private final PopbillServiceFactory serviceFactory;
-        private final KakaoService kakaoService;
         private final StudentRepository studentRepository;
 
         @Value("${popbill.aes.key}")

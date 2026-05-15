@@ -1,9 +1,5 @@
 package com.hohoedu.all_pass.popbill;
 
-import com.google.api.Http;
-import com.google.protobuf.Api;
-import com.hohoedu.all_pass._core.handler.GlobalExceptionHandler;
-import com.hohoedu.all_pass._core.utils.Aes256Util;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.consult.ConsultService;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;

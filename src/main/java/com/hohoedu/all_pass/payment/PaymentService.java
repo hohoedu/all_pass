@@ -19,8 +19,6 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.repository.StudentRepository;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
-import com.popbill.api.cashbill.Cashbill;
-import com.popbill.api.cashbill.CashbillInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +27,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
@@ -44,7 +40,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Service
 @Transactional
@@ -57,15 +52,16 @@ public class PaymentService {
     private final AtomicInteger billCounter = new AtomicInteger(0);
     private volatile long currentSecond = Instant.now().getEpochSecond();
 
-
-    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode, String roleKey, String type) {
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode,
+            String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, 1);
     }
 
     // 기간별 미납 조회
-    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode, String roleKey, String type) {
+    public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode,
+            String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, roleKey, type, year, month);
@@ -101,12 +97,15 @@ public class PaymentService {
 
         log.info("oldStatus={}", oldStatus);
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 1️⃣ 전체 detail 금액 (교육비 + 교재비) → payment.amount 용
-         * ========================================================= */
+         * =========================================================
+         */
         List<String> allDetails = paymentRepository.findPaymentDetailByPaymentKey(paymentKey);
         int totalDetailAmount = allDetails.stream().mapToInt(v -> {
-            if (v == null || v.isBlank()) return 0;
+            if (v == null || v.isBlank())
+                return 0;
             try {
                 return Integer.parseInt(v);
             } catch (NumberFormatException e) {
@@ -114,23 +113,30 @@ public class PaymentService {
             }
         }).sum();
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 2️⃣ 교육비 detail 총액 (상태 판단 기준)
-         * ========================================================= */
+         * =========================================================
+         */
         PaymentRespDTO.PaymentDetailDTO eduDetail = paymentRepository.findEduPaymentDetailByPaymentKey(paymentKey);
 
         int eduDetailTotal = (eduDetail != null && eduDetail.getAmount() != null) ? eduDetail.getAmount() : 0;
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 3️⃣ 교육비 bill 승인 금액 (approved 만)
-         * ========================================================= */
+         * =========================================================
+         */
         List<PaymentBill> bills = paymentRepository.findBillsByPaymentKey(paymentKey);
 
-        int eduBillApprovedAmount = bills.stream().filter(b -> "EDU_FEE".equals(b.getBillType())).filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
+        int eduBillApprovedAmount = bills.stream().filter(b -> "EDU_FEE".equals(b.getBillType()))
+                .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 4️⃣ manual 결제 금액 (교육비만)
-         * ========================================================= */
+         * =========================================================
+         */
         int manualPaidAmount;
         try {
             manualPaidAmount = paymentRepository.sumManualAmountByPaymentKey(paymentKey);
@@ -139,20 +145,27 @@ public class PaymentService {
             manualPaidAmount = 0;
         }
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 5️⃣ 교육비 실제 납부 금액
-         * ========================================================= */
+         * =========================================================
+         */
         int eduPaidTotal = eduBillApprovedAmount + manualPaidAmount;
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 6️⃣ 교육비 미납 금액 (핵심 공식)
-         * ========================================================= */
+         * =========================================================
+         */
         int eduUnpaidAmount = eduDetailTotal - eduPaidTotal;
-        if (eduUnpaidAmount < 0) eduUnpaidAmount = 0;
+        if (eduUnpaidAmount < 0)
+            eduUnpaidAmount = 0;
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 7️⃣ payment 상태 결정 (교육비 기준 ONLY)
-         * ========================================================= */
+         * =========================================================
+         */
         String newStatus;
 
         if (eduDetailTotal == 0) {
@@ -167,21 +180,28 @@ public class PaymentService {
 
         log.info("newStatus={}", newStatus);
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 8️⃣ payment.amount / unpaid_amount 업데이트
-         * - amount        : 전체(detail) 금액
+         * - amount : 전체(detail) 금액
          * - unpaid_amount : 전체 미납 (교육비 + 교재비 기준)
-         * ========================================================= */
-        int totalPaidAmount = eduBillApprovedAmount + manualPaidAmount + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType())).filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
+         * =========================================================
+         */
+        int totalPaidAmount = eduBillApprovedAmount + manualPaidAmount
+                + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType()))
+                        .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
 
         int totalUnpaidAmount = totalDetailAmount - totalPaidAmount;
-        if (totalUnpaidAmount < 0) totalUnpaidAmount = 0;
+        if (totalUnpaidAmount < 0)
+            totalUnpaidAmount = 0;
 
         paymentRepository.updateAmountAndUnpaidAmountByPaymentKey(paymentKey, totalDetailAmount, totalUnpaidAmount);
 
-        /* =========================================================
+        /*
+         * =========================================================
          * 9️⃣ 상태 변경 시 payment 업데이트
-         * ========================================================= */
+         * =========================================================
+         */
         if (!Objects.equals(oldStatus, newStatus)) {
 
             String paidDate = payment.getPaidDate();
@@ -202,10 +222,14 @@ public class PaymentService {
 
             paymentRepository.updatePaymentStatus(paymentKey, newStatus, paidDate, totalUnpaidAmount, method);
 
-            logHistory("status_recalculated", "system", oldStatus, newStatus, eduPaidTotal, String.format("교육비 재계산 (detail:%d, bill:%d, manual:%d, unpaid:%d)", eduDetailTotal, eduBillApprovedAmount, manualPaidAmount, eduUnpaidAmount), paymentKey, userCode);
+            logHistory("status_recalculated", "system", oldStatus, newStatus, eduPaidTotal,
+                    String.format("교육비 재계산 (detail:%d, bill:%d, manual:%d, unpaid:%d)", eduDetailTotal,
+                            eduBillApprovedAmount, manualPaidAmount, eduUnpaidAmount),
+                    paymentKey, userCode);
         }
 
-        log.info("✅ payment 재계산 완료 paymentKey={}, status:{}→{}, eduDetail={}, eduPaid={}, eduUnpaid={}, totalUnpaid={}", paymentKey, oldStatus, newStatus, eduDetailTotal, eduPaidTotal, eduUnpaidAmount, totalUnpaidAmount);
+        log.info("✅ payment 재계산 완료 paymentKey={}, status:{}→{}, eduDetail={}, eduPaid={}, eduUnpaid={}, totalUnpaid={}",
+                paymentKey, oldStatus, newStatus, eduDetailTotal, eduPaidTotal, eduUnpaidAmount, totalUnpaidAmount);
     }
 
     /**
@@ -213,7 +237,8 @@ public class PaymentService {
      * <p>
      * 용도: 모든 결제 관련 이벤트를 erp_payment_history 테이블에 기록
      *
-     * @param eventType   - 이벤트 타입 (payment_created, bill_issued, callback_received 등)
+     * @param eventType   - 이벤트 타입 (payment_created, bill_issued, callback_received
+     *                    등)
      * @param eventSource - 이벤트 발생원 (system, manual, callback)
      * @param oldStatus   - 변경 전 상태
      * @param newStatus   - 변경 후 상태
@@ -222,13 +247,15 @@ public class PaymentService {
      * @param paymentKey  - payment 키
      * @param userCode    - 작업자 코드
      */
-    private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount, String description, String paymentKey, String userCode) {
+    private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount,
+            String description, String paymentKey, String userCode) {
 
-        PaymentReqDTO.PaymentHistoryRecordDTO dto = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType(eventType).eventSource(eventSource).oldStatus(oldStatus).newStatus(newStatus).amount(amount).description(description).paymentKey(paymentKey).userCode(userCode).build();
+        PaymentReqDTO.PaymentHistoryRecordDTO dto = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType(eventType)
+                .eventSource(eventSource).oldStatus(oldStatus).newStatus(newStatus).amount(amount)
+                .description(description).paymentKey(paymentKey).userCode(userCode).build();
 
         paymentRepository.insertPaymentHistory(dto);
     }
-
 
     /**
      * billId 생성 (유니크 ID)
@@ -298,7 +325,8 @@ public class PaymentService {
      * @return Paymint 응답 객체
      * @throws JsonProcessingException JSON 변환 오류
      */
-    private PaymentRespDTO.PaymintRespDTO callPaymint(String url, Map<String, Object> body) throws JsonProcessingException {
+    private PaymentRespDTO.PaymintRespDTO callPaymint(String url, Map<String, Object> body)
+            throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(body);
@@ -311,7 +339,8 @@ public class PaymentService {
 
         HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
-        ResponseEntity<PaymentRespDTO.PaymintRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentRespDTO.PaymintRespDTO.class);
+        ResponseEntity<PaymentRespDTO.PaymintRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity,
+                PaymentRespDTO.PaymintRespDTO.class);
 
         return response.getBody();
     }
@@ -346,7 +375,10 @@ public class PaymentService {
 
         paymentKey = PaymentKeyGenerator.generate(centerCode);
 
-        Payment payment = Payment.builder().paymentKey(paymentKey).student(Student.builder().studentId(studentId).build()).center(Center.builder().centerCode(centerCode).build()).yy(yy).mm(mm).amount(0).unpaidAmount(0).status("pending").build();
+        Payment payment = Payment.builder().paymentKey(paymentKey)
+                .student(Student.builder().studentId(studentId).build())
+                .center(Center.builder().centerCode(centerCode).build()).yy(yy).mm(mm).amount(0).unpaidAmount(0)
+                .status("pending").build();
 
         paymentRepository.createPayment(payment);
 
@@ -399,9 +431,8 @@ public class PaymentService {
         paymentRepository.createPaymentDetail(bookDetail);
 
         // 🔥 개선: payment 상태 재계산
-//        recalculatePaymentStatus(paymentKey, userCode);
+        // recalculatePaymentStatus(paymentKey, userCode);
     }
-
 
     /**
      * 결제선생 청구서 발행 (핵심 메서드)
@@ -424,7 +455,8 @@ public class PaymentService {
      * 테이블: erp_payment_bill
      */
     @Transactional
-    public Map<String, Integer> sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req) throws JsonProcessingException {
+    public Map<String, Integer> sendBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaySendReqDTO req)
+            throws JsonProcessingException {
         log.info("req = {}", req.toString());
 
         // 1. 청구 타입 결정
@@ -456,7 +488,8 @@ public class PaymentService {
 
             targets = paymentRepository.findTargetsByParentPhones(parentPhones, req.getYy(), req.getMm(), billType);
         } else {
-            targets = paymentRepository.findTargetsByStudentIds(req.getStudentIds(), req.getYy(), req.getMm(), billType);
+            targets = paymentRepository.findTargetsByStudentIds(req.getStudentIds(), req.getYy(), req.getMm(),
+                    billType);
         }
 
         if (targets.isEmpty()) {
@@ -483,8 +516,7 @@ public class PaymentService {
                 int totalDetailAmount = target.getAmount();
                 int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(
                         paymentKey, req.getYy(), req.getMm(), billType,
-                        Arrays.asList("issued", "approved")
-                );
+                        Arrays.asList("issued", "approved"));
 
                 if (totalDetailAmount <= billedAmount) {
                     log.info("✅ 청구 제외 - payment.status가 approved이고 추가 청구 금액 없음");
@@ -502,12 +534,14 @@ public class PaymentService {
 
             // detail보다 큰 금액은 청구 불가
             if (requestAmount > totalDetailAmount) {
-                log.warn("청구 불가 - paymentKey: {}, 요청 금액({})이 detail 총액({})보다 큼", paymentKey, requestAmount, totalDetailAmount);
+                log.warn("청구 불가 - paymentKey: {}, 요청 금액({})이 detail 총액({})보다 큼", paymentKey, requestAmount,
+                        totalDetailAmount);
                 continue;
             }
 
             // 이미 청구된 bill 금액 조회 (destroyed, canceled 제외)
-            int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(paymentKey, req.getYy(), req.getMm(), billType, Arrays.asList("issued", "approved"));
+            int billedAmount = paymentRepository.sumBilledAmountByPaymentKey(paymentKey, req.getYy(), req.getMm(),
+                    billType, Arrays.asList("issued", "approved"));
 
             // manual 결제 금액 조회 (교육비만 해당)
             int manualPaidAmount = 0;
@@ -529,15 +563,18 @@ public class PaymentService {
 
             if (billedAmount > 0 && availableAmount > 0) {
                 isAdditionalCharge = true;
-                chargeReason = String.format("과목 추가로 인한 추가 청구 (기존: %d원, 현재: %d원, 추가: %d원)", billedAmount, requestAmount, availableAmount);
+                chargeReason = String.format("과목 추가로 인한 추가 청구 (기존: %d원, 현재: %d원, 추가: %d원)", billedAmount, requestAmount,
+                        availableAmount);
                 log.info("✅ 추가 청구 - studentId: {}, paymentKey: {}, {}", studentId, paymentKey, chargeReason);
             }
 
             if (availableAmount <= 0) {
                 if (billedAmount > 0) {
-                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 이미 전액 청구됨 (요청: {}, bill: {}, manual: {})", studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
+                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 이미 전액 청구됨 (요청: {}, bill: {}, manual: {})",
+                            studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
                 } else {
-                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 추가 청구 금액 없음 (요청: {}, bill: {}, manual: {})", studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
+                    log.info("✅ 청구 제외 - studentId: {}, paymentKey: {}, 추가 청구 금액 없음 (요청: {}, bill: {}, manual: {})",
+                            studentId, paymentKey, requestAmount, billedAmount, manualPaidAmount);
                 }
                 continue;
             }
@@ -547,9 +584,12 @@ public class PaymentService {
             finalTargets.add(target);
 
             if (isAdditionalCharge) {
-                log.info("✅✅ 추가 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 추가 금액: {} (기존 bill: {}, 현재 total: {})", studentId, target.getStudentName(), paymentKey, availableAmount, billedAmount, requestAmount);
+                log.info("✅✅ 추가 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 추가 금액: {} (기존 bill: {}, 현재 total: {})",
+                        studentId, target.getStudentName(), paymentKey, availableAmount, billedAmount, requestAmount);
             } else {
-                log.info("✅ 신규 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 청구 금액: {} (요청: {}, bill: {}, manual: {})", studentId, target.getStudentName(), paymentKey, availableAmount, requestAmount, billedAmount, manualPaidAmount);
+                log.info("✅ 신규 청구 대상 - studentId: {}, 학생: {}, paymentKey: {}, 청구 금액: {} (요청: {}, bill: {}, manual: {})",
+                        studentId, target.getStudentName(), paymentKey, availableAmount, requestAmount, billedAmount,
+                        manualPaidAmount);
             }
         }
 
@@ -563,11 +603,9 @@ public class PaymentService {
 
         // 5. 부모별로 그룹화
         Map<String, List<PaymentRespDTO.PayTargetDTO>> groupByParent = finalTargets.stream()
-                .collect(Collectors.groupingBy(t ->
-                        (t.getBillingPhone() != null && !t.getBillingPhone().isBlank())
-                                ? t.getBillingPhone()
-                                : t.getParentPhone()
-                ));
+                .collect(Collectors.groupingBy(t -> (t.getBillingPhone() != null && !t.getBillingPhone().isBlank())
+                        ? t.getBillingPhone()
+                        : t.getParentPhone()));
 
         log.info("✅ 부모별 그룹 수: {}", groupByParent.size());
 
@@ -623,7 +661,6 @@ public class PaymentService {
                     }
                 }
 
-
                 Map<String, Object> bill = Map.of(
                         "bill_id", billId,
                         "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
@@ -633,26 +670,26 @@ public class PaymentService {
                         "price", totalPrice,
                         "hash", hash,
                         "expire_dt", req.getExpireDt(),
-                        "callbackURL", conf.getCallbackUrl()
-                );
+                        "callbackURL", conf.getCallbackUrl());
 
                 Map<String, Object> body = Map.of(
                         "apikey", conf.getApiKey(),
-//                        "apikey", "TEST-API-KEY-TALK",
+                        // "apikey", "TEST-API-KEY-TALK",
                         "member", conf.getMemberId(),
-//                        "member", "TEST-MEMBER-FOR-API",
+                        // "member", "TEST-MEMBER-FOR-API",
                         "merchant", conf.getMerchantId(),
-//                        "merchant", "TEST-MERCHANT-FOR-API",
-                        "bill", bill
-                );
+                        // "merchant", "TEST-MERCHANT-FOR-API",
+                        "bill", bill);
 
                 log.info("✅ 결제 API 호출 - billId: {}, phone: {}, amount: {}, 형제 수: {}, 추가청구: {}",
                         billId, sendPhone, totalPrice, group.size(), hasAdditionalCharge ? "Yes" : "No");
                 PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint(conf.getSendUrl(), body);
-//                PaymentRespDTO.PaymintRespDTO paymintResp = callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
+                // PaymentRespDTO.PaymintRespDTO paymintResp =
+                // callPaymint("https://stg.paymint.co.kr/partner/if/bill/send", body);
 
                 if (!"0000".equals(paymintResp.getCode())) {
-                    log.error("결제 API 실패 - billId: {}, code: {}, message: {}", billId, paymintResp.getCode(), paymintResp.getMsg());
+                    log.error("결제 API 실패 - billId: {}, code: {}, message: {}", billId, paymintResp.getCode(),
+                            paymintResp.getMsg());
                     failCount++;
                     continue;
                 }
@@ -696,8 +733,9 @@ public class PaymentService {
     }
 
     private void sendProgress(String jobId, int current, int total, String status,
-                              String studentName, int successCount, int failCount) {
-        if (jobId == null || jobId.isBlank()) return;
+            String studentName, int successCount, int failCount) {
+        if (jobId == null || jobId.isBlank())
+            return;
 
         Map<String, Object> data = new HashMap<>();
         data.put("current", current);
@@ -731,7 +769,12 @@ public class PaymentService {
 
         Payment oldPayment = paymentRepository.findPaymentByKey(dto.getPaymentKey());
 
-        PaymentBill paymentBill = PaymentBill.builder().billId(dto.getBillId()).payment(Payment.builder().paymentKey(dto.getPaymentKey()).build()).amount(dto.getAmount()).status(status).expireDate(dto.getExpireDate()).issuedDate(today).billType(dto.getBillType()).student(Student.builder().studentId(dto.getStudentId()).build()).center(Center.builder().centerCode(dto.getCenterCode()).build()).yy(dto.getYy()).mm(dto.getMm()).build();
+        PaymentBill paymentBill = PaymentBill.builder().billId(dto.getBillId())
+                .payment(Payment.builder().paymentKey(dto.getPaymentKey()).build()).amount(dto.getAmount())
+                .status(status).expireDate(dto.getExpireDate()).issuedDate(today).billType(dto.getBillType())
+                .student(Student.builder().studentId(dto.getStudentId()).build())
+                .center(Center.builder().centerCode(dto.getCenterCode()).build()).yy(dto.getYy()).mm(dto.getMm())
+                .build();
 
         paymentRepository.createPaymentBill(paymentBill);
 
@@ -739,14 +782,18 @@ public class PaymentService {
             recalculatePaymentStatus(dto.getPaymentKey(), userCode);
         }
 
-        logHistory("bill_issued", "system", oldPayment.getStatus(), status, dto.getAmount(), dto.getYy() + "년 " + dto.getMm() + "월 청구서 발행 (" + dto.getBillType() + ")", dto.getPaymentKey(), userCode);
+        logHistory("bill_issued", "system", oldPayment.getStatus(), status, dto.getAmount(),
+                dto.getYy() + "년 " + dto.getMm() + "월 청구서 발행 (" + dto.getBillType() + ")", dto.getPaymentKey(),
+                userCode);
     }
 
     /**
      * 수업료 청구 화면 데이터 조회
      */
-    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode, String centerCode, String itemType) {
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode, centerCode, itemType);
+    public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode,
+            String centerCode, String itemType) {
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode,
+                centerCode, itemType);
         return students;
     }
 
@@ -760,7 +807,8 @@ public class PaymentService {
     /**
      * 앱용 납부내역 조회
      */
-    public List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsBytudentId(PaymentAppReqDTO.PaymentDetailsReqDTO reqDTO) {
+    public List<PaymentAppRespDTO.PaymentDetailRespDTO> findPaymentDetailsBytudentId(
+            PaymentAppReqDTO.PaymentDetailsReqDTO reqDTO) {
         return paymentRepository.findPaymentDetailsByStudentId(reqDTO.getStudentId(), reqDTO.getCount());
     }
 
@@ -784,22 +832,22 @@ public class PaymentService {
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
 
         log.info("paymentCallBack = {}", dto.toString());
-        PaymentCallback paymentCallback = PaymentCallback.builder().apiKey(dto.getApikey())                        // 연동코드
-                .billId(dto.getBill_id())                       // 청구서 ID
-                .apprCatId(dto.getAppr_cat_id()).apprPayType(dto.getAppr_pay_type())            // 결제수단
-                .apprCardType(dto.getAppr_card_type())          // 결제카드 종류
-                .apprDate(dto.getAppr_dt())                     // 승인일시
-                .apprIssuer(dto.getAppr_issuer())               // 결제은행 / 카드명
-                .apprIssuerCode(dto.getAppr_issuer_cd())        // 은행코드
-                .apprIssuerNum(dto.getAppr_issuer_num())        // 결제 카드번호
-                .apprNum(dto.getAppr_num())                     // 승인번호
-                .apprPrice(dto.getAppr_price())                 // 승인금액
-                .apprState(dto.getAppr_state())                 // 결제상태
-                .apprMonthly(dto.getAppr_monthly())             // 결제 할부 개월 수
-                .apprAcquirerCode(dto.getAppr_acquirer_cd())    // 매입사 코드
-                .apprAcquirerName(dto.getAppr_acquirer_nm())    // 매입사 명
-                .apprOriginDate(dto.getAppr_origin_dt())        // 원거래 일시
-                .apprOriginNum(dto.getAppr_origin_num())        // 원거래 승인번호
+        PaymentCallback paymentCallback = PaymentCallback.builder().apiKey(dto.getApikey()) // 연동코드
+                .billId(dto.getBill_id()) // 청구서 ID
+                .apprCatId(dto.getAppr_cat_id()).apprPayType(dto.getAppr_pay_type()) // 결제수단
+                .apprCardType(dto.getAppr_card_type()) // 결제카드 종류
+                .apprDate(dto.getAppr_dt()) // 승인일시
+                .apprIssuer(dto.getAppr_issuer()) // 결제은행 / 카드명
+                .apprIssuerCode(dto.getAppr_issuer_cd()) // 은행코드
+                .apprIssuerNum(dto.getAppr_issuer_num()) // 결제 카드번호
+                .apprNum(dto.getAppr_num()) // 승인번호
+                .apprPrice(dto.getAppr_price()) // 승인금액
+                .apprState(dto.getAppr_state()) // 결제상태
+                .apprMonthly(dto.getAppr_monthly()) // 결제 할부 개월 수
+                .apprAcquirerCode(dto.getAppr_acquirer_cd()) // 매입사 코드
+                .apprAcquirerName(dto.getAppr_acquirer_nm()) // 매입사 명
+                .apprOriginDate(dto.getAppr_origin_dt()) // 원거래 일시
+                .apprOriginNum(dto.getAppr_origin_num()) // 원거래 승인번호
                 .build();
 
         paymentRepository.createPaymentCallback(paymentCallback);
@@ -827,9 +875,10 @@ public class PaymentService {
         }
 
         String rawDate = dto.getAppr_dt();
-        String paidDate = rawDate.substring(0, 4) + "-" + rawDate.substring(4, 6) + "-" + rawDate.substring(6, 8) + " " + rawDate.substring(8, 10) + ":" + rawDate.substring(10, 12);
+        String paidDate = rawDate.substring(0, 4) + "-" + rawDate.substring(4, 6) + "-" + rawDate.substring(6, 8) + " "
+                + rawDate.substring(8, 10) + ":" + rawDate.substring(10, 12);
 
-        // bill 상태를  'approved'로 변경
+        // bill 상태를 'approved'로 변경
         paymentRepository.updateBillStatus(dto.getBill_id(), "approved");
 
         // 🔥 개선: 교육비 bill만 payment 상태에 영향
@@ -855,7 +904,8 @@ public class PaymentService {
 
             // 🔥 개선: bill_type 확인 후 분기 처리
             List<PaymentBill> paymentBills = paymentRepository.findBillsByPaymentKey(paymentKey);
-            boolean hasEduBill = paymentBills.stream().anyMatch(b -> "EDU_FEE".equals(b.getBillType()) && dto.getBill_id().equals(b.getBillId()));
+            boolean hasEduBill = paymentBills.stream()
+                    .anyMatch(b -> "EDU_FEE".equals(b.getBillType()) && dto.getBill_id().equals(b.getBillId()));
 
             if (hasEduBill) {
                 // 교육비 bill → payment 상태 재계산
@@ -863,13 +913,16 @@ public class PaymentService {
 
                 Payment updatedPayment = paymentRepository.findPaymentByKey(paymentKey);
 
-                logHistory("callback_received", "callback", oldStatus, updatedPayment.getStatus(), bill.getAmount(), "Paymint 교육비 결제 승인 콜백 처리", paymentKey, null);
+                logHistory("callback_received", "callback", oldStatus, updatedPayment.getStatus(), bill.getAmount(),
+                        "Paymint 교육비 결제 승인 콜백 처리", paymentKey, null);
             } else {
                 // 교재비 bill → payment 상태에 영향 없음 (bill.status로만 관리)
-                logHistory("callback_received", "callback", null, "approved", bill.getAmount(), "Paymint 교재비 결제 승인 콜백 처리 (payment 영향 없음)", paymentKey, null);
+                logHistory("callback_received", "callback", null, "approved", bill.getAmount(),
+                        "Paymint 교재비 결제 승인 콜백 처리 (payment 영향 없음)", paymentKey, null);
             }
 
-            log.info("✅ 콜백 처리 완료 paymentKey={}, billId={}, amount={}, type={}", paymentKey, dto.getBill_id(), bill.getAmount(), hasEduBill ? "교육비" : "교재비");
+            log.info("✅ 콜백 처리 완료 paymentKey={}, billId={}, amount={}, type={}", paymentKey, dto.getBill_id(),
+                    bill.getAmount(), hasEduBill ? "교육비" : "교재비");
         }
     }
 
@@ -881,9 +934,11 @@ public class PaymentService {
      * - BOOK_FEE bill 파기: 독립적 (payment 영향 없음)
      */
     @Transactional
-    public void destroyBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayDestroyReqDTO req) throws JsonProcessingException {
+    public void destroyBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayDestroyReqDTO req)
+            throws JsonProcessingException {
 
-        log.info("destroy request billId={}, paymentKey={}, type={}", req.getBillId(), req.getPaymentKey(), req.getDestroyType());
+        log.info("destroy request billId={}, paymentKey={}, type={}", req.getBillId(), req.getPaymentKey(),
+                req.getDestroyType());
 
         String billId = req.getBillId();
 
@@ -891,7 +946,8 @@ public class PaymentService {
             throw new RuntimeException("청구서 ID가 없습니다.");
         }
 
-        List<PaymentRespDTO.PaymentBillDTO> bills = paymentRepository.findBillsByBillIdAndType(billId, req.getDestroyType());
+        List<PaymentRespDTO.PaymentBillDTO> bills = paymentRepository.findBillsByBillIdAndType(billId,
+                req.getDestroyType());
 
         if (bills == null || bills.isEmpty()) {
             throw new RuntimeException("파기 가능한 청구서가 없습니다.");
@@ -929,7 +985,8 @@ public class PaymentService {
         String raw = billId + "," + billPrice;
         String hash = DigestUtils.sha256Hex(raw);
 
-        Map<String, Object> body = Map.of("apikey", conf.getApiKey(), "member", conf.getMemberId(), "merchant", conf.getMerchantId(), "bill_id", billId, "price", billPrice, "hash", hash);
+        Map<String, Object> body = Map.of("apikey", conf.getApiKey(), "member", conf.getMemberId(), "merchant",
+                conf.getMerchantId(), "bill_id", billId, "price", billPrice, "hash", hash);
 
         PaymentRespDTO.PaymintRespDTO resp = callPaymint(conf.getDestroyUrl(), body);
 
@@ -946,7 +1003,10 @@ public class PaymentService {
         for (PaymentRespDTO.PaymentBillDTO bill : bills) {
             affectedPaymentKeys.add(bill.getPaymentKey());
 
-            PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType("bill_destroyed").eventSource("manual").oldStatus(bill.getStatus()).newStatus("destroyed").amount(bill.getPrice()).description("청구서 파기 (" + req.getDestroyType() + ")").paymentKey(bill.getPaymentKey()).userCode(user.getUserCode()).build();
+            PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                    .eventType("bill_destroyed").eventSource("manual").oldStatus(bill.getStatus())
+                    .newStatus("destroyed").amount(bill.getPrice()).description("청구서 파기 (" + req.getDestroyType() + ")")
+                    .paymentKey(bill.getPaymentKey()).userCode(user.getUserCode()).build();
 
             paymentRepository.insertPaymentHistory(history);
         }
@@ -963,8 +1023,10 @@ public class PaymentService {
     /**
      * 미납 학생 조회
      */
-    public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode, String yy, String mm) {
-        List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode, yy, mm);
+    public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode, String yy,
+            String mm) {
+        List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode, yy,
+                mm);
         return studentDTO;
     }
 
@@ -997,7 +1059,8 @@ public class PaymentService {
      * - BOOK_FEE 취소: 독립적 (payment 영향 없음)
      */
     @Transactional
-    public void cancelPayment(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaymentCancelReqDTO req) throws JsonProcessingException {
+    public void cancelPayment(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PaymentCancelReqDTO req)
+            throws JsonProcessingException {
 
         log.info("cancel request paymentKey={}, cancelType={}", req.getPaymentKey(), req.getCancelType());
 
@@ -1007,7 +1070,8 @@ public class PaymentService {
             throw new RuntimeException("취소할 청구서 정보가 없습니다.");
         }
 
-        List<PaymentRespDTO.PaymentBillDTO> bills = paymentRepository.findBillsByBillIdAndType(billId, req.getCancelType());
+        List<PaymentRespDTO.PaymentBillDTO> bills = paymentRepository.findBillsByBillIdAndType(billId,
+                req.getCancelType());
 
         if (bills == null || bills.isEmpty()) {
             throw new RuntimeException("취소 가능한 결제 내역이 없습니다.");
@@ -1017,7 +1081,8 @@ public class PaymentService {
             throw new RuntimeException("결제 대기 상태의 청구서는 취소할 수 없습니다.");
         }
 
-        List<PaymentRespDTO.PaymentBillDTO> approvedBills = bills.stream().filter(b -> "approved".equals(b.getStatus())).toList();
+        List<PaymentRespDTO.PaymentBillDTO> approvedBills = bills.stream().filter(b -> "approved".equals(b.getStatus()))
+                .toList();
 
         if (approvedBills.isEmpty()) {
             throw new RuntimeException("결제 완료된 내역이 없습니다.");
@@ -1048,7 +1113,8 @@ public class PaymentService {
         String raw = billId + "," + cancelAmount;
         String hash = DigestUtils.sha256Hex(raw);
 
-        Map<String, Object> body = Map.of("apikey", conf.getApiKey(), "member", conf.getMemberId(), "merchant", conf.getMerchantId(), "bill_id", billId, "price", cancelAmount, "hash", hash);
+        Map<String, Object> body = Map.of("apikey", conf.getApiKey(), "member", conf.getMemberId(), "merchant",
+                conf.getMerchantId(), "bill_id", billId, "price", cancelAmount, "hash", hash);
 
         PaymentRespDTO.PaymintRespDTO resp = callPaymint(conf.getCancelUrl(), body);
 
@@ -1065,7 +1131,10 @@ public class PaymentService {
         for (PaymentRespDTO.PaymentBillDTO bill : approvedBills) {
             affectedPaymentKeys.add(bill.getPaymentKey());
 
-            PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType("payment_cancel").eventSource("manual").oldStatus("approved").newStatus("canceled").amount(bill.getPrice()).description(req.getCancelReason()).paymentKey(bill.getPaymentKey()).userCode(user.getUserCode()).build();
+            PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                    .eventType("payment_cancel").eventSource("manual").oldStatus("approved").newStatus("canceled")
+                    .amount(bill.getPrice()).description(req.getCancelReason()).paymentKey(bill.getPaymentKey())
+                    .userCode(user.getUserCode()).build();
 
             paymentRepository.insertPaymentHistory(history);
 
@@ -1103,9 +1172,11 @@ public class PaymentService {
         int bookMaterialFee = dto.getBookMaterialFee() != null ? dto.getBookMaterialFee() : 0;
 
         for (String paymentKey : paymentKeys) {
-            paymentRepository.updateEduFeeDetailByPaymentKey(paymentKey, hanEduFee, hanMaterialFee, bookEduFee, bookMaterialFee);
+            paymentRepository.updateEduFeeDetailByPaymentKey(paymentKey, hanEduFee, hanMaterialFee, bookEduFee,
+                    bookMaterialFee);
 
-            paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(), dto.getBookMaterialFee());
+            paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(),
+                    dto.getBookMaterialFee());
         }
     }
 
@@ -1119,12 +1190,13 @@ public class PaymentService {
         int bookEduFee = dto.getBookEduFee() != null ? dto.getBookEduFee() : 0;
         int bookMaterialFee = dto.getBookMaterialFee() != null ? dto.getBookMaterialFee() : 0;
 
-        paymentRepository.updateEduFeeDetailByPaymentKey(dto.getPaymentKey(), hanEduFee, hanMaterialFee, bookEduFee, bookMaterialFee);
+        paymentRepository.updateEduFeeDetailByPaymentKey(dto.getPaymentKey(), hanEduFee, hanMaterialFee, bookEduFee,
+                bookMaterialFee);
         recalculatePaymentStatus(dto.getPaymentKey(), null);
 
-        paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(), dto.getBookMaterialFee());
+        paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(),
+                dto.getBookMaterialFee());
     }
-
 
     /**
      * 수기 결제 입력 (현장 결제)
@@ -1166,14 +1238,16 @@ public class PaymentService {
 
         for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
             // Payment 조회
-            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
+            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(),
+                    reqDTO.getMm());
 
             if (payment == null) {
                 throw new RuntimeException("해당 학생의 결제 정보가 없습니다. studentId: " + studentInfo.getStudentId());
             }
 
             // 청구 금액 조회
-            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(), studentInfo.getStudentId());
+            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(),
+                    studentInfo.getStudentId());
             log.info("eduFee = {}", eduFee);
             if (eduFee == null || eduFee == 0) {
                 throw new RuntimeException("청구 금액을 찾을 수 없습니다. studentId: " + studentInfo.getStudentId());
@@ -1223,13 +1297,16 @@ public class PaymentService {
 
         // payment_manual_group 등록
         paymentRepository.insertPaymentManualGroup(groupDTO);
-        log.info("manual_group 생성 완료 - manualKey: {}, 대표학생: {}, 학생수: {}", manualKey, students.get(0).getStudentId(), students.size());
+        log.info("manual_group 생성 완료 - manualKey: {}, 대표학생: {}, 학생수: {}", manualKey, students.get(0).getStudentId(),
+                students.size());
         List<StudentPaymentResult> paymentResults = new ArrayList<>();
         for (PaymentReqDTO.ManualPaymentReqDTO.StudentPaymentInfo studentInfo : students) {
 
-            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(), reqDTO.getMm());
+            Payment payment = paymentRepository.findByStudentAndYm(studentInfo.getStudentId(), reqDTO.getYy(),
+                    reqDTO.getMm());
 
-            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(), studentInfo.getStudentId());
+            Integer eduFee = paymentRepository.findPaymentDetailEduFee(studentInfo.getPaymentKey(),
+                    studentInfo.getStudentId());
             log.info("eduFee = {}", eduFee);
             int studentTotalPaid = 0;
             int studentCardAmount = 0;
@@ -1288,15 +1365,18 @@ public class PaymentService {
                 }
             } else if (studentTotalPaid == eduFee) {
                 studentStatus = "approved";
-                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(), 0, method);
+                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(),
+                        0, method);
             } else {
                 studentStatus = "partial";
                 int unpaidAmount = eduFee - studentTotalPaid;
-                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(), unpaidAmount, method);
+                paymentRepository.updatePaymentStatus(studentInfo.getPaymentKey(), studentStatus, reqDTO.getPaidDate(),
+                        unpaidAmount, method);
             }
 
             log.info("학생 ID: {}, 청구: {}, 할당: {}, 저장: {}, 선납금: {}, 상태: {}",
-                    studentInfo.getStudentId(), eduFee, studentTotalPaid, studentActualPayment, studentPrepaidAmount, studentStatus);
+                    studentInfo.getStudentId(), eduFee, studentTotalPaid, studentActualPayment, studentPrepaidAmount,
+                    studentStatus);
             log.info("  -> 카드: {}, 현금: {}, 계좌: {}", finalCardAmount, finalCashAmount, finalTransferAmount);
 
             // manual 레코드 생성
@@ -1327,13 +1407,12 @@ public class PaymentService {
                     eduFee,
                     studentTotalPaid,
                     studentPrepaidAmount,
-                    manualPaymentId
-            ));
+                    manualPaymentId));
         }
 
         log.info("전체 manual 인서트 완료");
 
-// 🔥 선납금 처리 (각 학생별로)
+        // 🔥 선납금 처리 (각 학생별로)
         int totalPrepaidAmount = 0;
 
         for (StudentPaymentResult result : paymentResults) {
@@ -1358,7 +1437,8 @@ public class PaymentService {
                         .manualKey(manualKey) // 🔥 manualKey 추가
                         .note(students.size() > 1
                                 ? "형제 묶음 결제 시 선납금 (개인 할당: " + String.format("%,d", result.prepaidAmount) + "원)"
-                                : "수기 결제 시 선납금 (총 " + String.format("%,d", result.paidAmount) + "원 중 " + String.format("%,d", result.prepaidAmount) + "원)")
+                                : "수기 결제 시 선납금 (총 " + String.format("%,d", result.paidAmount) + "원 중 "
+                                        + String.format("%,d", result.prepaidAmount) + "원)")
                         .build();
 
                 paymentRepository.insertPaymentPreset(presetDTO);
@@ -1379,7 +1459,8 @@ public class PaymentService {
         return "서비스 종료";
     }
 
-    private void issueCashbillForManualPayment(String manualKey, PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
+    private void issueCashbillForManualPayment(String manualKey,
+            PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
 
         log.info("🔥 현금영수증 발행 시작 - manualKey: {}, 금액: {}", manualKey, cashbillInfo.getPrice());
 
@@ -1422,16 +1503,14 @@ public class PaymentService {
                     "tax", Integer.parseInt(cashbillInfo.getTax()),
                     "hash", hash,
                     "trader", cashbillInfo.getTrader(),
-                    "issuance_number", cashbillInfo.getReceiptNumber()
-            );
+                    "issuance_number", cashbillInfo.getReceiptNumber());
 
             // 5. API 요청
             Map<String, Object> body = Map.of(
                     "apikey", conf.getApiKey(),
                     "member", conf.getMemberId(),
                     "merchant", conf.getMerchantId(),
-                    "bill", bill
-            );
+                    "bill", bill);
 
             // 6. 결제선생 API 호출
             PaymentRespDTO.CashBillRespDTO paymintResp = callPaymintCashbill(conf.getCashbillIssueUrl(), body);
@@ -1480,14 +1559,14 @@ public class PaymentService {
     private static class StudentPaymentResult {
         private String studentId;
         private String paymentKey;
-        private Integer eduFee;          // 청구금액 (예: 120,000)
-        private Integer paidAmount;      // 할당받은 금액 (예: 150,000)
-        private Integer prepaidAmount;   // 선납금 (예: 30,000)
+        private Integer eduFee; // 청구금액 (예: 120,000)
+        private Integer paidAmount; // 할당받은 금액 (예: 150,000)
+        private Integer prepaidAmount; // 선납금 (예: 30,000)
         private Integer manualPaymentId; // 방금 생성된 manual ID
     }
 
     public void processPresetPaymentIfExists(String studentId, String paymentKey, Integer billAmount,
-                                             String userCode, String centerCode, String yy, String mm) {
+            String userCode, String centerCode, String yy, String mm) {
         try {
             // 1. 활성화된 선납금 조회
             PaymentPreset preset = paymentRepository.findActivePresetByStudentId(studentId);
@@ -1528,16 +1607,14 @@ public class PaymentService {
                     preset.getId(),
                     billAmount,
                     preset.getMethod(),
-                    preset.getCardName()
-            );
+                    preset.getCardName());
 
             // 4. preset 업데이트
             paymentRepository.updatePresetAfterUse(
                     preset.getId(),
-                    preset.getTotalAmount() - billAmount,  // 남은 금액
-                    preset.getUsedMonths() + 1,            // 사용 개월 증가
-                    (preset.getTotalAmount() - billAmount) <= 0 ? "completed" : "active"
-            );
+                    preset.getTotalAmount() - billAmount, // 남은 금액
+                    preset.getUsedMonths() + 1, // 사용 개월 증가
+                    (preset.getTotalAmount() - billAmount) <= 0 ? "completed" : "active");
 
             // 5. 결제 상태 재계산
             recalculatePaymentStatus(paymentKey, userCode);
@@ -1574,7 +1651,8 @@ public class PaymentService {
     /**
      * 월별 결제 내역 조회
      */
-    public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy, String mm) {
+    public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy,
+            String mm) {
         return paymentRepository.findMonthlyPayments(centerCode, userCode, yy, mm).stream().peek(dto -> {
             String paidDate = dto.getPaidDate();
             dto.setPaidDate((paidDate == null || paidDate.isBlank()) ? "-" : paidDate);
@@ -1584,7 +1662,8 @@ public class PaymentService {
     /**
      * 청구서 재발행
      */
-    public void reissueBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayReissueReqDTO req) throws JsonProcessingException {
+    public void reissueBill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.PayReissueReqDTO req)
+            throws JsonProcessingException {
 
         log.info("🔥 재발행 시작 - billIds: {}", req.getBillIds());
 
@@ -1606,7 +1685,8 @@ public class PaymentService {
             throw new IllegalStateException("이미 결제 완료된 청구서는 재발행할 수 없습니다.");
         }
 
-        Map<String, List<PaymentRespDTO.BillDetailDTO>> groupByBillId = existingBills.stream().collect(Collectors.groupingBy(PaymentRespDTO.BillDetailDTO::getBillId));
+        Map<String, List<PaymentRespDTO.BillDetailDTO>> groupByBillId = existingBills.stream()
+                .collect(Collectors.groupingBy(PaymentRespDTO.BillDetailDTO::getBillId));
 
         log.info("🔥 그룹 개수: {}", groupByBillId.size());
 
@@ -1620,7 +1700,9 @@ public class PaymentService {
             PaymentRespDTO.BillDetailDTO representative = bills.get(0);
             String billType = representative.getBillType();
 
-            PaymentRespDTO.PaymentConfigDTO conf = "EDU_FEE".equals(billType) ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode()) : paymentRepository.findPayConfigByCenterCode("PUS001");
+            PaymentRespDTO.PaymentConfigDTO conf = "EDU_FEE".equals(billType)
+                    ? paymentRepository.findPayConfigByCenterCode(user.getCenterCode())
+                    : paymentRepository.findPayConfigByCenterCode("PUS001");
 
             log.info("🔥 결제 설정 조회 완료: {}", conf != null);
 
@@ -1628,7 +1710,9 @@ public class PaymentService {
                 throw new IllegalStateException("결제 설정 없음");
             }
 
-            Map<String, Object> body = Map.of("apikey", conf.getApiKey() != null ? conf.getApiKey() : "", "member", conf.getMemberId() != null ? conf.getMemberId() : "", "merchant", conf.getMerchantId() != null ? conf.getMerchantId() : "", "bill_id", billId);
+            Map<String, Object> body = Map.of("apikey", conf.getApiKey() != null ? conf.getApiKey() : "", "member",
+                    conf.getMemberId() != null ? conf.getMemberId() : "", "merchant",
+                    conf.getMerchantId() != null ? conf.getMerchantId() : "", "bill_id", billId);
 
             log.info("🔥 Paymint 호출 시작 - URL: {}", conf.getResendUrl());
 
@@ -1657,11 +1741,13 @@ public class PaymentService {
 
     }
 
-    public List<PaymentRespDTO.CashbillStudentRespDTO> getCashPaymentStudents(String year, String month, String centerCode) {
+    public List<PaymentRespDTO.CashbillStudentRespDTO> getCashPaymentStudents(String year, String month,
+            String centerCode) {
         return paymentRepository.findCashbillStudents(year, month, centerCode);
     }
 
-    public void issueCashbill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.CashbillIssueReqDTO dto) throws JsonProcessingException {
+    public void issueCashbill(UserRespDTO.LoginRespDTO user, PaymentReqDTO.CashbillIssueReqDTO dto)
+            throws JsonProcessingException {
         log.info("🔥 현금영수증 발행 시작 - studentId: {}, paymentKey: {}", dto.getStudentId(), dto.getPaymentKey());
 
         // 1. 결제 설정 조회 (교육비는 센터별, 교재비는 PUS001)
@@ -1704,16 +1790,14 @@ public class PaymentService {
                 "tax", dto.getTax(),
                 "hash", hash,
                 "trader", dto.getTrader(),
-                "issuance_number", dto.getReceiptNumber()
-        );
+                "issuance_number", dto.getReceiptNumber());
 
         // 5. API 요청 바디
         Map<String, Object> body = Map.of(
                 "apikey", conf.getApiKey(),
                 "member", conf.getMemberId(),
                 "merchant", conf.getMerchantId(),
-                "bill", bill
-        );
+                "bill", bill);
 
         log.info("🔥 결제선생 API 호출 시작 - billId: {}, 발급구분: {}, 발급번호: {}, 금액: {}",
                 billId, dto.getReceiptType(), dto.getReceiptNumber(), dto.getPrice());
@@ -1758,8 +1842,7 @@ public class PaymentService {
         int updated = paymentRepository.updateCashbillInfo(
                 dto.getStudentId(),
                 dto.getPaymentKey(),
-                billId
-        );
+                billId);
 
         if (updated == 0) {
             log.error("erp_payment_manual 업데이트 실패 - paymentKey: {}", dto.getPaymentKey());
@@ -1773,7 +1856,8 @@ public class PaymentService {
 
     }
 
-    private PaymentRespDTO.CashBillRespDTO callPaymintCashbill(String url, Map<String, Object> body) throws JsonProcessingException {
+    private PaymentRespDTO.CashBillRespDTO callPaymintCashbill(String url, Map<String, Object> body)
+            throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         String jsonBody = mapper.writeValueAsString(body);
@@ -1786,11 +1870,11 @@ public class PaymentService {
 
         HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
 
-        ResponseEntity<PaymentRespDTO.CashBillRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity, PaymentRespDTO.CashBillRespDTO.class);
+        ResponseEntity<PaymentRespDTO.CashBillRespDTO> response = restTemplate.exchange(url, HttpMethod.POST, entity,
+                PaymentRespDTO.CashBillRespDTO.class);
 
         return response.getBody();
     }
-
 
     public List<PaymentRespDTO.ClaimDto> getFilteredClaims(PaymentReqDTO.ClaimFilterDTO filters) {
 
@@ -1799,7 +1883,8 @@ public class PaymentService {
     }
 
     public List<PaymentRespDTO.CashBillHistoryDTO> getCashbillHistory(String centerCode, String year, String month) {
-        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode, year, month);
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode, year,
+                month);
         return response;
     }
 
@@ -1859,7 +1944,8 @@ public class PaymentService {
         }
     }
 
-    private Map<String, Object> buildCancelRequestBody(PaymentRespDTO.PaymentConfigDTO config, PaymentCashbill cashbill) {
+    private Map<String, Object> buildCancelRequestBody(PaymentRespDTO.PaymentConfigDTO config,
+            PaymentCashbill cashbill) {
         Map<String, Object> body = new HashMap<>();
 
         body.put("apikey", config.getApiKey());
@@ -1873,9 +1959,11 @@ public class PaymentService {
         return body;
     }
 
-    public List<PaymentRespDTO.UnpaidStudentRespDTO> findUnpaidStudentForAlimtalk(PaymentReqDTO.UnpaidStudentReqDTO reqDTO) {
+    public List<PaymentRespDTO.UnpaidStudentRespDTO> findUnpaidStudentForAlimtalk(
+            PaymentReqDTO.UnpaidStudentReqDTO reqDTO) {
 
-        return paymentRepository.findUnpaidStudentForAlimtalk(reqDTO.getCenterCode(), reqDTO.getYear(), reqDTO.getMonth());
+        return paymentRepository.findUnpaidStudentForAlimtalk(reqDTO.getCenterCode(), reqDTO.getYear(),
+                reqDTO.getMonth());
     }
 
     public void updatePayment(Integer id, PaymentReqDTO.UpdatePaymentDTO dto, String centerCode) {
@@ -1936,7 +2024,8 @@ public class PaymentService {
         paymentRepository.deleteManualGroup(manualKey);
     }
 
-    public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm, UserRespDTO.LoginRespDTO user) {
+    public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm,
+            UserRespDTO.LoginRespDTO user) {
         String ym = yy + "-" + mm;
         String centerCode = user.getCenterCode();
 
@@ -1955,7 +2044,8 @@ public class PaymentService {
     }
 
     public List<PaymentAppRespDTO.StudentDTO> search(String keyword, UserRespDTO.LoginRespDTO user, String ym) {
-        List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode(), ym);
+        List<PaymentAppRespDTO.StudentDTO> students = paymentRepository.searchStudents(keyword, user.getCenterCode(),
+                ym);
 
         for (PaymentAppRespDTO.StudentDTO s : students) {
             List<String> siblingIds = paymentRepository.getSiblingIds(s.getStudentId());
@@ -1965,7 +2055,8 @@ public class PaymentService {
 
             List<PaymentAppRespDTO.StudentDTO> siblingDetails = new ArrayList<>();
             for (String siblingId : s.getSiblings()) {
-                PaymentAppRespDTO.StudentDTO sibling = paymentRepository.getStudentById(siblingId, user.getCenterCode(), ym);
+                PaymentAppRespDTO.StudentDTO sibling = paymentRepository.getStudentById(siblingId, user.getCenterCode(),
+                        ym);
                 if (sibling != null) {
                     sibling.setSubjects(buildSubjects(sibling));
                     siblingDetails.add(sibling);
@@ -1978,9 +2069,12 @@ public class PaymentService {
 
     private List<String> buildSubjects(PaymentAppRespDTO.StudentDTO s) {
         List<String> subjects = new ArrayList<>();
-        if (s.isSubHan()) subjects.add("한스쿨");
-        if (s.isSubBook()) subjects.add("북스쿨");
-        if (s.isSubHoho()) subjects.add("호호스쿨");
+        if (s.isSubHan())
+            subjects.add("한스쿨");
+        if (s.isSubBook())
+            subjects.add("북스쿨");
+        if (s.isSubHoho())
+            subjects.add("호호스쿨");
         return subjects;
     }
 

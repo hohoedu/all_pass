@@ -165,6 +165,8 @@ public class StudentWebReqDTO {
     public static class WithdrawReqDTO {
         private String userCode;
         private String ym;
+        private String roleKey;
+        private String centerCode;
     }
 
     @Data
@@ -178,8 +180,8 @@ public class StudentWebReqDTO {
 
     @Data
     public static class FamilyLinkRequest {
-        private String studentId;   // 현재 학생
-        private String siblingId;   // 연결할 형제 학생
+        private String studentId; // 현재 학생
+        private String siblingId; // 연결할 형제 학생
     }
 
     @Data

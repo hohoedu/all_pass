@@ -5,11 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.checkerframework.checker.units.qual.A;
 
 public class ClassRespDTO {
 
@@ -33,8 +29,8 @@ public class ClassRespDTO {
 
     @Data
     public static class MainAbsentSummaryDTO {
-        private Integer absentCount;    // 이번달 누적 결석
-        private Integer completeRemedialCount;  // 이번달 누적 보강
+        private Integer absentCount; // 이번달 누적 결석
+        private Integer completeRemedialCount; // 이번달 누적 보강
     }
 
     @Data
@@ -77,7 +73,8 @@ public class ClassRespDTO {
         private Long totalStudentsLong;
         private Double totalStudentsDouble;
 
-        public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudentsLong, double totalStudentsDouble) {
+        public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudentsLong,
+                double totalStudentsDouble) {
             this.tables = tables;
             this.stats = stats;
             this.totalStudentsLong = totalStudentsLong;
@@ -213,7 +210,6 @@ public class ClassRespDTO {
         private String unitKey;
     }
 
-
     @Data
     public static class RecordBundleDTO {
         private List<RecordStudentDTO> students;
@@ -318,7 +314,6 @@ public class ClassRespDTO {
         private List<String> difficultly;
     }
 
-
     @Data
     public static class RawClassDTO {
         private String classType;
@@ -397,9 +392,9 @@ public class ClassRespDTO {
 
     @Data
     public static class BasicTimeTableInfo {
-        private String classKey;     // 시간표의 class_key
-        private String teacherCode;  // user_code
-        private String classType;    // 한자 = 1, 독서 = 2
+        private String classKey; // 시간표의 class_key
+        private String teacherCode; // user_code
+        private String classType; // 한자 = 1, 독서 = 2
     }
 
     @Data

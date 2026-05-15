@@ -3,12 +3,7 @@ package com.hohoedu.all_pass.student._dto.web;
 import java.sql.Timestamp;
 import java.util.List;
 
-import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import com.hohoedu.all_pass.student.Student;
-import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
-import com.hohoedu.all_pass.user.User;
-import jakarta.persistence.*;
 import lombok.*;
 
 @Data
@@ -16,10 +11,10 @@ public class StudentWebRespDTO {
 
     @Data
     public static class MainStudentStatusDTO {
-        private Integer totalCount;     // 전체 학생 수
-        private Integer entryCount;     // 이번달 입회
-        private Integer withdrawCount;  // 이번달 탈퇴
-        private Integer transferInCount;  // 이번달 전입
+        private Integer totalCount; // 전체 학생 수
+        private Integer entryCount; // 이번달 입회
+        private Integer withdrawCount; // 이번달 탈퇴
+        private Integer transferInCount; // 이번달 전입
         private Integer transferOutCount; // 이번달 전출
     }
 
@@ -83,10 +78,10 @@ public class StudentWebRespDTO {
         private List<StudentAttendanceDTO> studentAttendance;
         private List<StudentConsultDTO> studentCounsult;
         private List<GradeCode> gradeCodes;
-        private List<HanClass> hanClasses;   // ← 추가
-        private List<BookClass> bookClasses;  // ← 추가
-        private List<HanTeacher> hanTeachers;    // ← 추가
-        private List<BookTeacher> bookTeachers;   // ← 추가
+        private List<HanClass> hanClasses; // ← 추가
+        private List<BookClass> bookClasses; // ← 추가
+        private List<HanTeacher> hanTeachers; // ← 추가
+        private List<BookTeacher> bookTeachers; // ← 추가
     }
 
     @Data
@@ -106,7 +101,6 @@ public class StudentWebRespDTO {
         private String entryHanDate;
         private String entryBookDate;
     }
-
 
     @Data
     public static class StudentAttendanceDTO {
@@ -206,7 +200,6 @@ public class StudentWebRespDTO {
         private String isSibling;
     }
 
-
     @Data
     public static class StudentInOutDTO {
         private String studentId;
@@ -266,47 +259,46 @@ public class StudentWebRespDTO {
         private String assignBookClass;
     }
 
-
     @Data
     public static class StudentSnapshotDTO {
-        private String  studentId;
-        private String  centerCode;
-        private String  statusKey;
+        private String studentId;
+        private String centerCode;
+        private String statusKey;
         private Integer hanState;
         private Integer bookState;
-        private String  hanClass;
-        private String  bookClass;
-        private String  hanTeacher;
-        private String  bookTeacher;
-        private String  entryHanDate;
-        private String  entryBookDate;
+        private String hanClass;
+        private String bookClass;
+        private String hanTeacher;
+        private String bookTeacher;
+        private String entryHanDate;
+        private String entryBookDate;
     }
 
     @Data
     public static class WithdrawLogDTO {
-        private Long    id;
-        private String  studentId;
+        private Long id;
+        private String studentId;
         private Integer beforeHanState;
         private Integer beforeBookState;
-        private String  beforeHanClass;
-        private String  beforeBookClass;
-        private String  beforeHanTeacher;
-        private String  beforeBookTeacher;
-        private String  beforeEntryHanDate;
-        private String  beforeEntryBookDate;
+        private String beforeHanClass;
+        private String beforeBookClass;
+        private String beforeHanTeacher;
+        private String beforeBookTeacher;
+        private String beforeEntryHanDate;
+        private String beforeEntryBookDate;
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class StudentSnapshotRespDTO {
-        private String snapshotYm;  // 집계 년월
+        private String snapshotYm; // 집계 년월
         private String centerCode;
-        private int totalCount;     // 총원
-        private int activeCount;    // 재원
-        private int restCount;      // 휴원
+        private int totalCount; // 총원
+        private int activeCount; // 재원
+        private int restCount; // 휴원
         private int withdrawnCount; // 탈퇴
-        private int waitCount;      // 대기
+        private int waitCount; // 대기
     }
 
     @Data

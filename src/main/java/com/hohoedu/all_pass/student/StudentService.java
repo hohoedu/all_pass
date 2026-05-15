@@ -1321,9 +1321,28 @@ public class StudentService {
         return studentRepository.selectJoinList(req);
     }
 
-    public List<StudentWebRespDTO.WithdrawItemDTO> findWithdrawList(StudentWebReqDTO.WithdrawReqDTO req) {
-        return studentRepository.selectWithdrawList(req);
+   public List<StudentWebRespDTO.WithdrawItemDTO> findWithdrawList(StudentWebReqDTO.WithdrawReqDTO req) {
+    List<StudentWebRespDTO.WithdrawItemDTO> rawList = studentRepository.selectWithdrawList(req);
+
+    Map<String, StudentWebRespDTO.WithdrawItemDTO> map = new LinkedHashMap<>();
+
+    for (StudentWebRespDTO.WithdrawItemDTO item : rawList) {
+        if (map.containsKey(item.getStudentId())) {
+            StudentWebRespDTO.WithdrawItemDTO existing = map.get(item.getStudentId());
+
+            if (item.getClassName() != null && !item.getClassName().equals(existing.getClassName())) {
+                existing.setClassName(existing.getClassName() + ", " + item.getClassName());
+            }
+            if (item.getTeacherName() != null && !item.getTeacherName().equals(existing.getTeacherName())) {
+                existing.setTeacherName(existing.getTeacherName() + ", " + item.getTeacherName());
+            }
+        } else {
+            map.put(item.getStudentId(), item);
+        }
     }
+
+    return new ArrayList<>(map.values());
+}
 
     public List<StudentWebRespDTO.WithdrawItemDTO> findTransferInList(StudentWebReqDTO.WithdrawReqDTO req) {
         return studentRepository.selectTransferInList(req);

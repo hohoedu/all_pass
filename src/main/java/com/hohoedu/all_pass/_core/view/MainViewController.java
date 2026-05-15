@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.threeten.bp.LocalDate;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -37,7 +36,7 @@ public class MainViewController {
     private final StudentService studentService;
     private final UserService userService;
 
-    @GetMapping({"/", "/home"})
+    @GetMapping({ "/", "/home" })
     public String getIndexPage(HttpSession session) {
         Object user = session.getAttribute("user");
         if (user == null) {
@@ -55,7 +54,7 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping({"/admin", "/login"})
+    @GetMapping({ "/admin", "/login" })
     public String getLoginPage() {
         return "login";
     }
@@ -70,44 +69,44 @@ public class MainViewController {
 
         String year = String.valueOf(LocalDate.now().getYear());
         String month = String.format("%02d", LocalDate.now().getMonthValue());
-
-        long t, total = System.currentTimeMillis();
-
-        t = System.currentTimeMillis();
-        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(),
-                user.getUserCode());
-        log.info("[PERF] getClassSummary: {}ms", System.currentTimeMillis() - t);
-
-        t = System.currentTimeMillis();
-        List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary = classService
-                .getRemedialSummary(user.getCenterCode());
-        log.info("[PERF] getRemedialSummary: {}ms", System.currentTimeMillis() - t);
-
-        t = System.currentTimeMillis();
-        List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary = paymentService
-                .getPaymentSummaryByPeriod(user.getCenterCode(), user.getUserCode(), user.getRoleKey(), user.getType());
-        log.info("[PERF] getPaymentSummaryByPeriod: {}ms", System.currentTimeMillis() - t);
-
-        t = System.currentTimeMillis();
-        List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary = paymentService
-                .getPaymentSummary(user.getCenterCode(), user.getUserCode(), user.getRoleKey(), user.getType());
-        log.info("[PERF] getPaymentSummary: {}ms", System.currentTimeMillis() - t);
-
-        t = System.currentTimeMillis();
-        ClassRespDTO.MainAbsentSummaryDTO absentSummary = classService.getAbsentSummary(user.getCenterCode(),
-                user.getUserCode(), user.getRoleKey(), year, month);
-        log.info("[PERF] getAbsentSummary: {}ms", System.currentTimeMillis() - t);
-
-        t = System.currentTimeMillis();
-        StudentWebRespDTO.MainStudentStatusDTO studentStatus = studentService.getStudentStatus(user.getCenterCode(),
-                user.getUserCode(), user.getRoleKey(), year, month);
-        log.info("[PERF] getStudentStatus: {}ms", System.currentTimeMillis() - t);
-
-        log.info("[PERF] ===== TOTAL: {}ms =====", System.currentTimeMillis() - total);
-
         List<User> users = userService.findActiveUser(user);
         boolean isMeInList = users.stream()
                 .anyMatch(u -> u.getUserCode().equals(user.getUserCode()));
+
+        // 초기 조회 대상 결정
+        String targetUserCode, targetRoleKey;
+        if ("ADMIN".equals(user.getRoleKey()) && !isMeInList) {
+            // ADMIN인데 목록에 없음 → 전체 조회
+            targetUserCode = user.getUserCode();
+            targetRoleKey = "ADMIN";
+        } else {
+            // 일반 유저이거나, ADMIN인데 목록에 본인 있음 → 본인만
+            targetUserCode = user.getUserCode();
+            targetRoleKey = "TEACHER";
+        }
+        // 수업정보
+        List<ClassRespDTO.MainClassSummaryDTO> classSummary = classService.getClassSummary(user.getCenterCode(),
+                targetUserCode, targetRoleKey);
+
+        // 보강 정보
+        List<ClassRespDTO.MainRemedialSummaryDTO> remedialSummary = classService
+                .getRemedialSummary(user.getCenterCode());
+
+        // 이번 달 미납 정보
+        List<PaymentRespDTO.MainPaymentSummaryDTO> paymentSummary = paymentService
+                .getPaymentSummaryByPeriod(user.getCenterCode(), targetUserCode, targetRoleKey, user.getType());
+
+        // 전체 미납 정보
+        List<PaymentRespDTO.MainPaymentSummaryDTO> allUnpaidSummary = paymentService
+                .getPaymentSummary(user.getCenterCode(), targetUserCode, targetRoleKey, user.getType());
+
+        // 결석 정보
+        ClassRespDTO.MainAbsentSummaryDTO absentSummary = classService.getAbsentSummary(user.getCenterCode(),
+                targetUserCode, targetRoleKey, year, month);
+
+        // 학생 현황
+        StudentWebRespDTO.MainStudentStatusDTO studentStatus = studentService.getStudentStatus(user.getCenterCode(),
+                targetUserCode, targetRoleKey, year, month);
 
         model.addAttribute("user", user);
         model.addAttribute("users", users);

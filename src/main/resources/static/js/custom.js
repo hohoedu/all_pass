@@ -409,13 +409,13 @@ function addHeadSort(headId, tbodyId, opts = {}) {
 
         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
             const d = new Date(v);
-            if (!isNaN(d)) return {type: 'date', value: d.getTime()};
+            if (!isNaN(d)) return { type: 'date', value: d.getTime() };
         }
 
         const n = Number(v.replace(/[^0-9.-]/g, ''));
-        if (!Number.isNaN(n) && v.match(/[0-9]/)) return {type: 'number', value: n};
+        if (!Number.isNaN(n) && v.match(/[0-9]/)) return { type: 'number', value: n };
 
-        return {type: 'string', value: v};
+        return { type: 'string', value: v };
     };
 
     const compareBy = (aRow, bRow, colIndex, asc) => {
@@ -434,7 +434,7 @@ function addHeadSort(headId, tbodyId, opts = {}) {
             return 0;
         }
 
-        const rank = {date: 3, number: 2, string: 1, empty: 0};
+        const rank = { date: 3, number: 2, string: 1, empty: 0 };
         if (rank[a.type] !== rank[b.type]) {
             return asc ? (rank[a.type] - rank[b.type]) : (rank[b.type] - rank[a.type]);
         }
@@ -484,8 +484,8 @@ function initHeaderSort(prefix, tbodySelector) {
 
     const sel = `img[id^="${prefix}-sort-"].svg-sort`;
     const orderMap = {};
-    const colType = {2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text'};
-    const koCmp = new Intl.Collator('ko-KR', {numeric: true, sensitivity: 'base'});
+    const colType = { 2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text' };
+    const koCmp = new Intl.Collator('ko-KR', { numeric: true, sensitivity: 'base' });
 
     h.addEventListener('click', e => {
         const th = e.target.closest('th');
@@ -553,6 +553,13 @@ function convertStrong(text) {
 document.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById("main-teacher-select");
     if (!select) return;
+
+    const defaultValue = select.value;
+
+    // 페이지 이탈 시 초기값으로 리셋
+    window.addEventListener("beforeunload", function () {
+        select.value = defaultValue;
+    });
 
     select.addEventListener("change", function () {
         const userCode = this.value;

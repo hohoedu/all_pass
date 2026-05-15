@@ -12,10 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +26,8 @@ public class ConsultController {
     private final ConsultService consultService;
 
     @PostMapping("/save")
-    public ResponseEntity<?> createConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> createConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -87,7 +86,7 @@ public class ConsultController {
     @PostMapping("/content-update")
     public ResponseEntity<?> updateConsultContent(@RequestBody ConsultReqDTO.ConsultUpdateContentDTO dto) {
 
-        int result = consultService.updateConsultContent(dto.getConsultId(), dto.getContent());
+        consultService.updateConsultContent(dto.getConsultId(), dto.getContent());
 
         return ResponseEntity.ok(ApiUtils.success(null));
 

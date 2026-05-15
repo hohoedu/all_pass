@@ -9,11 +9,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
 @Getter
 @Entity
-@Table(name = "erp_student_remark", uniqueConstraints = {@UniqueConstraint(name = "uq_student_remark_one_row", columnNames = {"student_id", "yy", "mm", "week", "remark_key"})})
+@Table(name = "erp_student_remark", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_student_remark_one_row", columnNames = { "student_id", "yy", "mm", "week",
+                "remark_key" }) })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudentRemark {
 
@@ -43,7 +43,8 @@ public class StudentRemark {
     private TimeTable timeTable;
 
     @Builder
-    public StudentRemark(Student student, TimeTable timeTable, String yy, String mm, String week, RemarkCode remarkCode) {
+    public StudentRemark(Student student, TimeTable timeTable, String yy, String mm, String week,
+            RemarkCode remarkCode) {
         this.student = student;
         this.timeTable = timeTable;
         this.yy = yy;

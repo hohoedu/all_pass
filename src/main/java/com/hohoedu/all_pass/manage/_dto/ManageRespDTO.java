@@ -1,12 +1,9 @@
 package com.hohoedu.all_pass.manage._dto;
 
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 

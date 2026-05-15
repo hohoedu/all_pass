@@ -6,8 +6,10 @@
         namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
     <select id="countPendingStudents" resultType="int">
-        select count(*) from erp_pending_student
-        where center_code = #{centerCode} and is_deleted = '0'
+        select count(*)
+        from erp_pending_student
+        where center_code = #{centerCode}
+          and is_deleted = '0'
 
     </select>
 
@@ -1417,48 +1419,41 @@
         #{studentId}
     </select>
 
+    <select id="selectWithdrawCounts" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawCountDTO">
+        SELECT (SELECT COUNT(DISTINCT t.student_id)
+                FROM erp_teacher_assign t
+                         JOIN erp_student es ON t.student_id = es.student_id
+                WHERE es.center_code = #{centerCode}
+                  AND (
+                    ((#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode}) AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
+                        OR ((#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode}) AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+                    ))                                  AS joinCount,
 
-    <select id="selectWithdrawCounts"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawCountDTO">
-        SELECT SUM(CASE WHEN gb = 'entry' THEN 1 ELSE 0 END)    AS joinCount,
-               SUM(CASE WHEN gb = 'inactive' THEN 1 ELSE 0 END) AS withdrawCount,
-               SUM(CASE WHEN gb = 'move_in' THEN 1 ELSE 0 END)  AS transferInCount,
-               SUM(CASE WHEN gb = 'move_out' THEN 1 ELSE 0 END) AS transferOutCount,
-               0                                                 AS graduateCount
-        FROM (SELECT 'entry' AS gb
-              FROM erp_teacher_assign t
-              WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
-                 OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+               (SELECT COUNT(DISTINCT wl.student_id)
+                FROM erp_student_withdraw_log wl
+                WHERE wl.center_code = #{centerCode}
+                  AND wl.withdraw_date IS NOT NULL
+                  AND SUBSTRING(wl.withdraw_date, 1, 7) = #{ym}
+                  AND (
+                    #{roleKey} = 'ADMIN'
+                        OR (wl.log_type = 'han' AND wl.before_han_teacher = #{userCode})
+                        OR (wl.log_type = 'book' AND wl.before_book_teacher = #{userCode})
+                    ))                                  AS withdrawCount,
 
-              UNION ALL
+               (SELECT COUNT(DISTINCT student_id)
+                FROM erp_student_transfer_history
+                WHERE (#{roleKey} = 'ADMIN' OR to_user_code = #{userCode})
+                  AND center_code = #{centerCode}
+                  AND SUBSTRING(move_at, 1, 7) = #{ym}) AS transferInCount,
 
-              SELECT 'inactive'
-              FROM erp_teacher_assign t
-              WHERE (t.inactive_han_teacher = #{userCode} AND SUBSTRING(t.inactive_han_date, 1, 7) = #{ym})  -- 수정
-                 OR (t.inactive_book_teacher = #{userCode} AND SUBSTRING(t.inactive_book_date, 1, 7) = #{ym}) -- 수정
+               (SELECT COUNT(DISTINCT student_id)
+                FROM erp_student_transfer_history
+                WHERE (#{roleKey} = 'ADMIN' OR from_user_code = #{userCode})
+                  AND center_code = #{centerCode}
+                  AND SUBSTRING(move_at, 1, 7) = #{ym}) AS transferOutCount,
 
-              UNION ALL
+               0                                        AS graduateCount
 
-              SELECT 'move_in'
-              FROM erp_student_transfer_history
-              WHERE to_user_code = #{userCode}
-                AND SUBSTRING(move_at, 1, 7) = #{ym}
-
-              UNION ALL
-
-              SELECT 'move_out'
-              FROM erp_student_transfer_history
-              WHERE from_user_code = #{userCode}
-                AND SUBSTRING(move_at, 1, 7) = #{ym}
-
-              UNION ALL
-
-              SELECT 'week'
-              FROM erp_time_table et
-                       JOIN erp_time_table_assign etta ON et.time_table_key = etta.time_table_key
-              WHERE et.user_code = #{userCode}
-                AND et.yy + '-' + et.mm = #{ym}
-                AND etta.week IN (1, 2, 3)) a
     </select>
 
     <!-- 입회 -->
@@ -1467,89 +1462,83 @@
                es.student_name AS studentName,
                gc.grade_name   AS gradeName,
                CASE
-                   WHEN t.assign_han_teacher = #{userCode}
+                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
                        THEN (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_han_class)
-                   WHEN t.assign_book_teacher = #{userCode}
+                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
                        THEN (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_book_class)
                    END         AS className,
                CASE
-                   WHEN t.assign_han_teacher = #{userCode}
+                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
                        THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_han_teacher)
-                   WHEN t.assign_book_teacher = #{userCode}
+                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
                        THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_book_teacher)
                    END         AS teacherName,
                CASE
-                   WHEN t.assign_han_teacher = #{userCode}
-                       THEN (t.entry_han_date)
-                   WHEN t.assign_book_teacher = #{userCode}
-                       THEN (t.entry_book_date)
+                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
+                       THEN t.entry_han_date
+                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
+                       THEN t.entry_book_date
                    END         AS joinDate
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
-        WHERE (t.assign_han_teacher = #{userCode} AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
-           OR (t.assign_book_teacher = #{userCode} AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
+        WHERE es.center_code = #{centerCode}
+          AND (((#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode}) AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
+            OR ((#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode}) AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym}))
         ORDER BY es.student_name
     </select>
 
     <!-- 탈퇴 -->
-    <select id="selectWithdrawList"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
-        SELECT es.student_id                                           AS studentId,
-               es.student_name                                         AS studentName,
-               gc.grade_name                                           AS gradeName,
+    <select id="selectWithdrawList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+        SELECT es.student_id      AS studentId,
+               es.student_name    AS studentName,
+               gc.grade_name      AS gradeName,
                CASE
-                   WHEN t.inactive_han_teacher = #{userCode}
-                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_han_teacher)
-                   WHEN t.inactive_book_teacher = #{userCode}
-                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.inactive_book_teacher)
-                   END                                                     AS teacherName,
+                   WHEN wl.log_type = 'han' THEN cc_han.class_name
+                   ELSE cc_book.class_name
+                   END            AS className,
                CASE
-                   WHEN t.inactive_han_teacher = #{userCode} THEN t.entry_han_date
-                   WHEN t.inactive_book_teacher = #{userCode} THEN t.entry_book_date
-                   END                                                     AS joinDate,
+                   WHEN wl.log_type = 'han' THEN u_han.user_name
+                   ELSE u_book.user_name
+                   END            AS teacherName,
                CASE
-                   WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_date
-                   WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_date
-                   END                                                     AS withdrawDate,
-               DATEDIFF(
-                   MONTH,
-                       CASE
-                           WHEN t.inactive_han_teacher = #{userCode} THEN t.entry_han_date
-                           WHEN t.inactive_book_teacher = #{userCode} THEN t.entry_book_date
-                           END,
-                       CASE
-                           WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_date
-                           WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_date
-                           END
-               )                                                       AS attendMonths,
-               CASE
-                   WHEN t.inactive_han_teacher = #{userCode} THEN t.inactive_han_reason
-                   WHEN t.inactive_book_teacher = #{userCode} THEN t.inactive_book_reason
-                   END                                                     AS reason
-        FROM erp_teacher_assign t
-                 JOIN erp_student es ON t.student_id = es.student_id
+                   WHEN wl.log_type = 'han' THEN wl.before_entry_han_date
+                   ELSE wl.before_entry_book_date
+                   END            AS joinDate,
+               wl.withdraw_date   AS withdrawDate,
+               DATEDIFF(MONTH, CASE
+                                   WHEN wl.log_type = 'han' THEN wl.before_entry_han_date
+                                   ELSE wl.before_entry_book_date END,
+                               wl.withdraw_date
+               )                  AS attendMonths,
+               wl.withdraw_reason AS reason
+        FROM erp_student_withdraw_log wl
+                 JOIN erp_student es ON wl.student_id = es.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
-        WHERE (
-                  (t.inactive_han_teacher = #{userCode} AND SUBSTRING(t.inactive_han_date, 1, 7) = #{ym})
-                      OR
-                  (t.inactive_book_teacher = #{userCode} AND SUBSTRING(t.inactive_book_date, 1, 7) = #{ym})
-                  )
+                 LEFT JOIN erp_class_code cc_han ON cc_han.class_key = wl.before_han_class
+                 LEFT JOIN erp_class_code cc_book ON cc_book.class_key = wl.before_book_class
+                 LEFT JOIN erp_user u_han ON u_han.user_code = wl.before_han_teacher
+                 LEFT JOIN erp_user u_book ON u_book.user_code = wl.before_book_teacher
+        WHERE wl.center_code = #{centerCode}
+          AND wl.withdraw_date IS NOT NULL
+          AND SUBSTRING(wl.withdraw_date, 1, 7) = #{ym}
+          AND (
+            #{roleKey} = 'ADMIN'
+                OR (wl.log_type = 'han' AND wl.before_han_teacher = #{userCode})
+                OR (wl.log_type = 'book' AND wl.before_book_teacher = #{userCode})
+            )
         ORDER BY es.student_name
     </select>
 
     <!-- 전입 -->
-    <select id="selectTransferInList"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+    <select id="selectTransferInList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                                                AS studentId,
                es.student_name                                                              AS studentName,
                gc.grade_name                                                                AS gradeName,
                (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
                CASE
-                   WHEN t.assign_han_teacher = #{userCode}
-                       THEN (t.entry_han_date)
-                   WHEN t.assign_book_teacher = #{userCode}
-                       THEN (t.entry_book_date)
+                   WHEN t.assign_han_teacher = th.to_user_code THEN t.entry_han_date
+                   WHEN t.assign_book_teacher = th.to_user_code THEN t.entry_book_date
                    END                                                                      AS joinDate,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
@@ -1559,23 +1548,21 @@
                  JOIN erp_student es ON th.student_id = es.student_id
                  JOIN erp_teacher_assign t ON es.student_id = t.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
-        WHERE th.to_user_code = #{userCode}
+        WHERE (#{roleKey} = 'ADMIN' OR th.to_user_code = #{userCode})
+          AND th.center_code = #{centerCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
         ORDER BY es.student_name
     </select>
 
     <!-- 전출 -->
-    <select id="selectTransferOutList"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+    <select id="selectTransferOutList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id                                                                AS studentId,
                es.student_name                                                              AS studentName,
                gc.grade_name                                                                AS gradeName,
                (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = th.class_key) AS className,
                CASE
-                   WHEN t.assign_han_teacher = th.to_user_code
-                       THEN t.entry_han_date
-                   WHEN t.assign_book_teacher = th.to_user_code
-                       THEN t.entry_book_date
+                   WHEN t.assign_han_teacher = th.to_user_code THEN t.entry_han_date
+                   WHEN t.assign_book_teacher = th.to_user_code THEN t.entry_book_date
                    END                                                                      AS joinDate,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.to_user_code)     AS transferInTeacher,
                (SELECT u.user_name FROM erp_user u WHERE u.user_code = th.from_user_code)   AS transferOutTeacher,
@@ -1585,7 +1572,8 @@
                  JOIN erp_student es ON th.student_id = es.student_id
                  JOIN erp_teacher_assign t ON es.student_id = t.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
-        WHERE th.from_user_code = #{userCode}
+        WHERE (#{roleKey} = 'ADMIN' OR th.from_user_code = #{userCode})
+          AND th.center_code = #{centerCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
         ORDER BY es.student_name
     </select>
@@ -1618,8 +1606,7 @@
 
     <!-- 삭제 이력 INSERT -->
     <insert id="insertToPendingDel" parameterType="map">
-        INSERT INTO erp_pending_student_del (
-                                             del_by,
+        INSERT INTO erp_pending_student_del (del_by,
                                              del_reason,
                                              pending_student_id,
                                              name,

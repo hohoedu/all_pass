@@ -17,229 +17,221 @@
 </head>
 
 <body>
-<div class="main-container">
-    <div class="main-frame">
-        <!-- left nav bar -->
-        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-        <main class="main-info">
-            <div class="line-second-frame">
-                <!-- section:left -->
-                <section class="move-summary">
-                    <div class="inout-head">
-                        <div class="common-title">
-                            <h2>전입 / 전출</h2>
-                        </div>
-                        <div class="inout-btns">
-                            <a class="print" th:href="@{/student/print-transfer}">
-                                인쇄
-                            </a>
-                            <div class="common-btn inout-btn" id="btn-inout" data-type="inout"
-                                 onclick="openTransferModal(this)">
-                                전입/전출내역
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-filters">
-                        <div class="info-arrange">
-                            <div class="stu-left">
-                                <div class="basic-select sl1"
-                                     th:if="${session.user.roleKey == 'ADMIN' or session.user.roleKey == 'MANAGER'}">
-                                    <select name="teacherNo" id="transfer-teacher-filter">
-                                        <option value="all" th:if="${session.user.roleKey == 'ADMIN'}">전체</option>
-                                        <th:block th:each="teacher : ${teachers}">
-                                            <option th:value="${teacher.userCode}"
-                                                    th:text="${teacher.userName + ' 선생님'}"></option>
-                                        </th:block>
-                                    </select>
-                                </div>
-                                <!--                                <div class="basic-select sl2">-->
-                                <!--                                    <select name="labelNo" id="transfer-subject-filter">-->
-                                <!--                                        <option value="all">전체</option>-->
-                                <!--                                        <th:block th:each="label : ${labels}">-->
-                                <!--                                            <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">-->
-                                <!--                                            </option>-->
-                                <!--                                        </th:block>-->
-                                <!--                                    </select>-->
-                                <!--                                </div>-->
-                            </div>
-                            <div class="stu-right">
-                                <div class="sl3">
-                                    <div class="basic-select" style="flex: 1;">
-                                        <select name="stuName" id="stu-name">
-                                            <option value="name">이름</option>
-                                            <option value="phone">전화번호</option>
-                                        </select>
-                                    </div>
-                                    <div class="search-box" style="flex: 2;">
-                                        <input type="text" id="search-name" name="searchName">
-                                    </div>
-                                </div>
-                                <div class="explore common-btn sl4" id="search-btn">검색</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt">
-                        <div class="table-frame move-t-frame">
-                            <table class="basic-table yh">
-                                <colgroup>
-                                    <col width="5%">
-                                    <col width="5%">
-                                    <col width="15%">
-                                    <col width="10%">
-                                    <col width="20%">
-                                    <col width="15%">
-                                    <col width="20%">
-                                </colgroup>
-                                <thead id="transfer-sort-header">
-                                <tr>
-                                    <th class="checkbox-group">
-                                        <input type="checkbox" id="check-all">
-                                    </th>
-                                    <th>No</th>
-
-                                    <th style="cursor:pointer">
-                                        <img id="transfer-sort-3" th:src="@{/image/sort_checked.svg}"
-                                             data-sort-default="@{/image/sort.svg}"
-                                             data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">이름
-                                    </th>
-
-                                    <th style="cursor:pointer">
-                                        <img id="transfer-sort-4" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}"
-                                             data-sort-checked="@{/image/sort_checked.svg}"
-                                             class="svg-sort">학년
-                                    </th>
-
-                                    <th style="cursor:pointer">
-                                        <img id="transfer-sort-5" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}"
-                                             data-sort-checked="@{/image/sort_checked.svg}"
-                                             class="svg-sort">수강과목
-                                    </th>
-
-                                    <th style="cursor:pointer">
-                                        <img id="transfer-sort-6" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}"
-                                             data-sort-checked="@{/image/sort_checked.svg}"
-                                             class="svg-sort">전입일
-                                    </th>
-
-                                    <th style="cursor:pointer">
-                                        <img id="transfer-sort-7" th:src="@{/image/sort.svg}"
-                                             data-sort-default="@{/image/sort.svg}"
-                                             data-sort-checked="@{/image/sort_checked.svg}"
-                                             class="svg-sort">담임
-                                    </th>
-                                </tr>
-                                </thead>
-
-                                <tbody id="student-tbody" class="stripe">
-                                <div class="table-body">
-                                    <th:block th:if="${#lists.isEmpty(students)}">
-                                        <tr>
-                                            <td colspan="7" style="text-align:center;">
-                                                등록된 학생이 없습니다.
-                                            </td>
-                                        </tr>
-                                    </th:block>
-
-                                    <th:block th:each="s, iterStat : ${students}">
-                                        <tr th:data-id="${s.studentId}"
-                                            th:data-name="${s.studentName}"
-                                            th:data-phone="${s.phone}">
-                                            <td class="checkbox-group">
-                                                <input type="checkbox"
-                                                       class="row-checkbox"
-                                                       th:value="${s.studentId}"
-                                                       onclick="event.stopPropagation();"
-                                                       name="studentNoList"
-                                                       form="inout-form">
-                                            </td>
-                                            <td th:text="${iterStat.count}"></td>
-                                            <td th:text="${s.studentName}"></td>
-                                            <td th:text="${s.gradeName}"></td>
-                                            <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass
-          : (s.hanClass != null ? s.hanClass
-          : (s.bookClass != null ? s.bookClass : ''))}"></td>
-                                            <td th:text="${s.moveAt != null ? s.moveAt : '-'}"></td>
-                                            <td th:text="${s.hanTeacher != null && s.bookTeacher != null ? s.hanTeacher + '(한자), ' + s.bookTeacher + '(독서)'
-          : (s.hanTeacher != null ? s.hanTeacher + '(한자)'
-          : (s.bookTeacher != null ? s.bookTeacher + '(독서)' : ''))}"></td>
-                                        </tr>
-                                    </th:block>
-                                </div>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-                <!-- section:right -->
-                <section class="move-desc">
-                    <div class="move-reason">
-                        <div class="move-reason-frame">
+    <div class="main-container">
+        <div class="main-frame">
+            <!-- left nav bar -->
+            <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+            <main class="main-info">
+                <div class="line-second-frame">
+                    <!-- section:left -->
+                    <section class="move-summary">
+                        <div class="inout-head">
                             <div class="common-title">
                                 <h2>전입 / 전출</h2>
                             </div>
-                            <form th:action="@{/student/inout}" method="post" class="inout-form" id="inout-form">
-                                <div class="detail-sub">
-                                    <h4>전출과목</h4>
+                            <div class="inout-btns">
+                                <a class="print" th:href="@{/student/print-transfer}">
+                                    인쇄
+                                </a>
+                                <div class="common-btn inout-btn" id="btn-inout" data-type="inout"
+                                    onclick="openTransferModal(this)">
+                                    전입/전출내역
                                 </div>
-                                <div class="input-row">
-                                    <div class="checkbox-group2">
-                                        <input type="checkbox" id="inout-han" name="inoutHan" value="1">한자수업
-                                    </div>
-                                    <div class="checkbox-group2" style="margin-left: 10px;">
-                                        <input type="checkbox" id="inout-book" name="inoutRead" value="2">독서수업
-                                    </div>
-                                </div>
-                                <div class="form-line"></div>
-                                <div class="detail-sub">
-                                    <h4>전출 일자</h4>
-                                </div>
-                                <div class="icon-field">
-                                    <div class="display-date"></div>
-                                    <div style="position: relative;">
-                                        <input type="date" class="hidden-inout-date datepicker" name="moveAt">
-                                        <button type="button" class="icon-btn calendar-open">
-                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="form-line"></div>
-                                <div class="detail-sub">
-                                    <h4>전입할 선생님</h4>
-                                </div>
-                                <div class="input-row">
-                                    <div class="basic-select" style="width: 100%;">
-                                        <select name="teacherNo" id="teacher-filter">
-                                            <th:block th:each="teacher : ${users}">
+                            </div>
+                        </div>
+                        <div class="info-filters">
+                            <div class="info-arrange">
+                                <div class="stu-left">
+                                    <div class="basic-select sl1"
+                                        th:if="${session.user.roleKey == 'ADMIN' or session.user.roleKey == 'MANAGER'}">
+                                        <select name="teacherNo" id="transfer-teacher-filter">
+                                            <option value="all" th:if="${session.user.roleKey == 'ADMIN'}">전체</option>
+                                            <th:block th:each="teacher : ${teachers}">
                                                 <option th:value="${teacher.userCode}"
-                                                        th:text="${teacher.userName + ' 선생님'}"></option>
+                                                    th:text="${teacher.userName + ' 선생님'}"></option>
                                             </th:block>
                                         </select>
                                     </div>
+                                    <!--                                <div class="basic-select sl2">-->
+                                    <!--                                    <select name="labelNo" id="transfer-subject-filter">-->
+                                    <!--                                        <option value="all">전체</option>-->
+                                    <!--                                        <th:block th:each="label : ${labels}">-->
+                                    <!--                                            <option th:value="${label.timeTableKey}" th:text="${label.classLabel}">-->
+                                    <!--                                            </option>-->
+                                    <!--                                        </th:block>-->
+                                    <!--                                    </select>-->
+                                    <!--                                </div>-->
                                 </div>
-                                <div class="form-line"></div>
-                                <div class="detail-sub">
-                                    <h4>사유</h4>
+                                <div class="stu-right">
+                                    <div class="sl3">
+                                        <div class="basic-select" style="flex: 1;">
+                                            <select name="stuName" id="stu-name">
+                                                <option value="name">이름</option>
+                                                <option value="phone">전화번호</option>
+                                            </select>
+                                        </div>
+                                        <div class="search-box" style="flex: 2;">
+                                            <input type="text" id="search-name" name="searchName">
+                                        </div>
+                                    </div>
+                                    <div class="explore common-btn sl4" id="search-btn">검색</div>
                                 </div>
-                                <div class="input-row">
-                    <textarea id="consult-content" name="transferReason" rows="7"
-                              placeholder="전출 사유를 작성해 주세요."></textarea>
-                                </div>
-                                <button type="submit" class="save-btn">저장하기</button>
-                            </form>
+                            </div>
                         </div>
-                    </div>
-                </section>
-                <div th:replace="~{student/inout-modal/student-inout-modal :: studentInoutModal}"></div>
-            </div>
-        </main>
-    </div>
-</div>
-<script>
+                        <div class="mt">
+                            <div class="table-frame move-t-frame">
+                                <table class="basic-table yh">
+                                    <colgroup>
+                                        <col width="5%">
+                                        <col width="5%">
+                                        <col width="15%">
+                                        <col width="10%">
+                                        <col width="20%">
+                                        <col width="15%">
+                                        <col width="20%">
+                                    </colgroup>
+                                    <thead id="transfer-sort-header">
+                                        <tr>
+                                            <th class="checkbox-group">
+                                                <input type="checkbox" id="check-all">
+                                            </th>
+                                            <th>No</th>
 
-</script>
+                                            <th style="cursor:pointer">
+                                                <img id="transfer-sort-3" th:src="@{/image/sort_checked.svg}"
+                                                    data-sort-default="@{/image/sort.svg}"
+                                                    data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">이름
+                                            </th>
+
+                                            <th style="cursor:pointer">
+                                                <img id="transfer-sort-4" th:src="@{/image/sort.svg}"
+                                                    data-sort-default="@{/image/sort.svg}"
+                                                    data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">학년
+                                            </th>
+
+                                            <th style="cursor:pointer">
+                                                <img id="transfer-sort-5" th:src="@{/image/sort.svg}"
+                                                    data-sort-default="@{/image/sort.svg}"
+                                                    data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">수강과목
+                                            </th>
+
+                                            <th style="cursor:pointer">
+                                                <img id="transfer-sort-6" th:src="@{/image/sort.svg}"
+                                                    data-sort-default="@{/image/sort.svg}"
+                                                    data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">전입일
+                                            </th>
+
+                                            <th style="cursor:pointer">
+                                                <img id="transfer-sort-7" th:src="@{/image/sort.svg}"
+                                                    data-sort-default="@{/image/sort.svg}"
+                                                    data-sort-checked="@{/image/sort_checked.svg}" class="svg-sort">담임
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="student-tbody" class="stripe">
+                                        <div class="table-body">
+                                            <th:block th:if="${#lists.isEmpty(students)}">
+                                                <tr>
+                                                    <td colspan="7" style="text-align:center;">
+                                                        등록된 학생이 없습니다.
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+
+                                            <th:block th:each="s, iterStat : ${students}">
+                                                <tr th:data-id="${s.studentId}" th:data-name="${s.studentName}"
+                                                    th:data-phone="${s.phone}">
+                                                    <td class="checkbox-group">
+                                                        <input type="checkbox" class="row-checkbox"
+                                                            th:value="${s.studentId}" onclick="event.stopPropagation();"
+                                                            name="studentNoList" form="inout-form">
+                                                    </td>
+                                                    <td th:text="${iterStat.count}"></td>
+                                                    <td th:text="${s.studentName}"></td>
+                                                    <td th:text="${s.gradeName}"></td>
+                                                    <td th:text="${s.hanClass != null && s.bookClass != null ? s.hanClass + ', ' + s.bookClass
+          : (s.hanClass != null ? s.hanClass
+          : (s.bookClass != null ? s.bookClass : ''))}"></td>
+                                                    <td th:text="${s.moveAt != null ? s.moveAt : '-'}"></td>
+                                                    <td th:text="${s.hanTeacher != null && s.bookTeacher != null ? s.hanTeacher + '(한자), ' + s.bookTeacher + '(독서)'
+          : (s.hanTeacher != null ? s.hanTeacher + '(한자)'
+          : (s.bookTeacher != null ? s.bookTeacher + '(독서)' : ''))}"></td>
+                                                </tr>
+                                            </th:block>
+                                        </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- section:right -->
+                    <section class="move-desc">
+                        <div class="move-reason">
+                            <div class="move-reason-frame">
+                                <div class="common-title">
+                                    <h2>전입 / 전출</h2>
+                                </div>
+                                <form th:action="@{/student/inout}" method="post" class="inout-form" id="inout-form">
+                                    <div class="detail-sub">
+                                        <h4>전출과목</h4>
+                                    </div>
+                                    <div class="input-row">
+                                        <div class="checkbox-group2">
+                                            <input type="checkbox" id="inout-han" name="inoutHan" value="1">한자수업
+                                        </div>
+                                        <div class="checkbox-group2" style="margin-left: 10px;">
+                                            <input type="checkbox" id="inout-book" name="inoutRead" value="2">독서수업
+                                        </div>
+                                    </div>
+                                    <div class="form-line"></div>
+                                    <div class="detail-sub">
+                                        <h4>전출 일자</h4>
+                                    </div>
+                                    <div class="icon-field">
+                                        <div class="display-date"></div>
+                                        <div style="position: relative;">
+                                            <input type="date" class="hidden-inout-date datepicker" name="moveAt">
+                                            <button type="button" class="icon-btn calendar-open">
+                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-line"></div>
+                                    <div class="detail-sub">
+                                        <h4>전입할 선생님</h4>
+                                    </div>
+                                    <div class="input-row">
+                                        <div class="basic-select" style="width: 100%;">
+                                            <select name="teacherNo" id="teacher-filter">
+                                                <th:block th:each="teacher : ${teachers}">
+                                                    <option th:value="${teacher.userCode}"
+                                                        th:text="${teacher.userName + ' 선생님'}"></option>
+                                                </th:block>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-line"></div>
+                                    <div class="detail-sub">
+                                        <h4>사유</h4>
+                                    </div>
+                                    <div class="input-row">
+                                        <textarea id="consult-content" name="transferReason" rows="7"
+                                            placeholder="전출 사유를 작성해 주세요."></textarea>
+                                    </div>
+                                    <button type="submit" class="save-btn">저장하기</button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                    <div th:replace="~{student/inout-modal/student-inout-modal :: studentInoutModal}"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+
+    </script>
 </body>
 
 </html>

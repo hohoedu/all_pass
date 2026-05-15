@@ -1,10 +1,8 @@
 package com.hohoedu.all_pass.manage;
 
-import com.google.api.Http;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
-import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -23,7 +20,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ManageController {
 
-    private final UserService userService;
     private final ManageService manageService;
 
 
