@@ -209,7 +209,8 @@
         SELECT COALESCE(SUM(
                                 COALESCE(card_amount, 0) +
                                 COALESCE(cash_amount, 0) +
-                                COALESCE(transfer_amount, 0)
+                                COALESCE(transfer_amount, 0) +
+                                COALESCE(prepaid_amount, 0)
                         ), 0) as total_amount
         FROM erp_payment_manual
         WHERE payment_key = #{paymentKey}
@@ -360,10 +361,12 @@
     <!-- preset에서 자동 결제 -->
     <insert id="insertPaymentManualFromPreset" parameterType="map">
         INSERT INTO
-        erp_payment_manual(card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id,
-        payment_key,user_code,yy,mm,prepaid_amount,preset_id,is_auto_from_preset,created_at
+        erp_payment_manual(manual_key, card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id,
+        payment_key,user_code,yy,mm,prepaid_amount,preset_id,is_auto_from_preset,created_at, preset_balance_before,
+        preset_balance_after
         )
         VALUES (
+            #{dto.manualKey},
         <!-- ✨ method에 따라 금액 분배 -->
         <choose>
             <when test="method == 'card'">#{amount}</when>
@@ -381,8 +384,18 @@
         </choose>
         ,
         #{cardName}, #{dto.paidDate}, 'approved', #{dto.studentId}, #{dto.paymentKey},
-        #{dto.userCode}, #{dto.yy}, #{dto.mm}, 0, #{presetId},
-        1, SYSDATETIME() )
+        #{dto.userCode}, #{dto.yy}, #{dto.mm}, #{dto.prepaidAmount}, #{presetId},
+        1, SYSDATETIME(),
+        #{balanceBefore},
+        #{balanceAfter} )
+    </insert>
+
+  
+    <insert id="insertPaymentManualGroupFromPreset" parameterType="map">
+    INSERT INTO erp_payment_manual_group (manual_key, total_amount, card_name, method, paid_date, yy, mm,
+    student_id, user_code, center_code, status, created_at, source)
+    VALUES (#{dto.manualKey}, 0, #{cardName}, #{method}, #{dto.paidDate}, #{dto.yy}, 
+    #{dto.mm}, #{dto.studentId}, #{dto.userCode}, #{centerCode}, 'approved', SYSDATETIME(), 'preset');
     </insert>
 
     <!-- preset 업데이트 -->
@@ -1357,21 +1370,51 @@
 
     <select id="findMonthlyPayments"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
-        select pm.id,
-               s.student_name,
-               pm.paid_date,
-               pm.payment_key,
-               pm.cash_amount     as cash,
-               pm.card_amount     as card,
-               pm.transfer_amount as trasfer,
-               epc.appr_cash_num
-        from erp_payment_manual pm
-                 join erp_payment_manual_group pmg on pm.manual_key = pmg.manual_key
-                 join erp_student s on pm.student_id = s.student_id
-                 left join erp_payment_cashbill epc on pmg.cashbill_id = epc.bill_id
-        where pmg.center_code = #{centerCode}
-          and pm.yy = #{yy}
-          and pm.mm = #{mm}
+     SELECT pm.id,
+       s.student_name,
+       pm.paid_date,
+       pm.payment_key,
+       pm.cash_amount          AS cash,
+       pm.card_amount          AS card,
+       pm.transfer_amount      AS transfer,
+       pm.prepaid_amount       AS prepaid,
+       pm.preset_balance_after AS remainBalance,
+       pmg.total_amount        AS actualPaid,
+       pmg.source              AS source,
+       epc.appr_cash_num
+FROM erp_payment_manual pm
+         JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
+         JOIN erp_student s ON pm.student_id = s.student_id
+         LEFT JOIN erp_payment_cashbill epc ON pmg.cashbill_id = epc.bill_id
+WHERE pmg.center_code = #{centerCode}
+  AND pm.yy = #{yy}
+  AND pm.mm = #{mm}
+  AND pmg.source = 'manual'
+
+UNION ALL
+
+SELECT MIN(pm.id),
+       s.student_name,
+       MAX(pm.paid_date),
+       pm.payment_key,
+       SUM(pm.cash_amount)          AS cash,
+       SUM(pm.card_amount)          AS card,
+       SUM(pm.transfer_amount)      AS transfer,
+       SUM(pm.prepaid_amount)       AS prepaid,
+       MIN(pm.preset_balance_after) AS remainBalance,
+       SUM(pm.prepaid_amount)       AS actualPaid,
+       'preset'                     AS source,
+       NULL                         AS appr_cash_num
+FROM erp_payment_manual pm
+         JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
+         JOIN erp_student s ON pm.student_id = s.student_id
+WHERE pmg.center_code = #{centerCode}
+  AND pm.yy = #{yy}
+  AND pm.mm = #{mm}
+  AND pmg.source = 'preset'
+GROUP BY pm.payment_key, s.student_name
+
+ORDER BY 1 DESC
     </select>
 
     <select id="findEduPaymentDetailByPaymentKey"

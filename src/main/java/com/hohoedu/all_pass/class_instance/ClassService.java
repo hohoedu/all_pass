@@ -337,7 +337,6 @@ public class ClassService {
         return tables;
     }
 
-
     public ClassRespDTO.TimeTableViewRespDTO findTableViewWithStudents(String year, String month, String userCode,
             String centerCode) {
 
@@ -457,7 +456,7 @@ public class ClassService {
 
         Integer baseFee = classInfo.getClassFee();
         if (baseFee == null)
-            throw new IllegalArgumentException("classFee가 null 입니다.");
+            throw new IllegalArgumentException("설정된 교육비가 없습니다.");
 
         int weekNo = Integer.parseInt(dto.getWeekNo());
         BigDecimal result = BigDecimal.valueOf(baseFee)

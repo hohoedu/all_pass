@@ -739,6 +739,7 @@ table .checkbox-group {
 .card-online,
 .card-offline,
 .cash-only,
+.pre-paid,
 .account-transfer,
 .mthod-total,
 .origin {
@@ -763,6 +764,11 @@ table .checkbox-group {
 .account-transfer {
     background: #b9de55;
     color: #6b8c05;
+}
+
+.pre-paid {
+    background: #c9b3f5;
+    color: #5a2d9c;
 }
 
 .mthod-total {

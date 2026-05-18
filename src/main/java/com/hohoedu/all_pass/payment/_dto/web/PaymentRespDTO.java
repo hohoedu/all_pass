@@ -1,4 +1,5 @@
 package com.hohoedu.all_pass.payment._dto.web;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,29 +30,28 @@ public class PaymentRespDTO {
         private String paymentKey;
         private String billId;
         private String studentName;
-        private String billPrice;           // 청구 금액
-        private String subject;             // 선택된 선생님 수업
-        private String otherTeacher;        // 선택되지 않은 선생님 이름
-        private String otherSubject;        // 선택되지 않은 수업
-        private String otherSubjectType;    // 선택되지 않은 수업 종류
+        private String billPrice; // 청구 금액
+        private String subject; // 선택된 선생님 수업
+        private String otherTeacher; // 선택되지 않은 선생님 이름
+        private String otherSubject; // 선택되지 않은 수업
+        private String otherSubjectType; // 선택되지 않은 수업 종류
 
-//        private Integer hanFee;
-//        private Integer hanMaterialFee;
-//        private Integer bookFee;
-//        private Integer bookMaterialFee;
-//        private String eduStatus;
-//        private String materialStatus;
+        // private Integer hanFee;
+        // private Integer hanMaterialFee;
+        // private Integer bookFee;
+        // private Integer bookMaterialFee;
+        // private String eduStatus;
+        // private String materialStatus;
 
+        private String paidAmount; // 결제 금액
+        private String unpaidAmount; // 미납 금액
+        private String issuanceStatus; // 발행 여부
+        private String payStatus; // 결제 여부
 
-        private String paidAmount;          // 결제 금액
-        private String unpaidAmount;        // 미납 금액
-        private String issuanceStatus;      // 발행 여부
-        private String payStatus;         // 결제 여부
+        private String parentPhone; // 부모님 핸드폰 번호
+        private String samePhoneStudents; // 전화번호 같은 형제들
 
-        private String parentPhone;         // 부모님 핸드폰 번호
-        private String samePhoneStudents;   // 전화번호 같은 형제들
-
-        private Integer isPriceModified;    // 금액 수정 여부 (0: 일치, 1: 불일치)
+        private Integer isPriceModified; // 금액 수정 여부 (0: 일치, 1: 불일치)
         private Integer standardFee;
     }
 
@@ -76,7 +76,7 @@ public class PaymentRespDTO {
         private String studentId;
         private String studentName;
         private String billingPhone;
-        private String parentPhone;   // 01012345678
+        private String parentPhone; // 01012345678
         private String paymentKey;
         private Integer amount;
 
@@ -131,8 +131,8 @@ public class PaymentRespDTO {
     @Data
     public static class PaySendRespDTO {
         private String billId;
-        private String paymintCode;     // Paymint 응답코드
-        private String paymintMsg;      // Paymint 메시지
+        private String paymintCode; // Paymint 응답코드
+        private String paymintMsg; // Paymint 메시지
         private boolean dbSaved;
     }
 
@@ -191,10 +191,10 @@ public class PaymentRespDTO {
         private String hanTeacher;
         private String bookTeacher;
         private Integer amount;
-        private Integer eduFeeTotal;      // 교육비 detail 총액
-        private Integer eduBillPaid;      // 교육비 bill 결제 금액 (approved)
-        private Integer eduManualPaid;    // 교육비 manual 결제 금액
-        private Integer eduUnpaidAmount;  // 교육비 미납 금액 = total - bill - manual
+        private Integer eduFeeTotal; // 교육비 detail 총액
+        private Integer eduBillPaid; // 교육비 bill 결제 금액 (approved)
+        private Integer eduManualPaid; // 교육비 manual 결제 금액
+        private Integer eduUnpaidAmount; // 교육비 미납 금액 = total - bill - manual
         private String paymentStatus;
         private String phoneNumber;
     }
@@ -202,9 +202,9 @@ public class PaymentRespDTO {
     @Data
     public static class ManualPaymentRespDTO {
         private String paymentKey;
-        private Integer price;              // 총 결제 금액
+        private Integer price; // 총 결제 금액
         private Integer actualBillPayment; // 이번 달 청구서에 적용된 금액
-        private Integer prepaidAmount;     // 선납금
+        private Integer prepaidAmount; // 선납금
         private String studentId;
         private String message;
     }
@@ -226,6 +226,10 @@ public class PaymentRespDTO {
         private Integer cash;
         private Integer card;
         private Integer transfer;
+        private Integer prepaid;
+        private Integer remainBalance;
+        private Integer actualPaid;
+        private String source;
         private String apprCashNum;
     }
 
@@ -310,17 +314,17 @@ public class PaymentRespDTO {
     @Data
     public static class CashbillPrintDTO {
         private String billId;
-        private String studentInfo;   // 학생정보
-        private String apprDate;      // 거래일자
-        private String receiptNum;    // 식별번호
-        private String apprCashNum;   // 승인번호
-        private Integer supplyPrice;  // 공급가액
-        private Integer taxPrice;     // 부가세
-        private Integer totalPrice;   // 합계
-        private String centerName;       // 가맹점명
-        private String directorName;  // 대표자
-        private String bizNo;         // 사업자등록번호
-        private String centerTel;     // 전화번호
+        private String studentInfo; // 학생정보
+        private String apprDate; // 거래일자
+        private String receiptNum; // 식별번호
+        private String apprCashNum; // 승인번호
+        private Integer supplyPrice; // 공급가액
+        private Integer taxPrice; // 부가세
+        private Integer totalPrice; // 합계
+        private String centerName; // 가맹점명
+        private String directorName; // 대표자
+        private String bizNo; // 사업자등록번호
+        private String centerTel; // 전화번호
         private String centerAddress; // 주소
     }
 

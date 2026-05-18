@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const res = await fetch('/pay/list/payments', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     year,
                     month: String(month).padStart(2, '0')
@@ -189,16 +189,37 @@ document.addEventListener("DOMContentLoaded", () => {
         list.forEach((payment, index) => {
             const tr = document.createElement('tr');
 
-            /* ── 수납방법 판별 ── */
+            /* ── 금액 파싱 ── */
             const cash = Number(payment.cash || 0);
             const card = Number(payment.card || 0);
             const transfer = Number(payment.transfer || 0);
-            const totalPaid = cash + card + transfer;
+            const prepaid = Number(payment.prepaid || 0);
+            const actualPaid = Number(payment.actualPaid || 0);
 
             const methodParts = [];
-            if (card > 0) methodParts.push({label: '카드', cls: 'card-offline', amount: card});
-            if (cash > 0) methodParts.push({label: '현금', cls: 'cash-only', amount: cash});
-            if (transfer > 0) methodParts.push({label: '계좌이체', cls: 'account-transfer', amount: transfer});
+            let totalPaid = 0;
+
+            if (payment.source === 'preset') {
+                /* ── 선납금 자동차감: 새로운 현금 없음 → 0원 ── */
+                methodParts.push({ label: '선결제', cls: 'pre-paid', amount: 0 });
+                totalPaid = 0;
+
+            } else {
+                /* ── 일반 수기결제 ── */
+                const displayAmount = actualPaid || (cash + card + transfer);
+                totalPaid = displayAmount;
+
+                if (card > 0) methodParts.push({ label: '카드', cls: 'card-offline', amount: displayAmount });
+                if (cash > 0) methodParts.push({ label: '현금', cls: 'cash-only', amount: displayAmount });
+                if (transfer > 0) methodParts.push({ label: '계좌이체', cls: 'account-transfer', amount: displayAmount });
+
+
+                /* ── 선납금 생성된 경우 (76만원 - 19만원 = 57만원 preset 생성) ── */
+                // const presetCreatedAmount = actualPaid - (card + cash + transfer);
+            }
+            const remainBalance = payment.remainBalance != null
+                ? Number(payment.remainBalance).toLocaleString('ko-KR') + '원'
+                : '-';
 
             const methodBtns = methodParts.map(m => `
             <button class="method-box ${m.cls}">
@@ -214,16 +235,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>`;
 
             /* ── 결제금액 셀 ── */
-            const paidPriceCell = totalPaid > 0
-                ? `<span class="origin">${totalPaid.toLocaleString('ko-KR')}</span>`
-                : `<input type="number" name="overpayment" value="0" class="td-input">`;
+            const paidPriceCell = payment.source === 'preset'
+                ? `<span class="origin">${prepaid.toLocaleString('ko-KR')}</span>`
+                : `<span class="origin">${totalPaid.toLocaleString('ko-KR')}</span>`;
 
+            const remainBalanceCell = `<span class="origin">${remainBalance}</span>`
             /* ── 현금영수증 아이콘 ── */
             const cashbillIcon = payment.apprCashNum
                 ? `<img src="/image/bill1.png" class="bill-icon" alt="발급완료" title="${payment.apprCashNum}">`
                 : (cash > 0 || transfer > 0)
                     ? `<img src="/image/bill_empty.png" class="bill-icon" alt="미발급" title="현금영수증 미발급">`
                     : '';
+
 
             tr.innerHTML = `
             <td class="checkbox-group">
@@ -240,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             </td>
             <td><div class="td-inputs">${paidPriceCell}</div></td>
-            <td><span>-</span></td>
+            <td>${remainBalanceCell}</td>
             <td>${cashbillIcon}</td>
             <td>
         <div class="common-btn btn-edit pay-desc" 
@@ -270,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
             /* ── 삭제 버튼 ── */
             const deleteBtn = e.target.closest('.btn-delete');
             if (deleteBtn) {
-                const {id, name, date, amount} = deleteBtn.dataset;
+                const { id, name, date, amount } = deleteBtn.dataset;
 
                 Swal.fire({
                     title: '결제 내역 삭제',
@@ -360,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch(`/pay/manual/delete/${id}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'}
+                headers: { 'Content-Type': 'application/json' }
             });
 
             const result = await res.json();
@@ -406,12 +429,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const dto = {paidDate, cardAmount, cashAmount, transferAmount, cardName};
+        const dto = { paidDate, cardAmount, cashAmount, transferAmount, cardName };
 
         try {
             const res = await fetch(`/pay/manual/update/${id}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             });
 
@@ -880,7 +903,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const res = await fetch("/pay/list/students", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(yearMonth)
             });
 
@@ -1076,7 +1099,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch("/pay/manual", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(dto)
             });
 
@@ -1108,7 +1131,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // 1. 발급 대상 학생 조회
             const studentsRes = await fetch("/pay/api/cashbill/students", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(yearMonth)
             });
 
@@ -1147,8 +1170,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     try {
                         const res = await fetch("/pay/api/cashbill/history", {
                             method: "POST",
-                            headers: {"Content-Type": "application/json"},
-                            body: JSON.stringify({year: y, month: m})
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ year: y, month: m })
                         });
                         if (res.ok) {
                             const result = await res.json();
@@ -1171,7 +1194,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const historyRes = await fetch("/pay/api/cashbill/history", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(yearMonth)
                 });
 
@@ -1470,7 +1493,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 fetch("/pay/api/cashbill/history", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(yearMonth)
                 })
                     .then(res => res.json())
@@ -1807,12 +1830,12 @@ async function refreshCashbillHistory() {
     if (!monthInput) return;
 
     const [year, month] = monthInput.value.split("-");
-    const yearMonth = {year, month};
+    const yearMonth = { year, month };
 
     try {
         const historyRes = await fetch("/pay/api/cashbill/history", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(yearMonth)
         });
 

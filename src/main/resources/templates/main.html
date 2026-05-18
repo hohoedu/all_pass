@@ -17,372 +17,381 @@
         .sidebar-load,
         .main-info,
         .student-frame,
-        .student-frame > section {
+        .student-frame>section {
             background: #f7f7f7;
         }
     </style>
 </head>
 
 <body>
-<div class="main-container">
-    <div class="main-frame">
-        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-        <main class="main-info">
-            <div class="student-frame">
+    <div class="main-container">
+        <div class="main-frame">
+            <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+            <main class="main-info">
+                <div class="student-frame">
 
-                <!-- ====== section:top ====== -->
-                <section class="class-info-section">
-                    <div class="class-desc">
-                        <div class="class-header">
-                            <div class="main-sub">
-                                <div class="common-title" style="margin-bottom: 0;">
-                                    <h2 id="main-month-title"></h2>
-                                </div>
-                                <div class="basic-select">
-                                    <select name="teacher" id="main-teacher-select" style="width: 200px;"
+                    <!-- ====== section:top ====== -->
+                    <section class="class-info-section">
+                        <div class="class-desc">
+                            <div class="class-header">
+                                <div class="main-sub">
+                                    <div class="common-title" style="margin-bottom: 0;">
+                                        <h2 id="main-month-title"></h2>
+                                    </div>
+                                    <div class="basic-select">
+                                        <select name="teacher" id="main-teacher-select" style="width: 200px;"
                                             th:disabled="${user.roleKey != 'ADMIN'}">
 
-                                        <th:block th:if="${user.roleKey == 'ADMIN'}">
-                                            <option value="all" th:selected="${!isMeInList}">전체</option>
-                                        </th:block>
+                                            <th:block th:if="${user.roleKey == 'ADMIN'}">
+                                                <option value="all" th:selected="${!isMeInList}">전체</option>
+                                            </th:block>
 
-                                        <th:block th:each="u : ${users}">
-                                            <option th:value="${u.userCode}"
-                                                    th:text="${u.userName + ' 선생님'}"
+                                            <th:block th:each="u : ${users}">
+                                                <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"
                                                     th:selected="${u.userCode == user.userCode}">
-                                            </option>
-                                        </th:block>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="class-btns">
-                                <a class="common-btn stas-btn" th:href="@{/student/overview}">
-                                    학생 현황 통계
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="class-status">
-
-                    <!-- ====== 오늘 수업 목록 ====== -->
-                    <article class="edu-card">
-                        <div class="student-info">
-                            <h2 class="subtitle">오늘 수업 목록</h2>
-                            <div class="class-button">
-                                <a class="class-next" th:href="@{/class/record}"></a>
-                            </div>
-                        </div>
-                        <div>
-                            <table class="class-status-table">
-                                <thead>
-                                <tr>
-                                    <th>시간</th>
-                                    <th>과목</th>
-                                    <th>인원</th>
-                                    <th>담임</th>
-                                    <th>바로가기</th>
-                                </tr>
-                                </thead>
-                            </table>
-                            <div class="class-tbody-scroll table-frame">
-                                <table class="class-status-table class-tbody">
-                                    <tbody>
-                                    <tr th:each="item : ${classSummary}">
-                                        <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
-                                        <td th:text="${item.className}"></td>
-                                        <td th:text="${item.countStudent}"></td>
-                                        <td th:text="${item.userName}"></td>
-                                        <td>
-                                            <button class="class-action-btn"
-                                                    th:attr="data-key=${item.timeTableKey}">
-                                                수업 관리
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(classSummary)}">
-                                        <td colspan="5" style="text-align:center; padding:20px;">
-                                            조회된 수업이 없습니다.
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- ====== 미납 현황 ====== -->
-                    <article class="unpaid-card">
-                        <div class="unpaid-lists">
-
-                            <!-- 이전 미납 현황 (전체 기간) -->
-                            <div class="payment-area">
-                                <div class="status-title">
-                                    <h2 class="subtitle">이전 미납 현황</h2>
-                                    <div class="class-button">
-                                        <a class="class-next" href="#"></a>
+                                                </option>
+                                            </th:block>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="unpaid-arrange">
-                                    <div class="payment-chart">
-                                        <div class="unpaid-stats">
-                                            <div class="all-amounts">
+
+                                <div class="class-btns">
+                                    <div>잔여 포인트</div>
+                                    <div>
+                                        <div style="justify-self: center;">결제선생</div>
+                                        <div>300,000 P</div>
+                                    </div>
+                                    <div>
+                                        <div style="justify-self: center;">알림톡</div>
+                                        <div>150,000 P</div>
+                                    </div>
+                                    <a class="common-btn stas-btn" th:href="@{/student/overview}">
+                                        학생 현황 통계
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="class-status">
+
+                        <!-- ====== 오늘 수업 목록 ====== -->
+                        <article class="edu-card">
+                            <div class="student-info">
+                                <h2 class="subtitle">오늘 수업 목록</h2>
+                                <div class="class-button">
+                                    <a class="class-next" th:href="@{/class/record}"></a>
+                                </div>
+                            </div>
+                            <div>
+                                <table class="class-status-table">
+                                    <thead>
+                                        <tr>
+                                            <th>시간</th>
+                                            <th>과목</th>
+                                            <th>인원</th>
+                                            <th>담임</th>
+                                            <th>바로가기</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <div class="class-tbody-scroll table-frame">
+                                    <table class="class-status-table class-tbody">
+                                        <tbody>
+                                            <tr th:each="item : ${classSummary}">
+                                                <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
+                                                <td th:text="${item.className}"></td>
+                                                <td th:text="${item.countStudent}"></td>
+                                                <td th:text="${item.userName}"></td>
+                                                <td>
+                                                    <button class="class-action-btn"
+                                                        th:attr="data-key=${item.timeTableKey}">
+                                                        수업 관리
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(classSummary)}">
+                                                <td colspan="5" style="text-align:center; padding:20px;">
+                                                    조회된 수업이 없습니다.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- ====== 미납 현황 ====== -->
+                        <article class="unpaid-card">
+                            <div class="unpaid-lists">
+
+                                <!-- 이전 미납 현황 (전체 기간) -->
+                                <div class="payment-area">
+                                    <div class="status-title">
+                                        <h2 class="subtitle">이전 미납 현황</h2>
+                                        <div class="class-button">
+                                            <a class="class-next" href="#"></a>
+                                        </div>
+                                    </div>
+                                    <div class="unpaid-arrange">
+                                        <div class="payment-chart">
+                                            <div class="unpaid-stats">
+                                                <div class="all-amounts">
                                                     <span class="unpaid-amount" th:text="${not #lists.isEmpty(allUnpaidSummary)
                                                           ? allUnpaidSummary[0].unpaidCount : 0}">
                                                     </span>
-                                                <span class="all-amount">건</span>
-                                            </div>
-                                            <div class="unpaid percent">
-                                                미납률:
-                                                <span th:text="${not #lists.isEmpty(allUnpaidSummary)
+                                                    <span class="all-amount">건</span>
+                                                </div>
+                                                <div class="unpaid percent">
+                                                    미납률:
+                                                    <span th:text="${not #lists.isEmpty(allUnpaidSummary)
                                                     ? #numbers.formatDecimal(allUnpaidSummary[0].unpaidRate, 1, 1) + '%'
                                                     : '0%'}">
                                                     </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="unpaid-list">
+                                            <div class="unpaid-frame"
+                                                style="border-top: none; max-height: 200px; overflow-y: auto;">
+                                                <table class="class-status-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>년월</th>
+                                                            <th>유효기간</th>
+                                                            <th>이름</th>
+                                                            <th>종류</th>
+                                                            <th>금액</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="item : ${allUnpaidSummary}">
+                                                            <td th:text="${item.yy + '년 ' + item.mm + '월'}"></td>
+                                                            <td
+                                                                th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
+                                                            </td>
+                                                            <td th:text="${item.studentName}"></td>
+                                                            <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
+                                                            </td>
+                                                            <td
+                                                                th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
+                                                            </td>
+                                                        </tr>
+                                                        <tr th:if="${#lists.isEmpty(allUnpaidSummary)}">
+                                                            <td colspan="5" style="text-align:center; padding:20px;">
+                                                                미납 내역이 없습니다.
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="unpaid-list">
-                                        <div class="unpaid-frame"
-                                             style="border-top: none; max-height: 200px; overflow-y: auto;">
-                                            <table class="class-status-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>년월</th>
-                                                    <th>유효기간</th>
-                                                    <th>이름</th>
-                                                    <th>종류</th>
-                                                    <th>금액</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr th:each="item : ${allUnpaidSummary}">
-                                                    <td th:text="${item.yy + '년 ' + item.mm + '월'}"></td>
-                                                    <td
-                                                            th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
-                                                    </td>
-                                                    <td th:text="${item.studentName}"></td>
-                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
-                                                    </td>
-                                                    <td
-                                                            th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
-                                                    </td>
-                                                </tr>
-                                                <tr th:if="${#lists.isEmpty(allUnpaidSummary)}">
-                                                    <td colspan="5" style="text-align:center; padding:20px;">
-                                                        미납 내역이 없습니다.
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
+                                </div>
+
+                                <!-- 이번달 미납 현황 -->
+                                <div class="payment-area">
+                                    <div class="status-title">
+                                        <h2 class="subtitle">이번달 미납 현황</h2>
+                                        <div class="class-button">
+                                            <a class="class-next" href="#"></a>
+                                        </div>
+                                    </div>
+                                    <div class="unpaid-arrange">
+                                        <div class="payment-chart">
+                                            <div class="unpaid-stats">
+                                                <div class="all-amounts">
+                                                    <span class="unpaid-amount" th:text="${not #lists.isEmpty(paymentSummary)
+                                                          ? paymentSummary[0].unpaidCount : 0}">
+                                                    </span>
+                                                    <span class="all-amount">건</span>
+                                                </div>
+                                                <div class="unpaid percent">
+                                                    미납률:
+                                                    <span th:text="${not #lists.isEmpty(paymentSummary)
+                                                    ? #numbers.formatDecimal(paymentSummary[0].unpaidRate, 1, 1) + '%'
+                                                    : '0%'}">
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="unpaid-list">
+                                            <div class="unpaid-frame"
+                                                style="border-top: none; max-height: 200px; overflow-y: auto;">
+                                                <table class="class-status-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>유효기간</th>
+                                                            <th>이름</th>
+                                                            <th>종류</th>
+                                                            <th>금액</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr th:each="item : ${paymentSummary}">
+                                                            <td
+                                                                th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
+                                                            </td>
+                                                            <td th:text="${item.studentName}"></td>
+                                                            <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
+                                                            </td>
+                                                            <td
+                                                                th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
+                                                            </td>
+                                                        </tr>
+                                                        <tr th:if="${#lists.isEmpty(paymentSummary)}">
+                                                            <td colspan="4" style="text-align:center; padding:20px;">
+                                                                미납 내역이 없습니다.
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- 이번달 미납 현황 -->
-                            <div class="payment-area">
-                                <div class="status-title">
-                                    <h2 class="subtitle">이번달 미납 현황</h2>
+                            </div>
+                        </article>
+
+                        <!-- ====== 오늘의 보강 목록 ====== -->
+                        <article class="makeup-card">
+                            <div class="student-info">
+                                <h2 class="subtitle">오늘의 보강 목록</h2>
+                                <div class="class-button">
+                                    <a class="class-next"
+                                        th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}">
+                                    </a>
+                                </div>
+                            </div>
+                            <div>
+                                <table class="class-status-table">
+                                    <thead>
+                                        <tr>
+                                            <th>시간</th>
+                                            <th>과목</th>
+                                            <th>인원</th>
+                                            <th>담임</th>
+                                            <th>바로가기</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <div class="makeup-tbody-scroll table-frame">
+                                    <table class="class-status-table class-tbody">
+                                        <tbody>
+                                            <tr th:each="item : ${remedialSummary}">
+                                                <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
+                                                <td th:text="${item.remedialSubject}"></td>
+                                                <td th:text="${item.countStudent}"></td>
+                                                <td th:text="${item.userName}"></td>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox">
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${#lists.isEmpty(remedialSummary)}">
+                                                <td colspan="5" style="text-align:center; padding:20px;">
+                                                    조회된 보강이 없습니다.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </article>
+
+                        <!-- ====== 결석/보강 현황 + 학생 현황 ====== -->
+                        <article class="status-card">
+
+                            <!-- 결석/보강 현황 -->
+                            <div class="absence-num">
+                                <div class="absence-info">
+                                    <div class="absence-desc">
+                                        <p class="subtitle">이번달 결석/보강 현황</p>
+                                        <p class="pax">
+                                            <span
+                                                th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>
+                                            /
+                                            <span
+                                                th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>
+                                        </p>
+                                    </div>
                                     <div class="class-button">
                                         <a class="class-next" href="#"></a>
                                     </div>
                                 </div>
-                                <div class="unpaid-arrange">
-                                    <div class="payment-chart">
-                                        <div class="unpaid-stats">
-                                            <div class="all-amounts">
-                                                    <span class="unpaid-amount" th:text="${not #lists.isEmpty(paymentSummary)
-                                                          ? paymentSummary[0].unpaidCount : 0}">
-                                                    </span>
-                                                <span class="all-amount">건</span>
-                                            </div>
-                                            <div class="unpaid percent">
-                                                미납률:
-                                                <span th:text="${not #lists.isEmpty(paymentSummary)
-                                                    ? #numbers.formatDecimal(paymentSummary[0].unpaidRate, 1, 1) + '%'
-                                                    : '0%'}">
-                                                    </span>
-                                            </div>
-                                        </div>
+                                <div class="class-boxes">
+                                    <div class="class-box">
+                                        <p>결석</p>
+                                        <p>
+                                            <span
+                                                th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>명
+                                        </p>
                                     </div>
-                                    <div class="unpaid-list">
-                                        <div class="unpaid-frame"
-                                             style="border-top: none; max-height: 200px; overflow-y: auto;">
-                                            <table class="class-status-table">
-                                                <thead>
-                                                <tr>
-                                                    <th>유효기간</th>
-                                                    <th>이름</th>
-                                                    <th>종류</th>
-                                                    <th>금액</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr th:each="item : ${paymentSummary}">
-                                                    <td
-                                                            th:text="${item.billExpireAt != null ? item.billExpireAt : '-'}">
-                                                    </td>
-                                                    <td th:text="${item.studentName}"></td>
-                                                    <td th:text="${item.itemType == 'EDU_FEE' ? '교육비' : '교재비'}">
-                                                    </td>
-                                                    <td
-                                                            th:text="${#numbers.formatInteger(item.billPrice, 1, 'COMMA')}">
-                                                    </td>
-                                                </tr>
-                                                <tr th:if="${#lists.isEmpty(paymentSummary)}">
-                                                    <td colspan="4" style="text-align:center; padding:20px;">
-                                                        미납 내역이 없습니다.
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                    <div class="class-box">
+                                        <p>보강</p>
+                                        <p>
+                                            <span
+                                                th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>명
+                                        </p>
                                     </div>
                                 </div>
                             </div>
 
-                        </div>
-                    </article>
-
-                    <!-- ====== 오늘의 보강 목록 ====== -->
-                    <article class="makeup-card">
-                        <div class="student-info">
-                            <h2 class="subtitle">오늘의 보강 목록</h2>
-                            <div class="class-button">
-                                <a class="class-next"
-                                   th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}">
-                                </a>
-                            </div>
-                        </div>
-                        <div>
-                            <table class="class-status-table">
-                                <thead>
-                                <tr>
-                                    <th>시간</th>
-                                    <th>과목</th>
-                                    <th>인원</th>
-                                    <th>담임</th>
-                                    <th>바로가기</th>
-                                </tr>
-                                </thead>
-                            </table>
-                            <div class="makeup-tbody-scroll table-frame">
-                                <table class="class-status-table class-tbody">
-                                    <tbody>
-                                    <tr th:each="item : ${remedialSummary}">
-                                        <td th:text="${item.startTime != null ? item.startTime : '-'}"></td>
-                                        <td th:text="${item.remedialSubject}"></td>
-                                        <td th:text="${item.countStudent}"></td>
-                                        <td th:text="${item.userName}"></td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox">
-                                        </td>
-                                    </tr>
-                                    <tr th:if="${#lists.isEmpty(remedialSummary)}">
-                                        <td colspan="5" style="text-align:center; padding:20px;">
-                                            조회된 보강이 없습니다.
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </article>
-
-                    <!-- ====== 결석/보강 현황 + 학생 현황 ====== -->
-                    <article class="status-card">
-
-                        <!-- 결석/보강 현황 -->
-                        <div class="absence-num">
-                            <div class="absence-info">
-                                <div class="absence-desc">
-                                    <p class="subtitle">이번달 결석/보강 현황</p>
-                                    <p class="pax">
-                                            <span
-                                                    th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>
-                                        /
-                                        <span
-                                                th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>
-                                    </p>
-                                </div>
-                                <div class="class-button">
-                                    <a class="class-next" href="#"></a>
-                                </div>
-                            </div>
-                            <div class="class-boxes">
-                                <div class="class-box">
-                                    <p>결석</p>
-                                    <p>
-                                            <span
-                                                    th:text="${absentSummary != null ? absentSummary.absentCount : 0}">0</span>명
-                                    </p>
-                                </div>
-                                <div class="class-box">
-                                    <p>보강</p>
-                                    <p>
-                                            <span
-                                                    th:text="${absentSummary != null ? absentSummary.completeRemedialCount : 0}">0</span>명
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 학생 현황 -->
-                        <div class="student-num">
-                            <div class="student-info">
-                                <div class="student-desc">
-                                    <p class="subtitle">학생 현황</p>
-                                    <p class="pax">
+                            <!-- 학생 현황 -->
+                            <div class="student-num">
+                                <div class="student-info">
+                                    <div class="student-desc">
+                                        <p class="subtitle">학생 현황</p>
+                                        <p class="pax">
                                             <span class="number"
-                                                  th:text="${studentStatus != null ? studentStatus.totalCount : 0}">
+                                                th:text="${studentStatus != null ? studentStatus.totalCount : 0}">
                                                 0
                                             </span>명
-                                    </p>
+                                        </p>
+                                    </div>
+                                    <div class="class-button">
+                                        <a class="class-next" href="#"></a>
+                                    </div>
                                 </div>
-                                <div class="class-button">
-                                    <a class="class-next" href="#"></a>
+                                <div class="student-status-boxes">
+                                    <div class="status-box join">
+                                        <div class="label">입회</div>
+                                        <div class="count"
+                                            th:text="${studentStatus != null ? studentStatus.entryCount : 0}">
+                                            0
+                                        </div>
+                                    </div>
+                                    <div class="status-box leave">
+                                        <div class="label">탈퇴</div>
+                                        <div class="count"
+                                            th:text="${studentStatus != null ? studentStatus.withdrawCount : 0}">
+                                            0
+                                        </div>
+                                    </div>
+                                    <div class="status-box transfer-in">
+                                        <div class="label">전입</div>
+                                        <div class="count"
+                                            th:text="${studentStatus != null ? studentStatus.transferInCount : 0}">
+                                            0
+                                        </div>
+                                    </div>
+                                    <div class="status-box transfer-out">
+                                        <div class="label">전출</div>
+                                        <div class="count"
+                                            th:text="${studentStatus != null ? studentStatus.transferOutCount : 0}">
+                                            0
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="student-status-boxes">
-                                <div class="status-box join">
-                                    <div class="label">입회</div>
-                                    <div class="count"
-                                         th:text="${studentStatus != null ? studentStatus.entryCount : 0}">
-                                        0
-                                    </div>
-                                </div>
-                                <div class="status-box leave">
-                                    <div class="label">탈퇴</div>
-                                    <div class="count"
-                                         th:text="${studentStatus != null ? studentStatus.withdrawCount : 0}">
-                                        0
-                                    </div>
-                                </div>
-                                <div class="status-box transfer-in">
-                                    <div class="label">전입</div>
-                                    <div class="count"
-                                         th:text="${studentStatus != null ? studentStatus.transferInCount : 0}">
-                                        0
-                                    </div>
-                                </div>
-                                <div class="status-box transfer-out">
-                                    <div class="label">전출</div>
-                                    <div class="count"
-                                         th:text="${studentStatus != null ? studentStatus.transferOutCount : 0}">
-                                        0
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                    </article>
+                        </article>
 
-                </section>
-            </div>
-        </main>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
-</div>
 </body>
 
 </html>

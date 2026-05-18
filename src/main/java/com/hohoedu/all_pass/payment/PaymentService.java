@@ -1576,18 +1576,26 @@ public class PaymentService {
                 return;
             }
 
-            // 2. 선납금이 청구금액보다 적으면 처리 안 함
-            if (preset.getTotalAmount() < billAmount) {
-                log.warn("선납금 부족 - studentId: {}, 필요: {}, 남은금액: {}",
-                        studentId, billAmount, preset.getTotalAmount());
-                return;
-            }
+            // 2. 부분결제 여부 및 금액 계산
+            boolean isPartial = preset.getTotalAmount() < billAmount;
+            int presetUsedAmount = isPartial ? preset.getTotalAmount() : billAmount;
+            int remainingAmount = billAmount - presetUsedAmount;
+            
 
-            log.info("✨ 선납금 자동 결제 시작 - studentId: {}, preset: {}, 금액: {}",
-                    studentId, preset.getId(), billAmount);
+            // 차감 전 잔액 스냅샷
+            int balanceBefore = preset.getTotalAmount();
+            int newBalance = balanceBefore - presetUsedAmount;
+            int balanceAfter = isPartial ? -remainingAmount : newBalance;
+            String newStatus = newBalance <= 0 ? "completed" : "active";
+
+            log.info("선납금 자동 결제 시작 - studentId: {}, 차감: {}, 차감 전: {}, 차감 후: {}",
+                    studentId, presetUsedAmount, balanceBefore, newBalance);
+
+            String manualKey = KeyGenerator.generateManualKey(centerCode, yy, mm);
 
             PaymentReqDTO.ManualPaymentReqDTO manualDTO = PaymentReqDTO.ManualPaymentReqDTO.builder()
                     .studentId(studentId)
+                    .manualKey(manualKey)
                     .paymentKey(paymentKey)
                     .paidDate(LocalDate.now().toString())
                     .cardAmount(0)
@@ -1595,49 +1603,70 @@ public class PaymentService {
                     .transferAmount(0)
                     .userCode(userCode)
                     .centerCode(centerCode)
-                    .status("approved")
-                    .prepaidAmount(0)
+                    .status(isPartial ? "partial" : "approved")
+                    .prepaidAmount(presetUsedAmount)
                     .yy(yy)
                     .mm(mm)
                     .build();
 
-            // manual_payment에 preset 정보 포함해서 저장
-            Integer manualPaymentId = paymentRepository.insertPaymentManualFromPreset(
+            // 3. payment_manual 저장 (잔액 스냅샷 포함)
+            paymentRepository.insertPaymentManualFromPreset(
                     manualDTO,
                     preset.getId(),
-                    billAmount,
+                    presetUsedAmount,
                     preset.getMethod(),
+                    preset.getCardName(),
+                    balanceBefore,
+                    balanceAfter);
+
+            // 4. payment_manual_group 저장 (source=preset)
+            paymentRepository.insertPaymentManualGroupFromPreset(
+                    manualDTO,
+                    preset.getMethod(),
+                    centerCode,
                     preset.getCardName());
 
-            // 4. preset 업데이트
+            // 5. preset 업데이트 (balanceBefore 저장 후 실행)
             paymentRepository.updatePresetAfterUse(
                     preset.getId(),
-                    preset.getTotalAmount() - billAmount, // 남은 금액
-                    preset.getUsedMonths() + 1, // 사용 개월 증가
-                    (preset.getTotalAmount() - billAmount) <= 0 ? "completed" : "active");
+                    newBalance,
+                    preset.getUsedMonths() + 1,
+                    newStatus);
 
-            // 5. 결제 상태 재계산
+            // 6. 잔여금액 처리
+            if (remainingAmount > 0) {
+                log.warn("선납금 부족으로 부분결제 처리 - paymentKey: {}, 잔여: {}", paymentKey, remainingAmount);
+            }
+
+            // 7. 결제 상태 재계산
             recalculatePaymentStatus(paymentKey, userCode);
 
-            // 6. 히스토리 기록
+            // 8. 히스토리 기록
             Payment payment = paymentRepository.findPaymentByKey(paymentKey);
-            PaymentReqDTO.PaymentHistoryRecordDTO history = PaymentReqDTO.PaymentHistoryRecordDTO.builder()
-                    .eventType("auto_paid_from_preset")
-                    .eventSource("auto")
-                    .oldStatus("pending")
-                    .newStatus(payment.getStatus())
-                    .amount(billAmount)
-                    .userCode(userCode)
-                    .description("선납금 자동 차감 (preset_id: " + preset.getId() + ")")
-                    .paymentKey(paymentKey)
-                    .build();
+            String eventType = isPartial ? "partial_paid_from_preset" : "auto_paid_from_preset";
+            String description = isPartial
+                    ? String.format("선납금 부분 차감 %d원 | 차감 전 %d원 → 잔여 %d원 미납 (preset_id: %d)",
+                            presetUsedAmount, balanceBefore, remainingAmount, preset.getId())
+                    : String.format("선납금 자동 차감 %d원 | 차감 전 %d원 → 잔여 %d원 (preset_id: %d)",
+                            presetUsedAmount, balanceBefore, newBalance, preset.getId());
 
-            paymentRepository.insertPaymentHistory(history);
+            paymentRepository.insertPaymentHistory(
+                    PaymentReqDTO.PaymentHistoryRecordDTO.builder()
+                            .eventType(eventType)
+                            .eventSource("auto")
+                            .oldStatus("pending")
+                            .newStatus(payment.getStatus())
+                            .amount(presetUsedAmount)
+                            .userCode(userCode)
+                            .description(description)
+                            .paymentKey(paymentKey)
+                            .build());
 
-            log.info("✅ 선납금 자동 결제 완료 - preset 남은금액: {}", preset.getTotalAmount() - billAmount);
+            log.info("선납금 자동 결제 완료 - 차감: {}, 차감 전: {}, 차감 후: {}, 잔여청구: {}",
+                    presetUsedAmount, balanceBefore, newBalance, remainingAmount);
 
         } catch (Exception e) {
-            log.error("❌ 선납금 자동 처리 실패 - studentId: {}, error: {}", studentId, e.getMessage(), e);
+            log.error("선납금 자동 처리 실패 - studentId: {}, error: {}", studentId, e.getMessage(), e);
         }
     }
 
