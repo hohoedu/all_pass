@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.center.repository.CenterRepository">
+
+  <select id="findPaymintConfigByCenterCode"
+            parameterType="String"
+            resultType="com.hohoedu.all_pass.center._dto.CenterRespDTO$PaymintConfigDTO">
+        SELECT api_key           AS apiKey,
+               remain_point_url  AS remainPointUrl
+        FROM   erp_payment_config
+        WHERE  center_code = #{centerCode}
+    </select>
+
+
+
+</mapper>

@@ -1,12 +1,11 @@
 package com.hohoedu.all_pass.center.repository;
 
-import com.hohoedu.all_pass.center.Center;
+import org.apache.ibatis.annotations.Mapper;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.hohoedu.all_pass.center._dto.CenterRespDTO.PaymintConfigDTO;
 
+@Mapper
+public interface CenterRepository {
 
-import java.util.Optional;
-
-public interface CenterRepository extends JpaRepository<Center, Integer> {
-    Optional<Center> findByCenterCode(String centerCode);
+    PaymintConfigDTO findPaymintConfigByCenterCode(String centerCode);
 }

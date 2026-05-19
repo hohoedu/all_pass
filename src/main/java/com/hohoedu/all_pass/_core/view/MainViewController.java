@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass.center.CenterService;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -10,6 +11,8 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -34,14 +37,20 @@ public class MainViewController {
     private final ClassService classService;
     private final PaymentService paymentService;
     private final StudentService studentService;
+    private final CenterService centerService;
     private final UserService userService;
 
     @GetMapping({ "/", "/home" })
-    public String getIndexPage(HttpSession session) {
-        Object user = session.getAttribute("user");
+    public String getIndexPage(HttpSession session, Model model) {
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:https://highreader.co.kr";
         }
+        String centerCode = user.getCenterCode();
+
+        // centerService.findPopbillPoint();
+        int paymintPoint = centerService.findPaymintPoint(centerCode);
+        log.info("paymintPoint = {}", paymintPoint);
         return "index";
     }
 

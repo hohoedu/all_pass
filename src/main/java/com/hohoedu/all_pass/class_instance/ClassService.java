@@ -504,6 +504,25 @@ public class ClassService {
             dto.setUserCode(userCode);
             dto.setCenterCode(centerCode);
 
+            if (Constants.UNIT_INCREMENT_CLASS_KEYS.contains(old.getClassKey())) {
+                String unitKey = old.getUnitKey();
+                String classKey = old.getClassKey(); 
+
+                String prefix = unitKey.replaceAll("[0-9]", ""); 
+                int prevMonth = Integer.parseInt(unitKey.replaceAll("[^0-9]", ""));
+
+                boolean isRollover = (prevMonth == 12);
+                int newMonth = isRollover ? 1 : prevMonth + 1;
+
+                dto.setUnitKey(prefix + String.format("%02d", newMonth)); 
+                dto.setClassKey(isRollover
+                        ? Constants.CLASS_KEY_ROLLOVER.getOrDefault(classKey, classKey)
+                        : classKey);
+            } else {
+                dto.setUnitKey(old.getUnitKey());
+                dto.setClassKey(old.getClassKey());
+            }
+
             registerClass(dto);
 
             keyMap.put(old.getTimeTableKey(), dto.getTimeTableKey());

@@ -12,7 +12,7 @@ import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass._core.utils.KeyGenerator;
 import com.hohoedu.all_pass.attendance.AttendanceRepository;
 import com.hohoedu.all_pass.center.Center;
-import com.hohoedu.all_pass.center.repository.CenterRepository;
+import com.hohoedu.all_pass.center.repository.CenterJpaRepository;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassWeek;
@@ -62,7 +62,7 @@ public class StudentService {
     private final UserRepository userRepository;
     private final SnapshotRepository snapshotRepository;
     private final SnapshotJpaRepository snapshotJpaRepository;
-    private final CenterRepository centerRepository;
+    private final CenterJpaRepository centerRepository;
     private final FamilyService familyService;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
