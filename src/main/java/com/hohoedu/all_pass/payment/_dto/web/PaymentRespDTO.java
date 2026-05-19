@@ -228,6 +228,7 @@ public class PaymentRespDTO {
         private Integer transfer;
         private Integer prepaid;
         private Integer remainBalance;
+        private Integer paidAmount;
         private Integer actualPaid;
         private String source;
         private String apprCashNum;

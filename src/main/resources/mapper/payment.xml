@@ -286,11 +286,11 @@
             parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
         INSERT INTO erp_payment_manual(manual_key, card_amount, transfer_amount, cash_amount, card_name, paid_date,
                                        status, student_id, payment_key, user_code, yy, mm,
-                                       prepaid_amount,
+                                       prepaid_amount, preset_balance_after,
                                        created_at)
         VALUES (#{manualKey}, #{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status},
                 #{studentId}, #{paymentKey}, #{userCode}, #{yy}, #{mm},
-                #{prepaidAmount},
+                #{prepaidAmount},#{presetBalanceAfter},
                 SYSDATETIME())
     </insert>
 
@@ -357,6 +357,13 @@
         ORDER BY created_at ASC
 
     </select>
+
+    <update id="updatePresetBalanceAfter">
+        UPDATE erp_payment_manual
+        SET preset_balance_after = #{balance}
+        WHERE manual_key = #{manualKey}
+          AND student_id = #{studentId}
+    </update>
 
     <!-- preset에서 자동 결제 -->
     <insert id="insertPaymentManualFromPreset" parameterType="map">
@@ -442,6 +449,13 @@
         where pd.payment_key = #{paymentKey}
           AND p.student_id = #{studentId}
           AND pd.item_type = 'EDU_FEE'
+    </select>
+
+    <select id="findAlreadyPaidAmount" parameterType="string" resultType="int">
+        SELECT ISNULL(SUM(card_amount + cash_amount + transfer_amount), 0)
+        FROM erp_payment_manual
+        WHERE payment_key = #{paymentKey}
+          AND status != 'canceled'
     </select>
 
     <select id="findParentPhonesByStudentIds" resultType="String">
@@ -1370,17 +1384,21 @@
 
     <select id="findMonthlyPayments"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$MonthlyPaymentDTO">
-     SELECT pm.id,
+ SELECT pm.id,
        s.student_name,
        pm.paid_date,
        pm.payment_key,
-       pm.cash_amount          AS cash,
-       pm.card_amount          AS card,
-       pm.transfer_amount      AS transfer,
-       pm.prepaid_amount       AS prepaid,
-       pm.preset_balance_after AS remainBalance,
-       pmg.total_amount        AS actualPaid,
-       pmg.source              AS source,
+       pm.cash_amount                              AS cash,
+       pm.card_amount                              AS card,
+       pm.transfer_amount                          AS transfer,
+       pm.prepaid_amount                           AS prepaid,
+       pm.preset_balance_after                     AS remainBalance,
+       pm.cash_amount + pm.card_amount + pm.transfer_amount AS paidAmount,
+       CASE
+           WHEN pmg.student_id = pm.student_id THEN pmg.total_amount
+           ELSE 0
+       END                                         AS actualPaid,
+       pmg.source                                  AS source,
        epc.appr_cash_num
 FROM erp_payment_manual pm
          JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
@@ -1402,6 +1420,7 @@ SELECT MIN(pm.id),
        SUM(pm.transfer_amount)      AS transfer,
        SUM(pm.prepaid_amount)       AS prepaid,
        MIN(pm.preset_balance_after) AS remainBalance,
+       SUM(pm.cash_amount + pm.card_amount + pm.transfer_amount) AS paidAmount,
        SUM(pm.prepaid_amount)       AS actualPaid,
        'preset'                     AS source,
        NULL                         AS appr_cash_num
@@ -1413,7 +1432,6 @@ WHERE pmg.center_code = #{centerCode}
   AND pm.mm = #{mm}
   AND pmg.source = 'preset'
 GROUP BY pm.payment_key, s.student_name
-
 ORDER BY 1 DESC
     </select>
 

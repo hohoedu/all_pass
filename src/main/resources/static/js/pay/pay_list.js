@@ -30,6 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const manualSearchInput = document.querySelector(".add-payment-modal .student-content .basic-input");
     const manualSearchBtn = document.querySelector("#search-unpaid-student");
 
+    const modalPayMonthInput = document.getElementById('modal-pay-month');
+    const modalPayMonthText = document.getElementById('modal-pay-month-text');
+
     /* ===============================
         초기 바인딩
     =============================== */
@@ -175,11 +178,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!list || list.length === 0) {
             tbody.innerHTML = `
-            <tr>
-                <td colspan="9" style="text-align: center; padding: 40px;">
-                    조회된 결제 내역이 없습니다.
-                </td>
-            </tr>`;
+        <tr>
+            <td colspan="9" style="text-align: center; padding: 40px;">
+                조회된 결제 내역이 없습니다.
+            </td>
+        </tr>`;
             tbody.style.visibility = 'visible';
             return;
         }
@@ -194,59 +197,54 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = Number(payment.card || 0);
             const transfer = Number(payment.transfer || 0);
             const prepaid = Number(payment.prepaid || 0);
-            const actualPaid = Number(payment.actualPaid || 0);
+            const paidAmount = Number(payment.paidAmount || 0);  // 결제 금액 (개인)
+            const actualPaid = payment.source === 'preset' ? Number(payment.paidAmount) : Number(payment.actualPaid || 0);  // 합계 (대표: 전체, 형제: 0)
 
             const methodParts = [];
-            let totalPaid = 0;
 
             if (payment.source === 'preset') {
-                /* ── 선납금 자동차감: 새로운 현금 없음 → 0원 ── */
+                /* ── 선납금 자동차감 ── */
                 methodParts.push({ label: '선결제', cls: 'pre-paid', amount: 0 });
-                totalPaid = 0;
 
             } else {
-                /* ── 일반 수기결제 ── */
-                const displayAmount = actualPaid || (cash + card + transfer);
-                totalPaid = displayAmount;
-
-                if (card > 0) methodParts.push({ label: '카드', cls: 'card-offline', amount: displayAmount });
-                if (cash > 0) methodParts.push({ label: '현금', cls: 'cash-only', amount: displayAmount });
-                if (transfer > 0) methodParts.push({ label: '계좌이체', cls: 'account-transfer', amount: displayAmount });
-
-
-                /* ── 선납금 생성된 경우 (76만원 - 19만원 = 57만원 preset 생성) ── */
-                // const presetCreatedAmount = actualPaid - (card + cash + transfer);
+                /* ── 일반 수기결제: 각 수단별 실제 금액 표시 ── */
+                if (card > 0) methodParts.push({ label: '카드', cls: 'card-offline', amount: card });
+                if (cash > 0) methodParts.push({ label: '현금', cls: 'cash-only', amount: cash });
+                if (transfer > 0) methodParts.push({ label: '계좌이체', cls: 'account-transfer', amount: transfer });
             }
+
             const remainBalance = payment.remainBalance != null
                 ? Number(payment.remainBalance).toLocaleString('ko-KR') + '원'
                 : '-';
 
+            /* ── 결제수단 버튼 ── */
             const methodBtns = methodParts.map(m => `
             <button class="method-box ${m.cls}">
                 <span>${m.label}</span>
-                <span class="total-amount">${m.amount.toLocaleString('ko-KR')}</span>
+                <span class="total-amount">${actualPaid.toLocaleString('ko-KR')}</span>
             </button>
         `).join('');
 
+            /* ── 합계 버튼: actualPaid ── */
             const totalBtn = `
             <button class="method-box mthod-total">
                 <span>합계</span>
-                <span class="total-amount">${totalPaid.toLocaleString('ko-KR')}</span>
+                <span class="total-amount">${actualPaid.toLocaleString('ko-KR')}</span>
             </button>`;
 
-            /* ── 결제금액 셀 ── */
+            /* ── 결제금액 셀: paidAmount ── */
             const paidPriceCell = payment.source === 'preset'
                 ? `<span class="origin">${prepaid.toLocaleString('ko-KR')}</span>`
-                : `<span class="origin">${totalPaid.toLocaleString('ko-KR')}</span>`;
+                : `<span class="origin">${paidAmount.toLocaleString('ko-KR')}</span>`;
 
-            const remainBalanceCell = `<span class="origin">${remainBalance}</span>`
+            const remainBalanceCell = `<span class="origin">${remainBalance}</span>`;
+
             /* ── 현금영수증 아이콘 ── */
             const cashbillIcon = payment.apprCashNum
                 ? `<img src="/image/bill1.png" class="bill-icon" alt="발급완료" title="${payment.apprCashNum}">`
                 : (cash > 0 || transfer > 0)
                     ? `<img src="/image/bill_empty.png" class="bill-icon" alt="미발급" title="현금영수증 미발급">`
                     : '';
-
 
             tr.innerHTML = `
             <td class="checkbox-group">
@@ -255,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${index + 1}</td>
             <td class="pay-day">${payment.paidDate || ''}</td>
             <td class="stu-name">${payment.studentName || ''}</td>
-         
             <td>
                 <div class="method-boxes">
                     ${methodBtns}
@@ -266,18 +263,18 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${remainBalanceCell}</td>
             <td>${cashbillIcon}</td>
             <td>
-        <div class="common-btn btn-edit pay-desc" 
-             data-id="${payment.id}"
-             style="margin-inline: 10px; padding-block: 0px;">수정</div>
-    </td>
-    <td>
-        <div class="common-btn btn-delete pay-remind" 
-             data-id="${payment.id}" 
-             data-name="${payment.studentName}" 
-             data-date="${payment.paidDate}" 
-             data-amount="${totalPaid}"
-             style="margin-inline: 10px; padding-block: 0px;">삭제</div>
-    </td>
+                <div class="common-btn btn-edit pay-desc"
+                     data-id="${payment.id}"
+                     style="margin-inline: 10px; padding-block: 0px;">수정</div>
+            </td>
+            <td>
+                <div class="common-btn btn-delete pay-remind"
+                     data-id="${payment.id}"
+                     data-name="${payment.studentName}"
+                     data-date="${payment.paidDate}"
+                     data-amount="${paidAmount}"
+                     style="margin-inline: 10px; padding-block: 0px;">삭제</div>
+            </td>
         `;
 
             fragment.appendChild(tr);
@@ -286,7 +283,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.appendChild(fragment);
         tbody.style.visibility = 'visible';
     }
-
     function bindRowActions() {
         tbody.addEventListener('click', e => {
 
@@ -897,10 +893,50 @@ document.addEventListener("DOMContentLoaded", () => {
     const openAddPaymentModal = async () => {
         try {
             closeAllModals();
-            const yearMonth = {
-                year: monthInput.value.split("-")[0],
-                month: monthInput.value.split("-")[1]
+
+            // ✅ 모달 월을 메인 페이지 월과 동기화
+            const mainYm = monthInput.value;
+            modalPayMonthInput.value = mainYm;
+            const [initY, initM] = mainYm.split('-');
+            modalPayMonthText.textContent = `${initY}년 ${parseInt(initM)}월`;
+
+            // ✅ 모달 내 월 변경 이벤트 (중복 등록 방지)
+            if (!modalPayMonthInput._bound) {
+                modalPayMonthInput._bound = true;
+                modalPayMonthInput.addEventListener('change', async () => {
+                    const [y, m] = modalPayMonthInput.value.split('-');
+                    modalPayMonthText.textContent = `${y}년 ${parseInt(m)}월`;
+
+                    selectedStudentsForPayment = [];
+                    renderEmptyStudentList();
+                    if (manualSearchInput) manualSearchInput.value = '';
+
+                    const nameCell = document.querySelector("#paid-student td:nth-child(2)");
+                    const amountCell = document.querySelector("#paid-student td:nth-child(4)");
+                    if (nameCell) nameCell.textContent = '학생을 선택해주세요.';
+                    if (amountCell) amountCell.textContent = '학생을 선택해주세요.';
+
+                    try {
+                        const res = await fetch("/pay/list/students", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ year: y, month: m })
+                        });
+                        if (!res.ok) throw new Error();
+                        const students = await res.json();
+                        unpaidStudents = students.response || [];
+                    } catch {
+                        alert("학생 목록 조회 중 오류가 발생했습니다.");
+                    }
+                });
             }
+
+            // ✅ 모달 열릴 때 초기 학생 목록 조회 (mainYm 기준)
+            const yearMonth = {
+                year: mainYm.split("-")[0],
+                month: mainYm.split("-")[1]
+            };
+
             const res = await fetch("/pay/list/students", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -911,20 +947,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const students = await res.json();
             unpaidStudents = students.response || [];
-
             selectedStudentsForPayment = [];
 
             initPayDate();
             renderEmptyStudentList();
-
-            if (manualSearchInput) {
-                manualSearchInput.value = '';
-            }
+            if (manualSearchInput) manualSearchInput.value = '';
 
             const payDateInput = document.getElementById("manual-pay-date");
-            if (payDateInput) {
-                payDateInput.value = getTodayForDateInput();
-            }
+            if (payDateInput) payDateInput.value = getTodayForDateInput();
 
             const cardCodeSelect = document.getElementById('cardCodeSelect');
             if (cardCodeSelect) cardCodeSelect.value = '';
@@ -966,7 +996,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll("#unpaid-student-list tr").forEach(r => r.classList.remove("selected"));
 
             modalPayment.style.display = "block";
-
             setupManualPaymentCashbill();
 
         } catch (err) {
@@ -1061,6 +1090,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
+        const [modalYY, modalMM] = modalPayMonthInput.value.split('-');
+
         const dto = {
             students: students,
             cardAmount: cardAmount,
@@ -1068,8 +1099,8 @@ document.addEventListener("DOMContentLoaded", () => {
             transferAmount: transferAmount,
             cardName: cardCode,
             paidDate: payDateInput.value,
-            yy: monthInput.value.split("-")[0],
-            mm: monthInput.value.split("-")[1],
+            yy: modalYY,    // ← 모달 월
+            mm: modalMM,
             cashbillInfo: cashbillInfo
         };
 

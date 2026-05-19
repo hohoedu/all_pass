@@ -71,6 +71,10 @@ public interface PaymentRepository {
         // 활성화된 선납금 조회
         PaymentPreset findActivePresetByStudentId(String studentId);
 
+        void updatePresetBalanceAfter(@Param("manualKey") String manualKey,
+                               @Param("studentId") String studentId,
+                               @Param("balance") int balance);
+                               
         // preset에서 자동 결제 시 manual_payment 생성
         Integer insertPaymentManualFromPreset(
                         @Param("dto") PaymentReqDTO.ManualPaymentReqDTO dto,
@@ -120,6 +124,8 @@ public interface PaymentRepository {
                         @Param("month") String month);
 
         Integer findPaymentDetailEduFee(@Param("paymentKey") String paymentKey, @Param("studentId") String studentId);
+
+        Integer findAlreadyPaidAmount(String paymentKey);
 
         String findPaymentKeyByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year,
                         @Param("month") String month);

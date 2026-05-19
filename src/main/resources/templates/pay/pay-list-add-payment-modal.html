@@ -1,42 +1,55 @@
 <div class="modal add-payment-modal" th:fragment="addPaymentModal">
     <div class="add-m-list">
         <div class="add-m-frame">
-            <div class="m-t-line " style="margin: 10px 10px 0px 10px;">
-                <div>
+            <div class="m-t-line" style="margin: 10px 10px 0px 10px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
                     <div class="title">납부내역 추가</div>
                 </div>
                 <a href="#" class="btn-close"></a>
             </div>
             <div class="second-frame" style="padding: 30px 40px;">
-                <div class="add-m-left" style="overflow: clip">
-                    <div class="student-content">
-                        <div class="pay-list-scroll" style="border-bottom:  1px solid #ddd">
-                            <h4>학생 선택</h4>
-                            <div class="add-inform " style="">
-                                <input type="text" class="basic-input" style="max-width: 75%;">
-                                <div class="common-btn stu-explore" id="search-unpaid-student">검색</div>
-                            </div>
+                <div class="left-box">
+                    <div
+                        style="display: flex; justify-self: center; margin-bottom: 20px; align-items: center; gap: 8px;">
+                        <span class="current-month" id="modal-pay-month-text" style="font-weight: 600;"></span>
+                        <div style="position: relative;">
+                            <input type="month" class="hidden-date" id="modal-pay-month">
+                            <button type="button" class="icon-btn calendar-open" data-target="modal-pay-month">
+                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                            </button>
                         </div>
-                        <div class="mt  add-m-left table-frame" style="border: 0px; height: 50vh">
-                            <div class="table-frame pay-add-t">
-                                <table class="basic-table pay-add-t stripe yh">
-                                    <colgroup>
-                                        <col width="25%">
-                                        <col width="25%">
-                                        <col width="30%">
-                                        <col width="30%">
-                                    </colgroup>
-                                    <thead>
-                                    <tr>
-                                        <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름</th>
-                                        <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
-                                        <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
-                                        <th>전화번호</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody id="unpaid-student-list" class="stripe">
-                                    </tbody>
-                                </table>
+                    </div>
+                    <div class="add-m-left" style="overflow: clip">
+                        <div class="student-content">
+                            <div class="pay-list-scroll" style="border-bottom:  1px solid #ddd">
+                                <h4>학생 선택</h4>
+                                <div class="add-inform">
+                                    <input type="text" class="basic-input" style="max-width: 75%;">
+                                    <div class="common-btn stu-explore" id="search-unpaid-student">검색</div>
+                                </div>
+                            </div>
+                            <div class="mt  add-m-left table-frame" style="border: 0px; height: 50vh">
+                                <div class="table-frame pay-add-t">
+                                    <table class="basic-table pay-add-t stripe yh">
+                                        <colgroup>
+                                            <col width="25%">
+                                            <col width="25%">
+                                            <col width="30%">
+                                            <col width="30%">
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th><img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름
+                                                </th>
+                                                <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년</th>
+                                                <th><img th:src="@{/image/sort.svg}" alt="" class="svg-sort">담임</th>
+                                                <th>전화번호</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="unpaid-student-list" class="stripe">
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -51,13 +64,13 @@
                             <col style="width:30%">
                         </colgroup>
                         <tbody id="paid-student">
-                        <tr>
-                            <td>학생명</td>
-                            <td>학생을 선택해주세요.</td>
-                            <td>청구 금액</td>
-                            <td>학생을 선택해주세요.</td>
+                            <tr>
+                                <td>학생명</td>
+                                <td>학생을 선택해주세요.</td>
+                                <td>청구 금액</td>
+                                <td>학생을 선택해주세요.</td>
 
-                        </tr>
+                            </tr>
                         </tbody>
                     </table>
                     <!-- 청구 종류 -->
@@ -70,60 +83,62 @@
                         </colgroup>
                         <tbody>
 
-                        <tr>
-                            <td class="label-cell">카드사</td>
-                            <td class="content-cell white-bg">
-                                <div class="select-group">
-                                    <select class="basic-input card-select" id="cardCodeSelect" style="width: 200px;">
-                                        <option value="">선택 안함</option>
-                                        <option th:each="c : ${cardCode}"
-                                                th:value="${c.cardCode}"
+                            <tr>
+                                <td class="label-cell">카드사</td>
+                                <td class="content-cell white-bg">
+                                    <div class="select-group">
+                                        <select class="basic-input card-select" id="cardCodeSelect"
+                                            style="width: 200px;">
+                                            <option value="">선택 안함</option>
+                                            <option th:each="c : ${cardCode}" th:value="${c.cardCode}"
                                                 th:text="${c.cardName}">
-                                        </option>
-                                    </select>
-                                </div>
-                            </td>
-                            <td class="label-cell">결제일</td>
-                            <td>
-                                <div style="margin: 20px">
-                                    <span class="current-month" id="pay-date-text">2025년 12월 29일</span>
-                                    <input type="date" class="basic-input pay-date hidden-date" id="manual-pay-date">
-                                    <button type="button" class="icon-btn calendar-open" data-target="manual-pay-date">
-                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label-cell">결제 방법 및 금액</td>
-                            <td class="content-cell white-bg" colspan="3" style="border-right:0px;">
-                                <div class="pay-input-group">
-                                    <div class="pay-row">
-                                        <label class="pay-label-container radio-group">
-                                            <input type="radio" name="pay-method" class="pay-radio">
-                                            <span class="pay-label color-green">오프라인 카드</span>
-                                        </label>
-                                        <input type="number" class="pay-input border-green">
+                                            </option>
+                                        </select>
                                     </div>
+                                </td>
+                                <td class="label-cell">결제일</td>
+                                <td>
+                                    <div style="margin: 20px">
+                                        <span class="current-month" id="pay-date-text">2025년 12월 29일</span>
+                                        <input type="date" class="basic-input pay-date hidden-date"
+                                            id="manual-pay-date">
+                                        <button type="button" class="icon-btn calendar-open"
+                                            data-target="manual-pay-date">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">결제 방법 및 금액</td>
+                                <td class="content-cell white-bg" colspan="3" style="border-right:0px;">
+                                    <div class="pay-input-group">
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-green">오프라인 카드</span>
+                                            </label>
+                                            <input type="number" class="pay-input border-green">
+                                        </div>
 
-                                    <div class="pay-row">
-                                        <label class="pay-label-container radio-group">
-                                            <input type="radio" name="pay-method" class="pay-radio">
-                                            <span class="pay-label color-blue2">현금</span>
-                                        </label>
-                                        <input type="number" class="pay-input border-blue">
-                                    </div>
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-blue2">현금</span>
+                                            </label>
+                                            <input type="number" class="pay-input border-blue">
+                                        </div>
 
-                                    <div class="pay-row">
-                                        <label class="pay-label-container radio-group">
-                                            <input type="radio" name="pay-method" class="pay-radio">
-                                            <span class="pay-label color-olive">계좌이체</span>
-                                        </label>
-                                        <input type="number" class="pay-input border-olive">
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-olive">계좌이체</span>
+                                            </label>
+                                            <input type="number" class="pay-input border-olive">
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -138,84 +153,84 @@
                             <col width="30%">
                         </colgroup>
                         <tbody>
-                        <tr>
-                            <td class="label-cell">발급번호</td>
-                            <td class="content-cell white-bg">
-                                <input type="text" class="basic-input" id="receipt-number"
-                                       placeholder="휴대폰번호(01012345678) 또는 사업자번호"
-                                       style="width: 100%; max-width: 400px;">
-                            </td>
-                            <td class="label-cell">발급구분</td>
-                            <td class="content-cell white-bg">
-                                <div class="radio-group round"
-                                     style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
-                                    <label><input type="radio" name="receipt-type" value="personal" checked>
-                                        개인</label>
-                                    <label><input type="radio" name="receipt-type" value="business">
-                                        사업자</label>
-                                    <label><input type="radio" name="receipt-type" value="self">
-                                        자진발급</label>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label-cell">과세구분</td>
-                            <td class="content-cell white-bg">
-                                <div class="radio-group round"
-                                     style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
-                                    <label><input type="radio" name="tax-type" value="taxable">
-                                        과세</label>
-                                    <label><input type="radio" name="tax-type" value="tax-free" checked>
-                                        비과세</label>
-                                </div>
-                            </td>
-                            <td class="label-cell">총 금액</td>
-                            <td class="content-cell white-bg">
-                                <div class="amount-grid" style="display: flex; align-items: center">
-                                    <div class="amount-input" style="white-space: nowrap">
-                                        <input type="text" class="basic-input"
-                                               id="cash-price">
-                                        <span style="margin-left: 10px">원</span>
+                            <tr>
+                                <td class="label-cell">발급번호</td>
+                                <td class="content-cell white-bg">
+                                    <input type="text" class="basic-input" id="receipt-number"
+                                        placeholder="휴대폰번호(01012345678) 또는 사업자번호"
+                                        style="width: 100%; max-width: 400px;">
+                                </td>
+                                <td class="label-cell">발급구분</td>
+                                <td class="content-cell white-bg">
+                                    <div class="radio-group round"
+                                        style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
+                                        <label><input type="radio" name="receipt-type" value="personal" checked>
+                                            개인</label>
+                                        <label><input type="radio" name="receipt-type" value="business">
+                                            사업자</label>
+                                        <label><input type="radio" name="receipt-type" value="self">
+                                            자진발급</label>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="label-cell">공급가액</td>
-                            <td class="content-cell white-bg">
-                                <div class="amount-grid" style="display: flex; align-items: center">
-                                    <div class="amount-input" style="white-space: nowrap">
-                                        <input type="text" class="basic-input"
-                                               id="supply-price">
-                                        <span style="margin-left: 10px">원</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">과세구분</td>
+                                <td class="content-cell white-bg">
+                                    <div class="radio-group round"
+                                        style="display: flex; gap: 20px; padding: 10px 0; justify-content: start">
+                                        <label><input type="radio" name="tax-type" value="taxable">
+                                            과세</label>
+                                        <label><input type="radio" name="tax-type" value="tax-free" checked>
+                                            비과세</label>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="label-cell">세금</td>
-                            <td class="content-cell white-bg">
-                                <div class="amount-grid" style="display: flex; align-items: center">
-                                    <div class="amount-input" style="white-space: nowrap">
-                                        <input type="text" class="basic-input" id="tax-price">
-                                        <span style="margin-left: 10px">원</span>
+                                </td>
+                                <td class="label-cell">총 금액</td>
+                                <td class="content-cell white-bg">
+                                    <div class="amount-grid" style="display: flex; align-items: center">
+                                        <div class="amount-input" style="white-space: nowrap">
+                                            <input type="text" class="basic-input" id="cash-price">
+                                            <span style="margin-left: 10px">원</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">공급가액</td>
+                                <td class="content-cell white-bg">
+                                    <div class="amount-grid" style="display: flex; align-items: center">
+                                        <div class="amount-input" style="white-space: nowrap">
+                                            <input type="text" class="basic-input" id="supply-price">
+                                            <span style="margin-left: 10px">원</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="label-cell">세금</td>
+                                <td class="content-cell white-bg">
+                                    <div class="amount-grid" style="display: flex; align-items: center">
+                                        <div class="amount-input" style="white-space: nowrap">
+                                            <input type="text" class="basic-input" id="tax-price">
+                                            <span style="margin-left: 10px">원</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
 
-                        </tr>
-                        <tr>
-                            <td class="label-cell">발행일자</td>
-                            <td class="content-cell white-bg" colspan="3">
-                                <div style="padding: 10px 0;">
-                                    <span class="current-month" id="manual-receipt-date-text">2025년 2월 2일</span>
-                                    <input type="date" class="basic-input pay-date hidden-date" id="manual-receipt-date">
-                                    <button type="button" class="icon-btn calendar-open" data-target="manual-receipt-date">
-                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">발행일자</td>
+                                <td class="content-cell white-bg" colspan="3">
+                                    <div style="padding: 10px 0;">
+                                        <span class="current-month" id="manual-receipt-date-text">2025년 2월 2일</span>
+                                        <input type="date" class="basic-input pay-date hidden-date"
+                                            id="manual-receipt-date">
+                                        <button type="button" class="icon-btn calendar-open"
+                                            data-target="manual-receipt-date">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

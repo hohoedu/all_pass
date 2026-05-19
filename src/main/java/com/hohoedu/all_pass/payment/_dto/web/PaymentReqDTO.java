@@ -117,6 +117,7 @@ public class PaymentReqDTO {
         private String status;
         private Integer prepaidAmount;
         private CashbillInfoDTO cashbillInfo;
+        private Integer presetBalanceAfter;
 
         @Data
         @Builder
