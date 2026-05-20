@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
 
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -50,12 +51,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO, @RequestParam(required = false) String redirectUrl, RedirectAttributes redirectAttributes) {
+    public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO,
+            @RequestParam(required = false) String redirectUrl, RedirectAttributes redirectAttributes) {
 
         try {
             LoginRespDTO dto = userService.login(loginDTO);
+            List<User> userList = userService.findActiveUser(dto);
             session.setAttribute("user", dto);
             session.setAttribute("readableMenus", dto.getReadableMenus());
+            session.setAttribute("userList", userList);
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     dto.getUserId(), null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
 
@@ -104,7 +108,8 @@ public class UserController {
     }
 
     @PostMapping("/password")
-    public ResponseEntity<?> changePassword(@RequestBody UserReqDTO.PasswordChangeRequest request, HttpSession session) {
+    public ResponseEntity<?> changePassword(@RequestBody UserReqDTO.PasswordChangeRequest request,
+            HttpSession session) {
         try {
             LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
 
@@ -130,7 +135,6 @@ public class UserController {
         log.info(LocalDate.now().toString());
         studentService.applyTodayTransfers(LocalDate.now());
         paymentService.paymentBillStatusChange();
-        return ResponseEntity.ok(ApiUtils.success("TODAY_TRANSFER_APPLIED")
-        );
+        return ResponseEntity.ok(ApiUtils.success("TODAY_TRANSFER_APPLIED"));
     }
 }

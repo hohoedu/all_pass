@@ -1907,4 +1907,16 @@
         </foreach>
     </insert>
 
+    <select id="findExistingEduUserCodes" resultType = "String">
+        SELECT DISTINCT user_code
+        FROM erp_edu_time_table
+        WHERE yy = #{yy}
+          AND mm = #{mm}
+          AND center_code = #{centerCode}
+          AND user_code IN
+        <foreach collection="userCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
 </mapper>

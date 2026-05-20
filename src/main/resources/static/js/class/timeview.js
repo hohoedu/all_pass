@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         url.searchParams.set('month', month);
 
 
-        window.history.pushState({year, month}, '', url);
+        window.history.pushState({ year, month }, '', url);
 
     }
 
@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     return s.studentName;
                 }).join(', ');
 
-                return {count, names};
+                return { count, names };
             };
 
             const entry = getStatHtml('entry');
@@ -394,8 +394,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('assignments=' + assignments);
         await fetch('/class/add_student', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({assignments})
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ assignments })
         });
 
         dragAssignments = null;
@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 브라우저 뒤로가기/앞으로가기 처리
     window.addEventListener('popstate', (event) => {
         if (event.state && event.state.year && event.state.month) {
-            const {year, month} = event.state;
+            const { year, month } = event.state;
             monthInput.value = `${year}-${month}`;
             updateMonthLabel(year, month);
             loadMonthlyData(year, month);

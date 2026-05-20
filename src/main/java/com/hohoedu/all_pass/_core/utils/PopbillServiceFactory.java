@@ -57,7 +57,7 @@ public class PopbillServiceFactory {
         KakaoServiceImp baseService = new KakaoServiceImp();
         baseService.setLinkID(popbillConfig.getLinkId());
         baseService.setSecretKey(secretKey);
-        baseService.setTest(true);
+        baseService.setTest(isTest);
 
         return baseService;
     }
@@ -69,7 +69,7 @@ public class PopbillServiceFactory {
         KakaoServiceImp baseService = new KakaoServiceImp();
         baseService.setLinkID(popbillConfig.getLinkId());
         baseService.setSecretKey(secretKey);
-        baseService.setTest(true);
+        baseService.setTest(isTest);
 
         return baseService.getChargeURL(centerCode, userId);
     }

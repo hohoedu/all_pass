@@ -56,14 +56,21 @@
                                 </div>
 
                                 <div class="class-btns">
-                                    <div>잔여 포인트</div>
-                                    <div>
-                                        <div style="justify-self: center;">결제선생</div>
-                                        <div>300,000 P</div>
-                                    </div>
-                                    <div>
-                                        <div style="justify-self: center;">알림톡</div>
-                                        <div>150,000 P</div>
+                                    <div class="index-point"
+                                        th:if="${session.user != null and session.user.roleKey == 'ADMIN'}">
+                                        <div>잔여 포인트</div>
+                                        <div>
+                                            <div style="justify-self: center;">결제선생</div>
+                                            <div
+                                                th:text="${session.point != null ? #numbers.formatInteger(session.point.paymintPoint, 1, 'COMMA') + ' P' : '0 P'}">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style="justify-self: center;">알림톡</div>
+                                            <div
+                                                th:text="${session.point != null ? #numbers.formatInteger(session.point.popbillPoint, 1, 'COMMA') + ' P' : '0 P'}">
+                                            </div>
+                                        </div>
                                     </div>
                                     <a class="common-btn stas-btn" th:href="@{/student/overview}">
                                         학생 현황 통계

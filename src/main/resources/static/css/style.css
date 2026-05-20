@@ -2445,6 +2445,75 @@ textarea {
     height: 23vh;
 }
 
+.index-point {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 셀렉터 수정 */
+#eduTeacherModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#eduTeacherModal .modal-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    min-width: 300px;
+    max-height: 80vh;
+    /* 선생님 많을 때 스크롤 */
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+#eduTeacherModal .teacher-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+/* label + checkbox 레이아웃으로 수정 */
+#eduTeacherModal .teacher-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    color: #333;
+    cursor: pointer;
+}
+
+#eduTeacherModal .teacher-item:hover {
+    background: #f5f5f5;
+}
+
+/* 전체 선택 구분선 */
+#eduTeacherModal .teacher-item.all-item {
+    border-color: #999;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+#eduTeacherModal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
 /* ======================= student-main page ======================= */
 .student-frame>section {
     background: #fff;
@@ -8007,4 +8076,18 @@ td.middle {
     to {
         transform: rotate(360deg);
     }
+}
+
+.app-id-btn {
+    height: 30px;
+    padding: 0 12px;
+    background: #5c8af5;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 50px;
 }

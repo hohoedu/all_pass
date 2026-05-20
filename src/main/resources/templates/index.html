@@ -2,8 +2,8 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <!-- Custom Css / Js -->
@@ -14,152 +14,139 @@
 </head>
 
 <body>
-<div class="menu-container">
-    <div class="menu-title">
-        <a class="menu-logo" th:href="@{/main}">
-            <img th:src="@{/image/hoho-logo.png}" alt="">
-            <h2 class="logo-subtitle">ALL PASS SYSYEM</h2>
-        </a>
-    </div>
-    <div class="menu">
-        <div class="menu-desc">
-            <div class="menu-exit">
-                <button type="button" id="app-id-btn" onclick="openAppIdPopup()" style="
-        height: 30px;
-        padding: 0 12px;
-        background: #5c8af5;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
-        margin-right: 50px;
-    ">App ID 조회
-                </button>
-                <a class="exit-icon" th:href="@{/logout}">
-                    <img th:src="@{/image/log-out.png}" alt="">
-                </a>
-            </div>
-            <div class="menu-greet"
-                 th:attr="data-user-code=${session.user.userCode},
+    <div class="menu-container">
+        <div class="menu-title">
+            <a class="menu-logo" th:href="@{/main}">
+                <img th:src="@{/image/hoho-logo.png}" alt="">
+                <h2 class="logo-subtitle">ALL PASS SYSYEM</h2>
+            </a>
+        </div>
+        <div class="menu">
+            <div class="menu-desc">
+                <div class="menu-exit">
+                    <button type="button" id="app-id-btn" onclick="openAppIdPopup()" class="app-id-btn">
+                        App ID조회</button>
+                    <a class="exit-icon" th:href="@{/logout}">
+                        <img th:src="@{/image/log-out.png}" alt="">
+                    </a>
+                </div>
+                <div class="menu-greet" th:attr="data-user-code=${session.user.userCode},
                  data-center-code=${session.user.centerCode}">
-                호호서당 <span class="highlight"
-                           th:text="${session.user.regionName + ' ' + session.user.centerName + ' ' + session.user.userName}"> </span> 선생님 안녕하세요!
-            </div>
-            <a class="menu-notice" th:href="@{/notice}"><img th:src="@{/image/bell.png}" alt="">
-                호호서당 프로그램 임시점검 안내 (2월11일 14:00~16:00)</a>
-            <div class="menu-items">
-                <div class="menu-item">
-                    <img th:src="@{/image/academy-manage.png}" alt="">
-                    <h2>학원 관리</h2>
-                    <p>학생, 수업, 상담, 운영 관리<br>
-                        프로그램 입니다.</p>
-                    <button id="center-btn">바로가기</button>
+                    호호서당 <span class="highlight"
+                        th:text="${session.user.regionName + ' ' + session.user.centerName + ' ' + session.user.userName}">
+                    </span> 선생님 안녕하세요!
                 </div>
-                <div class="menu-item">
-                    <img th:src="@{/image/e-class.png}" alt="">
-                    <h2>E-CLASS</h2>
-                    <p>수업에 활용되는 교사용<br>
-                        E-CLASS 프로그램 입니다.</p>
-                    <button id="eclass-btn">
-                        바로가기
-                    </button>
-                    <!--                    post요청 {선생님 id, 센터 id} -->
-                </div>
-                <div class="menu-item">
-                    <img th:src="@{/image/reading-clinic.png}" alt="">
-                    <h2>독서클리닉</h2>
-                    <p>선생님이 사용하는<br>
-                        독서클리닉 프로그램 입니다.</p>
-                    <button type="button" id="clinic-btn">
-                        바로가기
-                    </button>
-                </div>
-                <div class="menu-item"
-                     th:if="${session.user != null
+                <a class="menu-notice" th:href="@{/notice}"><img th:src="@{/image/bell.png}" alt="">
+                    호호서당 프로그램 임시점검 안내 (2월11일 14:00~16:00)</a>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <img th:src="@{/image/academy-manage.png}" alt="">
+                        <h2>학원 관리</h2>
+                        <p>학생, 수업, 상담, 운영 관리<br>
+                            프로그램 입니다.</p>
+                        <button id="center-btn">바로가기</button>
+                    </div>
+                    <div class="menu-item">
+                        <img th:src="@{/image/e-class.png}" alt="">
+                        <h2>E-CLASS</h2>
+                        <p>수업에 활용되는 교사용<br>
+                            E-CLASS 프로그램 입니다.</p>
+                        <button id="eclass-btn">
+                            바로가기
+                        </button>
+                        <!--                    post요청 {선생님 id, 센터 id} -->
+                    </div>
+                    <div class="menu-item">
+                        <img th:src="@{/image/reading-clinic.png}" alt="">
+                        <h2>독서클리닉</h2>
+                        <p>선생님이 사용하는<br>
+                            독서클리닉 프로그램 입니다.</p>
+                        <button type="button" id="clinic-btn">
+                            바로가기
+                        </button>
+                    </div>
+                    <div class="menu-item" th:if="${session.user != null
                         and session.user.centerCode != null
                         and session.user.centerCode == 'PUS001'}">
-                    <img th:src="@{/image/reading-clinic.png}" alt="">
-                    <h2>관리자설정</h2>
-                    <p>관리자가 사용하는<br>
-                        프로그램 입니다.</p>
-                    <button><a th:href="@{/admin/ebook/person}">바로가기</a></button>
+                        <img th:src="@{/image/reading-clinic.png}" alt="">
+                        <h2>관리자설정</h2>
+                        <p>관리자가 사용하는<br>
+                            프로그램 입니다.</p>
+                        <button><a th:href="@{/admin/ebook/person}">바로가기</a></button>
+                    </div>
                 </div>
-            </div>
-            <div class="input-container">
-                <div class="menu-input">
-                    <span class="input-label">신규회원 등록</span>
-                    <input type="text" id="new-member-phone" class="input-box"
-                           placeholder="‘-’를 제외한 번호를 입력해 주세요.">
-                    <button id="send-btn" class="input-button">발송하기</button>
+                <div class="input-container">
+                    <div class="menu-input">
+                        <span class="input-label">신규회원 등록</span>
+                        <input type="text" id="new-member-phone" class="input-box" placeholder="‘-’를 제외한 번호를 입력해 주세요.">
+                        <button id="send-btn" class="input-button">발송하기</button>
+                    </div>
+                    <button class="evaluation-button" id="assessment-btn"
+                        th:attr="data-center-code=${session.user.centerCode}">진단평가</button>
                 </div>
-                <button class="evaluation-button" id="assessment-btn" th:attr="data-center-code=${session.user.centerCode}">진단평가</button>
             </div>
         </div>
     </div>
-</div>
-<script th:inline="javascript">
-    document.getElementById('center-btn').addEventListener('click', () => {
-        window.location.href = '/main';
-    });
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const btn = document.getElementById("assessment-btn");
-        const centerCode = btn.dataset.centerCode;
-        const url = `https://highreader.co.kr/level-test/consult-test.html?center_code=${centerCode}`;
-
-        btn.addEventListener("click", async () => {
-            try {
-                await fetch(url, {method: "GET", mode: "no-cors"});
-                window.location.href = url;
-            } catch (err) {
-                console.error("이동 중 오류:", err);
-                window.location.href = url;
-            }
+    <script th:inline="javascript">
+        document.getElementById('center-btn').addEventListener('click', () => {
+            window.location.href = '/main';
         });
-    });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("assessment-btn");
+            const centerCode = btn.dataset.centerCode;
+            const url = `https://highreader.co.kr/level-test/consult-test.html?center_code=${centerCode}`;
+
+            btn.addEventListener("click", async () => {
+                try {
+                    await fetch(url, { method: "GET", mode: "no-cors" });
+                    window.location.href = url;
+                } catch (err) {
+                    console.error("이동 중 오류:", err);
+                    window.location.href = url;
+                }
+            });
+        });
 
 
-    document.getElementById('eclass-btn').addEventListener('click', () => {
-        console.log('클릭');
-        const session = document.querySelector('.menu-greet');
+        document.getElementById('eclass-btn').addEventListener('click', () => {
+            console.log('클릭');
+            const session = document.querySelector('.menu-greet');
 
-        const userCode = session.dataset.userCode;
-        const centerCode = session.dataset.centerCode;
+            const userCode = session.dataset.userCode;
+            const centerCode = session.dataset.centerCode;
 
-        const url =
-            "http://hohoseodang.com/eclass_center_erp.asp"
-            + "?user_code=" + encodeURIComponent(userCode)
-            + "&center_code=" + encodeURIComponent(centerCode);
+            const url =
+                "http://hohoseodang.com/eclass_center_erp.asp"
+                + "?user_code=" + encodeURIComponent(userCode)
+                + "&center_code=" + encodeURIComponent(centerCode);
 
-        window.open(url, "_blank");
+            window.open(url, "_blank");
 
-    });
-    document.getElementById('clinic-btn').addEventListener('click', () => {
-        console.log('클릭');
-        const session = document.querySelector('.menu-greet');
+        });
+        document.getElementById('clinic-btn').addEventListener('click', () => {
+            console.log('클릭');
+            const session = document.querySelector('.menu-greet');
 
-        const centerCode = session.dataset.centerCode;
+            const centerCode = session.dataset.centerCode;
 
-        const url =
-            "https://hohoschool.com/erpbook/booksend.html"
-            + "?center_code=" + encodeURIComponent(centerCode);
+            const url =
+                "https://hohoschool.com/erpbook/booksend.html"
+                + "?center_code=" + encodeURIComponent(centerCode);
 
-        window.open(url, "_blank");
+            window.open(url, "_blank");
 
-    });
+        });
 
-    function openAppIdPopup() {
-        window.open(
-            '/appid',   // 팝업 HTML URL — 실제 경로로 변경
-            'appIdPopup',
-            'width=780,height=580,top=100,left=200,resizable=no,scrollbars=no'
-        );
-    }
+        function openAppIdPopup() {
+            window.open(
+                '/appid',   // 팝업 HTML URL — 실제 경로로 변경
+                'appIdPopup',
+                'width=780,height=580,top=100,left=200,resizable=no,scrollbars=no'
+            );
+        }
 
-</script>
+    </script>
 </body>
 
 </html>

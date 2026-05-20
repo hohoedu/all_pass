@@ -759,4 +759,37 @@ function bindStudentStatus(data) {
     if (counts[3]) counts[3].textContent = data?.transferOutCount ?? 0;
 }
 
+function openEduModal() {
+    const modal = document.getElementById('eduTeacherModal');
 
+    // 처음 열 때 body 직속으로 이동 (aside 탈출)
+    if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+    }
+
+    modal.style.display = 'flex';
+}
+
+function closeEduModal() {
+    document.getElementById('eduTeacherModal').style.display = 'none';
+}
+
+function toggleAllTeachers(checkbox) {
+    document.querySelectorAll('.teacher-check')
+        .forEach(cb => cb.checked = checkbox.checked);
+}
+
+function syncAllCheck() {
+    const all = document.querySelectorAll('.teacher-check');
+    const checked = document.querySelectorAll('.teacher-check:checked');
+    document.getElementById('checkAll').checked = all.length === checked.length;
+}
+
+function validateSelection() {
+    const checked = document.querySelectorAll('.teacher-check:checked');
+    if (checked.length === 0) {
+        alert('선생님을 1명 이상 선택해주세요.');
+        return false;
+    }
+    return true;
+}

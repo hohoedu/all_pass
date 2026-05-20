@@ -358,6 +358,35 @@
 
     </select>
 
+    <select id="findActivePresetBySiblingKey" resultType="com.hohoedu.all_pass.payment.model.PaymentPreset">
+        SELECT TOP 1
+            p.id,
+            p.student_id               AS studentId,
+            p.center_code              AS centerCode,
+            p.user_code                AS userCode,
+            p.total_amount             AS totalAmount,
+            p.original_amount          AS originalAmount,
+            p.used_months              AS usedMonths,
+            p.preset_key               AS presetKey,
+            p.original_manual_payment_id AS originalManualPaymentId,
+            p.status,
+            p.card_name                AS cardName,
+            p.method,
+            p.paid_date                AS paidDate,
+            p.note,
+            p.created_at               AS createdAt,
+            p.updated_at               AS updatedAt
+        FROM erp_payment_preset p
+        JOIN erp_sibling s1 ON s1.student_id = p.student_id
+        JOIN erp_sibling s2 ON s2.sibling_key = s1.sibling_key
+        WHERE s2.student_id = #{studentId}
+          AND s1.student_id != #{studentId}
+          AND p.center_code  = #{centerCode}
+          AND p.status       = 'active'
+          AND p.total_amount > 0
+        ORDER BY p.created_at ASC
+    </select>
+
     <update id="updatePresetBalanceAfter">
         UPDATE erp_payment_manual
         SET preset_balance_after = #{balance}
@@ -460,8 +489,11 @@
 
     <select id="findParentPhonesByStudentIds" resultType="String">
         SELECT DISTINCT
-        s.billing_phone AS householdKey
+            ISNULL(s.billing_phone,
+                pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last
+            ) AS householdKey
         FROM erp_student s
+        JOIN erp_parent pa ON pa.student_id = s.student_id
         WHERE s.student_id IN
         <foreach collection="studentIds" item="id" open="(" separator="," close=")">
             #{id}
@@ -484,7 +516,9 @@
         ON p.student_id = s.student_id
         JOIN erp_payment_detail pd
         ON pd.payment_key = p.payment_key
-        WHERE (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last) IN
+        WHERE ISNULL(s.billing_phone,
+            pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last
+        ) IN
         <foreach collection="parentPhones" item="phone" open="(" separator="," close=")">
             #{phone}
         </foreach>

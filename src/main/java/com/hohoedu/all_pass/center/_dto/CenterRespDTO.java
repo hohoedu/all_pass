@@ -25,4 +25,10 @@ public class CenterRespDTO {
             private int remainCount;
         }
     }
+
+    @Data
+    public static class PointDTO {
+        private Integer paymintPoint;
+        private Integer popbillPoint;
+    }
 }

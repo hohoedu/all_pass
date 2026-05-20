@@ -32,6 +32,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.threeten.bp.LocalDate;
 
 import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
@@ -420,6 +421,25 @@ public class ClassViewController {
         }
 
         return "class/infant";
+    }
+
+    @PostMapping("/edu-timeview")
+    public String postEduTimeView(@RequestParam List<String> userCodes, HttpSession session, Model model) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return "redirect:/login";
+
+        String yy = DateConfig.currentYearMonth().get("currentYear");
+        String mm = DateConfig.currentYearMonth().get("currentMonth");
+
+        List<String> existingUserCodes = classService.findExistingEduUserCodes(
+                userCodes, yy, mm, user.getCenterCode());
+
+        log.info("선택한 선생님 : {}", userCodes);
+        log.info("이미 존재하는 선생님 : {}", existingUserCodes);
+
+        return "redirect:/main"; // 임시
     }
 
 }

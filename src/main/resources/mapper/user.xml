@@ -146,4 +146,14 @@
         order by sort_order
     </select>
 
+    <select id="findUserNamesByUserCodes" resultType="string">
+        SELECT user_name
+        FROM erp_user
+        WHERE center_code = #{centerCode}
+          AND user_code IN
+        <foreach collection="userCodes" item="code" open="(" separator="," close=")">
+            #{code}
+        </foreach>
+    </select>
+
 </mapper>

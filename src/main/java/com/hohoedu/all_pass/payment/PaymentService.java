@@ -54,7 +54,7 @@ public class PaymentService {
             String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
-        return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, 1);
+        return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, "01");
     }
 
     // 기간별 미납 조회
@@ -1538,10 +1538,16 @@ public class PaymentService {
         try {
             // 1. 활성화된 선납금 조회
             PaymentPreset preset = paymentRepository.findActivePresetByStudentId(studentId);
-
+            boolean isFromSibling = false;
             if (preset == null) {
-                log.info("선납금 없음 - studentId: {}", studentId);
-                return;
+                preset = paymentRepository.findActivePresetBySiblingKey(studentId, centerCode);
+
+                if (preset == null) {
+                    log.info("선납금 없음 (본인+형제 모두) - studentId: {}", studentId);
+                    return;
+                }
+                isFromSibling = true;
+                log.info("형제 선납금 사용 - studentId: {}, presetOwner: {}", studentId, preset.getId());
             }
 
             // 2. 부분결제 여부 및 금액 계산
@@ -1576,15 +1582,15 @@ public class PaymentService {
                     .mm(mm)
                     .build();
 
-            // 3. payment_manual 저장 (잔액 스냅샷 포함)
+            // 3. payment_manual 저장
             paymentRepository.insertPaymentManualFromPreset(
                     manualDTO,
                     preset.getId(),
                     presetUsedAmount,
                     preset.getMethod(),
                     preset.getCardName(),
-                    balanceBefore,
-                    balanceAfter);
+                    isFromSibling ? null : balanceBefore,
+                    isFromSibling ? null : balanceAfter);
 
             // 4. payment_manual_group 저장 (source=preset)
             paymentRepository.insertPaymentManualGroupFromPreset(
@@ -1593,9 +1599,9 @@ public class PaymentService {
                     centerCode,
                     preset.getCardName());
 
-            // 5. preset 업데이트 (balanceBefore 저장 후 실행)
+            // 5. preset 업데이트는 형 preset 기준 그대로
             paymentRepository.updatePresetAfterUse(
-                    preset.getId(),
+                    preset.getId(), // 형의 preset id
                     newBalance,
                     preset.getUsedMonths() + 1,
                     newStatus);

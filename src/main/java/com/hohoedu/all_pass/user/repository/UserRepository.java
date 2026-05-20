@@ -29,6 +29,7 @@ public interface UserRepository {
         UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
 
         List<String> findReadableMenus(String userCode);
+
         UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);
 
         public Center findCenterByCenterCode(@Param("centerCode") String centerCode);
@@ -42,4 +43,8 @@ public interface UserRepository {
         List<UserRespDTO.UserListRespDTO> findAllByCenterCode(String centerCode);
 
         List<UserRespDTO.MenuListDTO> findMenus();
+
+        List<String> findUserNamesByUserCodes(
+                        @Param("userCodes") List<String> userCodes,
+                        @Param("centerCode") String centerCode);
 }

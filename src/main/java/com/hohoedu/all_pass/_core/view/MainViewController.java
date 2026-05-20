@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass.center.CenterService;
+import com.hohoedu.all_pass.center._dto.CenterRespDTO.PointDTO;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -48,9 +49,16 @@ public class MainViewController {
         }
         String centerCode = user.getCenterCode();
 
-        // centerService.findPopbillPoint();
+        PointDTO point = new PointDTO();
+
+        int popbillPoint = centerService.findPopbillPoint(centerCode);
         int paymintPoint = centerService.findPaymintPoint(centerCode);
-        log.info("paymintPoint = {}", paymintPoint);
+
+        point.setPopbillPoint(popbillPoint);
+        point.setPaymintPoint(paymintPoint);
+
+        session.setAttribute("point", point);
+
         return "index";
     }
 
@@ -236,6 +244,11 @@ public class MainViewController {
         model.addAttribute("cardList", cardList);
 
         return "pay/pay-search";
+    }
+
+    @GetMapping("/test")
+    public String getTestPage() {
+        return "/test";
     }
 
 }

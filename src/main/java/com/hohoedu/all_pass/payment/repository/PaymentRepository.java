@@ -21,7 +21,7 @@ public interface PaymentRepository {
                         @Param("year") String year,
                         @Param("month") String month,
                         @Param("startYear") String startYear,
-                        @Param("startMonth") int startMonth);
+                        @Param("startMonth") String startMonth);
 
         List<PaymentRespDTO.MainPaymentSummaryDTO> findPaymentSummaryByPeriod(
                         @Param("centerCode") String centerCode,
@@ -71,10 +71,14 @@ public interface PaymentRepository {
         // 활성화된 선납금 조회
         PaymentPreset findActivePresetByStudentId(String studentId);
 
+        PaymentPreset findActivePresetBySiblingKey(
+                        @Param("studentId") String studentId,
+                        @Param("centerCode") String centerCode);
+
         void updatePresetBalanceAfter(@Param("manualKey") String manualKey,
-                               @Param("studentId") String studentId,
-                               @Param("balance") int balance);
-                               
+                        @Param("studentId") String studentId,
+                        @Param("balance") int balance);
+
         // preset에서 자동 결제 시 manual_payment 생성
         Integer insertPaymentManualFromPreset(
                         @Param("dto") PaymentReqDTO.ManualPaymentReqDTO dto,

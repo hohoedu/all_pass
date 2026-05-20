@@ -90,6 +90,10 @@
                         th:href="@{/class/monthly}" class="menu-link">월간평가(초등)</a>
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_infant')}"
                         th:href="@{/class/infant}" class="menu-link">학습내용(유아)</a>
+                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')}"
+                        href="#" onclick="openEduModal()" class="menu-link">
+                        시간표 조회<br>(교육청)
+                    </a>
                 </div>
                 <div class="submenu" data-menu="consult">
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"
@@ -116,6 +120,30 @@
                         th:href="@{/manage/tuition}" class="menu-link">수강료 관리</a>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="eduTeacherModal" style="display:none;">
+        <div class="modal-box">
+            <h3>선생님 선택</h3>
+            <form id="eduSelectForm" action="/class/edu-timeview" method="POST">
+                <div class="teacher-list">
+                    <!-- 전체 -->
+                    <label class="teacher-item all-item">
+                        <input type="checkbox" id="checkAll" onchange="toggleAllTeachers(this)">
+                        <span>전체</span>
+                    </label>
+                    <!-- 선생님 목록 -->
+                    <label th:each="u : ${session.userList}" class="teacher-item">
+                        <input type="checkbox" name="userCodes" th:value="${u.userCode}" class="teacher-check"
+                            onchange="syncAllCheck()">
+                        <span th:text="${u.userName}"></span>
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeEduModal()">닫기</button>
+                    <button type="submit" onclick="return validateSelection()">조회</button>
+                </div>
+            </form>
         </div>
     </div>
 </aside>

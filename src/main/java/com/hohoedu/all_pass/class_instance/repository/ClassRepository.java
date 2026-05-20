@@ -455,4 +455,10 @@ public interface ClassRepository {
         void deleteRemarks(ClassReqDTO.RemarksSaveDTO dto);
 
         void insertRemarks(ClassReqDTO.RemarksSaveDTO dto);
+
+        List<String> findExistingEduUserCodes(
+                        @Param("userCodes") List<String> userCodes,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("centerCode") String centerCode);
 }

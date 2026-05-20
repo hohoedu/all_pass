@@ -18,6 +18,8 @@ import com.hohoedu.all_pass.notice.repository.NoticeRepository;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.repository.UserRepository;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +54,7 @@ import org.threeten.bp.LocalDate;
 public class ClassService {
 
     private final ClassRepository classRepository;
+    private final UserRepository userRepository;
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
@@ -506,15 +509,15 @@ public class ClassService {
 
             if (Constants.UNIT_INCREMENT_CLASS_KEYS.contains(old.getClassKey())) {
                 String unitKey = old.getUnitKey();
-                String classKey = old.getClassKey(); 
+                String classKey = old.getClassKey();
 
-                String prefix = unitKey.replaceAll("[0-9]", ""); 
+                String prefix = unitKey.replaceAll("[0-9]", "");
                 int prevMonth = Integer.parseInt(unitKey.replaceAll("[^0-9]", ""));
 
                 boolean isRollover = (prevMonth == 12);
                 int newMonth = isRollover ? 1 : prevMonth + 1;
 
-                dto.setUnitKey(prefix + String.format("%02d", newMonth)); 
+                dto.setUnitKey(prefix + String.format("%02d", newMonth));
                 dto.setClassKey(isRollover
                         ? Constants.CLASS_KEY_ROLLOVER.getOrDefault(classKey, classKey)
                         : classKey);
@@ -1505,5 +1508,14 @@ public class ClassService {
         if (dto.getRemarksKeys() != null && !dto.getRemarksKeys().isEmpty()) {
             classRepository.insertRemarks(dto);
         }
+    }
+
+    public List<String> findExistingEduUserCodes(List<String> userCodes, String yy, String mm, String centerCode) {
+        return classRepository.findExistingEduUserCodes(userCodes, yy, mm, centerCode);
+
+    }
+
+    public List<String> findUserNamesByUserCodes(List<String> userCodes, String centerCode) {
+        return userRepository.findUserNamesByUserCodes(userCodes, centerCode);
     }
 }
