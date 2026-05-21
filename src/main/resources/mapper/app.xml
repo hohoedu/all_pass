@@ -46,6 +46,15 @@
         order by t.yy, t.mm, book.week
     </select>
 
+    
+    <select id="selectClassWeek" resultType="com.hohoedu.all_pass.app._dto.AppRespDTO$ClassWeekDTO">
+        SELECT week, mon, tue, wed, thu, fri, sat, sun
+        FROM erp_class_week
+        WHERE year  = #{year}
+          AND month = #{month}
+          AND center_code = #{centerCode}
+        ORDER BY week
+    </select>
 
 
 

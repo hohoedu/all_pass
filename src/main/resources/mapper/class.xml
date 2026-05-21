@@ -1819,7 +1819,7 @@
                  SELECT *,
                         RANK() OVER (ORDER BY per DESC) AS ranking
                  FROM AggregatedData)
--- 4. 최종 결과 조인 및 월별 결과 선택
+    -- 4. 최종 결과 조인 및 월별 결과 선택
         SELECT tr.qtypestr,
                rd.per,
                rd.ranking,
@@ -1907,7 +1907,7 @@
         </foreach>
     </insert>
 
-    <select id="findExistingEduUserCodes" resultType = "String">
+    <select id="findExistingEduUserCodes" resultType="String">
         SELECT DISTINCT user_code
         FROM erp_edu_time_table
         WHERE yy = #{yy}
@@ -1917,6 +1917,57 @@
         <foreach collection="userCodes" item="code" open="(" separator="," close=")">
             #{code}
         </foreach>
+    </select>
+
+    <update id="callEduGenerateProcedure" statementType="CALLABLE">
+        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1
+            @yy          = #{yy},
+            @mm          = #{mm},
+            @center_code = #{centerCode},
+            @user_code   = #{userCode}
+    </update>
+
+
+    <select id="findEduTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
+        SELECT t.time_table_key AS timeTableKey,
+               t.period_no      AS periodNo,
+               t.start_time     AS startTime,
+               t.end_time       AS endTime,
+               t.dayname        AS dayname,
+               t.class_key      AS classKey,
+               t.unit_key       AS unitKey,
+               cc.class_type    AS classType,
+            CASE WHEN t.unit_key = '2nd_TIME'
+                THEN ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name) + ' (독클)'
+                ELSE ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name)
+            END AS className,
+            NULL AS unitName
+        FROM erp_edu_time_table t
+        LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
+        LEFT JOIN erp_edu_time_class_value cv
+                   ON t.class_key = cv.class_key AND cv.center_code = #{centerCode}
+        WHERE t.yy = #{yy}
+          AND t.mm = #{mm}
+          AND t.user_code = #{userCode}
+          AND t.center_code = #{centerCode}
+        ORDER BY
+            CASE t.dayname WHEN 'mon' THEN 1 WHEN 'tue' THEN 2
+            WHEN 'wed' THEN 3 WHEN 'thu' THEN 4 WHEN 'fri' THEN 5 ELSE 6 END,
+        CAST(t.start_time AS DATETIME)
+    </select>
+
+    <select id="findEduStudentsByTimeTables" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+        SELECT a.time_table_key AS timeTableKey,
+               s.student_id     AS studentId,
+               s.student_name   AS studentName,
+               a.week           AS week
+        FROM erp_edu_time_table_assign a
+             JOIN erp_student s ON a.student_id = s.student_id
+        WHERE a.time_table_key IN
+        <foreach collection="timeTableKeys" item="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
+        ORDER BY s.student_name
     </select>
 
 </mapper>

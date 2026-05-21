@@ -32,7 +32,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.threeten.bp.LocalDate;
 
 import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
@@ -423,23 +422,53 @@ public class ClassViewController {
         return "class/infant";
     }
 
-    @PostMapping("/edu-timeview")
-    public String postEduTimeView(@RequestParam List<String> userCodes, HttpSession session, Model model) {
+    @GetMapping("/edu-timeview")
+    public String getEduTimeView(HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null)
             return "redirect:/login";
 
-        String yy = DateConfig.currentYearMonth().get("currentYear");
-        String mm = DateConfig.currentYearMonth().get("currentMonth");
+        List<User> users = userService.findActiveUser(user);
+        model.addAttribute("users", users);
+        model.addAttribute("currentYy", DateConfig.currentYearMonth().get("currentYear"));
+        model.addAttribute("currentMm", DateConfig.currentYearMonth().get("currentMonth"));
 
-        List<String> existingUserCodes = classService.findExistingEduUserCodes(
-                userCodes, yy, mm, user.getCenterCode());
+        return "class/edu-timeview";
+    }
 
-        log.info("선택한 선생님 : {}", userCodes);
-        log.info("이미 존재하는 선생님 : {}", existingUserCodes);
+    @GetMapping("/edu-print-timeview")
+    public String getEduPrintTimeView(
+            @RequestParam String userCode,
+            @RequestParam String yy,
+            @RequestParam String mm,
+            HttpSession session, Model model) {
 
-        return "redirect:/main"; // 임시
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return "redirect:/login";
+
+        List<ClassRespDTO.TimeTableDTO> tables = classService.findEduTableViewWithStudents(
+                yy, mm, userCode, user.getCenterCode());
+
+        Map<String, Map<String, ClassRespDTO.TimeTableDTO>> tableMap = tables.stream()
+                .collect(Collectors.groupingBy(
+                        ClassRespDTO.TimeTableDTO::getDayname,
+                        Collectors.toMap(ClassRespDTO.TimeTableDTO::getPeriodNo, Function.identity())));
+        DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
+
+        User selectedUser = userService.findActiveUser(user).stream()
+                .filter(u -> u.getUserCode().equals(userCode))
+                .findFirst()
+                .orElse(null);
+
+        model.addAttribute("selectedUser", selectedUser);
+        model.addAttribute("tableMap", tableMap);
+        model.addAttribute("days", DAYS);
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+
+        return "print/print-edu-timeview";
     }
 
 }

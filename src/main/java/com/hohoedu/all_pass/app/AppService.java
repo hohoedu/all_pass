@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.app;
 
+import com.hohoedu.all_pass.app._dto.AppRespDTO.ClassWeekDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import lombok.RequiredArgsConstructor;
@@ -74,6 +75,10 @@ public class AppService {
         resp.setBooks(dataList);
 
         return resp;
+    }
+
+    public List<ClassWeekDTO> getClassWeek(String year, String month, String centerCode) {
+        return appRepository.selectClassWeek(year, month, centerCode);
     }
 
 }

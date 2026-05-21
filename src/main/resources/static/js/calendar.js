@@ -11,6 +11,7 @@ const nextMonthKey = getMonthKey(nextMonthDate.getFullYear(), nextMonthDate.getM
 
 const months = [currentMonthKey, nextMonthKey];
 let activeMonth = months[0];
+let dateMap = {};
 
 init();
 
@@ -38,8 +39,10 @@ function renderTabs() {
   });
 }
 
-function renderCalendar(monthKey) {
+async function renderCalendar(monthKey) {
   calendarGrid.innerHTML = "";
+
+  await loadScheduleData(monthKey);
 
   const [year, month] = monthKey.split("-").map(Number);
   const firstDay = new Date(year, month - 1, 1).getDay();
@@ -51,7 +54,6 @@ function renderCalendar(monthKey) {
 
   for (let day = 1; day <= lastDate; day++) {
     const date = new Date(year, month - 1, day);
-    const weekday = date.getDay();
     const dateKey = formatDateKey(date);
 
     const cell = document.createElement("div");
@@ -66,22 +68,19 @@ function renderCalendar(monthKey) {
     num.textContent = day;
     cell.appendChild(num);
 
-    // 일요일은 수업 없음
-    if (weekday !== 0) {
-      const classWeekNumber = getClassWeekNumber(year, month, weekday, day);
+    const found = dateMap[dateKey];
+    if (found) {
+      const weekLabel = found.week.split("_")[1] + "주";
 
-      // 주 1회, 월 4회 수업 기준: 1~4주만 표시
-      if (classWeekNumber <= 4) {
-        const marker = document.createElement("div");
-        marker.className = "marker";
+      const marker = document.createElement("div");
+      marker.className = "marker";
 
-        const box = document.createElement("div");
-        box.className = `marker-box ${getColorClass(weekday)}`;
-        box.textContent = `${classWeekNumber}주`;
+      const box = document.createElement("div");
+      box.className = `marker-box ${found.weekday}`;
+      box.textContent = weekLabel;
 
-        marker.appendChild(box);
-        cell.appendChild(marker);
-      }
+      marker.appendChild(box);
+      cell.appendChild(marker);
     }
 
     calendarGrid.appendChild(cell);
@@ -90,82 +89,76 @@ function renderCalendar(monthKey) {
   renderSchedule(monthKey);
 }
 
-function renderSchedule(monthKey) {
-  const [year, month] = monthKey.split("-").map(Number);
-  const firstClassDate = getFirstClassDate(year, month);
-  const lastClassDate = getLastClassDate(year, month);
+async function loadScheduleData(monthKey) {
+  const [year, month] = monthKey.split("-");
 
-  if (!firstClassDate || !lastClassDate) {
-    scheduleBox.textContent = `${month}월의 수업 일정 : 등록된 수업 일정이 없습니다.`;
+  const params = new URLSearchParams(window.location.search);
+  const centerCode = params.get('centerCode');
+
+  const res = await fetch("/app/calendar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: year,
+      month: month,
+      centerCode: centerCode
+    })
+  });
+
+  const data = await res.json();
+
+  if (!data.success || !data.response) {
+    dateMap = {};
+
     return;
   }
 
-  scheduleBox.textContent =
-    `${month}월의 수업 일정 : ${month}월 ${firstClassDate}일 ~ ${month}월 ${lastClassDate}일`;
-}
+  const weekData = data.response;
 
-function getFirstClassDate(year, month) {
-  const lastDate = new Date(year, month, 0).getDate();
+  const fieldToClass = {
+    mon: "mon", tue: "tue", wed: "wed",
+    thu: "thu", fri: "fri", sat: "satc", sun: "sun"
+  };
 
-  for (let day = 1; day <= lastDate; day++) {
-    const date = new Date(year, month - 1, day);
-    const weekday = date.getDay();
+  dateMap = {};
+  const fields = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
-    if (weekday !== 0) {
-      const classWeekNumber = getClassWeekNumber(year, month, weekday, day);
-
-      if (classWeekNumber === 1) {
-        return day;
+  weekData.forEach(row => {
+    fields.forEach(field => {
+      if (row[field]) {
+        dateMap[row[field]] = {
+          week: row.week,
+          weekday: fieldToClass[field]
+        };
       }
-    }
-  }
+    });
+  });
 
-  return null;
+
 }
-
-function getLastClassDate(year, month) {
+function renderSchedule(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
   const lastDate = new Date(year, month, 0).getDate();
-  let lastClassDate = null;
+
+  let firstClassDay = null;
+  let lastClassDay = null;
 
   for (let day = 1; day <= lastDate; day++) {
     const date = new Date(year, month - 1, day);
-    const weekday = date.getDay();
+    const dateKey = formatDateKey(date);
 
-    if (weekday === 0) continue;
-
-    const classWeekNumber = getClassWeekNumber(year, month, weekday, day);
-
-    if (classWeekNumber <= 4) {
-      lastClassDate = day;
+    if (dateMap[dateKey]) {
+      if (firstClassDay === null) firstClassDay = day;
+      lastClassDay = day;
     }
   }
 
-  return lastClassDate;
-}
-
-function getClassWeekNumber(year, month, weekday, currentDay) {
-  let count = 0;
-
-  for (let day = 1; day <= currentDay; day++) {
-    const date = new Date(year, month - 1, day);
-
-    if (date.getDay() === weekday) {
-      count++;
-    }
+  if (firstClassDay === null) {
+    scheduleBox.textContent = `${month}월의 수업 일정 : 등록된 수업 일정이 없습니다.`;
+  } else {
+    scheduleBox.textContent =
+      `${month}월의 수업 일정 : ${month}월 ${firstClassDay}일 ~ ${month}월 ${lastClassDay}일`;
   }
-
-  return count;
-}
-
-function getColorClass(weekday) {
-  return {
-    1: "mon",
-    2: "tue",
-    3: "wed",
-    4: "thu",
-    5: "fri",
-    6: "satc"
-  }[weekday];
 }
 
 function createEmptyCell() {

@@ -21,6 +21,7 @@ import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByClassCodeDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassRecordReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.EduTimeTableCheckReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.UpdateRemedialDateDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.BeforeClassRespDTO;
@@ -574,4 +575,47 @@ public class ClassController {
         classService.saveRemarks(dto);
         return ResponseEntity.ok(Map.of("success", true));
     }
+
+    @PostMapping("/edu-check")
+    public ResponseEntity<?> checkEduData(@RequestBody EduTimeTableCheckReqDTO reqDTO, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        List<String> existingUserCodes = classService.findExistingEduUserCodes(
+                List.of(reqDTO.getUserCode()), reqDTO.getYy(), reqDTO.getMm(), user.getCenterCode());
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("existingUserCodes", existingUserCodes);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @PostMapping("/edu-generate")
+    public ResponseEntity<?> generateEdu(@RequestBody EduTimeTableCheckReqDTO reqDTO, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        classService.executeEduGenerateProcedure(
+                reqDTO.getYy(), reqDTO.getMm(), user.getCenterCode(), reqDTO.getUserCode());
+
+        List<ClassRespDTO.TimeTableDTO> tables = classService.findEduTableViewWithStudents(
+                reqDTO.getYy(), reqDTO.getMm(), reqDTO.getUserCode(), user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(tables));
+    }
+
+    @PostMapping("/edu-timeview/data")
+    public ResponseEntity<?> getEduData(@RequestBody EduTimeTableCheckReqDTO reqDTO, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<ClassRespDTO.TimeTableDTO> tables = classService.findEduTableViewWithStudents(
+                reqDTO.getYy(), reqDTO.getMm(), reqDTO.getUserCode(), user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(tables));
+    }
+
 }

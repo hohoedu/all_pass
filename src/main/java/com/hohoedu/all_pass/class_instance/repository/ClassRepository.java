@@ -461,4 +461,19 @@ public interface ClassRepository {
                         @Param("yy") String yy,
                         @Param("mm") String mm,
                         @Param("centerCode") String centerCode);
+
+        void callEduGenerateProcedure(
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode);
+
+        List<ClassRespDTO.TimeTableDTO> findEduTimeTableBasic(
+                        @Param("userCode") String userCode,
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("centerCode") String centerCode);
+
+        List<ClassRespDTO.TimeTableDTO.StudentDTO> findEduStudentsByTimeTables(
+                        @Param("timeTableKeys") List<String> timeTableKeys);
 }

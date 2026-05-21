@@ -18,7 +18,6 @@ import com.hohoedu.all_pass.notice.repository.NoticeRepository;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user.User;
-import com.hohoedu.all_pass.user.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +41,7 @@ import com.hohoedu.all_pass.class_instance.repository.UnitCodeJpaRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student.model.GradeCode;
 import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -54,7 +54,6 @@ import org.threeten.bp.LocalDate;
 public class ClassService {
 
     private final ClassRepository classRepository;
-    private final UserRepository userRepository;
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
     private final GradeJpaRepository gradeJpaRepository;
@@ -1510,12 +1509,56 @@ public class ClassService {
         }
     }
 
-    public List<String> findExistingEduUserCodes(List<String> userCodes, String yy, String mm, String centerCode) {
+    public List<String> findExistingEduUserCodes(
+            List<String> userCodes, String yy, String mm, String centerCode) {
         return classRepository.findExistingEduUserCodes(userCodes, yy, mm, centerCode);
-
     }
 
-    public List<String> findUserNamesByUserCodes(List<String> userCodes, String centerCode) {
-        return userRepository.findUserNamesByUserCodes(userCodes, centerCode);
+    public void executeEduGenerateProcedure(String yy, String mm, String centerCode, String userCode) {
+        classRepository.callEduGenerateProcedure(yy, mm, centerCode, userCode);
     }
+
+    public List<ClassRespDTO.TimeTableDTO> findEduTableViewWithStudents(
+            String yy, String mm, String userCode, String centerCode) {
+
+        List<ClassRespDTO.TimeTableDTO> tables = classRepository.findEduTimeTableBasic(
+                userCode, yy, mm, centerCode);
+        if (tables.isEmpty())
+            return tables;
+
+        // periodNo 재정렬 (요일별로 startTime 순 1,2,3...)
+        Map<String, List<ClassRespDTO.TimeTableDTO>> byDay = tables.stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.TimeTableDTO::getDayname));
+
+        byDay.forEach((day, list) -> {
+            list.sort(Comparator.comparing(ClassRespDTO.TimeTableDTO::getStartTime));
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setPeriodNo(String.valueOf(i + 1));
+            }
+        });
+
+        // 학생 조회 및 세팅 (기존 로직 동일)
+        List<String> keys = tables.stream()
+                .map(ClassRespDTO.TimeTableDTO::getTimeTableKey)
+                .collect(Collectors.toList());
+
+        List<ClassRespDTO.TimeTableDTO.StudentDTO> allStudents = classRepository.findEduStudentsByTimeTables(keys);
+
+        Map<String, List<ClassRespDTO.TimeTableDTO.StudentDTO>> studentMap = allStudents.stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.TimeTableDTO.StudentDTO::getTimeTableKey));
+
+        for (ClassRespDTO.TimeTableDTO tt : tables) {
+            List<ClassRespDTO.TimeTableDTO.StudentDTO> students = new ArrayList<>(
+                    studentMap.getOrDefault(tt.getTimeTableKey(), List.of()));
+            while (students.size() < 8) {
+                ClassRespDTO.TimeTableDTO.StudentDTO empty = new ClassRespDTO.TimeTableDTO.StudentDTO();
+                empty.setStudentName("\u00A0");
+                students.add(empty);
+            }
+            tt.setStudents(students);
+        }
+
+        return tables;
+    }
+
 }

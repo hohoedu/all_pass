@@ -2,7 +2,10 @@ package com.hohoedu.all_pass.app;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
+import com.hohoedu.all_pass.app._dto.AppReqDTO.CalendarReqDTO;
+import com.hohoedu.all_pass.app._dto.AppRespDTO.ClassWeekDTO;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.notice.NoticeService;
@@ -276,4 +279,16 @@ public class AppController {
         List<PaymentAppRespDTO.StudentDTO> response = paymentService.search(keyword, user, ym);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/calendar")
+    public ResponseEntity<?> getClassWeek(@RequestBody CalendarReqDTO request) {
+
+        List<ClassWeekDTO> result = appService.getClassWeek(
+                request.getYear(),
+                request.getMonth(),
+                request.getCenterCode());
+        log.info(request.getCenterCode());
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
 }

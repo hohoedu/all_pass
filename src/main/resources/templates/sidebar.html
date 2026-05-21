@@ -90,9 +90,9 @@
                         th:href="@{/class/monthly}" class="menu-link">월간평가(초등)</a>
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_infant')}"
                         th:href="@{/class/infant}" class="menu-link">학습내용(유아)</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')}"
-                        href="#" onclick="openEduModal()" class="menu-link">
-                        시간표 조회<br>(교육청)
+                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')
+                    and session.user.roleKey == 'ADMIN'}" th:href="@{/class/edu-timeview}" class="menu-link">
+                        시간표 조회(교)
                     </a>
                 </div>
                 <div class="submenu" data-menu="consult">
@@ -122,28 +122,16 @@
             </div>
         </div>
     </div>
-    <div id="eduTeacherModal" style="display:none;">
+
+    <!-- 확인 모달 (사이드바 밖, body 레벨에 고정) -->
+    <div id="confirmModal" style="display:none;">
         <div class="modal-box">
-            <h3>선생님 선택</h3>
-            <form id="eduSelectForm" action="/class/edu-timeview" method="POST">
-                <div class="teacher-list">
-                    <!-- 전체 -->
-                    <label class="teacher-item all-item">
-                        <input type="checkbox" id="checkAll" onchange="toggleAllTeachers(this)">
-                        <span>전체</span>
-                    </label>
-                    <!-- 선생님 목록 -->
-                    <label th:each="u : ${session.userList}" class="teacher-item">
-                        <input type="checkbox" name="userCodes" th:value="${u.userCode}" class="teacher-check"
-                            onchange="syncAllCheck()">
-                        <span th:text="${u.userName}"></span>
-                    </label>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" onclick="closeEduModal()">닫기</button>
-                    <button type="submit" onclick="return validateSelection()">조회</button>
-                </div>
-            </form>
+            <h3>이미 생성된 수업 정보가 있습니다</h3>
+            <p>기존 데이터가 <strong>삭제 후 재생성</strong>됩니다.<br>계속하시겠습니까?</p>
+            <div class="modal-footer">
+                <button type="button" onclick="closeConfirmModal()">취소</button>
+                <button type="button" onclick="submitEduForm()">재생성</button>
+            </div>
         </div>
     </div>
 </aside>

@@ -411,7 +411,14 @@ public class ClassReqDTO {
         private String yy;
         private String mm;
         private String week;
-        private List<String> remarksKeys; // 체크된 항목들
+        private List<String> remarksKeys;
+    }
+
+    @Data
+    public static class EduTimeTableCheckReqDTO {
+        private String userCode;
+        private String yy;
+        private String mm;
     }
 
 }
