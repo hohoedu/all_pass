@@ -462,7 +462,13 @@ public interface ClassRepository {
                         @Param("mm") String mm,
                         @Param("centerCode") String centerCode);
 
-        void callEduGenerateProcedure(
+        void generateProcedureNamCheon(
+                        @Param("yy") String yy,
+                        @Param("mm") String mm,
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode);
+
+        void generateProcedureWolSung(
                         @Param("yy") String yy,
                         @Param("mm") String mm,
                         @Param("centerCode") String centerCode,

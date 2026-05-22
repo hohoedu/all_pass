@@ -1,0 +1,624 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #404040;
+    background: #fff;
+}
+
+.main-container {
+    min-height: 100vh;
+}
+
+.main-frame {
+    display: flex;
+    background: #fff;
+}
+
+.main-info {
+    background: #fff;
+    padding-bottom: 20px;
+    width: 100%;
+}
+
+.student-frame>section {
+    background: #fff;
+    padding: 20px 15px 0 15px;
+}
+
+.common-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.common-title h2 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.header-btns {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+}
+
+.common-btn {
+    padding: 5px 18px;
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    transition: .3s ease;
+    font-size: 14px;
+}
+
+.explore {
+    background: #4C3FBC;
+}
+
+.explore:hover {
+    background: #fff;
+    border: 1px solid #4C3FBC;
+    color: #4C3FBC;
+    font-weight: bold;
+}
+
+.print {
+    color: #747477;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+}
+
+.print::before {
+    content: "\e9bb";
+    font-family: xeicon;
+    font-size: 17px;
+    margin-right: 3px;
+}
+
+.print:hover {
+    color: #4e4e4e;
+}
+
+.icon-btn {
+    background: #F6F0E3;
+    border-radius: 5px;
+    padding: 6px 8px;
+    border: none;
+    margin-left: 10px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.icon-btn img {
+    width: 14px;
+    margin-bottom: -3px;
+}
+
+.hidden-date {
+    position: absolute;
+    z-index: 1;
+}
+
+.mt {
+    border-top: .5px solid #494470;
+}
+
+.basic-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-style: hidden;
+    table-layout: fixed;
+}
+
+.basic-table tr {
+    padding: 8px 10px;
+    text-align: center;
+    line-height: 2.5rem;
+}
+
+.basic-table td {
+    margin: auto;
+    vertical-align: middle;
+}
+
+.basic-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.table-body-scroll {
+    overflow-y: auto;
+}
+
+.table-body-scroll::-webkit-scrollbar {
+    width: 9px;
+}
+
+.table-body-scroll::-webkit-scrollbar-track {
+    background: #eef3ff;
+    border-radius: 5px;
+}
+
+.table-body-scroll::-webkit-scrollbar-thumb {
+    background: #d5dfed;
+    border-radius: 5px;
+}
+
+.yh tbody tr:hover {
+    background: #fffac3;
+}
+
+.stripe tr:nth-child(odd) {
+    background: #f4f5f8;
+}
+
+.checkbox-group input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    position: relative;
+    background-color: #fff;
+    border: 1px solid #C2C9D7;
+    border-radius: 20%;
+    vertical-align: middle;
+}
+
+.checkbox-group input[type="checkbox"]:checked {
+    background-color: #4C3FBC;
+    border-color: transparent;
+}
+
+.checkbox-group input[type="checkbox"]:checked::after {
+    content: "\e928";
+    font-family: xeicon;
+    font-size: 14px;
+    color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.basic-input {
+    border-radius: 30px;
+    background: #FFFBEB;
+    border: 1px solid #e2e2e2;
+    appearance: none;
+    padding: 3px 12px;
+    height: 36px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.basic-input:focus {
+    outline: none;
+    border-color: #4C3FBC;
+}
+
+.month-header2 {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0 12px 0;
+}
+
+.month-title2 {
+    font-size: 22px;
+    color: #686868;
+    display: flex;
+    font-weight: 500;
+    align-items: center;
+}
+
+.info-arrange {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.stu-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.sl3 {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-box {
+    flex: 2;
+    margin-left: -4px;
+}
+
+.search-box input {
+    padding: 8px 15px;
+    height: 36px;
+    border: 1px solid #e2e2e2;
+    background: #FFFBEB;
+    border-radius: 5px 30px 30px 5px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #4C3FBC;
+}
+
+.sl4 {
+    flex: 0 0 auto;
+}
+
+.color-red {
+    color: rgb(218, 3, 3);
+}
+
+.color-blue {
+    color: #3180F7;
+}
+
+/* ===== 매출전표 전용 레이아웃 ===== */
+.receipt-layout {
+    display: flex;
+    gap: 0;
+    height: calc(100vh - 140px);
+    overflow: hidden;
+}
+
+/* 좌측 패널 */
+.receipt-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e4e4e4;
+    border-radius: 6px;
+    padding: 14px 14px 0 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.receipt-left .month-header2 {
+    justify-content: center;
+}
+
+.receipt-box-top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.receipt-left-preview-btn {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.receipt-left-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.receipt-left-search .basic-input {
+    flex: 1;
+}
+
+.receipt-table-wrap {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e4e4e4;
+    border-radius: 4px;
+}
+
+.receipt-table-head {
+    background: #fff;
+    border-bottom: 1px solid #DCE4F5;
+}
+
+.receipt-table-head th {
+    padding: 8px 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #494470;
+    border-bottom: 1px solid #494470;
+}
+
+.receipt-tbody-scroll {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.receipt-tbody-scroll::-webkit-scrollbar {
+    width: 7px;
+}
+
+.receipt-tbody-scroll::-webkit-scrollbar-track {
+    background: #eef3ff;
+    border-radius: 5px;
+}
+
+.receipt-tbody-scroll::-webkit-scrollbar-thumb {
+    background: #d5dfed;
+    border-radius: 5px;
+}
+
+.receipt-table-t td {
+    font-size: 13px;
+    padding: 4px 4px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.receipt-sub-row td {
+    font-size: 12px;
+    color: #888;
+    padding: 2px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fafafa !important;
+    /* stripe 덮어쓰기 */
+}
+
+.sub-icon {
+    color: #aaa;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 우측 패널 */
+.receipt-right {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e4e4e4;
+    border-radius: 6px;
+    margin-left: 12px;
+    background: #f0f0f0;
+    position: relative;
+}
+
+.receipt-preview-bg {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 30px;
+}
+
+/* A4 용지 미리보기 */
+.a4-preview-paper {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    padding: 20mm 18mm;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* A4 안: 영수증 콘텐츠 영역 */
+.receipt-doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.receipt-doc-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #1a1a1a;
+}
+
+.receipt-doc-subtitle {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    letter-spacing: 1px;
+}
+
+.receipt-doc-stamp {
+    width: 56px;
+    height: 56px;
+    border: 2px solid #c0392b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #c0392b;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.receipt-doc-divider {
+    border: none;
+    border-top: 2px solid #333;
+    margin: 8px 0 16px 0;
+}
+
+.receipt-doc-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 20px;
+}
+
+.receipt-doc-info-table td {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    vertical-align: middle;
+}
+
+.receipt-doc-info-table td:nth-child(odd) {
+    background: #f8f8f8;
+    font-weight: 500;
+    color: #555;
+    width: 22%;
+}
+
+.receipt-doc-body-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin: 16px 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #ddd;
+}
+
+.receipt-doc-body-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 16px;
+}
+
+.receipt-doc-body-table th {
+    background: #494470;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.receipt-doc-body-table td {
+    padding: 5px 8px;
+    border: 1px solid #dce4f5;
+    text-align: center;
+}
+
+.receipt-doc-body-table tbody tr:nth-child(odd) td {
+    background: #f8f9fd;
+}
+
+.receipt-doc-total {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 12px;
+    background: #f0eeff;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.receipt-doc-total-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #494470;
+}
+
+.receipt-doc-total-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4C3FBC;
+}
+
+.receipt-doc-footer {
+    margin-top: auto;
+    padding-top: 24px;
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+    border-top: 1px dashed #ddd;
+}
+
+/* 미리보기 없을 때 빈 상태 */
+.receipt-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #bbb;
+    gap: 10px;
+}
+
+.receipt-empty-state i {
+    font-size: 48px;
+    color: #ccc;
+}
+
+.receipt-empty-state p {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* 인쇄 버튼 행 */
+.receipt-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .receipt-left {
+        flex: 0 0 340px;
+    }
+}
+
+/* 인쇄 시 */
+@media print {
+
+    .receipt-left,
+    .receipt-top-bar,
+    .common-title {
+        display: none !important;
+    }
+
+    .receipt-right {
+        margin: 0;
+        border: none;
+        background: none;
+    }
+
+    .receipt-preview-bg {
+        padding: 0;
+    }
+
+    .a4-preview-paper {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        min-height: auto;
+    }
+}

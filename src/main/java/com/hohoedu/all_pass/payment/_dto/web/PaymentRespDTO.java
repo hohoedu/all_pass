@@ -3,7 +3,9 @@ package com.hohoedu.all_pass.payment._dto.web;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 public class PaymentRespDTO {
@@ -343,5 +345,41 @@ public class PaymentRespDTO {
         private String paymentKey;
         private String parentPhone;
         private String totalUnpaidAmount;
+    }
+
+    @Data
+    public static class PaidStudentListDTO {
+        private String amount;
+        private String cardName;
+        private String apprNum;
+        private String monthly;
+        private String paidDate;
+        private String payType;
+        private String rowKey;
+        private List<StudentDTO> students;
+    }
+
+    @Data
+    public static class StudentDTO {
+        private String studentId;
+        private String studentName;
+        private String className;
+    }
+
+    @Data
+    public static class FlatReceiptDTO {
+        private String rowKey;
+        private String studentName;
+        private String classType;
+        private String className;
+        private String itemAmount;
+        private String totalAmount;
+        private String cardNum;
+        private String cardName;
+        private String acquirerName;
+        private String apprNum;
+        private String monthly;
+        private String paidDate;
+        private String payType;
     }
 }

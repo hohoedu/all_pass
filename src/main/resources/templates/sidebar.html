@@ -90,8 +90,11 @@
                         th:href="@{/class/monthly}" class="menu-link">월간평가(초등)</a>
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_infant')}"
                         th:href="@{/class/infant}" class="menu-link">학습내용(유아)</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')
-                    and session.user.roleKey == 'ADMIN'}" th:href="@{/class/edu-timeview}" class="menu-link">
+                    <a th:if="${session.user.roleKey == 'ADMIN' 
+                                and (
+                                    session.user.centerCode == 'PUS002' 
+                                    or session.user.centerCode == 'DAE001'
+                                )}" th:href="@{/class/edu-timeview}" class="menu-link">
                         시간표 조회(교)
                     </a>
                 </div>
@@ -106,6 +109,7 @@
                         th:href="@{/pay/pay-edu}" id="payEduLink" class="menu-link">수강료 청구</a>
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('payment_monthly')}"
                         th:href="@{/pay/pay-list}" id="payListLink" class="menu-link">월별 결제 관리</a>
+                    <a th:href="@{/pay/pay-receipt}" class="menu-link">매출 전표 출력</a>
                 </div>
                 <div class="submenu" data-menu="operation">
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_order')}"

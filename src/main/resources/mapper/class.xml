@@ -1919,8 +1919,16 @@
         </foreach>
     </select>
 
-    <update id="callEduGenerateProcedure" statementType="CALLABLE">
+    <update id="generateProcedureNamCheon" statementType="CALLABLE">
         EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1
+            @yy          = #{yy},
+            @mm          = #{mm},
+            @center_code = #{centerCode},
+            @user_code   = #{userCode}
+    </update>
+
+    <update id="generateProcedureWolSung" statementType="CALLABLE">
+        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1_Dae001
             @yy          = #{yy},
             @mm          = #{mm},
             @center_code = #{centerCode},

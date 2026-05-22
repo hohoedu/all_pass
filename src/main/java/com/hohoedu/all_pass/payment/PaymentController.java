@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.SseEmitterHolder;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO.ReceiptPrintReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -39,7 +40,7 @@ public class PaymentController {
 
         try {
 
-//            String url = paymentService.getPaymintAccessURL(user.getCenterCode());
+            // String url = paymentService.getPaymintAccessURL(user.getCenterCode());
             String url = "https://manager.payssam.kr/";
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, url)
@@ -64,7 +65,8 @@ public class PaymentController {
 
     // 결제선생 청구서 발행
     @PostMapping("/send")
-    public ResponseEntity<?> sendBill(HttpSession session, @RequestBody PaymentReqDTO.PaySendReqDTO dto) throws JsonProcessingException {
+    public ResponseEntity<?> sendBill(HttpSession session, @RequestBody PaymentReqDTO.PaySendReqDTO dto)
+            throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -78,7 +80,8 @@ public class PaymentController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissueBill(HttpSession session, @RequestBody PaymentReqDTO.PayReissueReqDTO dto) throws JsonProcessingException {
+    public ResponseEntity<?> reissueBill(HttpSession session, @RequestBody PaymentReqDTO.PayReissueReqDTO dto)
+            throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -90,13 +93,11 @@ public class PaymentController {
             paymentService.reissueBill(user, dto);
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "msg", "재발행이 완료되었습니다."
-            ));
+                    "msg", "재발행이 완료되었습니다."));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of(
                     "success", false,
-                    "msg", e.getMessage()
-            ));
+                    "msg", e.getMessage()));
         }
     }
 
@@ -109,8 +110,7 @@ public class PaymentController {
 
         return ResponseEntity.ok(Map.of(
                 "code", "0000",
-                "msg", "성공하였습니다."
-        ));
+                "msg", "성공하였습니다."));
     }
 
     @PostMapping("/manual")
@@ -126,16 +126,17 @@ public class PaymentController {
         dto.setCenterCode(user.getCenterCode());
 
         log.info(dto.toString());
-//        PaymentRespDTO.ManualPaymentRespDTO response = paymentService.insertPaymentManual(dto);
+        // PaymentRespDTO.ManualPaymentRespDTO response =
+        // paymentService.insertPaymentManual(dto);
         String response = paymentService.insertPaymentManual(dto);
         return ResponseEntity.ok(ApiUtils.success(response));
-//        return ResponseEntity.ok(ApiUtils.success(null));
+        // return ResponseEntity.ok(ApiUtils.success(null));
 
     }
 
-
     @PostMapping("/destroy/bill")
-    public ResponseEntity<?> destroyBills(HttpSession session, @RequestBody PaymentReqDTO.PayDestroyReqDTO dto) throws JsonProcessingException {
+    public ResponseEntity<?> destroyBills(HttpSession session, @RequestBody PaymentReqDTO.PayDestroyReqDTO dto)
+            throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -150,7 +151,8 @@ public class PaymentController {
 
     // 데이터 필터링
     @PostMapping("/students")
-    public ResponseEntity<?> getStudents(HttpSession session, @RequestBody PaymentReqDTO.StudentsByMonthDTO paymentReqDTO) {
+    public ResponseEntity<?> getStudents(HttpSession session,
+                                         @RequestBody PaymentReqDTO.StudentsByMonthDTO paymentReqDTO) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -159,12 +161,14 @@ public class PaymentController {
         }
         String year = paymentReqDTO.getYear();
         String month = paymentReqDTO.getMonth();
-        String userCode = user.getRoleKey().equals("ADMIN") || user.getRoleKey().equals("MANAGER") ? paymentReqDTO.getUserCode() : user.getUserCode();
+        String userCode = user.getRoleKey().equals("ADMIN") || user.getRoleKey().equals("MANAGER")
+                ? paymentReqDTO.getUserCode()
+                : user.getUserCode();
 
-        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode, user.getCenterCode(), paymentReqDTO.getItemType());
+        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, userCode,
+                user.getCenterCode(), paymentReqDTO.getItemType());
         return ResponseEntity.ok(ApiUtils.success(students));
     }
-
 
     @PostMapping("/edu-personal")
     public ResponseEntity<?> getPersonalModal(HttpSession session, @RequestBody PaymentReqDTO.PersonalDTO reqDTO) {
@@ -195,16 +199,17 @@ public class PaymentController {
     }
 
     @PostMapping("/list/students")
-    public ResponseEntity<?> getListStudents(HttpSession session, @RequestBody PaymentReqDTO.StudentsByMonthDTO reqDTO) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+    public ResponseEntity<?> getListStudents(HttpSession session,
+                                             @RequestBody PaymentReqDTO.StudentsByMonthDTO reqDTO) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
 
-        List<PaymentRespDTO.UnpaidStudentDTO> studentList = paymentService.findUnpaidStudent(user.getCenterCode(), user.getUserCode(), reqDTO.getYear(), reqDTO.getMonth());
+        List<PaymentRespDTO.UnpaidStudentDTO> studentList = paymentService.findUnpaidStudent(user.getCenterCode(),
+                user.getUserCode(), reqDTO.getYear(), reqDTO.getMonth());
 
         return ResponseEntity.ok(ApiUtils.success(studentList));
 
@@ -219,12 +224,12 @@ public class PaymentController {
                     .build();
         }
 
-
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<?> cancelPayment(HttpSession session, @RequestBody PaymentReqDTO.PaymentCancelReqDTO reqDTO) throws JsonProcessingException {
+    public ResponseEntity<?> cancelPayment(HttpSession session, @RequestBody PaymentReqDTO.PaymentCancelReqDTO reqDTO)
+            throws JsonProcessingException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -237,7 +242,6 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
-
     @PostMapping("/refund")
     public ResponseEntity<?> paymentRefund() {
         paymentService.insertPaymentRefund();
@@ -246,8 +250,7 @@ public class PaymentController {
 
     @GetMapping("/fee/{classKey}")
     public ResponseEntity<?> getClassFee(HttpSession session, @PathVariable String classKey) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO)
-                session.getAttribute("user");
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
                     .header(HttpHeaders.LOCATION, "/login")
@@ -262,12 +265,12 @@ public class PaymentController {
 
         paymentService.updateEduFeeAndRecalculate(reqDTO);
 
-
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
     @PostMapping("/api/cashbill/students")
-    public ResponseEntity<?> getCashPaymentStudents(HttpSession session, @RequestBody PaymentReqDTO.CashbillStudentReqDTO reqDTO) {
+    public ResponseEntity<?> getCashPaymentStudents(HttpSession session,
+                                                    @RequestBody PaymentReqDTO.CashbillStudentReqDTO reqDTO) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -298,9 +301,9 @@ public class PaymentController {
         }
     }
 
-
     @PostMapping("/api/claim/export")
-    public ResponseEntity<List<PaymentRespDTO.ClaimDto>> exportClaims(@RequestBody PaymentReqDTO.ClaimFilterDTO filters) {
+    public ResponseEntity<List<PaymentRespDTO.ClaimDto>> exportClaims(
+            @RequestBody PaymentReqDTO.ClaimFilterDTO filters) {
         List<PaymentRespDTO.ClaimDto> data = paymentService.getFilteredClaims(filters);
         return ResponseEntity.ok(data);
     }
@@ -314,7 +317,8 @@ public class PaymentController {
                     .build();
         }
 
-        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentService.getCashbillHistory(user.getCenterCode(), dto.getYear(), dto.getMonth());
+        List<PaymentRespDTO.CashBillHistoryDTO> response = paymentService.getCashbillHistory(user.getCenterCode(),
+                dto.getYear(), dto.getMonth());
         log.info(response.toString());
         return ResponseEntity.ok(ApiUtils.success(response));
     }
@@ -331,7 +335,8 @@ public class PaymentController {
         log.info("현금영수증 취소 요청: billIds = {}", dto.getBillId());
 
         try {
-            PaymentRespDTO.CashbillCancelRespDTO result = paymentService.cancelCashbills(dto.getBillId(), dto.getReason(), user.getCenterCode());
+            PaymentRespDTO.CashbillCancelRespDTO result = paymentService.cancelCashbills(dto.getBillId(),
+                    dto.getReason(), user.getCenterCode());
             return ResponseEntity.ok(ApiUtils.success(result));
 
         } catch (Exception e) {
@@ -341,7 +346,8 @@ public class PaymentController {
     }
 
     @PostMapping("/api/remind/unpaid-students")
-    public ResponseEntity<?> findUnpaidStudents(@RequestBody PaymentReqDTO.UnpaidStudentReqDTO dto, HttpSession session) {
+    public ResponseEntity<?> findUnpaidStudents(@RequestBody PaymentReqDTO.UnpaidStudentReqDTO dto,
+                                                HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -367,14 +373,14 @@ public class PaymentController {
                 user.getUserCode(),
                 user.getCenterCode(),
                 year,
-                month
-        );
+                month);
 
         return ResponseEntity.ok(Map.of("response", payments));
     }
 
     @PostMapping("/manual/update/{id}")
-    public ResponseEntity<?> updatePayment(@PathVariable Integer id, @RequestBody PaymentReqDTO.UpdatePaymentDTO dto, HttpSession session) {
+    public ResponseEntity<?> updatePayment(@PathVariable Integer id, @RequestBody PaymentReqDTO.UpdatePaymentDTO dto,
+                                           HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -413,14 +419,30 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity<?> updatePhone(@RequestBody PaymentReqDTO.UpdateBillingPhone request) {
         try {
-
-            log.info("requestDTO = {}", request.toString());
             studentService.updateStudentBillingPhone(request.getStudentId(), request.getPhone());
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("success", false, "msg", e.getMessage()));
         }
+    }
+
+    @PostMapping("/receipt/print-data")
+    public ResponseEntity<?> getReceiptPrintData(@RequestBody ReceiptPrintReqDTO repDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        log.info(repDTO.toString());
+        System.out.println("rowKeys   : " + repDTO.getRowKeys());
+        System.out.println("centerCode: " + user.getCenterCode());
+
+        List<PaymentRespDTO.FlatReceiptDTO> result = paymentService.getReceiptPrintData(repDTO, user.getCenterCode());
+        System.out.println("조회 row 수: " + result.size());
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
 }

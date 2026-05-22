@@ -27,10 +27,11 @@ function handleSearch() {
                 const choice = confirm('해당 선생님의 수업 정보가 이미 존재합니다.' +
                     '\n\n[확인] → 현재 저장된 정보로 시간표를 조회합니다.' +
                     '\n[취소] → 기존 정보를 삭제하고 새로 생성(복사)합니다.');
+                console.log(choice);
                 if (choice) {
-                    generate();
-                } else {
                     handleView();
+                } else {
+                    generate();
                 }
             } else {
                 generate();  // 바로 생성

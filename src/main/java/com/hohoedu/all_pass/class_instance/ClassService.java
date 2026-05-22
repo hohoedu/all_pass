@@ -1515,7 +1515,12 @@ public class ClassService {
     }
 
     public void executeEduGenerateProcedure(String yy, String mm, String centerCode, String userCode) {
-        classRepository.callEduGenerateProcedure(yy, mm, centerCode, userCode);
+        if (centerCode.equals("PUS002")) {
+            classRepository.generateProcedureNamCheon(yy, mm, centerCode, userCode);
+        } else if (centerCode.equals("DAE001")) {
+            classRepository.generateProcedureWolSung(yy, mm, centerCode, userCode);
+        }
+
     }
 
     public List<ClassRespDTO.TimeTableDTO> findEduTableViewWithStudents(

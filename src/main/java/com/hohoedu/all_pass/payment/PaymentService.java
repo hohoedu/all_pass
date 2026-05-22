@@ -12,6 +12,7 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO.PaidStudentListDTO;
 import com.hohoedu.all_pass.payment.model.*;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
@@ -51,7 +52,7 @@ public class PaymentService {
     private volatile long currentSecond = Instant.now().getEpochSecond();
 
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode,
-            String roleKey, String type) {
+                                                                        String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, "01");
@@ -59,7 +60,7 @@ public class PaymentService {
 
     // 기간별 미납 조회
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode,
-            String roleKey, String type) {
+                                                                                String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, roleKey, type, year, month);
@@ -187,7 +188,7 @@ public class PaymentService {
          */
         int totalPaidAmount = eduBillApprovedAmount + manualPaidAmount
                 + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType()))
-                        .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
+                .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
 
         int totalUnpaidAmount = totalDetailAmount - totalPaidAmount;
         if (totalUnpaidAmount < 0)
@@ -246,7 +247,7 @@ public class PaymentService {
      * @param userCode    - 작업자 코드
      */
     private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount,
-            String description, String paymentKey, String userCode) {
+                            String description, String paymentKey, String userCode) {
 
         PaymentReqDTO.PaymentHistoryRecordDTO dto = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType(eventType)
                 .eventSource(eventSource).oldStatus(oldStatus).newStatus(newStatus).amount(amount)
@@ -731,7 +732,7 @@ public class PaymentService {
     }
 
     private void sendProgress(String jobId, int current, int total, String status,
-            String studentName, int successCount, int failCount) {
+                              String studentName, int successCount, int failCount) {
         if (jobId == null || jobId.isBlank())
             return;
 
@@ -789,7 +790,7 @@ public class PaymentService {
      * 수업료 청구 화면 데이터 조회
      */
     public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode,
-            String centerCode, String itemType) {
+                                                                      String centerCode, String itemType) {
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode,
                 centerCode, itemType);
         return students;
@@ -1022,7 +1023,7 @@ public class PaymentService {
      * 미납 학생 조회
      */
     public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode, String yy,
-            String mm) {
+                                                                   String mm) {
         List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode, yy,
                 mm);
         return studentDTO;
@@ -1428,7 +1429,7 @@ public class PaymentService {
     }
 
     private void issueCashbillForManualPayment(String manualKey,
-            PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
+                                               PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
 
         log.info("🔥 현금영수증 발행 시작 - manualKey: {}, 금액: {}", manualKey, cashbillInfo.getPrice());
 
@@ -1534,7 +1535,7 @@ public class PaymentService {
     }
 
     public void processPresetPaymentIfExists(String studentId, String paymentKey, Integer billAmount,
-            String userCode, String centerCode, String yy, String mm) {
+                                             String userCode, String centerCode, String yy, String mm) {
         try {
             // 1. 활성화된 선납금 조회
             PaymentPreset preset = paymentRepository.findActivePresetByStudentId(studentId);
@@ -1619,9 +1620,9 @@ public class PaymentService {
             String eventType = isPartial ? "partial_paid_from_preset" : "auto_paid_from_preset";
             String description = isPartial
                     ? String.format("선납금 부분 차감 %d원 | 차감 전 %d원 → 잔여 %d원 미납 (preset_id: %d)",
-                            presetUsedAmount, balanceBefore, remainingAmount, preset.getId())
+                    presetUsedAmount, balanceBefore, remainingAmount, preset.getId())
                     : String.format("선납금 자동 차감 %d원 | 차감 전 %d원 → 잔여 %d원 (preset_id: %d)",
-                            presetUsedAmount, balanceBefore, newBalance, preset.getId());
+                    presetUsedAmount, balanceBefore, newBalance, preset.getId());
 
             paymentRepository.insertPaymentHistory(
                     PaymentReqDTO.PaymentHistoryRecordDTO.builder()
@@ -1654,7 +1655,7 @@ public class PaymentService {
      * 월별 결제 내역 조회
      */
     public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy,
-            String mm) {
+                                                                      String mm) {
         return paymentRepository.findMonthlyPayments(centerCode, userCode, yy, mm).stream().peek(dto -> {
             String paidDate = dto.getPaidDate();
             dto.setPaidDate((paidDate == null || paidDate.isBlank()) ? "-" : paidDate);
@@ -1744,7 +1745,7 @@ public class PaymentService {
     }
 
     public List<PaymentRespDTO.CashbillStudentRespDTO> getCashPaymentStudents(String year, String month,
-            String centerCode) {
+                                                                              String centerCode) {
         return paymentRepository.findCashbillStudents(year, month, centerCode);
     }
 
@@ -1947,7 +1948,7 @@ public class PaymentService {
     }
 
     private Map<String, Object> buildCancelRequestBody(PaymentRespDTO.PaymentConfigDTO config,
-            PaymentCashbill cashbill) {
+                                                       PaymentCashbill cashbill) {
         Map<String, Object> body = new HashMap<>();
 
         body.put("apikey", config.getApiKey());
@@ -2027,7 +2028,7 @@ public class PaymentService {
     }
 
     public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm,
-            UserRespDTO.LoginRespDTO user) {
+                                                                   UserRespDTO.LoginRespDTO user) {
         String ym = yy + "-" + mm;
         String centerCode = user.getCenterCode();
 
@@ -2078,6 +2079,18 @@ public class PaymentService {
         if (s.isSubHoho())
             subjects.add("호호스쿨");
         return subjects;
+    }
+
+    public List<PaidStudentListDTO> getPaidStudentList() {
+        String centerCode = "PUS002";
+        String studentName = "고나연";
+        String year = "2026";
+        String month = "05";
+        return paymentRepository.findPaidStudent(centerCode, year, month, studentName);
+    }
+
+    public List<PaymentRespDTO.FlatReceiptDTO> getReceiptPrintData(PaymentReqDTO.ReceiptPrintReqDTO req, String centerCode) {
+        return paymentRepository.findReceiptPrintData(req.getRowKeys(), centerCode);
     }
 
 }

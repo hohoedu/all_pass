@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
+import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO.PaidStudentListDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
@@ -30,32 +31,37 @@ public class PaymentViewController {
     private final PaymentService paymentService;
 
     @GetMapping("/pay-edu")
-    public String getPayEduPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
+    public String getPayEduPage(@RequestParam("year") String year, @RequestParam("month") String month,
+            HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-//        String userCode = user.getRoleKey().equals("ADMIN") ? "all" : user.getUserCode();
+        // String userCode = user.getRoleKey().equals("ADMIN") ? "all" :
+        // user.getUserCode();
 
         List<User> users = userService.findActiveUser(user);
-//        List<PaymentRespDTO.AssignStudentsDTO> students = paymentService.findByAssignStudent(year, month, "all", user.getCenterCode(), "EDU_FEE");
+        // List<PaymentRespDTO.AssignStudentsDTO> students =
+        // paymentService.findByAssignStudent(year, month, "all", user.getCenterCode(),
+        // "EDU_FEE");
 
         model.addAttribute("user", user);
         model.addAttribute("users", users);
-//        model.addAttribute("students", students);
+        // model.addAttribute("students", students);
         return "pay/pay-edu";
     }
 
     @GetMapping("/pay-list")
-    public String getPayListPage(@RequestParam("year") String year, @RequestParam("month") String month, HttpSession session, Model model) {
+    public String getPayListPage(@RequestParam("year") String year, @RequestParam("month") String month,
+            HttpSession session, Model model) {
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
-
-        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(user.getUserCode(), user.getCenterCode(), year, month);
+        List<PaymentRespDTO.MonthlyPaymentDTO> payments = paymentService.findMonthlyPayments(user.getUserCode(),
+                user.getCenterCode(), year, month);
         List<CardCode> cardCode = paymentService.findCardCode();
         model.addAttribute("cardCode", cardCode);
         model.addAttribute("payments", payments);
@@ -64,10 +70,11 @@ public class PaymentViewController {
 
     @GetMapping("/print-cashbill")
     public String getCashbillPrint(@RequestParam String ym,
-                                   @RequestParam(required = false) String ids,
-                                   Model model, HttpSession session) {
+            @RequestParam(required = false) String ids,
+            Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         String yy = ym.substring(0, 4);
         String mm = ym.substring(4, 6);
@@ -88,6 +95,13 @@ public class PaymentViewController {
         model.addAttribute("printDTO", printDTO);
 
         return "print/print-cashbill";
+    }
+
+    @GetMapping("/pay-receipt")
+    public String getReceiptPage(Model model) {
+        List<PaidStudentListDTO> students = paymentService.getPaidStudentList();
+        model.addAttribute("students", students);
+        return "pay/pay-receipt";
     }
 
 }

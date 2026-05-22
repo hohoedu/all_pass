@@ -19,7 +19,8 @@ public class PaymentReqDTO {
         private String userCode;
 
         @Builder
-        public PaymentHistoryRecordDTO(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount, String description, String paymentKey, String userCode) {
+        public PaymentHistoryRecordDTO(String eventType, String eventSource, String oldStatus, String newStatus,
+                Integer amount, String description, String paymentKey, String userCode) {
             this.eventType = eventType;
             this.eventSource = eventSource;
             this.oldStatus = oldStatus;
@@ -77,22 +78,22 @@ public class PaymentReqDTO {
     @Data
     public static class PayCallbackDTO {
         private String apikey;
-        private String bill_id;             // 청구서 ID
-        private String appr_cat_id;         // ??
-        private String appr_pay_type;       // 결제수단
-        private String appr_card_type;      // 결제카드 종류
-        private String appr_dt;             // 승인일시
-        private String appr_issuer;         // 결제은행/카드명
-        private String appr_issuer_cd;      // 은행 코드
-        private String appr_issuer_num;     // 결제 카드 번호
-        private String appr_num;            // 승인번호
-        private String appr_price;          // 승인금액
-        private String appr_state;          // 결제상태
-        private String appr_monthly;        // 결제 할부 개월 수
-        private String appr_acquirer_cd;    // 매입사 코드
-        private String appr_acquirer_nm;    // 매입사 명
-        private String appr_origin_dt;      // 원거래 승인일시
-        private String appr_origin_num;     // 원거래 승인번호
+        private String bill_id; // 청구서 ID
+        private String appr_cat_id; // ??
+        private String appr_pay_type; // 결제수단
+        private String appr_card_type; // 결제카드 종류
+        private String appr_dt; // 승인일시
+        private String appr_issuer; // 결제은행/카드명
+        private String appr_issuer_cd; // 은행 코드
+        private String appr_issuer_num; // 결제 카드 번호
+        private String appr_num; // 승인번호
+        private String appr_price; // 승인금액
+        private String appr_state; // 결제상태
+        private String appr_monthly; // 결제 할부 개월 수
+        private String appr_acquirer_cd; // 매입사 코드
+        private String appr_acquirer_nm; // 매입사 명
+        private String appr_origin_dt; // 원거래 승인일시
+        private String appr_origin_num; // 원거래 승인번호
     }
 
     @Data
@@ -129,16 +130,16 @@ public class PaymentReqDTO {
 
         @Data
         public static class CashbillInfoDTO {
-            private String studentId;       // 학생 아이디
-            private String paymentKey;      // 결제한 페이먼트 키
-            private String receiptNumber;   // 발급 번호
-            private String issueDate;       // 발급 일자
-            private String price;           // 승인 금액
-            private String receiptType;     // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
-            private String supplyPrice;     // 공급가액
-            private String tax;             // 세금
-            private String taxType;         // 과세구분
-            private String trader;          // 발급 구분 (0: 개인, 1: 사업자, 2: 자진발급)
+            private String studentId; // 학생 아이디
+            private String paymentKey; // 결제한 페이먼트 키
+            private String receiptNumber; // 발급 번호
+            private String issueDate; // 발급 일자
+            private String price; // 승인 금액
+            private String receiptType; // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
+            private String supplyPrice; // 공급가액
+            private String tax; // 세금
+            private String taxType; // 과세구분
+            private String trader; // 발급 구분 (0: 개인, 1: 사업자, 2: 자진발급)
         }
     }
 
@@ -201,7 +202,6 @@ public class PaymentReqDTO {
         private String cancelReason;
     }
 
-
     @Data
     public static class PersonalDTO {
         private String studentId;
@@ -224,16 +224,16 @@ public class PaymentReqDTO {
 
     @Data
     public static class CashbillIssueReqDTO {
-        private String studentId;       // 학생 아이디
-        private String paymentKey;      // 결제한 페이먼트 키
-        private String receiptNumber;   // 발급 번호
-        private String issueDate;       // 발급 일자
-        private String price;           // 승인 금액
-        private String receiptType;     // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
-        private String supplyPrice;     // 공급가액
-        private String tax;             // 세금
-        private String taxType;         // 과세구분
-        private String trader;          // 발급 구분 (0: 개인, 1: 사업자)
+        private String studentId; // 학생 아이디
+        private String paymentKey; // 결제한 페이먼트 키
+        private String receiptNumber; // 발급 번호
+        private String issueDate; // 발급 일자
+        private String price; // 승인 금액
+        private String receiptType; // 발급 구분 (personal: 개인, business: 사업자, self: 자진발급)
+        private String supplyPrice; // 공급가액
+        private String tax; // 세금
+        private String taxType; // 과세구분
+        private String trader; // 발급 구분 (0: 개인, 1: 사업자)
     }
 
     @Data
@@ -266,23 +266,27 @@ public class PaymentReqDTO {
 
     @Data
     public static class UpdatePaymentDTO {
-        private String paidDate;        // "2026-03-15"
+        private String paidDate; // "2026-03-15"
         private Long cardAmount;
         private Long cashAmount;
         private Long transferAmount;
-        private String cardName;        // 카드사 코드
+        private String cardName; // 카드사 코드
     }
 
     @Data
-    public static class UpdateBillingPhone{
+    public static class UpdateBillingPhone {
         private String studentId;
         private String phone;
     }
 
-
     @Data
-    public static class YearMonthDTO{
+    public static class YearMonthDTO {
         private String year;
         private String month;
+    }
+
+    @Data
+    public static class ReceiptPrintReqDTO {
+        private List<String> rowKeys;
     }
 }
