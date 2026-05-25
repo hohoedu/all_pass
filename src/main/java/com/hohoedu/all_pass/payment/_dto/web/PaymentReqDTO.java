@@ -289,4 +289,11 @@ public class PaymentReqDTO {
     public static class ReceiptPrintReqDTO {
         private List<String> rowKeys;
     }
+
+    @Data
+    public static class ReceiptSearchReqDTO {
+        private String yy;
+        private String mm;
+        private String search;
+    }
 }

@@ -360,11 +360,14 @@ public interface PaymentRepository {
 
     List<String> getSiblingIds(@Param("studentId") String studentId);
 
+
     List<PaymentRespDTO.PaidStudentListDTO> findPaidStudent(
             @Param("centerCode") String centerCode,
             @Param("year") String year,
             @Param("month") String month,
-            @Param("studentName") String studentName);
+            @Param("search") String search);
+
+    PaymentRespDTO.CenterPrintInfoDTO findCenterPrintInfo(@Param("centerCode") String centerCode);
 
     List<PaymentRespDTO.FlatReceiptDTO> findReceiptPrintData(
             @Param("rowKeys") List<String> rowKeys,

@@ -2017,77 +2017,94 @@
     </resultMap>
 
     <select id="findPaidStudent" resultMap="paidStudentResultMap">
-        ;
-        WITH flat AS (SELECT pc.appr_num                                                                AS group_key,
-                             p.student_id,
-                             s.student_name,
-                             STUFF((SELECT DISTINCT ', ' + COALESCE(NULLIF(cv2.subName_hohoschool, ''), cv2.subName)
-                                    FROM erp_payment_detail pd2
-                                             JOIN erp_time_table tt2 ON pd2.time_table_key = tt2.time_table_key
-                                             JOIN erp_edu_time_class_value cv2 ON tt2.class_key = cv2.class_key
-                                        AND cv2.center_code = #{centerCode}
-                                    WHERE pd2.payment_key = p.payment_key
-                                      AND pd2.item_type = 'EDU_FEE'
-                                       FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS class_name,
-                             pc.appr_price                                                              AS amount,
-                             card.card_name                                                             AS card_name,
-                             pc.appr_num                                                                AS appr_num,
-                             pc.appr_monthly                                                            AS monthly,
-                             CONVERT(VARCHAR (16), pc.created_at, 120)                                  AS paid_date,
-                             '결제선생'                                                                     AS pay_type,
-                             CAST(pb.bill_id AS VARCHAR(50))                                            AS row_key,
-                             ROW_NUMBER()                                                                  OVER (
-                PARTITION BY pc.appr_num ORDER BY p.payment_key
-            ) - 1                                    AS rn
-                      FROM erp_payment_bill pb
-                               JOIN erp_payment p ON pb.payment_key = p.payment_key
-                               JOIN erp_payment_callback pc ON pb.bill_id = pc.bill_id
-                               JOIN erp_student s ON p.student_id = s.student_id
-                               JOIN erp_card_code card ON pc.appr_issuer = card.card_code
-                      WHERE p.yy = #{year}
-                        AND p.mm = #{month}
-                        AND s.center_code = #{centerCode}
-                        AND pb.bill_type = 'EDU_FEE'
+        ;WITH flat AS (
+        SELECT
+        pc.appr_num AS group_key,
+        p.student_id,
+        s.student_name,
+        STUFF((
+        SELECT DISTINCT ', ' + COALESCE(NULLIF(cv2.subName_hohoschool, ''), cv2.subName)
+        FROM erp_payment_detail pd2
+        JOIN erp_time_table tt2 ON pd2.time_table_key = tt2.time_table_key
+        JOIN erp_edu_time_class_value cv2 ON tt2.class_key = cv2.class_key
+        AND cv2.center_code = #{centerCode}
+        WHERE pd2.payment_key = p.payment_key
+        AND pd2.item_type = 'EDU_FEE'
+        FOR XML PATH(''), TYPE
+        ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS class_name,
+        pc.appr_price AS amount,
+        card.card_name AS card_name,
+        pc.appr_num AS appr_num,
+        pc.appr_monthly AS monthly,
+        CONVERT(VARCHAR(16), pc.created_at, 120) AS paid_date,
+        '결제선생' AS pay_type,
+        CAST(pb.bill_id AS VARCHAR(50)) AS row_key,
+        ROW_NUMBER() OVER (
+        PARTITION BY pc.appr_num ORDER BY p.payment_key
+        ) - 1 AS rn
+        FROM erp_payment_bill pb
+        JOIN erp_payment p ON pb.payment_key = p.payment_key
+        JOIN erp_payment_callback pc ON pb.bill_id = pc.bill_id
+        JOIN erp_student s ON p.student_id = s.student_id
+        JOIN erp_card_code card ON pc.appr_issuer = card.card_code
+        WHERE p.yy = #{year}
+        AND p.mm = #{month}
+        AND s.center_code = #{centerCode}
+        AND pb.bill_type = 'EDU_FEE'
 
-                      UNION ALL
+        UNION ALL
 
-                      SELECT CAST(pmg.manual_key AS VARCHAR(50))                                        AS group_key,
-                             p.student_id,
-                             s.student_name,
-                             STUFF((SELECT DISTINCT ', ' + COALESCE(NULLIF(cv2.subName_hohoschool, ''), cv2.subName)
-                                    FROM erp_payment_detail pd2
-                                             JOIN erp_time_table tt2 ON pd2.time_table_key = tt2.time_table_key
-                                             JOIN erp_edu_time_class_value cv2 ON tt2.class_key = cv2.class_key
-                                        AND cv2.center_code = #{centerCode}
-                                    WHERE pd2.payment_key = pm.payment_key
-                                      AND pd2.item_type = 'EDU_FEE'
-                                       FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS class_name,
-                             pmg.total_amount                                                           AS amount,
-                             card.card_name                                                             AS card_name,
-                             NULL                                                                       AS appr_num,
-                             NULL                                                                       AS monthly,
-                             CONVERT(VARCHAR (16), pm.paid_date, 120)                                   AS paid_date,
-                             CASE pmg.method
-                                 WHEN 'CARD' THEN '단말기'
-                                 WHEN 'CASH' THEN '현금'
-                                 WHEN 'TRANSFER' THEN '계좌이체'
-                                 END                                                                    AS pay_type,
-                             CAST(pmg.manual_key AS VARCHAR(50))                                        AS row_key,
-                             ROW_NUMBER()                                                                  OVER (
-                PARTITION BY pmg.manual_key ORDER BY pm.payment_key
-            ) - 1                                    AS rn
-                      FROM erp_payment_manual_group pmg
-                               JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
-                               JOIN erp_payment p ON pm.payment_key = p.payment_key
-                               JOIN erp_student s ON p.student_id = s.student_id
-                               LEFT JOIN erp_card_code card ON pm.card_name = card.card_code
-                      WHERE p.yy = #{year}
-                        AND p.mm = #{month}
-                        AND s.center_code = #{centerCode})
-        SELECT *
-        FROM flat
-        WHERE group_key IN (SELECT group_key
-                            FROM flat)
+        SELECT
+        CAST(pmg.manual_key AS VARCHAR(50)) AS group_key,
+        p.student_id,
+        s.student_name,
+        STUFF((
+        SELECT DISTINCT ', ' + COALESCE(NULLIF(cv2.subName_hohoschool, ''), cv2.subName)
+        FROM erp_payment_detail pd2
+        JOIN erp_time_table tt2 ON pd2.time_table_key = tt2.time_table_key
+        JOIN erp_edu_time_class_value cv2 ON tt2.class_key = cv2.class_key
+        AND cv2.center_code = #{centerCode}
+        WHERE pd2.payment_key = pm.payment_key
+        AND pd2.item_type = 'EDU_FEE'
+        FOR XML PATH(''), TYPE
+        ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS class_name,
+        pmg.total_amount AS amount,
+        card.card_name AS card_name,
+        NULL AS appr_num,
+        NULL AS monthly,
+        CONVERT(VARCHAR(16), pm.paid_date, 120) AS paid_date,
+        CASE pmg.method
+        WHEN 'CARD' THEN '단말기'
+        WHEN 'CASH' THEN '현금'
+        WHEN 'TRANSFER' THEN '계좌이체'
+        END AS pay_type,
+        CAST(pmg.manual_key AS VARCHAR(50)) AS row_key,
+        ROW_NUMBER() OVER (
+        PARTITION BY pmg.manual_key ORDER BY pm.payment_key
+        ) - 1 AS rn
+        FROM erp_payment_manual_group pmg
+        JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
+        JOIN erp_payment p ON pm.payment_key = p.payment_key
+        JOIN erp_student s ON p.student_id = s.student_id
+        LEFT JOIN erp_card_code card ON pm.card_name = card.card_code
+        WHERE p.yy = #{year}
+        AND p.mm = #{month}
+        AND s.center_code = #{centerCode}
+        )
+        SELECT * FROM flat
+        WHERE
+        <choose>
+            <when test="search == null or search == ''">
+                1 = 1
+            </when>
+            <otherwise>
+                group_key IN (
+                SELECT group_key FROM flat
+                WHERE student_name LIKE '%' + #{search} + '%'
+                OR group_key LIKE '%' + #{search} + '%'
+                )
+            </otherwise>
+        </choose>
         ORDER BY student_name, paid_date DESC, group_key, rn
     </select>
 
@@ -2175,6 +2192,18 @@
         )
         SELECT * FROM detail
         ORDER BY row_key, student_name, class_type, class_name
+    </select>
+
+    <select id="findCenterPrintInfo"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CenterPrintInfoDTO">
+        SELECT
+            biz_name    AS centerName,
+            director_name  AS directorName,
+            biz_no         AS bizNo,
+            center_tel     AS centerTel,
+            center_address AS centerAddr
+        FROM erp_center
+        WHERE center_code = #{centerCode}
     </select>
 
 </mapper>

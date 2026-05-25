@@ -382,4 +382,33 @@ public class PaymentRespDTO {
         private String paidDate;
         private String payType;
     }
+
+    @Data
+    public static class ReceiptPrintResponseDTO {
+        private CenterPrintInfoDTO centerInfo;
+        private List<ReceiptPrintDTO> printDataList;
+    }
+
+    @Data
+    public static class CenterPrintInfoDTO {
+        private String centerName;
+        private String directorName;
+        private String bizNo;
+        private String centerTel;
+        private String centerAddr;
+    }
+
+    @Data
+    public static class ReceiptPrintDTO {
+        private String studentInfo;
+        private String totalAmount;
+        private String cardNum;
+        private String cardName;
+        private String acquirerName;
+        private String apprNum;
+        private String monthly;
+        private String paidDate;
+        private String payType;
+    }
+
 }

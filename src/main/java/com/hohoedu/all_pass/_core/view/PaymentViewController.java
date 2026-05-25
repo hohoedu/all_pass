@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +33,7 @@ public class PaymentViewController {
 
     @GetMapping("/pay-edu")
     public String getPayEduPage(@RequestParam("year") String year, @RequestParam("month") String month,
-            HttpSession session, Model model) {
+                                HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -54,7 +55,7 @@ public class PaymentViewController {
 
     @GetMapping("/pay-list")
     public String getPayListPage(@RequestParam("year") String year, @RequestParam("month") String month,
-            HttpSession session, Model model) {
+                                 HttpSession session, Model model) {
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -70,8 +71,8 @@ public class PaymentViewController {
 
     @GetMapping("/print-cashbill")
     public String getCashbillPrint(@RequestParam String ym,
-            @RequestParam(required = false) String ids,
-            Model model, HttpSession session) {
+                                   @RequestParam(required = false) String ids,
+                                   Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null)
             return "redirect:/login";
@@ -98,9 +99,24 @@ public class PaymentViewController {
     }
 
     @GetMapping("/pay-receipt")
-    public String getReceiptPage(Model model) {
-        List<PaidStudentListDTO> students = paymentService.getPaidStudentList();
+    public String getReceiptPage(@RequestParam(required = false) String yy, @RequestParam(required = false) String mm,
+                                 Model model, HttpSession session) {
+
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+
+        String centerCode = user.getCenterCode();
+
+        LocalDate now = LocalDate.now();
+        if (yy == null || yy.isEmpty()) yy = String.valueOf(now.getYear());
+        if (mm == null || mm.isEmpty()) mm = String.format("%02d", now.getMonthValue());
+
+        List<PaymentRespDTO.PaidStudentListDTO> students =
+                paymentService.getPaidStudentList(centerCode, yy, mm, null);
+
         model.addAttribute("students", students);
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
         return "pay/pay-receipt";
     }
 

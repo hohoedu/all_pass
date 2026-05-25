@@ -436,13 +436,20 @@ public class PaymentController {
                     .build();
         }
 
-        log.info(repDTO.toString());
-        System.out.println("rowKeys   : " + repDTO.getRowKeys());
-        System.out.println("centerCode: " + user.getCenterCode());
+        PaymentRespDTO.ReceiptPrintResponseDTO result = paymentService.getReceiptPrintData(repDTO, user.getCenterCode());
 
-        List<PaymentRespDTO.FlatReceiptDTO> result = paymentService.getReceiptPrintData(repDTO, user.getCenterCode());
-        System.out.println("조회 row 수: " + result.size());
         return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @PostMapping("/pay-receipt/search")
+    public ResponseEntity<?> searchReceipts(@RequestBody PaymentReqDTO.ReceiptSearchReqDTO req, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<PaymentRespDTO.PaidStudentListDTO> students =
+                paymentService.getPaidStudentList(user.getCenterCode(), req.getYy(), req.getMm(), req.getSearch());
+        return ResponseEntity.ok(ApiUtils.success(students));
     }
 
 }

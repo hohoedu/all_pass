@@ -2081,16 +2081,59 @@ public class PaymentService {
         return subjects;
     }
 
-    public List<PaidStudentListDTO> getPaidStudentList() {
-        String centerCode = "PUS002";
-        String studentName = "고나연";
-        String year = "2026";
-        String month = "05";
-        return paymentRepository.findPaidStudent(centerCode, year, month, studentName);
+    public List<PaymentRespDTO.PaidStudentListDTO> getPaidStudentList(
+            String centerCode, String year, String month, String search) {
+        return paymentRepository.findPaidStudent(centerCode, year, month, search);
     }
 
-    public List<PaymentRespDTO.FlatReceiptDTO> getReceiptPrintData(PaymentReqDTO.ReceiptPrintReqDTO req, String centerCode) {
-        return paymentRepository.findReceiptPrintData(req.getRowKeys(), centerCode);
+    public PaymentRespDTO.ReceiptPrintResponseDTO getReceiptPrintData(PaymentReqDTO.ReceiptPrintReqDTO req, String centerCode) {
+
+        // 센터 정보 조회
+        PaymentRespDTO.CenterPrintInfoDTO centerInfo = paymentRepository.findCenterPrintInfo(centerCode);
+
+        // 결제 데이터 조회 및 가공 (기존 로직 동일)
+        List<PaymentRespDTO.FlatReceiptDTO> flatList = paymentRepository.findReceiptPrintData(req.getRowKeys(), centerCode);
+
+        List<PaymentRespDTO.ReceiptPrintDTO> printDataList = flatList.stream()
+                .collect(Collectors.groupingBy(
+                        PaymentRespDTO.FlatReceiptDTO::getRowKey,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ))
+                .values().stream()
+                .map(rows -> {
+                    PaymentRespDTO.FlatReceiptDTO first = rows.get(0);
+                    String studentInfo = rows.stream()
+                            .collect(Collectors.groupingBy(
+                                    PaymentRespDTO.FlatReceiptDTO::getStudentName,
+                                    LinkedHashMap::new,
+                                    Collectors.toList()
+                            ))
+                            .entrySet().stream()
+                            .map(entry -> entry.getKey() + " "
+                                    + entry.getValue().stream()
+                                    .map(PaymentRespDTO.FlatReceiptDTO::getClassName)
+                                    .collect(Collectors.joining(",")))
+                            .collect(Collectors.joining(", "));
+
+                    PaymentRespDTO.ReceiptPrintDTO dto = new PaymentRespDTO.ReceiptPrintDTO();
+                    dto.setStudentInfo(studentInfo);
+                    dto.setTotalAmount(first.getTotalAmount());
+                    dto.setCardNum(first.getCardNum());
+                    dto.setCardName(first.getCardName());
+                    dto.setAcquirerName(first.getAcquirerName());
+                    dto.setApprNum(first.getApprNum());
+                    dto.setMonthly(first.getMonthly());
+                    dto.setPaidDate(first.getPaidDate());
+                    dto.setPayType(first.getPayType());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        PaymentRespDTO.ReceiptPrintResponseDTO response = new PaymentRespDTO.ReceiptPrintResponseDTO();
+        response.setCenterInfo(centerInfo);
+        response.setPrintDataList(printDataList);
+        return response;
     }
 
 }
