@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.hohoedu.all_pass.user._dto.UserReqDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,8 +24,9 @@ public interface UserRepository {
                         @Param("type") String type,
                         @Param("userCode") String userCode);
 
-        List<User> findAllUserCode(
-                        @Param("centerCode") String centerCode);
+        List<User> findAllUserCode(@Param("centerCode") String centerCode);
+
+        List<User> findActiveUserCodeByCenterCode(@Param("centerCode") String centerCode);
 
         UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
 

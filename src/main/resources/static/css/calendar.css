@@ -124,3 +124,7 @@ body {
   color: #243042;
   background: #fafbfd;
 }
+
+.day-cell.other-month .day-num {
+  color: #bbb;
+}

@@ -11,4 +11,9 @@ public class AppReqDTO {
         private String month;
         private String centerCode;
     }
+
+    @Data
+    public static class QnaReqDTO {
+        private String gubun;
+    }
 }

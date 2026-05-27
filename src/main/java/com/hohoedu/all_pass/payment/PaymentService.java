@@ -12,18 +12,23 @@ import com.hohoedu.all_pass.payment._dto.app.PaymentAppReqDTO;
 import com.hohoedu.all_pass.payment._dto.app.PaymentAppRespDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
-import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO.PaidStudentListDTO;
 import com.hohoedu.all_pass.payment.model.*;
 import com.hohoedu.all_pass.payment.repository.PaymentRepository;
 import com.hohoedu.all_pass.student.Student;
 import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import java.io.ByteArrayOutputStream;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.temporal.ChronoUnit;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.LocalDateTime;
@@ -52,7 +58,7 @@ public class PaymentService {
     private volatile long currentSecond = Instant.now().getEpochSecond();
 
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummary(String centerCode, String userCode,
-                                                                        String roleKey, String type) {
+            String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, "01");
@@ -60,7 +66,7 @@ public class PaymentService {
 
     // 기간별 미납 조회
     public List<PaymentRespDTO.MainPaymentSummaryDTO> getPaymentSummaryByPeriod(String centerCode, String userCode,
-                                                                                String roleKey, String type) {
+            String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
         return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, roleKey, type, year, month);
@@ -188,7 +194,7 @@ public class PaymentService {
          */
         int totalPaidAmount = eduBillApprovedAmount + manualPaidAmount
                 + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType()))
-                .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
+                        .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
 
         int totalUnpaidAmount = totalDetailAmount - totalPaidAmount;
         if (totalUnpaidAmount < 0)
@@ -247,7 +253,7 @@ public class PaymentService {
      * @param userCode    - 작업자 코드
      */
     private void logHistory(String eventType, String eventSource, String oldStatus, String newStatus, Integer amount,
-                            String description, String paymentKey, String userCode) {
+            String description, String paymentKey, String userCode) {
 
         PaymentReqDTO.PaymentHistoryRecordDTO dto = PaymentReqDTO.PaymentHistoryRecordDTO.builder().eventType(eventType)
                 .eventSource(eventSource).oldStatus(oldStatus).newStatus(newStatus).amount(amount)
@@ -732,7 +738,7 @@ public class PaymentService {
     }
 
     private void sendProgress(String jobId, int current, int total, String status,
-                              String studentName, int successCount, int failCount) {
+            String studentName, int successCount, int failCount) {
         if (jobId == null || jobId.isBlank())
             return;
 
@@ -790,7 +796,7 @@ public class PaymentService {
      * 수업료 청구 화면 데이터 조회
      */
     public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode,
-                                                                      String centerCode, String itemType) {
+            String centerCode, String itemType) {
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode,
                 centerCode, itemType);
         return students;
@@ -1023,7 +1029,7 @@ public class PaymentService {
      * 미납 학생 조회
      */
     public List<PaymentRespDTO.UnpaidStudentDTO> findUnpaidStudent(String centerCode, String userCode, String yy,
-                                                                   String mm) {
+            String mm) {
         List<PaymentRespDTO.UnpaidStudentDTO> studentDTO = paymentRepository.findUnpaidStudent(centerCode, userCode, yy,
                 mm);
         return studentDTO;
@@ -1429,7 +1435,7 @@ public class PaymentService {
     }
 
     private void issueCashbillForManualPayment(String manualKey,
-                                               PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
+            PaymentReqDTO.ManualPaymentReqDTO.CashbillInfoDTO cashbillInfo, String centerCode) {
 
         log.info("🔥 현금영수증 발행 시작 - manualKey: {}, 금액: {}", manualKey, cashbillInfo.getPrice());
 
@@ -1535,7 +1541,7 @@ public class PaymentService {
     }
 
     public void processPresetPaymentIfExists(String studentId, String paymentKey, Integer billAmount,
-                                             String userCode, String centerCode, String yy, String mm) {
+            String userCode, String centerCode, String yy, String mm) {
         try {
             // 1. 활성화된 선납금 조회
             PaymentPreset preset = paymentRepository.findActivePresetByStudentId(studentId);
@@ -1620,9 +1626,9 @@ public class PaymentService {
             String eventType = isPartial ? "partial_paid_from_preset" : "auto_paid_from_preset";
             String description = isPartial
                     ? String.format("선납금 부분 차감 %d원 | 차감 전 %d원 → 잔여 %d원 미납 (preset_id: %d)",
-                    presetUsedAmount, balanceBefore, remainingAmount, preset.getId())
+                            presetUsedAmount, balanceBefore, remainingAmount, preset.getId())
                     : String.format("선납금 자동 차감 %d원 | 차감 전 %d원 → 잔여 %d원 (preset_id: %d)",
-                    presetUsedAmount, balanceBefore, newBalance, preset.getId());
+                            presetUsedAmount, balanceBefore, newBalance, preset.getId());
 
             paymentRepository.insertPaymentHistory(
                     PaymentReqDTO.PaymentHistoryRecordDTO.builder()
@@ -1655,7 +1661,7 @@ public class PaymentService {
      * 월별 결제 내역 조회
      */
     public List<PaymentRespDTO.MonthlyPaymentDTO> findMonthlyPayments(String userCode, String centerCode, String yy,
-                                                                      String mm) {
+            String mm) {
         return paymentRepository.findMonthlyPayments(centerCode, userCode, yy, mm).stream().peek(dto -> {
             String paidDate = dto.getPaidDate();
             dto.setPaidDate((paidDate == null || paidDate.isBlank()) ? "-" : paidDate);
@@ -1745,7 +1751,7 @@ public class PaymentService {
     }
 
     public List<PaymentRespDTO.CashbillStudentRespDTO> getCashPaymentStudents(String year, String month,
-                                                                              String centerCode) {
+            String centerCode) {
         return paymentRepository.findCashbillStudents(year, month, centerCode);
     }
 
@@ -1948,7 +1954,7 @@ public class PaymentService {
     }
 
     private Map<String, Object> buildCancelRequestBody(PaymentRespDTO.PaymentConfigDTO config,
-                                                       PaymentCashbill cashbill) {
+            PaymentCashbill cashbill) {
         Map<String, Object> body = new HashMap<>();
 
         body.put("apikey", config.getApiKey());
@@ -2028,7 +2034,7 @@ public class PaymentService {
     }
 
     public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm,
-                                                                   UserRespDTO.LoginRespDTO user) {
+            UserRespDTO.LoginRespDTO user) {
         String ym = yy + "-" + mm;
         String centerCode = user.getCenterCode();
 
@@ -2086,20 +2092,21 @@ public class PaymentService {
         return paymentRepository.findPaidStudent(centerCode, year, month, search);
     }
 
-    public PaymentRespDTO.ReceiptPrintResponseDTO getReceiptPrintData(PaymentReqDTO.ReceiptPrintReqDTO req, String centerCode) {
+    public PaymentRespDTO.ReceiptPrintResponseDTO getReceiptPrintData(PaymentReqDTO.ReceiptPrintReqDTO req,
+            String centerCode) {
 
         // 센터 정보 조회
         PaymentRespDTO.CenterPrintInfoDTO centerInfo = paymentRepository.findCenterPrintInfo(centerCode);
 
         // 결제 데이터 조회 및 가공 (기존 로직 동일)
-        List<PaymentRespDTO.FlatReceiptDTO> flatList = paymentRepository.findReceiptPrintData(req.getRowKeys(), centerCode);
+        List<PaymentRespDTO.FlatReceiptDTO> flatList = paymentRepository.findReceiptPrintData(req.getRowKeys(),
+                centerCode);
 
         List<PaymentRespDTO.ReceiptPrintDTO> printDataList = flatList.stream()
                 .collect(Collectors.groupingBy(
                         PaymentRespDTO.FlatReceiptDTO::getRowKey,
                         LinkedHashMap::new,
-                        Collectors.toList()
-                ))
+                        Collectors.toList()))
                 .values().stream()
                 .map(rows -> {
                     PaymentRespDTO.FlatReceiptDTO first = rows.get(0);
@@ -2107,13 +2114,12 @@ public class PaymentService {
                             .collect(Collectors.groupingBy(
                                     PaymentRespDTO.FlatReceiptDTO::getStudentName,
                                     LinkedHashMap::new,
-                                    Collectors.toList()
-                            ))
+                                    Collectors.toList()))
                             .entrySet().stream()
                             .map(entry -> entry.getKey() + " "
                                     + entry.getValue().stream()
-                                    .map(PaymentRespDTO.FlatReceiptDTO::getClassName)
-                                    .collect(Collectors.joining(",")))
+                                            .map(PaymentRespDTO.FlatReceiptDTO::getClassName)
+                                            .collect(Collectors.joining(",")))
                             .collect(Collectors.joining(", "));
 
                     PaymentRespDTO.ReceiptPrintDTO dto = new PaymentRespDTO.ReceiptPrintDTO();
@@ -2134,6 +2140,153 @@ public class PaymentService {
         response.setCenterInfo(centerInfo);
         response.setPrintDataList(printDataList);
         return response;
+    }
+
+    public byte[] generateLedger(String yy, String mm, String centerCode) throws IOException {
+
+        List<PaymentRespDTO.LedgerRespDTO> list = paymentRepository.getLedgerData(yy, mm, centerCode);
+
+        Workbook wb = new XSSFWorkbook();
+        buildSheet(wb, mm + "월_전체", mm, list, false);
+        buildSheet(wb, mm + "월_요약", mm, list, true);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        wb.write(out);
+        wb.close();
+        return out.toByteArray();
+    }
+
+    private void buildSheet(Workbook wb, String sheetName, String mm,
+                            List<PaymentRespDTO.LedgerRespDTO> rows, boolean grouped) {
+        Sheet sheet = wb.createSheet(sheetName);
+
+        int[] widths = {8, 14, 28, 20, 14, 14, 14};
+        for (int i = 0; i < widths.length; i++) {
+            sheet.setColumnWidth(i, widths[i] * 256);
+        }
+
+        // 헤더
+        Row hdr = sheet.createRow(0);
+        hdr.setHeightInPoints(20);
+        String[] headers = {"월", "날짜", "적요", "채주", "수입금액", "지출금액", "잔액"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell c = hdr.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(headerStyle(wb));
+        }
+
+        // 데이터
+        int rowIdx = 1;
+        List<PaymentRespDTO.LedgerRespDTO> writeList = grouped ? groupByDate(rows) : rows;
+
+        for (PaymentRespDTO.LedgerRespDTO d : writeList) {
+            Row r = sheet.createRow(rowIdx++);
+            r.setHeightInPoints(18);
+            r.createCell(0).setCellValue(d.getMonth());
+            r.createCell(1).setCellValue(d.getDate());
+            r.createCell(2).setCellValue(d.getDescription());
+            r.createCell(3).setCellValue(d.getCreditor());
+            setNumCell(r, 4, d.getIncomeAmount(),  numStyle(wb));
+            setNumCell(r, 5, d.getExpenseAmount(), numStyle(wb));
+            setNumCell(r, 6, d.getBalance(),       numStyle(wb));
+        }
+
+        // 월 계
+        Row total = sheet.createRow(rowIdx);
+        total.setHeightInPoints(20);
+        total.createCell(0).setCellValue("월  계");
+        total.createCell(4).setCellFormula("SUM(E2:E" + rowIdx + ")");
+        total.createCell(5).setCellFormula("SUM(F2:F" + rowIdx + ")");
+        total.createCell(6).setCellFormula("E" + (rowIdx + 1) + "-F" + (rowIdx + 1));
+        for (int i = 0; i <= 6; i++) {
+            if (total.getCell(i) == null) total.createCell(i);
+            total.getCell(i).setCellStyle(totalStyle(wb));
+        }
+    }
+
+    private List<PaymentRespDTO.LedgerRespDTO> groupByDate(List<PaymentRespDTO.LedgerRespDTO> rows) {
+        Map<String, List<PaymentRespDTO.LedgerRespDTO>> grouped = new LinkedHashMap<>();
+        for (PaymentRespDTO.LedgerRespDTO r : rows) {
+            String key = r.getDate() + "_" + r.getDescription();
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(r);
+        }
+
+        List<PaymentRespDTO.LedgerRespDTO> result  = new ArrayList<>();
+        long            balance = 0;
+
+        for (List<PaymentRespDTO.LedgerRespDTO> grp : grouped.values()) {
+            PaymentRespDTO.LedgerRespDTO first   = grp.get(0);
+            int       cnt     = grp.size();
+            long      income  = grp.stream().mapToLong(PaymentRespDTO.LedgerRespDTO::getIncomeAmount).sum();
+            long      expense = grp.stream().mapToLong(PaymentRespDTO.LedgerRespDTO::getExpenseAmount).sum();
+            balance += income - expense;
+
+            PaymentRespDTO.LedgerRespDTO d = new PaymentRespDTO.LedgerRespDTO();
+            d.setMonth(first.getMonth());
+            d.setDate(first.getDate());
+            d.setDescription(first.getDescription());
+            d.setCreditor(cnt == 1 ? first.getCreditor()
+                    : first.getCreditor() + " 외 " + (cnt - 1) + "명");
+            d.setIncomeAmount(income);
+            d.setExpenseAmount(expense);
+            d.setBalance(balance);
+            result.add(d);
+        }
+        return result;
+    }
+
+    // ── 스타일 ──────────────────────────────────────────────
+    private CellStyle headerStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        Font f = wb.createFont();
+        f.setFontName("맑은 고딕"); f.setBold(true);
+        s.setFont(f);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setVerticalAlignment(VerticalAlignment.CENTER);
+        XSSFCellStyle xs = (XSSFCellStyle) s;
+        xs.setFillForegroundColor(new XSSFColor(
+                new byte[]{(byte)0xBD, (byte)0xD7, (byte)0xEE},
+                new DefaultIndexedColorMap()));
+        xs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        setBorder(s);
+        return s;
+    }
+
+    private CellStyle numStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        Font f = wb.createFont(); f.setFontName("맑은 고딕");
+        s.setFont(f);
+        s.setAlignment(HorizontalAlignment.RIGHT);
+        s.setDataFormat(wb.createDataFormat().getFormat("#,##0"));
+        setBorder(s);
+        return s;
+    }
+
+    private CellStyle totalStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        Font f = wb.createFont();
+        f.setFontName("맑은 고딕"); f.setBold(true);
+        s.setFont(f);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setDataFormat(wb.createDataFormat().getFormat("#,##0"));
+        XSSFCellStyle xs = (XSSFCellStyle) s;
+        xs.setFillForegroundColor(new XSSFColor(
+                new byte[]{(byte)0xFF, (byte)0xF2, (byte)0xCC},
+                new DefaultIndexedColorMap()));
+        xs.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        setBorder(s);
+        return s;
+    }
+
+    private void setBorder(CellStyle s) {
+        s.setBorderTop(BorderStyle.THIN);    s.setBorderBottom(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN);   s.setBorderRight(BorderStyle.THIN);
+    }
+
+    private void setNumCell(Row r, int col, long val, CellStyle style) {
+        Cell c = r.createCell(col);
+        c.setCellValue(val);
+        c.setCellStyle(style);
     }
 
 }

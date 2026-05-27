@@ -15,6 +15,9 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -452,4 +455,28 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
+
+    @PostMapping("/ledger/download")
+    public ResponseEntity<byte[]> downloadLedger(@RequestBody PaymentReqDTO.LedgerReqDTO req, HttpSession session) throws IOException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        System.out.println("현금출납부 요청 - yy: " + req.getYy() + ", mm: " + req.getMm());
+
+        byte[] excel = paymentService.generateLedger(req.getYy(), req.getMm(), user.getCenterCode());
+
+        String filename = URLEncoder.encode(
+                "현금출납부_" + req.getYy() + "_" + req.getMm() + ".xlsx",
+                StandardCharsets.UTF_8);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename*=UTF-8''" + filename)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
+    }
 }

@@ -3,10 +3,13 @@ package com.hohoedu.all_pass.manage;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
+import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,8 @@ public class ManageController {
 
     private final ManageService manageService;
 
+    @Value("${ORDER_KEY}")
+    private String schedulerKey;
 
     @PostMapping("/order/save")
     public ResponseEntity<?> insertOrder(@RequestBody ManageReqDTO.InsertOrderHistoryDTO reqDTO, HttpSession session) {
@@ -48,7 +53,8 @@ public class ManageController {
                     .build();
         }
 
-        List<ManageRespDTO.SavedOrderListDTO> orderList = manageService.getSavedOrderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        List<ManageRespDTO.SavedOrderListDTO> orderList = manageService.getSavedOrderList(user.getUserCode(),
+                user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
 
         return ResponseEntity.ok(ApiUtils.success(orderList));
     }
@@ -62,7 +68,8 @@ public class ManageController {
                     .build();
         }
 
-        List<ManageRespDTO.BasicOrderListDTO> orderList = manageService.getBasicOrderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        List<ManageRespDTO.BasicOrderListDTO> orderList = manageService.getBasicOrderList(user.getUserCode(),
+                user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
 
         return ResponseEntity.ok(ApiUtils.success(orderList));
     }
@@ -76,7 +83,8 @@ public class ManageController {
                     .build();
         }
 
-        List<ManageRespDTO.OrderDetailDTO> response = manageService.getOrderDetailList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        List<ManageRespDTO.OrderDetailDTO> response = manageService.getOrderDetailList(user.getUserCode(),
+                user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
         log.info(response.toString());
         return ResponseEntity.ok(ApiUtils.success(response));
     }
@@ -94,7 +102,6 @@ public class ManageController {
         log.info(response);
         return ResponseEntity.ok(ApiUtils.success(response));
     }
-
 
     @PostMapping("/reorder/save")
     public ResponseEntity<?> insertReorder(@RequestBody ManageReqDTO.InsertReorderDTO reqDTO, HttpSession session) {
@@ -125,11 +132,11 @@ public class ManageController {
                     .build();
         }
         log.info("reqDTO = {}", reqDTO);
-        List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        List<ManageRespDTO.ReorderListDTO> reorderList = manageService.getReorderList(user.getUserCode(),
+                user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
 
         return ResponseEntity.ok(ApiUtils.success(reorderList));
     }
-
 
     @PostMapping("/reorder/cancel")
     public ResponseEntity<?> cancelReorder(@RequestBody ManageReqDTO.CancelReorderDTO dto, HttpSession session) {
@@ -156,14 +163,15 @@ public class ManageController {
         }
 
         String ym = dto.getYy() + dto.getMm();
-        List<ManageRespDTO.CenterOrderListDTO> response = manageService.getCenterOrderListFlat(ym, user.getCenterCode(), user.getUserCode());
-        
+        List<ManageRespDTO.CenterOrderListDTO> response = manageService.getCenterOrderListFlat(ym, user.getCenterCode(),
+                user.getUserCode());
+
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
-
     @PostMapping("/fee/insert")
-    public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO,
+                                               HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -200,7 +208,8 @@ public class ManageController {
     }
 
     @PostMapping("/teacher/{userCode}/permission")
-    public ResponseEntity<?> getTeacherPermission(@PathVariable String userCode, @RequestBody ManageReqDTO.PermissionReqDTO dto, HttpSession session) {
+    public ResponseEntity<?> getTeacherPermission(@PathVariable String userCode,
+                                                  @RequestBody ManageReqDTO.PermissionReqDTO dto, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -228,5 +237,13 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
 
+    @PostMapping("/order/batch")
+    public ResponseEntity<?> processBatchOrder(@RequestHeader("X-Scheduler-Key") String requestKey) {
+        if (!schedulerKey.equals(requestKey)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        manageService.processOrderIfScheduled();
+        return ResponseEntity.ok(ApiUtils.success("저장 완료"));
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.app;
 
+import com.hohoedu.all_pass.app._dto.AppRespDTO;
 import com.hohoedu.all_pass.app._dto.AppRespDTO.ClassWeekDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -81,4 +82,7 @@ public class AppService {
         return appRepository.selectClassWeek(year, month, centerCode);
     }
 
+    public List<AppRespDTO.QnaRespDTO> getQnaList(String gubun){
+        return appRepository.findQnaList(gubun);
+    }
 }

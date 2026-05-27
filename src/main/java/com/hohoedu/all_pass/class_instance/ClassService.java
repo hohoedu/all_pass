@@ -696,53 +696,39 @@ public class ClassService {
 
     // ================ 수업 일지 서비스 =====================//
     public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String dateStr, String dayName, String userCode,
-            String centerCode) {
+                                                                    String centerCode) {
         java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
-        String yy = String.valueOf(date.getYear());
-        String mm = String.format("%02d", date.getMonthValue());
 
-        log.info("[라벨조회] 날짜: {}, yy: {}, mm: {}", dateStr, yy, mm);
+        // ✅ 현월 → 전월 → 익월 순으로 매칭 확인
+        java.time.LocalDate[] candidates = {
+                date,
+                date.minusMonths(1),
+                date.plusMonths(1)
+        };
 
-        // ✅ 1. 현재 월 주차에서 날짜 매칭 확인
-        List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(yy, mm, centerCode);
-        boolean isCurrentMonthMatch = weeks.stream()
-                .anyMatch(w -> isDateMatch(w.getMon(), date) || isDateMatch(w.getTue(), date) ||
-                        isDateMatch(w.getWed(), date) || isDateMatch(w.getThu(), date) ||
-                        isDateMatch(w.getFri(), date) || isDateMatch(w.getSat(), date) ||
-                        isDateMatch(w.getSun(), date));
+        for (java.time.LocalDate candidate : candidates) {
+            String yy = String.valueOf(candidate.getYear());
+            String mm = String.format("%02d", candidate.getMonthValue());
 
-        // ✅ 2. 매칭 없으면 전월 기준으로 변경
-        if (!isCurrentMonthMatch) {
-            java.time.LocalDate prevMonth = date.minusMonths(1);
-            String prevYy = String.valueOf(prevMonth.getYear());
-            String prevMm = String.format("%02d", prevMonth.getMonthValue());
-
-            log.info("[라벨조회] 현재 월 매칭 없음 → 전월({}-{}) 확인", prevYy, prevMm);
-
-            // 전월에도 매칭 없으면 빈 리스트 반환
-            List<ClassRespDTO.ClassWeekDTO> prevWeeks = classRepository.getClassWeek(prevYy, prevMm, centerCode);
-            boolean isPrevMonthMatch = prevWeeks.stream()
+            List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(yy, mm, centerCode);
+            boolean isMatch = weeks.stream()
                     .anyMatch(w -> isDateMatch(w.getMon(), date) || isDateMatch(w.getTue(), date) ||
                             isDateMatch(w.getWed(), date) || isDateMatch(w.getThu(), date) ||
                             isDateMatch(w.getFri(), date) || isDateMatch(w.getSat(), date) ||
                             isDateMatch(w.getSun(), date));
 
-            if (!isPrevMonthMatch) {
-                log.info("[라벨조회] 전월에서도 매칭 없음 → 빈 리스트 반환");
-                return Collections.emptyList();
+            if (isMatch) {
+                log.info("[라벨조회] {}-{}월 기준으로 매칭됨", yy, mm);
+                List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode, centerCode);
+                log.info("[라벨조회] {}-{}월 결과: {}건", yy, mm, response.size());
+                return response;
             }
 
-            yy = prevYy;
-            mm = prevMm;
-            log.info("[라벨조회] 전월({}-{}) 기준으로 변경", yy, mm);
+            log.info("[라벨조회] {}-{}월 매칭 없음", yy, mm);
         }
 
-        // 3. 결정된 월 기준으로 라벨 조회
-        List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode,
-                centerCode);
-        log.info("[라벨조회] {}-{}월 결과: {}건", yy, mm, response.size());
-
-        return response;
+        log.info("[라벨조회] 현월/전월/익월 모두 매칭 없음 → 빈 리스트 반환");
+        return Collections.emptyList();
     }
 
     private boolean isDateMatch(Object dateObj, java.time.LocalDate target) {

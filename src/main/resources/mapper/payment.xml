@@ -1203,34 +1203,85 @@
                                        JOIN erp_payment_callback epc ON epc.bill_id = epb.bill_id
                               WHERE epb.status = 'approved'
                               GROUP BY epb.payment_key),
-             manual_date AS (SELECT payment_key,
-                                    MAX(REPLACE(paid_date, '-', '')) AS indate
+             manual_date AS (SELECT payment_key, MAX(REPLACE(paid_date, '-', '')) AS indate
                              FROM erp_payment_manual
                              WHERE status IN ('approved', 'partial')
-                             GROUP BY payment_key)
-        SELECT TOP(16) ep.yy + '-' + ep.mm        AS inym, CASE epd.class_type
+                             GROUP BY payment_key),
+-- 수기결제 합계 (EDU_FEE 결제완료 판단에 사용)
+             manual_payments AS (SELECT payment_key,
+                                        SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
+                                 FROM erp_payment_manual
+                                 GROUP BY payment_key),
+-- 승인된 청구서 합계 (item_type별 분리)
+             approved_bills AS (SELECT payment_key,
+                                       bill_type,
+                                       SUM(amount) AS bill_amount
+                                FROM erp_payment_bill
+                                WHERE status = 'approved'
+                                GROUP BY payment_key, bill_type),
+-- 청구 총액 (item_type별 분리)
+             total_by_type AS (SELECT payment_key,
+                                      item_type,
+                                      SUM(amount) AS total_amount
+                               FROM erp_payment_detail
+                               WHERE amount > 0
+                               GROUP BY payment_key, item_type)
+        SELECT TOP(24) ep.yy + '-' + ep.mm        AS inym, CASE epd.class_type
                                                                WHEN '1' THEN 'S'
                                                                WHEN '2' THEN 'I'
                                                                ELSE '호호'
             END AS gb,
                ISNULL(pd.indate, md.indate) AS indate,
                CAST(epd.amount AS VARCHAR)  AS inmoney,
-               ep.status                    AS state,
+
+               -- state → payStatus로 교체
+               CASE
+                   WHEN COALESCE(tbt.total_amount, 0) = 0 THEN '할인'
+                   WHEN (
+                            CASE epd.item_type
+                                WHEN 'EDU_FEE' THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                                ELSE COALESCE(ab.bill_amount, 0)
+                                END
+                            ) = 0 THEN 'issued'
+                   WHEN (
+                            CASE epd.item_type
+                                WHEN 'EDU_FEE' THEN COALESCE(mp.manual_amount, 0) + COALESCE(ab.bill_amount, 0)
+                                ELSE COALESCE(ab.bill_amount, 0)
+                                END
+                            ) >= COALESCE(tbt.total_amount, 0) THEN 'approved'
+                   ELSE 'partial'
+                   END                      AS state,
+
                CASE epd.item_type
                    WHEN 'EDU_FEE' THEN 'S'
                    WHEN 'BOOK_FEE' THEN 'B'
                    END                      AS gubun,
                ISNULL(ecc.class_name, '-')  AS className
+
         FROM erp_payment ep
                  JOIN erp_payment_detail epd ON epd.payment_key = ep.payment_key
                  LEFT JOIN erp_time_table ett ON ett.time_table_key = epd.time_table_key
                  LEFT JOIN erp_class_code ecc ON ecc.class_key = ett.class_key
                  LEFT JOIN paymint_date pd ON pd.payment_key = ep.payment_key
                  LEFT JOIN manual_date md ON md.payment_key = ep.payment_key
+                 LEFT JOIN manual_payments mp ON mp.payment_key = ep.payment_key
+                 LEFT JOIN approved_bills ab ON ab.payment_key = ep.payment_key
+            AND ab.bill_type = epd.item_type
+                 LEFT JOIN total_by_type tbt ON tbt.payment_key = ep.payment_key
+            AND tbt.item_type = epd.item_type
+
         WHERE ep.student_id = #{studentId}
           AND ep.status IN ('approved', 'partial', 'issued')
           AND epd.amount > 0
-        ORDER BY ISNULL(pd.indate, md.indate) DESC, ep.payment_key DESC
+
+        ORDER BY inym DESC,
+                 ISNULL(pd.indate, md.indate) DESC,
+                 epd.class_type ASC,
+                 CASE epd.item_type
+                     WHEN 'EDU_FEE' THEN 1
+                     WHEN 'BOOK_FEE' THEN 2
+                     ELSE 3
+                     END ASC;
     </select>
 
     <select id="findUnpaidStudent" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$UnpaidStudentDTO">
@@ -2196,14 +2247,44 @@
 
     <select id="findCenterPrintInfo"
             resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CenterPrintInfoDTO">
-        SELECT
-            biz_name    AS centerName,
-            director_name  AS directorName,
-            biz_no         AS bizNo,
-            center_tel     AS centerTel,
-            center_address AS centerAddr
+        SELECT biz_name       AS centerName,
+               director_name  AS directorName,
+               biz_no         AS bizNo,
+               center_tel     AS centerTel,
+               center_address AS centerAddr
         FROM erp_center
         WHERE center_code = #{centerCode}
     </select>
-
+    <select id="getLedgerData" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$LedgerRespDTO">
+        SELECT
+            CAST(CAST(SUBSTRING(epc.appr_date, 5, 2) AS INT) AS VARCHAR) + '월' AS month,
+        LEFT(epc.appr_date, 4) + '-' + SUBSTRING(epc.appr_date, 5, 2) + '-' + SUBSTRING(epc.appr_date, 7, 2) AS date,
+        CASE
+            WHEN pb.status = 'approved' THEN pb.mm + '월 수강료 수입'
+            WHEN pb.status = 'canceled' THEN pb.mm + '월 수강료 환불'
+        END AS description,
+        s.student_name AS creditor,
+        CASE WHEN pb.status = 'approved' THEN pb.amount ELSE 0 END AS incomeAmount,
+        CASE WHEN pb.status = 'canceled' THEN pb.amount ELSE 0 END AS expenseAmount,
+        SUM(
+            CASE
+                WHEN pb.status = 'approved' THEN  pb.amount
+                WHEN pb.status = 'canceled' THEN -pb.amount
+                ELSE 0
+            END
+        ) OVER (
+            ORDER BY epc.appr_date, epc.id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS balance
+    FROM erp_payment_callback epc
+    JOIN erp_payment_bill pb ON pb.bill_id    = epc.bill_id
+    JOIN erp_payment p       ON p.payment_key = pb.payment_key
+    JOIN erp_student s       ON p.student_id  = s.student_id
+    WHERE SUBSTRING(epc.appr_date, 1, 4) = #{yy}
+        AND SUBSTRING(epc.appr_date, 5, 2) = #{mm}
+        AND p.center_code = #{centerCode}
+        AND pb.bill_type  = 'EDU_FEE'
+        AND pb.status     IN ('approved', 'canceled')
+        ORDER BY epc.appr_date, epc.id
+    </select>
 </mapper>

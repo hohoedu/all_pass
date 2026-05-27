@@ -322,4 +322,39 @@ document.addEventListener('DOMContentLoaded', function () {
         ].join('\n');
     }
 
+
+    /* ════════════════════════════════
+        현금 출납부 다운로드
+    ════════════════════════════════ */
+    document.getElementById('btn-ledger-download').addEventListener('click', function () {
+        const parts = document.getElementById('monthPickerInput').value.split('-');
+        const yy    = parts[0];
+        const mm    = parts[1];
+        const centerCode = document.body.dataset.centerCode;
+
+        console.log('현금출납부 다운로드 요청 - yy:', yy, 'mm:', mm);
+
+        fetch('/pay/ledger/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ yy: yy, mm: mm, centerCode: centerCode })
+        })
+            .then(function (res) {
+                if (!res.ok) throw new Error('서버 오류: ' + res.status);
+                return res.blob();
+            })
+            .then(function (blob) {
+                const url  = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href     = url;
+                link.download = '현금출납부_' + yy + '_' + mm + '.xlsx';
+                link.click();
+                URL.revokeObjectURL(url);
+            })
+            .catch(function (err) {
+                console.error(err);
+                alert('다운로드 중 오류가 발생했습니다.');
+            });
+    });
+
 });

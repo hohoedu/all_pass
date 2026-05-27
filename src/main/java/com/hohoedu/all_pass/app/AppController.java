@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.AppApiUtils;
+import com.hohoedu.all_pass.app._dto.AppReqDTO;
 import com.hohoedu.all_pass.app._dto.AppReqDTO.CalendarReqDTO;
+import com.hohoedu.all_pass.app._dto.AppRespDTO;
 import com.hohoedu.all_pass.app._dto.AppRespDTO.ClassWeekDTO;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
@@ -289,6 +291,13 @@ public class AppController {
                 request.getCenterCode());
         log.info(request.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @PostMapping("/qna_list")
+    public ResponseEntity<?> AppQnaList(@RequestBody AppReqDTO.QnaReqDTO request) {
+        log.info(request.getGubun());
+        List<AppRespDTO.QnaRespDTO> response = appService.getQnaList(request.getGubun());
+        return ResponseEntity.ok(AppApiUtils.successList(response));
     }
 
 }

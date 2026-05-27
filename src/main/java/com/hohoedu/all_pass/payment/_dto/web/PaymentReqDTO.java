@@ -296,4 +296,11 @@ public class PaymentReqDTO {
         private String mm;
         private String search;
     }
+
+    @Data
+    public static class LedgerReqDTO {
+        private String yy;
+        private String mm;
+        private String centerCode;
+    }
 }

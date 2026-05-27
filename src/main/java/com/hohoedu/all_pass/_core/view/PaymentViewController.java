@@ -1,7 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
-import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO.PaidStudentListDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;

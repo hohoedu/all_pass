@@ -15,7 +15,7 @@ public class ManageRespDTO {
         private String classKey;
         private String unitName;
         private String unitKey;
-        private String baseCount;
+        private Integer baseCount;
     }
 
     @Data

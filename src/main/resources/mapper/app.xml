@@ -56,6 +56,12 @@
         ORDER BY week
     </select>
 
+    <select id="findQnaList" resultType="com.hohoedu.all_pass.app._dto.AppRespDTO$QnaRespDTO">
+        SELECT question, answer
+        FROM erp_app_question
+        WHERE (#{gubun} = 0 OR gubun = #{gubun});
+    </select>
+
 
 
 </mapper>

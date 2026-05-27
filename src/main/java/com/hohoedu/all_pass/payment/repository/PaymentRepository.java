@@ -372,4 +372,9 @@ public interface PaymentRepository {
     List<PaymentRespDTO.FlatReceiptDTO> findReceiptPrintData(
             @Param("rowKeys") List<String> rowKeys,
             @Param("centerCode") String centerCode);
+
+    List<PaymentRespDTO.LedgerRespDTO> getLedgerData(
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("centerCode") String centerCode);
 }

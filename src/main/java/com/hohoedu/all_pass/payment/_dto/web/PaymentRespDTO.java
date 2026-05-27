@@ -411,4 +411,16 @@ public class PaymentRespDTO {
         private String payType;
     }
 
+    @Data
+    public static class LedgerRespDTO {
+        private String month;
+        private String date;
+        private String description;
+        private String creditor;
+        private long incomeAmount;
+        private long expenseAmount;
+        private long balance;
+    }
+
+
 }

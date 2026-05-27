@@ -17,4 +17,10 @@ public class AppRespDTO {
         private String sun;
     }
 
+    @Data
+    public static class QnaRespDTO {
+        private String question;
+        private String answer;
+    }
+
 }
