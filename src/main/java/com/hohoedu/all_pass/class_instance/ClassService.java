@@ -386,6 +386,7 @@ public class ClassService {
                 .map(ClassRespDTO.TimeTableDTO.StudentDTO::getStudentId)
                 .distinct()
                 .count();
+        log.info(totalStudentsLong.toString());
 
         double totalStudentsDouble = tables.stream()
                 .flatMap(t -> t.getStudents().stream())
@@ -403,6 +404,8 @@ public class ClassService {
                 .values().stream()
                 .mapToDouble(weekSum -> weekSum * 0.25)
                 .sum();
+
+        log.info(totalStudentsLong.toString());
 
         return new ClassRespDTO.TimeTableViewRespDTO(tables, studentStat, totalStudentsLong, totalStudentsDouble);
     }

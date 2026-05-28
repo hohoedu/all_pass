@@ -1993,7 +1993,7 @@
           AND NOT EXISTS (SELECT 1
                           FROM erp_payment_manual pm
                           WHERE pm.student_id = s.student_id
-                            AND pm.yy + pm.mm = '202605');
+                            AND pm.yy + pm.mm = #{ym});
     </select>
 
     <!-- 형제 ID 조회 -->

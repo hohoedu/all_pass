@@ -92,9 +92,10 @@
             <tr>
                 <td></td>
                 <td>
-                    <span th:if="${totalStudentsLong != totalStudentsDouble}"
-                          th:text="${totalStudentsLong} + '명 (' + ${totalStudentsDouble} + '강좌)'"
-                          style="font-size: 10px; font-weight: bold;">
+                    <span th:text="${totalStudentsLong != totalStudentsDouble} ?
+                            (${totalStudentsLong} + '명 (' + ${totalStudentsDouble} + '강좌)') :
+                            (${totalStudentsLong} + '명')"
+                            style="font-size: 10px; font-weight: bold;">
                     </span>
                 </td>
                 <td>
