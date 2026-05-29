@@ -13,26 +13,59 @@
 
     <select id="findConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultListReqDTO"
             resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
-        SELECT c.id                AS id,
-               c.student_name      AS studentName,
-               c.consult_date      AS consultDate,
-               c.school            AS school,
-               c.phone             AS phone,
-               c.content           AS content,
-               c.grade_key         AS gradeKey,
-               gc.grade_name       AS gradeName,
-               i.inflow_route_name AS inflowRouteName,
-               c.progress_key      AS progressKey,
-               c.consult_type      AS type,
-               u.user_name         AS userName
+        SELECT c.id AS id,
+        c.student_name AS studentName,
+        c.consult_date AS consultDate,
+        c.school AS school,
+        c.phone AS phone,
+        c.content AS content,
+        c.grade_key AS gradeKey,
+        gc.grade_name AS gradeName,
+        i.inflow_route_name AS inflowRouteName,
+        c.inflow_route_key AS inflowRouteKey,
+        c.progress_key AS progressKey,
+        c.consult_type AS type,
+        u.user_name AS userName
         FROM ERP_CONSULT c
-                 JOIN erp_user u ON c.user_code = u.user_code
-                 JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
-                 LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
-                 JOIN erp_progress_code pc ON c.progress_key = pc.progress_key
+        JOIN erp_user u ON c.user_code = u.user_code
+        JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
+        LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+        JOIN erp_progress_code pc ON c.progress_key = pc.progress_key
         WHERE c.center_code = #{centerCode}
-          AND c.consult_date BETWEEN #{startDate} AND #{endDate}
-        ORDER BY consult_date desc
+        AND c.consult_date BETWEEN #{startDate} AND #{endDate}
+        <if test="progress != null and progress != ''">
+            AND c.progress_key = #{progress}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+            c.student_name LIKE CONCAT('%', #{keyword}, '%')
+            OR c.phone LIKE CONCAT('%', #{keyword}, '%')
+            OR c.school LIKE CONCAT('%', #{keyword}, '%')
+            OR gc.grade_name LIKE CONCAT('%', #{keyword}, '%')
+            OR u.user_name = #{keyword}
+            )
+        </if>
+        ORDER BY
+        CASE WHEN #{sortDir} = 'asc' THEN
+            CASE #{sortColumn}
+                WHEN 'consultDate'  THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
+                WHEN 'gradeName' THEN gc.grade_name
+                WHEN 'consultType' THEN c.consult_type
+                WHEN 'userName' THEN u.user_name
+                WHEN 'progressKey' THEN c.progress_key
+                ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
+            END
+        END ASC,
+        CASE WHEN #{sortDir} = 'desc' THEN
+            CASE #{sortColumn}
+                WHEN 'consultDate'  THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
+                WHEN 'gradeName' THEN gc.grade_name
+                WHEN 'consultType' THEN c.consult_type
+                WHEN 'userName' THEN u.user_name
+                WHEN 'progressKey' THEN c.progress_key
+                ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
+            END
+        END DESC
     </select>
 
 

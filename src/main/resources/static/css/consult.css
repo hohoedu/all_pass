@@ -58,7 +58,7 @@ button {
 
 .page {
     flex: 1;
-    padding: 25px 0 25px 25px;
+    padding: 25px 25px 0 25px;
     background-color: #f8f9fa;
     min-width: 1280px;
 }
@@ -178,7 +178,7 @@ h1 {
     font-weight: 600;
 }
 
-.period-radio input:checked+span {
+.period-radio input:checked + span {
     background: #3e2bb6;
     color: #fff;
     font-weight: 800;
@@ -239,8 +239,8 @@ select {
     color: #ff6326;
 }
 
-.yellow{
-    color:#ff9c00
+.yellow {
+    color: #ff9c00
 }
 
 .gray {
@@ -251,13 +251,13 @@ select {
     background: #fff;
     border-radius: 16px;
     overflow: visible;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
     position: relative;
 
     max-height: calc(100vh - 320px);
     overflow-y: auto;
     overflow-x: visible;
-  }
+}
 
 .list-head,
 .consult-row {
@@ -285,7 +285,7 @@ select {
 
 .consult-item:has(.status-dropdown.open) {
     z-index: 100;
-  }
+}
 
 .consult-row {
     min-height: 108px;
@@ -294,7 +294,7 @@ select {
 
 .status-dropdown.open {
     z-index: 60;
-  }
+}
 
 .student strong {
     display: block;
@@ -334,11 +334,12 @@ select {
     line-height: 1.55;
     color: #333;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     word-break: keep-all;
     text-align: left;
+    justify-self: center;
 }
 
 .status-dropdown {

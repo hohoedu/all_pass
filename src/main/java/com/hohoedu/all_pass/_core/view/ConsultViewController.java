@@ -47,27 +47,23 @@ public class ConsultViewController {
             return "redirect:/login?redirectUrl=" + request.getRequestURI();
         }
 
-        return "consult/consult_ver2";
+        return "consult";
     }
 
     @GetMapping("/main")
-    public String getConsultMainPage(Model model, HttpSession session) {
+    public String getConsultMainPage(Model model, HttpServletRequest request, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
-            return "redirect:/login";
+            return "redirect:/login?redirectUrl=" + request.getRequestURI();
         }
 
-//        List<User> teachers = userService.findByCenterCode(user);
-        List<User> teachers = userService.findActiveUser(user);
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> routes = consultService.findInflowRoute();
-//        List<ConsultRespDTO.ConsultDTO> consults = consultService.findConsult(user.getCenterCode(), userCode);
-        model.addAttribute("user", user);
-        model.addAttribute("teachers", teachers);
+
         model.addAttribute("grades", grades);
         model.addAttribute("routes", routes);
-//        model.addAttribute("consults", consults);
-        return "consult/consult";
+
+        return "/consult/consult";
     }
 
     @GetMapping("/print-consult")

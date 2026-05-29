@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/consult.js}" defer></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <title>상담문의 기록</title>
+</head>
+
+<body>
+<div class="main-container">
+    <div class="main-frame">
+        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+        <main class="main-info">
+            <div class="student-frame">
+                <section class="counsel-section">
+                    <div class="counsel-inner">
+                        <div class="class-header">
+                            <div class="common-title">
+                                <h2>상담문의 기록</h2>
+                            </div>
+                            <div class="class-btns">
+                                <a class="print" id="consult-print">인쇄</a>
+                                <div class="common-btn overlap" id="consult-excel">엑셀 다운로드</div>
+                                <div class="common-btn select-del">선택 삭제</div>
+                                <div class="common-btn consult-add">+ 상담기록 추가</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-filter counsel-header">
+                            <div class="stats-item-left">
+                                <div class="radio-group" style="white-space: nowrap">
+                                    <input type="radio" name="period" id="period-3month" value="3m">
+                                    <label for="period-3month">3개월</label>
+                                    <input type="radio" name="period" id="period-6month" value="6m">
+                                    <label for="period-6month">6개월</label>
+                                    <input type="radio" name="period" id="period-1year" value="1y">
+                                    <label for="period-1year">1년</label>
+                                    <input type="radio" name="period" id="period-custom" value="custom">
+                                    <label for="period-custom">일자지정</label>
+                                </div>
+
+                                <!-- 기간 표시 -->
+                                <div class="icon-field basic-input cal-adjust" id="period-display-wrap" style="margin-bottom:0;">
+                                    <span id="period-display"></span>
+                                </div>
+
+                                <!-- 일자지정 선택 시 노출 -->
+                                <div id="custom-range-wrap" style="display:none; align-items:center; gap:6px;">
+                                    <input type="date" id="custom-start" class="basic-input" style="padding:4px 8px;">
+                                    <span>~</span>
+                                    <input type="date" id="custom-end" class="basic-input" style="padding:4px 8px;">
+                                    <div class="explore common-btn" id="custom-search-btn" style="white-space: nowrap">조회</div>
+                                </div>
+                            </div>
+
+                            <div class="stu-left">
+                                <div class="basic-select sl1">
+                                    <select name="type" id="consult-type-filter">
+                                        <option value="all">과목</option>
+                                        <option value="hoho">호호스쿨</option>
+                                        <option value="han">한스쿨</option>
+                                        <option value="book">북스쿨</option>
+                                    </select>
+                                </div>
+                                <div class="basic-select sl1">
+                                    <select name="progress" id="consult-progress-filter">
+                                        <option value="all">상태</option>
+                                        <option value="counseling">문의</option>
+                                        <option value="waiting">대기</option>
+                                        <option value="confirmed">입회</option>
+                                        <option value="ended">종료</option>
+                                    </select>
+                                </div>
+                                <div class="basic-select sl1">
+                                    <select name="teacherNo" id="consult-teacher-filter">
+                                        <th:block th:each="teacher : ${teachers}">
+                                            <option th:value="${teacher.userCode}"
+                                                    th:text="${teacher.userName + ' 선생님'}"
+                                                    th:selected="${teacher.userCode == user.userCode}">
+                                            </option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                                <div class="teacher-search">
+                                    <div class="sl3">
+                                        <div class="basic-select" style="flex: 1;">
+                                            <select name="stuName" id="stu-name">
+                                                <option value="name">이름</option>
+                                                <option value="school">학교/유치원</option>
+                                                <option value="phone">전화번호</option>
+                                            </select>
+                                        </div>
+                                        <div class="search-box" style="flex: 2;">
+                                            <input type="text" id="search-name" name="searchName">
+                                        </div>
+                                    </div>
+                                    <div class="explore common-btn">검색</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bt">
+                            <div class="table-frame consult-frame">
+                                <table class="lesson-log-table consult-table">
+                                    <colgroup>
+                                        <col width="5%">
+                                        <col width="5%">
+                                        <col width="10%">
+                                        <col width="5%">
+                                        <col width="10%">
+                                        <col width="5%">
+                                        <col width="10%">
+                                        <col width="25%">
+                                        <col width="10%">
+                                        <col width="10%">
+                                    </colgroup>
+                                    <thead>
+                                    <tr>
+                                        <th class="checkbox-group"><input type="checkbox"/></th>
+                                        <th>No</th>
+                                        <th>일자</th>
+                                        <th>이름</th>
+                                        <th>학교</th>
+                                        <th>학년</th>
+                                        <th>연락처</th>
+                                        <th>메모사항</th>
+                                        <th>진행상황</th>
+                                        <th>등록폼 발송/입회일</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{consult/consult-modal :: consultModal}"></div>
+</body>
+</html>

@@ -154,7 +154,8 @@ public interface ClassRepository {
                         @Param("studentId") String studentId);
 
         int deleteTimeTableRow(
-                        @Param("timeTableKey") String timeTableKey);
+                        @Param("timeTableKey") String timeTableKey,
+                        @Param("userCode") String userCode);
 
         List<TimeTable> findTimeTable(
                         @Param("yy") String yy,

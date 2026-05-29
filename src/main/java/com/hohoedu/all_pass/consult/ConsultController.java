@@ -37,7 +37,7 @@ public class ConsultController {
         }
 
         reqDTO.setCenterCode(user.getCenterCode());
-        List<ConsultRespDTO.ConsultDTO> list = consultService.findConsultNew(reqDTO);
+        List<ConsultRespDTO.ConsultDTO> list = consultService.findConsult(reqDTO);
 
         return ResponseEntity.ok(ApiUtils.success(list));
     }

@@ -218,8 +218,14 @@ public class ClassController {
     }
 
     @PostMapping("/api/delete/timetable/row")
-    public ResponseEntity<?> deleteRow(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto) {
-        classService.deleteTimeTableRow(dto.getTimeTableKey());
+    public ResponseEntity<?> deleteRow(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        classService.deleteTimeTableRow(dto.getTimeTableKey(), user.getUserCode());
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 

@@ -101,8 +101,6 @@
                 <div class="submenu" data-menu="consult">
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"
                        th:href="@{/consult/main}" class="menu-link">상담문의 기록</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"
-                       th:href="@{/consult/consult_v2}" class="menu-link">상담문의 기록_v2</a>
                     <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_test')}"
                        th:href="@{/consult/test}" class="menu-link">입회진단 테스트</a>
                 </div>

@@ -570,38 +570,8 @@
     </insert>
 
     <!--다중 수업 제거-->
-    <delete id="deleteTimeTableRow" parameterType="string">
-        DELETE
-        FROM erp_time_table_assign
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_monthly_score
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_student_attendance
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_time_table
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_time_table_code
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_payment_detail
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_before_class_notice
-        WHERE time_table_key = #{timeTableKey}
-
-        DELETE
-        FROM erp_after_class_notice
-        WHERE time_table_key = #{timeTableKey}
+    <delete id="deleteTimeTableRow" parameterType="map">
+        {call sp_delete_time_table_row(#{timeTableKey}, #{userCode})}
     </delete>
 
     <select id="findClassLabelByUserCode"

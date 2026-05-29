@@ -610,8 +610,8 @@ public class ClassService {
 
     }
 
-    public int deleteTimeTableRow(String timeTableKey) {
-        int result = classRepository.deleteTimeTableRow(timeTableKey);
+    public int deleteTimeTableRow(String timeTableKey, String userCode) {
+        int result = classRepository.deleteTimeTableRow(timeTableKey, userCode);
         return result;
     }
 

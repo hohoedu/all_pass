@@ -39,8 +39,10 @@ public class ConsultService {
         consultRepository.registerConsult(reqDTO);
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findConsultNew(ConsultReqDTO.ConsultListReqDTO reqDTO) {
-
+    public List<ConsultRespDTO.ConsultDTO> findConsult(ConsultReqDTO.ConsultListReqDTO reqDTO) {
+        if (reqDTO.getProgress().equals("all")) {
+            reqDTO.setProgress(null);
+        }
         List<ConsultRespDTO.ConsultDTO> response = consultRepository.findConsult(reqDTO);
 
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
