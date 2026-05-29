@@ -58,7 +58,7 @@ button {
 
 .page {
     flex: 1;
-    padding: 25px;
+    padding: 25px 0 25px 25px;
     background-color: #f8f9fa;
     min-width: 1280px;
 }
@@ -253,6 +253,10 @@ select {
     overflow: visible;
     box-shadow: 0 4px 14px rgba(0,0,0,0.05);
     position: relative;
+
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: visible;
   }
 
 .list-head,

@@ -19,6 +19,8 @@ public class ConsultRespDTO {
         private String sendAt;
         private String type;
         private String registerDate;
+        private String inflowRouteKey;
+        private String userName;
     }
 
     @Data

@@ -39,8 +39,10 @@ public class ConsultService {
         consultRepository.registerConsult(reqDTO);
     }
 
-    public List<ConsultRespDTO.ConsultDTO> findConsult(String centerCode, String userCode) {
-        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findAll(centerCode, userCode);
+    public List<ConsultRespDTO.ConsultDTO> findConsultNew(ConsultReqDTO.ConsultListReqDTO reqDTO) {
+
+        List<ConsultRespDTO.ConsultDTO> response = consultRepository.findConsult(reqDTO);
+
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
 
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
@@ -126,7 +128,7 @@ public class ConsultService {
     }
 
 
-    public void updateSendKey(String consultId, String sendKey){
+    public void updateSendKey(String consultId, String sendKey) {
         consultRepository.updateSendKey(consultId, sendKey);
     }
 }

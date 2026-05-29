@@ -12,14 +12,11 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ConsultRepository {
 
-    public void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
+    void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
-    public List<ConsultRespDTO.ConsultDTO> findAll(
-            @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode
-    );
+    List<ConsultRespDTO.ConsultDTO> findConsult(ConsultReqDTO.ConsultListReqDTO req);
 
-    public List<ConsultRespDTO.ConsultDTO> findByPeriod(Map<String, Object> params);
+    List<ConsultRespDTO.ConsultDTO> findByPeriod(Map<String, Object> params);
 
     void deleteByIds(List<Integer> ids);
 
@@ -29,9 +26,10 @@ public interface ConsultRepository {
 
     void updateConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
-    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(@Param("userCode") String userCode,
-                                                             @Param("startDate") String startDate,
-                                                             @Param("endDate") String endDate);
+    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(
+            @Param("userCode") String userCode,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate);
 
     String findUserNameByUserCode(String userCode);
 

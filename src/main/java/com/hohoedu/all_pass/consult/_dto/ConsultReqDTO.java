@@ -20,8 +20,9 @@ public class ConsultReqDTO {
     }
 
     @Data
-    public static class GetConsultReqDTO {
+    public static class ConsultListReqDTO {
         private String userCode;
+        private String centerCode;
         private String startDate;
         private String endDate;
 

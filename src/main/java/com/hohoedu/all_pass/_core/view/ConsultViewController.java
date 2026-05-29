@@ -10,6 +10,7 @@ import java.util.*;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.poi.ss.usermodel.*;
@@ -39,8 +40,18 @@ public class ConsultViewController {
     private final ConsultService consultService;
     private final UserService userService;
 
+    @GetMapping("consult_v2")
+    public String getConsultV2Page(Model model, HttpServletRequest request, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login?redirectUrl=" + request.getRequestURI();
+        }
+
+        return "consult/consult_ver2";
+    }
+
     @GetMapping("/main")
-    public String getConsultMainPase(Model model, HttpSession session) {
+    public String getConsultMainPage(Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -183,14 +194,14 @@ public class ConsultViewController {
             row.setHeight((short) -1);  // ✅ 자동 높이
 
             createCell(row, 0, String.valueOf(rowNum), centerStyle);
-            createCell(row, 1, c.getConsultDate(),     centerStyle);
-            createCell(row, 2, c.getStudentName(),     centerStyle);
-            createCell(row, 3, c.getSchool(),          centerStyle);
-            createCell(row, 4, c.getGradeName(),       centerStyle);
-            createCell(row, 5, c.getPhone(),           centerStyle);
-            createCell(row, 6, c.getContent(),         memoStyle);
+            createCell(row, 1, c.getConsultDate(), centerStyle);
+            createCell(row, 2, c.getStudentName(), centerStyle);
+            createCell(row, 3, c.getSchool(), centerStyle);
+            createCell(row, 4, c.getGradeName(), centerStyle);
+            createCell(row, 5, c.getPhone(), centerStyle);
+            createCell(row, 6, c.getContent(), memoStyle);
             createCell(row, 7, c.getInflowRouteName(), centerStyle);
-            createCell(row, 8, c.getProgressName(),    centerStyle);
+            createCell(row, 8, c.getProgressName(), centerStyle);
             createCell(row, 9, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
 
             rowNum++;

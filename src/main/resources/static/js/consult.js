@@ -1,482 +1,287 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     /* =================== *
-     *   유틸리티 함수      *
+     *   참조              *
      * =================== */
-    function formatYM(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        return `${year}-${month}`;
-    }
+    const currentUserCode = document.getElementById('current-user-code')?.value || '';
+    const startDateInput  = document.getElementById('start-date');
+    const endDateInput    = document.getElementById('end-date');
+    const consultListBox  = document.getElementById('consult-list-box');
+    const progressFilter  = document.getElementById('progress-filter');
+    const keywordInput    = document.getElementById('keyword-input');
+    const consultModal    = document.getElementById('consult-modal');
 
     /* =================== *
-     *   검색 기능          *
+     *   헬퍼 함수         *
      * =================== */
-    const searchTypeSelect = document.getElementById('stu-name');
-    const searchInput = document.getElementById('search-name');
-    const searchBtn = document.querySelector('.explore');
-
-    searchBtn?.addEventListener('click', () => {
-        applySearch();
-    });
-
-    searchInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') applySearch();
-    });
-
-    // ★ student.js처럼 input 이벤트에도 실시간 검색
-    searchInput?.addEventListener('input', () => {
-        applySearch();
-    });
-
-    searchTypeSelect?.addEventListener('change', () => {
-        applySearch();
-    });
-
-    // ★ student.js 방식: 데이터 재조회 없이 DOM 행을 hide/show
-    function applySearch() {
-        const type = searchTypeSelect?.value || 'name';
-        const keyword = searchInput?.value.trim().toLowerCase();
-
-        // 1) 진행상황 정렬 기준으로 먼저 렌더링 (항상 최신 정렬 유지)
-        applyProgressSort();
-
-        // 2) 키워드 없으면 전체 표시 후 종료
-        if (!keyword) {
-            consultTableBody.querySelector('.empty-search-row')?.remove();
-            return;
-        }
-
-        // 3) 렌더링된 DOM 행에서 직접 hide/show
-        const rows = Array.from(consultTableBody.querySelectorAll('tr.consult-row'));
-
-        // 데이터 자체가 없으면 renderConsultTable이 이미 "데이터 없음" 표시 → 중복 방지
-        if (rows.length === 0) return;
-
-        // 검색 조건에 맞는 전화번호 수집 (동일 번호 행 전부 표시)
-        const matchedPhones = new Set();
-        rows.forEach(tr => {
-            let match = false;
-            switch (type) {
-                case 'name':
-                    match = (tr.dataset.studentName || '').toLowerCase().includes(keyword);
-                    break;
-                case 'school':
-                    match = (tr.dataset.school || '').toLowerCase().includes(keyword);
-                    break;
-                case 'phone': {
-                    const phone = (tr.dataset.phone || '').replace(/-/g, '');
-                    match = phone.includes(keyword.replace(/-/g, ''));
-                    break;
-                }
-            }
-            if (match) matchedPhones.add(tr.dataset.phone);
-        });
-
-        let visibleCount = 0;
-        rows.forEach(tr => {
-            if (matchedPhones.has(tr.dataset.phone)) {
-                tr.style.display = '';
-                visibleCount++;
-            } else {
-                tr.style.display = 'none';
-            }
-        });
-
-        // 결과 없음 처리
-        consultTableBody.querySelector('.empty-search-row')?.remove();
-        if (visibleCount === 0) {
-            const emptyTr = document.createElement('tr');
-            emptyTr.className = 'empty-search-row';
-            emptyTr.innerHTML = `<td colspan="10" style="text-align:center; padding:20px;">검색결과가 없습니다.</td>`;
-            consultTableBody.appendChild(emptyTr);
-        }
-    }
-
-    function getDateRange(monthsAgo) {
+    function getDateRange(months) {
         const today = new Date();
-        const past = new Date(today);
-        past.setMonth(today.getMonth() - monthsAgo);
-
-        function formatDate(d) {
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
-
-        return {
-            startDate: formatDate(past),
-            endDate: formatDate(today)
-        };
-    }
-
-    function formatPhoneNumber(raw) {
-        let digits = raw.replace(/\D/g, '');
-        if (!digits.startsWith('010')) digits = '010' + digits;
-        if (digits.length > 11) digits = digits.slice(0, 11);
-
-        if (digits.length <= 7) {
-            return digits.replace(/(\d{3})(\d{0,4})/, '$1-$2');
-        }
-        return digits.replace(/(\d{3})(\d{4})(\d{0,4})/, '$1-$2-$3');
+        const past  = new Date(today);
+        past.setMonth(today.getMonth() - months);
+        const fmt = d =>
+            `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        return { startDate: fmt(past), endDate: fmt(today) };
     }
 
     function getProgressText(progressKey) {
-        switch (progressKey) {
-            case 'waiting':
-                return '대기';
-            case 'confirmed':
-                return '입회';
-            case 'ended':
-                return '종료';
-            default:
-                return '문의';
-        }
+        const map = { confirmed: '입회', waiting: '대기', counseling: '문의', ended: '종료' };
+        return map[progressKey] || '문의';
     }
 
-    const printBtn = document.getElementById("consult-print");
-    const excelBtn = document.getElementById("consult-excel");
+    function getStatusClass(progressKey) {
+        const map = { confirmed: 'is-join', waiting: 'is-wait', counseling: 'is-consult', ended: 'is-end' };
+        return map[progressKey] || 'is-consult';
+    }
 
-    printBtn.addEventListener("click", () => {
-        const displayText = periodDisplay.textContent;
-        const matches = displayText.match(/(\d{4}-\d{2}-\d{2})\s*~\s*(\d{4}-\d{2}-\d{2})/);
-        const userCode = teacherFilter.value;
-        const typeSort = document.getElementById('consult-type-filter')?.value || 'all';
-        const progressSort = document.getElementById('consult-progress-filter')?.value || 'all';
-
-        let url = `/consult/print-consult?userCode=${userCode}`;
-        if (matches) url += `&startDate=${matches[1]}&endDate=${matches[2]}`;
-        url += `&typeSort=${typeSort}&progressSort=${progressSort}`;
-
-        printConsult(url);
-    });
-
-    function printConsult(url) {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = url;
-        iframe.onload = () => {
-            iframe.contentWindow.print();
+    function getTypeTag(type) {
+        const map = {
+            hoho: '<span class="tag tag-yellow">호호스쿨</span>',
+            han:  '<span class="tag tag-pink">한스쿨</span>',
+            book: '<span class="tag tag-mint">북스쿨</span>'
         };
-        document.body.appendChild(iframe);
+        return map[type] || '';
     }
 
-    excelBtn.addEventListener("click", () => {
-        const displayText = periodDisplay.textContent;
-        const matches = displayText.match(/(\d{4}-\d{2})\s*~\s*(\d{4}-\d{2})/);
-        const userCode = teacherFilter.value;
+    function groupByPhone(data) {
+        const seen  = new Map();
+        const order = [];
+        data.forEach(item => {
+            const phone = item.phone || '';
+            if (!seen.has(phone)) {
+                seen.set(phone, []);
+                order.push(phone);
+            }
+            seen.get(phone).push(item);
+        });
+        return order.map(p => seen.get(p));
+    }
 
-        let url = `/consult/excel-consult?userCode=${userCode}`;
-        if (matches) {
-            url += `&startYm=${matches[1]}&endYm=${matches[2]}`;
-        }
-        window.location.href = url;
-    });
+    function updateSummary(groups) {
+        const counts = { confirmed: 0, waiting: 0, counseling: 0, ended: 0 };
+
+        groups.forEach(records => {
+            const progressKey = records[0].progressKey || 'counseling';
+            if (counts[progressKey] !== undefined) counts[progressKey]++;
+        });
+
+        document.getElementById('cnt-all').innerHTML        = `${groups.length}<em>건</em>`;
+        document.getElementById('cnt-confirmed').innerHTML  = `${counts.confirmed}<em>건</em>`;
+        document.getElementById('cnt-waiting').innerHTML    = `${counts.waiting}<em>건</em>`;
+        document.getElementById('cnt-counseling').innerHTML = `${counts.counseling}<em>건</em>`;
+        document.getElementById('cnt-ended').innerHTML      = `${counts.ended}<em>건</em>`;
+    }
 
     /* =================== *
-     *   모달 관리          *
+     *   데이터 조회        *
      * =================== */
-    const modal = document.querySelector('.consult-modal');
-    const consultAddBtn = document.querySelector('.consult-add');
-    const closeBtn = modal?.querySelector('.btn-close');
-    const saveBtn = modal?.querySelector('.save-btn');
-    const modalContent = modal?.querySelector('.consult-record');
-
-    modal?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    });
-    modalContent?.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    let isEditMode = false;
-    let editingId = null;
-
-    function openModal(data = null) {
-        if (data) {
-            isEditMode = true;
-            editingId = data.id;
-            fillModalData(data);
-        } else {
-            isEditMode = false;
-            editingId = null;
-            clearModalData();
-        }
-        modal.style.display = 'block';
-    }
-
-    function closeModal() {
-        modal.style.display = 'none';
-        clearModalData();
-        isEditMode = false;
-        editingId = null;
-    }
-
-    function fillModalData(data) {
-        modal.querySelector('[name="studentName"]').value = data.studentName || '';
-        modal.querySelector('[name="consultDate"]').value = data.consultDate || '';
-        modal.querySelector('[name="school"]').value = data.school || '';
-        modal.querySelector('[name="gradeKey"]').value = data.gradeKey || '';
-        modal.querySelector('[name="parentPhone"]').value = data.phone || '';
-        modal.querySelector('[name="inflowRouteKey"]').value = data.inflowRouteKey || '';
-        modal.querySelector('[name="content"]').value = data.content || '';
-
-        if (data.consultDate) {
-            const [year, month, day] = data.consultDate.split('-');
-            dateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
-        }
-    }
-
-    function clearModalData() {
-        modal.querySelector('[name="studentName"]').value = '';
-        modal.querySelector('[name="consultDate"]').value = '';
-        modal.querySelector('[name="school"]').value = '';
-        modal.querySelector('[name="gradeKey"]').value = '';
-        modal.querySelector('[name="parentPhone"]').value = '';
-        modal.querySelector('[name="inflowRouteKey"]').value = '';
-        modal.querySelector('[name="content"]').value = '';
-        dateDisplay.textContent = '';
-    }
-
-    consultAddBtn?.addEventListener('click', () => {
-        openModal();
-    });
-    closeBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        closeModal();
-    });
-
-    const dateInput = modal?.querySelector('input[name="consultDate"]');
-    const dateDisplay = modal?.querySelector('.day-display');
-    const calendarBtn = modal?.querySelector('.birth-btn');
-
-    calendarBtn?.addEventListener('click', () => {
-        dateInput.showPicker?.();
-        dateInput.click();
-    });
-
-    dateInput?.addEventListener('change', () => {
-        const selected = dateInput.value;
-        if (selected) {
-            const [year, month, day] = selected.split('-');
-            dateDisplay.textContent = `${year}년 ${month}월 ${day}일`;
-        } else {
-            dateDisplay.textContent = '';
-        }
-    });
-
-    const phoneInput = modal?.querySelector('input[name="parentPhone"]');
-
-    phoneInput?.addEventListener('focus', () => {
-        if (!phoneInput.value.trim()) phoneInput.value = '010-';
-    });
-    phoneInput?.addEventListener('input', () => {
-        phoneInput.value = formatPhoneNumber(phoneInput.value);
-    });
-    phoneInput?.addEventListener('keydown', (e) => {
-        if ((e.key === 'Backspace' || e.key === 'Delete') &&
-            phoneInput.value.replace(/\D/g, '').length <= 3) {
-            e.preventDefault();
-        }
-    });
-
-    saveBtn?.addEventListener('click', async () => {
+    async function fetchConsults(startDate, endDate, userCode) {
         try {
-            const studentName = modal.querySelector('[name="studentName"]')?.value.trim();
-            const consultDate = modal.querySelector('[name="consultDate"]')?.value;
-            const school = modal.querySelector('[name="school"]')?.value.trim();
-            const consultType = modal.querySelector('[name="consultType"]:checked')?.value || '';
-            const gradeKey = modal.querySelector('[name="gradeKey"]')?.value;
-            const phone = modal.querySelector('[name="parentPhone"]')?.value.replace(/-/g, '');
-            const inflowRouteKey = modal.querySelector('[name="inflowRouteKey"]')?.value;
-            const content = modal.querySelector('[name="content"]')?.value.trim();
-
-            if (!studentName) {
-                alert('학생명을 입력해주세요.');
-                modal.querySelector('[name="studentName"]')?.focus();
-                return;
-            }
-            if (!consultDate) {
-                alert('상담일을 선택해주세요.');
-                modal.querySelector('[name="consultDate"]')?.focus();
-                return;
-            }
-            if (!school) {
-                alert('학교명을 입력해주세요.');
-                modal.querySelector('[name="school"]')?.focus();
-                return;
-            }
-            if (!gradeKey) {
-                alert('학년을 선택해주세요.');
-                modal.querySelector('[name="gradeKey"]')?.focus();
-                return;
-            }
-            if (!phone) {
-                alert('전화번호를 입력해주세요.');
-                modal.querySelector('[name="parentPhone"]')?.focus();
-                return;
-            }
-            if (!/^[0-9]{10,11}$/.test(phone)) {
-                alert('올바른 전화번호 형식이 아닙니다. (10-11자리 숫자)');
-                modal.querySelector('[name="parentPhone"]')?.focus();
-                return;
-            }
-            if (!content) {
-                alert('상담 내용을 입력해주세요.');
-                modal.querySelector('[name="content"]')?.focus();
-                return;
-            }
-
-            const data = {studentName, consultDate, school, gradeKey, phone, inflowRouteKey, content, consultType};
-            if (isEditMode && editingId) data.id = editingId;
-
-            const url = isEditMode ? '/consult/update' : '/consult/save';
-            const res = await fetch(url, {
+            const res  = await fetch('/consult/search', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ startDate, endDate, userCode })
             });
-
-            if (!res.ok) {
-                alert(isEditMode ? '수정 실패' : '저장 실패');
-                return;
-            }
-
-            alert(isEditMode ? '수정 완료' : '저장 완료');
-            window.location.reload();
-
+            const data = await res.json();
+            renderConsultTable(data.response ?? []);
         } catch (err) {
-            console.error(err);
-            alert('에러 발생');
+            console.error('조회 실패:', err);
         }
-    });
+    }
 
     /* =================== *
-     *   테이블 관리         *
+     *   렌더링             *
      * =================== */
-    const consultTableBody = document.querySelector('.consult-table tbody');
-
     function renderConsultTable(data) {
-        consultTableBody.innerHTML = "";
+        consultListBox.querySelectorAll('.consult-item, .empty-msg').forEach(el => el.remove());
 
         if (!data || data.length === 0) {
-            consultTableBody.innerHTML = `
-            <tr>
-                <td colspan="10" style="text-align:center;">
-                    조회된 데이터가 없습니다.
-                </td>
-            </tr>`;
+            updateSummary([]);
+            consultListBox.insertAdjacentHTML('beforeend',
+                `<div class="empty-msg">조회된 데이터가 없습니다.</div>`
+            );
             return;
         }
 
-        data.forEach((item, index) => {
-            const progressKey = item.progressKey || 'counseling';
-            const progressText = getProgressText(progressKey);
-            const escapedContent = (item.content || '').replace(/"/g, '&quot;');
+        const sorted = [...data].sort((a, b) => (b.consultDate || '').localeCompare(a.consultDate || ''));
+        const groups = groupByPhone(sorted);
+        updateSummary(groups);
 
-            let lastTdHtml = '';
-            if (item.registerDate) {
-                const datePart = item.registerDate.split(' ')[0];
-                lastTdHtml = `<span class="register-day">${datePart}</span>`;
-            } else {
-                lastTdHtml = `<div class="join-link common-btn">가입링크 발송</div>`;
-            }
+        groups.forEach((records, idx) => {
+            const main        = records[0];
+            const history     = records.slice(1);
+            const progressKey = main.progressKey || 'counseling';
+            const escapedMemo = (main.content || '').replace(/"/g, '&quot;');
 
-            consultTableBody.insertAdjacentHTML('beforeend', `
-            <tr data-id="${item.id || ""}"
-                data-student-name="${item.studentName || ""}"
-                data-consult-date="${item.consultDate || ""}"
-                data-school="${item.school || ""}"
-                data-grade-key="${item.gradeKey || ""}"
-                data-phone="${item.phone || ""}"
-                data-inflow-route-key="${item.inflowRouteKey || ""}"
-                data-content="${escapedContent}"
-                data-progress-key="${progressKey}"
-                data-type="${item.type || ""}"
-                class="consult-row">
-                <td class="checkbox-group" onclick="event.stopPropagation()">
-                    <input type="checkbox">
-                </td>
-                <td>${index + 1}</td>
-                <td>${item.consultDate || ""}</td>
-                <td>${item.studentName || ""}</td>
-                <td>${item.school || ""}</td>
-                <td>${item.gradeName || ""}</td>
-                <td>${item.phone || ""}</td>
-                <td onclick="event.stopPropagation()">
-                    <div class="memo-etc text-middle consult-memo">
-                        <textarea class="comment-text"
-                            data-original="${escapedContent}">${item.content || ""}</textarea>
-                        <div class="common-btn consult-fix" style="display:none;">수정</div>
+            const lastColHtml = main.registerDate
+                ? `<div>${main.registerDate.split(' ')[0]}</div>`
+                : `<div class="link-area">
+                       <button type="button" class="join-link">가입 링크 발송</button>
+                   </div>`;
+
+            const historyHtml = history.length > 0
+                ? `<div class="history">
+                       <h3>이전 상담 이력</h3>
+                       <ul>
+                           ${history.map(h => `
+                               <li>
+                                   <time>${h.consultDate || ''}</time>
+                                   <span>${h.userName || ''}</span>
+                                   <p>${h.content || ''}</p>
+                               </li>`).join('')}
+                       </ul>
+                   </div>`
+                : '';
+
+            consultListBox.insertAdjacentHTML('beforeend', `
+                <article class="consult-item"
+                    data-id="${main.id || ''}"
+                    data-student-name="${main.studentName || ''}"
+                    data-consult-date="${main.consultDate || ''}"
+                    data-school="${main.school || ''}"
+                    data-grade-key="${main.gradeKey || ''}"
+                    data-phone="${main.phone || ''}"
+                    data-inflow-route-key="${main.inflowRouteKey || ''}"
+                    data-content="${escapedMemo}"
+                    data-progress-key="${progressKey}"
+                    data-type="${main.type || ''}">
+
+                    <div class="consult-row">
+                        <div>${idx + 1}</div>
+                        <div>${main.consultDate || ''}</div>
+                        <div class="student">
+                            <strong>${main.studentName || ''}</strong>
+                            <span>${main.phone || ''}</span>
+                        </div>
+                        <div>${main.gradeName || ''}</div>
+                        <div>${getTypeTag(main.type)}</div>
+                        <div>${main.userName || ''}</div>
+                        <div class="memo">${main.content || ''}</div>
+                        <div>
+                            <div class="status-dropdown">
+                                <button type="button" class="status-current ${getStatusClass(progressKey)}">
+                                    <span>${getProgressText(progressKey)}</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                                <div class="status-menu">
+                                    <button type="button" class="status-option" data-status="confirmed"  data-label="입회">입회</button>
+                                    <button type="button" class="status-option" data-status="waiting"    data-label="대기">대기</button>
+                                    <button type="button" class="status-option" data-status="counseling" data-label="문의">문의</button>
+                                    <button type="button" class="status-option" data-status="ended"      data-label="종료">종료</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${lastColHtml}
+                        ${history.length > 0
+                ? `<button type="button" class="accordion-btn">
+                                   <i class="fa-solid fa-chevron-down"></i>
+                               </button>`
+                : `<div></div>`}
                     </div>
-                </td>
-                <td onclick="event.stopPropagation()">
-                    <div class="select-arrow">
-                        <button class="select-status" data-status="${progressKey}">
-                            ${progressText}
-                        </button>
-                        <ul class="dropdown-status">
-                            <li data-status="confirmed">입회</li>
-                            <li data-status="waiting">대기</li>
-                            <li data-status="counseling">문의</li>
-                            <li data-status="ended">종료</li>
-                        </ul>
-                    </div>
-                </td>
-                <td onclick="event.stopPropagation()">
-                    ${lastTdHtml}
-                </td>
-            </tr>
-        `);
+                    ${historyHtml}
+                </article>
+            `);
         });
 
-        attachRowClickEvents();
+        attachAccordionEvents();
         attachDropdownEvents();
-        attachTextareaEvents();
         attachJoinLinkEvents();
     }
 
+    /* =================== *
+     *   이벤트 바인딩      *
+     * =================== */
+    function attachAccordionEvents() {
+        consultListBox.querySelectorAll('.accordion-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                this.closest('.consult-item').classList.toggle('open');
+            });
+        });
+    }
+
+    function attachDropdownEvents() {
+        const statusClassNames = ['is-join', 'is-wait', 'is-consult', 'is-end'];
+
+        consultListBox.querySelectorAll('.status-current').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const dropdown = this.closest('.status-dropdown');
+                document.querySelectorAll('.status-dropdown').forEach(dd => {
+                    if (dd !== dropdown) dd.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+            });
+        });
+
+        consultListBox.querySelectorAll('.status-option').forEach(item => {
+            item.addEventListener('click', async function (e) {
+                e.stopPropagation();
+                const dropdown = this.closest('.status-dropdown');
+                const button   = dropdown.querySelector('.status-current');
+                const status   = this.dataset.status;
+                const label    = this.dataset.label;
+                const article  = this.closest('article.consult-item');
+                const id       = article?.dataset.id;
+
+                if (!id) return;
+
+                button.querySelector('span').textContent = label;
+                button.classList.remove(...statusClassNames);
+                button.classList.add(getStatusClass(status));
+                dropdown.classList.remove('open');
+
+                try {
+                    const res = await fetch('/consult/update-progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id, progressKey: status })
+                    });
+                    if (!res.ok) alert('진행상황 변경 실패');
+                } catch (err) {
+                    console.error(err);
+                    alert('서버 통신 오류가 발생했습니다.');
+                }
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.status-dropdown').forEach(dd => dd.classList.remove('open'));
+        });
+    }
+
     function attachJoinLinkEvents() {
-        consultTableBody.querySelectorAll('.join-link').forEach(btn => {
+        consultListBox.querySelectorAll('.join-link').forEach(btn => {
             btn.addEventListener('click', async function (e) {
                 e.stopPropagation();
-
-                const row = this.closest('tr');
-                const rawPhone = row.dataset.phone || '';
-                const studentName = row.dataset.studentName || '';
-                const gradeKey = row.dataset.gradeKey || '';
-                const consultId = row.dataset.id || '';
-                const type = row.dataset.type || '';
+                const article     = this.closest('article.consult-item');
+                const rawPhone    = article.dataset.phone || '';
+                const studentName = article.dataset.studentName || '';
+                const gradeKey    = article.dataset.gradeKey || '';
+                const consultId   = article.dataset.id || '';
+                const type        = article.dataset.type || '';
 
                 let phone = rawPhone.replace(/-/g, '').trim();
-
-                if (!/^[0-9]+$/.test(phone)) {
-                    alert('전화번호는 숫자만 입력해 주세요.');
-                    return;
-                }
-                if (phone.startsWith('010') && phone.length === 11) { /* 정상 */
-                } else if (phone.length === 8) {
-                    phone = '010' + phone;
-                } else {
-                    alert('올바른 전화번호가 아닙니다.');
-                    return;
+                if (!/^[0-9]+$/.test(phone)) { alert('전화번호는 숫자만 입력해 주세요.'); return; }
+                if (phone.length === 8) phone = '010' + phone;
+                else if (!(phone.startsWith('010') && phone.length === 11)) {
+                    alert('올바른 전화번호가 아닙니다.'); return;
                 }
 
                 if (!confirm(`${studentName} 학생에게 가입링크를 발송하시겠습니까?`)) return;
 
                 try {
-                    const response = await fetch('/popbill/send-join', {
+                    const res    = await fetch('/popbill/send-join', {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             source: 'CONSULT', phone, name: studentName,
                             gradeKey, consultId,
                             subHoho: type === 'hoho',
-                            subHan: type === 'han',
+                            subHan:  type === 'han',
                             subBook: type === 'book'
                         })
                     });
-                    const result = await response.json();
+                    const result = await res.json();
                     alert(result.success ? '알림톡이 발송되었습니다.' : '발송 실패: ' + (result.message || ''));
                 } catch (e) {
                     console.error(e);
@@ -486,351 +291,66 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function attachTextareaEvents() {
-        consultTableBody.querySelectorAll('.comment-text').forEach(textarea => {
-            textarea.addEventListener('input', function () {
-                const originalValue = this.getAttribute('data-original') || '';
-                const updateBtn = this.nextElementSibling;
-                updateBtn.style.display = (originalValue !== this.value) ? 'inline-block' : 'none';
-            });
+    /* =================== *
+     *   모달              *
+     * =================== */
+    document.getElementById('consult-add')?.addEventListener('click', () => {
+        consultModal.classList.add('show');
+    });
 
-            const updateBtn = textarea.nextElementSibling;
-            updateBtn.addEventListener('click', function () {
-                const row = this.closest('.consult-row');
-                const consultId = row.getAttribute('data-id');
-                const consultDate = row.getAttribute('data-consult-date');
-                const newContent = textarea.value;
+    document.getElementById('modal-close-btn')?.addEventListener('click', () => {
+        consultModal.classList.remove('show');
+    });
 
-                if (!confirm('변경된 상담내용을 저장하시겠습니까?')) return;
-                updateConsultContent(consultId, consultDate, newContent, textarea, this);
-            });
-        });
-    }
-
-    async function updateConsultContent(consultId, consultDate, content, textarea, button) {
-        try {
-            const response = await fetch('/consult/content-update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({consultId, consultDate, content})
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    textarea.setAttribute('data-original', content);
-                    button.style.display = 'none';
-                    alert('수정되었습니다.');
-                } else {
-                    alert('수정에 실패했습니다.');
-                }
-            } else {
-                alert('수정에 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('오류가 발생했습니다.');
-        }
-    }
-
-    function attachRowClickEvents() {
-        consultTableBody.querySelectorAll('.consult-row').forEach(row => {
-            row.addEventListener('click', function () {
-                openModal({
-                    id: this.dataset.id,
-                    studentName: this.dataset.studentName,
-                    consultDate: this.dataset.consultDate,
-                    school: this.dataset.school,
-                    gradeKey: this.dataset.gradeKey,
-                    phone: this.dataset.phone,
-                    inflowRouteKey: this.dataset.inflowRouteKey,
-                    content: this.dataset.content,
-                    progressKey: this.dataset.progressKey
-                });
-            });
-        });
-    }
-
-    function attachDropdownEvents() {
-        consultTableBody.querySelectorAll('.select-status').forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const dropdown = this.nextElementSibling;
-                document.querySelectorAll('.dropdown-status').forEach(dd => {
-                    dd.style.display = 'none';
-                });
-                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-
-        consultTableBody.querySelectorAll('.dropdown-status li').forEach(item => {
-            item.addEventListener('click', async function (e) {
-                e.stopPropagation();
-
-                const selectWrap = this.closest('.select-arrow');
-                const button = selectWrap.querySelector('.select-status');
-                const status = this.dataset.status;
-                const text = this.textContent;
-                const tr = this.closest('tr');
-                const id = tr?.dataset.id;
-
-                if (!id) {
-                    console.warn("data-id 없음");
-                    return;
-                }
-
-                button.textContent = text;
-                button.setAttribute('data-status', status);
-                this.parentElement.style.display = 'none';
-
-                try {
-                    const res = await fetch('/consult/update-progress', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({id, progressKey: status})
-                    });
-                    if (!res.ok) {
-                        alert('진행상황 변경 실패');
-                    } else {
-                        alert('상담 상태가 변경되었습니다.')
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                    alert('서버 통신 오류가 발생했습니다.');
-                }
-            });
-        });
-
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-status').forEach(dd => {
-                dd.style.display = 'none';
-            });
-        });
-    }
-
-    let allConsultData = [];
-
-    async function fetchConsults(startDate, endDate, userCode) {
-        try {
-            const res = await fetch('/consult/search', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({startDate, endDate, userCode})
-            });
-
-            const data = await res.json();
-
-
-            allConsultData = data.response ?? [];
-            applySearch();
-        } catch (err) {
-            console.error("조회 실패:", err);            // ← 에러 확인
-        }
-    }
-
-    function applyProgressSort() {
-        const progressVal = document.getElementById('consult-progress-filter')?.value || 'all';
-        const typeVal = document.getElementById('consult-type-filter')?.value || 'all';
-
-        // 상태 선택 시 선택값이 맨 앞, 나머지는 문의-대기-종료-입회 고정 순
-        const baseProgressOrder = ['counseling', 'waiting', 'ended', 'confirmed'];
-        const baseTypeOrder = ['hoho', 'han', 'book'];
-
-        const progressOrder = progressVal === 'all'
-            ? null  // 전체: 상태 그룹핑 없이 날짜순만
-            : [progressVal, ...baseProgressOrder.filter(s => s !== progressVal)];
-
-        const typeOrder = typeVal === 'all'
-            ? null
-            : [typeVal, ...baseTypeOrder.filter(t => t !== typeVal)];
-
-        // ★ 전화번호 기준으로 그룹핑
-        const phoneMap = new Map();
-        allConsultData.forEach(item => {
-            const phone = item.phone || '';
-            if (!phoneMap.has(phone)) phoneMap.set(phone, []);
-            phoneMap.get(phone).push(item);
-        });
-
-        // ★ 그룹 내부: 최신 날짜 먼저
-        phoneMap.forEach(records => {
-            records.sort((a, b) => (b.consultDate || '').localeCompare(a.consultDate || ''));
-        });
-
-        // ★ 그룹 메타데이터: 그룹의 대표값은 최신 레코드 기준
-        const groups = Array.from(phoneMap.values()).map(records => ({
-            records,
-            maxDate: records[0].consultDate || '',
-            latestStatus: records[0].progressKey || 'counseling',
-            latestType: records[0].type || '',
-        }));
-
-        // ★ 그룹 정렬
-        groups.sort((a, b) => {
-            // 1) 과목 필터 선택 시
-            if (typeOrder) {
-                const aT = typeOrder.indexOf(a.latestType);
-                const bT = typeOrder.indexOf(b.latestType);
-                if (aT !== bT) return aT - bT;
-            }
-
-            // 2) 상태 필터 선택 시
-            if (progressOrder) {
-                const aP = progressOrder.indexOf(a.latestStatus);
-                const bP = progressOrder.indexOf(b.latestStatus);
-                if (aP !== bP) return aP - bP;
-            }
-
-            // 3) 최종: 최신 날짜 먼저 (기본 + 각 그룹 내)
-            return b.maxDate.localeCompare(a.maxDate);
-        });
-
-        // ★ 그룹 → 평탄화
-        const sorted = groups.flatMap(g => g.records);
-        renderConsultTable(sorted);
-    }
-
-    document.getElementById('consult-progress-filter')?.addEventListener('change', () => applySearch());
-    document.getElementById('consult-type-filter')?.addEventListener('change', () => applySearch());
-
+    consultModal?.addEventListener('click', (e) => {
+        if (e.target === consultModal) consultModal.classList.remove('show');
+    });
 
     /* =================== *
-     *   기간 필터          *
+     *   기간 라디오        *
      * =================== */
-    const radios = document.querySelectorAll('input[name="period"]');
-    const periodDisplay = document.getElementById('period-display');
-    const periodDisplayWrap = document.getElementById('period-display-wrap');
-    const customRangeWrap = document.getElementById('custom-range-wrap');
-    const customStart = document.getElementById('custom-start');
-    const customEnd = document.getElementById('custom-end');
-    const customSearchBtn = document.getElementById('custom-search-btn');
-    const teacherFilter = document.getElementById('consult-teacher-filter');
-
-    radios.forEach(radio => {
-        radio.addEventListener('change', async (e) => {
-            const val = e.target.value;
-
-            if (val === 'custom') {
-                periodDisplayWrap.style.display = 'none';
-                customRangeWrap.style.display = 'flex';
-                return;
-            }
-
-            periodDisplayWrap.style.display = '';
-            customRangeWrap.style.display = 'none';
-
-            const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
-            const range = getDateRange(months);
-            periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
-            await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
+    document.querySelectorAll('input[name="period"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') return;
+            const months = e.target.value === '6month' ? 6 : e.target.value === '3month' ? 3 : 1;
+            const range  = getDateRange(months);
+            startDateInput.value = range.startDate;
+            endDateInput.value   = range.endDate;
         });
     });
 
-    customSearchBtn?.addEventListener('click', async () => {
-        const startDate = customStart.value;
-        const endDate = customEnd.value;
-
-        if (!startDate || !endDate) {
-            alert('시작일과 종료일을 선택해주세요.');
-            return;
-        }
-        if (startDate > endDate) {
-            alert('시작일이 종료일보다 늦을 수 없습니다.');
-            return;
-        }
-
-        periodDisplay.textContent = `${startDate} ~ ${endDate}`;
-        await fetchConsults(startDate, endDate, teacherFilter.value);
+    /* =================== *
+     *   조회 버튼          *
+     * =================== */
+    document.getElementById('search-btn')?.addEventListener('click', async () => {
+        const startDate = startDateInput.value;
+        const endDate   = endDateInput.value;
+        if (!startDate || !endDate) { alert('조회 기간을 선택해주세요.'); return; }
+        if (startDate > endDate)    { alert('시작일이 종료일보다 늦을 수 없습니다.'); return; }
+        await fetchConsults(startDate, endDate, currentUserCode);
     });
 
-    teacherFilter?.addEventListener('change', async () => {
-        const val = document.querySelector('input[name="period"]:checked')?.value;
-        if (!val) return;
-
-        if (val === 'custom') {
-            const startDate = customStart.value;
-            const endDate = customEnd.value;
-            if (startDate && endDate) await fetchConsults(startDate, endDate, teacherFilter.value);
-            return;
-        }
-
-        const months = val === '1y' ? 12 : val === '6m' ? 6 : 3;
-        const range = getDateRange(months);
-        periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
-        await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
+    /* =================== *
+     *   필터 초기화        *
+     * =================== */
+    document.getElementById('reset-btn')?.addEventListener('click', async () => {
+        const range = getDateRange(1);
+        startDateInput.value = range.startDate;
+        endDateInput.value   = range.endDate;
+        if (progressFilter) progressFilter.value = 'all';
+        if (keywordInput)   keywordInput.value   = '';
+        document.querySelector('input[name="period"][value="1month"]').checked = true;
+        await fetchConsults(range.startDate, range.endDate, currentUserCode);
     });
 
-    // 초기 로드 (3개월 기본)
+    /* =================== *
+     *   초기 로드          *
+     * =================== */
     (async () => {
-        const defaultRadio = document.querySelector('input[name="period"][value="3m"]');
-        if (defaultRadio) {
-            defaultRadio.checked = true;
-            const range = getDateRange(3);
-            periodDisplay.textContent = `${range.startDate} ~ ${range.endDate}`;
-            await fetchConsults(range.startDate, range.endDate, teacherFilter.value);
-        }
+        const range = getDateRange(1);
+        startDateInput.value = range.startDate;
+        endDateInput.value   = range.endDate;
+        await fetchConsults(range.startDate, range.endDate, currentUserCode);
     })();
-
-    /* =================== *
-     *   체크박스 관리       *
-     * =================== */
-    const table = document.querySelector('.consult-table');
-    const headerCheckbox = table?.querySelector('thead input[type="checkbox"]');
-
-    headerCheckbox?.addEventListener('change', () => {
-        table.querySelectorAll('tbody input[type="checkbox"]')
-            .forEach(cb => cb.checked = headerCheckbox.checked);
-    });
-
-    table?.addEventListener('change', (e) => {
-        if (e.target.matches('tbody input[type="checkbox"]')) {
-            const all = table.querySelectorAll('tbody input[type="checkbox"]');
-            headerCheckbox.checked = Array.from(all).every(cb => cb.checked);
-        }
-    });
-
-    /* =================== *
-     *   삭제 기능          *
-     * =================== */
-    const deleteBtn = document.querySelector('.select-del');
-
-    deleteBtn?.addEventListener('click', async () => {
-        const checked = document.querySelectorAll('.consult-table tbody input[type="checkbox"]:checked');
-
-        if (checked.length === 0) {
-            alert('삭제할 상담기록을 선택하세요.');
-            return;
-        }
-
-        const ids = Array.from(checked)
-            .map(chk => chk.closest('tr')?.dataset.id)
-            .filter(Boolean);
-
-        if (ids.length === 0) {
-            alert('선택된 데이터에 ID가 없습니다.');
-            return;
-        }
-        if (!confirm(`${ids.length}건의 상담기록을 삭제하시겠습니까?`)) return;
-
-        try {
-            const res = await fetch('/consult/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(ids)
-            });
-
-            if (!res.ok) {
-                alert('삭제 실패: ' + await res.text());
-                return;
-            }
-
-            alert('삭제 완료');
-            location.reload();
-        } catch (err) {
-            console.error('삭제 중 오류:', err);
-            alert('서버 통신 오류가 발생했습니다.');
-        }
-    });
 
 });
