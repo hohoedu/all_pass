@@ -395,6 +395,22 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(true));
     }
 
+    @PostMapping("/api/record/unsent-check")
+    public ResponseEntity<?> checkUnsentAfterNotification(
+            @RequestBody Map<String, String> req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        String userCode = (req.get("userCode") != null && !req.get("userCode").isBlank())
+                ? req.get("userCode")
+                : user.getUserCode();
+        List<String> result = classService.findUnsentAfterNotification(userCode, user.getCenterCode());
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
     // ================ 보강 관리 컨트롤러 =====================//
     @PostMapping("/remedial/list")
     public ResponseEntity<?> getRemedialList(HttpSession session, @RequestBody ClassReqDTO.GetRemedialDTO dto) {

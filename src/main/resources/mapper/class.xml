@@ -702,6 +702,22 @@
           AND t.class_key = 'COM'
     </select>
 
+    <select id="findUnsentAfterNotification" resultType="string">
+        SELECT DISTINCT a.student_id
+        FROM erp_student_attendance a
+                 INNER JOIN erp_time_table t ON a.time_table_key = t.time_table_key
+        WHERE a.attendance_key IN ('present', 'late')
+          AND a.is_after_send IS NULL
+          AND a.center_code = #{centerCode}
+          AND t.user_code = #{userCode}
+          AND t.class_key NOT IN ('K', 'M', 'J', 'Y', 'S', 'P')
+          AND CAST(a.attendance_date AS DATE) >= CAST(DATEADD(DAY, -7, GETDATE()) AS DATE)
+          AND CAST(a.attendance_date AS DATE) &lt;= CAST(GETDATE() AS DATE)
+          AND DATEADD(HOUR, 1,
+                            CAST(CONVERT(VARCHAR (10), a.attendance_date, 120) + ' ' + t.end_time AS DATETIME)
+              ) &lt; GETDATE()
+    </select>
+
     <update id="updateTimeTableAssign">
         UPDATE erp_time_table_assign
         SET class_key = #{classKey},

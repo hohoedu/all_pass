@@ -192,6 +192,10 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("week") String week);
 
+    public List<String> findUnsentAfterNotification(
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
+
     public List<ClassRespDTO.RemedialDTO> findRemedialByUserCode(
             @Param("year") String year,
             @Param("month") String month,

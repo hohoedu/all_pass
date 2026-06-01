@@ -4,14 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <script th:src="@{/js/custom.js}"></script>
     <script th:src="@{/js/class/record.js}"></script>
-    <!-- Html menu Load -->
     <script th:src="@{/js/sidebar.js}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <title>수업 일지</title>
@@ -20,11 +17,9 @@
 <body>
 <div class="main-container">
     <div class="main-frame">
-        <!-- left nav bar -->
         <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
         <main class="main-info bf-main">
             <div class="student-frame class-info-frame">
-                <!-- section:top -->
                 <section class="class-info-section">
                     <div class="class-desc">
                         <div class="class-header">
@@ -38,6 +33,25 @@
                                 <div class="common-btn record-save class-save">저장</div>
                             </div>
                         </div>
+
+                        <!-- 수업 후 알림 미발송 상태바 -->
+                        <div id="unsent-alert-bar"
+                             th:if="${unsentStudentIds != null and !unsentStudentIds.isEmpty()}"
+                             style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
+                                    padding:10px 15px; margin-top:10px; display:flex; align-items:center; gap:8px;">
+                            <span style="color:#856404; font-weight:bold;">⚠ 수업 후 알림 미발송</span>
+                            <span style="color:#856404;"
+                                  th:text="${unsentStudentIds.size() + '명의 학생에게 수업 후 알림이 발송되지 않았습니다.'}">
+                            </span>
+                        </div>
+                        <div id="unsent-alert-bar"
+                             th:if="${unsentStudentIds == null or unsentStudentIds.isEmpty()}"
+                             style="display:none; background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
+                                    padding:10px 15px; margin-top:10px; align-items:center; gap:8px;">
+                            <span style="color:#856404; font-weight:bold;">⚠ 수업 후 알림 미발송</span>
+                            <span id="unsent-alert-text" style="color:#856404;"></span>
+                        </div>
+
                         <div class="month-header">
                             <div class="month-title">
                                 <span class="current-month" id="record_current"></span>
@@ -61,7 +75,7 @@
                         </div>
                     </div>
                 </section>
-                <!-- section:left -->
+
                 <div class="second-frame">
                     <section class="class-log-left">
                         <h4>클래스 선택</h4>
@@ -77,12 +91,15 @@
                         <ul class="class-list" id="record-class-list">
                             <li th:each="s, iterStat : ${labels}"
                                 th:class="'class-btn' + (${iterStat.index} == 0 ? ' active' : '')"
-                                th:data-class-id="${s.timeTableKey}" th:data-time-table-key="${s.timeTableKey}"
-                                th:data-unit-key="${s.unitKey}" th:data-class-key="${s.classKey}">
+                                th:data-class-id="${s.timeTableKey}"
+                                th:data-time-table-key="${s.timeTableKey}"
+                                th:data-unit-key="${s.unitKey}"
+                                th:data-class-key="${s.classKey}">
                                 <span th:text="${s.classLabel}"></span>
                             </li>
                         </ul>
                     </section>
+
                     <section class="class-log-right">
                         <div class="bt">
                             <div class="table-frame lesson-frame">
@@ -101,7 +118,8 @@
                                     </colgroup>
                                     <thead>
                                     <tr>
-                                        <th class="checkbox-group"><input type="checkbox" id="select-all-students"/>
+                                        <th class="checkbox-group">
+                                            <input type="checkbox" id="select-all-students"/>
                                         </th>
                                         <th>No</th>
                                         <th>이름</th>
@@ -127,42 +145,38 @@
                                         <td class="studentName" th:text="${s.studentName}"></td>
                                         <td>
                                             <div>
-                <span th:classappend="
-                    ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
-                        (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
-                            (${s.attendanceName == '수업 전'} ? 'status-badge before stbox' :
-                                'status-badge absent stbox'))"
-                      th:text="${s.attendanceName}">
-                </span>
+                                                <span th:classappend="
+                                                    ${s.attendanceName == '출석 완료'} ? 'status-badge attend stbox' :
+                                                    (${s.attendanceName == '지각'} ? 'status-badge late stbox' :
+                                                    (${s.attendanceName == '수업 전'} ? 'status-badge before stbox' :
+                                                    'status-badge absent stbox'))"
+                                                      th:text="${s.attendanceName}">
+                                                </span>
                                                 <div class="time in stbox">
                                                     등원
                                                     <span class="time-set">
-                        <span class="display-time"
-                              th:text="${s.inTime != null ? s.inTime : '--:--'}"></span>
-                        <input type="time" class="timepicker"
-                               th:value="${s.inTime}"/>
-                    </span>
+                                                        <span class="display-time"
+                                                              th:text="${s.inTime != null ? s.inTime : '--:--'}"></span>
+                                                        <input type="time" class="timepicker" th:value="${s.inTime}"/>
+                                                    </span>
                                                 </div>
                                                 <div class="time out stbox">
                                                     하원
                                                     <span class="time-set">
-                        <span class="display-time"
-                              th:text="${s.outTime != null ? s.outTime : '--:--'}"></span>
-                        <input type="time" class="timepicker"
-                               th:value="${s.outTime}"/>
-                    </span>
+                                                        <span class="display-time"
+                                                              th:text="${s.outTime != null ? s.outTime : '--:--'}"></span>
+                                                        <input type="time" class="timepicker" th:value="${s.outTime}"/>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td th:if="${s.remedialDate == null}">
-                                            --
-                                        </td>
+                                        <td th:if="${s.remedialDate == null}">--</td>
                                         <td th:if="${s.remedialDate != null}">
                                             <div class="icon-field time-input cal-adjust"
                                                  style="margin-bottom: 0; text-align: center;">
-                <span class="selected-datetime"
-                      th:text="${s.remedialDate == '9999-12-31' ? '날짜를 선택하세요' : s.remedialDate}">
-                </span>
+                                                <span class="selected-datetime"
+                                                      th:text="${s.remedialDate == '9999-12-31' ? '날짜를 선택하세요' : s.remedialDate}">
+                                                </span>
                                                 <input type="date" class="datetime-input hidden-picker"
                                                        th:value="${s.remedialDate == '9999-12-31' ? '' : s.remedialDate}"/>
                                                 <button type="button" class="icon-btn calendar-btn"
@@ -178,7 +192,6 @@
                                                 </div>
                                             </ul>
                                         </td>
-
                                         <td class="cell-middle">
                                             <div class="counsel-box">
                                                 <div class="counsel-type">
@@ -192,15 +205,14 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                    <textarea class="comment-text record-content"
-                              placeholder="내용을 입력해주세요."
-                              th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].content != null
-                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].content, '<br />', ''),'<br/>',''),'<br>','')
-                                  : ''}"
-                              th:data-original-content="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].content : ''}">
-                    </textarea>
-                                                    <input type="hidden"
-                                                           class="record-word"
+                                                    <textarea class="comment-text record-content"
+                                                              placeholder="내용을 입력해주세요."
+                                                              th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].content != null
+                                                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].content, '<br />', ''),'<br/>',''),'<br>','')
+                                                                  : ''}"
+                                                              th:data-original-content="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].content : ''}">
+                                                    </textarea>
+                                                    <input type="hidden" class="record-word"
                                                            th:value="${afterClass != null and afterClass.size() > stat.index ? afterClass[stat.index].homework : ''}">
                                                 </div>
                                             </div>
@@ -208,16 +220,12 @@
                                         <td>
                                             <div class="cell-middle">
                                                 <div class="after-comment">
-                    <textarea
-                            class="comment-text record-review"
-                            placeholder="리뷰를 입력해주세요."
-                            th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].review != null
-                            ? #strings.replace(#strings.replace(
-                            #strings.replace(afterClass[stat.index].review, '<br />', ''),
-                            '<br/>',''),
-                            '<br>','')
-                            : ''}">
-                    </textarea>
+                                                    <textarea class="comment-text record-review"
+                                                              placeholder="선생님의 코멘트를 입력해주세요."
+                                                              th:text="${afterClass != null and afterClass.size() > stat.index and afterClass[stat.index].review != null
+                                                                  ? #strings.replace(#strings.replace(#strings.replace(afterClass[stat.index].review, '<br />', ''), '<br/>',''), '<br>','')
+                                                                  : ''}">
+                                                    </textarea>
                                                 </div>
                                             </div>
                                         </td>
@@ -225,11 +233,9 @@
                                             <img th:if="${s.appToken == null or s.appToken == ''}"
                                                  src="/image/no-smartphones.png" alt="">
                                             <span th:if="${s.appToken != null and s.appToken != ''}">
-                <img th:src="${s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png'}"
-                     alt="">
-                <img th:src="${s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png'}"
-                     alt="">
-            </span>
+                                                <img th:src="${s.isBeforeSend == '1' ? '/image/send2.png' : '/image/send1.png'}" alt="">
+                                                <img th:src="${s.isAfterSend == '1' ? '/image/send3.png' : '/image/send1.png'}" alt="">
+                                            </span>
                                         </td>
                                     </tr>
                                     <tr th:if="${#lists.isEmpty(students)}">
@@ -247,14 +253,13 @@
         </main>
     </div>
 </div>
-<!-- section: 특이사항 modal -->
+
+<!-- 특이사항 modal -->
 <div class="modal remarks-modal">
     <div class="remark">
         <div class="remarks-frame">
             <div class="m-t-line">
-                <div>
-                    <div class="title">특이사항</div>
-                </div>
+                <div><div class="title">특이사항</div></div>
                 <a href="#" class="btn-close"></a>
             </div>
             <p class="remark-sub">학생의 해당 수업에 대한 특이사항이나 문제점을 체크해 주세요.</p>
@@ -274,14 +279,13 @@
         </div>
     </div>
 </div>
-<!-- section: 수업 안내 발송 modal -->
+
+<!-- 수업 안내 발송 modal -->
 <div class="modal class-guide-modal">
     <div class="guidance">
         <div class="guide-frame">
             <div class="m-t-line">
-                <div>
-                    <div class="title">수업 안내 발송</div>
-                </div>
+                <div><div class="title">수업 안내 발송</div></div>
                 <a href="#" class="btn-close"></a>
             </div>
             <p class="remark-sub">아래의 수업 안내 내용이 앱으로 발송됩니다.</p>
@@ -292,9 +296,8 @@
                             <col width="30%">
                             <col width="70%">
                         </colgroup>
-                        <thead>
-                        </thead>
-                        <tbody class="">
+                        <thead></thead>
+                        <tbody>
                         <tr>
                             <td>수업 일자</td>
                             <td><p id="record-date"></p></td>
@@ -322,28 +325,5 @@
     </div>
 </div>
 
-<!-- section: 확인해주세요 modal -->
-<!-- <div class="modal inform-modal">
-<div class="information">
-<div class="inform-frame">
-  <div class="m-t-line">
-    <div>
-      <div class="title">확인해주세요!</div>
-    </div>
-    <a href="#" class="btn-close"></a>
-  </div>
-  <p class="inform-desc">
-    주차를 새로 선택하실 경우,<br>
-    작성되어있는 <span>수업 후 코멘트가 모두 초기화</span>됩니다.<br>
-    선택하신 주차로 변경하시겠습니까?
-  </p>
-  <div class="save-btn-frame" style="margin-top: 10px;">
-    <button type="submit" class="save-btn gray" name="action" value="cancel">취소</button>
-    <button type="submit" class="save-btn" name="action" value="send">발송</button>
-  </div>
-</div>
-</div>
-</div> -->
 </body>
-
 </html>

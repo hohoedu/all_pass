@@ -239,12 +239,13 @@ public class ClassViewController {
             model.addAttribute("students", Collections.emptyList());
             model.addAttribute("content", new ClassRespDTO.AfterClassRespDTO());
         }
-
+        List<String> unsentStudentIds = classService.findUnsentAfterNotification(user.getUserCode(), user.getCenterCode());
         model.addAttribute("user", user);
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
         model.addAttribute("activeWeek", activeWeek);
 
+        model.addAttribute("unsentStudentIds", unsentStudentIds);
         return "class/record";
     }
 

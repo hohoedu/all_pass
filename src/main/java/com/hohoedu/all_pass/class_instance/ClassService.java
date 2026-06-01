@@ -1042,6 +1042,10 @@ public class ClassService {
         classRepository.updateAfterSend(studentId, timeTableKey, week);
     }
 
+    public List<String> findUnsentAfterNotification(String userCode, String centerCode) {
+        return classRepository.findUnsentAfterNotification(userCode, centerCode);
+    }
+
     // ================ 보강 관리 서비스 =====================//
     public List<RemedialDTO> findRemedialByUserNo(String year, String month, String userCode) {
         System.out.println(year);
