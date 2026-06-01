@@ -352,6 +352,18 @@ public class ClassReqDTO {
     }
 
     @Data
+    public static class BeforeAllSendReqDTO {
+        private String date;
+        private String userCode;
+    }
+
+    @Data
+    public static class BeforeAllCountReqDTO {
+        private String date;
+        private String userCode;
+    }
+
+    @Data
     public static class BeforeClassNoticeDTO {
         private String studentId;
         private String userCode;

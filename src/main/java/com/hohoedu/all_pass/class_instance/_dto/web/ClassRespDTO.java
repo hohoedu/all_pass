@@ -74,7 +74,7 @@ public class ClassRespDTO {
         private Double totalStudentsDouble;
 
         public TimeTableViewRespDTO(List<TimeTableDTO> tables, List<StudentStatRespDTO> stats, Long totalStudentsLong,
-                double totalStudentsDouble) {
+                                    double totalStudentsDouble) {
             this.tables = tables;
             this.stats = stats;
             this.totalStudentsLong = totalStudentsLong;
@@ -247,6 +247,35 @@ public class ClassRespDTO {
         private String timeTableKey;
         private String timeTableLabel;
         private String userName;
+    }
+
+
+    @Data
+    public static class BeforeAllCountRespDTO {
+        private int studentCount;
+        private int classCount;
+    }
+
+    @Data
+    public static class BeforeAllStudentDTO {
+        private String studentId;
+        private String timeTableKey;
+        private String appToken;
+        private String centerCode;
+        private String week;
+        private String className;
+        private String unitName;
+        private String dayname;
+        private String startTime;
+        private String classType;
+        private String userName;
+        private String content;
+    }
+
+    @Data
+    public static class BeforeAllSendRespDTO {
+        private int sentCount;
+        private int skippedCount;
     }
 
     @Data

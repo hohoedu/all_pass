@@ -78,7 +78,7 @@ public class ClassController {
     // 시간표 등록
     @PostMapping("/register")
     public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO,
-            HttpSession session) {
+                                           HttpSession session) {
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
             if (user == null) {
@@ -110,7 +110,7 @@ public class ClassController {
     @PostMapping("/add_student")
     @ResponseBody
     public ResponseEntity<?> timeTableAssginStudent(HttpSession session,
-            @RequestBody ClassReqDTO.AddStudentList reqDTO) {
+                                                    @RequestBody ClassReqDTO.AddStudentList reqDTO) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -298,10 +298,44 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
+    @PostMapping("/api/before/all/count")
+    public ResponseEntity<?> countAllBeforeClass(
+            @RequestBody ClassReqDTO.BeforeAllCountReqDTO dto, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        ClassRespDTO.BeforeAllCountRespDTO result = classService.countAllBeforeClassStudents(
+                dto.getDate(), dto.getUserCode(), user.getCenterCode()
+        );
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @PostMapping("/api/before/all")
+    public ResponseEntity<?> sendAllBeforeClass(
+            @RequestBody ClassReqDTO.BeforeAllSendReqDTO dto, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        ClassRespDTO.BeforeAllSendRespDTO result = classService.sendAllBeforeClassNotice(
+                dto.getDate(), dto.getUserCode(), user.getCenterCode()
+        );
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+
     // 알림 발송 이후 내용 저장
     @PostMapping("/api/before-notice/insert")
-    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList,
-            HttpSession session) {
+    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -332,7 +366,7 @@ public class ClassController {
 
     @PostMapping("/api/after-notice/insert")
     public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList,
-            HttpSession session) {
+                                                    HttpSession session) {
         log.info(dtoList.get(0).getWord());
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -384,9 +418,9 @@ public class ClassController {
 
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
-            @RequestParam(value = "year") String year,
-            @RequestParam(value = "month") String month,
-            HttpSession session) {
+                                            @RequestParam(value = "year") String year,
+                                            @RequestParam(value = "month") String month,
+                                            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -494,7 +528,7 @@ public class ClassController {
     // 월간 학습내용 (유아)
     @PostMapping("/infant/labels")
     public ResponseEntity<?> getInfantClassLabel(@RequestBody ClassReqDTO.InfantClassLabelsDTO dto) {
-
+        log.info(dto.getUserCode());
         List<TimeTableLabelDTO> response = classService.findInfantClassLabel(dto);
 
         return ResponseEntity.ok(ApiUtils.success(response));

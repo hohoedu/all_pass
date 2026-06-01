@@ -3,50 +3,46 @@ let selectedStudents = [];
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    const monthInput = document.querySelector(".hidden-date");
-    const monthDisplay = document.querySelector(".current-month");
-    const monthBtn = document.querySelector(".calendar-open");
+    const monthInput    = document.querySelector(".hidden-date");
+    const monthDisplay  = document.querySelector(".current-month");
+    const monthBtn      = document.querySelector(".calendar-open");
     const teacherSelect = document.getElementById("infant-teacher-select");
-    const classButtons = document.querySelectorAll(".class-btn");
+    const teacherValue  = document.getElementById("teacher-value");
 
     infantSelectAllCheckbox();
 
     const today = new Date();
     const yy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
-
     monthInput.value = `${yy}-${mm}`;
     monthDisplay.textContent = `${yy}년 ${mm}월`;
 
-    monthBtn.addEventListener("click", () => {
-        monthInput.showPicker();
-    });
+    monthBtn.addEventListener("click", () => monthInput.showPicker());
 
     monthInput.addEventListener("change", () => {
         const [year, month] = monthInput.value.split("-");
         monthDisplay.textContent = `${year}년 ${Number(month)}월`;
-        requestClassLabels(year, month, teacherSelect.value);
+        requestClassLabels(year, month, teacherValue.value);
     });
 
-    if (!teacherSelect) alert("선택된 선생님이 없습니다.");
+    if (teacherSelect) {
+        teacherSelect.addEventListener("change", (e) => {
+            teacherValue.value = e.target.value;
+            const [year, month] = monthInput.value.split("-");
+            if (!year || !month) return;
+            requestClassLabels(year, month, teacherValue.value);
+        });
+    }
 
-    teacherSelect.addEventListener("change", (e) => {
-        const teacher = e.target.value;
-        const [year, month] = monthInput.value.split("-");
-        if (!year || !month) return;
-        requestClassLabels(year, month, teacher);
-    });
-
-    classButtons.forEach(btn => {
+    document.querySelectorAll(".class-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-            const label = {
+            const [year] = monthInput.value.split("-");
+            requestInfantDetail({
                 classKey: btn.dataset.classKey,
                 unitKey: btn.dataset.unitKey,
                 timeTableKey: btn.dataset.timeTableKey,
                 classSubject: btn.dataset.classSubject
-            };
-            const [year] = monthInput.value.split("-");
-            requestInfantDetail(label, year);
+            }, year);
         });
     });
 });

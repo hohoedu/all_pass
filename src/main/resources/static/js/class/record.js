@@ -778,6 +778,53 @@ document.addEventListener("click", function (e) {
     document.querySelector(".remarks-modal").style.display = "block";
 });
 
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".class-all-guide")?.addEventListener("click", async () => {
+
+        const date = document.getElementById("record_calendar")?.value;
+        if (!date) {
+            alert("날짜를 먼저 선택해주세요.");
+            return;
+        }
+
+        const res = await fetch("/class/api/before/all/count", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({date, userCode: state.teacherId})
+        });
+
+        const data = await res.json();
+        const count = data.response;
+        if (count === 0) {
+            alert("발송 대상 학생이 없습니다.");
+            return;
+        }
+
+        if (!confirm(`${date}\n${count.studentCount}명에게 수업 전 안내를 일괄 발송하시겠습니까?(총 ${count.classCount}건)`)) return;
+
+        try {
+            const sendRes = await fetch("/class/api/before/all", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({date, userCode: state.teacherId})
+            });
+
+            if (!sendRes.ok) throw new Error("서버 오류: " + sendRes.status);
+
+            const sendData = await sendRes.json();
+            const {sentCount, skippedCount} = sendData.response;
+
+            alert(`발송 완료\n- 발송: ${sentCount}명\n- 앱 미설치 제외: ${skippedCount}명`);
+            await loadStudentList();
+
+        } catch (e) {
+            console.error(e);
+            alert("발송 실패: " + e.message);
+        }
+    });
+});
+
 // 수업 전 알림 발송
 document.addEventListener("DOMContentLoaded", () => {
     const sendbtn = document.getElementById("send-before-record");

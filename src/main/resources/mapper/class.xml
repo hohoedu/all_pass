@@ -15,26 +15,25 @@
                AND ea.mm = #{month}
                AND ea.center_code = #{centerCode}
                AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
-               AND ea.attendance_key = 'absent'
-            ) AS absentCount,
+               AND ea.attendance_key = 'absent') AS absentCount,
 
             -- 이번달 완료 보강
             (SELECT COUNT(*)
              FROM erp_remedial er
-             WHERE yy = #{year} AND mm = #{month}
+             WHERE yy = #{year}
+               AND mm = #{month}
                AND (#{roleKey} = 'ADMIN' OR er.user_code = #{userCode})
                AND SUBSTRING(er.user_code, 1, 6) = #{centerCode}
-               AND er.action = 1
-            )                AS completeRemedialCount,
+               AND er.action = 1)                AS completeRemedialCount,
 
             -- 이번달 예정 보강
-            (SELECT COUNT (*)
+            (SELECT COUNT(*)
              FROM erp_remedial er
-             WHERE yy = #{year} AND mm = #{month}
+             WHERE yy = #{year}
+               AND mm = #{month}
                AND (#{roleKey} = 'ADMIN' OR er.user_code = #{userCode})
                AND SUBSTRING(er.user_code, 1, 6) = #{centerCode}
-               AND er.action = 0
-            ) AS intendedRemedialCount
+               AND er.action = 0)                AS intendedRemedialCount
     </select>
 
     <select id="findClassSummary"
@@ -539,7 +538,7 @@
     <!-- 한자: 현재 class/unit 기반 ID 조회 -->
     <select id="findUnitByClassAndUnit" resultType="map">
         SELECT id, class_key, unit_key
-        FROM class_unit_map
+        FROM erp_class_unit_map
         WHERE class_key = #{classKey}
           AND unit_key = #{unitKey}
     </select>
@@ -547,7 +546,7 @@
     <!-- 한자: 다음 ID 조회 -->
     <select id="findNextUnitById" resultType="map">
         SELECT id, class_key, unit_key
-        FROM class_unit_map
+        FROM erp_class_unit_map
         WHERE id = #{id}
     </select>
 
@@ -830,6 +829,7 @@
           AND RIGHT (bc.before_class_key
             , 2) = #{yy}
     </select>
+
 
     <select id="findAfterClassNoticeByStudentIds"
             resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
@@ -1475,11 +1475,21 @@
         UPDATE erp_infant_han_notice
         SET updated_at  = SYSDATETIME(),
             update_user = #{userCode},
-            part1_tag_1 = #{dto.detail.part1Tag1}, part1_tag_2 = #{dto.detail.part1Tag2}, part1_tag_3 = #{dto.detail.part1Tag3},
-            part2_tag_1 = #{dto.detail.part2Tag1}, part2_tag_2 = #{dto.detail.part2Tag2}, part2_tag_3 = #{dto.detail.part2Tag3},
-            part3_tag_1 = #{dto.detail.part3Tag1}, part3_tag_2 = #{dto.detail.part3Tag2}, part3_tag_3 = #{dto.detail.part3Tag3},
-            part4_tag_1 = #{dto.detail.part4Tag1}, part4_tag_2 = #{dto.detail.part4Tag2}, part4_tag_3 = #{dto.detail.part4Tag3},
-            part5_tag_1 = #{dto.detail.part5Tag1}, part5_tag_2 = #{dto.detail.part5Tag2}, part5_tag_3 = #{dto.detail.part5Tag3},
+            part1_tag_1 = #{dto.detail.part1Tag1},
+            part1_tag_2 = #{dto.detail.part1Tag2},
+            part1_tag_3 = #{dto.detail.part1Tag3},
+            part2_tag_1 = #{dto.detail.part2Tag1},
+            part2_tag_2 = #{dto.detail.part2Tag2},
+            part2_tag_3 = #{dto.detail.part2Tag3},
+            part3_tag_1 = #{dto.detail.part3Tag1},
+            part3_tag_2 = #{dto.detail.part3Tag2},
+            part3_tag_3 = #{dto.detail.part3Tag3},
+            part4_tag_1 = #{dto.detail.part4Tag1},
+            part4_tag_2 = #{dto.detail.part4Tag2},
+            part4_tag_3 = #{dto.detail.part4Tag3},
+            part5_tag_1 = #{dto.detail.part5Tag1},
+            part5_tag_2 = #{dto.detail.part5Tag2},
+            part5_tag_3 = #{dto.detail.part5Tag3},
             main_title  = #{dto.detail.subject},
             subtitle    = #{dto.detail.classLabel},
             img_url     = #{dto.detail.imagePath},
@@ -1492,7 +1502,7 @@
             part4_note  = #{dto.detail.clean},
             part5_note  = #{dto.detail.insung},
             is_send     = #{finalIsSend}
-        WHERE student_id     = #{studentId}
+        WHERE student_id = #{studentId}
           AND time_table_key = #{dto.timeTableKey}
     </update>
 
@@ -1509,11 +1519,21 @@
             part3_note  = #{dto.detail.thinkTalk},
             part4_note  = #{dto.detail.goldenbell},
             part5_note  = #{dto.detail.findDiff},
-            part1_tag_1 = #{dto.detail.part1Tag1}, part1_tag_2 = #{dto.detail.part1Tag2}, part1_tag_3 = #{dto.detail.part1Tag3},
-            part2_tag_1 = #{dto.detail.part2Tag1}, part2_tag_2 = #{dto.detail.part2Tag2}, part2_tag_3 = #{dto.detail.part2Tag3},
-            part3_tag_1 = #{dto.detail.part3Tag1}, part3_tag_2 = #{dto.detail.part3Tag2}, part3_tag_3 = #{dto.detail.part3Tag3},
-            part4_tag_1 = #{dto.detail.part4Tag1}, part4_tag_2 = #{dto.detail.part4Tag2}, part4_tag_3 = #{dto.detail.part4Tag3},
-            part5_tag_1 = #{dto.detail.part5Tag1}, part5_tag_2 = #{dto.detail.part5Tag2}, part5_tag_3 = #{dto.detail.part5Tag3},
+            part1_tag_1 = #{dto.detail.part1Tag1},
+            part1_tag_2 = #{dto.detail.part1Tag2},
+            part1_tag_3 = #{dto.detail.part1Tag3},
+            part2_tag_1 = #{dto.detail.part2Tag1},
+            part2_tag_2 = #{dto.detail.part2Tag2},
+            part2_tag_3 = #{dto.detail.part2Tag3},
+            part3_tag_1 = #{dto.detail.part3Tag1},
+            part3_tag_2 = #{dto.detail.part3Tag2},
+            part3_tag_3 = #{dto.detail.part3Tag3},
+            part4_tag_1 = #{dto.detail.part4Tag1},
+            part4_tag_2 = #{dto.detail.part4Tag2},
+            part4_tag_3 = #{dto.detail.part4Tag3},
+            part5_tag_1 = #{dto.detail.part5Tag1},
+            part5_tag_2 = #{dto.detail.part5Tag2},
+            part5_tag_3 = #{dto.detail.part5Tag3},
             updated_at  = SYSDATETIME(),
             update_user = #{userCode},
             is_send     = #{finalIsSend}
@@ -1522,70 +1542,146 @@
     </update>
 
     <insert id="insertInfantHanNotice">
-        INSERT INTO erp_infant_han_notice (
-            send_id, created_at, updated_at, center_code, update_user,
-            student_id, time_table_key, user_code,
-            part1_tag_1, part1_tag_2, part1_tag_3,
-            part2_tag_1, part2_tag_2, part2_tag_3,
-            part3_tag_1, part3_tag_2, part3_tag_3,
-            part4_tag_1, part4_tag_2, part4_tag_3,
-            part5_tag_1, part5_tag_2, part5_tag_3,
-            main_title, part1_title, part2_title, part3_title, part4_title, part5_title,
-            subtitle, img_url,
-            title1, title2, title3,
-            part1_note, part2_note, part3_note, part4_note, part5_note,
-            yy, mm, is_send
-        )
-        VALUES (
-                   #{sendId}, SYSDATETIME(), SYSDATETIME(), #{centerCode}, #{userCode},
-                   #{studentId}, #{dto.timeTableKey}, #{userCode},
-                   #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
-                   #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
-                   #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
-                   #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
-                   #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
-                   #{dto.detail.subject}, '의미표현', '어휘활용', '문장이해', '창의놀이', '바른인성',
-                   #{dto.detail.classLabel}, #{dto.detail.imagePath},
-                   #{dto.detail.newWord}, #{dto.detail.subStory}, #{dto.detail.idiom},
-                   #{dto.detail.hanjaSong}, #{dto.detail.workBook}, #{dto.detail.storyComment}, #{dto.detail.clean}, #{dto.detail.insung},
-                   #{dto.yy}, #{dto.mm}, #{dto.isSend}
-               )
+        INSERT INTO erp_infant_han_notice (send_id, created_at, updated_at, center_code, update_user,
+                                           student_id, time_table_key, user_code,
+                                           part1_tag_1, part1_tag_2, part1_tag_3,
+                                           part2_tag_1, part2_tag_2, part2_tag_3,
+                                           part3_tag_1, part3_tag_2, part3_tag_3,
+                                           part4_tag_1, part4_tag_2, part4_tag_3,
+                                           part5_tag_1, part5_tag_2, part5_tag_3,
+                                           main_title, part1_title, part2_title, part3_title, part4_title, part5_title,
+                                           subtitle, img_url,
+                                           title1, title2, title3,
+                                           part1_note, part2_note, part3_note, part4_note, part5_note,
+                                           yy, mm, is_send)
+        VALUES (#{sendId}, SYSDATETIME(), SYSDATETIME(), #{centerCode}, #{userCode},
+                #{studentId}, #{dto.timeTableKey}, #{userCode},
+                #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
+                #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
+                #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
+                #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
+                #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
+                #{dto.detail.subject}, '의미표현', '어휘활용', '문장이해', '창의놀이', '바른인성',
+                #{dto.detail.classLabel}, #{dto.detail.imagePath},
+                #{dto.detail.newWord}, #{dto.detail.subStory}, #{dto.detail.idiom},
+                #{dto.detail.hanjaSong}, #{dto.detail.workBook}, #{dto.detail.storyComment}, #{dto.detail.clean}, #{dto.detail.insung},
+                #{dto.yy}, #{dto.mm}, #{dto.isSend})
     </insert>
 
     <insert id="insertInfantBookNotice">
-    INSERT INTO erp_infant_book_notice (main_title, subtitle, title1, title2, title3,
-                                        img_url,
-                                        part1_title, part2_title, part3_title, part4_title, part5_title,
-                                        part1_note, part2_note, part3_note, part4_note, part5_note,
-                                        part1_tag_1, part1_tag_2, part1_tag_3,
-                                        part2_tag_1, part2_tag_2, part2_tag_3,
-                                        part3_tag_1, part3_tag_2, part3_tag_3,
-                                        part4_tag_1, part4_tag_2, part4_tag_3,
-                                        part5_tag_1, part5_tag_2, part5_tag_3,
-                                        created_at, updated_at, update_user,
-                                        student_id, time_table_key, center_code, user_code, send_id, yy, mm, is_send)
-    VALUES (#{dto.detail.subject},
-            #{dto.detail.content},
-            #{dto.detail.story},
-            #{dto.detail.knowledgeBoard},
-            #{dto.detail.thinkTalk},
-            #{dto.detail.imagePath},
-            '동화이해', '지식탐구', '창의표현', '통합사고', '스마트놀이',
-            #{dto.detail.story},
-            #{dto.detail.knowledgeBoard},
-            #{dto.detail.thinkTalk},
-            #{dto.detail.goldenbell},
-            #{dto.detail.findDiff},
-            #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
-            #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
-            #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
-            #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
-            #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
-            SYSDATETIME(), SYSDATETIME(), #{userCode},
-            #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
-            #{dto.isSend})
+        INSERT INTO erp_infant_book_notice (main_title, subtitle, title1, title2, title3,
+                                            img_url,
+                                            part1_title, part2_title, part3_title, part4_title, part5_title,
+                                            part1_note, part2_note, part3_note, part4_note, part5_note,
+                                            part1_tag_1, part1_tag_2, part1_tag_3,
+                                            part2_tag_1, part2_tag_2, part2_tag_3,
+                                            part3_tag_1, part3_tag_2, part3_tag_3,
+                                            part4_tag_1, part4_tag_2, part4_tag_3,
+                                            part5_tag_1, part5_tag_2, part5_tag_3,
+                                            created_at, updated_at, update_user,
+                                            student_id, time_table_key, center_code, user_code, send_id, yy, mm, is_send)
+        VALUES (#{dto.detail.subject},
+                #{dto.detail.content},
+                #{dto.detail.story},
+                #{dto.detail.knowledgeBoard},
+                #{dto.detail.thinkTalk},
+                #{dto.detail.imagePath},
+                '동화이해', '지식탐구', '창의표현', '통합사고', '스마트놀이',
+                #{dto.detail.story},
+                #{dto.detail.knowledgeBoard},
+                #{dto.detail.thinkTalk},
+                #{dto.detail.goldenbell},
+                #{dto.detail.findDiff},
+                #{dto.detail.part1Tag1}, #{dto.detail.part1Tag2}, #{dto.detail.part1Tag3},
+                #{dto.detail.part2Tag1}, #{dto.detail.part2Tag2}, #{dto.detail.part2Tag3},
+                #{dto.detail.part3Tag1}, #{dto.detail.part3Tag2}, #{dto.detail.part3Tag3},
+                #{dto.detail.part4Tag1}, #{dto.detail.part4Tag2}, #{dto.detail.part4Tag3},
+                #{dto.detail.part5Tag1}, #{dto.detail.part5Tag2}, #{dto.detail.part5Tag3},
+                SYSDATETIME(), SYSDATETIME(), #{userCode},
+                #{studentId}, #{dto.timeTableKey}, #{centerCode}, #{userCode}, #{sendId}, #{dto.yy}, #{dto.mm},
+                #{dto.isSend})
     </insert>
 
+    <select id="countStudentsByDateAndUserCode"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllCountRespDTO">
+        SELECT COUNT(DISTINCT ta.student_id) AS studentCount,
+               COUNT(ta.student_id)          AS classCount
+        FROM erp_time_table t
+                 JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_class_week cw ON t.yy = cw.year
+            AND t.mm = cw.month
+            AND t.center_code = cw.center_code
+        WHERE t.user_code = #{userCode}
+          AND t.center_code = #{centerCode}
+          AND (
+            (t.dayName = 'mon' AND cw.mon = #{date}) OR
+            (t.dayName = 'tue' AND cw.tue = #{date}) OR
+            (t.dayName = 'wed' AND cw.wed = #{date}) OR
+            (t.dayName = 'thu' AND cw.thu = #{date}) OR
+            (t.dayName = 'fri' AND cw.fri = #{date}) OR
+            (t.dayName = 'sat' AND cw.sat = #{date}) OR
+            (t.dayName = 'sun' AND cw.sun = #{date})
+            )
+    </select>
+
+    <select id="selectStudentsByDateAndUserCode"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllStudentDTO">
+        SELECT ta.student_id     AS studentId,
+               ta.time_table_key AS timeTableKey,
+               s.app_token       AS appToken,
+               s.center_code     AS centerCode,
+               cw.week           AS week,
+               cc.class_name     AS className,
+               uc.unit_name      AS unitName,
+               t.dayName         AS dayname,
+               t.start_time      AS startTime,
+               cc.class_type     AS classType,
+               u.user_name       AS userName,
+               CASE cw.week
+                   WHEN 'ju_1' THEN bc.ju_1
+                   WHEN 'ju_2' THEN bc.ju_2
+                   WHEN 'ju_3' THEN bc.ju_3
+                   WHEN 'ju_4' THEN bc.ju_4
+                   ELSE bc.ju_1
+                   END           AS content
+        FROM erp_time_table t
+                 JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                 JOIN erp_student s ON ta.student_id = s.student_id
+                 JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+                 JOIN erp_user u ON t.user_code = u.user_code
+                 JOIN erp_class_week cw ON t.yy = cw.year
+            AND t.mm = cw.month
+            AND t.center_code = cw.center_code
+                 JOIN erp_before_class bc ON bc.class_key = t.class_key
+            AND bc.unit_key = t.unit_key
+            AND RIGHT (bc.before_class_key, 2) = SUBSTRING (#{date}, 3, 2)
+        WHERE t.user_code = #{userCode}
+          AND t.center_code = #{centerCode}
+          AND (
+            (t.dayName = 'mon'
+          AND cw.mon = #{date})
+           OR
+            (t.dayName = 'tue'
+          AND cw.tue = #{date})
+           OR
+            (t.dayName = 'wed'
+          AND cw.wed = #{date})
+           OR
+            (t.dayName = 'thu'
+          AND cw.thu = #{date})
+           OR
+            (t.dayName = 'fri'
+          AND cw.fri = #{date})
+           OR
+            (t.dayName = 'sat'
+          AND cw.sat = #{date})
+           OR
+            (t.dayName = 'sun'
+          AND cw.sun = #{date})
+            )
+    </select>
+    
     <!-- 수업 전 안내 발송 후 내용 저장 -->
     <insert id="insertBeforeClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$BeforeClassNoticeDTO">
@@ -1789,7 +1885,7 @@
                  SELECT *,
                         RANK() OVER (ORDER BY per DESC) AS ranking
                  FROM AggregatedData)
-    -- 4. 최종 결과 조인 및 월별 결과 선택
+        -- 4. 최종 결과 조인 및 월별 결과 선택
         SELECT tr.qtypestr,
                rd.per,
                rd.ranking,
@@ -1881,9 +1977,9 @@
         SELECT DISTINCT user_code
         FROM erp_edu_time_table
         WHERE yy = #{yy}
-          AND mm = #{mm}
-          AND center_code = #{centerCode}
-          AND user_code IN
+        AND mm = #{mm}
+        AND center_code = #{centerCode}
+        AND user_code IN
         <foreach collection="userCodes" item="code" open="(" separator="," close=")">
             #{code}
         </foreach>
@@ -1891,18 +1987,38 @@
 
     <update id="generateProcedureNamCheon" statementType="CALLABLE">
         EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1
-            @yy          = #{yy},
-            @mm          = #{mm},
-            @center_code = #{centerCode},
-            @user_code   = #{userCode}
+            @yy          =
+        #{yy},
+        @
+        mm
+        =
+        #{mm},
+        @
+        center_code
+        =
+        #{centerCode},
+        @
+        user_code
+        =
+        #{userCode}
     </update>
 
     <update id="generateProcedureWolSung" statementType="CALLABLE">
         EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1_Dae001
-            @yy          = #{yy},
-            @mm          = #{mm},
-            @center_code = #{centerCode},
-            @user_code   = #{userCode}
+            @yy          =
+        #{yy},
+        @
+        mm
+        =
+        #{mm},
+        @
+        center_code
+        =
+        #{centerCode},
+        @
+        user_code
+        =
+        #{userCode}
     </update>
 
 
@@ -1915,32 +2031,37 @@
                t.class_key      AS classKey,
                t.unit_key       AS unitKey,
                cc.class_type    AS classType,
-            CASE WHEN t.unit_key = '2nd_TIME'
-                THEN ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name) + ' (독클)'
-                ELSE ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name)
-            END AS className,
-            NULL AS unitName
+               CASE
+                   WHEN t.unit_key = '2nd_TIME'
+                       THEN ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name) + ' (독클)'
+                   ELSE ISNULL(ISNULL(cv.subName_hohoschool, cv.subName), cc.class_name)
+                   END          AS className,
+               NULL             AS unitName
         FROM erp_edu_time_table t
-        LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
-        LEFT JOIN erp_edu_time_class_value cv
-                   ON t.class_key = cv.class_key AND cv.center_code = #{centerCode}
+                 LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 LEFT JOIN erp_edu_time_class_value cv
+                           ON t.class_key = cv.class_key AND cv.center_code = #{centerCode}
         WHERE t.yy = #{yy}
           AND t.mm = #{mm}
           AND t.user_code = #{userCode}
           AND t.center_code = #{centerCode}
-        ORDER BY
-            CASE t.dayname WHEN 'mon' THEN 1 WHEN 'tue' THEN 2
-            WHEN 'wed' THEN 3 WHEN 'thu' THEN 4 WHEN 'fri' THEN 5 ELSE 6 END,
-        CAST(t.start_time AS DATETIME)
+        ORDER BY CASE t.dayname
+                     WHEN 'mon' THEN 1
+                     WHEN 'tue' THEN 2
+                     WHEN 'wed' THEN 3
+                     WHEN 'thu' THEN 4
+                     WHEN 'fri' THEN 5
+                     ELSE 6 END,
+                 CAST(t.start_time AS DATETIME)
     </select>
 
     <select id="findEduStudentsByTimeTables" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT a.time_table_key AS timeTableKey,
-               s.student_id     AS studentId,
-               s.student_name   AS studentName,
-               a.week           AS week
+        s.student_id AS studentId,
+        s.student_name AS studentName,
+        a.week AS week
         FROM erp_edu_time_table_assign a
-             JOIN erp_student s ON a.student_id = s.student_id
+        JOIN erp_student s ON a.student_id = s.student_id
         WHERE a.time_table_key IN
         <foreach collection="timeTableKeys" item="key" open="(" separator="," close=")">
             #{key}
