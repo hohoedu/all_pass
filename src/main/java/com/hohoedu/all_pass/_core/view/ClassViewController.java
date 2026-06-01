@@ -322,8 +322,11 @@ public class ClassViewController {
                 .filter(r -> !r.isAction())
                 .toList();
 
+        List<ClassRespDTO.AbsentFlagDTO> absentFlags = classService.findAbsentFlags(year, month, user.getUserCode());
+
         model.addAttribute("rightRemedials", rightRemedials);
         model.addAttribute("leftRemedials", leftRemedials);
+        model.addAttribute("absentFlags", absentFlags);
         model.addAttribute("users", users);
         return "class/remedial";
     }

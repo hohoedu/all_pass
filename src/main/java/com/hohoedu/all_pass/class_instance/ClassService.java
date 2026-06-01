@@ -1049,6 +1049,10 @@ public class ClassService {
         List<RemedialDTO> remedials = classRepository.findRemedialByUserCode(year, month, userCode);
         return remedials;
     }
+    public List<ClassRespDTO.AbsentFlagDTO> findAbsentFlags(String year, String month, String userCode) {
+        return classRepository.findAbsentFlags(year, month, userCode);
+    }
+
 
     public int updateRemedialAction(UpdateRemedialDTO dto) {
         int result = classRepository.updateRemedialAction(dto.getRemedialKey(), dto.isAction());

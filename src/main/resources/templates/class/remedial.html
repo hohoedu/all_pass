@@ -4,22 +4,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Custom Css / Js -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <script th:src="@{/js/custom.js}"></script>
     <script th:src="@{/js/class/remedial.js}"></script>
-    <!-- Html menu Load -->
     <script th:src="@{/js/sidebar.js}"></script>
+    <style>
+        .absent-flag-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 18px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+    </style>
     <title>보강 관리</title>
 </head>
 
 <body>
 <div class="main-container">
     <div class="main-frame sup-frame">
-        <!-- left nav bar -->
         <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
         <main class="main-info supplement" style="width: 95%;">
             <div class="line-second-frame">
@@ -83,50 +95,7 @@
                                         <th>삭제</th>
                                     </tr>
                                     </thead>
-
-                                    <tbody id="student-tbody-left" class="stripe">
-
-                                    <tr th:each="item, iterStat : ${leftRemedials}" th:data-id="${item.remedialKey}">
-                                        <td th:text="${iterStat.count}"></td>
-                                        <td th:text="${item.studentName}"></td>
-                                        <td th:text="${item.absenceDate}"></td>
-                                        <td th:text="${item.remedialSubject}"></td>
-                                        <td class="cal-content">
-                                            <div class="icon-field time-input cal-adjust" style="margin-bottom: 0;">
-                            <span class="selected-datetime"
-                                  th:text="${item.remedialDate == '9999-12-31'} ? '날짜를 선택하세요' : ${item.remedialDate}">
-                            </span>
-                                                <input type="date" class="datetime-input hidden-picker"/>
-                                                <button type="button" class="icon-btn calendar-btn" style="background: transparent;">
-                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘"/>
-                                                </button>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="time-boxes">
-                                                <div class="time-start">
-                                                    시작
-                                                    <input type="text" class="time_input start-time"
-                                                           style="margin-bottom: 0"
-                                                           th:value="${item != null ? item.sTime : ''}"
-                                                           placeholder="00:00"
-                                                           pattern="^([01]\\d|2[0-3]):[0-5]\\d$"
-                                                           inputmode="numeric" maxlength="5"
-                                                           title="시간은 24시간 기준으로 입력하세요"/>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td th:text="${item.userName}"></td>
-                                        <td class="checkbox-group">
-                                            <input type="checkbox"/>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="icon-btn delete-btn" style="background: transparent;">
-                                                <img th:src="@{/image/cancel-icon.png}" alt="삭제" style="width:20px; height:20px;"/>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    </tbody>
+                                    <tbody id="student-tbody-left" class="stripe"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -159,20 +128,7 @@
                                     <th class="checkbox-group">보강여부</th>
                                 </tr>
                                 </thead>
-                                <tbody id="student-tbody-right" class="stripe">
-                                <tr th:each="item, iterStat : ${rightRemedials}" th:data-id="${item.remedialKey}">
-                                    <td th:text="${iterStat.count}"></td>
-                                    <td th:text="${item.studentName}"></td>
-                                    <td th:text="${item.absenceDate}"></td>
-                                    <td th:text="${item.remedialSubject}"></td>
-                                    <td class="cal-content"
-                                        th:text="${item.remedialDate == '9999-12-31' ? '날짜를 선택하세요.' : item.remedialDate}"></td>
-                                    <td th:text="${item.userName}"></td>
-                                    <td class="checkbox-group">
-                                        <input type="checkbox" checked="checked"/>
-                                    </td>
-                                </tr>
-                                </tbody>
+                                <tbody id="student-tbody-right" class="stripe"></tbody>
                             </table>
                         </div>
                     </div>
@@ -180,6 +136,6 @@
             </div>
         </main>
     </div>
+</div>
 </body>
-
 </html>

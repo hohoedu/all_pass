@@ -156,6 +156,7 @@ public class ClassRespDTO {
 
     @Data
     public static class RemedialDTO {
+        private String studentId;
         private String remedialKey;
         private String studentName;
         private String userName;
@@ -165,6 +166,12 @@ public class ClassRespDTO {
         private String sTime;
         private boolean action;
         private Timestamp updatedAt;
+    }
+
+    @Data
+    public static class AbsentFlagDTO {
+        private String studentId;
+        private int absentFlag;
     }
 
     @Data

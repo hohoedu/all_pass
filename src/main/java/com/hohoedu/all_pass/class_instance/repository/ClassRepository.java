@@ -197,6 +197,11 @@ public interface ClassRepository {
             @Param("month") String month,
             @Param("userCode") String userCode);
 
+    public List<ClassRespDTO.AbsentFlagDTO> findAbsentFlags(
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("userCode") String userCode);
+
     public int updateRemedialAction(
             @Param("remedialKey") String remedialKey,
             @Param("action") boolean action);

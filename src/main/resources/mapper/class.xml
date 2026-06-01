@@ -913,6 +913,35 @@
           AND substring(r.absence_date, 6, 2) = #{month}
     </select>
 
+    <!-- 결석 2주 / 결석 후 10일 이내 보강 없는 학생 조회  -->
+    <select id="findAbsentFlags" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AbsentFlagDTO">
+        SELECT
+            student_id AS studentId,
+            CASE
+                WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
+                    AND MAX(CASE WHEN action = 0
+                          AND remedial_date = '9999-12-31'
+                          AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
+                     THEN 1 ELSE 0 END) = 1 THEN 3
+                WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2 THEN 1
+                WHEN MAX(CASE WHEN action = 0
+                          AND remedial_date = '9999-12-31'
+                          AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
+                     THEN 1 ELSE 0 END) = 1 THEN 2
+                END AS absentFlag
+        FROM erp_remedial
+        WHERE yy = #{yy}
+          AND mm = #{mm}
+          AND user_code = #{userCode}
+        GROUP BY student_id
+        HAVING
+            COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
+            OR MAX(CASE WHEN action = 0
+                    AND remedial_date = '9999-12-31'
+                    AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
+               THEN 1 ELSE 0 END) = 1
+    </select>
+
     <!-- 보강 여부 수정 -->
     <update id="updateRemedialAction" flushCache="true">
         UPDATE erp_remedial

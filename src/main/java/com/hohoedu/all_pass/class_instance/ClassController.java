@@ -411,11 +411,15 @@ public class ClassController {
                 ? dto.getUserCode()
                 : user.getUserCode();
 
-        List<RemedialDTO> response = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), userCode);
+        List<RemedialDTO> remedials = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), userCode);
+        List<ClassRespDTO.AbsentFlagDTO> absentFlags = classService.findAbsentFlags(dto.getYear(), dto.getMonth(), userCode);
 
-        return ResponseEntity.ok(ApiUtils.success(response));
+        Map<String, Object> result = new HashMap<>();
+        result.put("remedials", remedials);
+        result.put("absentFlags", absentFlags);
+
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
-
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
                                             @RequestParam(value = "year") String year,
