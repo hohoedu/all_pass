@@ -108,6 +108,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (teacherSel && teacherSel.value) state.teacherId = teacherSel.value;
 
+
+    const urlParams = new URLSearchParams(location.search);
+    const targetKey = urlParams.get('timeTableKey');
+    if (targetKey && classList) {
+        const targetLi = classList.querySelector(`[data-time-table-key="${targetKey}"]`);
+        if (targetLi) {
+            classList.querySelectorAll('.class-btn').forEach(el => el.classList.remove('active'));
+            targetLi.classList.add('active');
+        }
+    }
+
     const initActiveClass = classList?.querySelector('.class-btn.active');
     if (initActiveClass) {
         state.timeTableKey = initActiveClass.dataset.timeTableKey || initActiveClass.dataset.classId || null;

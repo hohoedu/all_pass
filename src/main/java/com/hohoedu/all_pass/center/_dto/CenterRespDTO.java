@@ -10,6 +10,7 @@ public class CenterRespDTO {
     @Data
     public static class PaymintConfigDTO {
         private String remainPointUrl;
+        private String chargePointUrl;
         private String apiKey;
     }
 
@@ -30,5 +31,6 @@ public class CenterRespDTO {
     public static class PointDTO {
         private Integer paymintPoint;
         private Integer popbillPoint;
+        private String chargeUrl;
     }
 }

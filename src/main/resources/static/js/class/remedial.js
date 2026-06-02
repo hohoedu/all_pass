@@ -86,15 +86,18 @@ async function loadRemedialData(year, month, userCode) {
 
 function renderLeftTable(data, flagMap = {}) {
     const tbody = document.getElementById('student-tbody-left');
+    const flagTooltip = {
+        1: '결석 2주',
+        2: '10일 이내 미보강',
+        3: '결석 2주 / 10일 이내 미보강'
+    };
+
     tbody.innerHTML = '';
-    console.log('flagMap:', flagMap);
-    console.log('leftRemedials studentIds:', data.map(d => d.studentId));
-    console.log('leftRemedials[0]:', data[0]);
     data.forEach((item, index) => {
         const displayDate = item.remedialDate === '9999-12-31' ? '날짜를 선택하세요' : item.remedialDate;
         const flag = flagMap[item.studentId];
         const flagBadge = flag
-            ? `<span class="absent-flag-badge" data-flag="${flag}">${flag}</span>`
+            ? `<span class="absent-flag-badge" data-flag="${flag}" data-tooltip="${flagTooltip[flag] || ''}">${flag}</span>`
             : '';
 
         const row = document.createElement('tr');

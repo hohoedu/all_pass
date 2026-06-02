@@ -438,7 +438,7 @@ public class ClassService {
             if (count >= 10)
                 throw new IllegalStateException("정원 초과");
 
-            classRepository.restoreStudent(dto.getTimeTableKey(), dto.getStudentId());
+            classRepository.restoreStudent(dto.getTimeTableKey(), dto.getStudentId(), dto.getWeekNo());
 
         } else {
             // 신규 등록 기존 로직 그대로

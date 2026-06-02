@@ -8,7 +8,8 @@
             parameterType="String"
             resultType="com.hohoedu.all_pass.center._dto.CenterRespDTO$PaymintConfigDTO">
         SELECT api_key           AS apiKey,
-               remain_point_url  AS remainPointUrl
+               remain_point_url  AS remainPointUrl,
+               charge_point_url AS chargePointUrl
         FROM   erp_payment_config
         WHERE  center_code = #{centerCode}
     </select>

@@ -41,7 +41,7 @@ public class MainViewController {
     private final CenterService centerService;
     private final UserService userService;
 
-    @GetMapping({ "/", "/home" })
+    @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session, Model model) {
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -53,10 +53,12 @@ public class MainViewController {
 
         int popbillPoint = centerService.findPopbillPoint(centerCode);
         int paymintPoint = centerService.findPaymintPoint(centerCode);
+        String paymintChargeUrl = centerService.findPaymintUrl(centerCode);
 
         point.setPopbillPoint(popbillPoint);
         point.setPaymintPoint(paymintPoint);
-
+        point.setChargeUrl(paymintChargeUrl);
+        
         session.setAttribute("point", point);
 
         return "index";
@@ -71,7 +73,7 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping({ "/admin", "/login" })
+    @GetMapping({"/admin", "/login"})
     public String getLoginPage() {
         return "login";
     }

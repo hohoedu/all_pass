@@ -77,4 +77,9 @@ public class CenterService {
         }
 
     }
+
+    public String findPaymintUrl(String centerCode) {
+        PaymintConfigDTO response = centerRepository.findPaymintConfigByCenterCode(centerCode);
+        return response.getChargePointUrl();
+    }
 }

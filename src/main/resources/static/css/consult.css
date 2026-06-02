@@ -29,6 +29,7 @@ button {
     display: flex;
     min-height: 100vh;
     width: 100%;
+    margin-left: -6vw;
 }
 
 .logo {
@@ -347,7 +348,6 @@ select {
     overflow: hidden;
     word-break: keep-all;
     text-align: left;
-    justify-self: center;
 }
 
 .status-dropdown {
@@ -570,7 +570,7 @@ select {
 
 .modal-content2 {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 또는 원하는 비율 ex) 2fr 3fr */
+    grid-template-columns: 1fr 1fr;
     overflow: hidden;
     gap: 20px;
     justify-content: center;
@@ -770,28 +770,57 @@ select {
 /* 선택 상태 */
 
 .subject-chip:has(input:checked),
-.subject-chip.active { border-color: transparent; }
+.subject-chip.active {
+    border-color: transparent;
+}
 
 .subject-chip:has(input:checked) .label-text,
-.subject-chip.active .label-text { color: #fff; }
+.subject-chip.active .label-text {
+    color: #fff;
+}
 
 .subject-chip:has(input:checked) .check-box,
-.subject-chip.active .check-box { border-color: #fff; background: #fff; }
+.subject-chip.active .check-box {
+    border-color: #fff;
+    background: #fff;
+}
 
 .subject-chip:has(input:checked) .check-box i,
-.subject-chip.active .check-box i { opacity: 1; }
+.subject-chip.active .check-box i {
+    opacity: 1;
+}
 
-.subject-hoho:has(input:checked), .subject-hoho.active { background: #f5a400; }
-.subject-hoho:has(input:checked) .check-box i, .subject-hoho.active .check-box i { color: #f5a400; }
+.subject-hoho:has(input:checked), .subject-hoho.active {
+    background: #f5a400;
+}
 
-.subject-han:has(input:checked), .subject-han.active { background: #ed5c9c; }
-.subject-han:has(input:checked) .check-box i, .subject-han.active .check-box i { color: #ed5c9c; }
+.subject-hoho:has(input:checked) .check-box i, .subject-hoho.active .check-box i {
+    color: #f5a400;
+}
 
-.subject-book:has(input:checked), .subject-book.active { background: #16b8aa; }
-.subject-book:has(input:checked) .check-box i, .subject-book.active .check-box i { color: #16b8aa; }
+.subject-han:has(input:checked), .subject-han.active {
+    background: #ed5c9c;
+}
 
-.subject-clinic:has(input:checked), .subject-clinic.active { background: #00b368; }
-.subject-clinic:has(input:checked) .check-box i, .subject-clinic.active .check-box i { color: #00b368; }
+.subject-han:has(input:checked) .check-box i, .subject-han.active .check-box i {
+    color: #ed5c9c;
+}
+
+.subject-book:has(input:checked), .subject-book.active {
+    background: #16b8aa;
+}
+
+.subject-book:has(input:checked) .check-box i, .subject-book.active .check-box i {
+    color: #16b8aa;
+}
+
+.subject-clinic:has(input:checked), .subject-clinic.active {
+    background: #00b368;
+}
+
+.subject-clinic:has(input:checked) .check-box i, .subject-clinic.active .check-box i {
+    color: #00b368;
+}
 
 textarea {
     width: 100%;

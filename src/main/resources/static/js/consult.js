@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div>${main.gradeName || ''}</div>
                         <div>${getTypeTag(main.type)}</div>
                         <div>${main.userName || ''}</div>
-                        <div class="memo">${main.content || ''}</div>
+                        <textarea class="memo">${main.content || ''}</textarea>
                         <div>
                             <div class="status-dropdown">
                                 <button type="button" class="status-current ${getStatusClass(progressKey)}">

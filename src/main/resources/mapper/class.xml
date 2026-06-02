@@ -42,7 +42,8 @@
                t.start_time                             AS startTime,
                CONCAT(cc.class_name, ' ', uc.unit_name) AS className,
                COUNT(ta.student_id)                     AS countStudent,
-               u.user_name                              AS userName
+               u.user_name                              AS userName,
+               cc.class_type                            AS classType
         FROM erp_time_table t
                  LEFT JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
                  LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
@@ -53,8 +54,8 @@
           AND t.dayname = #{dayname}
           AND (#{roleKey} = 'ADMIN' OR t.user_code = #{userCode})
           AND u.center_code = #{centerCode}
-        GROUP BY t.time_table_key, t.start_time, cc.class_name, uc.unit_name, u.user_name
-        ORDER BY userName, startTime ASC;
+        GROUP BY t.time_table_key, t.start_time, cc.class_name, uc.unit_name, u.user_name, cc.class_type
+        ORDER BY startTime, classType ASC;
 
     </select>
 
@@ -249,7 +250,8 @@
     <update id="restoreStudent" parameterType="map" statementType="CALLABLE">
         EXEC sp_restore_student
         #{timeTableKey},
-        #{studentId}
+        #{studentId},
+        #{weekNo}
     </update>
 
     <select id="findClassInfoByTimeTableKeyAndStudentId"
