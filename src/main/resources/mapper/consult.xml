@@ -7,7 +7,7 @@
             keyProperty="id" keyColumn="id">
 
         INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, progress_key, content, created_at, center_code, user_code, consult_type)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, 'counseling', #{content}, SYSDATETIME(), #{centerCode}, #{userCode},
+        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, #{progressKey}, #{content}, SYSDATETIME(), #{centerCode}, #{userCode},
                 #{consultType});
     </insert>
 
@@ -25,12 +25,15 @@
         c.inflow_route_key AS inflowRouteKey,
         c.progress_key AS progressKey,
         c.consult_type AS type,
-        u.user_name AS userName
+        u.user_name AS userName,
+        ps.invite_sent_at AS send_at,
+        ps.registered_at AS registered_at
         FROM ERP_CONSULT c
         JOIN erp_user u ON c.user_code = u.user_code
         JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
         LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         JOIN erp_progress_code pc ON c.progress_key = pc.progress_key
+        LEFT JOIN erp_pending_student ps ON ps.send_key = c.send_key
         WHERE c.center_code = #{centerCode}
         AND c.consult_date BETWEEN #{startDate} AND #{endDate}
         <if test="progress != null and progress != ''">
@@ -46,28 +49,76 @@
             )
         </if>
         ORDER BY
-        CASE WHEN #{sortDir} = 'asc' THEN
-            CASE #{sortColumn}
-                WHEN 'consultDate'  THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
-                WHEN 'gradeName' THEN gc.grade_name
-                WHEN 'consultType' THEN c.consult_type
-                WHEN 'userName' THEN u.user_name
-                WHEN 'progressKey' THEN c.progress_key
-                ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
-            END
-        END ASC,
-        CASE WHEN #{sortDir} = 'desc' THEN
-            CASE #{sortColumn}
-                WHEN 'consultDate'  THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
-                WHEN 'gradeName' THEN gc.grade_name
-                WHEN 'consultType' THEN c.consult_type
-                WHEN 'userName' THEN u.user_name
-                WHEN 'progressKey' THEN c.progress_key
-                ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
-            END
-        END DESC
+        <choose>
+            <when test="sortDir == 'asc'">
+                <choose>
+                    <when test="sortColumn == 'studentName'">c.student_name ASC</when>
+                    <when test="sortColumn == 'consultDate'">c.consult_date ASC</when>
+                    <when test="sortColumn == 'gradeName'">gc.grade_name ASC</when>
+                    <when test="sortColumn == 'consultType'">c.consult_type ASC</when>
+                    <when test="sortColumn == 'userName'">u.user_name ASC</when>
+                    <when test="sortColumn == 'progressKey'">c.progress_key ASC</when>
+                    <otherwise>c.consult_date ASC</otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="sortColumn == 'studentName'">c.student_name DESC</when>
+                    <when test="sortColumn == 'consultDate'">c.consult_date DESC</when>
+                    <when test="sortColumn == 'gradeName'">gc.grade_name DESC</when>
+                    <when test="sortColumn == 'consultType'">c.consult_type DESC</when>
+                    <when test="sortColumn == 'userName'">u.user_name DESC</when>
+                    <when test="sortColumn == 'progressKey'">c.progress_key DESC</when>
+                    <otherwise>c.consult_date DESC</otherwise>
+                </choose>
+            </otherwise>
+        </choose>
     </select>
 
+    <select id="findConsultModal"
+            parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultModalReqDTO"
+            resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultModalRespDTO">
+        WITH ranked AS (
+        SELECT
+        c.id,
+        c.student_name,
+        c.phone,
+        c.school,
+        c.grade_key,
+        gc.grade_name,
+        c.inflow_route_key,
+        c.consult_type AS type,
+        c.content,
+        c.consult_date,
+        c.progress_key,
+        COUNT(*) OVER (PARTITION BY c.phone) AS consultCount,
+        ROW_NUMBER() OVER (PARTITION BY c.phone ORDER BY c.consult_date DESC) AS rn
+        FROM ERP_CONSULT c
+        JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
+        WHERE c.center_code = #{centerCode}
+        <if test="keyword != null and keyword != ''">
+            AND (
+            c.student_name LIKE CONCAT('%', #{keyword}, '%')
+            OR c.phone LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        )
+        SELECT
+        id,
+        student_name AS studentName,
+        phone,
+        school,
+        grade_key AS gradeKey,
+        grade_name AS gradeName,
+        inflow_route_key AS inflowRouteKey,
+        type,
+        content,
+        CONVERT(NVARCHAR(10), consult_date, 120) AS lastConsultDate,
+        consultCount
+        FROM ranked
+        WHERE rn = 1
+        ORDER BY consult_date DESC
+    </select>
 
     <select id="findByPeriod" parameterType="map" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultDTO">
         SELECT
@@ -116,6 +167,9 @@
     <update id="updateProgress">
         UPDATE ERP_CONSULT
         SET progress_key = #{progressKey}
+        <if test="endReason != null and endReason != ''">
+            , end_reason = #{endReason}
+        </if>
         WHERE id = #{id}
     </update>
 
@@ -125,7 +179,7 @@
         WHERE id = #{id}
     </update>
 
-    <update id="updateConsult">
+    <update id="updateConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO">
         UPDATE erp_consult
         SET student_name     = #{studentName},
             consult_date     = #{consultDate},
@@ -134,32 +188,66 @@
             phone            = #{phone},
             inflow_route_key = #{inflowRouteKey},
             content          = #{content},
-            updated_at       = SYSDATETime()
-        WHERE id = #{id};
+            consult_type     = #{consultType},
+            updated_at       = SYSDATETIME()
+        WHERE id = #{consultId};
     </update>
 
-    <select id="findConsultForPrint" resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultPrintDTO">
-        select con.id                AS id,
-               con.consult_key       AS consultKey,
-               u.user_name           AS userName,
-               consult_date          AS consultDate,
-               student_name          AS studentName,
-               school                AS school,
-               gc.grade_name         AS gradeName,
-               phone                 AS phone,
-               content               AS content,
-               eir.inflow_route_name AS inflowRouteName,
-               epc.progress_name     AS progressName,
-               con.progress_key      AS progressKey,
-               con.consult_type      AS type
-        from erp_consult con
-                 left join erp_grade_code gc on con.grade_key = gc.grade_key
-                 left join erp_inflow_route eir on con.inflow_route_key = eir.inflow_route_key
-                 left join erp_progress_code epc on con.progress_key = epc.progress_key
-                 join erp_user u on con.user_code = u.user_code
-        where con.user_code = #{userCode}
-          AND con.consult_date BETWEEN #{startDate} AND #{endDate}
-        order by MAX(con.consult_date) OVER (PARTITION BY con.phone) DESC, con.phone, con.consult_date DESC
+    <select id="findConsultForPrint"
+            parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultPrintReqDTO"
+            resultType="com.hohoedu.all_pass.consult._dto.ConsultRespDTO$ConsultPrintDTO">
+        SELECT
+        c.student_name AS studentName,
+        c.consult_date AS consultDate,
+        c.school AS school,
+        c.phone AS phone,
+        c.content AS content,
+        c.grade_key AS gradeKey,
+        gc.grade_name AS gradeName,
+        i.inflow_route_name AS inflowRouteName,
+        c.inflow_route_key AS inflowRouteKey,
+        c.progress_key AS progressKey,
+        pc.progress_name AS progressName,
+        c.consult_type AS type,
+        u.user_name AS userName,
+        c.send_at AS sendAt
+        FROM ERP_CONSULT c
+        JOIN erp_user u ON c.user_code = u.user_code
+        JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
+        LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
+        JOIN erp_progress_code pc ON c.progress_key = pc.progress_key
+        WHERE c.center_code = #{centerCode}
+        AND c.consult_date BETWEEN #{startDate} AND #{endDate}
+        <if test="progress != null and progress != ''">
+            AND c.progress_key = #{progress}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+            c.student_name LIKE CONCAT('%', #{keyword}, '%')
+            OR c.phone LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY
+        CASE WHEN #{sortDir} = 'asc' THEN
+        CASE #{sortColumn}
+        WHEN 'consultDate' THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
+        WHEN 'gradeName' THEN gc.grade_name
+        WHEN 'consultType' THEN c.consult_type
+        WHEN 'userName' THEN u.user_name
+        WHEN 'progressKey' THEN c.progress_key
+        ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
+        END
+        END ASC,
+        CASE WHEN #{sortDir} = 'desc' THEN
+        CASE #{sortColumn}
+        WHEN 'consultDate' THEN CONVERT(NVARCHAR(20), c.consult_date, 120)
+        WHEN 'gradeName' THEN gc.grade_name
+        WHEN 'consultType' THEN c.consult_type
+        WHEN 'userName' THEN u.user_name
+        WHEN 'progressKey' THEN c.progress_key
+        ELSE CONVERT(NVARCHAR(20), c.consult_date, 120)
+        END
+        END DESC
     </select>
 
     <select id="findUserNameByUserCode" resultType="String">

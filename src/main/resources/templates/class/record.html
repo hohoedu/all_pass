@@ -36,20 +36,14 @@
 
                         <!-- 수업 후 알림 미발송 상태바 -->
                         <div id="unsent-alert-bar"
-                             th:if="${unsentStudentIds != null and !unsentStudentIds.isEmpty()}"
-                             style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
-                                    padding:10px 15px; margin-top:10px; display:flex; align-items:center; gap:8px;">
+                             th:style="${unsentStudentIds != null and !unsentStudentIds.isEmpty()} ? 'display:flex;' : 'display:none;'"
+                             style="background:#fff3cd; border:1px solid #ffc107; border-radius:4px; padding:10px 15px; margin-top:10px; align-items:center; gap:8px;">
                             <span style="color:#856404; font-weight:bold;">⚠ 수업 후 알림 미발송</span>
-                            <span style="color:#856404;"
-                                  th:text="${unsentStudentIds.size() + '명의 학생에게 수업 후 알림이 발송되지 않았습니다.'}">
+                            <span id="unsent-alert-text" style="color:#856404;"
+                                  th:text="${unsentStudentIds != null and !unsentStudentIds.isEmpty()}
+                                  ? ${unsentStudentIds.size() + '명의 학생에게 수업 후 알림이 발송되지 않았습니다.'}
+                                  : ''">
                             </span>
-                        </div>
-                        <div id="unsent-alert-bar"
-                             th:if="${unsentStudentIds == null or unsentStudentIds.isEmpty()}"
-                             style="display:none; background:#fff3cd; border:1px solid #ffc107; border-radius:4px;
-                                    padding:10px 15px; margin-top:10px; align-items:center; gap:8px;">
-                            <span style="color:#856404; font-weight:bold;">⚠ 수업 후 알림 미발송</span>
-                            <span id="unsent-alert-text" style="color:#856404;"></span>
                         </div>
 
                         <div class="month-header">
@@ -259,7 +253,9 @@
     <div class="remark">
         <div class="remarks-frame">
             <div class="m-t-line">
-                <div><div class="title">특이사항</div></div>
+                <div>
+                    <div class="title">특이사항</div>
+                </div>
                 <a href="#" class="btn-close"></a>
             </div>
             <p class="remark-sub">학생의 해당 수업에 대한 특이사항이나 문제점을 체크해 주세요.</p>
@@ -285,7 +281,9 @@
     <div class="guidance">
         <div class="guide-frame">
             <div class="m-t-line">
-                <div><div class="title">수업 안내 발송</div></div>
+                <div>
+                    <div class="title">수업 안내 발송</div>
+                </div>
                 <a href="#" class="btn-close"></a>
             </div>
             <p class="remark-sub">아래의 수업 안내 내용이 앱으로 발송됩니다.</p>

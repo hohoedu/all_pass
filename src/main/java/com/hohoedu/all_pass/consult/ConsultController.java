@@ -27,7 +27,7 @@ public class ConsultController {
 
     // 상담 문의 기록 조회
     @PostMapping("/search")
-    public ResponseEntity<?> serachConsult(@RequestBody ConsultReqDTO.ConsultListReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> searchConsult(@RequestBody ConsultReqDTO.ConsultListReqDTO reqDTO, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -56,6 +56,46 @@ public class ConsultController {
         reqDTO.setCenterCode(user.getCenterCode());
         consultService.registerConsult(reqDTO);
         return ResponseEntity.ok(ApiUtils.success("success"));
+    }
+
+    @PostMapping("/modal/search")
+    public ResponseEntity<?> searchModalConsult(@RequestBody ConsultReqDTO.ConsultModalReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        reqDTO.setCenterCode(user.getCenterCode());
+        List<ConsultRespDTO.ConsultModalRespDTO> consultList = consultService.findConsultModal(reqDTO);
+        return ResponseEntity.ok(ApiUtils.success(consultList));
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updateConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+
+        reqDTO.setCenterCode(user.getCenterCode());
+        reqDTO.setUserCode(user.getUserCode());
+        consultService.updateConsult(reqDTO);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/update-progress")
+    public ResponseEntity<?> updateProgress(@RequestBody ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        consultService.updateProgress(reqDTO);
+        return ResponseEntity.ok(ApiUtils.success(null));
     }
 
 

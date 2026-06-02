@@ -49,15 +49,22 @@ public class ConsultService {
 
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
 
-        response.stream()
-                .forEach(dto -> {
-                    String sendAt = dto.getSendAt();
-                    if (sendAt == null || sendAt.isBlank()) return;
-
-                    LocalDate date = LocalDate.parse(sendAt, inputFormatter);
-                    dto.setSendAt(date.format(outputFormatter));
-                });
+        response.forEach(dto -> {
+            String sendAt = dto.getSendAt();
+            if (sendAt != null && !sendAt.isBlank()) {
+                dto.setSendAt(sendAt.substring(0, 10));
+            }
+            String registeredAt = dto.getRegisteredAt();
+            if (registeredAt != null && !registeredAt.isBlank()) {
+                dto.setRegisteredAt(registeredAt.substring(0, 10));
+            }
+        });
         return response;
+    }
+
+
+    public List<ConsultRespDTO.ConsultModalRespDTO> findConsultModal(ConsultReqDTO.ConsultModalReqDTO reqDTO) {
+        return consultRepository.findConsultModal(reqDTO);
     }
 
     public List<ConsultRespDTO.ConsultDTO> findByPeriod(String startDate, String endDate, String centerCode, String userCode) {
@@ -90,8 +97,8 @@ public class ConsultService {
         consultRepository.deleteByIds(ids);
     }
 
-    public void updateProgress(Integer id, String progressKey) {
-        consultRepository.updateProgress(id, progressKey);
+    public void updateProgress(ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO) {
+        consultRepository.updateProgress(reqDTO);
     }
 
     @Transactional
@@ -125,10 +132,14 @@ public class ConsultService {
                 .collect(Collectors.toList());
     }
 
+
+    public List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(ConsultReqDTO.ConsultPrintReqDTO reqDTO) {
+        return consultRepository.findConsultForPrint(reqDTO);
+    }
+
     public String getUserName(String userCode) {
         return consultRepository.findUserNameByUserCode(userCode);
     }
-
 
     public void updateSendKey(String consultId, String sendKey) {
         consultRepository.updateSendKey(consultId, sendKey);

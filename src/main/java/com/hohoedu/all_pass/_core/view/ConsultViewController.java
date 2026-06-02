@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import com.hohoedu.all_pass.consult._dto.ConsultReqDTO;
 import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -58,105 +59,69 @@ public class ConsultViewController {
         }
 
         List<GradeCode> grades = studentService.findGrade();
-        List<InflowRoute> routes = consultService.findInflowRoute();
+        List<InflowRoute> inflowRoutes = consultService.findInflowRoute();
 
         model.addAttribute("grades", grades);
-        model.addAttribute("routes", routes);
+        model.addAttribute("inflowRoutes", inflowRoutes);
 
         return "/consult/consult";
     }
 
     @GetMapping("/print-consult")
-    public String getPrintTimeView(@RequestParam(required = false) String startDate,
-                                   @RequestParam(required = false) String endDate,
-                                   @RequestParam(required = false) String userCode,
-                                   @RequestParam(defaultValue = "all") String typeSort,
-                                   @RequestParam(defaultValue = "all") String progressSort,
-                                   Model model, HttpSession session) {
+    public String printConsult(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(defaultValue = "all") String progress,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "consultDate") String sortColumn,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session, Model model) {
+
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
+        if (user == null) return "redirect:/login";
 
-        if (startDate == null || endDate == null) {
-            LocalDate now = LocalDate.now();
-            endDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            startDate = now.minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        }
+        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword, sortColumn, sortDir);
+        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
-        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(userCode, startDate, endDate);
-
-        List<String> typeOrder = List.of("hoho", "han", "book");
-        List<String> progressOrder = List.of("confirmed", "waiting", "counseling", "ended");
-
-        if (!typeSort.equals("all")) {
-            typeOrder = new ArrayList<>(typeOrder);
-            typeOrder.remove(typeSort);
-            typeOrder.add(0, typeSort);
-        }
-        if (!progressSort.equals("all")) {
-            progressOrder = new ArrayList<>(progressOrder);
-            progressOrder.remove(progressSort);
-            progressOrder.add(0, progressSort);
-        }
-
-        List<String> finalTypeOrder = typeOrder;
-        List<String> finalProgressOrder = progressOrder;
-
-        consults.sort(Comparator
-                .comparingInt((ConsultRespDTO.ConsultPrintDTO c) ->
-                        finalTypeOrder.indexOf(c.getType()) == -1 ? 99 : finalTypeOrder.indexOf(c.getType()))
-                .thenComparingInt(c ->
-                        finalProgressOrder.indexOf(c.getProgressKey()) == -1 ? 99 : finalProgressOrder.indexOf(c.getProgressKey()))
-        );
-
-        String userName = consultService.getUserName(userCode);
         model.addAttribute("consults", consults);
-        model.addAttribute("days", DAYS);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        model.addAttribute("userName", userName);
+        model.addAttribute("userName", user.getUserName());
 
         return "print/print-consult";
     }
 
     @GetMapping("/excel-consult")
-    public void downloadConsultExcel(@RequestParam(required = false) String startDate,
-                                     @RequestParam(required = false) String endDate,
-                                     @RequestParam(required = false) String userCode,
-                                     HttpSession session,
-                                     HttpServletResponse response) throws IOException {
+    public void downloadConsultExcel(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(defaultValue = "all") String progress,
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "consultDate") String sortColumn,
+            @RequestParam(defaultValue = "desc") String sortDir,
+            HttpSession session, HttpServletResponse response) throws IOException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            response.sendRedirect("/login");
-            return;
-        }
+        if (user == null) { response.sendRedirect("/login"); return; }
 
-        if (startDate == null || endDate == null) {
-            LocalDate now = LocalDate.now();
-            endDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            startDate = now.minusMonths(3).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        }
+        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword, sortColumn, sortDir);
+        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
-        List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(userCode, startDate, endDate);
-        String userName = consultService.getUserName(userCode);
-
-        String fileName = URLEncoder.encode("상담문의기록_" + userName + "_" + startDate + "~" + endDate + ".xlsx", StandardCharsets.UTF_8);
+        String fileName = URLEncoder.encode(
+                "상담문의기록_" + startDate + "~" + endDate + ".xlsx", StandardCharsets.UTF_8);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
+        // 기존 엑셀 생성 코드 그대로 사용
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("상담문의기록");
 
-        // ── 스타일 ──────────────────────────────
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
         headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         setBorder(headerStyle);
-
         Font headerFont = workbook.createFont();
         headerFont.setBold(true);
         headerStyle.setFont(headerFont);
@@ -172,45 +137,54 @@ public class ConsultViewController {
         memoStyle.setWrapText(true);
         setBorder(memoStyle);
 
-        // ── 헤더 ────────────────────────────────
         String[] headers = {"No", "일자", "이름", "학교", "학년", "연락처", "메모사항", "유입경로", "진행상황", "발송/입회일"};
         Row headerRow = sheet.createRow(0);
         headerRow.setHeight((short) 500);
-
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
         }
 
-        // ── 데이터 ──────────────────────────────
         int rowNum = 1;
         for (ConsultRespDTO.ConsultPrintDTO c : consults) {
             Row row = sheet.createRow(rowNum);
-            row.setHeight((short) -1);  // ✅ 자동 높이
-
+            row.setHeight((short) -1);
             createCell(row, 0, String.valueOf(rowNum), centerStyle);
-            createCell(row, 1, c.getConsultDate(), centerStyle);
-            createCell(row, 2, c.getStudentName(), centerStyle);
-            createCell(row, 3, c.getSchool(), centerStyle);
-            createCell(row, 4, c.getGradeName(), centerStyle);
-            createCell(row, 5, c.getPhone(), centerStyle);
-            createCell(row, 6, c.getContent(), memoStyle);
+            createCell(row, 1, c.getConsultDate(),     centerStyle);
+            createCell(row, 2, c.getStudentName(),     centerStyle);
+            createCell(row, 3, c.getSchool(),          centerStyle);
+            createCell(row, 4, c.getGradeName(),       centerStyle);
+            createCell(row, 5, c.getPhone(),           centerStyle);
+            createCell(row, 6, c.getContent(),         memoStyle);
             createCell(row, 7, c.getInflowRouteName(), centerStyle);
-            createCell(row, 8, c.getProgressName(), centerStyle);
+            createCell(row, 8, c.getProgressName(),    centerStyle);
             createCell(row, 9, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
-
             rowNum++;
         }
 
-        // ── 컬럼 너비 ───────────────────────────
         int[] colWidths = {2000, 4000, 3000, 5000, 3000, 5000, 12000, 4000, 4000, 5000};
-        for (int i = 0; i < colWidths.length; i++) {
-            sheet.setColumnWidth(i, colWidths[i]);
-        }
+        for (int i = 0; i < colWidths.length; i++) sheet.setColumnWidth(i, colWidths[i]);
 
         workbook.write(response.getOutputStream());
         workbook.close();
+    }
+
+    private ConsultReqDTO.ConsultPrintReqDTO buildPrintReqDTO(
+            UserRespDTO.LoginRespDTO user,
+            String startDate, String endDate,
+            String progress, String keyword,
+            String sortColumn, String sortDir) {
+
+        ConsultReqDTO.ConsultPrintReqDTO req = new ConsultReqDTO.ConsultPrintReqDTO();
+        req.setCenterCode(user.getCenterCode());
+        req.setStartDate(startDate);
+        req.setEndDate(endDate);
+        req.setProgress(progress.equals("all") ? null : progress);
+        req.setKeyword(keyword);
+        req.setSortColumn(sortColumn);
+        req.setSortDir(sortDir);
+        return req;
     }
 
     // ── 헬퍼 ────────────────────────────────────

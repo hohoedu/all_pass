@@ -21,6 +21,7 @@ public class ConsultRespDTO {
         private String registerDate;
         private String inflowRouteKey;
         private String userName;
+        private String registeredAt;
     }
 
     @Data
@@ -40,4 +41,21 @@ public class ConsultRespDTO {
         private String sendAt;
         private String type;
     }
+
+    @Data
+    public static class ConsultModalRespDTO {
+        private Integer id;
+        private String studentName;
+        private String phone;
+        private String school;
+        private String gradeKey;
+        private String gradeName;
+        private String inflowRouteKey;
+        private String type;
+        private String content;
+        private String lastConsultDate;
+        private String progressKey;
+        private int consultCount;
+    }
+
 }

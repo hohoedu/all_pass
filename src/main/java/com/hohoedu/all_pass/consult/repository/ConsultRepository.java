@@ -16,11 +16,13 @@ public interface ConsultRepository {
 
     List<ConsultRespDTO.ConsultDTO> findConsult(ConsultReqDTO.ConsultListReqDTO req);
 
+    List<ConsultRespDTO.ConsultModalRespDTO> findConsultModal(ConsultReqDTO.ConsultModalReqDTO req);
+
     List<ConsultRespDTO.ConsultDTO> findByPeriod(Map<String, Object> params);
 
     void deleteByIds(List<Integer> ids);
 
-    void updateProgress(@Param("id") Integer id, @Param("progressKey") String progressKey);
+    void updateProgress(ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO);
 
     int updateConsultContent(@Param("id") Integer id, @Param("content") String content);
 
@@ -30,6 +32,8 @@ public interface ConsultRepository {
             @Param("userCode") String userCode,
             @Param("startDate") String startDate,
             @Param("endDate") String endDate);
+
+    List<ConsultRespDTO.ConsultPrintDTO> findConsultForPrint(ConsultReqDTO.ConsultPrintReqDTO req);
 
     String findUserNameByUserCode(String userCode);
 
