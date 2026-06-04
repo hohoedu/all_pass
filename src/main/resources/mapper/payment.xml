@@ -1883,60 +1883,87 @@
     </delete>
 
     <select id="findCashbillPrint" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$CashbillPrintDTO">
-        WITH student_subjects AS (SELECT DISTINCT pc.appr_cash_num,
-                                                  pc.student_id,
-                                                  s.student_name,
-                                                  CASE cc.class_type WHEN 1 THEN '한자' WHEN 2 THEN '독서' END AS subject_name
-                                  FROM erp_payment_cashbill pc
-                                           JOIN erp_payment p ON pc.payment_key = p.payment_key
-                                           JOIN erp_student s ON pc.student_id = s.student_id
-                                           LEFT JOIN erp_time_table_assign ta ON s.student_id = ta.student_id
-                                           LEFT JOIN erp_time_table t
-                                                     ON t.time_table_key = ta.time_table_key
-                                                         AND t.yy + '-' + t.mm = #{ym}
-                                           LEFT JOIN erp_class_code cc
-                                                     ON t.class_key = cc.class_key
-                                                         AND cc.class_type IN (1, 2)
-                                  WHERE p.yy + '-' + p.mm = #{ym}
-                                    AND s.center_code = #{centerCode}),
-             student_display AS (SELECT DISTINCT appr_cash_num,
-                                                 student_id,
-                                                 -- 과목 정보가 없으면 이름만 표시
-                                                 student_name +
-                                                 ISNULL(
-                                                         NULLIF(
-                                                                 '(' + STUFF((SELECT DISTINCT ', ' + ss2.subject_name
-                                                                              FROM student_subjects ss2
-                                                                              WHERE ss2.appr_cash_num = ss.appr_cash_num
-                                                                                AND ss2.student_id = ss.student_id
-                                                                                AND ss2.subject_name IS NOT NULL
-                                                                                 FOR XML PATH (''), TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') + ')',
-                                                                 '()')
-                                                     , '') AS student_display
-                                 FROM student_subjects ss)
-        SELECT STUFF((SELECT DISTINCT ', ' + sd.student_display
-                      FROM student_display sd
-                      WHERE sd.appr_cash_num = pc.appr_cash_num
-                         FOR XML PATH (''),
-                     TYPE ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS studentInfo,
-               MAX(pc.bill_id)                                     AS billId,
-               MAX(pc.created_at)                                  AS apprDate,
-               MAX(pc.receipt_number)                              AS receiptNum,
-               pc.appr_cash_num                                    AS apprCashNum,
-               MAX(pc.supply_price)                                AS supplyPrice,
-               MAX(pc.tax)                                         AS taxPrice,
-               MAX(pc.price)                                       AS totalPrice,
-               MAX(c.biz_name)                                     AS centerName,
-               MAX(c.director_name)                                AS directorName,
-               MAX(c.biz_no)                                       AS bizNo,
-               MAX(c.center_tel)                                   AS centerTel,
-               MAX(c.center_address)                               AS centerAddress
+        WITH sibling_payments AS (
+            -- cashbill → payment → manual → group → 같은 그룹의 모든 manual payment_key 수집
+            SELECT
+                pc.appr_cash_num,
+                pm2.payment_key AS sibling_payment_key
+            FROM erp_payment_cashbill pc
+                     JOIN erp_payment p     ON pc.payment_key = p.payment_key
+                     JOIN erp_payment_manual pm   ON p.payment_key  = pm.payment_key
+                     JOIN erp_payment_manual_group pmg ON pm.manual_key   = pmg.manual_key
+                     JOIN erp_payment_manual pm2  ON pmg.manual_key  = pm2.manual_key
+            WHERE p.yy + '-' + p.mm = #{ym}
+              AND pc.student_id IN (
+                SELECT student_id FROM erp_student WHERE center_code = #{centerCode}
+            )
+        ),
+             student_subjects AS (
+                 SELECT DISTINCT
+                     sp.appr_cash_num,
+                     s.student_id,
+                     s.student_name,
+                     CASE
+                         WHEN cv.subName_hohoschool IS NOT NULL AND cv.subName_hohoschool != ''
+                    THEN cv.subName_hohoschool
+                         WHEN cv.class_type = 1 THEN '(한):' + cv.subName
+                         WHEN cv.class_type = 2 THEN '(독):' + cv.subName
+                         ELSE cv.subName
+                         END AS subject_name
+                 FROM sibling_payments sp
+                          JOIN erp_payment p   ON sp.sibling_payment_key = p.payment_key
+                          JOIN erp_student s   ON p.student_id           = s.student_id
+                          JOIN erp_payment_detail pd ON p.payment_key    = pd.payment_key
+                          JOIN erp_time_table tt     ON pd.time_table_key = tt.time_table_key
+                          JOIN erp_edu_time_class_value cv
+                               ON tt.class_key    = cv.class_key
+                                   AND cv.center_code = #{centerCode}
+                 WHERE pd.item_type = 'EDU_FEE'
+             ),
+             student_display AS (
+                 SELECT DISTINCT
+                     appr_cash_num,
+                     student_id,
+                     student_name +
+                     ISNULL(
+                             NULLIF(
+                                     '(' + STUFF(
+                                             (SELECT DISTINCT ', ' + ss2.subject_name
+                                              FROM student_subjects ss2
+                                              WHERE ss2.appr_cash_num = ss.appr_cash_num
+                                                AND ss2.student_id    = ss.student_id
+                                                AND ss2.subject_name  IS NOT NULL
+                                                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'),
+                    1, 2, '') + ')',
+                                     '()')
+                         , '') AS student_display
+                 FROM student_subjects ss
+             )
+        SELECT
+            STUFF(
+                    (SELECT DISTINCT ', ' + sd.student_display
+                     FROM student_display sd
+                     WHERE sd.appr_cash_num = pc.appr_cash_num
+                        FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'),
+        1, 2, '')              AS studentInfo,
+            MAX(pc.bill_id)        AS billId,
+            MAX(pc.created_at)     AS apprDate,
+            MAX(pc.receipt_number) AS receiptNum,
+            pc.appr_cash_num       AS apprCashNum,
+            MAX(pc.supply_price)   AS supplyPrice,
+            MAX(pc.tax)            AS taxPrice,
+            MAX(pc.price)          AS totalPrice,
+            MAX(c.biz_name)        AS centerName,
+            MAX(c.director_name)   AS directorName,
+            MAX(c.biz_no)          AS bizNo,
+            MAX(c.center_tel)      AS centerTel,
+            MAX(c.center_address)  AS centerAddress
         FROM erp_payment_cashbill pc
                  JOIN erp_payment p ON pc.payment_key = p.payment_key
-                 JOIN erp_student s ON pc.student_id = s.student_id
-                 JOIN erp_center c ON s.center_code = c.center_code
+                 JOIN erp_student s ON pc.student_id  = s.student_id
+                 JOIN erp_center c  ON s.center_code  = c.center_code
         WHERE p.yy + '-' + p.mm = #{ym}
-          AND s.center_code = #{centerCode}
+          AND s.center_code      = #{centerCode}
         GROUP BY pc.appr_cash_num
         ORDER BY MAX(pc.created_at) DESC
     </select>

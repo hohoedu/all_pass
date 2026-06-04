@@ -23,8 +23,8 @@ public class AttendancaController {
     private final AttendanceService attendanceService;
 
     @PostMapping("/select")
-    public ResponseEntity<?> attendanceSxcheduler() {
-        log.info("AttendancaController select");
+    public ResponseEntity<?> attendanceScheduler() {
+        log.info("AttendanceController select");
         String today = DateConfig.currentYearMonth().get("today");
         String day = DateConfig.currentYearMonth().get("currentDayName");
         String nowHHmm = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
