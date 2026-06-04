@@ -27,117 +27,51 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final ClassRepository classRepository;
 
-    private String findWeek(LocalDate today, ClassRespDTO.ClassWeekDTO week) {
 
-        if (today == null || week == null) {
-            return "";
-        }
+    public List<ClassRespDTO.ClassWeekInfoDTO> executeScheduledAttendance(String today, String dayname, String nowHHmm) {
 
-        try {
-            if (isSame(today, week.getMon()) ||
-                    isSame(today, week.getTue()) ||
-                    isSame(today, week.getWed()) ||
-                    isSame(today, week.getThu()) ||
-                    isSame(today, week.getFri()) ||
-                    isSame(today, week.getSat()) ||
-                    isSame(today, week.getSun())) {
+        // 1. 오늘 날짜에 맞는 수업 주차를 찾고 수업의 년월을 구하기
+        List<ClassRespDTO.ClassWeekInfoDTO> weekInfoList = classRepository.findWeekInfoAllCenters(today, dayname);
 
-                return week.getWeek();   // "ju_1", "ju_2" 등
+
+        for (ClassRespDTO.ClassWeekInfoDTO weekInfo : weekInfoList) {
+            // 2. 센터별 종료된 수업 찾기
+            List<ClassRespDTO.FinishClassDTO> finished = attendanceRepository.findClassesToProcess(
+                    weekInfo.getCenterCode(),
+                    weekInfo.getYear(),
+                    weekInfo.getMonth(),
+                    dayname,
+                    weekInfo.getWeek(),
+                    nowHHmm);
+
+            if (finished == null || finished.isEmpty()) {
+                log.info("[출석처리 SKIP] 처리 대상 없음 centerCode={}", weekInfo.getCenterCode());
+                continue;
             }
 
-        } catch (Exception e) {
-            log.error("주차 판단 오류: {}", e.getMessage());
-        }
+            for (ClassRespDTO.FinishClassDTO tt : finished) {
+                try {
+                    // 1. 지각 처리
+                    attendanceRepository.updateLatenessForClass(tt.getTimeTableKey(), today);
 
-        return ""; // 해당 없음
-    }
+                    // 2. 결석 처리 (before → absent)
+                    attendanceRepository.bulkInsertAbsentForClass(tt.getTimeTableKey(), today, tt.getWeek());
 
-    private boolean isSame(LocalDate today, String target) {
-        if (target == null || target.isBlank()) return false;
+                    // 3. 보충 등록 (absent인 학생만 insert)
+                    attendanceRepository.bulkInsertRemedialForClass(
+                            tt.getTimeTableKey(),
+                            today,
+                            tt.getWeek(),
+                            weekInfo.getYear(),
+                            weekInfo.getMonth());
 
-        try {
-            LocalDate parsed = LocalDate.parse(target);
-            return today.isEqual(parsed);
-        } catch (Exception e) {
-            log.warn("날짜 파싱 실패: {}", target);
-            return false;
-        }
-    }
-
-
-    public ScheduleRunResultDTO executeScheduledAttendance(
-            String nowHHmm, String yy, String mm, String day, String today) {
-
-        LocalDate currentDay = LocalDate.parse(today);
-
-        List<ClassRespDTO.FinishClassDTO> finished = attendanceRepository.findClassesToProcess(yy, mm, day, nowHHmm);
-
-        Map<String, String> weekMap = new HashMap<>();
-
-        for (ClassRespDTO.FinishClassDTO dto : finished) {
-            String centerCode = dto.getCenterCode();
-
-            if (!weekMap.containsKey(centerCode)) {
-
-                List<ClassRespDTO.ClassWeekDTO> classWeeks = classRepository.getClassWeek(yy, mm, centerCode);
-                String week = null;
-
-                if (classWeeks != null && !classWeeks.isEmpty()) {
-                    for (ClassRespDTO.ClassWeekDTO w : classWeeks) {
-                        String found = findWeek(currentDay, w);
-                        if (found != null && !found.isBlank()) {
-                            week = found;
-                            break;
-                        }
-                    }
+                } catch (Exception e) {
+                    log.error("[출석처리 오류] timeTableKey={}, centerCode={}",
+                            tt.getTimeTableKey(), tt.getCenterCode(), e);
                 }
-
-                if (week == null || week.isBlank()) {
-                    LocalDate prevMonth = currentDay.minusMonths(1);
-                    String prevYy = String.valueOf(prevMonth.getYear());
-                    String prevMm = String.format("%02d", prevMonth.getMonthValue());
-
-                    log.info("[스케줄 주차계산] 현재 월 매칭 없음 → 전월({}-{}) 조회, centerCode={}", prevYy, prevMm, centerCode);
-
-                    List<ClassRespDTO.ClassWeekDTO> prevWeeks = classRepository.getClassWeek(prevYy, prevMm, centerCode);
-                    if (prevWeeks != null && !prevWeeks.isEmpty()) {
-                        for (ClassRespDTO.ClassWeekDTO w : prevWeeks) {
-                            String found = findWeek(currentDay, w);
-                            if (found != null && !found.isBlank()) {
-                                week = found;
-                                log.info("[스케줄 주차계산] 전월({}-{})에서 찾음 → {}", prevYy, prevMm, week);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                weekMap.put(centerCode, week != null ? week : "");
             }
         }
-
-        for (ClassRespDTO.FinishClassDTO dto : finished) {
-            dto.setWeek(weekMap.get(dto.getCenterCode()));
-        }
-
-        int processed = 0;
-        List<ProcessedClassDTO> details = new ArrayList<>();
-
-        for (ClassRespDTO.FinishClassDTO tt : finished) {
-            try {
-                attendanceRepository.updateLatenessForClass(tt.getTimeTableKey(), today);
-                attendanceRepository.bulkInsertAbsentForClass(tt.getTimeTableKey(), today, tt.getWeek());
-                attendanceRepository.bulkInsertRemedialForClass(tt.getTimeTableKey(), today, tt.getWeek(), tt.getYy(), tt.getMm());
-
-                processed++;
-                details.add(ProcessedClassDTO.processedOf(tt));
-
-            } catch (DataAccessException e) {
-                log.error("출석 처리 중 오류", e);
-            }
-        }
-
-        return null;
+        return weekInfoList;
     }
 
 }

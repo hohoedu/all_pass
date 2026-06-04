@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.attendance;
 
 import java.util.List;
+import java.util.Map;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
@@ -13,9 +14,11 @@ public interface AttendanceRepository {
 
     // 종료된 수업 조회
     List<ClassRespDTO.FinishClassDTO> findClassesToProcess(
+            @Param("centerCode") String centerCode,
             @Param("yy") String yy,
             @Param("mm") String mm,
             @Param("dayname") String dayname,
+            @Param("week") String week,
             @Param("nowTimeHHmm") String nowTimeHHmm
     );
 
@@ -57,4 +60,6 @@ public interface AttendanceRepository {
     String findClassStartTime(
             @Param("timeTableKey") String timeTableKey
     );
+
+    Map<String, String> findYyMmByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 }

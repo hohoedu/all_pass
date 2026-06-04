@@ -41,6 +41,10 @@ public interface ClassRepository {
             @Param("month") String month,
             @Param("centerCode") String centerCode);
 
+    List<ClassRespDTO.ClassWeekInfoDTO> findWeekInfoAllCenters(
+            @Param("today") String today,
+            @Param("dayname") String dayname);
+
     void insertClassWeek(ClassReqDTO.SetWeekDTO dto);
 
     void updateClassWeek(ClassReqDTO.SetWeekDTO dto);

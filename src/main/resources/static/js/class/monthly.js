@@ -13,12 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!monthInput || !teacherSelect) return;
 
-    // 오늘 날짜 기본값 세팅
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    monthInput.value = `${yyyy}-${mm}`;
-    monthDisplay.textContent = `${yyyy}년 ${mm}월`;
+    const displayYear  = monthDisplay.dataset.year;
+    const displayMonth = monthDisplay.dataset.month;
+    monthInput.value   = `${displayYear}-${displayMonth}`;
+    monthDisplay.textContent = `${displayYear}년 ${displayMonth}월`;
 
     // 현재 선택된 요일 가져오기
     function getCurrentDayName() {

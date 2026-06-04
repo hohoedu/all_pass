@@ -1,9 +1,6 @@
 package com.hohoedu.all_pass.consult;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +32,10 @@ public class ConsultService {
     }
 
     public void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO) {
+        String existingKey = consultRepository.findConsultKeyByPhone(
+                reqDTO.getPhone(), reqDTO.getCenterCode()
+        );
+        reqDTO.setConsultKey(existingKey != null ? existingKey : generateConsultKey());
 
         consultRepository.registerConsult(reqDTO);
     }
@@ -58,6 +59,11 @@ public class ConsultService {
             if (registeredAt != null && !registeredAt.isBlank()) {
                 dto.setRegisteredAt(registeredAt.substring(0, 10));
             }
+            String endedAt = dto.getEndedAt();
+            if (endedAt != null && !endedAt.isBlank()) {
+                dto.setEndedAt(endedAt.substring(0, 10));
+            }
+
         });
         return response;
     }
@@ -89,6 +95,7 @@ public class ConsultService {
                     LocalDate date = LocalDate.parse(sendAt, inputFormatter);
                     dto.setSendAt(date.format(outputFormatter));
                 });
+
         return response;
     }
 
@@ -97,6 +104,7 @@ public class ConsultService {
         consultRepository.deleteByIds(ids);
     }
 
+    @Transactional
     public void updateProgress(ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO) {
         consultRepository.updateProgress(reqDTO);
     }
@@ -104,9 +112,7 @@ public class ConsultService {
     @Transactional
     public int updateConsultContent(Integer id, String content) {
         int result = consultRepository.updateConsultContent(id, content);
-//        if(result > 0) {
-//            return consultRepository.
-//        }
+
         return result;
     }
 
@@ -144,4 +150,19 @@ public class ConsultService {
     public void updateSendKey(String consultId, String sendKey) {
         consultRepository.updateSendKey(consultId, sendKey);
     }
+
+    private String generateConsultKey() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        String key;
+        do {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 8; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            key = sb.toString();
+        } while (consultRepository.existsByConsultKey(key)); // 중복 체크
+        return key;
+    }
+
 }

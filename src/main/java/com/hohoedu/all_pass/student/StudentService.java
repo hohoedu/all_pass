@@ -1256,16 +1256,17 @@ public class StudentService {
         }
 
         String newKey = dto.getAttendanceKey();
-        log.info("absenceDate = {}", dto.getAbsenceDate());
+
         // 4. 결석 → 보강 생성
         if (!"absent".equals(prevKey) && "absent".equals(newKey)) {
+            Map<String, String> ttYyMm = attendanceRepository.findYyMmByTimeTableKey(dto.getTimeTableKey());
             attendanceRepository.insertRemedialForStudent(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
                     dto.getAbsenceDate(),
                     dto.getWeek(),
-                    dto.getYy(),
-                    dto.getMm(),
+                    ttYyMm.get("yy"),
+                    ttYyMm.get("mm"),
                     userCode);
 
         }

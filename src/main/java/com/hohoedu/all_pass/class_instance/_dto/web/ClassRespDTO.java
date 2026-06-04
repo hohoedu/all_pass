@@ -201,6 +201,14 @@ public class ClassRespDTO {
     }
 
     @Data
+    public static class ClassWeekInfoDTO {
+        private String centerCode;
+        private String year;
+        private String month;
+        private String week;
+    }
+
+    @Data
     public static class InitRecordDTO {
         private String timeTableKey;
         private String classLabel;

@@ -17,21 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!monthInput) return;
 
-    const urlParams = getYearMonthFromURL();
-    let year, month;
-
-    if (urlParams.year && urlParams.month) {
-        year = urlParams.year;
-        month = urlParams.month;
-    } else {
-        const today = new Date();
-        year = today.getFullYear();
-        month = String(today.getMonth() + 1).padStart(2, "0");
-        setYearMonthToURL(year, month);
-    }
+    const year  = monthDisplay.dataset.year;
+    const month = monthDisplay.dataset.month;
 
     monthInput.value = `${year}-${month}`;
     monthDisplay.textContent = `${year}년 ${month}월`;
+    setYearMonthToURL(year, month);  // URL을 올바른 월로 초기화
 
     loadRemedialData(year, month);
 

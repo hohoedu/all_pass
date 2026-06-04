@@ -49,7 +49,7 @@ public class ClassViewController {
     // 시간표 등록
     @GetMapping("/timetable")
     public String getClassTimetable(@RequestParam("year") String year, @RequestParam("month") String month, Model model,
-            HttpSession session) throws JsonProcessingException {
+                                    HttpSession session) throws JsonProcessingException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -96,7 +96,7 @@ public class ClassViewController {
     // 시간표 조회
     @GetMapping("/timeview")
     public String getClassTimeView(@RequestParam("year") String year, @RequestParam("month") String month, Model model,
-            HttpSession session) {
+                                   HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -130,7 +130,7 @@ public class ClassViewController {
 
     @GetMapping("/print-timeview")
     public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model,
-            HttpSession session) {
+                                   HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -250,7 +250,7 @@ public class ClassViewController {
     }
 
     private String findWeekByDate(List<ClassRespDTO.ClassWeekDTO> weeks, LocalDate targetDate,
-            Function<LocalDate, List<ClassRespDTO.ClassWeekDTO>> weeksFetcher) {
+                                  Function<LocalDate, List<ClassRespDTO.ClassWeekDTO>> weeksFetcher) {
         // 현재 월에서 먼저 탐색
         Optional<String> result = findWeekInList(weeks, targetDate);
         if (result.isPresent()) {
@@ -305,12 +305,19 @@ public class ClassViewController {
 
     // 보강 페이지
     @GetMapping("/remedial")
-    public String getClassRemedialPage(Model model, @RequestParam("year") String year,
-            @RequestParam("month") String month, HttpSession session) {
+    public String getClassRemedialPage(Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+
+
+        Map<String, String> now = DateConfig.currentYearMonth();
+
+        ClassRespDTO.ClassWeekInfoDTO weekInfo = classService.findWeekInfoByCenter(now.get("today"), now.get("currentDayName"), user.getCenterCode());
+        log.info(weekInfo.toString());
+        String year = weekInfo != null ? weekInfo.getYear() : now.get("currentYear");
+        String month = weekInfo != null ? weekInfo.getMonth() : now.get("currentMonth");
 
         List<User> users = userService.findActiveUser(user);
 
@@ -329,6 +336,8 @@ public class ClassViewController {
         model.addAttribute("leftRemedials", leftRemedials);
         model.addAttribute("absentFlags", absentFlags);
         model.addAttribute("users", users);
+        model.addAttribute("displayYear", year);
+        model.addAttribute("displayMonth", month);
         return "class/remedial";
     }
 
@@ -341,26 +350,43 @@ public class ClassViewController {
             return "login";
         }
 
-        log.info(user.getUserName());
+        Map<String, String> now = DateConfig.currentYearMonth();
+
+        ClassRespDTO.ClassWeekInfoDTO weekInfo = classService.findWeekInfoByCenter(now.get("today"), now.get("currentDayName"), user.getCenterCode());
+
+        String displayYear = weekInfo != null ? weekInfo.getYear() : now.get("currentYear");
+        String displayMonth = weekInfo != null ? weekInfo.getMonth() : now.get("currentMonth");
+        String weekLabel = (weekInfo != null && weekInfo.getWeek() != null)
+                ? weekInfo.getWeek().replace("ju_", "") + "주차" : "";
+
+        boolean showWeekNotice = !displayMonth.equals(now.get("currentMonth"));
+
         // 센터별 선생님 목록
         List<User> users = userService.findActiveUser(user);
 
         // 클래스 리스트 가져오기
         List<TimeTableLabelDTO> labels = classService.getMonthlyClassList(
                 user.getUserCode(),
-                DateConfig.currentYearMonth().get("currentYear"),
-                DateConfig.currentYearMonth().get("currentMonth"),
-                DateConfig.currentYearMonth().get("currentDayName"),
+                displayYear,
+                displayMonth,
+                now.get("currentDayName"),
                 user.getCenterCode());
+
         // 첫번째 수업에 대한 학생 목록 가져오기
         if (!labels.isEmpty()) {
             List<MonthlyStudentDTO> students = classService.getMonthlyClassDetail(labels.get(0).getTimeTableKey());
             log.info(students.toString());
             model.addAttribute("students", students);
+        } else {
+            model.addAttribute("students", List.of());
         }
 
         model.addAttribute("users", users);
         model.addAttribute("labels", labels);
+        model.addAttribute("displayYear", displayYear);
+        model.addAttribute("displayMonth", displayMonth);
+        model.addAttribute("weekLabel", weekLabel);
+        model.addAttribute("showWeekNotice", showWeekNotice);
         return "class/monthly";
     }
 

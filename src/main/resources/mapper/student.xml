@@ -1317,7 +1317,8 @@
         SET
         attendance_key = #{attendanceKey},
         in_time = #{inTime},
-        out_time = #{outTime}
+        out_time = #{outTime},
+        attendance_date = #{absenceDate}
         <if test="inTime != null and inTime != ''">
             , check_in_updated_at = SYSDATETIME()
         </if>

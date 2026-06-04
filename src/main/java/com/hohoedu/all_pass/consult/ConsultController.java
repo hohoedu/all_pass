@@ -93,8 +93,17 @@ public class ConsultController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-
+        reqDTO.setUserCode(user.getUserCode());
         consultService.updateProgress(reqDTO);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/update-memo")
+    public ResponseEntity<?> updateMemo(@RequestBody ConsultReqDTO.ConsultMemoUpdateReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+
+        consultService.updateConsultContent(reqDTO.getId(), reqDTO.getContent());
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 

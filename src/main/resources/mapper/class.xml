@@ -82,6 +82,20 @@
         ORDER BY week
     </select>
 
+    <select id="findWeekInfoAllCenters" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassWeekInfoDTO">
+        SELECT center_code, year, month, week
+        FROM erp_class_week
+        WHERE CASE #{dayname}
+            WHEN 'mon' THEN mon
+            WHEN 'tue' THEN tue
+            WHEN 'wed' THEN wed
+            WHEN 'thu' THEN thu
+            WHEN 'fri' THEN fri
+            WHEN 'sat' THEN sat
+            WHEN 'sun' THEN sun
+        END = #{today}
+    </select>
+
     <!-- INSERT -->
     <insert id="insertClassWeek" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$SetWeekDTO">
         INSERT INTO erp_class_week (year, month, week, mon, tue, wed, thu, fri, sat, sun, center_code, created_at)
@@ -927,8 +941,8 @@
                  JOIN erp_student s ON r.student_id = s.student_id
                  JOIN erp_user u ON r.user_code = u.user_code
         WHERE r.user_code = #{userCode}
-          AND substring(r.absence_date, 1, 4) = #{year}
-          AND substring(r.absence_date, 6, 2) = #{month}
+          AND yy = #{year}
+          AND mm = #{month}
     </select>
 
     <!-- 결석 2주 / 결석 후 10일 이내 보강 없는 학생 조회  -->

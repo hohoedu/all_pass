@@ -12,6 +12,8 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ConsultRepository {
 
+    String findConsultKeyByPhone(@Param("phone") String phone, @Param("centerCode") String centerCode);
+
     void registerConsult(ConsultReqDTO.ConsultRegisterReqDTO reqDTO);
 
     List<ConsultRespDTO.ConsultDTO> findConsult(ConsultReqDTO.ConsultListReqDTO req);
@@ -41,4 +43,8 @@ public interface ConsultRepository {
             @Param("consultId") String consultId,
             @Param("sendKey") String sendKey
     );
+
+    boolean existsByConsultKey(String consultKey);
+
+
 }

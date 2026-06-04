@@ -3,11 +3,28 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hohoedu.all_pass.consult.repository.ConsultRepository">
 
-    <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO">
+    <select id="findConsultKeyByPhone" resultType="String">
+        SELECT TOP 1 consult_key
+        FROM erp_consult
+        WHERE phone = #{phone}
+          AND center_code = #{centerCode}
+          AND consult_key IS NOT NULL
+          AND consult_key != ''
+        ORDER BY created_at DESC
+    </select>
 
-        INSERT INTO erp_consult (student_name, consult_date, school, grade_key, phone, inflow_route_key, progress_key, content, created_at, center_code, user_code, consult_type)
-        VALUES (#{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone}, #{inflowRouteKey}, #{progressKey}, #{content}, SYSDATETIME(), #{centerCode}, #{userCode},
-                #{consultType});
+    <insert id="registerConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultRegisterReqDTO">
+        INSERT INTO erp_consult (
+            student_name, consult_date, school, grade_key, phone,
+            inflow_route_key, progress_key, content, created_at,
+            center_code, user_code, consult_key,
+            inquiry_hoho, inquiry_han, inquiry_book, inquiry_doc
+        ) VALUES (
+                     #{studentName}, #{consultDate}, #{school}, #{gradeKey}, #{phone},
+                     #{inflowRouteKey}, #{progressKey}, #{content}, SYSDATETIME(),
+                     #{centerCode}, #{userCode}, #{consultKey},
+                     #{inquiryHoho}, #{inquiryHan}, #{inquiryBook}, #{inquiryDoc}
+                 )
     </insert>
 
     <select id="findConsult" parameterType="com.hohoedu.all_pass.consult._dto.ConsultReqDTO$ConsultListReqDTO"
@@ -24,15 +41,24 @@
         c.inflow_route_key AS inflowRouteKey,
         c.progress_key AS progressKey,
         c.consult_type AS type,
+        c.consult_key AS consultKey,
         u.user_name AS userName,
         ps.invite_sent_at AS send_at,
-        ps.registered_at AS registered_at
+        ps.registered_at AS registered_at,
+        c.inquiry_hoho AS inquiryHoho,
+        c.inquiry_han  AS inquiryHan,
+        c.inquiry_book AS inquiryBook,
+        c.inquiry_doc  AS inquiryDoc,
+        c.end_reason AS endReason,
+        c.ended_at AS endedAt,
+        u2.user_name AS endUserName
         FROM ERP_CONSULT c
         JOIN erp_user u ON c.user_code = u.user_code
         JOIN erp_grade_code gc ON c.grade_key = gc.grade_key
         LEFT JOIN erp_inflow_route i ON c.inflow_route_key = i.inflow_route_key
         JOIN erp_progress_code pc ON c.progress_key = pc.progress_key
         LEFT JOIN erp_pending_student ps ON ps.send_key = c.send_key
+        LEFT JOIN erp_user u2 ON c.end_user_code = u2.user_code
         WHERE c.center_code = #{centerCode}
         AND c.consult_date BETWEEN #{startDate} AND #{endDate}
         <if test="progress != null and progress != ''">
@@ -167,7 +193,9 @@
         UPDATE ERP_CONSULT
         SET progress_key = #{progressKey}
         <if test="endReason != null and endReason != ''">
-            , end_reason = #{endReason}
+            , end_reason = #{endReason},
+              ended_at = SYSDATETIME(),
+              end_user_code = #{userCode}
         </if>
         WHERE id = #{id}
     </update>
@@ -260,4 +288,11 @@
         SET send_key = #{sendKey}
         where id = #{consultId}
     </update>
+
+    <select id="existsByConsultKey" resultType="boolean">
+        SELECT CASE WHEN COUNT(1) > 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END
+        FROM erp_consult
+        WHERE consult_key = #{consultKey}
+    </select>
+
 </mapper>

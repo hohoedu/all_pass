@@ -208,7 +208,7 @@ public class ClassService {
     }
 
     public Map<String, List<ClassRespDTO.ClassUnitDTO>> findClassUnitsOverPeriod(String centerCode, String startYear,
-            String startMonth, String endYear, String endMonth) {
+                                                                                 String startMonth, String endYear, String endMonth) {
         Map<String, List<ClassRespDTO.ClassUnitDTO>> result = new HashMap<>();
 
         List<ClassRespDTO.ClassUnitDTO> baseList = classRepository.findClassUnitMap();
@@ -504,13 +504,13 @@ public class ClassService {
             dto.setCenterCode(centerCode);
 
             String classKey = old.getClassKey();
-            String unitKey  = old.getUnitKey();
+            String unitKey = old.getUnitKey();
 
             if (Constants.UNIT_INCREMENT_BOOK_CLASS_KEYS.contains(classKey)) {
-                String prefix    = unitKey.replaceAll("[0-9]", "");
-                int    prevMonth = Integer.parseInt(unitKey.replaceAll("[^0-9]", ""));
+                String prefix = unitKey.replaceAll("[0-9]", "");
+                int prevMonth = Integer.parseInt(unitKey.replaceAll("[^0-9]", ""));
                 boolean isRollover = (prevMonth == 12);
-                int     newMonth   = isRollover ? 1 : prevMonth + 1;
+                int newMonth = isRollover ? 1 : prevMonth + 1;
 
                 dto.setUnitKey(prefix + String.format("%02d", newMonth));
                 dto.setClassKey(isRollover
@@ -1053,6 +1053,7 @@ public class ClassService {
         List<RemedialDTO> remedials = classRepository.findRemedialByUserCode(year, month, userCode);
         return remedials;
     }
+
     public List<ClassRespDTO.AbsentFlagDTO> findAbsentFlags(String year, String month, String userCode) {
         return classRepository.findAbsentFlags(year, month, userCode);
     }
@@ -1118,6 +1119,16 @@ public class ClassService {
     }
 
     // ================ 월간 평가 서비스 =====================//
+
+    // 수업 주차 조회
+    public ClassRespDTO.ClassWeekInfoDTO findWeekInfoByCenter(String today, String dayname, String centerCode) {
+
+        List<ClassRespDTO.ClassWeekInfoDTO> weekInfos = classRepository.findWeekInfoAllCenters(today, dayname);
+
+        return weekInfos.stream().filter(w -> w.getCenterCode().equals(centerCode)).findFirst().orElse(null);
+
+    }
+
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname,
                                                        String centerCode) {
         List<TimeTableLabelDTO> labels = classRepository

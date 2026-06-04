@@ -39,7 +39,15 @@
                         </div>
                         <div class="month-header">
                             <div class="month-title month-today">
-                                <span class="current-month" id="monthly_current"></span>
+                                <span class="current-month" id="monthly_current"
+                                      th:data-year="${displayYear}"
+                                      th:data-month="${displayMonth}">
+                                </span>
+                                <!-- 오늘 달력 월과 수업 주차 월이 다를 때만 표시 -->
+                                <span th:if="${showWeekNotice}"
+                                      th:text="|${displayMonth}월 ${weekLabel} 기준|"
+                                      style="font-size: 12px; color: #e67e22; margin-left: 8px; font-weight: bold;">
+                                </span>
                                 <div style="position: relative;">
                                     <input type="month" id="monthly_calendar" class="hidden-date"/>
                                     <button type="button" class="icon-btn calendar-open">
@@ -52,7 +60,8 @@
                                 <select name="teacher" id="monthly-teacher-select" style="width: 200px;">
                                     <th:block th:each="u : ${users}">
                                         <option th:value="${u.userCode}" th:text="${u.userName + ' 선생님'}"
-                                                th:selected="${u.userCode == session.user.getUserCode()}">></option>
+                                                th:selected="${u.userCode == session.user.getUserCode()}">>
+                                        </option>
                                     </th:block>
                                 </select>
                             </div>

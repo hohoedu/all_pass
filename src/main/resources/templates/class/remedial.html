@@ -68,7 +68,10 @@
                     </div>
                     <div class="month-header2" style="padding: 0px; margin-bottom: 15px;">
                         <div class="month-title">
-                            <span class="current-month" id="remedial_current"></span>
+                            <span class="current-month" id="remedial_current"
+                                  th:data-year="${displayYear}"
+                                  th:data-month="${displayMonth}">
+                            </span>
                             <div style="position: relative;">
                                 <div class="calendar-wrapper">
                                     <input type="month" id="remedial_calender" style="position:absolute; opacity:0; width:0; height:0;">

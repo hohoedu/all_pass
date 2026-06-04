@@ -22,6 +22,13 @@ public class ConsultRespDTO {
         private String inflowRouteKey;
         private String userName;
         private String registeredAt;
+        private String endReason;
+        private String endedAt;
+        private String endUserName;
+        private boolean inquiryHoho;
+        private boolean inquiryHan;
+        private boolean inquiryBook;
+        private boolean inquiryDoc;
     }
 
     @Data
