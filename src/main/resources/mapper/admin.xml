@@ -81,4 +81,10 @@
                     VALUES (#{subjectKey}, #{bookName}, #{publisher}, #{bookImageUrl}, #{classKey}, #{yy}, #{mm},
                             #{week}, SYSDATETIME());
     </update>
+
+    <update id="updateOrderDeadline" parameterType="com.hohoedu.all_pass.admin._dto.AdminReqDTO$OrderDeadlineDTO">
+        UPDATE erp_order_deadline
+        SET dead_line_at = #{deadline}
+        WHERE center_code = #{centerCode}
+    </update>
 </mapper>

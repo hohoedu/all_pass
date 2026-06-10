@@ -20,7 +20,7 @@ public class PaymentReqDTO {
 
         @Builder
         public PaymentHistoryRecordDTO(String eventType, String eventSource, String oldStatus, String newStatus,
-                Integer amount, String description, String paymentKey, String userCode) {
+                                       Integer amount, String description, String paymentKey, String userCode) {
             this.eventType = eventType;
             this.eventSource = eventSource;
             this.oldStatus = oldStatus;
@@ -301,6 +301,13 @@ public class PaymentReqDTO {
     public static class LedgerReqDTO {
         private String yy;
         private String mm;
+        private String centerCode;
+    }
+
+    @Data
+    public static class PayReceiptExportRequest {
+        private String year;
+        private String month;
         private String centerCode;
     }
 }

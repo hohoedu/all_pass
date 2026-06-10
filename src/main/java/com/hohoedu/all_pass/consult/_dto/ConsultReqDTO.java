@@ -31,6 +31,7 @@ public class ConsultReqDTO {
     @Data
     public static class ConsultListReqDTO {
         private String centerCode;
+        private String userCode;
         private String startDate;
         private String endDate;
         private String progress;

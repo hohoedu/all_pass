@@ -73,6 +73,9 @@
             OR u.user_name = #{keyword}
             )
         </if>
+        <if test="userCode != null and userCode != ''">
+            AND c.user_code = #{userCode}
+        </if>
         ORDER BY
         <choose>
             <when test="sortDir == 'asc'">

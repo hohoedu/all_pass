@@ -1891,6 +1891,10 @@ public class PaymentService {
         return response;
     }
 
+    public List<PaymentRespDTO.PayReceiptExportResponse> getReceiptExportList(PaymentReqDTO.PayReceiptExportRequest request) {
+        return paymentRepository.findReceiptExportList(request);
+    }
+
     public List<PaymentRespDTO.CashBillHistoryDTO> getCashbillHistory(String centerCode, String year, String month) {
         List<PaymentRespDTO.CashBillHistoryDTO> response = paymentRepository.findCashbillHistory(centerCode, year,
                 month);

@@ -83,4 +83,11 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
+
+    @PostMapping("/order/deadline")
+    @ResponseBody
+    public ResponseEntity<?> updateOrderDeadline(@RequestBody AdminReqDTO.OrderDeadlineDTO dto) {
+        adminService.updateOrderDeadline(dto);
+        return ResponseEntity.ok(ApiUtils.success("success"));
+    }
 }

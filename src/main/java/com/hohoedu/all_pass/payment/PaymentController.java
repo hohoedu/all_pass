@@ -311,6 +311,12 @@ public class PaymentController {
         return ResponseEntity.ok(data);
     }
 
+    @PostMapping("/api/receipt/export")
+    public ApiUtils.ApiResult<?> exportReceipt(@RequestBody PaymentReqDTO.PayReceiptExportRequest request) {
+        List<PaymentRespDTO.PayReceiptExportResponse> result = paymentService.getReceiptExportList(request);
+        return ApiUtils.success(result);
+    }
+
     @PostMapping("/api/cashbill/history")
     public ResponseEntity<?> getCashbillHistory(@RequestBody PaymentReqDTO.YearMonthDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

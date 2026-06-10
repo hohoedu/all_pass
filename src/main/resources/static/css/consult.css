@@ -914,3 +914,26 @@ textarea {
     margin-right: 1px;
     margin-top: -3px;
 }
+
+.filter-box .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.filter-box .checkbox-group input[type="checkbox"] {
+    min-width: 16px;
+    accent-color: #7c5cbf;
+    cursor: pointer;
+    padding: 0;
+}
+
+.filter-box .checkbox-group .class-label {
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}

@@ -2314,4 +2314,80 @@
         AND pb.status     IN ('approved', 'canceled')
         ORDER BY epc.appr_date, epc.id
     </select>
+
+
+    <select id="findReceiptExportList" parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$PayReceiptExportRequest"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$PayReceiptExportResponse">
+        ;
+        WITH flat AS (SELECT pc.appr_num                                                        AS group_key,
+                             p.student_id,
+                             s.student_name,
+                             COALESCE(NULLIF(cv.subName_hohoschool, ''),
+                                      CASE
+                                          WHEN cv.class_type = '1' THEN  cv.subName + '(한자)'
+                                          WHEN cv.class_type = '2' THEN  cv.subName + '(독서)' END) AS class_name,
+                             pd.amount                                                          AS amount,
+                             card.card_name                                                     AS card_name,
+                             pc.appr_num                                                        AS appr_num,
+                             pc.appr_monthly                                                    AS monthly,
+                             CONVERT(VARCHAR (10), pc.created_at, 120)                          AS paid_date,
+                             'CARD'                                                             AS pay_type,
+                             CAST(pb.bill_id AS VARCHAR(50))                                    AS row_key,
+                             ROW_NUMBER()                                                          OVER (
+        PARTITION BY pc.appr_num ORDER BY p.payment_key, pd.id
+        ) - 1                                                              AS rn
+                      FROM erp_payment_bill pb
+                               JOIN erp_payment p ON pb.payment_key = p.payment_key
+                               JOIN erp_payment_callback pc ON pb.bill_id = pc.bill_id
+                               JOIN erp_student s ON p.student_id = s.student_id
+                               JOIN erp_card_code card ON pc.appr_issuer = card.card_code
+                               JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+                          AND pd.item_type = 'EDU_FEE'
+                               JOIN erp_time_table tt ON pd.time_table_key = tt.time_table_key
+                               JOIN erp_edu_time_class_value cv ON tt.class_key = cv.class_key
+                          AND cv.center_code = #{centerCode}
+                      WHERE p.yy = #{year}
+                        AND p.mm = #{month}
+                        AND s.center_code = #{centerCode}
+                        AND pb.bill_type = 'EDU_FEE'
+
+                      UNION ALL
+
+                      SELECT CAST(pmg.manual_key AS VARCHAR(50))                                AS group_key,
+                             p.student_id,
+                             s.student_name,
+                             COALESCE(NULLIF(cv.subName_hohoschool, ''),
+                                      CASE
+                                          WHEN cv.class_type = '1' THEN  cv.subName + '(한자)'
+                                          WHEN cv.class_type = '2' THEN  cv.subName + '(독서)' END) AS class_name,
+                             pd.amount                                                          AS amount,
+                             card.card_name                                                     AS card_name,
+                             NULL                                                               AS appr_num,
+                             NULL                                                               AS monthly,
+                             CONVERT(VARCHAR (10), pm.paid_date, 120)                           AS paid_date,
+                             pmg.method                                                         AS pay_type,
+                             CAST(pmg.manual_key AS VARCHAR(50))                                AS row_key,
+                             ROW_NUMBER()                                                          OVER (
+        PARTITION BY pmg.manual_key ORDER BY pm.payment_key, pd.id
+        ) - 1                                                              AS rn
+                      FROM erp_payment_manual_group pmg
+                               JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
+                               JOIN erp_payment p ON pm.payment_key = p.payment_key
+                               JOIN erp_student s ON p.student_id = s.student_id
+                               LEFT JOIN erp_card_code card ON pm.card_name = card.card_code
+                               JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
+                          AND pd.item_type = 'EDU_FEE'
+                               JOIN erp_time_table tt ON pd.time_table_key = tt.time_table_key
+                               JOIN erp_edu_time_class_value cv ON tt.class_key = cv.class_key
+                          AND cv.center_code = #{centerCode}
+                      WHERE p.yy = #{year}
+                        AND p.mm = #{month}
+                        AND s.center_code = #{centerCode})
+        SELECT *
+        FROM flat
+        ORDER BY student_name, paid_date DESC, group_key, rn;
+
+    </select>
+
+
 </mapper>

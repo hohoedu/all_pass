@@ -330,18 +330,24 @@ public class ManageService {
 
 
         // 1. 센터코드 조회
+        // (모든센터)
+//        List<Center> centerList = centerJpaRepository.findAll();
         List<Center> centerList = centerJpaRepository.findAll()
                 .stream()
-                // dev
+//                // dev
 //                .filter(c -> "PUS001".equals(c.getCenterCode()))
-                // prod
-                .filter(c -> !"PUS001".equals(c.getCenterCode()))
+//                // prod
+//                .filter(c -> !"PUS001".equals(c.getCenterCode()))
                 .collect(Collectors.toList());
 
         int count = 0;
         for (Center center : centerList) {
             String centerCode = center.getCenterCode();
             String targetDay = manageRepository.findOrderDeadline(centerCode);
+            if (targetDay == null) {
+                log.info("주문일이 없습니다.");
+                continue;
+            }
             if (today != Integer.parseInt(targetDay)) {
                 log.info("주문일 아님 - 오늘: {}일, 주문일: {}일", today, targetDay);
                 continue;
@@ -349,12 +355,13 @@ public class ManageService {
             // 2. 센터별 유저코드 조회
             List<User> userList = userRepository.findAllUserCode(centerCode);
             // 사용중인 모든 선생님
-//            userList = userList.stream()
-//                    .filter(u -> Boolean.TRUE.equals(u.getIsHan()) || Boolean.TRUE.equals(u.getIsBook())).collect(Collectors.toList());
-            // 북스쿨 선생님만
             userList = userList.stream()
-                    .filter(u -> Boolean.TRUE.equals(u.getIsBook()) && Boolean.FALSE.equals(u.getIsHan()))
+                    .filter(u -> Boolean.TRUE.equals(u.getIsHan()) || Boolean.TRUE.equals(u.getIsBook()))
                     .collect(Collectors.toList());
+            // 북스쿨 선생님만
+//            userList = userList.stream()
+//                    .filter(u -> Boolean.TRUE.equals(u.getIsBook()) && Boolean.FALSE.equals(u.getIsHan()))
+//                    .collect(Collectors.toList());
 
             for (User user : userList) {
 

@@ -32,4 +32,6 @@ public interface AdminRepository {
             String mm
     );
     int upsertBookSuggest(AdminReqDTO.BookSuggestDTO dto);
+
+    void updateOrderDeadline(AdminReqDTO.OrderDeadlineDTO dto);
 }

@@ -133,4 +133,8 @@ public class AdminService {
 
     public void findAdminOrderList() {
     }
+
+    public void updateOrderDeadline(AdminReqDTO.OrderDeadlineDTO dto) {
+       adminRepository.updateOrderDeadline(dto);
+    }
 }

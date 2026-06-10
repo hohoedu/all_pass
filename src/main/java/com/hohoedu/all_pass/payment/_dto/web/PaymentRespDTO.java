@@ -1,8 +1,6 @@
 package com.hohoedu.all_pass.payment._dto.web;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -296,6 +294,22 @@ public class PaymentRespDTO {
         private String paidAmount;
         private String unpaidAmount;
         private String payStatus;
+    }
+
+    @Data
+    public static class PayReceiptExportResponse {
+        private String groupKey;
+        private String studentId;
+        private String studentName;
+        private String className;
+        private Long   amount;
+        private String cardName;
+        private String apprNum;
+        private String monthly;
+        private String paidDate;
+        private String payType;
+        private String rowKey;
+        private int    rn;
     }
 
     @Data

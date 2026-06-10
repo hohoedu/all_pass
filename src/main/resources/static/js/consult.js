@@ -86,12 +86,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cnt-ended').innerHTML = `${counts.ended}<em>건</em>`;
     }
 
+    document.getElementById('myConsult')?.addEventListener('change', async () => {
+        await fetchConsults(startDateInput.value, endDateInput.value);
+    });
+
     /* =================== *
      *   데이터 조회        *
      * =================== */
     async function fetchConsults(startDate, endDate) {
         const progress = progressFilter?.value || 'all';
         const keyword = keywordInput?.value.trim() || '';
+        const myConsultOnly = document.getElementById('myConsult')?.checked ?? false; // 추가
         try {
             const res = await fetch('/consult/search', {
                 method: 'POST',
@@ -99,11 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     startDate,
                     endDate,
-                    userCode: currentUserCode,
+                    userCode: myConsultOnly ? currentUserCode : '',  // 수정
                     progress,
                     keyword,
                     sortColumn: sortColumn ?? 'consultDate',
-                    sortDir:    sortDir    ?? 'desc'
+                    sortDir: sortDir ?? 'desc'
                 })
             });
             const data = await res.json();
@@ -527,6 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (progressFilter) progressFilter.value = 'all';
         if (keywordInput) keywordInput.value = '';
         document.querySelector('input[name="period"][value="1month"]').checked = true;
+        document.getElementById('myConsult').checked = false;
         await fetchConsults(range.startDate, range.endDate);
     });
 
@@ -556,11 +562,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     sortDir = 'desc';
                 } else if (sortDir === 'desc') {
                     sortColumn = null;
-                    sortDir    = null;
+                    sortDir = null;
                 }
             } else {
                 sortColumn = col;
-                sortDir    = 'asc';
+                sortDir = 'asc';
             }
             updateSortIcons(sortColumn);
             await fetchConsults(startDateInput.value, endDateInput.value);

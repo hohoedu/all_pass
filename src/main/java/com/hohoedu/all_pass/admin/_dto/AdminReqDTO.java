@@ -70,4 +70,10 @@ public class AdminReqDTO {
         private String publisher;
         private String bookImageUrl;
     }
+
+    @Data
+    public static class OrderDeadlineDTO {
+        private String centerCode;
+        private Integer deadline;
+    }
 }

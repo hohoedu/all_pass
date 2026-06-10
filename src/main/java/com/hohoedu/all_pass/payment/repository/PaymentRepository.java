@@ -309,6 +309,8 @@ public interface PaymentRepository {
 
     List<PaymentRespDTO.ClaimDto> getPaymentInfo(PaymentReqDTO.ClaimFilterDTO dto);
 
+    List<PaymentRespDTO.PayReceiptExportResponse> findReceiptExportList(PaymentReqDTO.PayReceiptExportRequest request);
+
     List<PaymentRespDTO.CashBillHistoryDTO> findCashbillHistory(
             @Param("centerCode") String centerCode,
             @Param("year") String year,

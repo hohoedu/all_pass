@@ -5,7 +5,7 @@
 =============================== */
 let currentFeeView = 'edu';
 let currentStudents = [];
-let currentSort = { key: null, order: 'asc' };
+let currentSort = {key: null, order: 'asc'};
 let fetchStudentsGlobal;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch('/pay/students', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     year,
                     month: String(month).padStart(2, '0'),
@@ -484,8 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/pay/edu-personal', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId: 'all' })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId: 'all'})
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -530,8 +530,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const response = await fetch('/pay/edu-personal', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ studentId, yy, mm })
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({studentId, yy, mm})
                     });
 
                     if (!response.ok) throw new Error('데이터 조회 실패');
@@ -578,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/pay/detail/bill', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId, yy, mm })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId, yy, mm})
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -849,8 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch('/pay/update-phone', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studentId, phone: rawPhone })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({studentId, phone: rawPhone})
                 });
 
                 const result = await res.json();
@@ -942,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/pay/update-fee', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         studentId,
                         yy,
@@ -1092,8 +1092,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (customPrice !== null && customPrice <= 0) return alert('올바른 금액을 입력하세요.');
 
         const types = [];
-        if (eduChecked) types.push({ type: 'edu', label: '교육비' });
-        if (bookChecked) types.push({ type: 'material', label: '교재비' });
+        if (eduChecked) types.push({type: 'edu', label: '교육비'});
+        if (bookChecked) types.push({type: 'material', label: '교재비'});
 
         const jobId = crypto.randomUUID();
         const overlay = showProgressOverlay();
@@ -1121,7 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const failMessages = [];
 
         for (let i = 0; i < types.length; i++) {
-            const { type, label } = types[i];
+            const {type, label} = types[i];
 
             updateOverlayLabel(overlay, `${label} 청구서 발행 중...`);
 
@@ -1163,14 +1163,14 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
 
             const data = await res.json();
 
             if (!res.ok || !data.success) {
-                return { success: false, error: data.msg || data.response || '청구 실패' };
+                return {success: false, error: data.msg || data.response || '청구 실패'};
             }
 
             return {
@@ -1179,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 failCount: data.response?.failCount || 0
             };
         } catch (e) {
-            return { success: false, error: e.message || '네트워크 오류' };
+            return {success: false, error: e.message || '네트워크 오류'};
         }
     }
 
@@ -1231,7 +1231,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateOverlayProgress(overlay, data) {
-        const { current, total, studentName, successCount, failCount, status } = data;
+        const {current, total, studentName, successCount, failCount, status} = data;
 
         const bar = overlay.querySelector('#overlay-bar');
         const count = overlay.querySelector('#overlay-count');
@@ -1292,8 +1292,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/cancel', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentKey, cancelType: billType, cancelReason: cancelReason.trim() })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({paymentKey, cancelType: billType, cancelReason: cancelReason.trim()})
             });
 
             const data = await res.json();
@@ -1337,8 +1337,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/destroy/bill', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ billId, studentId, paymentKey, destroyType: billType })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({billId, studentId, paymentKey, destroyType: billType})
             });
 
             const data = await res.json();
@@ -1389,8 +1389,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ billIds: [billId] })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({billIds: [billId]})
             });
 
             const data = await res.json();
@@ -1441,8 +1441,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch('/pay/reissue', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ billIds })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({billIds})
             });
 
             const data = await res.json();
@@ -1472,8 +1472,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const response = await fetch('/pay/detail/bill', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId, yy, mm })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId, yy, mm})
             });
 
             if (!response.ok) throw new Error('데이터 조회 실패');
@@ -1607,6 +1607,99 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== 엑셀 다운로드 ========== //
+// async function exportFilteredDataToExcel() {
+//     try {
+//         const button = event.target;
+//         button.disabled = true;
+//         button.textContent = '다운로드 중...';
+//
+//         const url = new URL(window.location.href);
+//         const yy = url.searchParams.get('year');
+//         const mm = url.searchParams.get('month');
+//         const userCode = document.getElementById('student-filter')?.value || '';
+//
+//         const filters = {
+//             userCode,
+//             centerCode: 'PUS002',
+//             yy,
+//             mm,
+//             itemType: 'EDU_FEE'
+//         };
+//
+//         const response = await fetch('/pay/api/claim/export', {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify(filters)
+//         });
+//
+//         if (!response.ok) throw new Error('데이터 조회 실패');
+//
+//         const result = await response.json();
+//         const allData = result.response || result;
+//
+//         if (!allData || allData.length === 0) {
+//             alert('다운로드할 데이터가 없습니다.');
+//             button.disabled = false;
+//             button.textContent = '엑셀 다운로드';
+//             return;
+//         }
+//
+//         const wb = XLSX.utils.book_new();
+//
+//         const groupedByTeacher = groupDataByTeacher(allData);
+//
+//         Object.keys(groupedByTeacher).sort().forEach(teacherName => {
+//             const teacherData = groupedByTeacher[teacherName];
+//             const title = `${mm}월 ${teacherName} 결제 기록`;
+//             const sheetData = teacherData.map(item => {
+//                 const paidAmount = Number(item.paidAmount || 0);
+//                 const billPrice = Number(item.billPrice || 0);
+//                 const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+//                 return {
+//                     '이름': item.studentName || '',
+//                     '수강과목': item.subject || '',
+//                     '청구금액': billPrice,
+//                     '결제금액': calculatedPaid,
+//                     '미납금액': Number(item.unpaidAmount || 0),
+//                     '상태': item.payStatus || ''
+//                 };
+//             });
+//
+//             const sheet = createSheetWithTitle(sheetData, title);
+//             const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
+//             XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+//         });
+//
+//         const allSheetData = allData.map(item => {
+//             const paidAmount = Number(item.paidAmount || 0);
+//             const billPrice = Number(item.billPrice || 0);
+//             const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+//             return {
+//                 '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
+//                 '이름': item.studentName || '',
+//                 '수강과목': item.subject || '',
+//                 '청구금액': billPrice,
+//                 '결제금액': calculatedPaid,
+//                 '미납금액': Number(item.unpaidAmount || 0),
+//                 '상태': item.payStatus || ''
+//             };
+//         });
+//
+//         const allSheet = createSheetWithTitle(allSheetData, `${mm}월 전체 결제 기록`, true);
+//         XLSX.utils.book_append_sheet(wb, allSheet, "전체");
+//
+//         XLSX.writeFile(wb, `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
+//
+//         button.disabled = false;
+//         button.textContent = '엑셀 다운로드';
+//
+//     } catch (error) {
+//         console.error('엑셀 다운로드 실패:', error);
+//         alert('엑셀 다운로드에 실패했습니다.');
+//         event.target.disabled = false;
+//         event.target.textContent = '엑셀 다운로드';
+//     }
+// }
 async function exportFilteredDataToExcel() {
     try {
         const button = event.target;
@@ -1616,26 +1709,21 @@ async function exportFilteredDataToExcel() {
         const url = new URL(window.location.href);
         const yy = url.searchParams.get('year');
         const mm = url.searchParams.get('month');
-        const userCode = document.getElementById('student-filter')?.value || '';
 
-        const filters = {
-            userCode,
-            centerCode: 'PUS002',
-            yy,
-            mm,
-            itemType: 'EDU_FEE'
-        };
-
-        const response = await fetch('/pay/api/claim/export', {
+        const response = await fetch('/pay/api/receipt/export', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(filters)
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                year: yy,
+                month: mm,
+                centerCode: 'PUS002'
+            })
         });
 
         if (!response.ok) throw new Error('데이터 조회 실패');
 
         const result = await response.json();
-        const allData = result.response || result;
+        const allData = result.response || [];
 
         if (!allData || allData.length === 0) {
             alert('다운로드할 데이터가 없습니다.');
@@ -1646,49 +1734,61 @@ async function exportFilteredDataToExcel() {
 
         const wb = XLSX.utils.book_new();
 
-        const groupedByTeacher = groupDataByTeacher(allData);
+        const payTypeMap = {
+            'CARD': '카드',
+            'CASH': '현금 결제',
+            'TRANSFER': '계좌이체'
+        };
+        const sheetData = allData.map(item => ({
+            '이름': item.studentName || '',
+            '수강과목': item.className || '',
+            '결제금액': Number(item.amount || 0),
+            '납부일': item.paidDate || '',
+            '납부방법': payTypeMap[item.payType] || item.payType || '',
+            '카드명': item.cardName || ''
+        }));
 
-        Object.keys(groupedByTeacher).sort().forEach(teacherName => {
-            const teacherData = groupedByTeacher[teacherName];
-            const title = `${mm}월 ${teacherName} 결제 기록`;
-            const sheetData = teacherData.map(item => {
-                const paidAmount = Number(item.paidAmount || 0);
-                const billPrice = Number(item.billPrice || 0);
-                const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-                return {
-                    '이름': item.studentName || '',
-                    '수강과목': item.subject || '',
-                    '청구금액': billPrice,
-                    '결제금액': calculatedPaid,
-                    '미납금액': Number(item.unpaidAmount || 0),
-                    '상태': item.payStatus || ''
-                };
-            });
-
-            const sheet = createSheetWithTitle(sheetData, title);
-            const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
-            XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+        const totalAmount = sheetData.reduce((sum, row) => sum + row['결제금액'], 0);
+        sheetData.push({
+            '이름': '합계',
+            '수강과목': '',
+            '결제금액': totalAmount,
+            '납부일': '',
+            '납부방법': '',
+            '카드명': ''
         });
 
-        const allSheetData = allData.map(item => {
-            const paidAmount = Number(item.paidAmount || 0);
-            const billPrice = Number(item.billPrice || 0);
-            const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-            return {
-                '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
-                '이름': item.studentName || '',
-                '수강과목': item.subject || '',
-                '청구금액': billPrice,
-                '결제금액': calculatedPaid,
-                '미납금액': Number(item.unpaidAmount || 0),
-                '상태': item.payStatus || ''
-            };
-        });
+        const sheet = XLSX.utils.json_to_sheet(sheetData);
 
-        const allSheet = createSheetWithTitle(allSheetData, `${mm}월 전체 결제 기록`, true);
-        XLSX.utils.book_append_sheet(wb, allSheet, "전체");
+        for (let i = 1; i <= allData.length + 1; i++) {
+            const cellRef = XLSX.utils.encode_cell({ r: i, c: 2 });
+            if (sheet[cellRef]) {
+                sheet[cellRef].z = '#,##0"원"';
+            }
+        }
 
-        XLSX.writeFile(wb, `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
+        // 합계 행 인덱스 (header=0, data=1~n, 합계=n+1)
+        const totalRowIndex = allData.length + 1;
+
+        sheet['!merges'] = [
+            // 이름(A) ~ 수강과목(B) 병합
+            {s: {r: totalRowIndex, c: 0}, e: {r: totalRowIndex, c: 1}},
+            // 결제금액(C) ~ 카드명(F) 병합
+            {s: {r: totalRowIndex, c: 2}, e: {r: totalRowIndex, c: 5}}
+        ];
+
+        // 컬럼 너비 설정
+        sheet['!cols'] = [
+            {wch: 12}, // 이름
+            {wch: 25}, // 수강과목
+            {wch: 12}, // 결제금액
+            {wch: 14}, // 납부일
+            {wch: 10}, // 납부방법
+            {wch: 14}  // 카드명
+        ];
+
+        XLSX.utils.book_append_sheet(wb, sheet, `${mm}월 결제내역`);
+        XLSX.writeFile(wb, `결제내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
 
         button.disabled = false;
         button.textContent = '엑셀 다운로드';
@@ -1743,11 +1843,11 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
 
     for (let R = range.s.r; R <= range.e.r; R++) {
         for (let C = range.s.c; C <= range.e.c; C++) {
-            const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-            if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+            const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+            if (!ws[cellAddress]) ws[cellAddress] = {t: 's', v: ''};
             if (!ws[cellAddress].s) ws[cellAddress].s = {};
 
-            ws[cellAddress].s = { alignment: { horizontal: 'center', vertical: 'center', wrapText: false } };
+            ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center', wrapText: false}};
 
             if (R > 2 && amountColumns.includes(C)) {
                 const cellValue = ws[cellAddress].v;
@@ -1755,21 +1855,21 @@ function createSheetWithTitle(data, title, isAllSheet = false) {
                     ws[cellAddress].t = 'n';
                     ws[cellAddress].v = Number(cellValue);
                     ws[cellAddress].z = '#,##0';
-                    ws[cellAddress].s = { alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0' };
+                    ws[cellAddress].s = {alignment: {horizontal: 'center', vertical: 'center'}, numFmt: '#,##0'};
                 }
             }
         }
     }
 
     if (!ws['!merges']) ws['!merges'] = [];
-    ws['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: isAllSheet ? 7 : 6 } });
+    ws['!merges'].push({s: {r: 0, c: 0}, e: {r: 0, c: isAllSheet ? 7 : 6}});
 
     if (!ws['!rows']) ws['!rows'] = [];
-    ws['!rows'][0] = { hpt: 30, hpx: 30 };
+    ws['!rows'][0] = {hpt: 30, hpx: 30};
 
     ws['!cols'] = isAllSheet
-        ? [{ wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }]
-        : [{ wch: 10 }, { wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 12 }];
+        ? [{wch: 10}, {wch: 12}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}]
+        : [{wch: 10}, {wch: 12}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}];
 
     return ws;
 }
@@ -1798,7 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const res = await fetch("/pay/api/remind/unpaid-students", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(yearMonth)
             });
 
@@ -1842,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const sendRes = await fetch("/popbill/remind/send", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     year: yearMonth.year,
                     month: yearMonth.month,
