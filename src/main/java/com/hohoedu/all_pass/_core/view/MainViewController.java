@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.center.CenterService;
 import com.hohoedu.all_pass.center._dto.CenterRespDTO.PointDTO;
 import com.hohoedu.all_pass.class_instance.ClassService;
@@ -7,6 +8,8 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
+import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
+import com.hohoedu.all_pass.secondary.repository.TestRepository;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
@@ -16,10 +19,12 @@ import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +45,7 @@ public class MainViewController {
     private final StudentService studentService;
     private final CenterService centerService;
     private final UserService userService;
+    private final TestRepository testRepository;
 
     @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session, Model model) {
@@ -58,7 +64,7 @@ public class MainViewController {
         point.setPopbillPoint(popbillPoint);
         point.setPaymintPoint(paymintPoint);
         point.setChargeUrl(paymintChargeUrl);
-        
+
         session.setAttribute("point", point);
 
         return "index";
@@ -249,8 +255,20 @@ public class MainViewController {
     }
 
     @GetMapping("/test")
-    public String getTestPage() {
-        return "/test";
+    @ResponseBody
+    public ResponseEntity<?> getTestPage() {
+        List<SecondaryDTO.TestDTO> result = testRepository.findAll();
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @GetMapping("/test/socket")
+    @ResponseBody
+    public String testSocket() {
+        try (java.net.Socket socket = new java.net.Socket("192.168.0.28", 47158)) {
+            return "소켓 연결 성공!";
+        } catch (Exception e) {
+            return "소켓 에러: " + e.getMessage();
+        }
     }
 
 }

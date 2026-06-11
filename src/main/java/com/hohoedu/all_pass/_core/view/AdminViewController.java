@@ -38,6 +38,16 @@ public class AdminViewController {
         return "/admin/order/order-list";
     }
 
+    @GetMapping("/order/order-list2")
+    public String getAdminOrderList2(Model model, HttpSession session) {
+        List<Center> center = centerService.findAllCenter();
+        adminService.findAdminOrderList();
+
+        model.addAttribute("center", center);
+
+        return "/admin/order/2logistics_2order";
+    }
+
     @GetMapping("/ebook/person")
     public String getAdminPersonPage(Model model, HttpSession session) {
         List<UnitCode> unitCodes = classService.findUnitCodeForPerson();

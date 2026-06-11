@@ -19,285 +19,287 @@
 </head>
 
 <body>
-    <div class="main-container">
-        <div class="main-frame">
-            <!-- left nav bar -->
-            <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-            <main class="main-info">
-                <div class="line-second-frame">
-                    <!-- section:left -->
-                    <section class="edu-left">
-                        <div class="edu-l-con">
-                            <div class="inout-head">
-                                <div class="common-title">
-                                    <h2>수강료 청구</h2>
-                                </div>
-                                <div class="inout-btns">
-                                    <!--                                <div class="common-btn pay-remind" id="pay-remind" style="margin-inline: 10px">미납 알림톡 발송</div>-->
-                                    <div class="common-btn pay-desc" id="btn-tuition">수강료 상세 내역</div>
-                                    <button class="explore common-btn" onclick="exportFilteredDataToExcel()" style="gap: 10px"
-                                        th:if="${user.userCode == 'PUS002test01'}">엑셀 다운로드
-                                    </button>
-                                </div>
-
-
-                            </div>
-                            <div class="month-header2" style="padding: 0px; margin-bottom: 15px;">
-                                <div class="month-title2 month-today">
-                                    <span class="current-month"></span>
-                                    <div style="position: relative">
-                                        <div class="day-display">
-                                            <input type="month" class="hidden-date hidden-picker" />
-                                            <button type="button" class="icon-btn calendar-open">
-                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="fee-filter" style="display: flex">
-                                        <label class="radio-group" style="margin-left: 20px">
-                                            <input type="radio" name="feeView" value="EDU_FEE" checked>
-                                            <span>교육비</span>
-                                        </label>
-                                        <label class="radio-group" style="margin-left: 20px">
-                                            <input type="radio" name="feeView" value="BOOK_FEE">
-                                            <span>교재비</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="info-filters">
-                                    <div class="info-arrange">
-                                        <div class="stu-left">
-                                            <div class="basic-select sl1"
-                                                th:if="${user.roleKey == 'ADMIN' or user.roleKey == 'MANAGER'}">
-                                                <select name="student" id="student-filter">
-                                                    <option value="all"
-                                                        th:if="${user.roleKey == 'ADMIN' or user.userCode == 'PUS002jumnea'}">
-                                                        선생님 전체</option>
-                                                    <th:block th:each="teacher : ${users}">
-                                                        <option th:value="${teacher.userCode}"
-                                                            th:text="${teacher.userName + ' 선생님'}"></option>
-                                                    </th:block>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="stu-right">
-                                            <div class="sl3">
-                                                <div class="basic-select" style="flex: 1;">
-                                                    <select name="stuName" id="stu-name">
-                                                        <option value="name">이름</option>
-                                                        <option value="phone">전화번호</option>
-                                                    </select>
-                                                </div>
-                                                <div class="search-box" style="flex: 2;">
-                                                    <input type="text" id="search-name" name="searchName">
-                                                </div>
-                                            </div>
-                                            <div class="explore common-btn sl4">검색</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-frame pay-frame mt">
-                                <table class="basic-table pay-table yh">
-                                    <colgroup>
-                                        <col width="5%">
-                                        <col width="5%">
-                                        <col width="10%">
-                                        <col width="15%">
-                                        <col width="15%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                        <col width="10%">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th class="checkbox-group">
-                                                <input type="checkbox" id="pay-edu-select-all">
-                                            </th>
-                                            <th>No</th>
-
-                                            <th data-sort="name" class="sortable">
-                                                <img src="/image/sort.svg" class="svg-sort">이름
-                                            </th>
-
-                                            <th>수강 단계</th>
-
-                                            <th data-sort="totalFee" class="sortable">
-                                                <img src="/image/sort.svg" class="svg-sort">금액
-                                            </th>
-
-                                            <th data-sort="unpaid" class="sortable">
-                                                <img src="/image/sort.svg" class="svg-sort">기타 과목
-                                            </th>
-
-                                            <th data-sort="issued" class="sortable">
-                                                <img src="/image/sort.svg" class="svg-sort">발행 여부
-                                            </th>
-
-                                            <th data-sort="payment" class="sortable">
-                                                <img src="/image/sort.svg" class="svg-sort">결제 여부
-                                            </th>
-                                            <th>상세정보</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody id="student-tbody" class="stripe">
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
-                    <!-- gray line -->
-                    <div class="divider"></div>
-                    <!-- section:right -->
-                    <section class="edu-right">
+<div class="main-container">
+    <div class="main-frame">
+        <!-- left nav bar -->
+        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+        <main class="main-info">
+            <div class="line-second-frame">
+                <!-- section:left -->
+                <section class="edu-left">
+                    <div class="edu-l-con">
                         <div class="inout-head">
                             <div class="common-title">
-                                <h2>청구서 발행</h2>
+                                <h2>수강료 청구</h2>
+                            </div>
+                            <div class="inout-btns" style="gap: 10px;">
+                                <!--                                <div class="common-btn pay-remind" id="pay-remind" style="margin-inline: 10px">미납 알림톡 발송</div>-->
+                                <div class="common-btn pay-desc" id="btn-tuition">수강료 상세 내역</div>
+                                <button class="common-btn" onclick="exportFilteredDataToExcel()" style="background: #4C3FBC;
+    border: 1px solid transparent;"
+                                        th:if="${user.userCode == 'PUS002test01'}">엑셀 다운로드
+                                </button>
+                            </div>
+
+
+                        </div>
+                        <div class="month-header2" style="padding: 0px; margin-bottom: 15px;">
+                            <div class="month-title2 month-today">
+                                <span class="current-month"></span>
+                                <div style="position: relative">
+                                    <div class="day-display">
+                                        <input type="month" class="hidden-date hidden-picker"/>
+                                        <button type="button" class="icon-btn calendar-open">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="fee-filter" style="display: flex">
+                                    <label class="radio-group" style="margin-left: 20px">
+                                        <input type="radio" name="feeView" value="EDU_FEE" checked>
+                                        <span>교육비</span>
+                                    </label>
+                                    <label class="radio-group" style="margin-left: 20px">
+                                        <input type="radio" name="feeView" value="BOOK_FEE">
+                                        <span>교재비</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="info-filters">
+                                <div class="info-arrange">
+                                    <div class="stu-left">
+                                        <div class="basic-select sl1"
+                                             th:if="${user.roleKey == 'ADMIN' or user.roleKey == 'MANAGER'}">
+                                            <select name="student" id="student-filter">
+                                                <option value="all"
+                                                        th:if="${user.roleKey == 'ADMIN' or user.userCode == 'PUS002jumnea'}">
+                                                    선생님 전체
+                                                </option>
+                                                <th:block th:each="teacher : ${users}">
+                                                    <option th:value="${teacher.userCode}"
+                                                            th:text="${teacher.userName + ' 선생님'}"></option>
+                                                </th:block>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="stu-right">
+                                        <div class="sl3">
+                                            <div class="basic-select" style="flex: 1;">
+                                                <select name="stuName" id="stu-name">
+                                                    <option value="name">이름</option>
+                                                    <option value="phone">전화번호</option>
+                                                </select>
+                                            </div>
+                                            <div class="search-box" style="flex: 2;">
+                                                <input type="text" id="search-name" name="searchName">
+                                            </div>
+                                        </div>
+                                        <div class="explore common-btn sl4">검색</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <p class="issue-sub">반드시 왼쪽의 최종 금액을 확인 후 청구서를 발행해 주세요. </p>
-
-                        <table class="member-status-table pay-edu-table bt">
-                            <colgroup>
-                                <col width="20%">
-                                <col width="80%">
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>청구사유</td>
-                                    <td>학원비</td>
-                                </tr>
-                                <tr>
-                                    <td>유효기간</td>
-                                    <td>
-                                        <div class="icon-field day-picker" style="position: relative;">
-                                            <div class="day-display"></div>
-                                            <div>
-                                                <input type="date" class="expire-input hidden-picker" />
-                                                <button type="button" class="icon-btn expire-btn">
-                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>청구 종류</td>
-                                    <td>
-                                        <div class="kind-charge">
-                                            <div class="checkbox-group2">
-                                                <input type="checkbox" name="eduFee">교육비
-                                            </div>
-                                            <div class="checkbox-group2">
-                                                <input type="checkbox" name="bookFee">교재비
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>청구 금액</td>
-                                    <td>
-                                        <div class="kind-charge">
-                                            <div class="radio-group round">
-                                                <input type="radio" name="feeType" id="eduFee" checked>
-                                                <label for="eduFee">기본 금액</label>
-                                            </div>
-                                            <div class="radio-group round">
-                                                <input type="radio" name="feeType" id="bookFee">
-                                                <label for="bookFee">직접 입력</label>
-                                            </div>
-                                            <div class="price with-won">
-                                                <input type="text" class="basic-input edu-input"
-                                                    placeholder="금액을 입력하세요">
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>형제묶음</td>
-                                    <td>
-                                        <div class="checkbox-group2">
-                                            <input type="checkbox" name="includeSibling">형제 한 번에 발송
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>안내메세지</td>
-                                    <td><input type="text" name="message" placeholder="내용을 입력해주세요" style="width: 100%;">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="btn-groups">
-                            <button id="pay-issue" class="btn-basic btn-issue">발행</button>
-                            <button id="pay-checked-reissue" class="btn-basic btn-reissue reissue-tooltip-wrap">
-                                재발행
-                                <div class="reissue-tooltip">
-                                    <strong>재발행 vs 재청구 차이</strong><br><br>
-                                    📤 <b>재발행</b><br>
-                                    기존 청구서와 <u>동일한 금액·내용</u>으로<br>
-                                    알림톡만 다시 발송합니다.<br><br>
-                                    🗑️ <b>파기 후 재청구</b><br>
-                                    기존 청구서를 삭제하고<br>
-                                    <u>새로운 청구서</u>를 발행합니다.<br>
-                                    (금액 수정 가능)
-                                </div>
-                            </button>
-                        </div>
-                        <div class="section-divider" id="claim-divider" style="display: none; margin: 0"></div>
-                        <div id="claim-student-name"
-                            style="display: none; padding: 8px 12px; font-size: 14px; font-weight: 600; color: #374151;">
-                        </div>
-                        <div class="table-frame claim-frame" style="height: 23vh; display: none;">
-                            <table class="basic-table yh" style="border: 1px solid #ddd; height: 10vh">
+                        <div class="table-frame pay-frame mt">
+                            <table class="basic-table pay-table yh">
                                 <colgroup>
                                     <col width="5%">
+                                    <col width="5%">
+                                    <col width="10%">
                                     <col width="15%">
                                     <col width="15%">
-                                    <col width="15%">
-                                    <col width="15%">
-                                    <col width="15%">
-                                    <col width="15%">
-                                    <col width="15%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
+                                    <col width="10%">
                                 </colgroup>
                                 <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>수강월</th>
-                                        <th>청구종류</th>
-                                        <th>유효기간</th>
-                                        <th>결제일자</th>
-                                        <th>결제방법</th>
-                                        <th>결제금액</th>
-                                        <th>상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="claim-detail-tbody" class="stripe">
-                                </tbody>
+                                <tr>
+                                    <th class="checkbox-group">
+                                        <input type="checkbox" id="pay-edu-select-all">
+                                    </th>
+                                    <th>No</th>
 
+                                    <th data-sort="name" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">이름
+                                    </th>
+
+                                    <th>수강 단계</th>
+
+                                    <th data-sort="totalFee" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">금액
+                                    </th>
+
+                                    <th data-sort="unpaid" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">기타 과목
+                                    </th>
+
+                                    <th data-sort="issued" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">발행 여부
+                                    </th>
+
+                                    <th data-sort="payment" class="sortable">
+                                        <img src="/image/sort.svg" class="svg-sort">결제 여부
+                                    </th>
+                                    <th>상세정보</th>
+                                </tr>
+                                </thead>
+
+                                <tbody id="student-tbody" class="stripe">
+
+                                </tbody>
                             </table>
                         </div>
-                        <div class="btn-groups" id="claim-buttons" style="display: none;">
-                            <button id="pay-cancel" class="btn-basic btn-cancel">결제 취소</button>
-                            <button id="pay-destory" class="btn-basic btn-destroy">청구서 파기</button>
-                            <button id="pay-reissue" class="btn-basic btn-reissue">재발행</button>
+                    </div>
+                </section>
+                <!-- gray line -->
+                <div class="divider"></div>
+                <!-- section:right -->
+                <section class="edu-right">
+                    <div class="inout-head">
+                        <div class="common-title">
+                            <h2>청구서 발행</h2>
                         </div>
-                    </section>
+                    </div>
 
-                    <!-- section: modal(수강료 상세 내역) -->
-                    <div th:replace="~{pay/pay-edu-tuition-modal :: eduTuitionModal}"></div>
+                    <p class="issue-sub">반드시 왼쪽의 최종 금액을 확인 후 청구서를 발행해 주세요. </p>
 
-                    <!-- section: modal(개인 청구 내역) -->
-                    <div th:replace="~{pay/pay-edu-personal-modal :: eduPersonalModal}"></div>
+                    <table class="member-status-table pay-edu-table bt">
+                        <colgroup>
+                            <col width="20%">
+                            <col width="80%">
+                        </colgroup>
+                        <tbody>
+                        <tr>
+                            <td>청구사유</td>
+                            <td>학원비</td>
+                        </tr>
+                        <tr>
+                            <td>유효기간</td>
+                            <td>
+                                <div class="icon-field day-picker" style="position: relative;">
+                                    <div class="day-display"></div>
+                                    <div>
+                                        <input type="date" class="expire-input hidden-picker"/>
+                                        <button type="button" class="icon-btn expire-btn">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘"/>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>청구 종류</td>
+                            <td>
+                                <div class="kind-charge">
+                                    <div class="checkbox-group2">
+                                        <input type="checkbox" name="eduFee">교육비
+                                    </div>
+                                    <div class="checkbox-group2">
+                                        <input type="checkbox" name="bookFee">교재비
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>청구 금액</td>
+                            <td>
+                                <div class="kind-charge">
+                                    <div class="radio-group round">
+                                        <input type="radio" name="feeType" id="eduFee" checked>
+                                        <label for="eduFee">기본 금액</label>
+                                    </div>
+                                    <div class="radio-group round">
+                                        <input type="radio" name="feeType" id="bookFee">
+                                        <label for="bookFee">직접 입력</label>
+                                    </div>
+                                    <div class="price with-won">
+                                        <input type="text" class="basic-input edu-input"
+                                               placeholder="금액을 입력하세요">
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>형제묶음</td>
+                            <td>
+                                <div class="checkbox-group2">
+                                    <input type="checkbox" name="includeSibling">형제 한 번에 발송
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>안내메세지</td>
+                            <td><input type="text" name="message" placeholder="내용을 입력해주세요" style="width: 100%;">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-groups">
+                        <button id="pay-issue" class="btn-basic btn-issue">발행</button>
+                        <button id="pay-checked-reissue" class="btn-basic btn-reissue reissue-tooltip-wrap">
+                            재발행
+                            <div class="reissue-tooltip">
+                                <strong>재발행 vs 재청구 차이</strong><br><br>
+                                📤 <b>재발행</b><br>
+                                기존 청구서와 <u>동일한 금액·내용</u>으로<br>
+                                알림톡만 다시 발송합니다.<br><br>
+                                🗑️ <b>파기 후 재청구</b><br>
+                                기존 청구서를 삭제하고<br>
+                                <u>새로운 청구서</u>를 발행합니다.<br>
+                                (금액 수정 가능)
+                            </div>
+                        </button>
+                    </div>
+                    <div class="section-divider" id="claim-divider" style="display: none; margin: 0"></div>
+                    <div id="claim-student-name"
+                         style="display: none; padding: 8px 12px; font-size: 14px; font-weight: 600; color: #374151;">
+                    </div>
+                    <div class="table-frame claim-frame" style="height: 23vh; display: none;">
+                        <table class="basic-table yh" style="border: 1px solid #ddd; height: 10vh">
+                            <colgroup>
+                                <col width="5%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                                <col width="15%">
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>수강월</th>
+                                <th>청구종류</th>
+                                <th>유효기간</th>
+                                <th>결제일자</th>
+                                <th>결제방법</th>
+                                <th>결제금액</th>
+                                <th>상태</th>
+                            </tr>
+                            </thead>
+                            <tbody id="claim-detail-tbody" class="stripe">
+                            </tbody>
 
-                </div>
-            </main>
-        </div>
+                        </table>
+                    </div>
+                    <div class="btn-groups" id="claim-buttons" style="display: none;">
+                        <button id="pay-cancel" class="btn-basic btn-cancel">결제 취소</button>
+                        <button id="pay-destory" class="btn-basic btn-destroy">청구서 파기</button>
+                        <button id="pay-reissue" class="btn-basic btn-reissue">재발행</button>
+                    </div>
+                </section>
+
+                <!-- section: modal(수강료 상세 내역) -->
+                <div th:replace="~{pay/pay-edu-tuition-modal :: eduTuitionModal}"></div>
+
+                <!-- section: modal(개인 청구 내역) -->
+                <div th:replace="~{pay/pay-edu-personal-modal :: eduPersonalModal}"></div>
+
+            </div>
+        </main>
     </div>
+</div>
 </body>
 
 </html>

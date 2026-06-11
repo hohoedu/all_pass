@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/medial.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/2logistics_2order.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/admin/order/2logistics_2order.js}"></script>
+    <title>월별 교재 주문 관리</title>
+</head>
+
+<body>
+<div class="app-shell" id="appShell">
+    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+
+    <header class="header">
+        <h1 class="page-title">월별 교재 주문 관리</h1>
+        <div class="header-actions">
+            <select class="center-select" aria-label="센터 선택">
+                <option>전체 센터</option>
+                <option>부산 남천A점</option>
+                <option>대구 월성점</option>
+            </select>
+            <button class="bell" type="button" aria-label="알림"><i class="fa-regular fa-bell"></i><em>8</em></button>
+        </div>
+    </header>
+
+    <main class="content">
+        <section class="filter-card" aria-label="조회 조건">
+            <div class="filter-left">
+                <div class="field">
+                    <label for="monthDisplay">시간표 기준 월</label>
+                    <div class="date-field">
+                        <input id="monthDisplay" type="text" value="2026. 06" readonly/>
+                        <button class="calendar-btn" type="button" data-picker="monthPicker" aria-label="시간표 기준 월 선택"><i
+                                class="fa-regular fa-calendar"></i></button>
+                        <input class="hidden-picker" id="monthPicker" type="month" value="2026-06"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="deadlineDisplay">신청 마감일</label>
+                    <div class="date-field">
+                        <input id="deadlineDisplay" class="danger" type="text" value="2026. 05. 20" readonly/>
+                        <button class="calendar-btn" type="button" data-picker="deadlinePicker" aria-label="신청 마감일 선택"><i
+                                class="fa-regular fa-calendar"></i></button>
+                        <input class="hidden-picker" id="deadlinePicker" type="date" value="2026-05-20"/>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>조회 기준</label>
+                    <div class="segmented" role="group" aria-label="조회 기준">
+                        <button class="active" type="button">거래명세서</button>
+                        <button type="button">전체 집계</button>
+                        <button type="button">센터별 집계</button>
+                    </div>
+                </div>
+                <button class="primary-btn" type="button">조회</button>
+            </div>
+            <div class="filter-right">
+                <button class="outline-btn" type="button">현재 명세서에 수기로 추가</button>
+                <button class="outline-btn" type="button">신규 수기 명세서 등록</button>
+            </div>
+        </section>
+
+        <section class="workspace">
+            <section class="panel center-panel" aria-labelledby="center-heading">
+                <div class="panel-head">
+                    <h2 id="center-heading" class="panel-title">센터별 주문 현황</h2>
+                    <span class="count">총 8개</span>
+                </div>
+                <div class="search-box">
+                    <input type="search" placeholder="센터명 검색" aria-label="센터명 검색"/>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <div class="center-list">
+                    <article class="center-item active">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">부산 남천A점</div>
+                            <div class="request">요청 2건</div>
+                        </div>
+                        <span class="badge wait">승인대기</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">부산 남천B점</div>
+                            <div class="request">요청 1건</div>
+                        </div>
+                        <span class="badge wait">승인대기</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">대구 월성점</div>
+                            <div class="request">요청 2건</div>
+                        </div>
+                        <span class="badge done">승인완료</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">울산 유곡점</div>
+                            <div class="request">요청 0건</div>
+                        </div>
+                        <span class="badge hold">보류</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">서울 목동점</div>
+                            <div class="request">요청 2건</div>
+                        </div>
+                        <span class="badge wait">승인대기</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">서울 중계점</div>
+                            <div class="request">요청 2건 · 추가 주문 4건 대기중</div>
+                        </div>
+                        <span class="badge wait">승인대기</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">대전 둔산점</div>
+                            <div class="request">요청 2건</div>
+                        </div>
+                        <span class="badge after">마감 후 추가</span>
+                    </article>
+                    <article class="center-item">
+                        <label class="check-label"><input class="check-input" type="checkbox"><span
+                                class="check-mark"></span></label>
+                        <div>
+                            <div class="center-name">인천 송도점</div>
+                            <div class="request">요청 6건 · 반품 처리 필요</div>
+                        </div>
+                        <span class="badge done">승인완료</span>
+                    </article>
+                </div>
+            </section>
+
+            <section class="order-detail" aria-label="주문 상세 영역">
+                <section class="panel statement-panel">
+                    <div class="panel-head">
+                        <h2 class="panel-title">주문 명세서 리스트</h2>
+                    </div>
+                    <div class="statement-tabs">
+                        <button class="statement-card active" type="button"><strong>정기 주문 명세서</strong>
+                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                        </button>
+                        <button class="statement-card" type="button"><i class="fa-regular fa-trash-can delete-icon"></i><strong>추가
+                            주문 명세서</strong>
+                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                        </button>
+                        <button class="statement-card" type="button"><i class="fa-regular fa-trash-can delete-icon"></i><strong>특강
+                            교재 명세서</strong>
+                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="panel change-panel">
+                    <div class="panel-head">
+                        <h2 class="panel-title">변동 사항</h2>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></th>
+                                <th>상태</th>
+                                <th>등록일시</th>
+                                <th>선생님</th>
+                                <th>구분</th>
+                                <th>교재</th>
+                                <th>수량</th>
+                                <th>승인 여부</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge return">반품</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>이경진</td>
+                                <td>초등박사</td>
+                                <td>1호</td>
+                                <td>1</td>
+                                <td><select class="status-select wait">
+                                    <option>승인대기</option>
+                                    <option>승인</option>
+                                    <option>보류</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge add">추가</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>장혜진</td>
+                                <td>다움</td>
+                                <td>10월</td>
+                                <td>1</td>
+                                <td><select class="status-select approved">
+                                    <option>승인</option>
+                                    <option>승인대기</option>
+                                    <option>보류</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge return">반품</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>이경진</td>
+                                <td>초등천재</td>
+                                <td>3호</td>
+                                <td>2</td>
+                                <td><select class="status-select approved">
+                                    <option>승인</option>
+                                    <option>승인대기</option>
+                                    <option>보류</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge return">반품</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>장혜진</td>
+                                <td>새움</td>
+                                <td>10월</td>
+                                <td>3</td>
+                                <td><select class="status-select approved">
+                                    <option>승인</option>
+                                    <option>승인대기</option>
+                                    <option>보류</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge add">추가</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>이경진</td>
+                                <td>다움</td>
+                                <td>10월</td>
+                                <td>2</td>
+                                <td><select class="status-select hold">
+                                    <option>보류</option>
+                                    <option>승인대기</option>
+                                    <option>승인</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge add">추가</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>장혜진</td>
+                                <td>한스쿨 기본</td>
+                                <td>3호</td>
+                                <td>1</td>
+                                <td><select class="status-select hold">
+                                    <option>보류</option>
+                                    <option>승인대기</option>
+                                    <option>승인</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            <tr>
+                                <td><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></td>
+                                <td><span class="badge add">추가</span></td>
+                                <td class="muted">2026-05-14 17:44</td>
+                                <td>이경진</td>
+                                <td>한스쿨 기본</td>
+                                <td>4호</td>
+                                <td>1</td>
+                                <td><select class="status-select approved">
+                                    <option>승인</option>
+                                    <option>승인대기</option>
+                                    <option>보류</option>
+                                    <option>반려</option>
+                                </select></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <aside class="panel invoice" aria-labelledby="invoice-heading">
+                <div class="invoice-head">
+                    <div class="invoice-title">
+                        <h2 id="invoice-heading">거래명세서</h2><span>2026. 05</span>
+                    </div>
+                    <button class="print-btn" type="button">인쇄 미리보기</button>
+                </div>
+                <dl class="company-info">
+                    <dt>상호</dt>
+                    <dd>호호서당 부산 남천점</dd>
+                    <dt>등록번호</dt>
+                    <dd>315-87-00242</dd>
+                    <dt>성명</dt>
+                    <dd>조정로</dd>
+                    <dt>주소</dt>
+                    <dd>부산 수영구 남천동로 13-6, 대명빌딩 1층 호호서당</dd>
+                    <dt>담당</dt>
+                    <dd>이경진</dd>
+                    <dt>연락처</dt>
+                    <dd>010-7788-6291</dd>
+                </dl>
+                <div class="table-wrap">
+                    <table class="invoice-table">
+                        <thead>
+                        <tr>
+                            <th>주문일시</th>
+                            <th>품명</th>
+                            <th>규격</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>금액</th>
+                            <th>비고</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>2026-05-03</td>
+                            <td><b>초등신동</b></td>
+                            <td>5호</td>
+                            <td>10</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">이경진</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>초등천재</b></td>
+                            <td>3호</td>
+                            <td>8</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">이경진</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>초등박사</b></td>
+                            <td>1호</td>
+                            <td>3</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">이경진</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>새움</b></td>
+                            <td>4호</td>
+                            <td>2</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">이경진</td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-04</td>
+                            <td><b>초등수재</b></td>
+                            <td>1호</td>
+                            <td>3</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">이경진</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><b>초등천재</b></td>
+                            <td>2호</td>
+                            <td>1</td>
+                            <td>15,000</td>
+                            <td>150,000</td>
+                            <td class="muted">장혜진</td>
+                        </tr>
+                        <tr>
+                            <td>2025-05-07</td>
+                            <td><b>새움</b></td>
+                            <td>5월</td>
+                            <td class="neg">-3</td>
+                            <td>15,000</td>
+                            <td class="neg">-150,000</td>
+                            <td class="muted">장혜진</td>
+                        </tr>
+                        <tr>
+                            <td>2026-05-13</td>
+                            <td><b>다움</b></td>
+                            <td>5월</td>
+                            <td class="neg">-4</td>
+                            <td>15,000</td>
+                            <td class="neg">-150,000</td>
+                            <td class="muted">장혜진</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-row"><span>주문 금액 합계</span><strong>3,000,000원</strong></div>
+                    <div class="summary-row"><span>반품 차감 금액</span><strong>200,000원</strong></div>
+                    <div class="summary-row"><span>추가 주문 금액</span><strong>400,000원</strong></div>
+                    <div class="summary-total"><span>최종 합계 금액</span><strong>3,200,000원</strong></div>
+                </div>
+            </aside>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

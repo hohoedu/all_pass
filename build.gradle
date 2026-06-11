@@ -62,6 +62,10 @@ dependencies {
 
 }
 
+bootRun {
+    jvmArgs = ['-Djava.net.preferIPv4Stack=true']
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
