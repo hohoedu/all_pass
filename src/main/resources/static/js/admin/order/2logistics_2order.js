@@ -50,10 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const syncStatusSelectColor = (select) => {
         select.classList.remove('wait', 'approved', 'hold', 'rejected');
         const value = select.value;
-        if (value === '승인대기') select.classList.add('wait');
-        if (value === '승인') select.classList.add('approved');
-        if (value === '보류') select.classList.add('hold');
-        if (value === '반려') select.classList.add('rejected');
+        if (value === 'unchecked') select.classList.add('wait');
+        if (value === 'checked') select.classList.add('approved');
+        if (value === 'user_cancel') select.classList.add('hold');
+        if (value === 'acancel') select.classList.add('rejected');
     };
 
     document.querySelectorAll('.status-select').forEach((select) => {
@@ -86,4 +86,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const [year, month, day] = deadlinePicker.value.split('-');
         deadlineDisplay.value = `${year}. ${month}. ${day}`;
     });
+
+    const renderReorderTable = (list) => {
+        const tbody = document.getElementById('reorderTableBody');
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            const msg = onlyWait ? '미승인 건이 없습니다.' : '데이터가 없습니다.';
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#9a9da7;">${msg}</td></tr>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const stateClass = item.state === 'RETURN' ? 'return' : 'add';
+            const stateText = item.state === 'RETURN' ? '반품' : '추가';
+
+            const confirmedClass = item.confirmed === 'checked' ? 'approved' :
+                item.confirmed === 'unchecked' ? 'wait' :
+                    item.confirmed === 'user_cancel' ? 'hold' : 'rejected';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <label class="check-label">
+                        <input class="check-input" type="checkbox">
+                        <span class="check-mark"></span>
+                    </label>
+                </td>
+                <td><span class="badge ${stateClass}">${stateText}</span></td>
+                <td class="muted">${item.createdAt}</td>
+                <td>${item.userName}</td>
+                <td>${item.className}</td>
+                <td>${item.unitName}</td>
+                <td>${item.cnt}</td>
+                <td>
+                    <select class="status-select ${confirmedClass}" data-id="${item.id}">
+                        <option value="unchecked"   ${item.confirmed === 'unchecked' ? 'selected' : ''}>미승인</option>
+                        <option value="checked"     ${item.confirmed === 'checked' ? 'selected' : ''}>승인</option>
+                        <option value="acancel"     ${item.confirmed === 'acancel' ? 'selected' : ''}>관리자 취소</option>
+                        <option value="user_cancel" ${item.confirmed === 'user_cancel' ? 'selected' : ''}>사용자 취소</option>
+                    </select>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', () => syncStatusSelectColor(select));
+        });
+    };
+
+    const fetchReorderList = async () => {
+        const [year, month] = document.getElementById('monthPicker').value.split('-');
+        const centerCode = document.getElementById('centerName').value;
+        const onlyWait = document.getElementById('onlyWaitCheck').checked;
+
+        const res = await fetch('/logis/order/reorder-list', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({year, month, centerCode, onlyWait})
+        });
+        const data = await res.json();
+        renderReorderTable(data.response);
+    };
+
+    document.querySelector('.primary-btn').addEventListener('click', fetchReorderList);
+    document.getElementById('onlyWaitCheck').addEventListener('change', fetchReorderList);
+
+    fetchReorderList();
 });

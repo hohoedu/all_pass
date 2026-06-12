@@ -8,6 +8,9 @@ import com.hohoedu.all_pass.center.CenterService;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
+import com.hohoedu.all_pass.logistics.LogisticsService;
+import com.hohoedu.all_pass.logistics._dto.LogisReqDTO;
+import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -27,6 +30,7 @@ public class AdminViewController {
     private final ClassService classService;
     private final CenterService centerService;
     private final AdminService adminService;
+    private final LogisticsService logisticsService;
 
     @GetMapping("/order/order-list")
     public String getAdminOrderList(Model model, HttpSession session) {
@@ -39,12 +43,8 @@ public class AdminViewController {
     }
 
     @GetMapping("/order/order-list2")
-    public String getAdminOrderList2(Model model, HttpSession session) {
-        List<Center> center = centerService.findAllCenter();
-        adminService.findAdminOrderList();
-
-        model.addAttribute("center", center);
-
+    public String getAdminOrderList2(Model model) {
+        model.addAttribute("center", centerService.findAllCenter());
         return "/admin/order/2logistics_2order";
     }
 

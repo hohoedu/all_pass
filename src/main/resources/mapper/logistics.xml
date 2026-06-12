@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.logistics.LogisticsRepository">
+
+    <select id="findReorderList" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderListDTO">
+
+        SELECT r.id                                     AS id,
+               r.reorder_type                           AS state,
+               u.user_name                              AS userName,
+               cc.class_name                            AS className,
+               uc.unit_name                             AS unitName,
+               r.count                                  AS cnt,
+               r.confirmed                              AS confirmed,
+               r.center_code                            AS centerCode,
+               CONVERT(VARCHAR (16), r.created_at, 120) AS createdAt
+        FROM erp_reorder r
+                 JOIN erp_class_code cc ON CASE
+                                               WHEN r.class_key LIKE 'N%'
+                                                   THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
+                                               ELSE r.class_key
+                                               END = cc.class_key
+                 JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
+                 JOIN erp_user u ON r.user_code = u.user_code
+        WHERE r.yy = #{year}
+          AND r.mm = '06'
+          AND (#{centerCode} = 'all' OR r.center_code = #{centerCode})
+        <if test="onlyWait">
+            AND r.confirmed = 'unchecked'
+        </if>
+    </select>
+</mapper>
