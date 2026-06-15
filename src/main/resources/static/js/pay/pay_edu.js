@@ -1607,99 +1607,99 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ========== 엑셀 다운로드 ========== //
-// async function exportFilteredDataToExcel() {
-//     try {
-//         const button = event.target;
-//         button.disabled = true;
-//         button.textContent = '다운로드 중...';
-//
-//         const url = new URL(window.location.href);
-//         const yy = url.searchParams.get('year');
-//         const mm = url.searchParams.get('month');
-//         const userCode = document.getElementById('student-filter')?.value || '';
-//
-//         const filters = {
-//             userCode,
-//             centerCode: 'PUS002',
-//             yy,
-//             mm,
-//             itemType: 'EDU_FEE'
-//         };
-//
-//         const response = await fetch('/pay/api/claim/export', {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: JSON.stringify(filters)
-//         });
-//
-//         if (!response.ok) throw new Error('데이터 조회 실패');
-//
-//         const result = await response.json();
-//         const allData = result.response || result;
-//
-//         if (!allData || allData.length === 0) {
-//             alert('다운로드할 데이터가 없습니다.');
-//             button.disabled = false;
-//             button.textContent = '엑셀 다운로드';
-//             return;
-//         }
-//
-//         const wb = XLSX.utils.book_new();
-//
-//         const groupedByTeacher = groupDataByTeacher(allData);
-//
-//         Object.keys(groupedByTeacher).sort().forEach(teacherName => {
-//             const teacherData = groupedByTeacher[teacherName];
-//             const title = `${mm}월 ${teacherName} 결제 기록`;
-//             const sheetData = teacherData.map(item => {
-//                 const paidAmount = Number(item.paidAmount || 0);
-//                 const billPrice = Number(item.billPrice || 0);
-//                 const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-//                 return {
-//                     '이름': item.studentName || '',
-//                     '수강과목': item.subject || '',
-//                     '청구금액': billPrice,
-//                     '결제금액': calculatedPaid,
-//                     '미납금액': Number(item.unpaidAmount || 0),
-//                     '상태': item.payStatus || ''
-//                 };
-//             });
-//
-//             const sheet = createSheetWithTitle(sheetData, title);
-//             const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
-//             XLSX.utils.book_append_sheet(wb, sheet, sheetName);
-//         });
-//
-//         const allSheetData = allData.map(item => {
-//             const paidAmount = Number(item.paidAmount || 0);
-//             const billPrice = Number(item.billPrice || 0);
-//             const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
-//             return {
-//                 '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
-//                 '이름': item.studentName || '',
-//                 '수강과목': item.subject || '',
-//                 '청구금액': billPrice,
-//                 '결제금액': calculatedPaid,
-//                 '미납금액': Number(item.unpaidAmount || 0),
-//                 '상태': item.payStatus || ''
-//             };
-//         });
-//
-//         const allSheet = createSheetWithTitle(allSheetData, `${mm}월 전체 결제 기록`, true);
-//         XLSX.utils.book_append_sheet(wb, allSheet, "전체");
-//
-//         XLSX.writeFile(wb, `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
-//
-//         button.disabled = false;
-//         button.textContent = '엑셀 다운로드';
-//
-//     } catch (error) {
-//         console.error('엑셀 다운로드 실패:', error);
-//         alert('엑셀 다운로드에 실패했습니다.');
-//         event.target.disabled = false;
-//         event.target.textContent = '엑셀 다운로드';
-//     }
-// }
+async function exportPaidDataToExcel() {
+    try {
+        const button = event.target;
+        button.disabled = true;
+        button.textContent = '다운로드 중...';
+
+        const url = new URL(window.location.href);
+        const yy = url.searchParams.get('year');
+        const mm = url.searchParams.get('month');
+        const userCode = document.getElementById('student-filter')?.value || '';
+
+        const filters = {
+            userCode,
+            centerCode: 'PUS002',
+            yy,
+            mm,
+            itemType: 'EDU_FEE'
+        };
+
+        const response = await fetch('/pay/api/claim/export', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filters)
+        });
+
+        if (!response.ok) throw new Error('데이터 조회 실패');
+
+        const result = await response.json();
+        const allData = result.response || result;
+
+        if (!allData || allData.length === 0) {
+            alert('다운로드할 데이터가 없습니다.');
+            button.disabled = false;
+            button.textContent = '엑셀 다운로드';
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+
+        const groupedByTeacher = groupDataByTeacher(allData);
+
+        Object.keys(groupedByTeacher).sort().forEach(teacherName => {
+            const teacherData = groupedByTeacher[teacherName];
+            const title = `${mm}월 ${teacherName} 결제 기록`;
+            const sheetData = teacherData.map(item => {
+                const paidAmount = Number(item.paidAmount || 0);
+                const billPrice = Number(item.billPrice || 0);
+                const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+                return {
+                    '이름': item.studentName || '',
+                    '수강과목': item.subject || '',
+                    '청구금액': billPrice,
+                    '결제금액': calculatedPaid,
+                    '미납금액': Number(item.unpaidAmount || 0),
+                    '상태': item.payStatus || ''
+                };
+            });
+
+            const sheet = createSheetWithTitle(sheetData, title);
+            const sheetName = teacherName.length > 31 ? teacherName.substring(0, 31) : teacherName;
+            XLSX.utils.book_append_sheet(wb, sheet, sheetName);
+        });
+
+        const allSheetData = allData.map(item => {
+            const paidAmount = Number(item.paidAmount || 0);
+            const billPrice = Number(item.billPrice || 0);
+            const calculatedPaid = item.payStatus === '미결제' ? 0 : (paidAmount - (paidAmount - billPrice));
+            return {
+                '선생님': item.teacherName || item.hanTeacher || item.bookTeacher || '미지정',
+                '이름': item.studentName || '',
+                '수강과목': item.subject || '',
+                '청구금액': billPrice,
+                '결제금액': calculatedPaid,
+                '미납금액': Number(item.unpaidAmount || 0),
+                '상태': item.payStatus || ''
+            };
+        });
+
+        const allSheet = createSheetWithTitle(allSheetData, `${mm}월 전체 결제 기록`, true);
+        XLSX.utils.book_append_sheet(wb, allSheet, "전체");
+
+        XLSX.writeFile(wb, `청구내역_${yy}년${mm}월_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        button.disabled = false;
+        button.textContent = '엑셀 다운로드';
+
+    } catch (error) {
+        console.error('엑셀 다운로드 실패:', error);
+        alert('엑셀 다운로드에 실패했습니다.');
+        event.target.disabled = false;
+        event.target.textContent = '엑셀 다운로드';
+    }
+}
 async function exportFilteredDataToExcel() {
     try {
         const button = event.target;

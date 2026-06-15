@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.target.closest('.check-label')) return;
             document.querySelectorAll('.center-item').forEach((item) => item.classList.remove('active'));
             center.classList.add('active');
+            fetchReorderList();
         });
     });
 
@@ -138,7 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchReorderList = async () => {
         const [year, month] = document.getElementById('monthPicker').value.split('-');
-        const centerCode = document.getElementById('centerName').value;
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
         const onlyWait = document.getElementById('onlyWaitCheck').checked;
 
         const res = await fetch('/logis/order/reorder-list', {
