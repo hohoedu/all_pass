@@ -24,8 +24,27 @@ public class LogisticsController {
     @PostMapping("/order/reorder-list")
     public ResponseEntity<?> getReorderList(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
         log.info("getReorderList");
-        List<LogisRespDTO.ReorderListDTO> list = logisticsService.findReorderList(req);
+        LogisRespDTO.SelectCenterDTO list = logisticsService.findCenterOrderData(req);
         return ResponseEntity.ok(ApiUtils.success(list));
+    }
+
+    @PostMapping("/order/invoice")
+    public ResponseEntity<?> getInvoice(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
+        List<LogisRespDTO.InvoiceDTO> list = logisticsService.findInvoice(req);
+        return ResponseEntity.ok(ApiUtils.success(list));
+    }
+
+    @PostMapping("/order/deadline")
+    public ResponseEntity<?> updateDeadline(@RequestBody LogisReqDTO.DeadlineUpdateReqDTO req) {
+        logisticsService.updateDeadline(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/order/aggregate")
+    public ResponseEntity<?> getAggregate(@RequestBody LogisReqDTO.AggregateReqDTO req) {
+        log.info("getAggregate - segmentType: {}, centers: {}", req.getSegmentType(), req.getCenterCodes());
+        // 서비스 연결은 다음 단계
+        return ResponseEntity.ok(ApiUtils.success(null));
     }
 
 }

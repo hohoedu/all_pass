@@ -4,36 +4,54 @@
 
 <mapper namespace="com.hohoedu.all_pass.logistics.LogisticsRepository">
 
-    <select id="findReorderList" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderListDTO">
+    <select id="findAllDeadlines"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$DeadlineDTO">
+        SELECT center_code AS centerCode,
+               dead_line_at AS deadlineAt
+        FROM erp_order_deadline
+    </select>
 
-        SELECT r.id                                     AS id,
-               r.reorder_type                           AS state,
-               u.user_name                              AS userName,
-               cc.class_name                            AS className,
-               uc.unit_name                             AS unitName,
-               r.count                                  AS cnt,
-               r.confirmed                              AS confirmed,
-               r.center_code                            AS centerCode,
-               CONVERT(VARCHAR (16), r.created_at, 120) AS createdAt
+    <update id="updateDeadline">
+        UPDATE erp_order_deadline
+        SET dead_line_at = #{deadlineAt},
+            updated_at   = GETDATE()
+        WHERE center_code = #{centerCode}
+    </update>
+
+    <select id="findReorderList"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$ReorderListDTO">
+
+        SELECT r.id AS id,
+        r.reorder_type AS state,
+        u.user_name AS userName,
+        cc.class_name AS className,
+        uc.unit_name AS unitName,
+        r.count AS cnt,
+        r.confirmed AS confirmed,
+        r.center_code AS centerCode,
+        CONVERT(VARCHAR (16), r.created_at, 120) AS createdAt
         FROM erp_reorder r
-                 JOIN erp_class_code cc ON CASE
-                                               WHEN r.class_key LIKE 'N%'
-                                                   THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
-                                               ELSE r.class_key
-                                               END = cc.class_key
-                 JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
-                 JOIN erp_user u ON r.user_code = u.user_code
+        JOIN erp_class_code cc ON CASE
+        WHEN r.class_key LIKE 'N%'
+        THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
+        ELSE r.class_key
+        END = cc.class_key
+        JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
+        JOIN erp_user u ON r.user_code = u.user_code
         WHERE r.yy = #{year}
-          AND r.mm = #{month}
-          AND (#{centerCode} = 'all' OR r.center_code = #{centerCode})
+        AND r.mm = #{month}
+        AND (#{centerCode} = 'all' OR r.center_code = #{centerCode})
         <if test="onlyWait">
             AND r.confirmed = 'unchecked'
         </if>
     </select>
 
 
-    <select id="findSummaryInvoiceByCenterCode" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SummaryInvoiceDTO">
-        SELECT COUNT(*) AS itemCount, SUM(total) AS totalCount
+    <select id="findSummaryInvoiceByCenterCode"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$SummaryInvoiceDTO">
+        SELECT CONCAT(#{year}, '-', #{month}) AS yyMm,
+               COUNT(*)                       AS itemCount,
+               SUM(total)                     AS totalCount
         FROM (SELECT class_key, SUM(val) AS total
               FROM (SELECT class_key, total_count AS val
                     FROM erp_order
@@ -56,20 +74,36 @@
                       AND confirmed = 'checked') AS inner_sub
               GROUP BY class_key) AS sub
     </select>
-    <select id="findInvoiceByCenterCode" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$InvoiceDTO">
-        ;
+
+    <select id="findCenterInfoByCenterCode"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$CenterInfoDTO">
+        SELECT center_name    AS centerName,
+               biz_no         AS bizNum,
+               director_name  AS directorName,
+               center_address AS address,
+               manager_name   AS managerName,
+               manager_tel    AS managerTel
+        FROM erp_center
+        WHERE center_code = #{centerCode}
+    </select>
+
+    <select id="findInvoiceByCenterCode"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$InvoiceDTO">
         WITH T AS (SELECT o.created_at,
                           cc.class_key,
-                          CONVERT(VARCHAR (10), o.created_at, 120) AS orderDate, cc.class_name AS className, uc.unit_name AS unitName,
-                          o.total_count AS totalCount, up.unit_price AS unitPrice, o.total_count * up.unit_price AS totalPrice, u.user_name AS userName
+                          'order'                                  AS rowType,
+                          CONVERT(VARCHAR (10), o.created_at, 120) AS orderDate,
+                          cc.class_name                            AS className,
+                          uc.unit_name                             AS unitName,
+                          o.total_count                            AS totalCount,
+                          up.unit_price                            AS unitPrice,
+                          o.total_count * up.unit_price            AS totalPrice,
+                          u.user_name                              AS userName
                    FROM erp_order o
-                            JOIN erp_class_code cc
-                                 ON CASE
-                                        WHEN o.class_key LIKE 'N%'
-                                            THEN SUBSTRING(o.class_key, 2, LEN(o.class_key))
-                                        ELSE o.class_key
-                                        END
-                                     = cc.class_key
+                            JOIN erp_class_code cc ON CASE
+                                                          WHEN o.class_key LIKE 'N%'
+                                                              THEN SUBSTRING(o.class_key, 2, LEN(o.class_key))
+                                                          ELSE o.class_key END = cc.class_key
                             JOIN erp_unit_code uc ON o.unit_key = uc.unit_key
                             JOIN erp_user u ON o.user_code = u.user_code
                             JOIN erp_unit_price up ON o.class_key = up.class_key
@@ -81,28 +115,21 @@
 
                    SELECT r.created_at,
                           cc.class_key,
+                          CASE WHEN r.reorder_type = 'add' THEN 'add' ELSE 'return' END,
                           CONVERT(VARCHAR (10), r.created_at, 120),
                           cc.class_name,
                           uc.unit_name,
-                          CASE
-                              WHEN r.reorder_type = 'add' THEN r.count
-                              WHEN r.reorder_type = 'return' THEN -r.count
-                              ELSE 0
-                              END,
+                          CASE WHEN r.reorder_type = 'add' THEN r.count ELSE -r.count END,
                           up.unit_price,
                           CASE
                               WHEN r.reorder_type = 'add' THEN r.count * up.unit_price
-                              WHEN r.reorder_type = 'return' THEN -(r.count * up.unit_price)
-                              ELSE 0
-                              END,
+                              ELSE -(r.count * up.unit_price) END,
                           u.user_name
                    FROM erp_reorder r
-                            JOIN erp_class_code cc
-                                 ON CASE
-                                        WHEN r.class_key LIKE 'N%'
-                                            THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
-                                        ELSE r.class_key
-                                        END = cc.class_key
+                            JOIN erp_class_code cc ON CASE
+                                                          WHEN r.class_key LIKE 'N%'
+                                                              THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
+                                                          ELSE r.class_key END = cc.class_key
                             JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
                             JOIN erp_user u ON r.user_code = u.user_code
                             JOIN erp_unit_price up ON r.class_key = up.class_key
@@ -110,8 +137,8 @@
                      AND r.mm = #{month}
                      AND r.center_code = #{centerCode}
                      AND r.confirmed = 'checked')
-
-        SELECT orderDate,
+        SELECT rowType,
+               orderDate,
                className,
                unitName,
                totalCount,
@@ -120,32 +147,38 @@
                userName
         FROM (SELECT 0       AS sort_order,
                      created_at,
-                     CASE
-                         WHEN class_key = 'Y' THEN 1
-                         WHEN class_key = 'S' THEN 2
-                         WHEN class_key = 'P' THEN 3
-                         WHEN class_key = 'ES' THEN 4
-                         WHEN class_key = 'EP' THEN 5
-                         WHEN class_key = 'EG' THEN 6
-                         WHEN class_key = 'ED' THEN 7
-                         WHEN class_key = 'HSN' THEN 8
-                         WHEN class_key = 'HSU' THEN 9
-                         WHEN class_key = 'HSX' THEN 10
-                         WHEN class_key = 'HSS' THEN 11
-                         WHEN class_key = 'HSA' THEN 12
-                         WHEN class_key = 'K' THEN 13
-                         WHEN class_key = 'M' THEN 14
-                         WHEN class_key = 'J' THEN 15
-                         WHEN class_key = 'SU' THEN 16
-                         WHEN class_key = 'DU' THEN 17
-                         WHEN class_key = 'BSN' THEN 18
-                         WHEN class_key = 'BSU' THEN 19
-                         WHEN class_key = 'BSX' THEN 20
-                         WHEN class_key = 'BSS' THEN 21
-                         END AS class_order, orderDate, className, unitName, totalCount, unitPrice, totalPrice, userName
+                     CASE class_key
+                         WHEN 'Y' THEN 1
+                         WHEN 'S' THEN 2
+                         WHEN 'P' THEN 3
+                         WHEN 'ES' THEN 4
+                         WHEN 'EP' THEN 5
+                         WHEN 'EG' THEN 6
+                         WHEN 'ED' THEN 7
+                         WHEN 'HSN' THEN 8
+                         WHEN 'HSU' THEN 9
+                         WHEN 'HSX' THEN 10
+                         WHEN 'HSS' THEN 11
+                         WHEN 'HSA' THEN 12
+                         WHEN 'K' THEN 13
+                         WHEN 'M' THEN 14
+                         WHEN 'J' THEN 15
+                         WHEN 'SU' THEN 16
+                         WHEN 'DU' THEN 17
+                         WHEN 'BSN' THEN 18
+                         WHEN 'BSU' THEN 19
+                         WHEN 'BSX' THEN 20
+                         WHEN 'BSS' THEN 21
+                         END AS class_order,
+                     rowType,
+                     orderDate,
+                     className,
+                     unitName,
+                     totalCount,
+                     unitPrice,
+                     totalPrice,
+                     userName
               FROM T) X
-        ORDER BY sort_order,
-                 created_at,
-                 class_order;
+        ORDER BY sort_order, created_at, class_order
     </select>
 </mapper>

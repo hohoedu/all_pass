@@ -17,7 +17,32 @@ public class LogisticsService {
 
     private final LogisticsRepository logisticsRepository;
 
-    public List<LogisRespDTO.ReorderListDTO> findReorderList(LogisReqDTO.ReorderListReqDTO req) {
-        return logisticsRepository.findReorderList(req.getYear(), req.getMonth(), req.getCenterCode(), req.isOnlyWait());
+    public List<LogisRespDTO.DeadlineDTO> findAllDeadlines() {
+        return logisticsRepository.findAllDeadlines();
+    }
+
+    public void updateDeadline(LogisReqDTO.DeadlineUpdateReqDTO req) {
+        logisticsRepository.updateDeadline(req.getCenterCode(), req.getDeadlineAt());
+    }
+
+    public LogisRespDTO.SelectCenterDTO findCenterOrderData(LogisReqDTO.ReorderListReqDTO req) {
+        List<LogisRespDTO.SelectCenterDTO.ReorderListDTO> reorderList =
+                logisticsRepository.findReorderList(req.getYear(), req.getMonth(), req.getCenterCode(), req.isOnlyWait());
+
+        List<LogisRespDTO.SelectCenterDTO.SummaryInvoiceDTO> summaryInvoice =
+                logisticsRepository.findSummaryInvoiceByCenterCode(req.getYear(), req.getMonth(), req.getCenterCode());
+
+        LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo =
+                logisticsRepository.findCenterInfoByCenterCode(req.getCenterCode());
+
+        LogisRespDTO.SelectCenterDTO result = new LogisRespDTO.SelectCenterDTO();
+        result.setReorderList(reorderList);
+        result.setSummaryInvoice(summaryInvoice);
+        result.setCenterInfo(centerInfo);
+        return result;
+    }
+
+    public List<LogisRespDTO.InvoiceDTO> findInvoice(LogisReqDTO.ReorderListReqDTO req) {
+        return logisticsRepository.findInvoiceByCenterCode(req.getYear(), req.getMonth(), req.getCenterCode());
     }
 }

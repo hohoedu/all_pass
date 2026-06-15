@@ -44,7 +44,15 @@ public class AdminViewController {
 
     @GetMapping("/order/order-list2")
     public String getAdminOrderList2(Model model) {
+        Map<String, Integer> deadlineMap = logisticsService.findAllDeadlines()
+                .stream()
+                .collect(Collectors.toMap(
+                        LogisRespDTO.DeadlineDTO::getCenterCode,
+                        LogisRespDTO.DeadlineDTO::getDeadlineAt
+                ));
+
         model.addAttribute("center", centerService.findAllCenter());
+        model.addAttribute("deadlineMap", deadlineMap);
         return "/admin/order/2logistics_2order";
     }
 

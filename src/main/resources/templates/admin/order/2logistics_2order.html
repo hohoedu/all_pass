@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
     <link rel="stylesheet" th:href="@{/css/medial.css}">
     <link rel="stylesheet" th:href="@{/css/admin/2logistics_2order.css}">
@@ -18,7 +19,7 @@
 
 <body>
 <div class="app-shell" id="appShell">
-    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+<!--    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>-->
 
     <header class="header">
         <h1 class="page-title">월별 교재 주문 관리</h1>
@@ -43,7 +44,7 @@
                 <div class="field">
                     <label for="deadlineDisplay">신청 마감일</label>
                     <div class="date-field">
-                        <input id="deadlineDisplay" class="danger" type="text" value="2026. 05. 20" readonly/>
+                        <input id="deadlineDisplay" type="text" value="-" readonly/>
                         <button class="calendar-btn" type="button" data-picker="deadlinePicker" aria-label="신청 마감일 선택">
                             <i class="fa-regular fa-calendar"></i>
                         </button>
@@ -53,7 +54,7 @@
                 <div class="field">
                     <label>조회 기준</label>
                     <div class="segmented" role="group" aria-label="조회 기준">
-                        <button class="active" type="button">거래명세서</button>
+                        <!--                        <button class="active" type="button">거래명세서</button>-->
                         <button type="button">전체 집계</button>
                         <button type="button">센터별 집계</button>
                         <button type="button">센터별 선생님 집계</button>
@@ -82,7 +83,8 @@
                         <article th:if="${c.centerCode != 'PUS001'}"
                                  class="center-item"
                                  th:classappend="${stat.first} ? ' active'"
-                                 th:data-center-code="${c.centerCode}">
+                                 th:data-center-code="${c.centerCode}"
+                                 th:data-deadline="${deadlineMap[c.centerCode]}">
                             <label class="check-label">
                                 <input class="check-input" type="checkbox">
                                 <span class="check-mark"></span>
@@ -105,17 +107,20 @@
                     <div class="statement-tabs">
                         <button class="statement-card active" type="button">
                             <strong>정기 주문 명세서</strong>
-                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                            <p>-</p>
+                            <small>-</small>
                         </button>
                         <button class="statement-card" type="button">
                             <i class="fa-regular fa-trash-can delete-icon"></i>
                             <strong>추가 주문 명세서</strong>
-                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                            <p>-</p>
+                            <small>-</small>
                         </button>
                         <button class="statement-card" type="button">
                             <i class="fa-regular fa-trash-can delete-icon"></i>
                             <strong>특강 교재 명세서</strong>
-                            <p>2026-05</p><small>품목 12건 | 전체 98권</small>
+                            <p>-</p>
+                            <small>-</small>
                         </button>
                     </div>
                 </section>
@@ -126,7 +131,8 @@
                         <label class="check-label" id="onlyWaitLabel" style="gap: 5px">
                             <input class="check-input" type="checkbox" id="onlyWaitCheck">
                             <span class="check-mark"></span>
-                            <span class="only-wait-text" style="color:#5d606b; font-size:15px; font-weight:700;">미승인만 보기</span>
+                            <span class="only-wait-text"
+                                  style="color:#5d606b; font-size:15px; font-weight:700;">미승인만 보기</span>
                         </label>
                     </div>
                     <div class="table-wrap">
@@ -143,7 +149,8 @@
                             </colgroup>
                             <thead>
                             <tr>
-                                <th><label class="check-label"><input class="check-input" type="checkbox"><span class="check-mark"></span></label></th>
+                                <th><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        class="check-mark"></span></label></th>
                                 <th>상태</th>
                                 <th>등록일시</th>
                                 <th>선생님</th>
@@ -153,8 +160,7 @@
                                 <th>승인 여부</th>
                             </tr>
                             </thead>
-                            <tbody id="reorderTableBody">
-                            </tbody>
+                            <tbody id="reorderTableBody"></tbody>
                         </table>
                     </div>
                 </section>
@@ -163,26 +169,36 @@
             <aside class="panel invoice" aria-labelledby="invoice-heading">
                 <div class="invoice-head">
                     <div class="invoice-title">
-                        <h2 id="invoice-heading">거래명세서</h2><span>2026. 05</span>
+                        <h2 id="invoice-heading">거래명세서</h2>
+                        <span id="invoiceYyMm">-</span>
                     </div>
                     <button class="print-btn" type="button">인쇄 미리보기</button>
                 </div>
-                <dl class="company-info">
+                <dl class="company-info" id="companyInfo">
                     <dt>상호</dt>
-                    <dd>호호서당 부산 남천점</dd>
+                    <dd id="infoCenterName">-</dd>
                     <dt>등록번호</dt>
-                    <dd>315-87-00242</dd>
+                    <dd id="infoBizNum">-</dd>
                     <dt>성명</dt>
-                    <dd>조정로</dd>
+                    <dd id="infoDirectorName">-</dd>
                     <dt>주소</dt>
-                    <dd>부산 수영구 남천동로 13-6, 대명빌딩 1층 호호서당</dd>
+                    <dd id="infoAddress">-</dd>
                     <dt>담당</dt>
-                    <dd>이경진</dd>
+                    <dd id="infoManagerName">-</dd>
                     <dt>연락처</dt>
-                    <dd>010-7788-6291</dd>
+                    <dd id="infoManagerTel">-</dd>
                 </dl>
                 <div class="table-wrap">
                     <table class="invoice-table">
+                        <colgroup>
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 10%">
+                            <col style="width: 10%">
+                            <col style="width: 12%">
+                            <col style="width: 12%">
+                            <col style="width: 20%">
+                        </colgroup>
                         <thead>
                         <tr>
                             <th>주문일시</th>
@@ -194,87 +210,14 @@
                             <th>비고</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr>
-                            <td>2026-05-03</td>
-                            <td><b>초등신동</b></td>
-                            <td>5호</td>
-                            <td>10</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">이경진</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><b>초등천재</b></td>
-                            <td>3호</td>
-                            <td>8</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">이경진</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><b>초등박사</b></td>
-                            <td>1호</td>
-                            <td>3</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">이경진</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><b>새움</b></td>
-                            <td>4호</td>
-                            <td>2</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">이경진</td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-04</td>
-                            <td><b>초등수재</b></td>
-                            <td>1호</td>
-                            <td>3</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">이경진</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td><b>초등천재</b></td>
-                            <td>2호</td>
-                            <td>1</td>
-                            <td>15,000</td>
-                            <td>150,000</td>
-                            <td class="muted">장혜진</td>
-                        </tr>
-                        <tr>
-                            <td>2025-05-07</td>
-                            <td><b>새움</b></td>
-                            <td>5월</td>
-                            <td class="neg">-3</td>
-                            <td>15,000</td>
-                            <td class="neg">-150,000</td>
-                            <td class="muted">장혜진</td>
-                        </tr>
-                        <tr>
-                            <td>2026-05-13</td>
-                            <td><b>다움</b></td>
-                            <td>5월</td>
-                            <td class="neg">-4</td>
-                            <td>15,000</td>
-                            <td class="neg">-150,000</td>
-                            <td class="muted">장혜진</td>
-                        </tr>
-                        </tbody>
+                        <tbody id="invoiceTableBody"></tbody>
                     </table>
                 </div>
-                <div class="summary-box">
-                    <div class="summary-row"><span>주문 금액 합계</span><strong>3,000,000원</strong></div>
-                    <div class="summary-row"><span>반품 차감 금액</span><strong>200,000원</strong></div>
-                    <div class="summary-row"><span>추가 주문 금액</span><strong>400,000원</strong></div>
-                    <div class="summary-total"><span>최종 합계 금액</span><strong>3,200,000원</strong></div>
+                <div class="summary-box" id="summaryBox">
+                    <div class="summary-row"><span>주문 금액 합계</span><strong id="summaryOrder">-</strong></div>
+                    <div class="summary-row"><span>반품 차감 금액</span><strong id="summaryReturn">-</strong></div>
+                    <div class="summary-row"><span>추가 주문 금액</span><strong id="summaryAdd">-</strong></div>
+                    <div class="summary-total"><span>최종 합계 금액</span><strong id="summaryTotal">-</strong></div>
                 </div>
             </aside>
         </section>

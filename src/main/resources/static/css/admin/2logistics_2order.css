@@ -667,6 +667,10 @@ a {
     color: var(--text);
 }
 
+input[type="search"]::-webkit-search-cancel-button {
+    cursor: pointer;
+}
+
 .center-list {
     padding: 0 14px 18px;
     overflow-y: auto;
@@ -703,7 +707,6 @@ a {
 .check-input {
     position: absolute;
     opacity: 0;
-    pointer-events: none;
 }
 
 .check-mark {
@@ -928,6 +931,17 @@ select.status-select.rejected {
 
 .invoice {
     padding-bottom: 16px;
+}
+
+.invoice .table-wrap {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.invoice-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .invoice-head {
