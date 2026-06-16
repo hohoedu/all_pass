@@ -803,6 +803,49 @@ input[type="search"]::-webkit-search-cancel-button {
     background: #eef6ff;
 }
 
+.has-tooltip {
+    position: relative;
+    cursor: pointer;
+}
+
+.has-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 130%;
+    left: 0;
+    background: #2f3137;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 20;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s ease;
+    pointer-events: none;
+}
+
+.has-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 118%;
+    left: 10px;
+    border: 5px solid transparent;
+    border-bottom-color: #2f3137;
+    z-index: 20;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s ease;
+}
+
+.has-tooltip:hover::after,
+.has-tooltip:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
 .statement-tabs {
     padding: 0 14px 14px;
     display: grid;
@@ -978,6 +1021,16 @@ select.status-select.rejected {
     font-weight: 800;
 }
 
+.excel-btn {
+    color: #1d6f3e;
+    background: #fff;
+    border: 1px solid #cfe8da;
+    border-radius: 7px;
+    height: 40px;
+    padding: 0 17px;
+    font-weight: 800;
+}
+
 .company-info {
     padding: 0 22px 0;
     display: grid;
@@ -1093,5 +1146,33 @@ select.status-select.rejected {
 
     .workspace {
         grid-template-columns: 1fr;
+    }
+}
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .invoice,
+    .invoice * {
+        visibility: visible;
+    }
+
+    .invoice {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .invoice .table-wrap {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .print-btn {
+        display: none;
     }
 }

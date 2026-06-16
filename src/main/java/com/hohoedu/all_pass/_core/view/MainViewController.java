@@ -9,7 +9,7 @@ import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
-import com.hohoedu.all_pass.secondary.repository.TestRepository;
+import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
@@ -45,7 +45,7 @@ public class MainViewController {
     private final StudentService studentService;
     private final CenterService centerService;
     private final UserService userService;
-    private final TestRepository testRepository;
+    private final SecondaryLogisticsRepository testRepository;
 
     @GetMapping({"/", "/home"})
     public String getIndexPage(HttpSession session, Model model) {
@@ -252,13 +252,6 @@ public class MainViewController {
         model.addAttribute("cardList", cardList);
 
         return "pay/pay-search";
-    }
-
-    @GetMapping("/test")
-    @ResponseBody
-    public ResponseEntity<?> getTestPage() {
-        List<SecondaryDTO.TestDTO> result = testRepository.findAll();
-        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
     @GetMapping("/test/socket")

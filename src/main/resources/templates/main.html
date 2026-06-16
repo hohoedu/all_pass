@@ -140,7 +140,7 @@
                                 <div class="status-title">
                                     <h2 class="subtitle">이전 미납 현황</h2>
                                     <div class="class-button">
-                                        <a class="class-next" th:href="@{/pay/pay-edu}"></a>
+                                        <a class="class-next" th:href="@{/pay/pay-edu(year=${currentYear}, month=${currentMonth})}"></a>
                                     </div>
                                 </div>
                                 <div class="unpaid-arrange">
@@ -204,7 +204,7 @@
                                 <div class="status-title">
                                     <h2 class="subtitle">이번달 미납 현황</h2>
                                     <div class="class-button">
-                                        <a class="class-next" th:href="@{/pay/pay-edu}"></a>
+                                        <a class="class-next" th:href="@{/pay/pay-edu(year=${currentYear}, month=${currentMonth})}"></a>
                                     </div>
                                 </div>
                                 <div class="unpaid-arrange">
@@ -325,7 +325,7 @@
                                     </p>
                                 </div>
                                 <div class="class-button">
-                                    <a class="class-next" href="#"></a>
+                                    <a class="class-next" th:href="@{/class/remedial(year=${currentYear}, month=${currentMonth})}"></a>
                                 </div>
                             </div>
                             <div class="class-boxes">
@@ -359,7 +359,7 @@
                                     </p>
                                 </div>
                                 <div class="class-button">
-                                    <a class="class-next" href="#"></a>
+                                    <a class="class-next" th:href="@{/student/withdraw}"></a>
                                 </div>
                             </div>
                             <div class="student-status-boxes">

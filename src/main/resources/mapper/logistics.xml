@@ -6,7 +6,7 @@
 
     <select id="findAllDeadlines"
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$DeadlineDTO">
-        SELECT center_code AS centerCode,
+        SELECT center_code  AS centerCode,
                dead_line_at AS deadlineAt
         FROM erp_order_deadline
     </select>
@@ -17,6 +17,21 @@
             updated_at   = GETDATE()
         WHERE center_code = #{centerCode}
     </update>
+
+    <select id="findReorderStatusByMonth"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderStatusDTO">
+        SELECT center_code AS centerCode,
+               COUNT(*)    AS requestCount,
+               CASE
+                   WHEN SUM(CASE WHEN confirmed = 'unchecked' THEN 1 ELSE 0 END) > 0
+                       THEN CAST(0 AS BIT)
+                   ELSE CAST(1 AS BIT)
+                   END     AS confirmed
+        FROM erp_reorder
+        WHERE yy = #{year}
+          AND mm = #{month}
+        GROUP BY center_code
+    </select>
 
     <select id="findReorderList"
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$ReorderListDTO">
@@ -29,7 +44,8 @@
         r.count AS cnt,
         r.confirmed AS confirmed,
         r.center_code AS centerCode,
-        CONVERT(VARCHAR (16), r.created_at, 120) AS createdAt
+        CONVERT(VARCHAR (19), r.created_at, 120) AS createdAt,
+        r.reason AS reason
         FROM erp_reorder r
         JOIN erp_class_code cc ON CASE
         WHEN r.class_key LIKE 'N%'
@@ -40,12 +56,17 @@
         JOIN erp_user u ON r.user_code = u.user_code
         WHERE r.yy = #{year}
         AND r.mm = #{month}
-        AND (#{centerCode} = 'all' OR r.center_code = #{centerCode})
+        AND r.center_code = #{centerCode}
         <if test="onlyWait">
             AND r.confirmed = 'unchecked'
         </if>
     </select>
 
+    <update id="updateConfirmed">
+        UPDATE erp_reorder
+        SET confirmed = #{confirmed}
+        WHERE id = #{id}
+    </update>
 
     <select id="findSummaryInvoiceByCenterCode"
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$SummaryInvoiceDTO">
@@ -92,7 +113,7 @@
         WITH T AS (SELECT o.created_at,
                           cc.class_key,
                           'order'                                  AS rowType,
-                          CONVERT(VARCHAR (10), o.created_at, 120) AS orderDate,
+                          CONVERT(VARCHAR (19), o.created_at, 120) AS orderDate,
                           cc.class_name                            AS className,
                           uc.unit_name                             AS unitName,
                           o.total_count                            AS totalCount,
@@ -116,7 +137,7 @@
                    SELECT r.created_at,
                           cc.class_key,
                           CASE WHEN r.reorder_type = 'add' THEN 'add' ELSE 'return' END,
-                          CONVERT(VARCHAR (10), r.created_at, 120),
+                          CONVERT(VARCHAR (19), r.created_at, 120),
                           cc.class_name,
                           uc.unit_name,
                           CASE WHEN r.reorder_type = 'add' THEN r.count ELSE -r.count END,
@@ -181,4 +202,337 @@
               FROM T) X
         ORDER BY sort_order, created_at, class_order
     </select>
+
+    <select id="findCenterNameByCode" resultType="String">
+        SELECT center_name
+        FROM erp_center
+        WHERE center_code = #{centerCode}
+    </select>
+
+    <select id="findAggregateItemsAll"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
+        SELECT o.class_name,
+               o.unit_name,
+               o.baseCount,
+               0                            as teacherCount,
+               o.reorderCount,
+               o.baseCount + o.reorderCount AS totalCount,
+               ISNULL(s.studentCount, 0)    AS timeTableCount
+        FROM (SELECT class_name,
+                     unit_name,
+                     class_type,
+                     class_key,
+                     ucId,
+                     SUM(baseCount)    AS baseCount,
+                     SUM(reorderCount) AS reorderCount
+              FROM (SELECT cc.class_name,
+                           uc.unit_name,
+                           cc.class_type,
+                           cc.class_key,
+                           uc.id              AS ucId,
+                           SUM(o.total_count) AS baseCount,
+                           0                  AS reorderCount
+                    FROM erp_order o
+                             JOIN erp_class_code cc ON CASE
+                                                           WHEN o.class_key LIKE 'N%'
+                                                               THEN SUBSTRING(o.class_key, 2, LEN(o.class_key))
+                                                           ELSE o.class_key
+                                                           END = cc.class_key
+                             JOIN erp_unit_code uc ON o.unit_key = uc.unit_key
+                    WHERE o.yy = #{year}
+                      AND o.mm = #{month}
+                      AND o.center_code != 'PUS001'
+                    GROUP BY cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id
+
+                    UNION ALL
+
+                    SELECT cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id, 0, SUM (CASE
+                        WHEN r.reorder_type = 'ADD' THEN r.count
+                        WHEN r.reorder_type = 'RETURN' THEN -r.count
+                        ELSE 0
+                        END)
+                    FROM erp_reorder r
+                        JOIN erp_class_code cc
+                    ON CASE
+                        WHEN r.class_key LIKE 'N%'
+                        THEN SUBSTRING (r.class_key, 2, LEN(r.class_key))
+                        ELSE r.class_key
+                        END = cc.class_key
+                        JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
+                    WHERE r.yy = #{year}
+                      AND r.mm = #{month}
+                      AND r.center_code != 'PUS001'
+                      AND r.confirmed = 'checked'
+                    GROUP BY cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id) AS order_sub
+              GROUP BY class_name, unit_name, class_type, class_key, ucId) AS o
+                 LEFT JOIN (SELECT class_name, unit_name, SUM(cnt) AS studentCount
+                            FROM (SELECT cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id AS ucId, COUNT(*) AS cnt
+                                  FROM erp_time_table_assign ta
+                                           JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                                           JOIN erp_class_code cc ON CASE
+                                                                         WHEN t.class_key LIKE 'N%'
+                                                                             THEN SUBSTRING(t.class_key, 2, LEN(t.class_key))
+                                                                         ELSE t.class_key
+                                                                         END = cc.class_key
+                                           JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+                                  WHERE t.yy = #{year}
+                                    AND t.mm = #{month}
+                                    AND t.center_code != 'PUS001'
+                                  GROUP BY t.time_table_key, cc.class_type, cc.class_key, cc.class_name, uc.unit_name, uc.id) AS tt_sub
+                            GROUP BY class_name, unit_name, class_type, class_key, ucId) AS s ON o.class_name = s.class_name AND o.unit_name = s.unit_name
+        ORDER BY o.class_type,
+                 CASE o.class_key
+                     WHEN 'Y' THEN 1
+                     WHEN 'S' THEN 2
+                     WHEN 'P' THEN 3
+                     WHEN 'ES' THEN 4
+                     WHEN 'EP' THEN 5
+                     WHEN 'EG' THEN 6
+                     WHEN 'ED' THEN 7
+                     WHEN 'HSN' THEN 8
+                     WHEN 'HSU' THEN 9
+                     WHEN 'HSX' THEN 10
+                     WHEN 'HSS' THEN 11
+                     WHEN 'HSA' THEN 12
+                     WHEN 'K' THEN 13
+                     WHEN 'M' THEN 14
+                     WHEN 'J' THEN 15
+                     WHEN 'SU' THEN 16
+                     WHEN 'DU' THEN 17
+                     WHEN 'TU' THEN 18
+                     WHEN 'BSN' THEN 19
+                     WHEN 'BSU' THEN 20
+                     WHEN 'BSX' THEN 21
+                     WHEN 'BSS' THEN 22
+                     END,
+                 o.ucId
+    </select>
+
+    <select id="findAggregateItemsByCenterCode"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
+        SELECT o.class_name,
+               o.unit_name,
+               o.baseCount,
+               0                            as teacherCount,
+               o.reorderCount,
+               o.baseCount + o.reorderCount AS totalCount,
+               ISNULL(s.studentCount, 0)    AS timeTableCount
+        FROM (SELECT class_name,
+                     unit_name,
+                     class_type,
+                     class_key,
+                     ucId,
+                     SUM(baseCount)    AS baseCount,
+                     SUM(reorderCount) AS reorderCount
+              FROM (SELECT cc.class_name,
+                           uc.unit_name,
+                           cc.class_type,
+                           cc.class_key,
+                           uc.id              AS ucId,
+                           SUM(o.total_count) AS baseCount,
+                           0                  AS reorderCount
+                    FROM erp_order o
+                             JOIN erp_class_code cc ON CASE
+                                                           WHEN o.class_key LIKE 'N%'
+                                                               THEN SUBSTRING(o.class_key, 2, LEN(o.class_key))
+                                                           ELSE o.class_key
+                                                           END = cc.class_key
+                             JOIN erp_unit_code uc ON o.unit_key = uc.unit_key
+                    WHERE o.yy = #{year}
+                      AND o.mm = #{month}
+                      AND o.center_code = #{centerCode}
+                    GROUP BY cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id
+
+                    UNION ALL
+
+                    SELECT cc.class_name,
+                           uc.unit_name,
+                           cc.class_type,
+                           cc.class_key,
+                           uc.id,
+                           0,
+                           SUM(CASE
+                                   WHEN r.reorder_type = 'ADD' THEN r.count
+                                   WHEN r.reorder_type = 'RETURN' THEN -r.count
+                                   ELSE 0
+                               END)
+                    FROM erp_reorder r
+                             JOIN erp_class_code cc ON CASE
+                                                           WHEN r.class_key LIKE 'N%'
+                                                               THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
+                                                           ELSE r.class_key
+                                                           END = cc.class_key
+                             JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
+                    WHERE r.yy = #{year}
+                      AND r.mm = #{month}
+                      AND r.center_code = #{centerCode}
+                      AND r.confirmed = 'checked'
+                    GROUP BY cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id) AS order_sub
+              GROUP BY class_name, unit_name, class_type, class_key, ucId) AS o
+                 LEFT JOIN (SELECT class_name, unit_name, SUM(cnt) AS studentCount
+                            FROM (SELECT cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id AS ucId, COUNT(*) AS cnt
+                                  FROM erp_time_table_assign ta
+                                           JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                                           JOIN erp_class_code cc ON CASE
+                                                                         WHEN t.class_key LIKE 'N%'
+                                                                             THEN SUBSTRING(t.class_key, 2, LEN(t.class_key))
+                                                                         ELSE t.class_key
+                                                                         END = cc.class_key
+                                           JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+                                  WHERE t.yy = #{year}
+                                    AND t.mm = #{month}
+                                    AND t.center_code = #{centerCode}
+                                  GROUP BY t.time_table_key, cc.class_type, cc.class_key, cc.class_name, uc.unit_name, uc.id) AS tt_sub
+                            GROUP BY class_name, unit_name, class_type, class_key, ucId) AS s ON o.class_name = s.class_name AND o.unit_name = s.unit_name
+        ORDER BY o.class_type,
+                 CASE o.class_key
+                     WHEN 'Y' THEN 1
+                     WHEN 'S' THEN 2
+                     WHEN 'P' THEN 3
+                     WHEN 'ES' THEN 4
+                     WHEN 'EP' THEN 5
+                     WHEN 'EG' THEN 6
+                     WHEN 'ED' THEN 7
+                     WHEN 'HSN' THEN 8
+                     WHEN 'HSU' THEN 9
+                     WHEN 'HSX' THEN 10
+                     WHEN 'HSS' THEN 11
+                     WHEN 'HSA' THEN 12
+                     WHEN 'K' THEN 13
+                     WHEN 'M' THEN 14
+                     WHEN 'J' THEN 15
+                     WHEN 'SU' THEN 16
+                     WHEN 'DU' THEN 17
+                     WHEN 'TU' THEN 18
+                     WHEN 'BSN' THEN 19
+                     WHEN 'BSU' THEN 20
+                     WHEN 'BSX' THEN 21
+                     WHEN 'BSS' THEN 22
+                     END,
+                 o.ucId
+    </select>
+
+    <select id="findAggregateItemsByTeacherGroup"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
+        SELECT o.user_name                  AS userName,
+               o.user_code                  AS userCode,
+               o.class_name,
+               o.unit_name,
+               o.baseCount,
+               0                            AS teacherCount,
+               o.reorderCount,
+               o.baseCount + o.reorderCount AS totalCount,
+               ISNULL(s.studentCount, 0)    AS timeTableCount
+        FROM (SELECT user_name,
+                     user_code,
+                     class_name,
+                     unit_name,
+                     class_type,
+                     class_key,
+                     ucId,
+                     SUM(baseCount)    AS baseCount,
+                     SUM(reorderCount) AS reorderCount
+              FROM (SELECT u.user_name,
+                           o.user_code,
+                           cc.class_name,
+                           uc.unit_name,
+                           cc.class_type,
+                           cc.class_key,
+                           uc.id              AS ucId,
+                           SUM(o.total_count) AS baseCount,
+                           0                  AS reorderCount
+                    FROM erp_order o
+                             JOIN erp_class_code cc ON CASE
+                                                           WHEN o.class_key LIKE 'N%'
+                                                               THEN SUBSTRING(o.class_key, 2, LEN(o.class_key))
+                                                           ELSE o.class_key
+                                                           END = cc.class_key
+                             JOIN erp_unit_code uc ON o.unit_key = uc.unit_key
+                             JOIN erp_user u ON o.user_code = u.user_code
+                    WHERE o.yy = #{year}
+                      AND o.mm = #{month}
+                      AND o.center_code = #{centerCode}
+                    GROUP BY u.user_name, o.user_code, cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id
+
+                    UNION ALL
+
+                    SELECT u.user_name,
+                           r.user_code,
+                           cc.class_name,
+                           uc.unit_name,
+                           cc.class_type,
+                           cc.class_key,
+                           uc.id,
+                           0,
+                           SUM(CASE
+                                   WHEN r.reorder_type = 'ADD' THEN r.count
+                                   WHEN r.reorder_type = 'RETURN' THEN -r.count
+                                   ELSE 0
+                               END)
+                    FROM erp_reorder r
+                             JOIN erp_class_code cc ON CASE
+                                                           WHEN r.class_key LIKE 'N%'
+                                                               THEN SUBSTRING(r.class_key, 2, LEN(r.class_key))
+                                                           ELSE r.class_key
+                                                           END = cc.class_key
+                             JOIN erp_unit_code uc ON r.unit_key = uc.unit_key
+                             JOIN erp_user u ON r.user_code = u.user_code
+                    WHERE r.yy = #{year}
+                      AND r.mm = #{month}
+                      AND r.center_code = #{centerCode}
+                      AND r.confirmed = 'checked'
+                    GROUP BY u.user_name, r.user_code, cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id) AS order_sub
+              GROUP BY user_name, user_code, class_name, unit_name, class_type, class_key, ucId) AS o
+                 LEFT JOIN (SELECT u.user_name,
+                                   tt_sub.class_name,
+                                   tt_sub.unit_name,
+                                   tt_sub.class_type,
+                                   tt_sub.class_key,
+                                   tt_sub.ucId,
+                                   SUM(tt_sub.cnt) AS studentCount
+                            FROM (SELECT t.user_code, cc.class_name, uc.unit_name, cc.class_type, cc.class_key, uc.id AS ucId, COUNT(*) AS cnt
+                                  FROM erp_time_table_assign ta
+                                           JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                                           JOIN erp_class_code cc ON CASE
+                                                                         WHEN t.class_key LIKE 'N%'
+                                                                             THEN SUBSTRING(t.class_key, 2, LEN(t.class_key))
+                                                                         ELSE t.class_key
+                                                                         END = cc.class_key
+                                           JOIN erp_unit_code uc ON t.unit_key = uc.unit_key
+                                  WHERE t.yy = #{year}
+                                    AND t.mm = #{month}
+                                    AND t.center_code = #{centerCode}
+                                  GROUP BY t.user_code, cc.class_type, cc.class_key, cc.class_name, uc.unit_name, uc.id) AS tt_sub
+                                     JOIN erp_user u ON tt_sub.user_code = u.user_code
+                            GROUP BY u.user_name, tt_sub.class_name, tt_sub.unit_name, tt_sub.class_type, tt_sub.class_key, tt_sub.ucId) AS s
+                           ON o.user_name = s.user_name AND o.class_name = s.class_name AND o.unit_name = s.unit_name
+        ORDER BY o.user_name,
+                 o.class_type,
+                 CASE o.class_key
+                     WHEN 'Y' THEN 1
+                     WHEN 'S' THEN 2
+                     WHEN 'P' THEN 3
+                     WHEN 'ES' THEN 4
+                     WHEN 'EP' THEN 5
+                     WHEN 'EG' THEN 6
+                     WHEN 'ED' THEN 7
+                     WHEN 'HSN' THEN 8
+                     WHEN 'HSU' THEN 9
+                     WHEN 'HSX' THEN 10
+                     WHEN 'HSS' THEN 11
+                     WHEN 'HSA' THEN 12
+                     WHEN 'K' THEN 13
+                     WHEN 'M' THEN 14
+                     WHEN 'J' THEN 15
+                     WHEN 'SU' THEN 16
+                     WHEN 'DU' THEN 17
+                     WHEN 'TU' THEN 18
+                     WHEN 'BSN' THEN 19
+                     WHEN 'BSU' THEN 20
+                     WHEN 'BSX' THEN 21
+                     WHEN 'BSS' THEN 22
+                     END,
+                 o.ucId
+    </select>
+
 </mapper>

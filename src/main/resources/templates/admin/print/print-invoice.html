@@ -1,45 +1,40 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <title>거래명세서</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
         *{margin:0; padding:0; letter-spacing: -0.2px; box-sizing: border-box; }
         body{line-height:1.5em; color:#252525; }
-        a{color:#121212; text-decoration:none;}
-        img{border:none; vertical-align: top;}
-        ul, ol{list-style:none;}
-        address{font-style: normal;}
-        .cf{}
-        .cf:after{display: block; content:""; clear: both;}
-        input, textarea:focus{outline:none !important;}
-        img{border:none; vertical-align: top;}
-        ul, ol{list-style:none;}
-        address{font-style: normal;}
         table{border-collapse:collapse; border-spacing:0; font-size: 13px;}
-        button{cursor: pointer;}
         a, p, h1, h2, h3, h4, h5{word-break: keep-all;}
-        .print{width:210mm; height:297mm; position: relative; background:#fff; padding:5mm; box-sizing: border-box;}
+
+        @page{ size: A4; margin: 0; }
+
+        .print{
+            width:210mm;
+            height:297mm;
+            position: relative;
+            background:#fff;
+            padding:5mm;
+            box-sizing: border-box;
+            page-break-after: always;
+            overflow: hidden;
+        }
+        .print:last-of-type{ page-break-after: auto; }
+
         h1{text-align: center; font-weight: 600; line-height: 1.5em; margin-bottom:2mm; padding-top:4mm; font-size: 28px; text-decoration: underline;}
         h2{text-align: right; font-weight: 400; font-size: 16px; margin: -5mm 0 2mm;}
-        
-        /*table*/
+
         .table_wrapper{margin-bottom:3mm;}
         .table1 td{height:39px;}
-        .table1 .stamp{position: absolute; left:26mm; top:-1.5mm; background-blend-mode: multiply;}
-        .table1 span img{vertical-align: middle; width:13mm; background-blend-mode: multiply;}
         .table1 tr:nth-child(4) td, .table1 tr:nth-child(5) td{height:19px;}
-        table{border-collapse:collapse;border-spacing:0; border:2px solid black; vertical-align: middle; width:100%;}
+        table{border-collapse:collapse;border-spacing:0; vertical-align: middle; width:100%;}
         table th{border:1px solid black; background: #eee;}
         table td{border-color:black; border-style:solid; border-width:1px; padding:0 1mm; word-break:normal; vertical-align:middle; }
-        {text-align:left;}
         .gray{background:#eee; }
-        .line1{width:5mm;}
         .bold{font-size:16px; font-weight: 700;}
         .center{text-align: center;}
         .table2{text-align: center;}
@@ -48,159 +43,185 @@
         .minus{color:red;}
         .sum{background:#ffff99; font-size: 15px; height:35px; font-weight: 700;}
         .alignR{text-align: right;}
-        
-        /*notice2*/
+
         .notice2{padding:10px 0;}
         .notice2 h3{font-size: 16px; }
         .notice2 p{font-size:14px; margin-left:20px;}
-        .notice2 p span{font-weight: 700;}
-        .notice2 p .blue{color:blue;}
-        h5{text-align: center; margin-top:20px; color:gray; font-size: 16px; }
-    </style>
 
+        .page-no{ position:absolute; bottom:5mm; right:5mm; font-size:12px; color:#999; }
+    </style>
 </head>
 
 <body>
 
-    <div id="wrap">
-        <div class="print">
-            <!--A4 페이지 단위-->
-            <h1>거 래 명 세 서</h1>
-            <h2>거래년월 : 2026.02</h2>
-            <div class="table_wrapper table1">
-                <div class="tg-wrap">
-                    <table>
-                       <colgroup>
-                           <col width="3%">
-                           <col width="8%">
-                           <col width="14%">
-                           <col width="2%">
-                           <col width="7%">
-                           <col width="14%">
-                           <col width="3%">
-                           <col width="8%">
-                           <col width="14%">
-                           <col width="2%">
-                           <col width="7%">
-                           <col width="14%">
-                       </colgroup>
-                        <tbody>
-                            <tr>
-                                <td rowspan="5" class="gray center">공<br><br>급<br><br>자</td>
-                                <td class="center space">상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
-                                <td colspan="4" class="bold" style="position:relative;">호호에듀(주)<span class="stamp"><img src="img/stamp.png" alt="stamp"></span></td>
-                                <td rowspan="5" class="gray center" style="border-left: 2px solid black">공<br>급<br>받<br>는<br>자</td>
-                                <td class="center space">상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
-                                <td colspan="4" class="bold">호호서당 부산 남천점</td>
-                            </tr>
-                            <tr>
-                                <td class="center">등록번호</td>
-                                <td colspan="2">320-88-00028</td>
-                                <td class="center space">성&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명</td>
-                                <td>임무화</td>
-                                <td class="center">등록번호</td>
-                                <td colspan="2">315-87-00242</td>
-                                <td class="center space">성&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명</td>
-                                <td>조정로</td>
-                            </tr>
-                            <tr>
-                                <td class="center space">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
-                                <td colspan="4">부산 해운대구 센텀중앙로97, B동 지하316호(재송동, 센텀스카이비즈)</td>
-                                <td class="center space">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
-                                <td colspan="4">부산시 수영구 남천동로 13-6, 대명빌딩 1-3층</td>
-                            </tr>
-                            <tr>
-                                <td rowspan="2" class="center space">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
-                                <td rowspan="2" class="center">물류팀 이종열</td>
-                                <td colspan="3">T. 010-9191-9291</td>
-                                <td rowspan="2" class="center space">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
-                                <td rowspan="2" class="center">이경진</td>
-                                <td colspan="3">T. 010-7285-8775</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3">E. st8898st@naver.com</td>
-                                <td colspan="3">E. koleekr@hanmail.net</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="table_wrapper table2">
-                <div class="tg-wrap">
-                    <table>
-                       <colgroup>
-                           <col width="15%">
-                           <col width="18%">
-                           <col width="15%">
-                           <col width="10%">
-                           <col width="15%">
-                           <col width="17%">
-                           <col width="10%">
-                       </colgroup>
-                       <thead>
-                           <tr>
-                               <th>주문일시</th>
-                               <th>품명</th>
-                               <th>규격</th>
-                               <th>수량</th>
-                               <th>단가</th>
-                               <th>금액</th>
-                               <th>비고</th>
-                           </tr>
-                       </thead>
-                        <tbody>
-                            <tr>
-                                <td>2023-12-15</td>
-                                <td>한스쿨 기본</td>
-                                <td>6호</td>
-                                <td>34</td>
-                                <td>15,000</td>
-                                <td>240,000</td>
-                                <td>김도경</td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                            <tr class="sum">
-                                <td colspan="3">합계</td>
-                                <td>457</td>
-                                <td></td>
-                                <td class="alignR">6,855,000</td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="notice2">
-                <h3>※교재비 결제</h3>
-                <p>- 결제 기간 : 전월 20일 ~ 당월 10일 마감.</p>
-                <p>- 거래명세서 = 시간표 수량 확인 하오니, 당월 10일까지 추가/반품 접수 부탁드립니다.</p>
+<div id="wrap"></div>
+
+<script th:inline="javascript">
+    const ROWS_PER_PAGE = 25;
+
+    const year = /*[[${year}]]*/ '';
+    const month = /*[[${month}]]*/ '';
+    const centerInfo = /*[[${centerInfo}]]*/ null;
+    const items = /*[[${items}]]*/ [];
+
+    const formatNumber = (n) => Math.abs(n).toLocaleString('ko-KR');
+    const formatBizNum = (val) => {
+        if (!val) return '-';
+        const n = val.replace(/\D/g, '');
+        return n.length === 10 ? `${n.slice(0,3)}-${n.slice(3,5)}-${n.slice(5)}` : val;
+    };
+
+    const headerHtml = (info) => `
+        <h1>거 래 명 세 서</h1>
+        <h2>거래년월 : ${year}.${month}</h2>
+        <div class="table_wrapper table1">
+            <div class="tg-wrap">
+                <table>
+                    <colgroup>
+                        <col width="3%"><col width="8%"><col width="14%"><col width="2%">
+                        <col width="7%"><col width="14%"><col width="3%"><col width="8%">
+                        <col width="14%"><col width="2%"><col width="7%"><col width="14%">
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td rowspan="5" class="gray center">공<br><br>급<br><br>자</td>
+                        <td class="center">상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
+                        <td colspan="4" class="bold">호호에듀(주)</td>
+                        <td rowspan="5" class="gray center" style="border-left: 2px solid black">공<br>급<br>받<br>는<br>자</td>
+                        <td class="center">상&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;호</td>
+                        <td colspan="4" class="bold">${info ? info.centerName : '-'}</td>
+                    </tr>
+                    <tr>
+                        <td class="center">등록번호</td>
+                        <td colspan="2">320-88-00028</td>
+                        <td class="center">성&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명</td>
+                        <td>임무화</td>
+                        <td class="center">등록번호</td>
+                        <td colspan="2">${info ? formatBizNum(info.bizNum) : '-'}</td>
+                        <td class="center">성&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명</td>
+                        <td>${info ? info.directorName : '-'}</td>
+                    </tr>
+                    <tr>
+                        <td class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
+                        <td colspan="4">부산 해운대구 센텀중앙로97, B동 지하316호(재송동, 센텀스카이비즈)</td>
+                        <td class="center">주&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;소</td>
+                        <td colspan="4">${info ? info.address : '-'}</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2" class="center">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
+                        <td rowspan="2" class="center">물류팀 이종열</td>
+                        <td colspan="3">T. 010-9161-9291</td>
+                        <td rowspan="2" class="center">담&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;당</td>
+                        <td rowspan="2" class="center">${info ? info.managerName : '-'}</td>
+                        <td colspan="3">T. ${info ? info.managerTel : '-'}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">E. st8898st@naver.com</td>
+                        <td colspan="3">&nbsp;</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+    `;
 
-    </div>
+    const itemsTableHead = `
+        <tr class="table2">
+            <th>주문일시</th><th>품명</th><th>규격</th><th>수량</th><th>단가</th><th>금액</th><th>비고</th>
+        </tr>
+    `;
 
+    const itemRowHtml = (item, showDate) => {
+        const isNeg = item.totalCount < 0;
+        return `
+            <tr>
+                <td>${showDate}</td>
+                <td>${item.className}</td>
+                <td>${item.unitName}</td>
+                <td class="${isNeg ? 'minus' : ''}">${item.totalCount}</td>
+                <td>${formatNumber(item.unitPrice)}</td>
+                <td class="${isNeg ? 'minus' : ''}">${isNeg ? '-' : ''}${formatNumber(item.totalPrice)}</td>
+                <td>${item.userName}</td>
+            </tr>
+        `;
+    };
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    const renderPages = (info, list) => {
+        const wrap = document.getElementById('wrap');
+        wrap.innerHTML = '';
 
+        if (!list || list.length === 0) {
+            const page = document.createElement('div');
+            page.className = 'print';
+            page.innerHTML = headerHtml(info) + `
+                <table class="table2">
+                    <thead>${itemsTableHead}</thead>
+                    <tbody><tr><td colspan="7">데이터가 없습니다.</td></tr></tbody>
+                </table>
+                <div class="notice2">
+                    <h3>※교재비 결제</h3>
+                    <p>- 결제 기간 : 전월 20일 ~ 당월 10일 마감.</p>
+                    <p>- 거래명세서 = 시간표 수량 확인 하오니, 당월 10일까지 추가/반품 접수 부탁드립니다.</p>
+                </div>
+            `;
+            wrap.appendChild(page);
+            return;
+        }
 
+        let totalQty = 0, totalAmount = 0;
+        list.forEach(i => { totalQty += i.totalCount; totalAmount += i.totalPrice; });
+
+        const pages = [];
+        for (let i = 0; i < list.length; i += ROWS_PER_PAGE) {
+            pages.push(list.slice(i, i + ROWS_PER_PAGE));
+        }
+
+        let prevDate = null;
+
+        pages.forEach((pageItems, pageIdx) => {
+            const isLastPage = pageIdx === pages.length - 1;
+
+            let rowsHtml = '';
+            pageItems.forEach(item => {
+                const dateOnly = item.orderDate ? item.orderDate.slice(0, 10) : '';
+                const showDate = dateOnly !== prevDate ? dateOnly : '';
+                prevDate = dateOnly;
+                rowsHtml += itemRowHtml(item, showDate);
+            });
+
+            if (isLastPage) {
+                rowsHtml += `
+                    <tr class="sum">
+                        <td colspan="3">합계</td>
+                        <td>${totalQty}</td>
+                        <td></td>
+                        <td class="alignR">${formatNumber(totalAmount)}</td>
+                        <td></td>
+                    </tr>
+                `;
+            }
+
+            const page = document.createElement('div');
+            page.className = 'print';
+            page.innerHTML = headerHtml(info) + `
+                <table class="table2">
+                    <thead>${itemsTableHead}</thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+                ${isLastPage ? `
+                <div class="notice2">
+                    <h3>※교재비 결제</h3>
+                    <p>- 결제 기간 : 전월 20일 ~ 당월 10일 마감.</p>
+                    <p>- 거래명세서 = 시간표 수량 확인 하오니, 당월 10일까지 추가/반품 접수 부탁드립니다.</p>
+                </div>` : ''}
+                <div class="page-no">${pageIdx + 1} / ${pages.length}</div>
+            `;
+            wrap.appendChild(page);
+        });
+    };
+
+    renderPages(centerInfo, items);
+</script>
 
 </body>
-
 </html>

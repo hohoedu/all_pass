@@ -1,5 +1,7 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass._core.config.DateConfig;
+import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.admin.AdminService;
 import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
@@ -11,13 +13,23 @@ import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.logistics.LogisticsService;
 import com.hohoedu.all_pass.logistics._dto.LogisReqDTO;
 import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,10 +62,394 @@ public class AdminViewController {
                         LogisRespDTO.DeadlineDTO::getCenterCode,
                         LogisRespDTO.DeadlineDTO::getDeadlineAt
                 ));
+        Map<String, String> dateConfig = DateConfig.currentYearMonth();
+        String year = dateConfig.get("currentYear");
+        String month = dateConfig.get("currentMonth");
 
+        Map<String, LogisRespDTO.ReorderStatusDTO> reorderStatusMap = logisticsService.findReorderStatusMap(year, month);
         model.addAttribute("center", centerService.findAllCenter());
         model.addAttribute("deadlineMap", deadlineMap);
+        model.addAttribute("reorderStatusMap", reorderStatusMap);
         return "/admin/order/2logistics_2order";
+    }
+
+    @GetMapping("/order/print-invoice")
+    public String printInvoice(@RequestParam String year,
+                               @RequestParam String month,
+                               @RequestParam String centerCode,
+                               Model model) {
+
+        LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
+
+        LogisReqDTO.ReorderListReqDTO req = new LogisReqDTO.ReorderListReqDTO();
+        req.setYear(year);
+        req.setMonth(month);
+        req.setCenterCode(centerCode);
+        List<LogisRespDTO.InvoiceDTO> items = logisticsService.findInvoice(req);
+
+        model.addAttribute("year", year);
+        model.addAttribute("month", month);
+        model.addAttribute("centerInfo", centerInfo);
+        model.addAttribute("items", items);
+        return "/admin/print/print-invoice";
+    }
+
+    @GetMapping("/order/invoice-excel")
+    public void downloadInvoiceExcel(@RequestParam String year, @RequestParam String month, @RequestParam String centerCode, HttpServletResponse response) throws IOException {
+
+        LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
+
+        LogisReqDTO.ReorderListReqDTO req = new LogisReqDTO.ReorderListReqDTO();
+        req.setYear(year);
+        req.setMonth(month);
+        req.setCenterCode(centerCode);
+        List<LogisRespDTO.InvoiceDTO> items = logisticsService.findInvoice(req);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("거래명세서");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle sumStyle = workbook.createCellStyle();
+            sumStyle.cloneStyleFrom(cellStyle);
+            Font sumFont = workbook.createFont();
+            sumFont.setBold(true);
+            sumStyle.setFont(sumFont);
+            sumStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+            sumStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            int rowIdx = 0;
+
+            Row titleRow = sheet.createRow(rowIdx++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("거래명세서 (" + year + "." + month + ")");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+
+            rowIdx++;
+
+            Row infoRow1 = sheet.createRow(rowIdx++);
+            infoRow1.createCell(0).setCellValue("상호");
+            infoRow1.createCell(1).setCellValue(centerInfo != null ? centerInfo.getCenterName() : "-");
+            infoRow1.createCell(2).setCellValue("등록번호");
+            infoRow1.createCell(3).setCellValue(centerInfo != null ? centerInfo.getBizNum() : "-");
+
+            Row infoRow2 = sheet.createRow(rowIdx++);
+            infoRow2.createCell(0).setCellValue("성명");
+            infoRow2.createCell(1).setCellValue(centerInfo != null ? centerInfo.getDirectorName() : "-");
+            infoRow2.createCell(2).setCellValue("연락처");
+            infoRow2.createCell(3).setCellValue(centerInfo != null ? centerInfo.getManagerTel() : "-");
+
+            Row infoRow3 = sheet.createRow(rowIdx++);
+            infoRow3.createCell(0).setCellValue("주소");
+            infoRow3.createCell(1).setCellValue(centerInfo != null ? centerInfo.getAddress() : "-");
+
+            rowIdx++;
+
+            String[] headers = {"주문일시", "품명", "규격", "수량", "단가", "금액", "비고"};
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int totalQty = 0;
+            long totalAmount = 0;
+            String prevDate = null;
+
+            for (LogisRespDTO.InvoiceDTO item : items) {
+                Row row = sheet.createRow(rowIdx++);
+
+                String dateOnly = (item.getOrderDate() != null && item.getOrderDate().length() >= 10)
+                        ? item.getOrderDate().substring(0, 10) : "";
+                String showDate = dateOnly.equals(prevDate) ? "" : dateOnly;
+                prevDate = dateOnly;
+
+                row.createCell(0).setCellValue(showDate);
+                row.createCell(1).setCellValue(item.getClassName());
+                row.createCell(2).setCellValue(item.getUnitName());
+                row.createCell(3).setCellValue(item.getTotalCount());
+                row.createCell(4).setCellValue(item.getUnitPrice());
+                row.createCell(5).setCellValue(item.getTotalPrice());
+                row.createCell(6).setCellValue(item.getUserName());
+
+                for (int i = 0; i < 7; i++) {
+                    row.getCell(i).setCellStyle(cellStyle);
+                }
+
+                totalQty += item.getTotalCount();
+                totalAmount += item.getTotalPrice();
+            }
+
+            Row sumRow = sheet.createRow(rowIdx);
+            sumRow.createCell(0).setCellValue("합계");
+            sumRow.createCell(1);
+            sumRow.createCell(2);
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 2));
+            sumRow.createCell(3).setCellValue(totalQty);
+            sumRow.createCell(4).setCellValue("");
+            sumRow.createCell(5).setCellValue(totalAmount);
+            sumRow.createCell(6).setCellValue("");
+            for (int i = 0; i < 7; i++) {
+                sumRow.getCell(i).setCellStyle(sumStyle);
+            }
+
+            sheet.setColumnWidth(0, 4000);
+            sheet.setColumnWidth(1, 6000);
+            sheet.setColumnWidth(2, 3000);
+            sheet.setColumnWidth(3, 2500);
+            sheet.setColumnWidth(4, 3500);
+            sheet.setColumnWidth(5, 4000);
+            sheet.setColumnWidth(6, 3500);
+
+            String fileName = URLEncoder.encode(
+                    (centerInfo != null ? centerInfo.getCenterName() : "거래명세서") + "_" + year + month + ".xlsx",
+                    StandardCharsets.UTF_8).replace("+", "%20");
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            workbook.write(response.getOutputStream());
+        }
+    }
+
+
+    @GetMapping("/order/print-aggregate")
+    public String printAggregate(@RequestParam String year, @RequestParam String month, @RequestParam String segmentType, @RequestParam String centerCodes, Model model) {
+
+        LogisReqDTO.AggregateReqDTO req = new LogisReqDTO.AggregateReqDTO();
+        req.setYear(year);
+        req.setMonth(month);
+        req.setSegmentType(segmentType);
+        req.setCenterCodes(Arrays.asList(centerCodes.split(",")));
+
+        List<LogisRespDTO.CenterAggregateDTO> list = "센터별 선생님 집계".equals(segmentType)
+                ? logisticsService.findTeacherAggregate(req)
+                : logisticsService.findCenterAggregate(req);
+
+        model.addAttribute("year", year);
+        model.addAttribute("month", month);
+        model.addAttribute("segmentType", segmentType);
+        model.addAttribute("list", list);
+        return "/admin/print/print-aggregate";
+    }
+
+    @GetMapping("/order/aggregate-excel")
+    public void downloadAggregateExcel(@RequestParam String year, @RequestParam String month, @RequestParam String segmentType, @RequestParam String centerCodes, HttpServletResponse response) throws IOException {
+
+        LogisReqDTO.AggregateReqDTO req = new LogisReqDTO.AggregateReqDTO();
+        req.setYear(year);
+        req.setMonth(month);
+        req.setSegmentType(segmentType);
+        req.setCenterCodes(Arrays.asList(centerCodes.split(",")));
+
+        boolean isTeacherMode = "센터별 선생님 집계".equals(segmentType);
+        boolean isAllMode = "전체 집계".equals(segmentType);
+
+        List<LogisRespDTO.CenterAggregateDTO> list = isTeacherMode
+                ? logisticsService.findTeacherAggregate(req)
+                : logisticsService.findCenterAggregate(req);
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet(segmentType);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            setBorder(headerStyle);
+
+            CellStyle cellStyle = workbook.createCellStyle();
+            setBorder(cellStyle);
+
+            CellStyle centerStyle = workbook.createCellStyle();
+            setBorder(centerStyle);
+            Font centerFont = workbook.createFont();
+            centerFont.setBold(true);
+            centerStyle.setFont(centerFont);
+            centerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            centerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle teacherStyle = workbook.createCellStyle();
+            setBorder(teacherStyle);
+            Font teacherFont = workbook.createFont();
+            teacherFont.setBold(true);
+            teacherFont.setColor(IndexedColors.VIOLET.getIndex());
+            teacherStyle.setFont(teacherFont);
+            teacherStyle.setFillForegroundColor(IndexedColors.LAVENDER.getIndex());
+            teacherStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle subTotalStyle = workbook.createCellStyle();
+            subTotalStyle.cloneStyleFrom(teacherStyle);
+
+            CellStyle totalStyle = workbook.createCellStyle();
+            setBorder(totalStyle);
+            Font totalFont = workbook.createFont();
+            totalFont.setBold(true);
+            totalStyle.setFont(totalFont);
+            totalStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            int colCount = isTeacherMode ? 8 : isAllMode ? 6 : 7;
+            int rowIdx = 0;
+
+            Row titleRow = sheet.createRow(rowIdx++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(segmentType + " (" + year + "." + month + ")");
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, colCount - 1));
+
+            rowIdx++;
+
+            String[] headers = isTeacherMode
+                    ? new String[]{"선생님", "단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량"}
+                    : isAllMode
+                    ? new String[]{"단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계"}
+                    : new String[]{"단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량"};
+
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            for (LogisRespDTO.CenterAggregateDTO center : list) {
+                Row centerRow = sheet.createRow(rowIdx++);
+                centerRow.createCell(0).setCellValue(center.getCenterName());
+                for (int i = 1; i < colCount; i++) centerRow.createCell(i);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
+                for (int i = 0; i < colCount; i++) centerRow.getCell(i).setCellStyle(centerStyle);
+
+                if (center.getItems() == null || center.getItems().isEmpty()) {
+                    Row emptyRow = sheet.createRow(rowIdx++);
+                    emptyRow.createCell(0).setCellValue("데이터가 없습니다.");
+                    for (int i = 1; i < colCount; i++) emptyRow.createCell(i);
+                    sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
+                    for (int i = 0; i < colCount; i++) emptyRow.getCell(i).setCellStyle(cellStyle);
+                    continue;
+                }
+
+                int totalBaseCount = 0, totalTeacherCount = 0, totalReorderCount = 0, totalCount = 0, totalTimeTable = 0;
+                List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> items = center.getItems();
+
+                for (int idx = 0; idx < items.size(); idx++) {
+                    LogisRespDTO.CenterAggregateDTO.AggregateItemDTO item = items.get(idx);
+
+                    if (isTeacherMode) {
+                        boolean isFirst = idx == 0 || !items.get(idx - 1).getUserName().equals(item.getUserName());
+                        if (isFirst) {
+                            Row teacherRow = sheet.createRow(rowIdx++);
+                            teacherRow.createCell(0).setCellValue(item.getUserName() + " 선생님");
+                            for (int i = 1; i < colCount; i++) teacherRow.createCell(i);
+                            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
+                            for (int i = 0; i < colCount; i++) teacherRow.getCell(i).setCellStyle(teacherStyle);
+                        }
+                    }
+
+                    Row row = sheet.createRow(rowIdx++);
+                    int col = 0;
+                    if (isTeacherMode) row.createCell(col++).setCellValue(item.getUserName());
+                    row.createCell(col++).setCellValue(item.getClassName());
+                    row.createCell(col++).setCellValue(item.getUnitName());
+                    row.createCell(col++).setCellValue(item.getBaseCount());
+                    row.createCell(col++).setCellValue(item.getTeacherCount());
+                    row.createCell(col++).setCellValue(item.getReorderCount());
+                    row.createCell(col++).setCellValue(item.getTotalCount());
+                    if (!isAllMode) row.createCell(col++).setCellValue(item.getTimeTableCount());
+
+                    for (int i = 0; i < colCount; i++) row.getCell(i).setCellStyle(cellStyle);
+
+                    totalBaseCount += item.getBaseCount();
+                    totalTeacherCount += item.getTeacherCount();
+                    totalReorderCount += item.getReorderCount();
+                    totalCount += item.getTotalCount();
+                    totalTimeTable += item.getTimeTableCount();
+
+                    if (isTeacherMode) {
+                        boolean isLast = idx == items.size() - 1 || !items.get(idx + 1).getUserName().equals(item.getUserName());
+                        if (isLast) {
+                            List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> sameTeacher = items.stream()
+                                    .filter(i -> i.getUserName().equals(item.getUserName()))
+                                    .toList();
+
+                            int tBase = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getBaseCount).sum();
+                            int tTeacher = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTeacherCount).sum();
+                            int tReorder = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getReorderCount).sum();
+                            int tTotal = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTotalCount).sum();
+                            int tTime = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTimeTableCount).sum();
+
+                            Row subTotalRow = sheet.createRow(rowIdx++);
+                            subTotalRow.createCell(0).setCellValue(item.getUserName() + " 합계");
+                            subTotalRow.createCell(1);
+                            subTotalRow.createCell(2);
+                            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, 2));
+                            subTotalRow.createCell(3).setCellValue(tBase);
+                            subTotalRow.createCell(4).setCellValue(tTeacher);
+                            subTotalRow.createCell(5).setCellValue(tReorder);
+                            subTotalRow.createCell(6).setCellValue(tTotal);
+                            if (!isAllMode) subTotalRow.createCell(7).setCellValue(tTime);
+
+                            for (int i = 0; i < colCount; i++) subTotalRow.getCell(i).setCellStyle(subTotalStyle);
+                        }
+                    }
+                }
+
+                Row totalRow = sheet.createRow(rowIdx++);
+                int labelSpan = isTeacherMode ? 3 : 2;
+                totalRow.createCell(0).setCellValue(center.getCenterName() + " 합계");
+                for (int i = 1; i < labelSpan; i++) totalRow.createCell(i);
+                sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, labelSpan - 1));
+                totalRow.createCell(labelSpan).setCellValue(totalBaseCount);
+                totalRow.createCell(labelSpan + 1).setCellValue(totalTeacherCount);
+                totalRow.createCell(labelSpan + 2).setCellValue(totalReorderCount);
+                totalRow.createCell(labelSpan + 3).setCellValue(totalCount);
+                if (!isAllMode) totalRow.createCell(labelSpan + 4).setCellValue(totalTimeTable);
+
+                for (int i = 0; i < colCount; i++) totalRow.getCell(i).setCellStyle(totalStyle);
+            }
+
+            for (int i = 0; i < colCount; i++) sheet.setColumnWidth(i, 4500);
+
+            String fileName = URLEncoder.encode(segmentType + "_" + year + month + ".xlsx",
+                    StandardCharsets.UTF_8).replace("+", "%20");
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            workbook.write(response.getOutputStream());
+        }
+    }
+
+    private void setBorder(CellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
 
     @GetMapping("/ebook/person")

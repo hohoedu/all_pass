@@ -29,4 +29,11 @@ public class LogisReqDTO {
         private String segmentType;       // "전체 집계" | "센터별 집계" | "센터별 선생님 집계"
         private List<String> centerCodes;
     }
+
+    @Data
+    public static class ConfirmedUpdateReqDTO {
+        private String id;
+        private String confirmed;
+        private String centerCode;
+    }
 }

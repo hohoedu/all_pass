@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository">
+
+
+    <select id="findReorderStatusByMonth"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderStatusDTO">
+        SELECT 'ULS001' AS centerCode,
+               COUNT(*) AS requestCount,
+               CASE
+                   WHEN SUM(CASE WHEN schk = 'N' THEN 1 ELSE 0 END) > 0
+                       THEN CAST(0 AS BIT)
+                   ELSE CAST(1 AS BIT)
+                   END AS confirmed
+        FROM Hohosc_book_order_add
+        WHERE Yyyy = #{year}
+          AND Mm = #{month}
+    </select>
+
+    <select id="findInvoice" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$InvoiceDTO">
+        --d_hohosc_order_list_sub_all_total_u
+
+--hohosc_book_order : 주문테이블
+--Hohosc_book_order_add : 추가반품테이블
+--Hohosc_book_order_add_sugi  : 수기주문테이블
+--hohosc_office_user : 선생님 테이블
+--codezip : 코드 테이을
+
+-- 선생님별 월 주문 집계 --
+        SELECT CASE A.gb
+                   WHEN '0' THEN 'order'
+                   WHEN '1' THEN 'add'
+                   WHEN '2' THEN 'return'
+                   END                                                  as rowType,
+               FORMAT(
+                       CONVERT(DATETIME,
+                               SUBSTRING(idate, 1, 4) + '-' +
+                               SUBSTRING(idate, 5, 2) + '-' +
+                               SUBSTRING(idate, 7, 2) + ' ' +
+                               SUBSTRING(idate, 9, 2) + ':' +
+                               SUBSTRING(idate, 11, 2)
+                       ),
+                       'yyyy-MM-dd HH:mm')                              AS orderDate,
+               A.class_name                                             as className,
+               A.unit_name                                              as unitName,
+               CASE WHEN A.gb = 2 THEN -qty ELSE qty end                as totalCount,
+               CASE WHEN A.gb = 2 THEN - A.danga ELSE A.danga end       as unitPrice,
+               CASE WHEN A.gb = 2 THEN - A.qty ELSE A.qty end * A.danga as totalPrice,
+               userName = (SELECT t.name from hohosc_office_user t Where t.UID = A.teaid)
+        FROM (SELECT A.yyyy,
+                     A.mm,
+                     A.ggubun,
+                     A.mgubun,
+                     REPLACE(A.mgubun_str, '월', '호') as unit_name,
+                     A.class_name,
+                     sum(A.qty)                      as qty,
+                     0                               as tqty,
+                     A.idate                         as idate,
+                     '0'                             as gb,
+                     A.teaid,
+                     15000                           as danga,
+                     '1'                             as gb_sort
+              FROM (SELECT H.*, class_name = (SELECT C.note FROM codezip C WHERE C.code2 = ggubun), 1 as qty
+                    from (select a.*
+                          from (select yyyy, mm, teaid, max(idate) as idate
+                                from hohosc_book_order h
+                                where yyyy = #{year}
+                                  and mm = #{month}
+                                  and h.yyyy + h.mm + h.teaid = (SELECT TOP 1 O.yyyy + O.mm+ o.teaid
+                                                                 FROM hohosc_book_order O
+                                                                 WHERE O.yyyy = h.yyyy
+                                                                   and O.mm = h.mm
+                                                                   and O.teaid = h.teaid
+                                                                 ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)
+                                group by yyyy, mm, teaid) a
+                          where a.yyyy + a.mm + a.idate = (SELECT TOP 1 O.yyyy + O.mm + o.idate
+                                                           FROM hohosc_book_order O
+                                                           WHERE O.yyyy = a.yyyy
+                                                             and O.mm = A.mm
+                                                             and O.idate = a.idate
+                                                           ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)) A
+                             JOIN hohosc_book_order H ON A.yyyy = H.yyyy AND A.mm = H.mm AND A.idate = H.idate) A
+              GROUP BY yyyy, mm, ggubun, mgubun, mgubun_str, class_name, idate, teaid
+
+              UNION ALL
+
+              SELECT A.yyyy,
+                     A.mm,
+                     A.ggubun,
+                     A.mgubun,
+                     A.unit_name,
+                     A.class_name,
+                     sum(A.addqty) as qty,
+                     sum(A.tqty)   as tqty,
+                     max(A.idate)  as idate,
+                     a.gb,
+                     a.Teaid,
+                     15000         as danga,
+                     '2'           as gb_sotrt
+              FROM (SELECT dbo.Hohosc_book_order_add.Yyyy,
+                           dbo.Hohosc_book_order_add.Mm,
+                           replace(gbcd, ' ', '')                             as ggubun,
+                           replace(dbo.Hohosc_book_order_add.mgubun, ' ', '') as mgubun,
+                           dbo.Hohosc_book_order_add.mgubun_note              as unit_name,
+                           dbo.Hohosc_book_order_add.gbcd_note                as class_name,
+                           0                                                  as qty,
+                           0                                                  as tqty,
+                           dbo.Hohosc_book_order_add.cnt                      as addqty,
+                           dbo.Hohosc_book_order_add.idate,
+                           isnull(dbo.Hohosc_book_order_add.gb, '1')          AS gb,
+                           Teaid
+                    FROM dbo.Hohosc_book_order_add
+                    WHERE dbo.Hohosc_book_order_add.Yyyy = #{year}
+                      AND dbo.Hohosc_book_order_add.Mm = #{month}
+                      AND isnull(dbo.Hohosc_book_order_add.gb, '1') in ('1', '2')
+                      AND dbo.Hohosc_book_order_add.schk in ('Y')) A
+              group by substring(idate, 1, 8), A.yyyy, A.mm, A.ggubun, A.mgubun, A.unit_name, A.class_name, a.gb, a.Teaid
+
+              UNION ALL
+
+              SELECT A.yyyy,
+                     A.mm,
+                     A.ggubun,
+                     A.mgubun,
+                     A.unit_name,
+                     A.class_name,
+                     sum(A.addqty) as qty,
+                     sum(A.tqty)   as tqty,
+                     max(A.idate)  as idate,
+                     a.gb,
+                     a.Teaid,
+                     a.danga,
+                     '5'           as gb_sort
+              FROM (SELECT dbo.Hohosc_book_order_add_sugi.Yyyy,
+                           dbo.Hohosc_book_order_add_sugi.Mm,
+                           replace(gbcd, ' ', '')                                  as ggubun,
+                           replace(dbo.Hohosc_book_order_add_sugi.mgubun, ' ', '') as mgubun,
+                           dbo.Hohosc_book_order_add_sugi.mgubun_note              as unit_name,
+                           dbo.Hohosc_book_order_add_sugi.gbcd_note                as class_name,
+                           0                                                       as qty,
+                           0                                                       as tqty,
+                           dbo.Hohosc_book_order_add_sugi.cnt                      as addqty,
+                           dbo.Hohosc_book_order_add_sugi.idate,
+                           isnull(dbo.Hohosc_book_order_add_sugi.gb, '1')          AS gb,
+                           Teaid,
+                           dbo.Hohosc_book_order_add_sugi.danga
+                    FROM dbo.Hohosc_book_order_add_sugi
+                    WHERE dbo.Hohosc_book_order_add_sugi.Yyyy = #{year}
+                      AND dbo.Hohosc_book_order_add_sugi.Mm = #{month}
+                      AND isnull(dbo.Hohosc_book_order_add_sugi.gb, '1') in ('1', '2')
+                      AND dbo.Hohosc_book_order_add_sugi.schk in ('Y')) A
+              group by substring(idate, 1, 8), A.yyyy, A.mm, A.ggubun, A.mgubun, A.unit_name, A.class_name, a.gb, a.Teaid, a.danga) A
+        Order by idate, A.teaid,
+                 Case
+                     when A.ggubun = 'U1' Then 1
+                     when A.ggubun = 'U2' Then 2
+                     when A.ggubun = 'U3' Then 3
+                     when A.ggubun = 'E1' Then 4
+                     when A.ggubun = 'E2' Then 5
+                     when A.ggubun = 'E3' Then 6
+                     when A.ggubun = 'E4' Then 7
+                     when A.ggubun = 'UA' Then 11
+                     when A.ggubun = 'UB' Then 12
+                     when A.ggubun = 'UC' Then 13
+                     when A.ggubun = 'EA' Then 14
+                     when A.ggubun = 'EB' Then 15
+                     end,
+                 A.mgubun;
+
+    </select>
+
+
+    <select id="findReorderList"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$SelectCenterDTO$ReorderListDTO">
+        SELECT idx                            AS id,
+               CASE
+                   WHEN gb = 1 THEN 'ADD'
+                   WHEN gb = 2 THEN 'RETURN'
+                   END                        AS state,
+               teaidname                      AS userName,
+               gbcd_note                      AS className,
+               REPLACE(mgubun_note, '월', '호') as unitName,
+               cnt                            AS cnt,
+               CASE schk
+                   WHEN 'Y' THEN 'checked'
+                   WHEN 'N' THEN 'unchecked'
+                   WHEN 'C' THEN 'user_cancel'
+                   WHEN 'D' THEN 'acancel'
+                   END                        AS confirmed,
+               'ULS001'                       AS centerCode,
+               FORMAT(
+                       CONVERT(DATETIME,
+                               SUBSTRING(idate, 1, 4) + '-' +
+                               SUBSTRING(idate, 5, 2) + '-' +
+                               SUBSTRING(idate, 7, 2) + ' ' +
+                               SUBSTRING(idate, 9, 2) + ':' +
+                               SUBSTRING(idate, 11, 2)
+                       ),
+                       'yyyy-MM-dd HH:mm')    AS createdAt,
+               note                           AS reason
+        FROM Hohosc_book_order_add
+        WHERE Yyyy = #{year}
+          AND Mm = #{month}
+        <if test="onlyWait">
+            AND schk = 'N'
+        </if>
+    </select>
+
+    <update id="updateConfirmed">
+        UPDATE Hohosc_book_order_add
+        SET schk = #{confirmed}
+        WHERE idx = #{id}
+    </update>
+
+    <select id="findAggregateItemsByCenterCode"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
+        SELECT class_name                         AS className,
+               unit_name                          AS unitName,
+               SUM(baseCount)                     AS baseCount,
+               0                                  AS teacherCount,
+               SUM(reorderCount)                  AS reorderCount,
+               SUM(baseCount) + SUM(reorderCount) AS totalCount,
+               0                                  AS timeTableCount
+        FROM (
+                 -- 기본 주문
+                 SELECT A.ggubun,
+                        A.class_name,
+                        A.unit_name,
+                        SUM(A.qty) AS baseCount,
+                        0          AS reorderCount
+                 FROM (SELECT H.*,
+                              class_name = (SELECT C.note FROM codezip C WHERE C.code2 = ggubun),
+                              REPLACE(mgubun_str, '월', '호') AS unit_name,
+                              1                             AS qty
+                       FROM (SELECT a.*
+                             FROM (SELECT yyyy, mm, teaid, MAX(idate) AS idate
+                                   FROM hohosc_book_order h
+                                   WHERE yyyy = #{year}
+                                     AND mm = #{month}
+                                     AND h.yyyy + h.mm + h.teaid = (SELECT TOP 1 O.yyyy + O.mm + O.teaid
+                                                                    FROM hohosc_book_order O
+                                                                    WHERE O.yyyy = h.yyyy
+                                                                      AND O.mm = h.mm
+                                                                      AND O.teaid = h.teaid
+                                                                    ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)
+                                   GROUP BY yyyy, mm, teaid) a
+                             WHERE a.yyyy + a.mm + a.idate = (SELECT TOP 1 O.yyyy + O.mm + O.idate
+                                                              FROM hohosc_book_order O
+                                                              WHERE O.yyyy = a.yyyy
+                                                                AND O.mm = a.mm
+                                                                AND O.idate = a.idate
+                                                              ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)) A
+                                JOIN hohosc_book_order H ON A.yyyy = H.yyyy AND A.mm = H.mm AND A.idate = H.idate) A
+                 GROUP BY A.ggubun, A.class_name, A.unit_name
+
+                 UNION ALL
+
+                 -- 추가/반품
+                 SELECT REPLACE(gbcd, ' ', '')                                      AS ggubun,
+                        gbcd_note                                                   AS class_name,
+                        REPLACE(mgubun_note, '월', '호')                              AS unit_name,
+                        0                                                           AS baseCount,
+                        SUM(CASE WHEN ISNULL(gb, '1') = '2' THEN -cnt ELSE cnt END) AS reorderCount
+                 FROM Hohosc_book_order_add
+                 WHERE Yyyy = #{year}
+                   AND Mm = #{month}
+                   AND ISNULL(gb, '1') IN ('1', '2')
+                   AND schk = 'Y'
+                 GROUP BY REPLACE(gbcd, ' ', ''), gbcd_note, REPLACE(mgubun_note, '월', '호')) AS sub
+        GROUP BY ggubun, class_name, unit_name
+        ORDER BY CASE ggubun
+                     WHEN 'U1' THEN 1
+                     WHEN 'U2' THEN 2
+                     WHEN 'U3' THEN 3
+                     WHEN 'E1' THEN 4
+                     WHEN 'E2' THEN 5
+                     WHEN 'E3' THEN 6
+                     WHEN 'E4' THEN 7
+                     WHEN 'UA' THEN 11
+                     WHEN 'UB' THEN 12
+                     WHEN 'UC' THEN 13
+                     WHEN 'EA' THEN 14
+                     WHEN 'EB' THEN 15
+                     END,
+                 unit_name
+    </select>
+
+    <select id="findAggregateItemsByTeacherGroup"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
+        SELECT user_name AS userName,
+               user_code AS userCode,
+               class_name   AS className,
+               unit_name    AS unitName,
+               SUM(baseCount)                     AS baseCount,
+               0                                   AS teacherCount,
+               SUM(reorderCount)                   AS reorderCount,
+               SUM(baseCount) + SUM(reorderCount)  AS totalCount,
+               0                                   AS timeTableCount
+        FROM (
+                 -- 기본 주문
+                 SELECT t.name AS user_name,
+                        A.teaid AS user_code,
+                        A.ggubun,
+                        A.class_name,
+                        A.unit_name,
+                        SUM(A.qty) AS baseCount,
+                        0          AS reorderCount
+                 FROM (
+                          SELECT H.*,
+                                 class_name = (SELECT C.note FROM codezip C WHERE C.code2 = ggubun),
+                                 REPLACE(mgubun_str, '월', '호') AS unit_name,
+                                 1 AS qty
+                          FROM (
+                                   SELECT a.*
+                                   FROM (
+                                            SELECT yyyy, mm, teaid, MAX(idate) AS idate
+                                            FROM hohosc_book_order h
+                                            WHERE yyyy = #{year}
+                                              AND mm = #{month}
+                                              AND h.yyyy + h.mm + h.teaid = (
+                                                SELECT TOP 1 O.yyyy + O.mm + O.teaid
+                                                FROM hohosc_book_order O
+                                                WHERE O.yyyy = h.yyyy AND O.mm = h.mm AND O.teaid = h.teaid
+                                                ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)
+                                            GROUP BY yyyy, mm, teaid
+                                        ) a
+                                   WHERE a.yyyy + a.mm + a.idate = (
+                                       SELECT TOP 1 O.yyyy + O.mm + O.idate
+                                       FROM hohosc_book_order O
+                                       WHERE O.yyyy = a.yyyy AND O.mm = a.mm AND O.idate = a.idate
+                                       ORDER BY O.yyyy DESC, O.mm DESC, O.idate DESC)
+                               ) A
+                                   JOIN hohosc_book_order H ON A.yyyy = H.yyyy AND A.mm = H.mm AND A.idate = H.idate
+                      ) A
+                          JOIN hohosc_office_user t ON t.UID = A.teaid
+                 GROUP BY t.name, A.teaid, A.ggubun, A.class_name, A.unit_name
+
+                 UNION ALL
+
+                 -- 추가/반품
+                 SELECT teaidname,
+                        Teaid,
+                        REPLACE(gbcd, ' ', '')           AS ggubun,
+                        gbcd_note                        AS class_name,
+                        REPLACE(mgubun_note, '월', '호')  AS unit_name,
+                        0                                 AS baseCount,
+                        SUM(CASE WHEN ISNULL(gb, '1') = '2' THEN -cnt ELSE cnt END) AS reorderCount
+                 FROM Hohosc_book_order_add
+                 WHERE Yyyy = #{year}
+                   AND Mm = #{month}
+                   AND ISNULL(gb, '1') IN ('1', '2')
+                   AND schk = 'Y'
+                 GROUP BY teaidname, Teaid, REPLACE(gbcd, ' ', ''), gbcd_note, REPLACE(mgubun_note, '월', '호')
+             ) AS sub
+        GROUP BY user_name, user_code, ggubun, class_name, unit_name
+        ORDER BY
+            user_name,
+            CASE ggubun
+                WHEN 'U1' THEN 1  WHEN 'U2' THEN 2  WHEN 'U3' THEN 3
+                WHEN 'E1' THEN 4  WHEN 'E2' THEN 5  WHEN 'E3' THEN 6  WHEN 'E4' THEN 7
+                WHEN 'UA' THEN 11 WHEN 'UB' THEN 12 WHEN 'UC' THEN 13
+                WHEN 'EA' THEN 14 WHEN 'EB' THEN 15
+                END,
+            unit_name
+    </select>
+
+</mapper>

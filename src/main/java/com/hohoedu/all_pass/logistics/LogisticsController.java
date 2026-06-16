@@ -28,6 +28,12 @@ public class LogisticsController {
         return ResponseEntity.ok(ApiUtils.success(list));
     }
 
+    @PostMapping("/order/confirmed")
+    public ResponseEntity<?> updateConfirmed(@RequestBody LogisReqDTO.ConfirmedUpdateReqDTO req) {
+        logisticsService.updateConfirmed(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
     @PostMapping("/order/invoice")
     public ResponseEntity<?> getInvoice(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
         List<LogisRespDTO.InvoiceDTO> list = logisticsService.findInvoice(req);
@@ -42,9 +48,12 @@ public class LogisticsController {
 
     @PostMapping("/order/aggregate")
     public ResponseEntity<?> getAggregate(@RequestBody LogisReqDTO.AggregateReqDTO req) {
-        log.info("getAggregate - segmentType: {}, centers: {}", req.getSegmentType(), req.getCenterCodes());
-        // 서비스 연결은 다음 단계
-        return ResponseEntity.ok(ApiUtils.success(null));
+        List<LogisRespDTO.CenterAggregateDTO> result = "센터별 선생님 집계".equals(req.getSegmentType())
+                ? logisticsService.findTeacherAggregate(req)
+                : logisticsService.findCenterAggregate(req);
+
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
+
 
 }

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <title>집계 인쇄</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0; padding:0; letter-spacing: -0.2px; box-sizing: border-box; }
+        body{line-height:1.5em; color:#252525; }
+        table{border-collapse:collapse; border-spacing:0; font-size: 13px; width:100%;}
+        a, p, h1, h2{word-break: keep-all;}
+
+        @page{ size: A4; margin: 0; }
+
+        .print{
+            width:210mm;
+            height:297mm;
+            position: relative;
+            background:#fff;
+            padding:10mm;
+            box-sizing: border-box;
+            page-break-after: always;
+            overflow: hidden;
+        }
+        .print:last-of-type{ page-break-after: auto; }
+
+        h1{text-align: center; font-weight: 700; font-size: 24px; margin-bottom:2mm;}
+        h2{text-align: right; font-weight: 400; font-size: 14px; margin-bottom:5mm;}
+
+        table th, table td{
+            border:1px solid black;
+            padding:5px 6px;
+            text-align:center;
+        }
+        table th{ background:#eee; font-weight:700; }
+
+        .center-row td{
+            background:#f3f4f8;
+            font-weight:800;
+            text-align:left;
+            padding-left:14px;
+        }
+        .teacher-row td{
+            background:#fbf6ff;
+            color:#9b009b;
+            font-weight:800;
+            text-align:left;
+            padding-left:24px;
+        }
+        .sub-total td{
+            background:#fbf6ff;
+            font-weight:700;
+            color:#9b009b;
+        }
+        .grand-total td{
+            background:#f8f8fb;
+            font-weight:800;
+        }
+        .minus{ color:red; font-weight:800; }
+        .empty{ color:#999; }
+
+        .page-no{
+            position:absolute;
+            bottom:5mm;
+            right:10mm;
+            font-size:12px;
+            color:#999;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="wrap"></div>
+
+<script th:inline="javascript">
+    const ROWS_PER_PAGE = 25;
+
+    const year = /*[[${year}]]*/ '';
+    const month = /*[[${month}]]*/ '';
+    const segmentType = /*[[${segmentType}]]*/ '';
+    const list = /*[[${list}]]*/ [];
+
+    const isTeacherMode = segmentType === '센터별 선생님 집계';
+    const isAllMode      = segmentType === '전체 집계';
+    const colCount        = isTeacherMode ? 8 : isAllMode ? 6 : 7;
+
+    const theadHtml = isTeacherMode
+        ? `<th>선생님</th><th>단계</th><th>교재</th><th>학생 수량</th><th>선생님 수량</th><th>추가수량</th><th>합계</th><th>시간표 수량</th>`
+        : isAllMode
+            ? `<th>단계</th><th>교재</th><th>학생 수량</th><th>선생님 수량</th><th>추가수량</th><th>합계</th>`
+            : `<th>단계</th><th>교재</th><th>학생 수량</th><th>선생님 수량</th><th>추가수량</th><th>합계</th><th>시간표 수량</th>`;
+
+    const rows = [];
+
+    list.forEach(center => {
+        rows.push(`<tr class="center-row"><td colspan="${colCount}">${center.centerName}</td></tr>`);
+
+        if (!center.items || center.items.length === 0) {
+            rows.push(`<tr><td colspan="${colCount}" class="empty">데이터가 없습니다.</td></tr>`);
+            return;
+        }
+
+        let totalBaseCount = 0, totalTeacherCount = 0, totalReorderCount = 0, totalCount = 0, totalTimeTable = 0;
+
+        center.items.forEach((item, idx) => {
+            if (isTeacherMode) {
+                const isFirst = idx === 0 || center.items[idx - 1].userName !== item.userName;
+                if (isFirst) {
+                    rows.push(`<tr class="teacher-row"><td colspan="${colCount}">${item.userName} 선생님</td></tr>`);
+                }
+            }
+
+            const isNeg = item.reorderCount < 0;
+            rows.push(`
+                <tr>
+                    ${isTeacherMode ? `<td>${item.userName}</td>` : ''}
+                    <td>${item.className}</td>
+                    <td>${item.unitName}</td>
+                    <td>${item.baseCount}</td>
+                    <td>${item.teacherCount}</td>
+                    <td class="${isNeg ? 'minus' : ''}">${item.reorderCount}</td>
+                    <td>${item.totalCount}</td>
+                    ${isAllMode ? '' : `<td>${item.timeTableCount}</td>`}
+                </tr>
+            `);
+
+            totalBaseCount    += item.baseCount;
+            totalTeacherCount += item.teacherCount;
+            totalReorderCount += item.reorderCount;
+            totalCount        += item.totalCount;
+            totalTimeTable    += item.timeTableCount;
+
+            if (isTeacherMode) {
+                const isLast = idx === center.items.length - 1 || center.items[idx + 1].userName !== item.userName;
+                if (isLast) {
+                    const same = center.items.filter(i => i.userName === item.userName);
+                    const tB   = same.reduce((s, i) => s + i.baseCount, 0);
+                    const tT   = same.reduce((s, i) => s + i.teacherCount, 0);
+                    const tR   = same.reduce((s, i) => s + i.reorderCount, 0);
+                    const tTot = same.reduce((s, i) => s + i.totalCount, 0);
+                    const tTi  = same.reduce((s, i) => s + i.timeTableCount, 0);
+
+                    rows.push(`
+                        <tr class="sub-total">
+                            <td colspan="3">${item.userName} 합계</td>
+                            <td>${tB}</td><td>${tT}</td>
+                            <td class="${tR < 0 ? 'minus' : ''}">${tR}</td>
+                            <td>${tTot}</td>
+                            ${isAllMode ? '' : `<td>${tTi}</td>`}
+                        </tr>
+                    `);
+                }
+            }
+        });
+
+        rows.push(`
+            <tr class="grand-total">
+                <td colspan="${isTeacherMode ? 3 : 2}">${center.centerName} 합계</td>
+                <td>${totalBaseCount}</td><td>${totalTeacherCount}</td>
+                <td class="${totalReorderCount < 0 ? 'minus' : ''}">${totalReorderCount}</td>
+                <td>${totalCount}</td>
+                ${isAllMode ? '' : `<td>${totalTimeTable}</td>`}
+            </tr>
+        `);
+    });
+
+    const pages = [];
+    if (rows.length === 0) {
+        pages.push([`<tr><td colspan="${colCount}" class="empty">데이터가 없습니다.</td></tr>`]);
+    } else {
+        for (let i = 0; i < rows.length; i += ROWS_PER_PAGE) {
+            pages.push(rows.slice(i, i + ROWS_PER_PAGE));
+        }
+    }
+
+    const wrap = document.getElementById('wrap');
+    pages.forEach((pageRows, idx) => {
+        const page = document.createElement('div');
+        page.className = 'print';
+        page.innerHTML = `
+            <h1>${segmentType}</h1>
+            <h2>거래월 : ${year}.${month}</h2>
+            <table>
+                <thead><tr>${theadHtml}</tr></thead>
+                <tbody>${pageRows.join('')}</tbody>
+            </table>
+            <div class="page-no">${idx + 1} / ${pages.length}</div>
+        `;
+        wrap.appendChild(page);
+    });
+
+    if (window.parent !== window) {
+        window.parent.postMessage('aggregate-ready', '*');
+    }
+</script>
+
+</body>
+</html>

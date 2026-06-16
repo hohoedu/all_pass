@@ -1,17 +1,19 @@
-package com.hohoedu.all_pass.logistics;
+package com.hohoedu.all_pass.secondary.repository;
 
 import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
+import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
 
 import java.util.List;
 
 @Mapper
-public interface LogisticsRepository {
+public interface SecondaryLogisticsRepository {
 
-    List<LogisRespDTO.DeadlineDTO> findAllDeadlines();
-
-    void updateDeadline(String centerCode, int deadlineAt);
+    List<LogisRespDTO.InvoiceDTO> findInvoice(
+            @Param("year") String year,
+            @Param("month") String month);
 
     List<LogisRespDTO.ReorderStatusDTO> findReorderStatusByMonth(
             @Param("year") String year,
@@ -27,25 +29,6 @@ public interface LogisticsRepository {
             @Param("id") String id,
             @Param("confirmed") String confirmed);
 
-    List<LogisRespDTO.SelectCenterDTO.SummaryInvoiceDTO> findSummaryInvoiceByCenterCode(
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("centerCode") String centerCode);
-
-    LogisRespDTO.SelectCenterDTO.CenterInfoDTO findCenterInfoByCenterCode(
-            @Param("centerCode") String centerCode);
-
-    List<LogisRespDTO.InvoiceDTO> findInvoiceByCenterCode(
-            @Param("year") String year,
-            @Param("month") String month,
-            @Param("centerCode") String centerCode);
-
-    String findCenterNameByCode(String centerCode);
-
-    List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> findAggregateItemsAll(
-            @Param("year") String year,
-            @Param("month") String month);
-
     List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> findAggregateItemsByCenterCode(
             @Param("year") String year,
             @Param("month") String month,
@@ -55,6 +38,5 @@ public interface LogisticsRepository {
             @Param("year") String year,
             @Param("month") String month,
             @Param("centerCode") String centerCode);
-
 
 }

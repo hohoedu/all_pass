@@ -19,7 +19,7 @@
 
 <body>
 <div class="app-shell" id="appShell">
-<!--    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>-->
+    <!--    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>-->
 
     <header class="header">
         <h1 class="page-title">월별 교재 주문 관리</h1>
@@ -84,16 +84,19 @@
                                  class="center-item"
                                  th:classappend="${stat.first} ? ' active'"
                                  th:data-center-code="${c.centerCode}"
-                                 th:data-deadline="${deadlineMap[c.centerCode]}">
+                                 th:data-deadline="${deadlineMap[c.centerCode]}"
+                                 th:with="status=${reorderStatusMap[c.centerCode]}">
                             <label class="check-label">
                                 <input class="check-input" type="checkbox">
                                 <span class="check-mark"></span>
                             </label>
                             <div>
                                 <div class="center-name" th:text="${#strings.replace(c.centerName, '호호서당 ', '')}"></div>
-                                <div class="request">요청 0건</div>
+                                <div class="request" th:text="'요청 ' + (${status != null} ? ${status.requestCount} : 0) + '건'">요청 0건</div>
                             </div>
-                            <span class="badge wait">승인대기</span>
+                            <span class="badge"
+                                  th:classappend="${status != null and status.confirmed} ? 'done' : 'wait'"
+                                  th:text="${status != null and status.confirmed} ? '승인완료' : '승인대기'">승인대기</span>
                         </article>
                     </th:block>
                 </div>
@@ -172,7 +175,10 @@
                         <h2 id="invoice-heading">거래명세서</h2>
                         <span id="invoiceYyMm">-</span>
                     </div>
-                    <button class="print-btn" type="button">인쇄 미리보기</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="excel-btn" type="button">엑셀 다운로드</button>
+                        <button class="print-btn" type="button">인쇄 미리보기</button>
+                    </div>
                 </div>
                 <dl class="company-info" id="companyInfo">
                     <dt>상호</dt>

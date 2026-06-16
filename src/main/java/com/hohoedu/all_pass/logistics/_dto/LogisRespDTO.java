@@ -15,6 +15,13 @@ public class LogisRespDTO {
     }
 
     @Data
+    public static class ReorderStatusDTO{
+        private String centerCode;
+        private int requestCount;
+        private boolean confirmed;
+    }
+
+    @Data
     public static class SelectCenterDTO{
         private List<ReorderListDTO> reorderList;
         private List<SummaryInvoiceDTO>  summaryInvoice;
@@ -31,6 +38,7 @@ public class LogisRespDTO {
             private String confirmed;
             private String centerCode;
             private String createdAt;
+            private String reason;
         }
 
         @Data
@@ -64,4 +72,25 @@ public class LogisRespDTO {
         private int totalPrice;
         private String userName;
     }
+
+    @Data
+    public static class CenterAggregateDTO {
+        private String centerCode;
+        private String centerName;
+        private List<AggregateItemDTO> items;
+
+        @Data
+        public static class AggregateItemDTO {
+            private String userCode;
+            private String userName;
+            private String className;
+            private String unitName;
+            private int baseCount;
+            private int teacherCount;
+            private int reorderCount;
+            private int totalCount;
+            private int timeTableCount;
+        }
+    }
+
 }
