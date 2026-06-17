@@ -542,6 +542,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let sortColumn = 'consultDate';
     let sortDir = 'desc';
 
+    const SUBJECT_SORT_CYCLE = ['subjectHan', 'subjectBook', 'subjectHoho', null];
+    let subjectSortIndex = -1; // -1 = 비활성 상태
+
     function updateSortIcons(col) {
         document.querySelectorAll('.sort-col').forEach(el => {
             const icon = el.querySelector('.sort-icon');
@@ -557,6 +560,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.sort-col').forEach(el => {
         el.addEventListener('click', async () => {
             const col = el.dataset.col;
+
+            if (col === 'consultType') {
+                subjectSortIndex = (subjectSortIndex + 1) % SUBJECT_SORT_CYCLE.length;
+                sortColumn = SUBJECT_SORT_CYCLE[subjectSortIndex];
+                sortDir = null;
+                updateSortIcons(sortColumn ? 'consultType' : null);
+                await fetchConsults(startDateInput.value, endDateInput.value);
+                return;
+            }
+
+            subjectSortIndex = -1; // 다른 컬럼 클릭 시 과목 순환 초기화
             if (sortColumn === col) {
                 if (sortDir === 'asc') {
                     sortDir = 'desc';

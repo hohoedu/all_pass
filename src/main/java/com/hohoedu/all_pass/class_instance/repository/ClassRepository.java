@@ -247,6 +247,14 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    ClassRespDTO.BeforeClassRespDTO findBeforeClassVariant(
+            @Param("centerCode") String centerCode,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("week") String week,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("year") String year);
+
     public ClassRespDTO.BeforeClassRespDTO findBeforeClass(
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
@@ -277,13 +285,23 @@ public interface ClassRepository {
             @Param("timeTableKey") String timeTableKey,
             @Param("week") String week);
 
-    public ClassRespDTO.AfterClassRespDTO findAfterClass(
+    ClassRespDTO.AfterClassRespDTO findAfterClassVariant(
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey,
+            @Param("week") String week,
+            @Param("timeTableKey") String timeTableKey,
+            @Param("year") String year);
+
+    ClassRespDTO.AfterClassRespDTO findAfterClass(
             @Param("userCode") String userCode,
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey,
             @Param("week") String week,
             @Param("timeTableKey") String timeTableKey,
             @Param("yy") String yy);
+
 
     ClassRespDTO.AfterClassRespDTO findAfterClassNotice(
             @Param("studentId") String studentId,
@@ -300,17 +318,35 @@ public interface ClassRepository {
             @Param("mm") String mm,
             @Param("score") ClassReqDTO.ClassMonthlyScoreDTO.MonthlyScoreDTO score);
 
+    boolean existsMonthlyCommentVariant(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("centerCode") String centerCode,
+            @Param("year") String year);
+
+
     List<String> getMonthlyAllCorrectFeedback(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
             @Param("yy") String yy,
-            @Param("mm") String mm);
+            @Param("mm") String mm,
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("feedbackVariantExists") boolean feedbackVariantExists);
+
+    boolean existsMonthlyFeedbackVariant(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("centerCode") String centerCode,
+            @Param("year") String year);
 
     Map<String, String> getMonthlyFeedback(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
             @Param("yy") String yy,
-            @Param("mm") String mm);
+            @Param("mm") String mm,
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("feedbackVariantExists") boolean feedbackVariantExists,
+            @Param("commentVariantExists") boolean commentVariantExists);
 
     MonthlyResult findMonthlyResult(
             @Param("studentId") String studentId,

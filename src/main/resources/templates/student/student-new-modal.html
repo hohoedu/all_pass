@@ -27,10 +27,10 @@
                             <!-- 상태 변경 버튼 -->
                             <div class="btn-group">
                                 <div class="status-buttons" data-visibility="except-current">
-<!--                                    <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>-->
-<!--                                    <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>-->
-<!--                                    <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>-->
-<!--                                    <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>-->
+                                    <!--                                    <button type="button" class="btn-status active s_status" data-status="ACTIVE">재원중</button>-->
+                                    <!--                                    <button type="button" class="btn-status cancel s_status" data-status="CANCELLED">입학취소</button>-->
+                                    <!--                                    <button type="button" class="btn-status closed s_status" data-status="PAUSED">휴원</button>-->
+                                    <!--                                    <button type="button" class="btn-status danger s_status" data-status="WITHDRAWN">탈퇴</button>-->
                                 </div>
                             </div>
 
@@ -142,22 +142,11 @@
                                                style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
                                     </td>
 
-                                    <th>형제 연결</th>
+                                    <th>QR 카드 등록</th>
                                     <td>
-                                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                                            <select id="nameSelect" name="familySearchKey">
-                                                <option value="name">이름</option>
-                                                <option value="phone">전화번호</option>
-                                            </select>
-                                            <input type="text" name="familySearchValue"
-                                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
-                                            <div class="explore common-btn">검색</div>
-                                        </div>
-
-                                        <div class="checkbox-group round cash-type" style="margin-bottom:10px;">
-                                            저장할 연락처
-                                            <input type="text" name="familySavePhone"
-                                                   style="border:1px solid #e9eaec; padding:8px; width:290px; border-radius:5px;">
+                                        <div class="regist-qr-group">
+                                            <input type="text" class="regist-qr-input" name="qrNumber" placeholder="QR카드의 번호를 입력해주세요.">
+                                            <div class="explore common-btn regist-qr-btn">등록</div>
                                         </div>
                                     </td>
                                 </tr>
@@ -173,7 +162,7 @@
                     </div>
                 </div>
 
-                <!-- ======================== TAB3: 수강과목/회비 ======================== -->
+                <!-- ======================== TAB2: 수강과목/회비 ======================== -->
                 <div id="new-tab3" class="tab" style="display:none;">
                     <div class="modal-scroll">
                         <div class="modal-inner">
@@ -211,7 +200,8 @@
                                         <div style="position: relative; display: flex; gap: 10px; align-items: center;">
                                             <div style="position: relative;">
                                                 <input type="text" class="han-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
-                                                <input type="date" id="han-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                                <input type="date" id="han-inactive-date" class="hidden-date hidden-picker"
+                                                       style="position: absolute; opacity: 0; pointer-events: none;"/>
                                             </div>
                                             <button type="button" class="icon-btn han-calendar-open">
                                                 <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
@@ -289,7 +279,8 @@
                                         <div style="position: relative; display: flex; gap: 10px; align-items: center;">
                                             <div style="position: relative;">
                                                 <input type="text" class="book-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
-                                                <input type="date" id="book-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                                <input type="date" id="book-inactive-date" class="hidden-date hidden-picker"
+                                                       style="position: absolute; opacity: 0; pointer-events: none;"/>
                                             </div>
                                             <button type="button" class="icon-btn book-calendar-open">
                                                 <img th:src="@{/image/calendar.png}" alt="달력 아이콘">

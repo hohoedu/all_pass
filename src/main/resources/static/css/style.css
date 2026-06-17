@@ -426,7 +426,7 @@ input[type="text"]:focus {
 }
 
 .checkbox-group2 input[type="checkbox"],
-/* .radio-group input[type="radio"], */
+    /* .radio-group input[type="radio"], */
 .join-group input[type="checkbox"] {
     margin-right: 5px;
 }
@@ -1084,7 +1084,7 @@ table .checkbox-group {
     border-right: 1px dashed #ddd;
 }
 
-.manual-payment-table tr+tr td {
+.manual-payment-table tr + tr td {
     border-top: 1px dashed #bbb;
 }
 
@@ -1161,8 +1161,8 @@ table .checkbox-group {
     color: #65688b;
 }
 
-#login-form>input[type="text"],
-#login-form>input[type="password"] {
+#login-form > input[type="text"],
+#login-form > input[type="password"] {
     width: 100%;
     padding: 15px;
     font-size: 14px;
@@ -1173,11 +1173,11 @@ table .checkbox-group {
     background: #EEF3FF;
 }
 
-#login-form>input[type="text"] {
+#login-form > input[type="text"] {
     margin-bottom: 20px;
 }
 
-#login-form>input[type="text"]:focus,
+#login-form > input[type="text"]:focus,
 input[type="password"]:focus,
 .join-group input[type="text"]:focus {
     outline: none;
@@ -1245,7 +1245,7 @@ input[type="checkbox"]:checked::after {
     background: #fff;
 }
 
-.menu-container>div {
+.menu-container > div {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -1340,7 +1340,7 @@ input[type="checkbox"]:checked::after {
     text-decoration: underline;
 }
 
-.menu-notice>img {
+.menu-notice > img {
     margin-right: 15px;
     width: 30px;
 }
@@ -1407,7 +1407,7 @@ input[type="checkbox"]:checked::after {
     margin: 10px 0px 25px 0px;
 }
 
-.menu-item>button {
+.menu-item > button {
     padding: 10px 30px;
     border-radius: 30px;
     border: none;
@@ -1419,19 +1419,19 @@ input[type="checkbox"]:checked::after {
     font-size: 18px;
 }
 
-.menu-item>button a {
+.menu-item > button a {
     color: #fff;
 }
 
-.menu-item>button:hover {
+.menu-item > button:hover {
     background-color: #084ab8;
 }
 
-.menu-item:nth-child(2)>button:hover {
+.menu-item:nth-child(2) > button:hover {
     background-color: #c03d60;
 }
 
-.menu-item:nth-child(3)>button:hover {
+.menu-item:nth-child(3) > button:hover {
     background-color: #2c813c;
 }
 
@@ -1989,7 +1989,7 @@ textarea {
     align-items: stretch;
 }
 
-.class-status>article:not(.unpaid-card, .status-card) {
+.class-status > article:not(.unpaid-card, .status-card) {
     background: #fff;
 }
 
@@ -2226,7 +2226,7 @@ textarea {
     flex-direction: column;
 }
 
-.status-card>div {
+.status-card > div {
     width: 100%;
 }
 
@@ -2303,7 +2303,8 @@ textarea {
     margin-top: 15px;
 }
 
-.unpaid-tbody {}
+.unpaid-tbody {
+}
 
 .class-tbody,
 .unpaid-tbody {
@@ -2482,7 +2483,7 @@ textarea {
 }
 
 /* ======================= student-main page ======================= */
-.student-frame>section {
+.student-frame > section {
     background: #fff;
     padding: 20px 15px 0 15px;
 }
@@ -2925,10 +2926,10 @@ textarea {
     width: 100%;
     height: 2px;
     background: repeating-linear-gradient(to right,
-            lightgray,
-            lightgray 5px,
-            transparent 5px,
-            transparent 10px);
+    lightgray,
+    lightgray 5px,
+    transparent 5px,
+    transparent 10px);
     margin: 20px 0px;
 }
 
@@ -3456,7 +3457,7 @@ textarea#consult-memo {
     /* display: block; */
 }
 
-.modal>div {
+.modal > div {
     background: #fff;
     border-radius: 5px;
     position: absolute;
@@ -3489,7 +3490,7 @@ textarea#consult-memo {
     width: 100%;
 }
 
-.manager-modal .modal-notice>div {
+.manager-modal .modal-notice > div {
     width: 70%;
     font-size: 15px;
     margin: 20px 0px;
@@ -3919,11 +3920,11 @@ textarea#consult-memo {
     transition: 0.4s;
 }
 
-input:checked+.slider {
+input:checked + .slider {
     background-color: #4a3ecb;
 }
 
-input:checked+.slider::before {
+input:checked + .slider::before {
     transform: translateX(22px);
 }
 
@@ -4717,11 +4718,11 @@ input:checked+.slider::before {
     max-height: 70vh;
 }
 
-.time-chocie-frame>table {
+.time-chocie-frame > table {
     line-height: 1.6em;
 }
 
-.time-chocie-frame>table td:first-child {
+.time-chocie-frame > table td:first-child {
     font-weight: 600;
 }
 
@@ -5086,7 +5087,7 @@ input[type="time" i] {
 }
 
 /* 선택된 라디오 옆의 라벨 */
-.tab-radio input[type="radio"]:checked+label {
+.tab-radio input[type="radio"]:checked + label {
     background: #4c3fbc;
     color: #fff;
     border-color: transparent;
@@ -5107,11 +5108,11 @@ input[type="time" i] {
     align-items: center;
 }
 
-.time-boxes>div:first-child {
+.time-boxes > div:first-child {
     margin-bottom: 10px;
 }
 
-.time-boxes>div {
+.time-boxes > div {
     border-radius: 5px;
 }
 
@@ -5128,7 +5129,7 @@ input[type="time" i] {
     justify-content: center;
 }
 
-.mini-select>.basic-select {
+.mini-select > .basic-select {
     width: calc(50% - 2.5px);
     /* gap이 5px이니까 절반에서 gap 절반씩 뺌 */
 }
@@ -5293,7 +5294,7 @@ input[type="time" i] {
     grid-template-columns: 1fr 1fr;
 }
 
-.inner-grid>div {
+.inner-grid > div {
     border-bottom: 1px dashed;
     border-color: inherit;
     border-right: 1px dashed;
@@ -5302,25 +5303,25 @@ input[type="time" i] {
     font-size: 13px;
 }
 
-.inner-grid>div:nth-last-child(-n+2) {
+.inner-grid > div:nth-last-child(-n+2) {
     border-bottom: none;
 }
 
-.inner-grid>div:nth-child(2n) {
+.inner-grid > div:nth-child(2n) {
     border-right: none;
 }
 
 /* 마지막 줄은 border 제거 */
-.inner-grid>div.col-span-2 {
+.inner-grid > div.col-span-2 {
     border-bottom: none;
     grid-column: span 2;
 }
 
-.timetable-lookup-box.blue .inner-grid>div {
+.timetable-lookup-box.blue .inner-grid > div {
     border-color: #60c0d4;
 }
 
-.timetable-lookup-box.pink .inner-grid>div {
+.timetable-lookup-box.pink .inner-grid > div {
     border-color: #eb8baf;
 }
 
@@ -7652,7 +7653,7 @@ td.middle {
     color: #949CB4 !important;
 }
 
-.tution-table tr>td[rowspan] {
+.tution-table tr > td[rowspan] {
     background: #F7F7F7 !important;
     font-weight: bold;
 }
@@ -8057,4 +8058,18 @@ td.middle {
     cursor: pointer;
     white-space: nowrap;
     margin-right: 50px;
+}
+
+.regist-qr-group {
+    display: flex;
+}
+
+.regist-qr-input {
+    border: 1px solid #e9eaec;
+    padding: 8px;
+    width: 250px;
+    border-radius: 5px;
+}
+.regist-qr-btn{
+    align-items: center;
 }

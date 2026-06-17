@@ -836,6 +836,29 @@
         WHERE tta.time_table_key = #{timeTableKey}
     </select>
 
+    <select id="findBeforeClassVariant"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
+        SELECT CASE #{week}
+                   WHEN 'ju_1' THEN bc.ju_1
+                   WHEN 'ju_2' THEN bc.ju_2
+                   WHEN 'ju_3' THEN bc.ju_3
+                   WHEN 'ju_4' THEN bc.ju_4
+                   ELSE bc.ju_1
+                   END             AS content,
+               bc.before_class_key AS beforeClassKey,
+               t.time_table_key    AS timeTableKey,
+               tc.time_table_label AS timeTableLabel,
+               u.user_name         AS userName
+        FROM erp_before_class_variant bc
+                 JOIN erp_time_table t ON bc.class_key = t.class_key AND bc.unit_key = t.unit_key
+                 JOIN erp_user u ON t.user_code = u.user_code
+                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+        WHERE t.unit_key = #{unitKey}
+          AND t.class_key = #{classKey}
+          AND t.time_table_key = #{timeTableKey}
+          AND bc.yy = #{year}
+          AND bc.center_code = #{centerCode}
+    </select>
 
     <!--  수업 전 안내 내용  -->
     <select id="findBeforeClass"
@@ -931,6 +954,27 @@
         where acn.time_table_key = #{timeTableKey}
           and acn.student_id = #{studentId}
           and acn.week = #{week}
+    </select>
+
+    <select id="findAfterClassVariant"
+            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+        SELECT ac.after_class_key  AS afterClassKey,
+               ac.content          AS content,
+               ac.word             AS word,
+               t.time_table_key    AS timeTableKey,
+               tc.time_table_label AS timeTableLabel,
+               u.user_name         AS userName
+        FROM erp_after_class_variant ac
+                 JOIN erp_time_table t ON ac.class_key = t.class_key AND ac.unit_key = t.unit_key
+                 JOIN erp_user u ON t.user_code = u.user_code
+                 JOIN erp_time_table_code tc ON t.time_table_key = tc.time_table_key
+        WHERE u.user_code = #{userCode}
+          AND ac.unit_key = #{unitKey}
+          AND t.class_key = #{classKey}
+          AND ac.week = #{week}
+          AND t.time_table_key = #{timeTableKey}
+          AND ac.center_code = #{centerCode}
+          AND ac.yy = #{year}
     </select>
 
     <!-- 선생님별 보강 조회 -->
@@ -1078,44 +1122,65 @@
           AND mm = #{mm}
     </update>
 
+    <select id="existsMonthlyFeedbackVariant" resultType="boolean">
+        SELECT CASE WHEN EXISTS (
+            SELECT 1
+            FROM erp_monthly_feedback_variant v
+                     JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
+            WHERE t.time_table_key = #{timeTableKey}
+              AND v.center_code = #{centerCode}
+              AND v.yy = #{year}
+        ) THEN 1 ELSE 0 END
+    </select>
+
+    <select id="existsMonthlyCommentVariant" resultType="boolean">
+        SELECT CASE WHEN EXISTS (
+            SELECT 1
+            FROM erp_monthly_comment_variant v
+                     JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
+            WHERE t.time_table_key = #{timeTableKey}
+              AND v.center_code = #{centerCode}
+              AND v.yy = #{year}
+        ) THEN 1 ELSE 0 END
+    </select>
+
     <select id="getMonthlyAllCorrectFeedback" resultType="String">
-        WITH base AS (SELECT s.student_id,
-                             s.yy,
-                             s.mm,
-                             s.time_table_key,
-                             t.class_key,
-                             t.unit_key,
-                             question1,
-                             question2,
-                             question3,
-                             question4,
-                             question5,
-                             question6,
-                             question7,
-                             question8
-                      FROM erp_monthly_score s
-                               JOIN erp_time_table t
-                                    ON s.time_table_key = t.time_table_key
-                      WHERE s.student_id = #{studentId}
-                        AND s.yy = #{yy}
-                        AND s.mm = #{mm}
-                        AND s.time_table_key = #{timeTableKey}),
-             merged AS (SELECT f.correct_ment,
-                               CASE
-                                   WHEN f.number = 1 THEN b.question1
-                                   WHEN f.number = 2 THEN b.question2
-                                   WHEN f.number = 3 THEN b.question3
-                                   WHEN f.number = 4 THEN b.question4
-                                   WHEN f.number = 5 THEN b.question5
-                                   WHEN f.number = 6 THEN b.question6
-                                   WHEN f.number = 7 THEN b.question7
-                                   WHEN f.number = 8 THEN b.question8
-                                   END AS score
-                        FROM base b
-                                 JOIN erp_monthly_feedback f
-                                      ON f.yy = b.yy
-                                          AND f.class_key = b.class_key
-                                          AND f.unit_key = b.unit_key)
+        WITH base AS (SELECT s.student_id, s.yy, s.mm, s.time_table_key,
+        t.class_key, t.unit_key,
+        question1, question2, question3, question4,
+        question5, question6, question7, question8
+        FROM erp_monthly_score s
+        JOIN erp_time_table t ON s.time_table_key = t.time_table_key
+        WHERE s.student_id = #{studentId}
+        AND s.yy = #{yy}
+        AND s.mm = #{mm}
+        AND s.time_table_key = #{timeTableKey}),
+        merged AS (SELECT f.correct_ment,
+        CASE
+        WHEN f.number = 1 THEN b.question1
+        WHEN f.number = 2 THEN b.question2
+        WHEN f.number = 3 THEN b.question3
+        WHEN f.number = 4 THEN b.question4
+        WHEN f.number = 5 THEN b.question5
+        WHEN f.number = 6 THEN b.question6
+        WHEN f.number = 7 THEN b.question7
+        WHEN f.number = 8 THEN b.question8
+        END AS score
+        FROM base b
+        <if test="feedbackVariantExists">
+            JOIN erp_monthly_feedback_variant f
+            ON f.class_key = b.class_key
+            AND f.unit_key = b.unit_key
+            AND f.center_code = #{centerCode}
+            AND f.yy = #{year}
+        </if>
+        <if test="!feedbackVariantExists">
+            JOIN erp_monthly_feedback f
+            ON f.yy = b.yy
+            AND f.class_key = b.class_key
+            AND f.unit_key = b.unit_key
+        </if>
+        )
         SELECT correct_ment
         FROM merged
         WHERE score = 1
@@ -1123,69 +1188,78 @@
 
     <select id="getMonthlyFeedback" resultType="map">
         WITH base AS (SELECT s.student_id,
-                             s.yy,
-                             s.mm,
-                             s.time_table_key,
-                             t.class_key,
-                             t.unit_key,
-                             question1,
-                             question2,
-                             question3,
-                             question4,
-                             question5,
-                             question6,
-                             question7,
-                             question8
-                      FROM erp_monthly_score s
-                               JOIN erp_time_table t
-                                    ON s.time_table_key = t.time_table_key
-                      WHERE s.student_id = #{studentId}
-                        AND s.yy = #{yy}
-                        AND s.mm = #{mm}
-                        AND s.time_table_key = #{timeTableKey}),
-             merged AS (SELECT f.number,
-                               f.difficultly,
-                               f.correct_ment,
-                               f.wrong_ment,
-                               CASE
-                                   WHEN f.number = 1 THEN b.question1
-                                   WHEN f.number = 2 THEN b.question2
-                                   WHEN f.number = 3 THEN b.question3
-                                   WHEN f.number = 4 THEN b.question4
-                                   WHEN f.number = 5 THEN b.question5
-                                   WHEN f.number = 6 THEN b.question6
-                                   WHEN f.number = 7 THEN b.question7
-                                   WHEN f.number = 8 THEN b.question8
-                                   END AS score,
-                               b.class_key,
-                               b.unit_key,
-                               b.student_id
-                        FROM base b
-                                 JOIN erp_monthly_feedback f
-                                      ON f.yy = b.yy
-                                          AND f.class_key = b.class_key
-                                          AND f.unit_key = b.unit_key)
-        SELECT st.student_name             AS studentName,
-               mc.top_comment              AS topComment,
-               mc.bottom_comment           AS bottomComment,
-               (SELECT TOP 1 correct_ment
-                FROM merged
-                WHERE score = 1
-                ORDER BY difficultly DESC) AS topCorrectMent,
-
-               (SELECT TOP 1 wrong_ment
-                FROM merged
-                WHERE score = 0
-                ORDER BY difficultly DESC) AS topWrongMent
-
+        s.yy,
+        s.mm,
+        s.time_table_key,
+        t.class_key,
+        t.unit_key,
+        question1, question2, question3, question4,
+        question5, question6, question7, question8
+        FROM erp_monthly_score s
+        JOIN erp_time_table t ON s.time_table_key = t.time_table_key
+        WHERE s.student_id = #{studentId}
+        AND s.yy = #{yy}
+        AND s.mm = #{mm}
+        AND s.time_table_key = #{timeTableKey}),
+        merged AS (SELECT f.number,
+        f.difficultly,
+        f.correct_ment,
+        f.wrong_ment,
+        CASE
+        WHEN f.number = 1 THEN b.question1
+        WHEN f.number = 2 THEN b.question2
+        WHEN f.number = 3 THEN b.question3
+        WHEN f.number = 4 THEN b.question4
+        WHEN f.number = 5 THEN b.question5
+        WHEN f.number = 6 THEN b.question6
+        WHEN f.number = 7 THEN b.question7
+        WHEN f.number = 8 THEN b.question8
+        END AS score,
+        b.class_key,
+        b.unit_key,
+        b.student_id
+        FROM base b
+        <if test="feedbackVariantExists">
+            JOIN erp_monthly_feedback_variant f
+            ON f.class_key = b.class_key
+            AND f.unit_key = b.unit_key
+            AND f.center_code = #{centerCode}
+            AND f.yy = #{year}
+        </if>
+        <if test="!feedbackVariantExists">
+            JOIN erp_monthly_feedback f
+            ON f.yy = b.yy
+            AND f.class_key = b.class_key
+            AND f.unit_key = b.unit_key
+        </if>
+        )
+        SELECT st.student_name AS studentName,
+        mc.top_comment AS topComment,
+        mc.bottom_comment AS bottomComment,
+        (SELECT TOP 1 correct_ment
+        FROM merged
+        WHERE score = 1
+        ORDER BY difficultly DESC) AS topCorrectMent,
+        (SELECT TOP 1 wrong_ment
+        FROM merged
+        WHERE score = 0
+        ORDER BY difficultly DESC) AS topWrongMent
         FROM merged m
-                 LEFT JOIN erp_monthly_comment mc
-                           ON m.class_key = mc.class_key
-                               AND m.unit_key = mc.unit_key
-                 LEFT JOIN erp_student st
-                           ON m.student_id = st.student_id
+        <if test="commentVariantExists">
+            LEFT JOIN erp_monthly_comment_variant mc
+            ON m.class_key = mc.class_key
+            AND m.unit_key = mc.unit_key
+            AND mc.center_code = #{centerCode}
+            AND mc.yy = #{year}
+        </if>
+        <if test="!commentVariantExists">
+            LEFT JOIN erp_monthly_comment mc
+            ON m.class_key = mc.class_key
+            AND m.unit_key = mc.unit_key
+        </if>
+        LEFT JOIN erp_student st
+        ON m.student_id = st.student_id
         GROUP BY st.student_name, mc.top_comment, mc.bottom_comment;
-
     </select>
 
     <select id="findMonthlyResult" resultType="com.hohoedu.all_pass.class_instance.model.MonthlyResult">

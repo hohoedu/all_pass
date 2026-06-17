@@ -1,7 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
-import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.admin.AdminService;
 import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
@@ -19,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +42,7 @@ public class AdminViewController {
     private final AdminService adminService;
     private final LogisticsService logisticsService;
 
-    @GetMapping("/order/order-list")
+    @GetMapping("/order/order-list2")
     public String getAdminOrderList(Model model, HttpSession session) {
         List<Center> center = centerService.findAllCenter();
         adminService.findAdminOrderList();
@@ -54,7 +52,7 @@ public class AdminViewController {
         return "/admin/order/order-list";
     }
 
-    @GetMapping("/order/order-list2")
+    @GetMapping("/order/order-list")
     public String getAdminOrderList2(Model model) {
         Map<String, Integer> deadlineMap = logisticsService.findAllDeadlines()
                 .stream()
@@ -70,7 +68,7 @@ public class AdminViewController {
         model.addAttribute("center", centerService.findAllCenter());
         model.addAttribute("deadlineMap", deadlineMap);
         model.addAttribute("reorderStatusMap", reorderStatusMap);
-        return "/admin/order/2logistics_2order";
+        return "/admin/order/logistics_order";
     }
 
     @GetMapping("/order/print-invoice")

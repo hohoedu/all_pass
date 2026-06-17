@@ -458,4 +458,22 @@ public interface StudentRepository {
             @Param("groupKey") String groupKey,
             @Param("studentId") String studentId
     );
+
+    int countByQrNumber(
+            @Param("qrNumber") String qrNumber,
+            @Param("centerCode") String centerCode);
+
+    int countInUse(
+            @Param("qrNumber") String qrNumber,
+            @Param("centerCode") String centerCode);
+
+    int registerQrNumber(
+            @Param("studentId") String studentId,
+            @Param("qrNumber") String qrNumber,
+            @Param("centerCode") String centerCode);
+
+    int updateQrNumber(
+            @Param("studentId") String studentId,
+            @Param("qrNumber") String qrNumber);
+
 }

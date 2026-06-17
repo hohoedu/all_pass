@@ -78,12 +78,25 @@
         </if>
         ORDER BY
         <choose>
+            <when test="sortColumn == 'subjectHan'">
+                CASE WHEN (CAST(c.inquiry_han AS INT) + CAST(c.inquiry_book AS INT) + CAST(c.inquiry_hoho AS INT)) >= 2 THEN 1 ELSE 0 END DESC,
+                CASE WHEN c.inquiry_han = 1 THEN 3 WHEN c.inquiry_book = 1 THEN 2 WHEN c.inquiry_hoho = 1 THEN 1 ELSE 0 END DESC,
+                c.consult_date DESC
+            </when>
+            <when test="sortColumn == 'subjectBook'">
+                CASE WHEN (CAST(c.inquiry_han AS INT) + CAST(c.inquiry_book AS INT) + CAST(c.inquiry_hoho AS INT)) >= 2 THEN 1 ELSE 0 END DESC,
+                CASE WHEN c.inquiry_book = 1 THEN 3 WHEN c.inquiry_hoho = 1 THEN 2 WHEN c.inquiry_han = 1 THEN 1 ELSE 0 END DESC,
+                c.consult_date DESC
+            </when>
+            <when test="sortColumn == 'subjectHoho'">
+                CASE WHEN c.inquiry_hoho = 1 THEN 3 WHEN c.inquiry_han = 1 THEN 2 WHEN c.inquiry_book = 1 THEN 1 ELSE 0 END DESC,
+                c.consult_date DESC
+            </when>
             <when test="sortDir == 'asc'">
                 <choose>
                     <when test="sortColumn == 'studentName'">c.student_name ASC</when>
                     <when test="sortColumn == 'consultDate'">c.consult_date ASC</when>
                     <when test="sortColumn == 'gradeName'">gc.grade_name ASC</when>
-                    <when test="sortColumn == 'consultType'">c.consult_type ASC</when>
                     <when test="sortColumn == 'userName'">u.user_name ASC</when>
                     <when test="sortColumn == 'progressKey'">c.progress_key ASC</when>
                     <otherwise>c.consult_date ASC</otherwise>
@@ -94,7 +107,6 @@
                     <when test="sortColumn == 'studentName'">c.student_name DESC</when>
                     <when test="sortColumn == 'consultDate'">c.consult_date DESC</when>
                     <when test="sortColumn == 'gradeName'">gc.grade_name DESC</when>
-                    <when test="sortColumn == 'consultType'">c.consult_type DESC</when>
                     <when test="sortColumn == 'userName'">u.user_name DESC</when>
                     <when test="sortColumn == 'progressKey'">c.progress_key DESC</when>
                     <otherwise>c.consult_date DESC</otherwise>

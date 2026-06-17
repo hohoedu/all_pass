@@ -795,6 +795,9 @@ public class ClassService {
         String currentYear = DateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
 
+        ClassRespDTO.AfterClassRespDTO variant = classRepository.findAfterClassVariant(
+                userCode, centerCode, classKey, unitKey, week, timeTableKey, currentYear);
+
         for (RecordStudentDTO s : students) {
 
             ClassRespDTO.AfterClassRespDTO notice = classRepository.findAfterClassNotice(
@@ -803,21 +806,26 @@ public class ClassService {
                     noticeWeek);
 
             if (notice != null) {
+
                 afterClassList.add(notice);
+
+            } else if (variant != null) {
+                afterClassList.add(variant);
+
             } else {
                 ClassRespDTO.AfterClassRespDTO base = classRepository.findAfterClass(
                         userCode, classKey, unitKey, week, timeTableKey, yy);
 
                 afterClassList.add(base);
+
             }
         }
 
-        // 계산된 주차 정보도 함께 반환
         ClassRespDTO.RecordBundleDTO bundle = new ClassRespDTO.RecordBundleDTO();
         bundle.setStudents(students);
         bundle.setAfterClass(afterClassList);
-        bundle.setWeek(week); // 계산된 주차 반환
-        log.info("students + {}", students);
+        bundle.setWeek(week);
+
         return bundle;
     }
 
@@ -902,10 +910,15 @@ public class ClassService {
     }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
-                                                                 String timeTableKey) {
+                                                                 String timeTableKey, String centerCode) {
 
         String currentYear = DateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
+        ClassRespDTO.BeforeClassRespDTO variant = classRepository.findBeforeClassVariant(centerCode, classKey, unitKey, week, timeTableKey, currentYear);
+        if (variant != null) {
+            return variant;
+        }
+
         ClassRespDTO.BeforeClassRespDTO response = classRepository.findBeforeClass(classKey, unitKey, week,
                 timeTableKey, yy);
         return response;
@@ -1159,14 +1172,13 @@ public class ClassService {
         return students;
     }
 
-    public ClassRespDTO.ScoreResultDTO updateMonthlyScore(ClassMonthlyScoreDTO dto) {
+    public ClassRespDTO.ScoreResultDTO updateMonthlyScore(ClassMonthlyScoreDTO dto, String centerCode) {
         ClassMonthlyScoreDTO.MonthlyScoreDTO score = dto.getScores().get(0);
 
         classRepository.updateMonthlyScore(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm(), score);
 
-        // 오답 개수 확인
         int wrongCount = 0;
-        wrongCount += (score.isQuestion1()) ? 0 : 1; // false면 오답
+        wrongCount += (score.isQuestion1()) ? 0 : 1;
         wrongCount += (score.isQuestion2()) ? 0 : 1;
         wrongCount += (score.isQuestion3()) ? 0 : 1;
         wrongCount += (score.isQuestion4()) ? 0 : 1;
@@ -1175,15 +1187,24 @@ public class ClassService {
         wrongCount += (score.isQuestion7()) ? 0 : 1;
         wrongCount += (score.isQuestion8()) ? 0 : 1;
 
+        String currentYear = DateConfig.currentYearMonth().get("currentYear");
+
+        boolean feedbackVariantExists = classRepository.existsMonthlyFeedbackVariant(
+                dto.getTimeTableKey(), centerCode, currentYear);
+        boolean commentVariantExists = classRepository.existsMonthlyCommentVariant(
+                dto.getTimeTableKey(), centerCode, currentYear);
+        log.info(String.valueOf(feedbackVariantExists));
+        log.info(String.valueOf(commentVariantExists));
         Map<String, String> monthlyFeedback = classRepository.getMonthlyFeedback(
-                dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+                dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm(),
+                centerCode, currentYear, feedbackVariantExists, commentVariantExists);
 
         String feedback;
 
         if (wrongCount == 0) {
-            // 모두 정답일 경우: 정답 코멘트 리스트에서 랜덤 2개 선택
             List<String> correctComments = classRepository.getMonthlyAllCorrectFeedback(
-                    dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+                    dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm(),
+                    centerCode, currentYear, feedbackVariantExists);
 
             if (correctComments.size() >= 2) {
                 Collections.shuffle(correctComments);
@@ -1193,7 +1214,6 @@ public class ClassService {
             }
 
         } else {
-            // 오답이 있을 경우: 기존 로직 (정답 1개 + 오답 1개)
             feedback = Optional.ofNullable(monthlyFeedback.get("topCorrectMent")).orElse("")
                     + "\n" +
                     Optional.ofNullable(monthlyFeedback.get("topWrongMent")).orElse("");
@@ -1208,8 +1228,7 @@ public class ClassService {
 
         log.info("response={}", response);
 
-        MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(),
-                dto.getMm());
+        MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
 
         if (exist == null) {
             MonthlyResult insertResult = MonthlyResult.builder()

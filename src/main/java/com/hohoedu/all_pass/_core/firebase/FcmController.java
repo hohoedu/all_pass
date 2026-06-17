@@ -24,7 +24,7 @@ public class FcmController {
 
     @PostMapping("/attendance")
     public ResponseEntity<?> attendance(@RequestBody FcmDTO.SingleFcmDTO fcmDTO) {
-log.info("출결 등록 안됨?");
+    log.info("출결 등록 안됨?");
         if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }

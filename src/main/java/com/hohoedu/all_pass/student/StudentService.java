@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
+import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.DuplicateStudentException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass._core.utils.KeyGenerator;
@@ -28,6 +29,7 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
@@ -75,7 +77,7 @@ public class StudentService {
     }
 
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode,
-            String userCode) {
+                                                                           String userCode) {
 
         List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month,
                 centerCode, userCode);
@@ -319,7 +321,7 @@ public class StudentService {
     }
 
     public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO,
-            String userCode) {
+                                                           String userCode) {
         String today = DateConfig.currentYearMonth().get("today");
         historyDTO.setUserCode(userCode);
         if (historyDTO.getStatusKey().equals("ACTIVE")) {
@@ -403,7 +405,7 @@ public class StudentService {
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
         StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository
                 .findTeacherAssignByStudentId(request.getStudentId());
-        
+
         if (teacherDTO == null) {
             throw new Exception400("학생 정보를 찾을 수 없습니다.");
         }
@@ -1322,28 +1324,28 @@ public class StudentService {
         return studentRepository.selectJoinList(req);
     }
 
-   public List<StudentWebRespDTO.WithdrawItemDTO> findWithdrawList(StudentWebReqDTO.WithdrawReqDTO req) {
-    List<StudentWebRespDTO.WithdrawItemDTO> rawList = studentRepository.selectWithdrawList(req);
+    public List<StudentWebRespDTO.WithdrawItemDTO> findWithdrawList(StudentWebReqDTO.WithdrawReqDTO req) {
+        List<StudentWebRespDTO.WithdrawItemDTO> rawList = studentRepository.selectWithdrawList(req);
 
-    Map<String, StudentWebRespDTO.WithdrawItemDTO> map = new LinkedHashMap<>();
+        Map<String, StudentWebRespDTO.WithdrawItemDTO> map = new LinkedHashMap<>();
 
-    for (StudentWebRespDTO.WithdrawItemDTO item : rawList) {
-        if (map.containsKey(item.getStudentId())) {
-            StudentWebRespDTO.WithdrawItemDTO existing = map.get(item.getStudentId());
+        for (StudentWebRespDTO.WithdrawItemDTO item : rawList) {
+            if (map.containsKey(item.getStudentId())) {
+                StudentWebRespDTO.WithdrawItemDTO existing = map.get(item.getStudentId());
 
-            if (item.getClassName() != null && !item.getClassName().equals(existing.getClassName())) {
-                existing.setClassName(existing.getClassName() + ", " + item.getClassName());
+                if (item.getClassName() != null && !item.getClassName().equals(existing.getClassName())) {
+                    existing.setClassName(existing.getClassName() + ", " + item.getClassName());
+                }
+                if (item.getTeacherName() != null && !item.getTeacherName().equals(existing.getTeacherName())) {
+                    existing.setTeacherName(existing.getTeacherName() + ", " + item.getTeacherName());
+                }
+            } else {
+                map.put(item.getStudentId(), item);
             }
-            if (item.getTeacherName() != null && !item.getTeacherName().equals(existing.getTeacherName())) {
-                existing.setTeacherName(existing.getTeacherName() + ", " + item.getTeacherName());
-            }
-        } else {
-            map.put(item.getStudentId(), item);
         }
-    }
 
-    return new ArrayList<>(map.values());
-}
+        return new ArrayList<>(map.values());
+    }
 
     public List<StudentWebRespDTO.WithdrawItemDTO> findTransferInList(StudentWebReqDTO.WithdrawReqDTO req) {
         return studentRepository.selectTransferInList(req);
@@ -1401,7 +1403,7 @@ public class StudentService {
     }
 
     public List<StudentWebRespDTO.SiblingSearchRespDTO> searchSibling(String currentStudentId, String searchKey,
-            String searchValue) {
+                                                                      String searchValue) {
 
         // 현재 학생의 center_code 조회 (같은 센터 내에서만 검색)
         String centerCode = studentRepository.getCenterCode(currentStudentId);
@@ -1468,5 +1470,26 @@ public class StudentService {
             // 3명 이상이면 해당 학생만 삭제
             studentRepository.deleteSiblingMember(groupKey, siblingId);
         }
+    }
+
+    @Transactional
+    public String registerQr(StudentWebReqDTO.QrRegisterDTO request, String centerCode) {
+        String qrNumber = request.getQrNumber();
+
+        // 1. 실제 존재하는 QR 번호인지
+        if (studentRepository.countByQrNumber(qrNumber, centerCode) == 0) {
+            return "사용할 수 없는 카드 번호입니다.";
+        }
+
+        // 2. 현재 사용 중인 번호인지
+        int inUse = studentRepository.countInUse(qrNumber, centerCode);
+        if (inUse > 0) {
+            return "사용 중인 카드 번호입니다.";
+        }
+
+        // 3. 등록
+        studentRepository.registerQrNumber(request.getStudentId(), qrNumber, centerCode);
+        studentRepository.updateQrNumber(request.getStudentId(), qrNumber);
+        return null;
     }
 }

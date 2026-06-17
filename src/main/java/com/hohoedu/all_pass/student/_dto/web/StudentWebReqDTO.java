@@ -188,4 +188,10 @@ public class StudentWebReqDTO {
     public static class StudentRestoreDTO {
         private String studentId;
     }
+
+    @Data
+    public static class QrRegisterDTO{
+        private String studentId;
+        private String qrNumber;
+    }
 }

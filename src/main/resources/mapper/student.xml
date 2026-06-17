@@ -968,6 +968,7 @@
                app_token    as token
         FROM erp_student
         WHERE app_id = #{appId}
+           OR serial_num = #{appId}
     </select>
     <select id="findAppTokenByStudentId"
             resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
@@ -1748,5 +1749,34 @@
         WHERE sibling_key = #{groupKey}
           AND student_id = #{studentId}
     </delete>
+
+    <select id="countByQrNumber" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_qr_newid
+        WHERE create_qr_id = #{qrNumber}
+          AND center_code = #{centerCode}
+    </select>
+
+    <select id="countInUse" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_qr_newid
+        WHERE create_qr_id = #{qrNumber}
+          AND center_code = #{centerCode}
+          AND use_date IS NOT NULL
+    </select>
+
+    <update id="registerQrNumber">
+        UPDATE erp_qr_newid
+        SET student_id = #{studentId},
+            use_date   = CONVERT(CHAR (8), GETDATE(), 112)
+        WHERE create_qr_id = #{qrNumber}
+          AND center_code = #{centerCode}
+    </update>
+
+    <update id="updateQrNumber">
+        UPDATE erp_student
+        SET serial_num = #{qrNumber}
+        WHERE student_id = #{studentId}
+    </update>
 
 </mapper>

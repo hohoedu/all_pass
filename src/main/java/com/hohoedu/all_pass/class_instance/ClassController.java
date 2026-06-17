@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.api.Http;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -289,12 +290,20 @@ public class ClassController {
     }
 
     @PostMapping("/api/record/before-class")
-    public ResponseEntity<?> findRecordBeforeClass(@RequestBody ClassReqDTO.BeforeClassDTO dto) {
+    public ResponseEntity<?> findRecordBeforeClass(@RequestBody ClassReqDTO.BeforeClassDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
         BeforeClassRespDTO response = classService.getBeforeClassContent(
                 dto.getClassKey(),
                 dto.getUnitKey(),
                 dto.getWeek(),
-                dto.getTimeTableKey());
+                dto.getTimeTableKey(),
+                user.getCenterCode()
+        );
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
@@ -436,6 +445,7 @@ public class ClassController {
 
         return ResponseEntity.ok(ApiUtils.success(result));
     }
+
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
                                             @RequestParam(value = "year") String year,
@@ -511,9 +521,15 @@ public class ClassController {
     }
 
     @PostMapping("/api/monthly/update_score")
-    public ResponseEntity<?> updateMonthlyScore(@RequestBody ClassMonthlyScoreDTO dto) {
+    public ResponseEntity<?> updateMonthlyScore(@RequestBody ClassMonthlyScoreDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
-        ClassRespDTO.ScoreResultDTO response = classService.updateMonthlyScore(dto);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        ClassRespDTO.ScoreResultDTO response = classService.updateMonthlyScore(dto, user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success(response));
     }

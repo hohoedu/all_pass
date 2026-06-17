@@ -806,6 +806,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initQrRegister() {
+        const input = modal.querySelector('.regist-qr-input');
+        const btn = modal.querySelector('.regist-qr-btn');
+        if (!input || !btn) return;
+
+        btn.addEventListener('click', async () => {
+            const qrNumber = input.value.trim();
+            if (!qrNumber) {
+                alert('QR카드 번호를 입력해주세요.');
+                input.focus();
+                return;
+            }
+
+            try {
+                const res = await fetch('/student/qr/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        studentId: currentStudentId,
+                        qrNumber
+                    })
+                });
+
+                const data = await res.json();
+                console.log(data);
+                if (!res.ok || !data.success) {
+                    alert('등록 실패: ' + (data.error?.message || ''));
+                    return;
+                }
+
+                alert('QR카드가 등록되었습니다.');
+                input.value = '';
+
+            } catch {
+                alert('등록 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
 
     // ============================================= //
     //         수강상태 저장 (TAB3)                    //
@@ -1021,5 +1060,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initUpdateBtn();
     initCourseStatusSave();
     initPayInfo();
+    initQrRegister();
     renderTable(pendingStudents);
 });
