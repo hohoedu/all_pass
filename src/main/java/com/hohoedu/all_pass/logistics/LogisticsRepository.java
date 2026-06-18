@@ -1,10 +1,12 @@
 package com.hohoedu.all_pass.logistics;
 
+import com.hohoedu.all_pass.logistics._dto.LogisReqDTO;
 import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface LogisticsRepository {
@@ -56,5 +58,31 @@ public interface LogisticsRepository {
             @Param("month") String month,
             @Param("centerCode") String centerCode);
 
+    void insertOrderManual(
+            @Param("dto") LogisReqDTO.OrderManualSaveReqDTO dto,
+            @Param("manualId") String manualId);
 
+    void insertOrderManualItem(
+            @Param("manualId") String manualId,
+            @Param("item") LogisReqDTO.OrderManualSaveReqDTO.OrderManualItemDTO item);
+
+    List<Map<String, Object>> selectManualList(LogisReqDTO.ManualListReqDTO dto);
+
+    List<Map<String, Object>> selectManualItems(LogisReqDTO.ManualItemsReqDTO dto);
+
+    List<Map<String, Object>> selectClassCodes();
+
+    List<Map<String, Object>> selectUnitCodesByClassKey(@Param("classKey") String classKey);
+
+    void insertReorderManualAdd(
+            @Param("item") LogisReqDTO.ReorderManualAddReqDTO.ReorderAddItemDTO item,
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("month") String month);
+
+    Map<String, Object> selectManualHeaderByManualId(LogisReqDTO.ManualItemsReqDTO dto);
+
+    void deleteManualItemsByManualId(@Param("manualId") String manualId);
+
+    void deleteManualByManualId(@Param("manualId") String manualId);
 }

@@ -1,11 +1,54 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+    // ────────────────────────────────────────
+    // DOM 참조
+    // ────────────────────────────────────────
     const appShell = document.getElementById('appShell');
     const navButtons = document.querySelectorAll('.nav-icon');
     const depthMenus = document.querySelectorAll('.depth-menu');
+
+    const orderManualModal = document.getElementById('order-manual-modal');
+    const itemTableBody = document.getElementById('modal-item-table-body');
+    const addItemBtn = document.getElementById('modal-add-item-btn');
+    const totalAmountEl = document.getElementById('modal-total-amount');
+
+    const orderAddModal = document.getElementById('order-add-modal');
+    const addItemTableBody = document.getElementById('add-modal-item-table-body');
+    const addModalAddItemBtn = document.getElementById('add-modal-add-item-btn');
+    const addModalTotalAmountEl = document.getElementById('add-modal-total-amount');
+
+    const statementTabs = document.getElementById('statementTabs');
+    const statementPrevBtn = document.getElementById('statementPrevBtn');
+    const statementNextBtn = document.getElementById('statementNextBtn');
+
+    const monthPicker = document.getElementById('monthPicker');
+    const monthDisplay = document.getElementById('monthDisplay');
+    const deadlinePicker = document.getElementById('deadlinePicker');
+    const deadlineDisplay = document.getElementById('deadlineDisplay');
+
+    // ────────────────────────────────────────
+    // 상태
+    // ────────────────────────────────────────
     let openedMenu = null;
     let currentCenterInfo = null;
     let lastAggregateSegment = null;
     let lastAggregateCenterCodes = [];
+    const checkedCenters = new Set();
+
+    // ────────────────────────────────────────
+    // 유틸리티
+    // ────────────────────────────────────────
+    const formatNumber = (n) => Math.abs(n).toLocaleString('ko-KR');
+
+    const formatBizNum = (val) => {
+        const n = val.replace(/\D/g, '');
+        return n.length === 10 ? `${n.slice(0, 3)}-${n.slice(3, 5)}-${n.slice(5)}` : val;
+    };
+
+    const openPicker = (picker) => {
+        if (typeof picker.showPicker === 'function') picker.showPicker();
+        else picker.focus();
+    };
 
     // ────────────────────────────────────────
     // 사이드바
@@ -30,31 +73,622 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ────────────────────────────────────────
-    // 조회 세그먼트
+    // 신규 수기 명세서 등록 모달
     // ────────────────────────────────────────
-    document.querySelectorAll('.segmented button').forEach((button) => {
-        button.addEventListener('click', () => {
-            button.parentElement.querySelectorAll('button').forEach((item) => item.classList.remove('active'));
-            button.classList.add('active');
+    document.getElementById('order-manual')?.addEventListener('click', () => {
+        document.getElementById('modal-invoice-yymm').value = monthPicker.value;
+        orderManualModal.classList.add('show');
+    });
+
+    document.getElementById('modal-close-btn')?.addEventListener('click', () => {
+        orderManualModal.classList.remove('show');
+    });
+
+    function createItemRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'modal-item-row';
+        tr.innerHTML = `
+            <td><input type="date" class="item-order-date"></td>
+            <td><input type="text" class="item-name"></td>
+            <td><input type="text" class="item-spec"></td>
+            <td><input type="number" class="item-qty" min="0"></td>
+            <td><input type="number" class="item-price" min="0"></td>
+            <td><input type="text" class="item-amount" readonly></td>
+            <td><input type="text" class="item-note"></td>
+            <td><input type="date" class="item-approve-date"></td>
+            <td>
+                <button type="button" class="item-delete-btn" aria-label="행 삭제">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        return tr;
+    }
+
+    function calculateRowAmount(row) {
+        const qty = Number(row.querySelector('.item-qty').value) || 0;
+        const price = Number(row.querySelector('.item-price').value) || 0;
+        const amount = qty * price;
+        row.querySelector('.item-amount').value = amount.toLocaleString('ko-KR');
+        return amount;
+    }
+
+    function calculateTotalAmount() {
+        let total = 0;
+        itemTableBody.querySelectorAll('.modal-item-row').forEach((row) => {
+            const qty = Number(row.querySelector('.item-qty').value) || 0;
+            const price = Number(row.querySelector('.item-price').value) || 0;
+            total += qty * price;
         });
+        totalAmountEl.textContent = total.toLocaleString('ko-KR') + '원';
+    }
+
+    addItemBtn?.addEventListener('click', () => {
+        itemTableBody.appendChild(createItemRow());
+    });
+
+    itemTableBody?.addEventListener('input', (e) => {
+        if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-price')) {
+            const row = e.target.closest('.modal-item-row');
+            calculateRowAmount(row);
+            calculateTotalAmount();
+        }
+    });
+
+    itemTableBody?.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('.item-delete-btn');
+        if (!deleteBtn) return;
+
+        const rows = itemTableBody.querySelectorAll('.modal-item-row');
+        if (rows.length <= 1) {
+            deleteBtn.closest('.modal-item-row').querySelectorAll('input').forEach((input) => (input.value = ''));
+            calculateTotalAmount();
+            return;
+        }
+
+        deleteBtn.closest('.modal-item-row').remove();
+        calculateTotalAmount();
+    });
+
+    document.getElementById('modal-save-btn')?.addEventListener('click', async () => {
+        const yymm = document.getElementById('modal-invoice-yymm').value;
+        if (!yymm) {
+            alert('거래연월을 입력해주세요.');
+            return;
+        }
+        const [yy, mm] = yymm.split('-');
+
+        const title = document.getElementById('modal-invoice-title').value.trim();
+        const centerCode = document.getElementById('modal-invoice-center-code').value;
+        const writerName = document.getElementById('modal-invoice-writer').value.trim();
+
+        if (!title || !centerCode || !writerName) {
+            alert('기본 정보를 모두 입력해주세요.');
+            return;
+        }
+
+        const items = Array.from(itemTableBody.querySelectorAll('.modal-item-row'))
+            .map((row) => ({
+                orderDate: row.querySelector('.item-order-date').value,
+                classKey: row.querySelector('.item-name').value.trim(),
+                unitKey: row.querySelector('.item-spec').value.trim(),
+                qty: row.querySelector('.item-qty').value,
+                price: row.querySelector('.item-price').value,
+                amount: String(calculateRowAmount(row)),
+                note: row.querySelector('.item-note').value.trim(),
+                approveDate: row.querySelector('.item-approve-date').value
+            }))
+            .filter((item) => item.classKey !== '');
+
+        if (items.length === 0) {
+            alert('품목을 한 건 이상 입력해주세요.');
+            return;
+        }
+
+        const totalAmount = String(items.reduce((sum, item) => sum + Number(item.amount), 0));
+
+        try {
+            const res = await fetch('/logis/order/manual/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({yy, mm, title, centerCode, writerName, totalAmount, items})
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                alert('명세서가 저장되었습니다.');
+                orderManualModal.classList.remove('show');
+            } else {
+                alert('저장에 실패했습니다.');
+            }
+        } catch (e) {
+            alert('저장 중 오류가 발생했습니다.');
+        }
     });
 
     // ────────────────────────────────────────
-    // 명세서 탭
+    // 현재 명세서에 수기로 추가 모달
     // ────────────────────────────────────────
-    document.querySelectorAll('.statement-card').forEach((card) => {
-        card.addEventListener('click', () => {
-            card.parentElement.querySelectorAll('.statement-card').forEach((item) => item.classList.remove('active'));
-            card.classList.add('active');
+    let addModalMode = 'regular';
+    let addModalManualId = null;
+    let regularOptionsCache = null;
+
+    const addRegularItemTableBody = document.getElementById('add-regular-item-table-body');
+    const addRegularAddItemBtn = document.getElementById('add-regular-add-item-btn');
+
+    function buildOptionsHtml(list, valueKey, textKey, placeholder) {
+        const opts = (list || []).map(item => `<option value="${item[valueKey]}">${item[textKey]}</option>`).join('');
+        return `<option value="">${placeholder}</option>${opts}`;
+    }
+
+    function createRegularItemRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'modal-item-row';
+        const classOptionsHtml = buildOptionsHtml(regularOptionsCache.classCodes, 'classKey', 'className', '품명 선택');
+        const userOptionsHtml = buildOptionsHtml(regularOptionsCache.users, 'userCode', 'userName', '선생님 선택');
+
+        tr.innerHTML = `
+        <td><select class="item-class-key modal-select">${classOptionsHtml}</select></td>
+        <td><select class="item-unit-key modal-select" disabled><option value="">품명 먼저 선택</option></select></td>
+        <td><input type="text" class="item-price" value="15,000" readonly></td>
+        <td><input type="text" class="item-qty"></td>
+        <td><input type="text" class="item-amount" readonly></td>
+        <td><select class="item-user-code modal-select">${userOptionsHtml}</select></td>
+        <td><input type="text" class="item-reason"></td>
+        <td>
+            <button type="button" class="item-delete-btn" aria-label="행 삭제">
+                <i class="fa-regular fa-trash-can"></i>
+            </button>
+        </td>
+    `;
+        return tr;
+    }
+
+    function calculateRegularRowAmount(row) {
+        const qty = Number(row.querySelector('.item-qty').value) || 0;
+        const amount = 15000 * qty;
+        row.querySelector('.item-amount').value = amount.toLocaleString('ko-KR');
+        return amount;
+    }
+
+    function calculateRegularTotalAmount() {
+        let total = 0;
+        addRegularItemTableBody.querySelectorAll('.modal-item-row').forEach((row) => {
+            const qty = Number(row.querySelector('.item-qty').value) || 0;
+            total += 15000 * qty;
+        });
+        addModalTotalAmountEl.textContent = total.toLocaleString('ko-KR') + '원';
+    }
+
+    addRegularItemTableBody?.addEventListener('input', (e) => {
+        if (e.target.classList.contains('item-qty')) {
+            calculateRegularRowAmount(e.target.closest('.modal-item-row'));
+            calculateRegularTotalAmount();
+        }
+    });
+
+    addRegularItemTableBody?.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('.item-delete-btn');
+        if (!deleteBtn) return;
+
+        const rows = addRegularItemTableBody.querySelectorAll('.modal-item-row');
+        deleteBtn.closest('.modal-item-row').remove();
+
+        if (rows.length <= 1) {
+            addRegularItemTableBody.appendChild(createRegularItemRow());
+        }
+        calculateRegularTotalAmount();
+    });
+
+    addRegularAddItemBtn?.addEventListener('click', () => {
+        addRegularItemTableBody.appendChild(createRegularItemRow());
+    });
+
+    addRegularItemTableBody?.addEventListener('input', (e) => {
+        if (e.target.classList.contains('item-qty')) {
+            calculateRegularRowAmount(e.target.closest('.modal-item-row'));
+        }
+    });
+
+    addRegularItemTableBody?.addEventListener('change', async (e) => {
+        if (!e.target.classList.contains('item-class-key')) return;
+
+        const row = e.target.closest('.modal-item-row');
+        const unitSelect = row.querySelector('.item-unit-key');
+        const classKey = e.target.value;
+
+        if (!classKey) {
+            unitSelect.innerHTML = '<option value="">품명 먼저 선택</option>';
+            unitSelect.disabled = true;
+            return;
+        }
+
+        const res = await fetch('/logis/order/unit-codes-by-class', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({classKey})
+        });
+        const data = await res.json();
+
+        unitSelect.innerHTML = buildOptionsHtml(data.response, 'unitKey', 'unitName', '규격 선택');
+        unitSelect.disabled = false;
+    });
+
+    document.getElementById('order-add')?.addEventListener('click', async () => {
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
+
+        if (!centerCode) {
+            alert('먼저 센터를 선택해주세요.');
+            return;
+        }
+
+        const activeCard = document.querySelector('.statement-card.active');
+        const manualId = activeCard ? activeCard.dataset.manualId : null;
+
+        if (manualId) {
+            addModalMode = 'manual';
+            addModalManualId = manualId;
+            document.getElementById('add-modal-title').textContent = `${activeCard.querySelector('strong').textContent}에 품목 추가`;
+            document.getElementById('add-regular-section').style.display = 'none';
+            document.getElementById('add-manual-section').style.display = '';
+        } else {
+            addModalMode = 'regular';
+            addModalManualId = null;
+            document.getElementById('add-modal-title').textContent = '정기 주문 명세서에 품목 추가';
+            document.getElementById('add-manual-section').style.display = 'none';
+            document.getElementById('add-regular-section').style.display = '';
+
+            const res = await fetch('/logis/order/manual-add/options', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({centerCode})
+            });
+            const data = await res.json();
+            regularOptionsCache = data.response;
+
+            addRegularItemTableBody.innerHTML = '';
+            addRegularItemTableBody.appendChild(createRegularItemRow());
+        }
+
+        orderAddModal.classList.add('show');
+    });
+
+    document.getElementById('add-modal-close-btn')?.addEventListener('click', () => {
+        orderAddModal.classList.remove('show');
+    });
+
+    function createAddItemRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'modal-item-row';
+        tr.innerHTML = `
+            <td><input type="date" class="item-order-date"></td>
+            <td><input type="text" class="item-name"></td>
+            <td><input type="text" class="item-spec"></td>
+            <td><input type="text" class="item-qty"></td>
+            <td><input type="text" class="item-price"></td>
+            <td><input type="text" class="item-amount" readonly></td>
+            <td><input type="text" class="item-note"></td>
+            <td><input type="date" class="item-approve-date"></td>
+            <td>
+                <button type="button" class="item-delete-btn" aria-label="행 삭제">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </td>
+        `;
+        return tr;
+    }
+
+    function calculateAddRowAmount(row) {
+        const qty = Number(row.querySelector('.item-qty').value) || 0;
+        const price = Number(row.querySelector('.item-price').value) || 0;
+        const amount = qty * price;
+        row.querySelector('.item-amount').value = amount.toLocaleString('ko-KR');
+        return amount;
+    }
+
+    function calculateAddTotalAmount() {
+        let total = 0;
+        addItemTableBody.querySelectorAll('.modal-item-row').forEach((row) => {
+            const qty = Number(row.querySelector('.item-qty').value) || 0;
+            const price = Number(row.querySelector('.item-price').value) || 0;
+            total += qty * price;
+        });
+        addModalTotalAmountEl.textContent = total.toLocaleString('ko-KR') + '원';
+    }
+
+    addModalAddItemBtn?.addEventListener('click', () => {
+        addItemTableBody.appendChild(createAddItemRow());
+    });
+
+    addItemTableBody?.addEventListener('input', (e) => {
+        if (e.target.classList.contains('item-qty') || e.target.classList.contains('item-price')) {
+            const row = e.target.closest('.modal-item-row');
+            calculateAddRowAmount(row);
+            calculateAddTotalAmount();
+        }
+    });
+
+    addItemTableBody?.addEventListener('click', (e) => {
+        const deleteBtn = e.target.closest('.item-delete-btn');
+        if (!deleteBtn) return;
+
+        const rows = addItemTableBody.querySelectorAll('.modal-item-row');
+        if (rows.length <= 1) {
+            deleteBtn.closest('.modal-item-row').querySelectorAll('input').forEach((input) => (input.value = ''));
+            calculateAddTotalAmount();
+            return;
+        }
+
+        deleteBtn.closest('.modal-item-row').remove();
+        calculateAddTotalAmount();
+    });
+
+    document.getElementById('add-modal-save-btn')?.addEventListener('click', async () => {
+        if (addModalMode === 'regular') {
+            const activeCenter = document.querySelector('.center-item.active');
+            const centerCode = activeCenter.dataset.centerCode;
+            const [year, month] = monthPicker.value.split('-');
+
+            const items = Array.from(addRegularItemTableBody.querySelectorAll('.modal-item-row'))
+                .map((row) => ({
+                    classKey: row.querySelector('.item-class-key').value,
+                    unitKey: row.querySelector('.item-unit-key').value,
+                    qty: row.querySelector('.item-qty').value,
+                    userCode: row.querySelector('.item-user-code').value,
+                    reason: row.querySelector('.item-reason').value.trim()
+                }))
+                .filter((item) => item.classKey && item.unitKey && item.qty && item.userCode);
+
+            if (items.length === 0) {
+                alert('품목을 한 건 이상 입력해주세요.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/logis/order/reorder/manual-add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({year, month, centerCode, items})
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('정기 주문 명세서에 추가되었습니다.');
+                    orderAddModal.classList.remove('show');
+                    fetchReorderList();
+                } else {
+                    alert('추가에 실패했습니다.');
+                }
+            } catch (e) {
+                alert('추가 중 오류가 발생했습니다.');
+            }
+        } else {
+            const items = Array.from(addItemTableBody.querySelectorAll('.modal-item-row'))
+                .map((row) => ({
+                    orderDate: row.querySelector('.item-order-date').value,
+                    classKey: row.querySelector('.item-name').value.trim(),
+                    unitKey: row.querySelector('.item-spec').value.trim(),
+                    qty: row.querySelector('.item-qty').value,
+                    price: row.querySelector('.item-price').value,
+                    amount: String(calculateAddRowAmount(row)),
+                    note: row.querySelector('.item-note').value.trim(),
+                    approveDate: row.querySelector('.item-approve-date').value
+                }))
+                .filter((item) => item.classKey !== '');
+
+            if (items.length === 0) {
+                alert('품목을 한 건 이상 입력해주세요.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/logis/order/manual/items/add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({manualId: addModalManualId, items})
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('수기 명세서에 추가되었습니다.');
+                    orderAddModal.classList.remove('show');
+                    fetchManualList();
+                } else {
+                    alert('추가에 실패했습니다.');
+                }
+            } catch (e) {
+                alert('추가 중 오류가 발생했습니다.');
+            }
+        }
+    });
+
+    // add-modal-save-btn 저장 로직은 두 갈래 정해지면 이어서 작성
+
+    // ────────────────────────────────────────
+    // 명세서 탭 (정기 + 수기)
+    // ────────────────────────────────────────
+    const updateStatementArrows = () => {
+        const hasOverflow = statementTabs.scrollWidth > statementTabs.clientWidth + 1;
+        statementPrevBtn.classList.toggle('hidden', !hasOverflow);
+        statementNextBtn.classList.toggle('hidden', !hasOverflow);
+    };
+
+    const renderStatementCards = (manualList) => {
+        statementTabs.querySelectorAll('.statement-card[data-manual-id]').forEach((card) => card.remove());
+
+        manualList.forEach((manual) => {
+            const card = document.createElement('button');
+            card.className = 'statement-card';
+            card.type = 'button';
+            card.dataset.manualId = manual.manualId;
+            card.innerHTML = `
+                <i class="fa-regular fa-trash-can delete-icon"></i>
+                <strong>${manual.title}</strong>
+                <p>${manual.yy}. ${manual.mm}</p>
+                <small>품목 ${manual.itemCount}건</small>
+            `;
+            statementTabs.appendChild(card);
+        });
+
+        updateStatementArrows();
+    };
+
+    statementPrevBtn.addEventListener('click', () => {
+        statementTabs.scrollBy({left: -240, behavior: 'smooth'});
+    });
+
+    statementNextBtn.addEventListener('click', () => {
+        statementTabs.scrollBy({left: 240, behavior: 'smooth'});
+    });
+
+    statementTabs.addEventListener('click', (e) => {
+        const card = e.target.closest('.statement-card');
+        if (!card) return;
+
+        statementTabs.querySelectorAll('.statement-card').forEach((c) => c.classList.remove('active'));
+        card.classList.add('active');
+
+        const manualId = card.dataset.manualId;
+        if (manualId) {
+            fetchManualInvoice(manualId, card.querySelector('strong').textContent, card.querySelector('p').textContent);
+        } else {
             fetchInvoice();
-        });
+        }
     });
 
-    // ────────────────────────────────────────
-    // 체크박스 & 센터 선택
-    // ────────────────────────────────────────
-    const checkedCenters = new Set();
+    statementTabs.addEventListener('click', async (e) => {
+        const deleteIcon = e.target.closest('.delete-icon');
+        if (deleteIcon) {
+            const card = deleteIcon.closest('.statement-card');
+            const manualId = card ? card.dataset.manualId : null;
+            if (!manualId) return;
 
+            if (!confirm('이 수기 명세서를 삭제하시겠습니까?')) return;
+
+            try {
+                const res = await fetch('/logis/order/manual/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({manualId})
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('삭제되었습니다.');
+                    statementTabs.querySelectorAll('.statement-card').forEach((c, idx) => c.classList.toggle('active', idx === 0));
+                    fetchInvoice();
+                    fetchManualList();
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            } catch (err) {
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+            return;
+        }
+
+        const card = e.target.closest('.statement-card');
+        if (!card) return;
+
+        statementTabs.querySelectorAll('.statement-card').forEach((c) => c.classList.remove('active'));
+        card.classList.add('active');
+
+        const manualId = card.dataset.manualId;
+        if (manualId) {
+            fetchManualInvoice(manualId, card.querySelector('strong').textContent, card.querySelector('p').textContent);
+        } else {
+            fetchInvoice();
+        }
+    });
+
+    const renderManualInvoiceTable = (list) => {
+        const tbody = document.getElementById('invoiceTableBody');
+        tbody.innerHTML = '';
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#9a9da7;">데이터가 없습니다.</td></tr>`;
+            document.getElementById('summaryOrder').textContent = '-';
+            document.getElementById('summaryReturn').textContent = '-';
+            document.getElementById('summaryAdd').textContent = '-';
+            document.getElementById('summaryTotal').textContent = '-';
+            return;
+        }
+
+        let totalAmount = 0;
+
+        list.forEach((item) => {
+            totalAmount += Number(item.amount) || 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.orderDate || ''}</td>
+                <td><b>${item.classKey || ''}</b></td>
+                <td>${item.unitKey || ''}</td>
+                <td>${item.qty || ''}</td>
+                <td>${formatNumber(Number(item.price) || 0)}</td>
+                <td>${formatNumber(Number(item.amount) || 0)}</td>
+                <td class="muted">${item.note || ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('summaryOrder').textContent = '-';
+        document.getElementById('summaryReturn').textContent = '-';
+        document.getElementById('summaryAdd').textContent = '-';
+        document.getElementById('summaryTotal').textContent = `${formatNumber(totalAmount)}원`;
+    };
+
+    const fetchManualInvoice = async (manualId, title, yymmText) => {
+        document.querySelector('.invoice-table thead tr').innerHTML = `
+            <th>주문일시</th>
+            <th>품명</th>
+            <th>규격</th>
+            <th>수량</th>
+            <th>단가</th>
+            <th>금액</th>
+            <th>비고</th>
+        `;
+        setInvoiceColgroup([20, 20, 10, 10, 12, 12, 16]);
+
+        const res = await fetch('/logis/order/manual/items', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({manualId})
+        });
+        const data = await res.json();
+
+        showInvoiceMode();
+        document.getElementById('invoice-heading').textContent = title;
+        document.getElementById('invoiceYyMm').textContent = yymmText;
+        if (currentCenterInfo) renderCenterInfo(currentCenterInfo);
+
+        renderManualInvoiceTable(data.response);
+    };
+
+    const fetchManualList = async () => {
+        const [year, month] = monthPicker.value.split('-');
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
+
+        if (!centerCode) {
+            renderStatementCards([]);
+            return;
+        }
+
+        const res = await fetch('/logis/order/manual/list', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({year, month, centerCode})
+        });
+        const data = await res.json();
+
+        renderStatementCards(data.response || []);
+    };
+
+    // ────────────────────────────────────────
+    // 체크박스 & 센터 선택 & 검색
+    // ────────────────────────────────────────
     document.querySelectorAll('.center-item').forEach((center) => {
         const checkbox = center.querySelector('.check-input');
         const checkLabel = center.querySelector('.check-label');
@@ -77,9 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ────────────────────────────────────────
-    // 센터 검색
-    // ────────────────────────────────────────
     document.querySelector('.search-box input').addEventListener('input', (e) => {
         const keyword = e.target.value.trim().toLowerCase();
         document.querySelectorAll('.center-item').forEach(item => {
@@ -89,24 +720,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ────────────────────────────────────────
-    // 달력 피커
+    // 달력 피커 & 마감일
     // ────────────────────────────────────────
-    const openPicker = (picker) => {
-        if (typeof picker.showPicker === 'function') picker.showPicker();
-        else picker.focus();
-    };
-
     document.querySelectorAll('.calendar-btn').forEach((button) => {
         button.addEventListener('click', () => {
             const picker = document.getElementById(button.dataset.picker);
             openPicker(picker);
         });
     });
-
-    const monthPicker = document.getElementById('monthPicker');
-    const monthDisplay = document.getElementById('monthDisplay');
-    const deadlinePicker = document.getElementById('deadlinePicker');
-    const deadlineDisplay = document.getElementById('deadlineDisplay');
 
     monthPicker.addEventListener('change', () => {
         const [year, month] = monthPicker.value.split('-');
@@ -145,9 +766,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ────────────────────────────────────────
-    // 마감일 표시
-    // ────────────────────────────────────────
     const applyDeadlineToDisplay = (centerCode) => {
         const centerEl = document.querySelector(`.center-item[data-center-code="${centerCode}"]`);
         const day = centerEl ? centerEl.dataset.deadline : null;
@@ -171,16 +789,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (select.value === 'user_cancel') select.classList.add('hold');
         if (select.value === 'acancel') select.classList.add('rejected');
     };
-
-    // ────────────────────────────────────────
-    // 포맷
-    // ────────────────────────────────────────
-    const formatBizNum = (val) => {
-        const n = val.replace(/\D/g, '');
-        return n.length === 10 ? `${n.slice(0, 3)}-${n.slice(3, 5)}-${n.slice(5)}` : val;
-    };
-
-    const formatNumber = (n) => Math.abs(n).toLocaleString('ko-KR');
 
     // ────────────────────────────────────────
     // 렌더링
@@ -538,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderReorderTable(data.response.reorderList);
         renderCenterInfo(currentCenterInfo);
         fetchInvoice();
+        fetchManualList();
     };
 
     const fetchInvoice = async () => {
@@ -575,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const [year, month] = monthPicker.value.split('-');
 
-        const res  = await fetch('/logis/order/aggregate', {
+        const res = await fetch('/logis/order/aggregate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({year, month, segmentType, centerCodes})
@@ -583,15 +1192,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         document.getElementById('invoice-heading').textContent = segmentType;
-        document.getElementById('invoiceYyMm').textContent     = `${year}. ${month}`;
+        document.getElementById('invoiceYyMm').textContent = `${year}. ${month}`;
 
         renderCenterAggregate(data.response, segmentType);
     };
 
     // ────────────────────────────────────────
-    // 조회 버튼
+    // 조회 세그먼트 / 조회 버튼
     // ────────────────────────────────────────
-    document.querySelector('.primary-btn').addEventListener('click', () => {
+    document.querySelectorAll('.segmented button').forEach((button) => {
+        button.addEventListener('click', () => {
+            button.parentElement.querySelectorAll('button').forEach((item) => item.classList.remove('active'));
+            button.classList.add('active');
+        });
+    });
+
+    document.querySelector('.primary-btn')?.addEventListener('click', () => {
         const activeSegment = document.querySelector('.segmented button.active');
 
         if (!activeSegment) {
@@ -636,11 +1252,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ────────────────────────────────────────
-    // 인쇄
+    // 인쇄 / 엑셀
     // ────────────────────────────────────────
-    const printBtn = document.querySelector('.print-btn');
+    function printInvoice(year, month, centerCode) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/admin/order/print-invoice?year=${year}&month=${month}&centerCode=${centerCode}`;
+        iframe.onload = () => iframe.contentWindow.print();
+        document.body.appendChild(iframe);
+    }
 
-    printBtn.addEventListener('click', () => {
+
+    function printAggregate(year, month, segmentType, centerCodes) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/admin/order/print-aggregate?year=${year}&month=${month}&segmentType=${encodeURIComponent(segmentType)}&centerCodes=${centerCodes.join(',')}`;
+        iframe.onload = () => iframe.contentWindow.print();
+        document.body.appendChild(iframe);
+    }
+
+    function printManualInvoice(manualId) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/admin/order/print-manual-invoice?manualId=${manualId}`;
+        iframe.onload = () => iframe.contentWindow.print();
+        document.body.appendChild(iframe);
+    }
+
+    document.querySelector('.print-btn')?.addEventListener('click', () => {
         const isAggregateMode = document.getElementById('companyInfo').style.display === 'none';
 
         if (isAggregateMode) {
@@ -653,9 +1292,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const activeCard = document.querySelector('.statement-card.active');
+        const manualId = activeCard ? activeCard.dataset.manualId : null;
+
+        if (manualId) {
+            printManualInvoice(manualId);
+            return;
+        }
+
         const [year, month] = monthPicker.value.split('-');
-        const activeCenter  = document.querySelector('.center-item.active');
-        const centerCode    = activeCenter ? activeCenter.dataset.centerCode : null;
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
 
         if (!centerCode) {
             alert('조회하실 센터를 선택해주세요.');
@@ -665,36 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         printInvoice(year, month, centerCode);
     });
 
-    function printInvoice(year, month, centerCode) {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = `/admin/order/print-invoice?year=${year}&month=${month}&centerCode=${centerCode}`;
-
-        iframe.onload = () => {
-            iframe.contentWindow.print();
-        };
-
-        document.body.appendChild(iframe);
-    }
-
-    function printAggregate(year, month, segmentType, centerCodes) {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = `/admin/order/print-aggregate?year=${year}&month=${month}&segmentType=${encodeURIComponent(segmentType)}&centerCodes=${centerCodes.join(',')}`;
-
-        iframe.onload = () => {
-            iframe.contentWindow.print();
-        };
-
-        document.body.appendChild(iframe);
-    }
-
-    // ────────────────────────────────────────
-    // 엑셀
-    // ────────────────────────────────────────
-    const excelBtn = document.querySelector('.excel-btn');
-
-    excelBtn.addEventListener('click', () => {
+    document.querySelector('.excel-btn')?.addEventListener('click', () => {
         const isAggregateMode = document.getElementById('companyInfo').style.display === 'none';
 
         if (isAggregateMode) {
@@ -707,9 +1325,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const activeCard = document.querySelector('.statement-card.active');
+        const manualId = activeCard ? activeCard.dataset.manualId : null;
+
+        if (manualId) {
+            window.location.href = `/admin/order/manual-excel?manualId=${manualId}`;
+            return;
+        }
+
         const [year, month] = monthPicker.value.split('-');
-        const activeCenter  = document.querySelector('.center-item.active');
-        const centerCode    = activeCenter ? activeCenter.dataset.centerCode : null;
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
 
         if (!centerCode) {
             alert('조회하실 센터를 선택해주세요.');

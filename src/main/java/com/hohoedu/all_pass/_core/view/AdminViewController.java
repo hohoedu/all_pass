@@ -27,9 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -49,7 +47,7 @@ public class AdminViewController {
 
         model.addAttribute("center", center);
 
-        return "/admin/order/order-list";
+        return "/admin/order/order-list-regacy";
     }
 
     @GetMapping("/order/order-list")
@@ -68,7 +66,7 @@ public class AdminViewController {
         model.addAttribute("center", centerService.findAllCenter());
         model.addAttribute("deadlineMap", deadlineMap);
         model.addAttribute("reorderStatusMap", reorderStatusMap);
-        return "/admin/order/logistics_order";
+        return "/admin/order/order-list";
     }
 
     @GetMapping("/order/print-invoice")
@@ -92,6 +90,48 @@ public class AdminViewController {
         return "/admin/print/print-invoice";
     }
 
+    @GetMapping("/order/print-manual-invoice")
+    public String printManualInvoice(@RequestParam String manualId, Model model) {
+
+        LogisReqDTO.ManualItemsReqDTO req = new LogisReqDTO.ManualItemsReqDTO();
+        req.setManualId(manualId);
+
+        Map<String, Object> manualInfo = logisticsService.getManualHeader(req);
+        List<Map<String, Object>> rawItems = logisticsService.getManualItems(req);
+
+        String centerCode = (String) manualInfo.get("centerCode");
+        LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (Map<String, Object> item : rawItems) {
+            Map<String, Object> mapped = new HashMap<>();
+            mapped.put("orderDate", item.get("orderDate"));
+            mapped.put("className", item.get("classKey"));
+            mapped.put("unitName", item.get("unitKey"));
+            mapped.put("totalCount", parseIntSafe(item.get("qty")));
+            mapped.put("unitPrice", parseIntSafe(item.get("price")));
+            mapped.put("totalPrice", parseIntSafe(item.get("amount")));
+            mapped.put("userName", item.get("note"));
+            items.add(mapped);
+        }
+
+        model.addAttribute("year", manualInfo.get("yy"));
+        model.addAttribute("month", manualInfo.get("mm"));
+        model.addAttribute("centerInfo", centerInfo);
+        model.addAttribute("items", items);
+
+        return "/admin/print/print-invoice";
+    }
+
+    private int parseIntSafe(Object val) {
+        if (val == null) return 0;
+        try {
+            return Integer.parseInt(String.valueOf(val).replaceAll("[^0-9-]", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     @GetMapping("/order/invoice-excel")
     public void downloadInvoiceExcel(@RequestParam String year, @RequestParam String month, @RequestParam String centerCode, HttpServletResponse response) throws IOException {
 
@@ -101,7 +141,31 @@ public class AdminViewController {
         req.setYear(year);
         req.setMonth(month);
         req.setCenterCode(centerCode);
-        List<LogisRespDTO.InvoiceDTO> items = logisticsService.findInvoice(req);
+        List<LogisRespDTO.InvoiceDTO> rawItems = logisticsService.findInvoice(req);
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (LogisRespDTO.InvoiceDTO item : rawItems) {
+            Map<String, Object> mapped = new HashMap<>();
+            mapped.put("orderDate", item.getOrderDate());
+            mapped.put("className", item.getClassName());
+            mapped.put("unitName", item.getUnitName());
+            mapped.put("totalCount", item.getTotalCount());
+            mapped.put("unitPrice", item.getUnitPrice());
+            mapped.put("totalPrice", item.getTotalPrice());
+            mapped.put("userName", item.getUserName());
+            items.add(mapped);
+        }
+
+        String title = "거래명세서 (" + year + "." + month + ")";
+        String fileNamePrefix = (centerInfo != null ? centerInfo.getCenterName() : "거래명세서") + "_" + year + month;
+
+        generateInvoiceExcel(title, fileNamePrefix, centerInfo, items, response);
+    }
+
+    private void generateInvoiceExcel(String title, String fileNamePrefix,
+                                      LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo,
+                                      List<Map<String, Object>> items,
+                                      HttpServletResponse response) throws IOException {
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("거래명세서");
@@ -142,7 +206,7 @@ public class AdminViewController {
 
             Row titleRow = sheet.createRow(rowIdx++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("거래명세서 (" + year + "." + month + ")");
+            titleCell.setCellValue(title);
             titleCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
@@ -178,28 +242,32 @@ public class AdminViewController {
             long totalAmount = 0;
             String prevDate = null;
 
-            for (LogisRespDTO.InvoiceDTO item : items) {
+            for (Map<String, Object> item : items) {
                 Row row = sheet.createRow(rowIdx++);
 
-                String dateOnly = (item.getOrderDate() != null && item.getOrderDate().length() >= 10)
-                        ? item.getOrderDate().substring(0, 10) : "";
+                String orderDate = String.valueOf(item.get("orderDate"));
+                String dateOnly = (orderDate != null && orderDate.length() >= 10) ? orderDate.substring(0, 10) : "";
                 String showDate = dateOnly.equals(prevDate) ? "" : dateOnly;
                 prevDate = dateOnly;
 
+                int qty = parseIntSafe(item.get("totalCount"));
+                int price = parseIntSafe(item.get("unitPrice"));
+                int amount = parseIntSafe(item.get("totalPrice"));
+
                 row.createCell(0).setCellValue(showDate);
-                row.createCell(1).setCellValue(item.getClassName());
-                row.createCell(2).setCellValue(item.getUnitName());
-                row.createCell(3).setCellValue(item.getTotalCount());
-                row.createCell(4).setCellValue(item.getUnitPrice());
-                row.createCell(5).setCellValue(item.getTotalPrice());
-                row.createCell(6).setCellValue(item.getUserName());
+                row.createCell(1).setCellValue(String.valueOf(item.get("className")));
+                row.createCell(2).setCellValue(String.valueOf(item.get("unitName")));
+                row.createCell(3).setCellValue(qty);
+                row.createCell(4).setCellValue(price);
+                row.createCell(5).setCellValue(amount);
+                row.createCell(6).setCellValue(String.valueOf(item.get("userName")));
 
                 for (int i = 0; i < 7; i++) {
                     row.getCell(i).setCellStyle(cellStyle);
                 }
 
-                totalQty += item.getTotalCount();
-                totalAmount += item.getTotalPrice();
+                totalQty += qty;
+                totalAmount += amount;
             }
 
             Row sumRow = sheet.createRow(rowIdx);
@@ -223,15 +291,46 @@ public class AdminViewController {
             sheet.setColumnWidth(5, 4000);
             sheet.setColumnWidth(6, 3500);
 
-            String fileName = URLEncoder.encode(
-                    (centerInfo != null ? centerInfo.getCenterName() : "거래명세서") + "_" + year + month + ".xlsx",
-                    StandardCharsets.UTF_8).replace("+", "%20");
+            String fileName = URLEncoder.encode(fileNamePrefix + ".xlsx", StandardCharsets.UTF_8).replace("+", "%20");
 
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
             response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
             workbook.write(response.getOutputStream());
         }
+    }
+
+    @GetMapping("/order/manual-excel")
+    public void downloadManualExcel(@RequestParam String manualId, HttpServletResponse response) throws IOException {
+
+        LogisReqDTO.ManualItemsReqDTO req = new LogisReqDTO.ManualItemsReqDTO();
+        req.setManualId(manualId);
+
+        Map<String, Object> manualInfo = logisticsService.getManualHeader(req);
+        List<Map<String, Object>> rawItems = logisticsService.getManualItems(req);
+
+        String centerCode = (String) manualInfo.get("centerCode");
+        LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (Map<String, Object> item : rawItems) {
+            Map<String, Object> mapped = new HashMap<>();
+            mapped.put("orderDate", item.get("orderDate"));
+            mapped.put("className", item.get("classKey"));
+            mapped.put("unitName", item.get("unitKey"));
+            mapped.put("totalCount", parseIntSafe(item.get("qty")));
+            mapped.put("unitPrice", parseIntSafe(item.get("price")));
+            mapped.put("totalPrice", parseIntSafe(item.get("amount")));
+            mapped.put("userName", item.get("note"));
+            items.add(mapped);
+        }
+
+        String yy = String.valueOf(manualInfo.get("yy"));
+        String mm = String.valueOf(manualInfo.get("mm"));
+        String title = manualInfo.get("title") + " (" + yy + "." + mm + ")";
+        String fileNamePrefix = (centerInfo != null ? centerInfo.getCenterName() : "거래명세서") + "_" + yy + mm + "_수기";
+
+        generateInvoiceExcel(title, fileNamePrefix, centerInfo, items, response);
     }
 
 

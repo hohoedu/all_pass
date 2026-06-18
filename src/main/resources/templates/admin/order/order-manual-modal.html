@@ -1,0 +1,130 @@
+<div class="modal-backdrop" id="order-manual-modal" th:fragment="orderManualModal">
+    <div class="modal2">
+        <button type="button" class="modal-close" id="modal-close-btn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 class="modal-title">신규 수기 명세서 등록</h2>
+
+        <div class="modal-stack">
+
+            <!-- 1. 기본 정보 -->
+            <section class="modal-panel">
+                <div class="modal-panel-title">
+                    <span>기본 정보</span>
+                </div>
+                <div class="modal-form-flex">
+                    <div class="modal-field">
+                        <label>거래연월</label>
+                        <input type="month" id="modal-invoice-yymm">
+                    </div>
+                    <div class="modal-field">
+                        <label>명세서 타이틀</label>
+                        <input type="text" id="modal-invoice-title" placeholder="예) 6월 정기 주문">
+                    </div>
+                    <div class="modal-field">
+                        <label>지점</label>
+                        <select id="modal-invoice-center-code">
+                            <option value="">선택</option>
+                            <th:block th:each="c : ${center}">
+                                <option th:if="${c.centerCode != 'PUS001'}"
+                                        th:value="${c.centerCode}"
+                                        th:text="${#strings.replace(c.centerName, '호호서당 ', '')}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="modal-field">
+                        <label>작성자</label>
+                        <input type="text" id="modal-invoice-writer" value="물류팀 이종열">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 품목 목록 -->
+            <section class="modal-panel">
+                <div class="modal-panel-title item-title">
+                    <span>품목 목록</span>
+                    <button type="button" class="print-btn" id="modal-add-item-btn">+ 품목 추가</button>
+                </div>
+                <div class="modal-item-table-wrap">
+                    <table class="invoice-item-table">
+                        <colgroup>
+                            <col style="width: 12%">
+                            <col style="width: 12%">
+                            <col style="width: 5%">
+                            <col style="width: 5%">
+                            <col style="width: 10%">
+                            <col style="width: 10%">
+                            <col style="width: 12%">
+                            <col style="width: 12%">
+                            <col style="width: 5%">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>주문일시</th>
+                            <th>품명</th>
+                            <th>규격</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>금액</th>
+                            <th>비고</th>
+                            <th>승인일자</th>
+                            <th>삭제</th>
+                        </tr>
+                        </thead>
+                        <tbody id="modal-item-table-body">
+                        <tr class="modal-item-row">
+                            <td><input type="date" class="item-order-date"></td>
+                            <td><input type="text" class="item-name"></td>
+                            <td><input type="text" class="item-spec"></td>
+                            <td><input type="text" class="item-qty"></td>
+                            <td><input type="text" class="item-price"></td>
+                            <td><input type="text" class="item-amount" readonly></td>
+                            <td><input type="text" class="item-note"></td>
+                            <td><input type="date" class="item-approve-date"></td>
+                            <td><button type="button" class="item-delete-btn" aria-label="행 삭제"><i class="fa-regular fa-trash-can"></i></button></td>
+                        </tr>
+                        <tr class="modal-item-row">
+                            <td><input type="date" class="item-order-date"></td>
+                            <td><input type="text" class="item-name"></td>
+                            <td><input type="text" class="item-spec"></td>
+                            <td><input type="text" class="item-qty"></td>
+                            <td><input type="text" class="item-price"></td>
+                            <td><input type="text" class="item-amount" readonly></td>
+                            <td><input type="text" class="item-note"></td>
+                            <td><input type="date" class="item-approve-date"></td>
+                            <td><button type="button" class="item-delete-btn" aria-label="행 삭제"><i class="fa-regular fa-trash-can"></i></button></td>
+                        </tr>
+                        <tr class="modal-item-row">
+                            <td><input type="date" class="item-order-date"></td>
+                            <td><input type="text" class="item-name"></td>
+                            <td><input type="text" class="item-spec"></td>
+                            <td><input type="text" class="item-qty"></td>
+                            <td><input type="text" class="item-price"></td>
+                            <td><input type="text" class="item-amount" readonly></td>
+                            <td><input type="text" class="item-note"></td>
+                            <td><input type="date" class="item-approve-date"></td>
+                            <td><button type="button" class="item-delete-btn" aria-label="행 삭제"><i class="fa-regular fa-trash-can"></i></button></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+            <!-- 3. 총 합계 -->
+
+            <div class="summary-box">
+                <div class="modal-total">
+                    <span>총 합계 금액</span>
+                    <strong id="modal-total-amount">0원</strong>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="primary-btn" id="modal-save-btn">저장</button>
+        </div>
+    </div>
+</div>

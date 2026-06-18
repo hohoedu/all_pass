@@ -55,5 +55,50 @@ public class LogisticsController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
+    @PostMapping("/order/manual/save")
+    public ResponseEntity<?> saveOrderManual(@RequestBody LogisReqDTO.OrderManualSaveReqDTO dto) {
+        String manualId = logisticsService.saveOrderManual(dto);
+        return ResponseEntity.ok(ApiUtils.success(manualId));
+    }
+
+    @PostMapping("/order/manual/list")
+    public ResponseEntity<?> getManualList(@RequestBody LogisReqDTO.ManualListReqDTO dto) {
+
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getManualList(dto)));
+    }
+
+    @PostMapping("/order/manual/items")
+    public ResponseEntity<?> getManualItems(@RequestBody LogisReqDTO.ManualItemsReqDTO dto) {
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getManualItems(dto)));
+    }
+
+    @PostMapping("/order/manual-add/options")
+    public ResponseEntity<?> getManualAddOptions(@RequestBody LogisReqDTO.ManualAddOptionsReqDTO req) {
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getManualAddOptions(req)));
+    }
+
+    @PostMapping("/order/reorder/manual-add")
+    public ResponseEntity<?> addReorderManually(@RequestBody LogisReqDTO.ReorderManualAddReqDTO req) {
+        logisticsService.addReorderManually(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/order/manual/items/add")
+    public ResponseEntity<?> addManualItems(@RequestBody LogisReqDTO.ManualItemAddReqDTO req) {
+        logisticsService.addManualItems(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/order/unit-codes-by-class")
+    public ResponseEntity<?> getUnitCodesByClass(@RequestBody LogisReqDTO.UnitCodeByClassKeyReqDTO req) {
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getUnitCodesByClassKey(req.getClassKey())));
+    }
+
+    @PostMapping("/order/manual/delete")
+    public ResponseEntity<?> deleteManual(@RequestBody LogisReqDTO.ManualItemsReqDTO req) {
+        logisticsService.deleteManual(req.getManualId());
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
 
 }

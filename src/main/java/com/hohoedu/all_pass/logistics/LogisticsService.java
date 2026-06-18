@@ -3,6 +3,8 @@ package com.hohoedu.all_pass.logistics;
 import com.hohoedu.all_pass.logistics._dto.LogisReqDTO;
 import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
 import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class LogisticsService {
     private final LogisticsRepository logisticsRepository;
     private final SecondaryLogisticsRepository secondaryLogisticsRepository;
     private static final Set<String> SECONDARY_CENTERS = Set.of("ULS001");
+    private final UserRepository userRepository;
 
     public List<LogisRespDTO.DeadlineDTO> findAllDeadlines() {
         return logisticsRepository.findAllDeadlines();
@@ -181,5 +184,73 @@ public class LogisticsService {
 
     public LogisRespDTO.SelectCenterDTO.CenterInfoDTO findCenterInfo(String centerCode) {
         return logisticsRepository.findCenterInfoByCenterCode(centerCode);
+    }
+
+    @Transactional
+    public String saveOrderManual(LogisReqDTO.OrderManualSaveReqDTO dto) {
+        String manualId = generateManualId();
+
+        logisticsRepository.insertOrderManual(dto, manualId);
+
+        if (dto.getItems() != null) {
+            for (LogisReqDTO.OrderManualSaveReqDTO.OrderManualItemDTO item : dto.getItems()) {
+                logisticsRepository.insertOrderManualItem(manualId, item);
+            }
+        }
+
+        return manualId;
+    }
+
+    private String generateManualId() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 20).toUpperCase();
+    }
+
+    public List<Map<String, Object>> getManualList(LogisReqDTO.ManualListReqDTO dto) {
+        return logisticsRepository.selectManualList(dto);
+    }
+
+    public List<Map<String, Object>> getManualItems(LogisReqDTO.ManualItemsReqDTO dto) {
+        return logisticsRepository.selectManualItems(dto);
+    }
+
+    public Map<String, Object> getManualAddOptions(LogisReqDTO.ManualAddOptionsReqDTO req) {
+        Map<String, Object> result = new HashMap<>();
+
+        List<User> users = userRepository.findAllUserCode(req.getCenterCode()).stream()
+                .filter(u -> Boolean.TRUE.equals(u.getIsHan()) || Boolean.TRUE.equals(u.getIsBook()))
+                .collect(Collectors.toList());
+
+        result.put("classCodes", logisticsRepository.selectClassCodes());
+        result.put("users", users);
+        return result;
+    }
+
+    public List<Map<String, Object>> getUnitCodesByClassKey(String classKey) {
+        return logisticsRepository.selectUnitCodesByClassKey(classKey);
+    }
+
+    @Transactional
+    public void addReorderManually(LogisReqDTO.ReorderManualAddReqDTO req) {
+        for (LogisReqDTO.ReorderManualAddReqDTO.ReorderAddItemDTO item : req.getItems()) {
+            logisticsRepository.insertReorderManualAdd(item, req.getCenterCode(), req.getYear(), req.getMonth());
+        }
+    }
+
+    @Transactional
+    public void addManualItems(LogisReqDTO.ManualItemAddReqDTO req) {
+        for (LogisReqDTO.OrderManualSaveReqDTO.OrderManualItemDTO item : req.getItems()) {
+            logisticsRepository.insertOrderManualItem(req.getManualId(), item);
+        }
+    }
+
+    public Map<String, Object> getManualHeader(LogisReqDTO.ManualItemsReqDTO dto) {
+        return logisticsRepository.selectManualHeaderByManualId(dto);
+    }
+
+
+    @Transactional
+    public void deleteManual(String manualId) {
+        logisticsRepository.deleteManualItemsByManualId(manualId);
+        logisticsRepository.deleteManualByManualId(manualId);
     }
 }

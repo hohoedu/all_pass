@@ -36,4 +36,72 @@ public class LogisReqDTO {
         private String confirmed;
         private String centerCode;
     }
+
+    @Data
+    public static class OrderManualSaveReqDTO{
+        private String yy;
+        private String mm;
+        private String title;
+        private String centerCode;
+        private String writerName;
+        private String totalAmount;
+        private List<OrderManualItemDTO> items;
+
+        @Data
+        public static class OrderManualItemDTO {
+            private String orderDate;
+            private String classKey;
+            private String unitKey;
+            private String qty;
+            private String price;
+            private String amount;
+            private String note;
+            private String approveDate;
+        }
+    }
+
+    @Data
+    public static class ManualListReqDTO {
+        private String year;
+        private String month;
+        private String centerCode;
+    }
+
+    @Data
+    public static class ManualItemsReqDTO {
+        private String manualId;
+    }
+
+    @Data
+    public static class ManualAddOptionsReqDTO {
+        private String centerCode;
+    }
+
+    @Data
+    public static class UnitCodeByClassKeyReqDTO {
+        private String classKey;
+    }
+
+    @Data
+    public static class ReorderManualAddReqDTO {
+        private String year;
+        private String month;
+        private String centerCode;
+        private List<ReorderAddItemDTO> items;
+
+        @Data
+        public static class ReorderAddItemDTO {
+            private String classKey;
+            private String unitKey;
+            private String qty;
+            private String userCode;
+            private String reason;
+        }
+    }
+
+    @Data
+    public static class ManualItemAddReqDTO {
+        private String manualId;
+        private List<OrderManualSaveReqDTO.OrderManualItemDTO> items;
+    }
 }
