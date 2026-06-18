@@ -152,6 +152,32 @@ $(document).ready(function () {
         );
     });
     // 기관 검색
+    window.setSchoolName = function(name) {
+        const targetInput = document.querySelector(".s_school");
+
+        if (targetInput) {
+            // 1. 값 갱신 (직관적 대입)
+            targetInput.value = name;
+
+            // 2. 값 갱신 (속성값 강제 설정)
+            targetInput.setAttribute('value', name);
+
+            // 3. 이벤트 3종 세트 (브라우저에게 '사용자가 입력했다'고 거짓말하기)
+            const events = ['input', 'change', 'blur', 'keyup'];
+            events.forEach(eventType => {
+                targetInput.dispatchEvent(new Event(eventType, { bubbles: true }));
+            });
+
+            // 4. 강제 포커스 및 선택 (화면 갱신 강제 유도)
+            targetInput.focus();
+
+            console.log("부모창 값 대입 및 강제 이벤트 발생 성공: " + name);
+        } else {
+            console.error("부모창에서 .s_school을 찾을 수 없습니다!");
+        }
+    };
+
+// 2. 돋보기 클릭 이벤트
     $('.search-school').click(function () {
         window.open(
             '/school',

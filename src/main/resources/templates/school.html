@@ -1,183 +1,374 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Custom Css / Js -->
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/media.css">
     <script src="js/custom.js"></script>
-    <!-- jQuery CDN -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="js/signature.js"></script>
-    <title>학교 찾기</title>
+    <title>학교 및 기관 찾기 (행정코드 확인 모드)</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-      }
-  
-      .popup {
-        background: #fff;
-        padding: 30px;
-        width: 100%;
-        max-width: 480px;
-        margin: auto;
-      }
-  
-      h2 {
-        font-size: 1.3rem;
-        margin-bottom: 16px;
-        text-align: center;
-      }
-  
-      .form-group {
-        margin-bottom: 16px;
-      }
-  
-      .form-group label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 0.95rem;
-        font-weight: bold;
-      }
-  
-      select, input[type="text"] {
-        width: 100%;
-        padding: 10px;
-        font-size: 1rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-      }
-  
-      .btn {
-        display: inline-block;
-        background: #334DD7;
-        color: white;
-        border: none;
-        padding: 12px;
-        font-size: 1rem;
-        width: 100%;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-bottom: 20px;
-      }
-  
-      .btn:hover {
-        background: #253dbb;
-      }
-  
-      /* 검색 결과 리스트 */
-      .result-list {
-        border-top: 1px solid #ddd;
-        max-height: 250px;
-        overflow-y: auto;
-      }
-  
-      .result-item {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-      }
-  
-      .result-item:hover {
-        background: #f1f1f1;
-      }
-  
-      .no-result {
-        padding: 20px;
-        text-align: center;
-        color: #777;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="popup">
-      <h2>학교 찾기</h2>
-      
-      <div class="form-group">
-        <label for="province">시/도 선택</label>
-        <select id="province">
-          <option>서울특별시</option>
-          <option>부산광역시</option>
-          <option>대구광역시</option>
-          <option>인천광역시</option>
-        </select>
-      </div>
-  
-      <div class="form-group">
-        <label for="city">시/군/구 선택</label>
-        <select id="city">
-          <option>강남구</option>
-          <option>서초구</option>
-          <option>송파구</option>
-          <option>마포구</option>
-        </select>
-      </div>
-  
-      <div class="form-group">
-        <label for="school">학교 이름</label>
-        <input type="text" id="school" placeholder="학교명을 입력하세요">
-      </div>
-  
-      <button class="btn">검색하기</button>
-  
-      <!-- 검색 결과 영역 -->
-      <div class="result-list">
-        <!-- 검색 결과 없을 때 -->
-        <div class="no-result">검색 결과가 없습니다.</div>
-  
-        <!-- 검색 결과 있을 때 -->
-        
-        <div class="result-item">서울 강남고등학교</div>
-        <div class="result-item">서울 강남중학교</div>
-        <div class="result-item">서울 강남초등학교</div>
-      </div>
-    </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.querySelector(".btn");
-      const resultList = document.querySelector(".result-list");
-
-      btn.addEventListener("click", () => {
-        const schoolInput = document.getElementById("school").value.trim();
-        if (!schoolInput) {
-          alert("학교명을 입력하세요.");
-          return;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
         }
 
-        const url = `https://open.neis.go.kr/hub/schoolInfo?KEY=7883c8be1b0641489a5a495ff0bb6b4a&Type=json&pIndex=1&pSize=10&SCHUL_NM=${encodeURIComponent(schoolInput)}`;
+        .popup {
+            background: #fff;
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+        }
 
-        fetch(url)
-                .then(response => {
-                  if (!response.ok) {
-                    throw new Error("API 요청 실패");
-                  }
-                  return response.json();
-                })
-                .then(data => {
-                  resultList.innerHTML = "";
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            text-align: center;
+        }
 
-                  if (!data.schoolInfo || !data.schoolInfo[1].row || data.schoolInfo[1].row.length === 0) {
-                    resultList.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
-                    return;
-                  }
+        .form-group {
+            margin-bottom: 16px;
+        }
 
-                  data.schoolInfo[1].row.forEach(item => {
-                    const schoolName = item.SCHUL_NM;
-                    const address = item.ORG_RDNMA;
-                    const div = document.createElement("div");
-                    div.className = "result-item";
-                    div.textContent = `${schoolName} (${address})`;
-                    resultList.appendChild(div);
-                  });
-                })
-                .catch(err => {
-                  console.error("에러:", err);
-                  resultList.innerHTML = '<div class="no-result">오류가 발생했습니다.</div>';
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        /* 기관 구분 라디오 버튼 스타일 */
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.95rem;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        /* ⭐️ 실시간 행정코드 모니터링창 스타일 */
+        .code-monitor {
+            background: #f4f6fa;
+            border: 1px dashed #334DD7;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #222;
+        }
+
+        .code-monitor p {
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .code-val {
+            font-weight: bold;
+            color: #334DD7;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #334DD7;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background: #253dbb;
+        }
+
+        /* 검색 결과 리스트 */
+        .result-list {
+            border-top: 1px solid #ddd;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            background: #f1f1f1;
+        }
+
+        .no-result {
+            padding: 20px;
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="popup">
+    <h2>학교 및 기관 찾기</h2>
+
+    <div class="form-group">
+        <label>기관 구분</label>
+        <div class="radio-group">
+            <label><input type="radio" name="orgType" value="SCHOOL" checked> 초/중/고</label>
+            <label><input type="radio" name="orgType" value="KINDERGARTEN"> 유치원</label>
+            <label><input type="radio" name="orgType" value="DAYCARE"> 어린이집</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="province">시/도 선택</label>
+        <select id="province">
+            <option value="">-- 시/도 선택 --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="city">시/군/구 선택</label>
+        <select id="city">
+            <option value="">-- 시/군/구 선택 --</option>
+        </select>
+    </div>
+
+    <div class="code-monitor">
+        <p>선택 유형: <span id="mon-type" class="code-val">-</span></p>
+        <p>시도 코드: <span id="mon-sido" class="code-val">-</span></p>
+        <p>시군구 코드: <span id="mon-sigungu" class="code-val">-</span></p>
+    </div>
+
+    <div class="form-group">
+        <label for="school">기관 이름</label>
+        <input type="text" id="school" placeholder="검색어를 입력하세요">
+    </div>
+
+    <button class="btn">검색하기</button>
+
+    <div class="result-list">
+        <div class="no-result">지역을 선택하고 검색해 주세요.</div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // DOM 엘리먼트 캐싱
+        const provinceSelect = document.getElementById("province");
+        const citySelect = document.getElementById("city");
+        const schoolInput = document.getElementById("school");
+        const searchBtn = document.querySelector(".btn");
+        const resultList = document.querySelector(".result-list");
+
+        // 모니터링 엘리먼트 캐싱
+        const monType = document.getElementById("mon-type");
+        const monSido = document.getElementById("mon-sido");
+        const monSigungu = document.getElementById("mon-sigungu");
+
+        let regionData = []; // json 데이터를 저장할 전역 변수
+
+        // 실시간 코드 모니터링 업데이트 함수
+        function updateCodeMonitor() {
+            const orgTypeElement = document.querySelector('input[name="orgType"]:checked');
+            monType.textContent = orgTypeElement ? orgTypeElement.value : '-';
+            monSido.textContent = provinceSelect.value || '-';
+            monSigungu.textContent = citySelect.value || '-';
+        }
+
+        // 라디오 버튼 변경 시 모니터링 즉시 업데이트
+        document.querySelectorAll('input[name="orgType"]').forEach(radio => {
+            radio.addEventListener("change", updateCodeMonitor);
+        });
+        // 초기 상태 반영
+        updateCodeMonitor();
+
+
+        // [Step 1] 정적 경로 변경 반영: /json/region.json 읽어오기
+        try {
+            const response = await fetch('/json/region.json');
+            if (!response.ok) throw new Error("네트워크 응답 불안정");
+
+            regionData = await response.json();
+
+            // 시/도 드롭다운 옵션 채우기
+            regionData.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.sido_code;
+                option.textContent = item.sido_name;
+                provinceSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("행정구역 데이터를 불러오지 못했습니다:", error);
+        }
+
+        // [Step 2] 시/도 변경 이벤트 - 시/군/구 동적 업데이트
+        provinceSelect.addEventListener("change", (e) => {
+            const selectedSidoCode = e.target.value;
+
+            // 시/군/구 옵션 초기화
+            citySelect.innerHTML = '<option value="">-- 시/군/구 선택 --</option>';
+
+            // 코드 모니터링창 실시간 연동
+            updateCodeMonitor();
+
+            if (!selectedSidoCode) return;
+
+            // 선택한 시도 코드에 일치하는 데이터 찾기
+            const targetSido = regionData.find(item => item.sido_code === selectedSidoCode);
+
+            if (targetSido && targetSido.sigungu) {
+                targetSido.sigungu.forEach(sgg => {
+                    const option = document.createElement("option");
+                    option.value = sgg.sigungu_code;
+                    option.textContent = sgg.sigungu_name;
+                    citySelect.appendChild(option);
                 });
-      });
+            }
+        });
+
+        // 시군구 변경 시에도 실시간 코드창 업데이트
+        citySelect.addEventListener("change", updateCodeMonitor);
+
+
+        // [Step 3] 검색 버튼 클릭 시 임시 화면 테스트 출력 로직
+// 나이스 API 전용: 시도코드(2자리)를 나이스 시도교육청코드(4자리)로 변환하는 매핑 테이블
+        const neisOfficeMap = {
+            "11": "B10", // 서울특별시 -> 서울특별시교육청
+            "26": "C10", // 부산광역시 -> 부산광역시교육청
+            "27": "D10", // 대구광역시 -> 대구광역시교육청
+            "28": "E10", // 인천광역시 -> 인천광역시교육청
+            "29": "F10", // 광주광역시 -> 광주광역시교육청
+            "30": "G10", // 대전광역시 -> 대전광역시교육청
+            "31": "H10", // 울산광역시 -> 울산광역시교육청
+            "36": "I10", // 세종특별자치시 -> 세종특별자치시교육청
+            "41": "J10", // 경기도 -> 경기도교육청
+            "42": "K10", // 강원특별자치도 -> 강원특별자치도교육청
+            "43": "M10", // 충청북도 -> 충청북도교육청
+            "44": "N10", // 충청남도 -> 충청남도교육청
+            "45": "P10", // 전북특별자치도 -> 전북특별자치도교육청
+            "46": "Q10", // 전라남도 -> 전라남도교육청
+            "47": "R10", // 경상북도 -> 경상북도교육청
+            "48": "S10", // 경상남도 -> 경상남도교육청
+            "50": "T10"  // 제주특별자치도 -> 제주특별자치도교육청
+        };
+
+        // [Step 3] 검색 버튼 클릭 시 처리 로직 (실제 API 요청 연동)
+        searchBtn.addEventListener("click", async () => {
+            const orgTypeElement = document.querySelector('input[name="orgType"]:checked');
+            const orgType = orgTypeElement ? orgTypeElement.value : 'SCHOOL';
+            const sidoCode = provinceSelect.value;
+            const sigunguCode = citySelect.value;
+            const searchInput = schoolInput.value.trim();
+
+            // 유효성 검사
+            if (!sidoCode || !sigunguCode) {
+                alert("지역(시/도 및 시/군/구)을 선택해주세요.");
+                return;
+            }
+            if (!searchInput) {
+                alert("기관명을 입력하세요.");
+                return;
+            }
+
+            resultList.innerHTML = '<div class="no-result">검색 중입니다...</div>';
+
+            // -------------------------------------------------------------
+            // [분기 1] 초/중/고등학교 API 연동 (나이스)
+            // -------------------------------------------------------------
+            if (orgType === 'SCHOOL') {
+                // 1. 선택한 시도코드를 나이스 교육청 코드로 변환 (예: "11" -> "B10")
+                const officeCode = neisOfficeMap[sidoCode] || "";
+
+                // 2. 나이스 API URL 조립 (ATPT_OFCDC_HLM_CD 파라미터 추가로 지역 타겟팅 고도화)
+                const neisKey = "7883c8be1b0641489a5a495ff0bb6b4a";
+                const neisUrl = `https://open.neis.go.kr/hub/schoolInfo?KEY=${neisKey}&Type=json&pIndex=1&pSize=50&ATPT_OFCDC_HLM_CD=${officeCode}&SCHUL_NM=${encodeURIComponent(searchInput)}`;
+
+                try {
+                    const response = await fetch(neisUrl);
+                    if (!response.ok) throw new Error("API 요청 실패");
+
+                    const data = await response.json();
+                    resultList.innerHTML = ""; // 검색 중 메시지 제거
+
+                    // 결과 데이터가 없는 예외 처리
+                    if (!data.schoolInfo || !data.schoolInfo[1].row || data.schoolInfo[1].row.length === 0) {
+                        resultList.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+                        return;
+                    }
+
+                    // 3. 선택된 시군구 명칭(예: "강남구", "수원시")을 가져와 한 번 더 정확하게 필터링
+                    const selectedCityName = citySelect.options[citySelect.selectedIndex].text;
+                    let hasRow = false;
+
+                    data.schoolInfo[1].row.forEach(item => {
+                        const schoolName = item.SCHUL_NM;
+                        const address = item.ORG_RDNMA || item.ORG_BAZMA || "";
+                        const schoolType = item.SCHUL_KND_SC_NM;
+
+                        if (address.includes(selectedCityName) && schoolType !== "유치원") {
+                            hasRow = true;
+                            const div = document.createElement("div");
+                            div.className = "result-item";
+                            div.innerHTML = `<strong>${schoolName}</strong> <span style="font-size:0.85rem; color:#666;">[${schoolType}]</span><br><span style="font-size:0.85rem; color:#777;">${address}</span>`;
+
+                            // [추가된 부분] 결과 항목 클릭 시 부모창 인풋에 데이터 바인딩
+                            div.addEventListener("click", () => {
+                                const selectedSchoolName = div.querySelector('strong').textContent;
+
+                                // 부모창의 함수를 호출하면서 선택된 값을 넘깁니다.
+                                if (window.opener && window.opener.setSchoolName) {
+                                    window.opener.setSchoolName(selectedSchoolName);
+                                    window.close(); // 팝업 닫기
+                                } else {
+                                    alert("부모창을 찾을 수 없습니다.");
+                                }
+                            });
+
+                            resultList.appendChild(div);
+                        }
+                    });
+
+                    if (!hasRow) {
+                        resultList.innerHTML = '<div class="no-result">해당 시/군/구 내에 일치하는 학교가 없습니다.</div>';
+                    }
+
+                } catch (err) {
+                    console.error("나이스 API 에러:", err);
+                    resultList.innerHTML = '<div class="no-result">학교 정보를 가져오는 중 오류가 발생했습니다.</div>';
+                }
+            }
+                // -------------------------------------------------------------
+                // [분기 2 & 3] 유치원 / 어린이집 (추후 구현을 위한 임시 스페이스)
+            // -------------------------------------------------------------
+            else if (orgType === 'KINDERGARTEN') {
+                resultList.innerHTML = '<div class="no-result">🌻 유치원 API 연동 단계 준비 중입니다.</div>';
+            } else if (orgType === 'DAYCARE') {
+                resultList.innerHTML = '<div class="no-result">🧸 어린이집 API 연동 단계 준비 중입니다.</div>';
+            }
+        });
     });
-  </script>
-  </body>
+</script>
+</body>
 </html>
