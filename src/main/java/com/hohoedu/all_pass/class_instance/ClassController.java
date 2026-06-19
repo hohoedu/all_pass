@@ -78,16 +78,14 @@ public class ClassController {
 
     // 시간표 등록
     @PostMapping("/register")
-    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO,
-                                           HttpSession session) {
+    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
-                        .header(HttpHeaders.LOCATION, "/login")
-                        .build();
-            }
-            String msg = "";
+            if (user == null) return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+
+            String msg = null;
             for (ClassReqDTO.ClassRegisterDTO req : reqDTO) {
                 if ("COM".equals(req.getClassKey())) {
                     req.setUnitKey(null);
@@ -96,14 +94,11 @@ public class ClassController {
                 req.setCenterCode(user.getCenterCode());
                 msg = classService.registerClass(req);
             }
-            System.out.println(msg);
-
-            return ResponseEntity.ok(ApiUtils.success("200"));
+            return ResponseEntity.ok(ApiUtils.success(msg));
 
         } catch (Exception e) {
             System.out.println("============" + e.getMessage() + "============");
             return ResponseEntity.ok(ApiUtils.error("시간표 등록 실패", HttpStatus.INTERNAL_SERVER_ERROR));
-
         }
     }
 
@@ -122,7 +117,7 @@ public class ClassController {
 
         try {
             for (ClassReqDTO.AddStudentDTO dto : reqDTO.getAssignments()) {
-                classService.registerStudentFullProcess(dto, user.getUserCode(), user.getCenterCode());
+                classService.registerStudentFullProcess(dto, user.getUserCode(), user.getCenterCode(), false);
             }
             return ResponseEntity.ok(ApiUtils.success(true));
 
@@ -167,8 +162,8 @@ public class ClassController {
     public ResponseEntity<?> timeTableDeleteStudent(@RequestBody Map<String, String> request) {
         String timeTableKey = request.get("timeTableKey");
         String studentId = request.get("studentId");
-        classService.deleteStudent(timeTableKey, studentId);
-        return ResponseEntity.ok(ApiUtils.success("삭제되었습니다. 교재 주문 수량을 수정해주세요."));
+        String msg = classService.deleteStudent(timeTableKey, studentId);
+        return ResponseEntity.ok(ApiUtils.success(msg));
     }
 
     @PostMapping("/api/load_time_table")
@@ -195,12 +190,12 @@ public class ClassController {
                     .build();
         }
 
-        classService.copyLastMonthTimeTableAndStudents(
+        String msg = classService.copyLastMonthTimeTableAndStudents(
                 user.getUserCode(),
                 user.getCenterCode(),
                 req.get("year"),
                 req.get("month"));
-        return ResponseEntity.ok(ApiUtils.success(true));
+        return ResponseEntity.ok(ApiUtils.success(msg));
     }
 
     @PostMapping("/timetable/view")
@@ -221,13 +216,12 @@ public class ClassController {
     @PostMapping("/api/delete/timetable/row")
     public ResponseEntity<?> deleteRow(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-        classService.deleteTimeTableRow(dto.getTimeTableKey(), user.getUserCode());
-        return ResponseEntity.ok(ApiUtils.success(true));
+        if (user == null) return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "/login")
+                .build();
+
+        String msg = classService.deleteTimeTableRow(dto.getTimeTableKey(), user.getUserCode());
+        return ResponseEntity.ok(ApiUtils.success(msg));
     }
 
     @PostMapping("/api/delete/timetable/all")

@@ -93,7 +93,9 @@
             WHEN 'fri' THEN fri
             WHEN 'sat' THEN sat
             WHEN 'sun' THEN sun
-        END = #{today}
+        END
+        =
+        #{today}
     </select>
 
     <!-- INSERT -->
@@ -300,6 +302,15 @@
         WHERE t.time_table_key = #{timeTableKey}
           AND ta.student_id = #{studentId}
         GROUP BY t.time_table_key, c.class_type, c.class_key, t.center_code, t.user_code, cf.fee;
+    </select>
+
+    <select id="findTimeTableMeta" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableMetaDTO">
+        SELECT center_code AS centerCode,
+               user_code   AS userCode,
+               yy,
+               mm
+        FROM erp_time_table
+        WHERE time_table_key = #{timeTableKey}
     </select>
 
     <select id="findClassWeekByCenter"
@@ -991,27 +1002,25 @@
 
     <!-- 결석 2주 / 결석 후 10일 이내 보강 없는 학생 조회  -->
     <select id="findAbsentFlags" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AbsentFlagDTO">
-        SELECT
-            student_id AS studentId,
-            CASE
-                WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
-                    AND MAX(CASE WHEN action = 0
+        SELECT student_id AS studentId,
+               CASE
+                   WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
+                       AND MAX(CASE WHEN action = 0
                           AND remedial_date = '9999-12-31'
                           AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
                      THEN 1 ELSE 0 END) = 1 THEN 3
-                WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2 THEN 1
-                WHEN MAX(CASE WHEN action = 0
+                   WHEN COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2 THEN 1
+                   WHEN MAX(CASE WHEN action = 0
                           AND remedial_date = '9999-12-31'
                           AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
                      THEN 1 ELSE 0 END) = 1 THEN 2
-                END AS absentFlag
+                   END    AS absentFlag
         FROM erp_remedial
         WHERE yy = #{yy}
           AND mm = #{mm}
           AND user_code = #{userCode}
         GROUP BY student_id
-        HAVING
-            COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
+        HAVING COUNT(DISTINCT DATEPART(WEEK, absence_date)) >= 2
             OR MAX(CASE WHEN action = 0
                     AND remedial_date = '9999-12-31'
                     AND DATEDIFF(DAY, absence_date, GETDATE()) >= 10
@@ -1123,25 +1132,25 @@
     </update>
 
     <select id="existsMonthlyFeedbackVariant" resultType="boolean">
-        SELECT CASE WHEN EXISTS (
-            SELECT 1
-            FROM erp_monthly_feedback_variant v
-                     JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
-            WHERE t.time_table_key = #{timeTableKey}
-              AND v.center_code = #{centerCode}
-              AND v.yy = #{year}
-        ) THEN 1 ELSE 0 END
+        SELECT CASE
+                   WHEN EXISTS (SELECT 1
+                                FROM erp_monthly_feedback_variant v
+                                         JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
+                                WHERE t.time_table_key = #{timeTableKey}
+                                  AND v.center_code = #{centerCode}
+                                  AND v.yy = #{year}) THEN 1
+                   ELSE 0 END
     </select>
 
     <select id="existsMonthlyCommentVariant" resultType="boolean">
-        SELECT CASE WHEN EXISTS (
-            SELECT 1
-            FROM erp_monthly_comment_variant v
-                     JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
-            WHERE t.time_table_key = #{timeTableKey}
-              AND v.center_code = #{centerCode}
-              AND v.yy = #{year}
-        ) THEN 1 ELSE 0 END
+        SELECT CASE
+                   WHEN EXISTS (SELECT 1
+                                FROM erp_monthly_comment_variant v
+                                         JOIN erp_time_table t ON v.class_key = t.class_key AND v.unit_key = t.unit_key
+                                WHERE t.time_table_key = #{timeTableKey}
+                                  AND v.center_code = #{centerCode}
+                                  AND v.yy = #{year}) THEN 1
+                   ELSE 0 END
     </select>
 
     <select id="getMonthlyAllCorrectFeedback" resultType="String">
@@ -1816,7 +1825,7 @@
           AND cw.sun = #{date})
             )
     </select>
-    
+
     <!-- 수업 전 안내 발송 후 내용 저장 -->
     <insert id="insertBeforeClassNotice"
             parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$BeforeClassNoticeDTO">

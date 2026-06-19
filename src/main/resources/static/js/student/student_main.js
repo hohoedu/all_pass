@@ -343,6 +343,10 @@ function renderStudentModal(data) {
     setValue("#tab2 .s_phone", formatPhone(info.parentPhone));
     setValue("#tab2 .s_birth", formatBirthDisplay(info.birth));
     setValue("#tab2 .s_billing_phone", formatPhone(info.billingPhone));
+    setValue("#tab2 .s_serial_num", info.serialNum ?? '');
+// ✅ 버튼 텍스트 변경
+    const qrBtn = document.querySelector('#tab2 .regist-qr-btn');
+    if (qrBtn) qrBtn.textContent = info.serialNum ? '수정' : '등록';
 
     // ---------------- TAB3: 수업 정보 ----------------
     // 교육비 (readonly input이므로 setValue로 세팅)
@@ -491,6 +495,7 @@ function renderStudentModal(data) {
             }
         });
     }
+
     async function fetchAttendance(studentId, year, month) {
         try {
             const yy = String(year);
@@ -506,6 +511,7 @@ function renderStudentModal(data) {
             return [];
         }
     }
+
     document.addEventListener("DOMContentLoaded", () => {
         const prevBtn = document.getElementById("calendar-prev");
         const nextBtn = document.getElementById("calendar-next");
@@ -1549,7 +1555,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
     const searchBtn = document.getElementById("family-search-btn");
     if (!searchBtn) return;
@@ -1566,7 +1571,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function searchFamily() {
-    const searchKey   = document.getElementById("nameSelect")?.value;
+    const searchKey = document.getElementById("nameSelect")?.value;
     const searchValue = document.getElementById("familySearchValue")?.value.trim();
 
     if (!searchValue) {
@@ -1644,7 +1649,7 @@ async function linkFamily(siblingId, siblingName) {
     try {
         const res = await fetch("/student/api/family-link", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 studentId: currentStudentId,
                 siblingId: siblingId
@@ -1725,7 +1730,7 @@ async function unlinkFamily(siblingId, siblingName) {
     try {
         const res = await fetch("/student/api/family-unlink", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 studentId: currentStudentId,
                 siblingId: siblingId
@@ -1770,3 +1775,37 @@ function updateSiblingIconInList(studentId, hasSibling) {
         td.innerHTML = "";
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('#tab2 .regist-qr-btn');
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+        const input = document.querySelector('#tab2 .s_serial_num');
+        const qrNumber = input?.value.trim();
+        if (!qrNumber) {
+            alert('QR카드 번호를 입력해주세요.');
+            return;
+        }
+
+        const isUpdate = btn.textContent.trim() === '수정'; // ✅ 등록/수정 분기
+        const url = isUpdate ? '/student/qr/update' : '/student/qr/register';
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({studentId: currentStudentId, qrNumber})
+            });
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.error?.message || '오류');
+                return;
+            }
+            alert('QR카드가 등록되었습니다.');
+            btn.textContent = '수정';
+        } catch {
+            alert('오류가 발생했습니다.');
+        }
+    });
+})

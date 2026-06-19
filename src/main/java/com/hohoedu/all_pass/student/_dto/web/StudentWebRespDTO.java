@@ -135,6 +135,7 @@ public class StudentWebRespDTO {
         private String genderKey;
         private String address;
         private String addressDetail;
+        private String serialNum;
     }
 
     @Data

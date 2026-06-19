@@ -150,8 +150,11 @@ public class ClassRespDTO {
     }
 
     @Data
-    public static class DeleteBackupDTO {
-
+    public static class TimeTableMetaDTO {
+        private String centerCode;
+        private String userCode;
+        private String yy;
+        private String mm;
     }
 
     @Data

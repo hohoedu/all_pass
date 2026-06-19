@@ -1492,4 +1492,14 @@ public class StudentService {
         studentRepository.updateQrNumber(request.getStudentId(), qrNumber);
         return null;
     }
+
+    @Transactional
+    public String updateQr(String studentId, String qrNumber, String centerCode) {
+        if (studentRepository.countByQrNumber(qrNumber, centerCode) == 0)
+            return "등록되지 않은 QR 카드번호입니다.";
+        studentRepository.unlinkQrByStudentId(studentId, centerCode);
+        studentRepository.registerQrNumber(studentId, qrNumber, centerCode);
+        studentRepository.updateQrNumber(studentId, qrNumber);
+        return null;
+    }
 }

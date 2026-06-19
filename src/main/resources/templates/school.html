@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/media.css">
     <script src="js/custom.js"></script>
     <script src="js/signature.js"></script>
-    <title>학교 및 기관 찾기 (행정코드 확인 모드)</title>
+    <title>학교 및 기관 찾기</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -66,6 +66,7 @@
 
         /* ⭐️ 실시간 행정코드 모니터링창 스타일 */
         .code-monitor {
+            display: none;
             background: #f4f6fa;
             border: 1px dashed #334DD7;
             border-radius: 8px;
@@ -294,14 +295,8 @@
 
             resultList.innerHTML = '<div class="no-result">검색 중입니다...</div>';
 
-            // -------------------------------------------------------------
-            // [분기 1] 초/중/고등학교 API 연동 (나이스)
-            // -------------------------------------------------------------
             if (orgType === 'SCHOOL') {
-                // 1. 선택한 시도코드를 나이스 교육청 코드로 변환 (예: "11" -> "B10")
                 const officeCode = neisOfficeMap[sidoCode] || "";
-
-                // 2. 나이스 API URL 조립 (ATPT_OFCDC_HLM_CD 파라미터 추가로 지역 타겟팅 고도화)
                 const neisKey = "7883c8be1b0641489a5a495ff0bb6b4a";
                 const neisUrl = `https://open.neis.go.kr/hub/schoolInfo?KEY=${neisKey}&Type=json&pIndex=1&pSize=50&ATPT_OFCDC_HLM_CD=${officeCode}&SCHUL_NM=${encodeURIComponent(searchInput)}`;
 
@@ -310,15 +305,13 @@
                     if (!response.ok) throw new Error("API 요청 실패");
 
                     const data = await response.json();
-                    resultList.innerHTML = ""; // 검색 중 메시지 제거
-
-                    // 결과 데이터가 없는 예외 처리
+                    resultList.innerHTML = "";
+                    console.log(data);
                     if (!data.schoolInfo || !data.schoolInfo[1].row || data.schoolInfo[1].row.length === 0) {
                         resultList.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
                         return;
                     }
 
-                    // 3. 선택된 시군구 명칭(예: "강남구", "수원시")을 가져와 한 번 더 정확하게 필터링
                     const selectedCityName = citySelect.options[citySelect.selectedIndex].text;
                     let hasRow = false;
 
@@ -327,20 +320,17 @@
                         const address = item.ORG_RDNMA || item.ORG_BAZMA || "";
                         const schoolType = item.SCHUL_KND_SC_NM;
 
-                        if (address.includes(selectedCityName) && schoolType !== "유치원") {
+                        if (address.includes(selectedCityName) && schoolType !== "유치원" && schoolType !== "고등학교") {
                             hasRow = true;
                             const div = document.createElement("div");
                             div.className = "result-item";
                             div.innerHTML = `<strong>${schoolName}</strong> <span style="font-size:0.85rem; color:#666;">[${schoolType}]</span><br><span style="font-size:0.85rem; color:#777;">${address}</span>`;
 
-                            // [추가된 부분] 결과 항목 클릭 시 부모창 인풋에 데이터 바인딩
                             div.addEventListener("click", () => {
-                                const selectedSchoolName = div.querySelector('strong').textContent;
-
-                                // 부모창의 함수를 호출하면서 선택된 값을 넘깁니다.
+                                // 부모창의 전역 함수 호출
                                 if (window.opener && window.opener.setSchoolName) {
-                                    window.opener.setSchoolName(selectedSchoolName);
-                                    window.close(); // 팝업 닫기
+                                    window.opener.setSchoolName(schoolName);
+                                    window.close();
                                 } else {
                                     alert("부모창을 찾을 수 없습니다.");
                                 }
@@ -351,21 +341,66 @@
                     });
 
                     if (!hasRow) {
-                        resultList.innerHTML = '<div class="no-result">해당 시/군/구 내에 일치하는 학교가 없습니다.</div>';
+                        resultList.innerHTML = '<div class="no-result">해당 지역 내에 일치하는 학교가 없습니다.</div>';
                     }
 
                 } catch (err) {
-                    console.error("나이스 API 에러:", err);
-                    resultList.innerHTML = '<div class="no-result">학교 정보를 가져오는 중 오류가 발생했습니다.</div>';
+                    resultList.innerHTML = '<div class="no-result">정보를 가져오는 중 오류가 발생했습니다.</div>';
                 }
-            }
-                // -------------------------------------------------------------
-                // [분기 2 & 3] 유치원 / 어린이집 (추후 구현을 위한 임시 스페이스)
-            // -------------------------------------------------------------
+            } // 유치원 검색 로직
             else if (orgType === 'KINDERGARTEN') {
-                resultList.innerHTML = '<div class="no-result">🌻 유치원 API 연동 단계 준비 중입니다.</div>';
-            } else if (orgType === 'DAYCARE') {
-                resultList.innerHTML = '<div class="no-result">🧸 어린이집 API 연동 단계 준비 중입니다.</div>';
+                const sidoCode = provinceSelect.value;
+                const sggCode = citySelect.value;
+                const url = `/api/proxy/kindergarten?sidoCode=${sidoCode}&sggCode=${sggCode}`;
+
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    resultList.innerHTML = ""; // 목록 초기화
+
+                    // 1. API 응답 구조에 맞춰 리스트 추출 (kinderInfo가 배열인지 확인)
+                    const list = data.kinderInfo || [];
+
+                    if (list.length === 0) {
+                        resultList.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+                        return;
+                    }
+
+                    // 2. 하나의 반복문으로 처리
+                    list.forEach(item => {
+                        // 입력된 검색어와 유치원 이름 비교 (대소문자 무시를 위해 .toLowerCase() 권장)
+                        if (item.kindername.includes(searchInput)) {
+                            const div = document.createElement("div");
+                            div.className = "result-item";
+
+                            // 표시 데이터 (kindername, addr 등 API 응답 키값이 맞는지 확인하세요)
+                            div.innerHTML = `
+                                    <div style="font-weight: bold; margin-bottom: 4px;">${item.kindername}</div>
+                                    <div style="font-size: 0.85rem; color: #666;">📍 ${item.addr}</div>
+                                    <div style="font-size: 0.8rem; color: #999;">📞 ${item.telno || '전화번호 없음'}</div>
+                                `;
+
+                            // 클릭 이벤트
+                            div.addEventListener("click", () => {
+                                // 부모 창으로 데이터 전달
+                                if (window.opener) {
+                                    window.opener.setSchoolName(item.kindername);
+                                    window.close();
+                                } else {
+                                    alert(item.kindername + "을 선택하셨습니다.");
+                                }
+                            });
+
+                            resultList.appendChild(div);
+                        }
+                    });
+                } catch (err) {
+                    console.error("API 호출 에러:", err);
+                    resultList.innerHTML = '<div class="no-result">데이터 호출 실패</div>';
+                }
+            } else {
+                resultList.innerHTML = '<div class="no-result">준비 중입니다.</div>';
             }
         });
     });

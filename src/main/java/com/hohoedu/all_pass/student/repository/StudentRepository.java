@@ -476,4 +476,9 @@ public interface StudentRepository {
             @Param("studentId") String studentId,
             @Param("qrNumber") String qrNumber);
 
+    void unlinkQrByStudentId(
+            @Param("studentId") String studentId,
+            @Param("centerCode") String centerCode);
 }
+
+

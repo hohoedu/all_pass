@@ -152,28 +152,17 @@ $(document).ready(function () {
         );
     });
     // 기관 검색
-    window.setSchoolName = function(name) {
-        const targetInput = document.querySelector(".s_school");
+    window.setSchoolName = function (name) {
+        // class 대신 name="school"로 정확히 타겟팅
+        const targetInput = document.querySelector('input[name="school"]');
 
         if (targetInput) {
-            // 1. 값 갱신 (직관적 대입)
             targetInput.value = name;
-
-            // 2. 값 갱신 (속성값 강제 설정)
-            targetInput.setAttribute('value', name);
-
-            // 3. 이벤트 3종 세트 (브라우저에게 '사용자가 입력했다'고 거짓말하기)
-            const events = ['input', 'change', 'blur', 'keyup'];
-            events.forEach(eventType => {
-                targetInput.dispatchEvent(new Event(eventType, { bubbles: true }));
-            });
-
-            // 4. 강제 포커스 및 선택 (화면 갱신 강제 유도)
-            targetInput.focus();
-
-            console.log("부모창 값 대입 및 강제 이벤트 발생 성공: " + name);
+            targetInput.dispatchEvent(new Event('input', {bubbles: true}));
+            targetInput.dispatchEvent(new Event('change', {bubbles: true}));
+            console.log("name 속성으로 타겟팅 성공: " + name);
         } else {
-            console.error("부모창에서 .s_school을 찾을 수 없습니다!");
+            console.error("name='school'인 인풋을 찾을 수 없습니다!");
         }
     };
 
@@ -435,13 +424,13 @@ function addHeadSort(headId, tbodyId, opts = {}) {
 
         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
             const d = new Date(v);
-            if (!isNaN(d)) return { type: 'date', value: d.getTime() };
+            if (!isNaN(d)) return {type: 'date', value: d.getTime()};
         }
 
         const n = Number(v.replace(/[^0-9.-]/g, ''));
-        if (!Number.isNaN(n) && v.match(/[0-9]/)) return { type: 'number', value: n };
+        if (!Number.isNaN(n) && v.match(/[0-9]/)) return {type: 'number', value: n};
 
-        return { type: 'string', value: v };
+        return {type: 'string', value: v};
     };
 
     const compareBy = (aRow, bRow, colIndex, asc) => {
@@ -460,7 +449,7 @@ function addHeadSort(headId, tbodyId, opts = {}) {
             return 0;
         }
 
-        const rank = { date: 3, number: 2, string: 1, empty: 0 };
+        const rank = {date: 3, number: 2, string: 1, empty: 0};
         if (rank[a.type] !== rank[b.type]) {
             return asc ? (rank[a.type] - rank[b.type]) : (rank[b.type] - rank[a.type]);
         }
@@ -510,8 +499,8 @@ function initHeaderSort(prefix, tbodySelector) {
 
     const sel = `img[id^="${prefix}-sort-"].svg-sort`;
     const orderMap = {};
-    const colType = { 2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text' };
-    const koCmp = new Intl.Collator('ko-KR', { numeric: true, sensitivity: 'base' });
+    const colType = {2: 'text', 3: 'text', 4: 'date', 5: 'text', 6: 'text', 7: 'text'};
+    const koCmp = new Intl.Collator('ko-KR', {numeric: true, sensitivity: 'base'});
 
     h.addEventListener('click', e => {
         const th = e.target.closest('th');

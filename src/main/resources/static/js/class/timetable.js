@@ -469,27 +469,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btn.addEventListener('click', async () => {
         if (!confirm('전월 시간표와 학생을 그대로 복사하시겠습니까?')) return;
-
         try {
             const res = await fetch('/class/api/copy/last-timetable', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({year, month})
             });
-
             const json = await res.json();
-
             if (!res.ok || json.success === false) {
-                alert(json.msg || '처리 중 오류가 발생했습니다.');
+                showAlert({icon: 'error', title: json.error?.message || '처리 중 오류가 발생했습니다.'});
                 return;
             }
-
-            alert('전월 시간표가 복사되었습니다.');
-            location.reload();
-
+            showAlert({
+                icon: 'success',
+                title: '전월 시간표가 복사되었습니다.',
+                text: json.response ?? undefined, // ✅ 마감일 메시지
+                showConfirmButton: true,
+                allowOutsideClick: false
+            }).then(() => location.reload());
         } catch (e) {
-            alert('서버와 통신 중 오류가 발생했습니다.');
-            console.error(e);
+            showAlert({icon: 'error', title: '서버와 통신 중 오류가 발생했습니다.'});
         }
     });
 });
@@ -654,19 +653,21 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(payloadList)
         })
             .then(res => {
-                if (!res.ok) throw new Error(res.json.message + res.status);
+                if (!res.ok) throw new Error(res.status);
                 return res.json();
             })
             .then(json => {
-                if (json.response === "200") {
-                    showAlert({icon: 'success', title: '시간표가 저장되었습니다.'})
-                        .then(() => window.location.reload());
+                if (json.success) { // ✅ "200" 체크 → success 체크로 변경
+                    showAlert({
+                        icon: 'success',
+                        title: '시간표가 저장되었습니다.',
+                        text: json.response ?? undefined // ✅ 마감일 메시지
+                    }).then(() => window.location.reload());
                 } else {
                     showAlert({icon: 'error', title: json.error?.message, text: '오류코드: ' + json.error?.status});
                 }
             })
             .catch(err => {
-                console.error(err);
                 showAlert({icon: 'error', title: '오류', text: err.message});
             });
     });
@@ -755,21 +756,18 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(apiResult => {
                 return showAlert({
-                    icon: apiResult.response ? 'success' : 'error',
-                    title: apiResult.response ? '학생이 추가되었습니다.' : '등록 실패',
-                    text: apiResult.error?.message,
+                    icon: apiResult.success ? 'success' : 'error', // ✅ success 기준
+                    title: apiResult.success ? '학생이 추가되었습니다.' : '등록 실패',
+                    text: apiResult.response ?? apiResult.error?.message, // ✅ 마감일 메시지
                     showConfirmButton: true,
                     allowOutsideClick: false,
                     allowEscapeKey: false
                 });
             })
             .then(result => {
-                if (result.isConfirmed) {
-                    window.location.reload();
-                }
+                if (result.isConfirmed) window.location.reload();
             })
             .catch(err => {
-                console.error(err);
                 showAlert({icon: 'error', title: '오류가 발생했습니다.', text: err.message});
             });
     };
@@ -892,9 +890,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 fetch('/class/delete/student', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json;charset=UTF-8'
-                    },
+                    headers: {'Content-Type': 'application/json;charset=UTF-8'},
                     body: JSON.stringify(requestBody)
                 })
                     .then(res => {
@@ -903,25 +899,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                     .then(apiResult => {
                         return showAlert({
-                            icon: apiResult.response ? 'success' : 'error',
-                            title: apiResult.response ? '삭제되었습니다.\n교재 주문 수량을 확인해주세요.' : '삭제 실패',
-                            text: apiResult.error?.message,
+                            icon: apiResult.success ? 'success' : 'error', // ✅ success 기준
+                            title: apiResult.success ? '삭제되었습니다.' : '삭제 실패',
+                            text: apiResult.response ?? apiResult.error?.message, // ✅ 마감일 메시지
                             showConfirmButton: true,
                             allowOutsideClick: false
                         });
                     })
                     .then(res => {
-                        if (res.isConfirmed) {
-                            window.location.reload();
-                        }
+                        if (res.isConfirmed) window.location.reload();
                     })
                     .catch(err => {
-                        console.error(err);
-                        showAlert({
-                            icon: 'error',
-                            title: '오류 발생',
-                            text: err.message
-                        });
+                        showAlert({icon: 'error', title: '오류 발생', text: err.message});
                     });
             });
         });
@@ -958,7 +947,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            window.location.reload();
+                            showAlert({
+                                icon: 'success',
+                                title: '삭제되었습니다.',
+                                text: data.response ?? undefined, // ✅ 마감일 메시지
+                                showConfirmButton: true,
+                                allowOutsideClick: false
+                            }).then(() => window.location.reload());
                         }
                     });
 

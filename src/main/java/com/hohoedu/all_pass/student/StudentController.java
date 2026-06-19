@@ -503,4 +503,13 @@ public class StudentController {
 
         return ResponseEntity.ok(ApiUtils.success("QR등록 완료"));
     }
+
+    @PostMapping("/qr/update")
+    public ResponseEntity<?> updateQr(@RequestBody StudentWebReqDTO.QrRegisterDTO dto, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+        String error = studentService.updateQr(dto.getStudentId(), dto.getQrNumber(), user.getCenterCode());
+        if (error != null) return ResponseEntity.ok(ApiUtils.error(error, HttpStatus.BAD_REQUEST));
+        return ResponseEntity.ok(ApiUtils.success(true));
+    }
 }

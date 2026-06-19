@@ -25,6 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -262,6 +263,17 @@ public class MainViewController {
         } catch (Exception e) {
             return "소켓 에러: " + e.getMessage();
         }
+    }
+
+    @GetMapping("/api/proxy/kindergarten")
+    @ResponseBody
+    public String getKindergarten(@RequestParam String sidoCode, @RequestParam String sggCode) {
+        String url = "https://e-childschoolinfo.moe.go.kr/api/notice/basicInfo2.do?" +
+                "key=687efc54181d4faaa1f37b15d5399b52&sidoCode=" + sidoCode + "&sggCode=" + sggCode +
+                "&pageCnt=100&currentPage=1";
+
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate.getForObject(url, String.class);
     }
 
 }

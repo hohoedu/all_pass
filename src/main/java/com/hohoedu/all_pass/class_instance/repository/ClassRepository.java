@@ -106,6 +106,8 @@ public interface ClassRepository {
             @Param("studentId") String studentId,
             @Param("centerCode") String centerCode);
 
+   ClassRespDTO.TimeTableMetaDTO findTimeTableMeta(String timeTableKey);
+
     List<ClassRespDTO.StudentStatRespDTO> findStudentStat(
             @Param("userCode") String userCode,
             @Param("ym") String ym,

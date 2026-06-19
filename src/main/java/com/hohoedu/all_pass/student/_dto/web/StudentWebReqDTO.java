@@ -194,4 +194,10 @@ public class StudentWebReqDTO {
         private String studentId;
         private String qrNumber;
     }
+
+    @Data
+    public static class QrUpdateDTO {
+        private String studentId;
+        private String qrNumber;
+    }
 }

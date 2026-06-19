@@ -13,6 +13,10 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
+import com.hohoedu.all_pass.manage.ManageService;
+import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
+import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
+import com.hohoedu.all_pass.manage.repository.ManageRepository;
 import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
 import com.hohoedu.all_pass.notice.repository.NoticeRepository;
 import com.hohoedu.all_pass.payment.PaymentService;
@@ -56,6 +60,7 @@ public class ClassService {
     private final ClassRepository classRepository;
     private final UnitCodeJpaRepository unitCodeJpaRepository;
     private final ClassCodeJpaRepository classCodeJpaRepository;
+    private final ManageRepository manageRepository;
     private final GradeJpaRepository gradeJpaRepository;
     private final StudentService studentService;
     private final PaymentService paymentService;
@@ -283,7 +288,8 @@ public class ClassService {
 
             classRepository.registerClass(classReqDTO);
 
-            return "success-register";
+            return autoRegisterOrder(classReqDTO.getUserCode(), classReqDTO.getCenterCode(),
+                    classReqDTO.getYy(), classReqDTO.getMm()); //
         } else {
 
             int result = classRepository.updateClass(classReqDTO, timeTable.getTimeTableKey(),
@@ -295,8 +301,51 @@ public class ClassService {
                 return "fail-update";
             }
 
-            return "success-update";
+            return autoRegisterOrder(classReqDTO.getUserCode(), classReqDTO.getCenterCode(),
+                    classReqDTO.getYy(), classReqDTO.getMm()); //
         }
+    }
+
+    private String autoRegisterOrder(String userCode, String centerCode, String yy, String mm) {
+
+        // 마감일 체크
+        String deadlineDay = manageRepository.findOrderDeadline(centerCode);
+        if (deadlineDay != null && LocalDate.now().getDayOfMonth() > Integer.parseInt(deadlineDay)) {
+            return "마감일이 지났습니다. 수량 변동이 있다면 추가 주문 / 반품을 이용해주세요.";
+        }
+
+        // 시간표 기준 base_count 조회
+        List<ManageRespDTO.BasicOrderListDTO> basicList =
+                manageRepository.findBasicOrderList(centerCode, userCode, yy, mm);
+
+        if (basicList.isEmpty()) return null;
+
+        // DTO 변환
+        List<ManageReqDTO.InsertOrderHistoryDTO.InsertOrder> insertOrders = basicList.stream()
+                .map(b -> {
+                    ManageReqDTO.InsertOrderHistoryDTO.InsertOrder order =
+                            new ManageReqDTO.InsertOrderHistoryDTO.InsertOrder();
+                    order.setClassKey(b.getClassKey());
+                    order.setUnitKey(b.getUnitKey());
+                    order.setBaseCount(b.getBaseCount());
+                    order.setTotalCount(b.getBaseCount());
+                    order.setAddCount(0);
+                    return order;
+                })
+                .collect(Collectors.toList());
+
+        ManageReqDTO.InsertOrderHistoryDTO orderDto = new ManageReqDTO.InsertOrderHistoryDTO();
+        orderDto.setCenterCode(centerCode);
+        orderDto.setUserCode(userCode);
+        orderDto.setYy(yy);
+        orderDto.setMm(mm);
+        orderDto.setInsertOrders(insertOrders);
+
+        manageRepository.deleteOrderByCondition(userCode, centerCode, yy, mm);
+        manageRepository.insertOrder(orderDto);
+        manageRepository.insertOrderHistory(orderDto);
+
+        return null; // 정상 처리
     }
 
     private String createTimeTableLabel(ClassReqDTO.ClassRegisterDTO dto) {
@@ -427,7 +476,7 @@ public class ClassService {
     }
 
     @Transactional
-    public void registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode) {
+    public String registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode, boolean skipAutoOrder) {
 
         // 히스토리 먼저 확인
         boolean restored = classRepository.existsAssignHistory(dto.getTimeTableKey(), dto.getStudentId()) > 0;
@@ -476,17 +525,22 @@ public class ClassService {
             paymentService.processPresetPaymentIfExists(dto.getStudentId(), paymentKey, classInfo.getClassFee(),
                     userCode, centerCode, dto.getYy(), dto.getMm());
         }
+
+        if (!skipAutoOrder) {
+          return  autoRegisterOrder(info.getTeacherCode(), centerCode, dto.getYy(), dto.getMm());
+        }
+        return null;
     }
 
     @Transactional
-    public void copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
+    public String copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
 
         int count = classRepository.existsTimeTable(userCode, year, month);
         if (count > 0) throw new RuntimeException("이번 달 시간표 등록 내역이 있습니다.");
 
         Map<String, String> req = Map.of("year", year, "month", month);
         List<TimeTableDTO> lastTables = getLastTimeTable(userCode, req);
-        if (lastTables.isEmpty()) return;
+        if (lastTables.isEmpty()) return null;
 
         Map<String, String> keyMap = new HashMap<>();
 
@@ -562,9 +616,10 @@ public class ClassService {
                 addDto.setYy(year);
                 addDto.setMm(month);
 
-                registerStudentFullProcess(addDto, userCode, centerCode);
+                registerStudentFullProcess(addDto, userCode, centerCode, true);
             }
         }
+       return autoRegisterOrder(userCode, centerCode, year, month);
     }
 
 
@@ -595,10 +650,13 @@ public class ClassService {
         return classInfo;
     }
 
-    public void deleteStudent(String timeTableKey, String studentId) {
-
+    @Transactional
+    public String deleteStudent(String timeTableKey, String studentId) {
+        ClassRespDTO.TimeTableMetaDTO meta = classRepository.findTimeTableMeta(timeTableKey);
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
         paymentService.deleteDetail(timeTableKey, studentId);
+
+        return autoRegisterOrder(meta.getUserCode(), meta.getCenterCode(), meta.getYy(), meta.getMm());
     }
 
     public List<TimeTableDTO> getLastTimeTable(String userCode, Map<String, String> req) {
@@ -644,9 +702,18 @@ public class ClassService {
 
     }
 
-    public int deleteTimeTableRow(String timeTableKey, String userCode) {
+    @Transactional
+    public String deleteTimeTableRow(String timeTableKey, String userCode) {
+
+        // 삭제 전 메타 조회 (삭제 후엔 조회 불가)
+        ClassRespDTO.TimeTableMetaDTO meta = classRepository.findTimeTableMeta(timeTableKey);
+
         int result = classRepository.deleteTimeTableRow(timeTableKey, userCode);
-        return result;
+        // ✅ 수업 삭제 후 주문 재계산 (해당 수업 학생들이 빠지므로)
+        if (result != 0 && meta != null) {
+            return autoRegisterOrder(meta.getUserCode(), meta.getCenterCode(), meta.getYy(), meta.getMm());
+        }
+        return null;
     }
 
     public List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(String timeTableKey,

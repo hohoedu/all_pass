@@ -244,7 +244,8 @@
                s.birth                                                      AS birth,
                s.billing_phone                                              AS billingPhone,
                s.address                                                    AS address,
-               s.address_detail                                             AS addressDetail
+               s.address_detail                                             AS addressDetail,
+               s.serial_num                                                 AS serialNum
         from erp_student s
                  LEFT JOIN erp_status_code sc ON s.status_key = sc.status_key
                  JOIN erp_grade_code gc ON s.grade_key = gc.grade_key
@@ -1777,6 +1778,13 @@
         UPDATE erp_student
         SET serial_num = #{qrNumber}
         WHERE student_id = #{studentId}
+    </update>
+
+    <update id="unlinkQrByStudentId">
+        UPDATE erp_qr_newid
+        SET student_id = NULL
+        WHERE student_id = #{studentId}
+          AND center_code = #{centerCode}
     </update>
 
 </mapper>
