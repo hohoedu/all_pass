@@ -260,6 +260,31 @@ document.addEventListener('DOMContentLoaded', () => {
         addModalTotalAmountEl.textContent = total.toLocaleString('ko-KR') + '원';
     }
 
+    async function fillRegularRow(row, item) {
+        const classSelect = row.querySelector('.item-class-key');
+        const unitSelect = row.querySelector('.item-unit-key');
+        const userSelect = row.querySelector('.item-user-code');
+
+        classSelect.value = item.classKey || '';
+
+        if (item.classKey) {
+            const res = await fetch('/logis/order/unit-codes-by-class', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({classKey: item.classKey})
+            });
+            const units = (await res.json()).response;
+            unitSelect.innerHTML = buildOptionsHtml(units, 'unitKey', 'unitName', '규격 선택');
+            unitSelect.disabled = false;
+            unitSelect.value = item.unitKey || '';
+        }
+
+        userSelect.value = item.userCode || '';
+        row.querySelector('.item-qty').value = item.qty || '';
+        row.querySelector('.item-reason').value = item.reason || '';
+        calculateRegularRowAmount(row);
+    }
+
     addRegularItemTableBody?.addEventListener('input', (e) => {
         if (e.target.classList.contains('item-qty')) {
             calculateRegularRowAmount(e.target.closest('.modal-item-row'));
@@ -327,28 +352,73 @@ document.addEventListener('DOMContentLoaded', () => {
         const manualId = activeCard ? activeCard.dataset.manualId : null;
 
         if (manualId) {
+            // ── 수기 명세서 편집 ──
             addModalMode = 'manual';
             addModalManualId = manualId;
-            document.getElementById('add-modal-title').textContent = `${activeCard.querySelector('strong').textContent}에 품목 추가`;
+            document.getElementById('add-modal-title').textContent = `${activeCard.querySelector('strong').textContent} 수정`;
             document.getElementById('add-regular-section').style.display = 'none';
             document.getElementById('add-manual-section').style.display = '';
+
+            const res = await fetch('/logis/order/manual/items', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({manualId})
+            });
+            const list = (await res.json()).response || [];
+
+            addItemTableBody.innerHTML = '';
+            if (list.length === 0) {
+                addItemTableBody.appendChild(createAddItemRow());
+            } else {
+                list.forEach((item) => {
+                    const row = createAddItemRow();
+                    row.querySelector('.item-order-date').value = item.orderDate || '';
+                    row.querySelector('.item-name').value = item.classKey || '';
+                    row.querySelector('.item-spec').value = item.unitKey || '';
+                    row.querySelector('.item-qty').value = item.qty || '';
+                    row.querySelector('.item-price').value = item.price || '';
+                    row.querySelector('.item-note').value = item.note || '';
+                    row.querySelector('.item-approve-date').value = item.approveDate || '';
+                    calculateAddRowAmount(row);
+                    addItemTableBody.appendChild(row);
+                });
+            }
+            calculateAddTotalAmount();
         } else {
+            // ── 정기 주문 명세서 편집 ──
             addModalMode = 'regular';
             addModalManualId = null;
-            document.getElementById('add-modal-title').textContent = '정기 주문 명세서에 품목 추가';
+            document.getElementById('add-modal-title').textContent = '정기 주문 명세서 수정';
             document.getElementById('add-manual-section').style.display = 'none';
             document.getElementById('add-regular-section').style.display = '';
 
-            const res = await fetch('/logis/order/manual-add/options', {
+            const [year, month] = monthPicker.value.split('-');
+
+            const optRes = await fetch('/logis/order/manual-add/options', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({centerCode})
             });
-            const data = await res.json();
-            regularOptionsCache = data.response;
+            regularOptionsCache = (await optRes.json()).response;
+
+            const listRes = await fetch('/logis/order/reorder/sugi-list', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({year, month, centerCode})
+            });
+            const list = (await listRes.json()).response || [];
 
             addRegularItemTableBody.innerHTML = '';
-            addRegularItemTableBody.appendChild(createRegularItemRow());
+            if (list.length === 0) {
+                addRegularItemTableBody.appendChild(createRegularItemRow());
+            } else {
+                for (const item of list) {
+                    const row = createRegularItemRow();
+                    addRegularItemTableBody.appendChild(row);
+                    await fillRegularRow(row, item);
+                }
+            }
+            calculateRegularTotalAmount();
         }
 
         orderAddModal.classList.add('show');
@@ -441,12 +511,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 .filter((item) => item.classKey && item.unitKey && item.qty && item.userCode);
 
             if (items.length === 0) {
-                alert('품목을 한 건 이상 입력해주세요.');
-                return;
+                if (!confirm('입력된 품목이 없습니다. 기존 추가분을 모두 삭제하시겠습니까?')) return;
             }
 
             try {
-                const res = await fetch('/logis/order/reorder/manual-add', {
+                const res = await fetch('/logis/order/reorder/manual-replace', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({year, month, centerCode, items})
@@ -454,14 +523,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('정기 주문 명세서에 추가되었습니다.');
+                    alert('정기 주문 명세서가 수정되었습니다.');
                     orderAddModal.classList.remove('show');
                     fetchReorderList();
                 } else {
-                    alert('추가에 실패했습니다.');
+                    alert('수정에 실패했습니다.');
                 }
             } catch (e) {
-                alert('추가 중 오류가 발생했습니다.');
+                alert('수정 중 오류가 발생했습니다.');
             }
         } else {
             const items = Array.from(addItemTableBody.querySelectorAll('.modal-item-row'))
@@ -483,27 +552,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const res = await fetch('/logis/order/manual/items/add', {
+                const editedId = addModalManualId;
+                const res = await fetch('/logis/order/manual/items/replace', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({manualId: addModalManualId, items})
+                    body: JSON.stringify({manualId: editedId, items})
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('수기 명세서에 추가되었습니다.');
+                    alert('수기 명세서가 수정되었습니다.');
                     orderAddModal.classList.remove('show');
-                    fetchManualList();
+
+                    await fetchManualList();
+                    const card = statementTabs.querySelector(`.statement-card[data-manual-id="${editedId}"]`);
+                    if (card) {
+                        statementTabs.querySelectorAll('.statement-card').forEach((c) => c.classList.remove('active'));
+                        card.classList.add('active');
+                        fetchManualInvoice(editedId, card.querySelector('strong').textContent, card.querySelector('p').textContent);
+                    }
                 } else {
-                    alert('추가에 실패했습니다.');
+                    alert('수정에 실패했습니다.');
                 }
             } catch (e) {
-                alert('추가 중 오류가 발생했습니다.');
+                alert('수정 중 오류가 발생했습니다.');
             }
         }
     });
-
-    // add-modal-save-btn 저장 로직은 두 갈래 정해지면 이어서 작성
 
     // ────────────────────────────────────────
     // 명세서 탭 (정기 + 수기)

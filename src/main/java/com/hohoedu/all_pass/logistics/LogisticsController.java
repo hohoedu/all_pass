@@ -100,5 +100,22 @@ public class LogisticsController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/order/manual/items/replace")
+    public ResponseEntity<?> replaceManualItems(@RequestBody LogisReqDTO.ManualItemAddReqDTO req) {
+        logisticsService.replaceManualItems(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
+    @PostMapping("/order/reorder/sugi-list")
+    public ResponseEntity<?> getReorderSugiList(@RequestBody LogisReqDTO.ReorderManualAddReqDTO req) {
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getReorderSugiItems(req)));
+    }
+
+    @PostMapping("/order/reorder/manual-replace")
+    public ResponseEntity<?> replaceReorderManualAdd(@RequestBody LogisReqDTO.ReorderManualAddReqDTO req) {
+        logisticsService.replaceReorderManualAdd(req);
+        return ResponseEntity.ok(ApiUtils.success(null));
+    }
+
 
 }

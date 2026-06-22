@@ -253,4 +253,35 @@ public class LogisticsService {
         logisticsRepository.deleteManualItemsByManualId(manualId);
         logisticsRepository.deleteManualByManualId(manualId);
     }
+
+    // ── 수기 ──
+    @Transactional
+    public void replaceManualItems(LogisReqDTO.ManualItemAddReqDTO req) {
+        logisticsRepository.deleteManualItemsByManualId(req.getManualId());
+
+        if (req.getItems() != null) {
+            for (LogisReqDTO.OrderManualSaveReqDTO.OrderManualItemDTO item : req.getItems()) {
+                logisticsRepository.insertOrderManualItem(req.getManualId(), item);
+            }
+        }
+
+        logisticsRepository.updateManualTotalByManualId(req.getManualId());
+    }
+
+    // ── 정기 로드 ──
+    public List<LogisRespDTO.ReorderSugiItemDTO> getReorderSugiItems(LogisReqDTO.ReorderManualAddReqDTO req) {
+        return logisticsRepository.selectReorderSugiItems(req.getYear(), req.getMonth(), req.getCenterCode());
+    }
+
+    // ── 정기 교체 ──
+    @Transactional
+    public void replaceReorderManualAdd(LogisReqDTO.ReorderManualAddReqDTO req) {
+        logisticsRepository.deleteReorderSugiByCenterMonth(req.getYear(), req.getMonth(), req.getCenterCode());
+
+        if (req.getItems() != null) {
+            for (LogisReqDTO.ReorderManualAddReqDTO.ReorderAddItemDTO item : req.getItems()) {
+                logisticsRepository.insertReorderManualAdd(item, req.getCenterCode(), req.getYear(), req.getMonth());
+            }
+        }
+    }
 }

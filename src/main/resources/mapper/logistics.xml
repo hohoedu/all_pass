@@ -538,26 +538,23 @@
     <insert id="insertOrderManual">
         INSERT INTO erp_order_manual
             (yy, mm, title, center_code, writer_name, total_amount, manual_id, created_at)
-        VALUES
-            (#{dto.yy}, #{dto.mm}, #{dto.title}, #{dto.centerCode}, #{dto.writerName}, #{dto.totalAmount}, #{manualId}, GETDATE())
+        VALUES (#{dto.yy}, #{dto.mm}, #{dto.title}, #{dto.centerCode}, #{dto.writerName}, #{dto.totalAmount}, #{manualId}, GETDATE())
     </insert>
 
     <insert id="insertOrderManualItem">
         INSERT INTO erp_order_manual_item
             (manual_id, order_date, class_key, unit_key, qty, price, amount, note, approve_date, created_at)
-        VALUES
-            (#{manualId}, #{item.orderDate}, #{item.classKey}, #{item.unitKey}, #{item.qty}, #{item.price}, #{item.amount}, #{item.note}, #{item.approveDate}, GETDATE())
+        VALUES (#{manualId}, #{item.orderDate}, #{item.classKey}, #{item.unitKey}, #{item.qty}, #{item.price}, #{item.amount}, #{item.note}, #{item.approveDate}, GETDATE())
     </insert>
 
 
     <select id="selectManualList" resultType="map">
-        SELECT
-            m.manual_id    AS manualId,
-            m.title        AS title,
-            m.yy           AS yy,
-            m.mm           AS mm,
-            m.total_amount AS totalAmount,
-            COUNT(i.id)    AS itemCount
+        SELECT m.manual_id    AS manualId,
+               m.title        AS title,
+               m.yy           AS yy,
+               m.mm           AS mm,
+               m.total_amount AS totalAmount,
+               COUNT(i.id)    AS itemCount
         FROM erp_order_manual m
                  LEFT JOIN erp_order_manual_item i ON i.manual_id = m.manual_id
         WHERE m.yy = #{year}
@@ -568,14 +565,14 @@
     </select>
 
     <select id="selectManualItems" resultType="map">
-        SELECT
-            order_date AS orderDate,
-            class_key  AS classKey,
-            unit_key   AS unitKey,
-            qty        AS qty,
-            price      AS price,
-            amount     AS amount,
-            note       AS note
+        SELECT order_date   AS orderDate,
+               class_key    AS classKey,
+               unit_key     AS unitKey,
+               qty          AS qty,
+               price        AS price,
+               amount       AS amount,
+               note         AS note,
+               approve_date AS approveDate
         FROM erp_order_manual_item
         WHERE manual_id = #{manualId}
         ORDER BY id
@@ -597,9 +594,8 @@
 
     <insert id="insertReorderManualAdd">
         INSERT INTO erp_reorder
-            (reorder_type, user_code, class_key, unit_key, count, confirmed, center_code, yy, mm, reason, created_at, sugi)
-        VALUES
-            ('ADD', #{item.userCode}, #{item.classKey}, #{item.unitKey}, #{item.qty}, 'checked', #{centerCode}, #{year}, #{month}, #{item.reason}, GETDATE(), 'Y')
+        (reorder_type, user_code, class_key, unit_key, count, confirmed, center_code, yy, mm, reason, created_at, sugi)
+        VALUES ('ADD', #{item.userCode}, #{item.classKey}, #{item.unitKey}, #{item.qty}, 'checked', #{centerCode}, #{year}, #{month}, #{item.reason}, GETDATE(), 'Y')
     </insert>
 
     <select id="selectManualHeaderByManualId" resultType="map">
@@ -616,12 +612,47 @@
 
 
     <delete id="deleteManualItemsByManualId">
-        DELETE FROM erp_order_manual_item
+        DELETE
+        FROM erp_order_manual_item
         WHERE manual_id = #{manualId}
     </delete>
 
     <delete id="deleteManualByManualId">
-        DELETE FROM erp_order_manual
+        DELETE
+        FROM erp_order_manual
         WHERE manual_id = #{manualId}
+    </delete>
+
+    <update id="updateManualTotalByManualId">
+        UPDATE erp_order_manual
+        SET total_amount = ISNULL((SELECT SUM(TRY_CAST(NULLIF(amount, '') AS INT))
+                                   FROM erp_order_manual_item
+                                   WHERE manual_id = #{manualId}), 0),
+            updated_at   = GETDATE()
+        WHERE manual_id = #{manualId}
+    </update>
+
+    <select id="selectReorderSugiItems"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderSugiItemDTO">
+        SELECT class_key AS classKey,
+               unit_key  AS unitKey,
+               count     AS qty,
+               user_code AS userCode,
+               reason    AS reason
+        FROM erp_reorder
+        WHERE center_code = #{centerCode}
+          AND yy = #{year}
+          AND mm = #{month}
+          AND sugi = 'Y'
+        ORDER BY id
+    </select>
+
+    <delete id="deleteReorderSugiByCenterMonth">
+        DELETE
+        FROM erp_reorder
+        WHERE center_code = #{centerCode}
+          AND yy = #{year}
+          AND mm = #{month}
+          AND sugi = 'Y'
     </delete>
 </mapper>

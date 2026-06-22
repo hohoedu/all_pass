@@ -93,4 +93,13 @@ public class LogisRespDTO {
         }
     }
 
+
+    @Data
+    public static class ReorderSugiItemDTO {
+        private String classKey;
+        private String unitKey;
+        private String qty;
+        private String userCode;
+        private String reason;
+    }
 }

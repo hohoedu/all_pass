@@ -85,4 +85,16 @@ public interface LogisticsRepository {
     void deleteManualItemsByManualId(@Param("manualId") String manualId);
 
     void deleteManualByManualId(@Param("manualId") String manualId);
+    
+    void updateManualTotalByManualId(@Param("manualId") String manualId);
+
+    List<LogisRespDTO.ReorderSugiItemDTO> selectReorderSugiItems(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode);
+
+    void deleteReorderSugiByCenterMonth(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode);
 }
