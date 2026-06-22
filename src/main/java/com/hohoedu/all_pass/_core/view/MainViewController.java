@@ -1,6 +1,5 @@
 package com.hohoedu.all_pass._core.view;
 
-import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.center.CenterService;
 import com.hohoedu.all_pass.center._dto.CenterRespDTO.PointDTO;
 import com.hohoedu.all_pass.class_instance.ClassService;
@@ -8,8 +7,6 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
-import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
-import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
 import com.hohoedu.all_pass.student.StudentService;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.User;
@@ -19,7 +16,6 @@ import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,9 +42,8 @@ public class MainViewController {
     private final StudentService studentService;
     private final CenterService centerService;
     private final UserService userService;
-    private final SecondaryLogisticsRepository testRepository;
 
-    @GetMapping({"/", "/home"})
+    @GetMapping({ "/", "/home" })
     public String getIndexPage(HttpSession session, Model model) {
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -80,7 +75,7 @@ public class MainViewController {
         return "index";
     }
 
-    @GetMapping({"/admin", "/login"})
+    @GetMapping({ "/admin", "/login" })
     public String getLoginPage() {
         return "login";
     }

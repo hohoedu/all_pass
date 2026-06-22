@@ -1,8 +1,6 @@
 package com.hohoedu.all_pass.consult._dto;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 public class ConsultReqDTO {
 
@@ -45,7 +43,6 @@ public class ConsultReqDTO {
         private String keyword;
         private String centerCode;
     }
-
 
     @Data
     public static class ConsultMemoUpdateReqDTO {

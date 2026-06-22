@@ -3,13 +3,9 @@ package com.hohoedu.all_pass._core.view;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import com.hohoedu.all_pass.consult._dto.ConsultReqDTO;
-import com.hohoedu.all_pass.user.User;
-import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,8 +26,6 @@ import com.hohoedu.all_pass.student.model.GradeCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
-
 @Controller
 @RequestMapping("/consult")
 @RequiredArgsConstructor
@@ -39,7 +33,6 @@ public class ConsultViewController {
 
     private final StudentService studentService;
     private final ConsultService consultService;
-    private final UserService userService;
 
     @GetMapping("consult_v2")
     public String getConsultV2Page(Model model, HttpServletRequest request, HttpSession session) {
@@ -78,9 +71,11 @@ public class ConsultViewController {
             HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
-        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword, sortColumn, sortDir);
+        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword,
+                sortColumn, sortDir);
         List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
         model.addAttribute("consults", consults);
@@ -102,9 +97,13 @@ public class ConsultViewController {
             HttpSession session, HttpServletResponse response) throws IOException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) { response.sendRedirect("/login"); return; }
+        if (user == null) {
+            response.sendRedirect("/login");
+            return;
+        }
 
-        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword, sortColumn, sortDir);
+        ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword,
+                sortColumn, sortDir);
         List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
         String fileName = URLEncoder.encode(
@@ -137,7 +136,7 @@ public class ConsultViewController {
         memoStyle.setWrapText(true);
         setBorder(memoStyle);
 
-        String[] headers = {"No", "일자", "이름", "학교", "학년", "연락처", "메모사항", "유입경로", "진행상황", "발송/입회일"};
+        String[] headers = { "No", "일자", "이름", "학교", "학년", "연락처", "메모사항", "유입경로", "진행상황", "발송/입회일" };
         Row headerRow = sheet.createRow(0);
         headerRow.setHeight((short) 500);
         for (int i = 0; i < headers.length; i++) {
@@ -151,20 +150,21 @@ public class ConsultViewController {
             Row row = sheet.createRow(rowNum);
             row.setHeight((short) -1);
             createCell(row, 0, String.valueOf(rowNum), centerStyle);
-            createCell(row, 1, c.getConsultDate(),     centerStyle);
-            createCell(row, 2, c.getStudentName(),     centerStyle);
-            createCell(row, 3, c.getSchool(),          centerStyle);
-            createCell(row, 4, c.getGradeName(),       centerStyle);
-            createCell(row, 5, c.getPhone(),           centerStyle);
-            createCell(row, 6, c.getContent(),         memoStyle);
+            createCell(row, 1, c.getConsultDate(), centerStyle);
+            createCell(row, 2, c.getStudentName(), centerStyle);
+            createCell(row, 3, c.getSchool(), centerStyle);
+            createCell(row, 4, c.getGradeName(), centerStyle);
+            createCell(row, 5, c.getPhone(), centerStyle);
+            createCell(row, 6, c.getContent(), memoStyle);
             createCell(row, 7, c.getInflowRouteName(), centerStyle);
-            createCell(row, 8, c.getProgressName(),    centerStyle);
+            createCell(row, 8, c.getProgressName(), centerStyle);
             createCell(row, 9, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
             rowNum++;
         }
 
-        int[] colWidths = {2000, 4000, 3000, 5000, 3000, 5000, 12000, 4000, 4000, 5000};
-        for (int i = 0; i < colWidths.length; i++) sheet.setColumnWidth(i, colWidths[i]);
+        int[] colWidths = { 2000, 4000, 3000, 5000, 3000, 5000, 12000, 4000, 4000, 5000 };
+        for (int i = 0; i < colWidths.length; i++)
+            sheet.setColumnWidth(i, colWidths[i]);
 
         workbook.write(response.getOutputStream());
         workbook.close();

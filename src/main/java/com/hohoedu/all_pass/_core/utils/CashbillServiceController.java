@@ -4,7 +4,8 @@ import com.popbill.api.CBIssueResponse;
 import com.popbill.api.CashbillService;
 import com.popbill.api.PopbillException;
 import com.popbill.api.cashbill.Cashbill;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 @RequestMapping(value = "CashbillService")
+@RequiredArgsConstructor
 public class CashbillServiceController {
 
-    @Autowired
-    private CashbillService cashbillService;
+    private final CashbillService cashbillService;
 
     @RequestMapping(value = "registIssue", method = RequestMethod.GET)
     public String registIssue(Model m) {

@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
-import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

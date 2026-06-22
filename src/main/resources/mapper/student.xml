@@ -200,7 +200,9 @@
         WHERE s.center_code = #{centerCode}
           AND s.status_key ='ACTIVE'
           AND (ta.assign_han_teacher = #{userCode}
-           OR ta.assign_book_teacher = #{userCode})
+           OR ta.assign_book_teacher = #{userCode}
+           OR ta.pending_han_teacher = #{userCode}
+           OR ta.pending_book_teacher = #{userCode})
           AND (
             reg.registeredClassTypes IS NULL
            OR (

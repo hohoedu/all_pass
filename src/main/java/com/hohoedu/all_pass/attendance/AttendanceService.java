@@ -1,20 +1,12 @@
 package com.hohoedu.all_pass.attendance;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ScheduleRunResultDTO;
-import com.hohoedu.all_pass.attendance._dto.AttendanceRespDTO.ProcessedClassDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,12 +19,11 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final ClassRepository classRepository;
 
-
-    public List<ClassRespDTO.ClassWeekInfoDTO> executeScheduledAttendance(String today, String dayname, String nowHHmm) {
+    public List<ClassRespDTO.ClassWeekInfoDTO> executeScheduledAttendance(String today, String dayname,
+            String nowHHmm) {
 
         // 1. 오늘 날짜에 맞는 수업 주차를 찾고 수업의 년월을 구하기
         List<ClassRespDTO.ClassWeekInfoDTO> weekInfoList = classRepository.findWeekInfoAllCenters(today, dayname);
-
 
         for (ClassRespDTO.ClassWeekInfoDTO weekInfo : weekInfoList) {
             // 2. 센터별 종료된 수업 찾기
@@ -75,4 +66,3 @@ public class AttendanceService {
     }
 
 }
-

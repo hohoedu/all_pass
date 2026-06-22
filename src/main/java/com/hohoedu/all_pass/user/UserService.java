@@ -54,7 +54,7 @@ public class UserService {
 
     public List<User> findActiveUser(LoginRespDTO dto) {
         List<User> user = userRepository.findAllUserCode(dto.getCenterCode());
-        
+
         return user.stream()
                 .filter(u -> Boolean.TRUE.equals(u.getIsHan()) || Boolean.TRUE.equals(u.getIsBook()))
                 .collect(Collectors.toList());

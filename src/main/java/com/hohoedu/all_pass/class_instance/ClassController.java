@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.api.Http;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -78,12 +77,14 @@ public class ClassController {
 
     // 시간표 등록
     @PostMapping("/register")
-    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO, HttpSession session) {
+    public ResponseEntity<?> registerClass(@RequestBody List<ClassReqDTO.ClassRegisterDTO> reqDTO,
+            HttpSession session) {
         try {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-            if (user == null) return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
+            if (user == null)
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .header(HttpHeaders.LOCATION, "/login")
+                        .build();
 
             String msg = null;
             for (ClassReqDTO.ClassRegisterDTO req : reqDTO) {
@@ -106,7 +107,7 @@ public class ClassController {
     @PostMapping("/add_student")
     @ResponseBody
     public ResponseEntity<?> timeTableAssginStudent(HttpSession session,
-                                                    @RequestBody ClassReqDTO.AddStudentList reqDTO) {
+            @RequestBody ClassReqDTO.AddStudentList reqDTO) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -216,9 +217,10 @@ public class ClassController {
     @PostMapping("/api/delete/timetable/row")
     public ResponseEntity<?> deleteRow(@RequestBody ClassReqDTO.DeleteTimeTableDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, "/login")
-                .build();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
 
         String msg = classService.deleteTimeTableRow(dto.getTimeTableKey(), user.getUserCode());
         return ResponseEntity.ok(ApiUtils.success(msg));
@@ -296,8 +298,7 @@ public class ClassController {
                 dto.getUnitKey(),
                 dto.getWeek(),
                 dto.getTimeTableKey(),
-                user.getCenterCode()
-        );
+                user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(response));
     }
 
@@ -313,8 +314,7 @@ public class ClassController {
         }
 
         ClassRespDTO.BeforeAllCountRespDTO result = classService.countAllBeforeClassStudents(
-                dto.getDate(), dto.getUserCode(), user.getCenterCode()
-        );
+                dto.getDate(), dto.getUserCode(), user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
@@ -330,15 +330,14 @@ public class ClassController {
         }
 
         ClassRespDTO.BeforeAllSendRespDTO result = classService.sendAllBeforeClassNotice(
-                dto.getDate(), dto.getUserCode(), user.getCenterCode()
-        );
+                dto.getDate(), dto.getUserCode(), user.getCenterCode());
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
-
     // 알림 발송 이후 내용 저장
     @PostMapping("/api/before-notice/insert")
-    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList, HttpSession session) {
+    public ResponseEntity<?> insertBeforeClassNotice(@RequestBody List<ClassReqDTO.BeforeClassNoticeDTO> dtoList,
+            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
@@ -369,7 +368,7 @@ public class ClassController {
 
     @PostMapping("/api/after-notice/insert")
     public ResponseEntity<?> insertAfterClassNotice(@RequestBody List<ClassReqDTO.AfterClassNoticeDTO> dtoList,
-                                                    HttpSession session) {
+            HttpSession session) {
         log.info(dtoList.get(0).getWord());
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -431,7 +430,8 @@ public class ClassController {
                 : user.getUserCode();
 
         List<RemedialDTO> remedials = classService.findRemedialByUserNo(dto.getYear(), dto.getMonth(), userCode);
-        List<ClassRespDTO.AbsentFlagDTO> absentFlags = classService.findAbsentFlags(dto.getYear(), dto.getMonth(), userCode);
+        List<ClassRespDTO.AbsentFlagDTO> absentFlags = classService.findAbsentFlags(dto.getYear(), dto.getMonth(),
+                userCode);
 
         Map<String, Object> result = new HashMap<>();
         result.put("remedials", remedials);
@@ -442,9 +442,9 @@ public class ClassController {
 
     @PostMapping("/remedial/update")
     public ResponseEntity<?> updateRemedial(@RequestBody UpdateRemedialDTO dto,
-                                            @RequestParam(value = "year") String year,
-                                            @RequestParam(value = "month") String month,
-                                            HttpSession session) {
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month,
+            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 

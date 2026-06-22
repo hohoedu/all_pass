@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.handler.exception.AppRestfulException;
-import com.hohoedu.all_pass._core.handler.exception.CustomRestfulException;
 import com.hohoedu.all_pass._core.handler.exception.DuplicateStudentException;
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass._core.utils.KeyGenerator;
@@ -29,7 +28,6 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;

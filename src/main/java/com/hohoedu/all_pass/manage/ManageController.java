@@ -3,7 +3,6 @@ package com.hohoedu.all_pass.manage;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
-import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -171,7 +170,7 @@ public class ManageController {
 
     @PostMapping("/fee/insert")
     public ResponseEntity<?> insertClassFeeMap(@RequestBody ManageReqDTO.InsertClassFeeDTO reqDTO,
-                                               HttpSession session) {
+            HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -209,7 +208,7 @@ public class ManageController {
 
     @PostMapping("/teacher/{userCode}/permission")
     public ResponseEntity<?> getTeacherPermission(@PathVariable String userCode,
-                                                  @RequestBody ManageReqDTO.PermissionReqDTO dto, HttpSession session) {
+            @RequestBody ManageReqDTO.PermissionReqDTO dto, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {

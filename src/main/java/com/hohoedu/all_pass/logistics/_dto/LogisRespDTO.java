@@ -2,7 +2,6 @@ package com.hohoedu.all_pass.logistics._dto;
 
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -15,16 +14,16 @@ public class LogisRespDTO {
     }
 
     @Data
-    public static class ReorderStatusDTO{
+    public static class ReorderStatusDTO {
         private String centerCode;
         private int requestCount;
         private boolean confirmed;
     }
 
     @Data
-    public static class SelectCenterDTO{
+    public static class SelectCenterDTO {
         private List<ReorderListDTO> reorderList;
-        private List<SummaryInvoiceDTO>  summaryInvoice;
+        private List<SummaryInvoiceDTO> summaryInvoice;
         private CenterInfoDTO centerInfo;
 
         @Data
@@ -59,8 +58,6 @@ public class LogisRespDTO {
         }
     }
 
-
-
     @Data
     public static class InvoiceDTO {
         private String rowType;
@@ -92,7 +89,6 @@ public class LogisRespDTO {
             private int timeTableCount;
         }
     }
-
 
     @Data
     public static class ReorderSugiItemDTO {

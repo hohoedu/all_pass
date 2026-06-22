@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -43,7 +42,8 @@ public class ConsultController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> createConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> createConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -59,7 +59,8 @@ public class ConsultController {
     }
 
     @PostMapping("/modal/search")
-    public ResponseEntity<?> searchModalConsult(@RequestBody ConsultReqDTO.ConsultModalReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> searchModalConsult(@RequestBody ConsultReqDTO.ConsultModalReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -74,9 +75,11 @@ public class ConsultController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> updateConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> updateConsult(@RequestBody ConsultReqDTO.ConsultRegisterReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
 
         reqDTO.setCenterCode(user.getCenterCode());
         reqDTO.setUserCode(user.getUserCode());
@@ -85,7 +88,8 @@ public class ConsultController {
     }
 
     @PostMapping("/update-progress")
-    public ResponseEntity<?> updateProgress(@RequestBody ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> updateProgress(@RequestBody ConsultReqDTO.ConsultUpdateProgressReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
 
         if (user == null) {
@@ -99,13 +103,14 @@ public class ConsultController {
     }
 
     @PostMapping("/update-memo")
-    public ResponseEntity<?> updateMemo(@RequestBody ConsultReqDTO.ConsultMemoUpdateReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> updateMemo(@RequestBody ConsultReqDTO.ConsultMemoUpdateReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
 
         consultService.updateConsultContent(reqDTO.getId(), reqDTO.getContent());
         return ResponseEntity.ok(ApiUtils.success(null));
     }
-
 
 }

@@ -1,7 +1,6 @@
 package com.hohoedu.all_pass.logistics._dto;
 
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.List;
 
@@ -26,7 +25,7 @@ public class LogisReqDTO {
     public static class AggregateReqDTO {
         private String year;
         private String month;
-        private String segmentType;       // "전체 집계" | "센터별 집계" | "센터별 선생님 집계"
+        private String segmentType; // "전체 집계" | "센터별 집계" | "센터별 선생님 집계"
         private List<String> centerCodes;
     }
 
@@ -38,7 +37,7 @@ public class LogisReqDTO {
     }
 
     @Data
-    public static class OrderManualSaveReqDTO{
+    public static class OrderManualSaveReqDTO {
         private String yy;
         private String mm;
         private String title;

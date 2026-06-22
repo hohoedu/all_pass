@@ -2,10 +2,10 @@ package com.hohoedu.all_pass._core.utils;
 
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -18,10 +18,10 @@ import java.sql.PreparedStatement;
 @Slf4j
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class SessionContextAop {
 
-    @Autowired
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     @Before("@annotation(org.springframework.transaction.annotation.Transactional)")
     public void setSessionContext() {

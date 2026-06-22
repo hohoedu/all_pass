@@ -13,7 +13,6 @@ import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppReqDTO;
 import com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO;
 import com.hohoedu.all_pass.class_instance.model.*;
-import com.hohoedu.all_pass.manage.ManageService;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.manage.repository.ManageRepository;
