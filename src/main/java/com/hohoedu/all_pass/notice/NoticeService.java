@@ -35,6 +35,12 @@ public class NoticeService {
         dto.setViewCount(0);
         int result = noticeRepository.insertCenterNotice(dto);
 
+        if (dto.getStudentIds() != null && !dto.getStudentIds().isEmpty()) {
+            for (String studentId : dto.getStudentIds()) {
+                noticeRepository.insertRemedialNoticeMap(dto.getCenterNoticeKey(), studentId);
+            }
+        }
+
         if (dto.getTokens() != null && !dto.getTokens().isEmpty()) {
             // HTML 태그 제거
             String message = dto.getContent().replaceAll("<[^>]*>", "");
@@ -57,16 +63,13 @@ public class NoticeService {
         return result;
     }
 
-    public List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(UserRespDTO.LoginRespDTO user) {
-
-
-        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeRepository.findCenterNoticeByCenterCode(user.getCenterCode(), user.getUserCode())
-                .stream()
-                .peek(dto -> dto.setCleanContent(sanitizeHtml(dto.getRawContent())))
-                .toList();
-        return noticeList;
-
-    }
+    public List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(UserRespDTO.LoginRespDTO user, boolean myOnly) {
+    String userCode = myOnly ? user.getUserCode() : null;
+    return noticeRepository.findCenterNoticeByCenterCode(user.getCenterCode(), userCode)
+            .stream()
+            .peek(dto -> dto.setCleanContent(sanitizeHtml(dto.getRawContent())))
+            .toList();
+}
 
     public int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO) {
         return noticeRepository.updateCenterNotice(noticeDTO);
@@ -77,12 +80,13 @@ public class NoticeService {
     }
 
     public List<NoticeRespDTO.NoticeStudentDTO> findStudentByUserCode(UserRespDTO.LoginRespDTO user) {
-        return noticeRepository.findStudentByUserCode(user.getUserCode(), user.getCenterCode());
+        return noticeRepository.findStudentByCenterCode(user.getCenterCode());
     }
 
     public NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(UserRespDTO.LoginRespDTO user, Integer id) {
 
-        NoticeRespDTO.CenterNoticeDetailDTO notice = noticeRepository.findCenterNoticeByNoticeId(user.getCenterCode(), id);
+        NoticeRespDTO.CenterNoticeDetailDTO notice = noticeRepository.findCenterNoticeByNoticeId(user.getCenterCode(),
+                id);
         notice.setCleanContent(sanitizeHtml(notice.getRawContent()));
         return notice;
     }
@@ -102,8 +106,7 @@ public class NoticeService {
 
             if (sdate != null) {
                 LocalDateTime date = LocalDateTime.parse(sdate, oldFormatter);
-                n.setSdate(date.format(newFormatter)
-                );
+                n.setSdate(date.format(newFormatter));
             }
         }).toList();
 

@@ -20,14 +20,15 @@ public class NoticeRespDTO {
         private Integer viewCount;
         private Timestamp createdAt;
         private String userName;
+        private String userCode;
 
         public static String sanitizeHtml(String html) {
-            if (html == null) return "";
+            if (html == null)
+                return "";
             return html.replaceAll("<[^>]*>", " ");
         }
 
     }
-
 
     @Data
     public static class CenterNoticeDetailDTO {
@@ -43,9 +44,9 @@ public class NoticeRespDTO {
         private Timestamp createdAt;
         private String userName;
 
-
         public static String sanitizeHtml(String html) {
-            if (html == null) return "";
+            if (html == null)
+                return "";
             // 허용할 태그만 직접 지정 가능 (단순 예시)
             return html.replaceAll("<[^>]*>", " ");
         }
@@ -65,8 +66,10 @@ public class NoticeRespDTO {
         public String getSubject() {
             if (hanClassName != null && bookClassName != null)
                 return hanClassName + ", " + bookClassName;
-            if (hanClassName != null) return hanClassName;
-            if (bookClassName != null) return bookClassName;
+            if (hanClassName != null)
+                return hanClassName;
+            if (bookClassName != null)
+                return bookClassName;
             return "";
         }
     }

@@ -1,142 +1,150 @@
 <script src="https://kit.fontawesome.com/180a7620c6.js" crossorigin="anonymous"></script>
 
 <aside class="sidebar" th:fragment="sidebar">
-    <div class="sidebar-frame">
-        <div class="sidebar-left">
-            <div class="sidebar-con">
-                <div class="left-top">
-                    <div class="sidebar-item">
-                        <a th:href="@{/index}" class="home-back" data-target="dashboard">
-                            <img th:src="@{/image/hoho-icon.png}" alt="">
-                        </a>
-                    </div>
-                    <div class="sidebar-item">
-                        <a th:href="@{/main}" class="menu-toggle" data-target="dashboard">
-                            <img th:src="@{/image/menu-icon.png}" alt=""><span>대시보드</span>
-                        </a>
-                    </div>
-                    <div class="sidebar-item"
-                         th:if="${session.readableMenus != null and session.readableMenus.contains('student')}">
-                        <a href="#" class="menu-toggle" data-target="student">
-                            <img th:src="@{/image/menu-icon1.png}" alt=""><span>학생관리</span>
-                            <div class="icon-dot" th:if="${session.hasPendingStudent}">●</div>
-                        </a>
-                    </div>
-                    <div class="sidebar-item"
-                         th:if="${session.readableMenus != null and session.readableMenus.contains('class')}">
-                        <a href="#" class="menu-toggle" data-target="class">
-                            <img th:src="@{/image/menu-icon2.png}" alt=""><span>수업관리</span>
-                        </a>
-                    </div>
-                    <div class="sidebar-item"
-                         th:if="${session.readableMenus != null and session.readableMenus.contains('consult')}">
-                        <a href="#" class="menu-toggle" data-target="consult">
-                            <img th:src="@{/image/menu-icon3.png}" alt=""><span>상담관리</span>
-                        </a>
-                    </div>
-                    <div class="sidebar-item"
-                         th:if="${session.readableMenus != null and session.readableMenus.contains('payment')}">
-                        <a href="#" class="menu-toggle" data-target="tuition">
-                            <img th:src="@{/image/menu-icon4.png}" alt=""><span>결제관리</span>
-                        </a>
-                    </div>
-                    <div class="sidebar-item"
-                         th:if="${session.readableMenus != null and session.readableMenus.contains('manage')}">
-                        <a href="#" class="menu-toggle" data-target="operation">
-                            <img th:src="@{/image/menu-icon5.png}" alt=""><span>운영관리</span>
-                        </a>
-                    </div>
-                </div>
-                <div class="left-bottom">
-                    <div class="sidebar-line"></div>
-                    <a href="/popbill/access-url" class="ecl-icon" target="_blank" rel="noopener noreferrer">
-                        <img th:src="@{/image/popbill.png}" width="30" height="30" alt="">
-                    </a>
-                    <a href="/pay/access-url" class="dokcl-icon" target="_blank" rel="noopener noreferrer">
-                        <img th:src="@{/image/payTeacher.png}" width="30" height="30" alt="">
-                    </a>
-                </div>
-            </div>
+  <div class="sidebar-frame">
+    <div class="sidebar-left">
+      <div class="sidebar-con">
+        <div class="left-top">
+          <div class="sidebar-item">
+            <a th:href="@{/index}" class="home-back" data-target="dashboard">
+              <img th:src="@{/image/hoho-icon.png}" alt="" />
+            </a>
+          </div>
+          <div class="sidebar-item">
+            <a th:href="@{/main}" class="menu-toggle" data-target="dashboard">
+              <img th:src="@{/image/menu-icon.png}" alt="" /><span>대시보드</span>
+            </a>
+          </div>
+          <div class="sidebar-item"
+            th:if="${session.readableMenus != null and session.readableMenus.contains('student')}">
+            <a href="#" class="menu-toggle" data-target="student">
+              <img th:src="@{/image/menu-icon1.png}" alt="" /><span>학생관리</span>
+              <div class="icon-dot" th:if="${session.hasPendingStudent}">●</div>
+            </a>
+          </div>
+          <div class="sidebar-item"
+            th:if="${session.readableMenus != null and session.readableMenus.contains('class')}">
+            <a href="#" class="menu-toggle" data-target="class">
+              <img th:src="@{/image/menu-icon2.png}" alt="" /><span>수업관리</span>
+            </a>
+          </div>
+          <div class="sidebar-item"
+            th:if="${session.readableMenus != null and session.readableMenus.contains('consult')}">
+            <a href="#" class="menu-toggle" data-target="consult">
+              <img th:src="@{/image/menu-icon3.png}" alt="" /><span>상담관리</span>
+            </a>
+          </div>
+          <div class="sidebar-item"
+            th:if="${session.readableMenus != null and session.readableMenus.contains('payment')}">
+            <a href="#" class="menu-toggle" data-target="tuition">
+              <img th:src="@{/image/menu-icon4.png}" alt="" /><span>결제관리</span>
+            </a>
+          </div>
+          <div class="sidebar-item"
+            th:if="${session.readableMenus != null and session.readableMenus.contains('manage')}">
+            <a href="#" class="menu-toggle" data-target="operation">
+              <img th:src="@{/image/menu-icon5.png}" alt="" /><span>운영관리</span>
+            </a>
+          </div>
         </div>
+        <div class="left-bottom">
+          <div class="sidebar-line"></div>
+          <a href="/popbill/access-url" class="ecl-icon" target="_blank" rel="noopener noreferrer">
+            <img th:src="@{/image/popbill.png}" width="30" height="30" alt="" />
+          </a>
+          <a href="/pay/access-url" class="dokcl-icon" target="_blank" rel="noopener noreferrer">
+            <img th:src="@{/image/payTeacher.png}" width="30" height="30" alt="" />
+          </a>
+        </div>
+      </div>
+    </div>
 
-        <div class="sidebar-right collapsed">
-            <div class="sub-frame">
-                <div class="submenu" data-menu="dashboard">
-                    <p>왼쪽 메뉴를<br> 클릭해주세요</p>
-                </div>
-                <div class="submenu" data-menu="student">
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_main')}"
-                       th:href="@{/student/main}" class="menu-link">학생 정보</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_new')}"
-                       th:href="@{/student/new}" class="menu-link">
-                        신규 입회
-                        <img th:if="${session.hasPendingStudent}" th:src="@{/image/icon-new.png}" class="icon-new">
-                    </a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_transfer')}"
-                       th:href="@{/student/transfer}" class="menu-link">전입/전출</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_withdrawal')}"
-                       th:href="@{/student/withdraw}" class="menu-link">입·탈퇴 현황</a>
-                </div>
-                <div class="submenu" data-menu="class">
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timetable')}"
-                       th:href="@{/class/timetable}" id="timetableLink" class="menu-link">시간표 등록</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')}"
-                       th:href="@{/class/timeview}" id="tableViewLink" class="menu-link">시간표 조회</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_record')}"
-                       th:href="@{/class/record}" class="menu-link">수업 일지</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_remedial')}"
-                       th:href="@{/class/remedial}" id="remedial" class="menu-link">보강 관리</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_monthly')}"
-                       th:href="@{/class/monthly}" class="menu-link">월간평가(초등)</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_infant')}"
-                       th:href="@{/class/infant}" class="menu-link">학습내용(유아)</a>
-                    <a th:if="${session.user.roleKey == 'ADMIN' 
+    <div class="sidebar-right collapsed">
+      <div class="sub-frame">
+        <div class="submenu" data-menu="dashboard">
+          <p>
+            왼쪽 메뉴를<br />
+            클릭해주세요
+          </p>
+        </div>
+        <div class="submenu" data-menu="student">
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_main')}"
+            th:href="@{/student/main}" class="menu-link">학생 정보</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_new')}"
+            th:href="@{/student/new}" class="menu-link">
+            신규 입회
+            <img th:if="${session.hasPendingStudent}" th:src="@{/image/icon-new.png}" class="icon-new" />
+          </a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_transfer')}"
+            th:href="@{/student/transfer}" class="menu-link">전입/전출</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_withdrawal')}"
+            th:href="@{/student/withdraw}" class="menu-link">입·탈퇴 현황</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('privacy_print')}"
+            th:href="@{/student/privacy-print}" class="menu-link">개인정보 동의서</a>
+        </div>
+        <div class="submenu" data-menu="class">
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timetable')}"
+            th:href="@{/class/timetable}" id="timetableLink" class="menu-link">시간표 등록</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timeview')}"
+            th:href="@{/class/timeview}" id="tableViewLink" class="menu-link">시간표 조회</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_record')}"
+            th:href="@{/class/record}" class="menu-link">수업 일지</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_remedial')}"
+            th:href="@{/class/remedial}" id="remedial" class="menu-link">보강 관리</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_monthly')}"
+            th:href="@{/class/monthly}" class="menu-link">월간평가(초등)</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_infant')}"
+            th:href="@{/class/infant}" class="menu-link">학습내용(유아)</a>
+          <a th:if="${session.user.roleKey == 'ADMIN' 
                                 and (
                                     session.user.centerCode == 'PUS002' 
                                     or session.user.centerCode == 'DAE001'
                                 )}" th:href="@{/class/edu-timeview}" class="menu-link">
-                        시간표 조회(교)
-                    </a>
-                </div>
-                <div class="submenu" data-menu="consult">
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"
-                       th:href="@{/consult/main}" class="menu-link">상담문의 기록</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_test')}"
-                       th:href="@{/consult/test}" class="menu-link">입회진단 테스트</a>
-                </div>
-                <div class="submenu" data-menu="tuition">
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('payment_edu')}"
-                       th:href="@{/pay/pay-edu}" id="payEduLink" class="menu-link">수강료 청구</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('payment_monthly')}"
-                       th:href="@{/pay/pay-list}" id="payListLink" class="menu-link">월별 결제 관리</a>
-                    <a th:if="${session.user.roleKey == 'ADMIN' and (session.user.centerCode == 'PUS002' or session.user.centerCode == 'DAE001')}"
-                       th:href="@{/pay/pay-receipt}" class="menu-link">매출 전표 출력</a>
-                </div>
-                <div class="submenu" data-menu="operation">
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_order')}"
-                       th:href="@{/manage/order}" id="orderLink" class="menu-link">교재 주문</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_reoder')}"
-                       th:href="@{/manage/reorder}" class="menu-link">교재 추가/반품</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_push')}"
-                       th:href="@{/manage/sms}" class="menu-link">앱 공지 관리</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_teacher')}"
-                       th:href="@{/manage/teacher}" class="menu-link">선생님 관리</a>
-                    <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_fee')}"
-                       th:href="@{/manage/tuition}" class="menu-link">수강료 관리</a>
-                </div>
-            </div>
+            시간표 조회(교)
+          </a>
         </div>
+        <div class="submenu" data-menu="consult">
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"
+            th:href="@{/consult/main}" class="menu-link">상담문의 기록</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_test')}"
+            th:href="@{/consult/test}" class="menu-link">입회진단 테스트</a>
+        </div>
+        <div class="submenu" data-menu="tuition">
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('payment_edu')}"
+            th:href="@{/pay/pay-edu}" id="payEduLink" class="menu-link">수강료 청구</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('payment_monthly')}"
+            th:href="@{/pay/pay-list}" id="payListLink" class="menu-link">월별 결제 관리</a>
+          <a th:if="${session.user.roleKey == 'ADMIN' and (session.user.centerCode == 'PUS002' or session.user.centerCode == 'DAE001')}"
+            th:href="@{/pay/pay-receipt}" class="menu-link">매출 전표 출력</a>
+        </div>
+        <div class="submenu" data-menu="operation">
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_order')}"
+            th:href="@{/manage/order}" id="orderLink" class="menu-link">교재 주문</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_reoder')}"
+            th:href="@{/manage/reorder}" class="menu-link">교재 추가/반품</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_push')}"
+            th:href="@{/manage/sms}" class="menu-link">앱 공지 관리</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_teacher')}"
+            th:href="@{/manage/teacher}" class="menu-link">선생님 관리</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('manage_fee')}"
+            th:href="@{/manage/tuition}" class="menu-link">수강료 관리</a>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- 확인 모달 (사이드바 밖, body 레벨에 고정) -->
-    <div id="confirmModal" style="display:none;">
-        <div class="modal-box">
-            <h3>이미 생성된 수업 정보가 있습니다</h3>
-            <p>기존 데이터가 <strong>삭제 후 재생성</strong>됩니다.<br>계속하시겠습니까?</p>
-            <div class="modal-footer">
-                <button type="button" onclick="closeConfirmModal()">취소</button>
-                <button type="button" onclick="submitEduForm()">재생성</button>
-            </div>
-        </div>
+  <!-- 확인 모달 (사이드바 밖, body 레벨에 고정) -->
+  <div id="confirmModal" style="display: none">
+    <div class="modal-box">
+      <h3>이미 생성된 수업 정보가 있습니다</h3>
+      <p>
+        기존 데이터가
+        <strong>삭제 후 재생성</strong>됩니다.<br />계속하시겠습니까?
+      </p>
+      <div class="modal-footer">
+        <button type="button" onclick="closeConfirmModal()">취소</button>
+        <button type="button" onclick="submitEduForm()">재생성</button>
+      </div>
     </div>
+  </div>
 </aside>

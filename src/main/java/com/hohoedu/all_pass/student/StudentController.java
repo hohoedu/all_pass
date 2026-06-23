@@ -11,6 +11,8 @@ import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,9 +68,9 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
-    @GetMapping(value = "/api/students", params = {"timeTableKey", "userCode"})
+    @GetMapping(value = "/api/students", params = { "timeTableKey", "userCode" })
     public ResponseEntity<?> getStudentsByClassCode(@RequestParam("timeTableKey") String timeTableKey,
-                                                    @RequestParam("userCode") String userCode, HttpSession session) {
+            @RequestParam("userCode") String userCode, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -110,7 +112,7 @@ public class StudentController {
     // 학생 등록
     @PostMapping("/join")
     public ResponseEntity<?> studentJoin(@ModelAttribute StudentJoinDTO studentDTO,
-                                         @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO, HttpSession session) {
+            @ModelAttribute StudentWebReqDTO.ParentJoinDTO parentDTO, HttpSession session) {
 
         if (studentDTO.getInviteCode() == null || studentDTO.getInviteCode().isEmpty()) {
             UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user"); // 세션 키 이름은 맞게 수정
@@ -141,7 +143,7 @@ public class StudentController {
     // 학생 정보 수정
     @PostMapping("/update/info")
     public ResponseEntity<String> updateStudentInfo(@RequestBody StudentWebReqDTO.StudentUpdateDTO reqDTO,
-                                                    HttpSession session) {
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -164,7 +166,7 @@ public class StudentController {
 
     @PostMapping("/update/course-status")
     public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req,
-                                          HttpSession session) {
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -199,7 +201,7 @@ public class StudentController {
 
     @PostMapping("/api/transfer/list")
     public ResponseEntity<?> getTransferStudentList(@RequestBody StudentWebReqDTO.TransferStudentListReqDTO reqDTO,
-                                                    HttpSession session) {
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -240,6 +242,12 @@ public class StudentController {
         studentService.reserveTransfer(dto, user.getUserCode(), user.getCenterCode());
 
         return ResponseEntity.ok(ApiUtils.success("RESERVED"));
+    }
+
+    @PostMapping("/api/transfer/cancel")
+    public ResponseEntity<?> cancelTransfer(@RequestBody StudentWebReqDTO.TransferCancelDTO reqDto) {
+        studentService.cancelTransfer(reqDto.getIds());
+        return ResponseEntity.ok(ApiUtils.success("ok"));
     }
 
     @PostMapping("/app_token")
@@ -305,7 +313,7 @@ public class StudentController {
 
     @PostMapping("/update/attendance")
     public ResponseEntity<?> updateStudentAttendance(HttpSession session,
-                                                     @RequestBody StudentWebReqDTO.StudentAttendanceUpdateDTO requestDTO) {
+            @RequestBody StudentWebReqDTO.StudentAttendanceUpdateDTO requestDTO) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -429,7 +437,7 @@ public class StudentController {
 
     @PostMapping("/pending/cancel")
     public ResponseEntity<Map<String, Object>> cancelPending(@RequestBody Map<String, Object> body,
-                                                             HttpSession session) {
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -457,7 +465,7 @@ public class StudentController {
      */
     @GetMapping("/api/family-search")
     public ResponseEntity<?> searchFamily(@RequestParam String currentStudentId, @RequestParam String searchKey,
-                                          @RequestParam String searchValue) {
+            @RequestParam String searchValue) {
         List<StudentWebRespDTO.SiblingSearchRespDTO> result = studentService.searchSibling(currentStudentId, searchKey,
                 searchValue);
         return ResponseEntity.ok(ApiUtils.success(result));
@@ -507,9 +515,42 @@ public class StudentController {
     @PostMapping("/qr/update")
     public ResponseEntity<?> updateQr(@RequestBody StudentWebReqDTO.QrRegisterDTO dto, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
         String error = studentService.updateQr(dto.getStudentId(), dto.getQrNumber(), user.getCenterCode());
-        if (error != null) return ResponseEntity.ok(ApiUtils.error(error, HttpStatus.BAD_REQUEST));
+        if (error != null)
+            return ResponseEntity.ok(ApiUtils.error(error, HttpStatus.BAD_REQUEST));
         return ResponseEntity.ok(ApiUtils.success(true));
     }
+
+    @PostMapping("/consent/print-data")
+    public ResponseEntity<?> getConsentPrintData(
+            @RequestBody StudentWebReqDTO.PrivacyPrintReqDTO req,
+            HttpSession session) {
+
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(401).build();
+
+        StudentWebRespDTO.PrivacyPrintResultDTO result = studentService.getConsentPrintData(user.getCenterCode(),
+                req.getStudentIds());
+
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @PostMapping("/consent/search")
+    public ResponseEntity<?> searchStudents(
+            @RequestBody StudentWebReqDTO.PrivacySearchReqDTO req,
+            HttpSession session) {
+
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(401).build();
+
+        List<StudentWebRespDTO.PrivacyStudentListDTO> students = studentService.getStudentList(user.getCenterCode(),
+                req.getYy(), req.getMm(), req.getSearch());
+
+        return ResponseEntity.ok(ApiUtils.success(students));
+    }
+
 }

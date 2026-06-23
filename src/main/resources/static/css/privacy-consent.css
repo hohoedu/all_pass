@@ -1,0 +1,281 @@
+/* ════════════════════════════════
+   전체 레이아웃
+════════════════════════════════ */
+.pc-layout {
+    display: flex;
+    gap: 12px;
+    height: calc(100vh - 140px);
+    overflow: hidden;
+}
+
+/* ══ 좌측 패널 ══ */
+.pc-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e4e4e4;
+    border-radius: 6px;
+    padding: 14px 14px 0;
+    background: #fff;
+    overflow: hidden;
+}
+
+.pc-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    margin-inline: 100px;
+    margin-block: 20px;
+    gap: 20px;
+}
+
+.pc-table-wrap {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e4e4e4;
+    border-radius: 4px;
+}
+
+.pc-thead th {
+    padding: 8px 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #494470;
+    border-bottom: 1px solid #494470;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.pc-tbody-scroll {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.pc-tbody-scroll::-webkit-scrollbar       { width: 7px; }
+.pc-tbody-scroll::-webkit-scrollbar-track { background: #eef3ff; border-radius: 5px; }
+.pc-tbody-scroll::-webkit-scrollbar-thumb { background: #d5dfed; border-radius: 5px; }
+
+.pc-table td {
+    font-size: 13px;
+    padding: 4px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.empty-row {
+    text-align: center !important;
+    padding: 30px !important;
+    color: #bbb;
+    font-size: 14px;
+}
+
+/* ══ 우측 패널 ══ */
+.pc-right {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e4e4e4;
+    border-radius: 6px;
+    background: #525659;
+}
+
+.pc-preview-bg {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pc-preview-bg::-webkit-scrollbar       { width: 7px; }
+.pc-preview-bg::-webkit-scrollbar-track { background: #3a3d3f; }
+.pc-preview-bg::-webkit-scrollbar-thumb { background: #888; border-radius: 5px; }
+
+.pc-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #ccc;
+    gap: 10px;
+}
+
+.pc-empty-state i { font-size: 48px; color: #aaa; }
+.pc-empty-state p { font-size: 14px; text-align: center; line-height: 1.6; }
+
+/* ════════════════════════════════
+   인쇄 버튼
+════════════════════════════════ */
+#pcPreviewWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#pcPrintBtnWrap {
+    width: 794px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 0 12px 0;
+}
+
+#btnPrint {
+    background: #4C3FBC;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+#btnPrint:hover { background: #3a2fa0; }
+
+/* ════════════════════════════════
+   동의서 시트 (미리보기)
+════════════════════════════════ */
+#pcPreviewWrap .page {
+    width: 794px;
+    min-height: 1123px;
+    padding: 44px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    color: #111;
+}
+
+#pcPreviewWrap .page h1 {
+    margin: 0 0 22px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+#pcPreviewWrap .page table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-bottom: 0;
+}
+
+#pcPreviewWrap .page td {
+    border: 1px solid #666;
+    padding: 12px 14px;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+#pcPreviewWrap .desc-row td {
+    font-family: 'Noto Serif KR', serif;
+    line-height: 1.65;
+    background: #fafafa;
+    padding: 12px 16px;
+}
+
+#pcPreviewWrap .vertical {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    text-align: center;
+    font-weight: 700;
+    background: #f2f2f2;
+    width: 50px;
+}
+
+#pcPreviewWrap .label {
+    background: #f2f2f2;
+    font-weight: 700;
+    text-align: center;
+}
+
+#pcPreviewWrap .checkbox {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #000;
+    vertical-align: -3px;
+    margin-right: 5px;
+    position: relative;
+    background: #fff;
+}
+
+#pcPreviewWrap .checkbox.checked { background: #000; }
+
+#pcPreviewWrap .checkbox.checked::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    width: 7px;
+    height: 4px;
+    border-left: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(-45deg);
+}
+
+#pcPreviewWrap .agree-line {
+    text-align: right;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+#pcPreviewWrap .split-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+#pcPreviewWrap .sign-img {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    filter: brightness(0) saturate(100%);
+}
+
+#pcPreviewWrap .bottom-area { margin-top: auto; }
+
+#pcPreviewWrap .date {
+    margin-top: 18px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#pcPreviewWrap .brand {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#pcPreviewWrap .brand img { width: 150px; }
+
+/* ════════════════════════════════
+   반응형 / 인쇄
+════════════════════════════════ */
+@media (max-width: 1200px) {
+    .pc-left { flex: 0 0 340px; }
+}
+
+@media print {
+    .pc-left,
+    .common-title,
+    #pcPrintBtnWrap     { display: none !important; }
+    .pc-right           { margin: 0; border: none; background: none; }
+    .pc-preview-bg      { overflow: visible; padding: 0; }
+}

@@ -5,9 +5,8 @@
 <mapper namespace="com.hohoedu.all_pass.notice.repository.NoticeRepository">
 
     <insert id="insertCenterNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$CenterNoticeSaveReqDTO" useGeneratedKeys="true">
-        INSERT INTO erp_center_notice
-        (center_notice_key, title, sub_title, content, link_url, image, icon, view_count, user_code, center_code, created_at)
-        VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{linkUrl}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
+       INSERT INTO erp_center_notice(center_notice_key, title, sub_title, content, link_url, image, icon, view_count, user_code, center_code, notice_type, is_delete, created_at)
+    VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{linkUrl}, #{image}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, 'center', 'N', SYSDATETIME())
     </insert>
 
     <update id="deleteCenterNotice" parameterType="int">
@@ -20,8 +19,8 @@
 
     <insert id="insertRemedialNotice" parameterType="com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO$RemedialNoticeDTO" useGeneratedKeys="true">
         INSERT INTO erp_center_notice
-            (center_notice_key, title, sub_title, content, icon, view_count, user_code, center_code, created_at)
-        VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, SYSDATETIME())
+            (center_notice_key, title, sub_title, content, icon, view_count, user_code, center_code, notice_type, is_delete, created_at)
+        VALUES (#{centerNoticeKey}, #{title}, #{subTitle}, #{content}, #{icon}, #{viewCount}, #{userCode}, #{centerCode}, 'remedial', 'N', SYSDATETIME())
     </insert>
 
     <insert id="insertRemedialNoticeMap" parameterType="String">
@@ -42,25 +41,29 @@
     </update>
 
     <select id="findCenterNoticeByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$CenterNoticeDTO">
-        SELECT n.id                AS id,
-               n.center_notice_key AS centerNoticeKey,
-               n.title             AS title,
-               n.sub_title         AS subTitle,
-               n.content           AS rawContent,
-               n.created_at        AS createdAt,
-               n.icon              AS icon,
-               n.link_url          AS linkUrl,
-               n.view_count        AS viewCount,
-               u.user_name         AS userName
-        FROM erp_center_notice n
-                 JOIN erp_user u ON n.user_code = u.user_code
-        WHERE n.center_code = #{centerCode}
-          AND n.user_code = #{userCode}
-          AND is_delete = 'N'
-        ORDER BY n.created_at DESC;
+    SELECT n.id                AS id,
+           n.center_notice_key AS centerNoticeKey,
+           n.title             AS title,
+           n.sub_title         AS subTitle,
+           n.content           AS rawContent,
+           n.created_at        AS createdAt,
+           n.icon              AS icon,
+           n.link_url          AS linkUrl,
+           n.view_count        AS viewCount,
+           n.user_code         AS userCode,
+           u.user_name         AS userName
+    FROM erp_center_notice n
+             JOIN erp_user u ON n.user_code = u.user_code
+    WHERE n.center_code = #{centerCode}
+      AND n.notice_type = 'center'
+      AND n.is_delete = 'N'
+        <if test="userCode != null and userCode != ''">
+        AND n.user_code = #{userCode}
+        </if>
+    ORDER BY n.created_at DESC
     </select>
 
-    <select id="findStudentByUserCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$NoticeStudentDTO">
+    <select id="findStudentByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$NoticeStudentDTO">
         SELECT s.student_id   AS studentId,
                s.student_name AS studentName,
                s.app_token    AS appToken,
@@ -74,7 +77,8 @@
                  LEFT JOIN erp_class_code hc ON ta.assign_han_class = hc.class_key
                  LEFT JOIN erp_class_code bc ON ta.assign_book_class = bc.class_key
                  JOIN erp_grade_code gc ON s.grade_key = gc.grade_key
-        WHERE (ta.assign_han_teacher = #{userCode} OR ta.assign_book_teacher = #{userCode})
+        WHERE (ta.assign_han_teacher is not null OR ta.assign_book_teacher  is not null)
+          AND s.status_key = 'ACTIVE'
           AND s.center_code = #{centerCode}
         ORDER BY s.student_name ASC
     </select>
@@ -110,6 +114,7 @@
         from erp_student_notice_map snm
                  join erp_center_notice cn on snm.notice_key = cn.center_notice_key
         where snm.student_id = #{studentId}
+          AND cn.is_delete = 'N'
         ORDER BY cn.created_at DESC;
     </select>
 
@@ -120,11 +125,12 @@
                sub_title         AS subtitle,
                content           AS note,
                icon              AS subicon,
-               image             AS imagepath,
+               image             AS imgpath,
                link_url          AS linkurl,
                created_at        AS sdate
         FROM erp_center_notice
         where id = #{id}
+          AND is_delete = 'N'
         ORDER BY created_at DESC;
 
     </select>

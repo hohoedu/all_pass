@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,7 +26,8 @@ public class NoticeController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/center/save")
-    public ResponseEntity<?> insertCenterNotice(@RequestBody NoticeReqDTO.CenterNoticeSaveReqDTO reqDTO, HttpSession session) {
+    public ResponseEntity<?> insertCenterNotice(@RequestBody NoticeReqDTO.CenterNoticeSaveReqDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -65,7 +67,8 @@ public class NoticeController {
     }
 
     @PostMapping("/center/delete")
-    public ResponseEntity<Map<String, Object>> deleteNotice(@RequestBody NoticeReqDTO.CenterNoticeDeleteDTO reqDTO, HttpSession session) {
+    public ResponseEntity<Map<String, Object>> deleteNotice(@RequestBody NoticeReqDTO.CenterNoticeDeleteDTO reqDTO,
+            HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FOUND) // 302 Redirect
@@ -92,6 +95,17 @@ public class NoticeController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/center/list")
+    public ResponseEntity<?> getCenterNoticeList(
+            @RequestBody Map<String, String> body, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+
+        boolean myOnly = "true".equals(body.get("myOnly"));
+        List<NoticeRespDTO.CenterNoticeDTO> list = noticeService.findCenterNoticeByCenterCode(user, myOnly);
+        return ResponseEntity.ok(ApiUtils.success(list));
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<?> noticeImageUpload(@RequestParam("file") MultipartFile file) {
@@ -109,9 +123,9 @@ public class NoticeController {
                     .build();
         }
 
-        NoticeRespDTO.CenterNoticeDetailDTO response = noticeService.findCenterNoticeByNoticeId(user, noticeId.get("id"));
+        NoticeRespDTO.CenterNoticeDetailDTO response = noticeService.findCenterNoticeByNoticeId(user,
+                noticeId.get("id"));
         return ResponseEntity.ok(ApiUtils.success(response));
     }
-
 
 }

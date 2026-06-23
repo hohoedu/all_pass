@@ -12,6 +12,8 @@ import com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO;
 import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
+import com.hohoedu.all_pass.user._dto.UserRespDTO.LoginRespDTO;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -251,6 +253,32 @@ public class StudentViewController {
     @GetMapping("/print-overview")
     public String getStudentOverviewPrintPage() {
         return "print/print-student-overview";
+    }
+
+    @GetMapping("/privacy-print")
+    public String consentPage(
+            @RequestParam(required = false) String yy,
+            @RequestParam(required = false) String mm,
+            Model model, HttpSession session) {
+
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return "redirect:/login";
+
+        LocalDate now = LocalDate.now();
+        if (yy == null || yy.isBlank())
+            yy = String.valueOf(now.getYear());
+        if (mm == null || mm.isBlank())
+            mm = String.format("%02d", now.getMonthValue());
+
+        List<StudentWebRespDTO.PrivacyStudentListDTO> students = studentService.getStudentList(user.getCenterCode(), yy,
+                mm);
+
+        model.addAttribute("students", students);
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+        model.addAttribute("centerCode", user.getCenterCode());
+        return "print/print-privacy";
     }
 
 }

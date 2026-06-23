@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper
-        namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
+<mapper namespace="com.hohoedu.all_pass.student.repository.StudentRepository">
 
     <select id="countPendingStudents" resultType="int">
         select count(*)
@@ -13,8 +12,7 @@
 
     </select>
 
-    <select id="findStudentStatus"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentStatusDTO">
+    <select id="findStudentStatus" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentStatusDTO">
         -- @formatter:off
         SELECT
         -- 전체 학생 수
@@ -157,8 +155,7 @@
     </select>
 
     <!-- 회원가입 -->
-    <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true"
-            keyProperty="id" keyColumn="id">
+    <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student
         (student_id, student_name, birth, gender, school, address, address_detail, app_id, app_password, created_at,
          center_code, grade_key, status_key, student_privacy_agree, sub_han, sub_book, sub_hoho, is_hoho, billing_phone)
@@ -173,8 +170,7 @@
         WHERE app_id LIKE CONCAT(#{prefix}, '%')
     </select>
 
-    <select id="findStudentByCenterCode" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
+    <select id="findStudentByCenterCode" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentsListDTO">
         -- @formatter:off
         SELECT 	s.*,
                   g.*,
@@ -229,8 +225,7 @@
         -- @formatter:on
     </select>
 
-    <select id="findStudentInfoByStudentId" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInfoDTO">
+    <select id="findStudentInfoByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInfoDTO">
         SELECT s.student_id                                                 AS studentId,
                s.student_name                                               AS studentName,
                s.status_key                                                 AS statusKey,
@@ -260,8 +255,7 @@
     </select>
 
 
-    <select id="findStudentPaymentByStudentId" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentPaymentDTO">
+    <select id="findStudentPaymentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentPaymentDTO">
 
         SELECT ta.han_state         AS hanState,
                ta.book_state        AS bookState,
@@ -284,14 +278,13 @@
                  LEFT JOIN erp_user hu ON ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu ON ta.assign_book_teacher = bu.user_code
                  LEFT JOIN erp_class_fee_map_copy hf ON ta.assign_han_class = hf.class_key AND s.center_code = hf.center_code
-            AND <![CDATA[((s.is_hoho = 1 AND hf.category = 'hoho') OR (s.is_hoho = 0 AND hf.category <> 'hoho'))]]>
+            AND                                                                                                                                                                                                         <![CDATA[((s.is_hoho = 1 AND hf.category = 'hoho') OR (s.is_hoho = 0 AND hf.category <> 'hoho'))]]>
                  LEFT JOIN erp_class_fee_map_copy bf ON ta.assign_book_class = bf.class_key AND s.center_code = bf.center_code
-            AND<![CDATA[ ((s.is_hoho = 1 AND bf.category = 'hoho') OR (s.is_hoho = 0 AND bf.category <> 'hoho'))]]>
+            AND                                                                                                                                                                                                        <![CDATA[ ((s.is_hoho = 1 AND bf.category = 'hoho') OR (s.is_hoho = 0 AND bf.category <> 'hoho'))]]>
         WHERE ta.student_id = #{studentId}
     </select>
 
-    <select id="findStudentAttendanceByStudentId" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentAttendanceDTO">
+    <select id="findStudentAttendanceByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentAttendanceDTO">
         SELECT *
         FROM erp_student_attendance
         WHERE student_id = #{studentId}
@@ -300,8 +293,7 @@
         ORDER BY attendance_date ASC
     </select>
 
-    <select id="findStudentConsultByStudentId" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentConsultDTO">
+    <select id="findStudentConsultByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentConsultDTO">
         SELECT CONCAT(yy, '년 ', dayname) AS consultDate,
                counsel_content           AS consultContent
         FROM erp_after_class_notice
@@ -310,8 +302,7 @@
     </select>
 
     <!-- 메인화면 선생님별 학생 조회 -->
-    <select id="selectStudentByUserCode"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
+    <select id="selectStudentByUserCode" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$MainStudentDTO">
         SELECT s.student_id                                                                  AS studentId,
                s.student_name                                                                AS studentName,
                CASE WHEN s.app_token IS NOT NULL AND s.app_token != '' THEN 'Y' ELSE 'N' END AS hasApp,
@@ -335,6 +326,8 @@
                  LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
                  LEFT JOIN erp_user hu on ta.assign_han_teacher = hu.user_code
                  LEFT JOIN erp_user bu on ta.assign_book_teacher = bu.user_code
+                 LEFT JOIN erp_user phu ON ta.pending_han_teacher = phu.user_code
+                 LEFT JOIN erp_user pbu ON ta.pending_book_teacher = pbu.user_code
                  LEFT JOIN erp_center c ON c.center_code = s.center_code
                  LEFT JOIN erp_teacher_assign eta on s.student_id = eta.student_id
                  LEFT JOIN erp_class_code hc on eta.assign_han_class = hc.class_key
@@ -343,7 +336,7 @@
 
         WHERE s.center_code = #{centerCode}
           AND ISNULL(s.status_key, '') &lt; &gt; 'WITHDRAWN'
-          AND (#{userCode} = 'all' OR hu.user_code = #{userCode} OR bu.user_code = #{userCode})
+          AND (#{userCode} = 'all' OR hu.user_code = #{userCode} OR bu.user_code = #{userCode} OR phu.user_code = #{userCode} OR pbu.user_code = #{userCode})
 
         ORDER BY CASE
                      WHEN sc.status_name IS NULL THEN 0
@@ -427,8 +420,7 @@
         WHERE invite_code = #{inviteCode}
     </select>
 
-    <select id="findPendingStudentBySendKey" parameterType="String"
-            resultType="com.hohoedu.all_pass.student.model.PendingStudent">
+    <select id="findPendingStudentBySendKey" parameterType="String" resultType="com.hohoedu.all_pass.student.model.PendingStudent">
         SELECT *
         FROM erp_pending_student
         WHERE send_key = #{sendKey}
@@ -446,18 +438,14 @@
     </update>
 
     <!-- 학생 상태 기록 -->
-    <insert id="statusHistoryInsert"
-            parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO"
-            useGeneratedKeys="true"
-            keyProperty="id" keyColumn="id">
+    <insert id="statusHistoryInsert" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_status_history
             (student_id, status_key, reason, user_code, withdraw_date, updated_at)
         values (#{studentId}, #{statusKey}, #{reason}, #{userCode}, #{withdrawDate}, SYSDATETIME());
     </insert>
 
     <!-- 학생 상태 변경 -->
-    <update id="studentStatusUpdate"
-            parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO">
+    <update id="studentStatusUpdate" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StatusHistoryDTO">
         UPDATE erp_student
         SET status_key = #{statusKey}
         WHERE student_id = #{studentId};
@@ -472,8 +460,7 @@
     </update>
 
     <!--  변경된 학생 상태 조회  -->
-    <select id="findStatusByStudentId"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentStatusDTO">
+    <select id="findStatusByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentStatusDTO">
         SELECT s.student_id   AS studentId,
                s.status_key   AS statusKey,
                sc.status_name AS statusName
@@ -539,8 +526,7 @@
     </select>
 
     <!-- 한자 담당 선생님 목록 -->
-    <select id="findHanTeachers" parameterType="string"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$HanTeacher">
+    <select id="findHanTeachers" parameterType="string" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$HanTeacher">
         SELECT user_code AS userCode,
                user_name AS userName
         FROM erp_user
@@ -549,8 +535,7 @@
     </select>
 
     <!-- 독서 담당 선생님 목록 -->
-    <select id="findBookTeachers" parameterType="string"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookTeacher">
+    <select id="findBookTeachers" parameterType="string" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookTeacher">
         SELECT user_code AS userCode,
                user_name AS userName
         FROM erp_user
@@ -636,8 +621,7 @@
         WHERE student_id = #{studentId}
     </update>
 
-    <select id="findSnapshotByStudentId"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotDTO">
+    <select id="findSnapshotByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotDTO">
         SELECT s.student_id           AS studentId,
                s.center_code          AS centerCode,
                s.status_key           AS statusKey,
@@ -688,8 +672,7 @@
                 #{userCode})
     </insert>
 
-    <select id="findLatestWithdrawLog"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawLogDTO">
+    <select id="findLatestWithdrawLog" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawLogDTO">
         SELECT TOP 1
         id, before_han_state AS beforeHanState,
                before_book_state      AS beforeBookState,
@@ -800,11 +783,7 @@
                    END         AS subject,
                fu.user_name    AS fromTeacher,
                tu.user_name    AS toTeacher,
-               CASE s.status
-                   WHEN 'SCHEDULED' THEN '대기중'
-                   WHEN 'APPLIED' THEN '완료'
-                   ELSE s.status
-                   END         AS status,
+               s.status        AS status,
                s.reason        AS transferReason
         FROM erp_student_transfer_schedule s
                  LEFT JOIN erp_student st ON st.student_id = s.student_id
@@ -825,8 +804,7 @@
                 #{hanState}, #{bookState}, #{assignHanClass.classKey}, #{assignBookClass.classKey})
     </insert>
 
-    <update id="updateTeacherAssign"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$TeacherAssignUpdateDTO">
+    <update id="updateTeacherAssign" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$TeacherAssignUpdateDTO">
         UPDATE ERP_TEACHER_ASSIGN
         <set>
             <if test="hanState != null">han_state = #{hanState},</if>
@@ -843,8 +821,7 @@
     </update>
 
     <!-- 전입/전출 화면 전체 학생 조회 -->
-    <select id="selectTransferStudents"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">
+    <select id="selectTransferStudents" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentInOutDTO">
         SELECT s.student_id,
                s.student_name,
                g.grade_name,
@@ -871,8 +848,7 @@
         order by s.student_name asc;
     </select>
 
-    <select id="findInOutByStudentId" parameterType="int"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentTransferDTO">
+    <select id="findInOutByStudentId" parameterType="int" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentTransferDTO">
         SELECT
         s.student_id AS studentId,
         sth.TRANSFER_NO as historyNo,
@@ -909,6 +885,7 @@
             <when test="classType == 1">
                 UPDATE erp_teacher_assign
                 SET assign_han_teacher = #{userCode},
+                    pending_han_teacher = null,
                 assign_han_class = null
                 WHERE student_id = #{studentId}
             </when>
@@ -916,6 +893,7 @@
             <when test="classType == 2">
                 UPDATE erp_teacher_assign
                 SET assign_book_teacher = #{userCode},
+                    pending_book_teacher = null,
                 assign_book_class = null
                 WHERE student_id = #{studentId}
             </when>
@@ -928,6 +906,24 @@
         VALUES (#{studentId}, #{classType}, #{fromUser}, #{toUser}, #{moveAt}, 'SCHEDULED', #{reason}, #{createdBy},
                 SYSDATETIME(), #{centerCode})
     </insert>
+
+    <!-- 한자 pending -->
+    <update id="updatePendingHanTeacher">
+        UPDATE erp_teacher_assign
+        SET pending_han_teacher = #{userCode},
+            updated_at = GETDATE()
+        WHERE student_id  = #{studentId}
+          AND center_code = #{centerCode}
+    </update>
+
+    <!-- 독서 pending -->
+    <update id="updatePendingBookTeacher">
+        UPDATE erp_teacher_assign
+        SET pending_book_teacher = #{userCode},
+            updated_at = GETDATE()
+        WHERE student_id  = #{studentId}
+          AND center_code = #{centerCode}
+    </update>
 
     <!-- 오늘 처리 대상 조회 (크론용) -->
     <select id="findTodaySchedules" resultType="com.hohoedu.all_pass.student.model.StudentTransferSchedule">
@@ -956,6 +952,41 @@
                 SYSDATETIME());
     </insert>
 
+    <select id="findScheduleByIds" resultType="com.hohoedu.all_pass.student.model.StudentTransferSchedule">
+        SELECT *
+        FROM erp_student_transfer_schedule
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+          AND status = 'SCHEDULED' 
+    </select>
+
+    <update id="cancelTransferSchedule">
+        UPDATE erp_student_transfer_schedule
+        SET status = 'CANCELED'
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+          AND status = 'SCHEDULED'
+    </update>
+
+    <!-- pending 클리어 -->
+    <update id="clearPendingHanTeacher">
+        UPDATE erp_teacher_assign
+        SET pending_han_teacher = NULL,
+            updated_at = GETDATE()
+        WHERE student_id = #{studentId}
+    </update>
+
+    <update id="clearPendingBookTeacher">
+        UPDATE erp_teacher_assign
+        SET pending_book_teacher = NULL,
+            updated_at = GETDATE()
+        WHERE student_id = #{studentId}
+    </update>
+
     <!-- 출석 관련 -->
     <select id="findByStudentId">
         SELECT *
@@ -963,8 +994,7 @@
         WHERE student_id = #{studentId}
     </select>
 
-    <select id="findAppTokenByAppId"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+    <select id="findAppTokenByAppId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
         SELECT center_code  as centerCode,
                student_id   as stuid,
                student_name as name,
@@ -973,8 +1003,7 @@
         WHERE app_id = #{appId}
            OR serial_num = #{appId}
     </select>
-    <select id="findAppTokenByStudentId"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
+    <select id="findAppTokenByStudentId" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppTokenRespDTO">
         SELECT center_code  as centerCode,
                student_id   as stuid,
                student_name as name,
@@ -1021,8 +1050,7 @@
           AND time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findWeekInfoByDate"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceInfoDTO">
+    <select id="findWeekInfoByDate" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceInfoDTO">
         SELECT week, year AS yy, month AS mm
         FROM erp_class_week
         WHERE center_code = #{centerCode}
@@ -1079,8 +1107,7 @@
           AND mm = #{mm}
     </update>
 
-    <select id="findRemedialByStudentAndDate"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$RemedialDTO">
+    <select id="findRemedialByStudentAndDate" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$RemedialDTO">
         SELECT remedial_key   AS remedialKey,
                time_table_key AS timeTableKey,
                absence_date   AS absenceDate,
@@ -1146,8 +1173,7 @@
                  JOIN status_code sc ON s.status_no = sc.status_no;
     </insert>
 
-    <select id="findAllStudentOverview"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotRespDTO">
+    <select id="findAllStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentSnapshotRespDTO">
         SELECT s.snapshot_ym AS snapshotYm,
                s.active_count,
                s.rest_count,
@@ -1169,8 +1195,7 @@
         ORDER BY s.snapshot_ym
     </select>
 
-    <select id="appLogin" parameterType="String"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppLoginViewDTO">
+    <select id="appLogin" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AppLoginViewDTO">
         SELECT s.student_id   as studentId,
                s.student_name as studentName,
                s.app_password as password,
@@ -1216,8 +1241,7 @@
         GROUP BY s.grade_key
     </select>
 
-    <select id="findAttendanceList"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceListRespDTO">
+    <select id="findAttendanceList" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceListRespDTO">
         SELECT CASE
                    WHEN sa.student_id IN ('DAE0012603262D574',
                                           'DAE001260326C1369',
@@ -1282,8 +1306,7 @@
         ORDER BY ymd
     </select>
 
-    <select id="findAttendanceMain"
-            resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceMainRespDTO">
+    <select id="findAttendanceMain" resultType="com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO$AttendanceMainRespDTO">
         SELECT TOP 1
             sa.attendance_date AS ymd, CASE
                                                               WHEN DATEPART(WEEKDAY, sa.attendance_date) = 1 THEN '일요일'
@@ -1315,8 +1338,7 @@
         WHERE student_id = #{studentId}
     </update>
 
-    <update id="updateAttendance"
-            parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StudentAttendanceUpdateDTO">
+    <update id="updateAttendance" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$StudentAttendanceUpdateDTO">
         UPDATE erp_student_attendance
         SET
         attendance_key = #{attendanceKey},
@@ -1342,8 +1364,7 @@
           AND week = #{week}
     </select>
 
-    <select id="findStudentOverview"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentOverviewDTO">
+    <select id="findStudentOverview" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentOverviewDTO">
         SELECT COALESCE(e.ym, i.ym, mi.ym, mo.ym) AS ym,
                ISNULL(e.cnt, 0)                   AS entry_count,
                ISNULL(i.cnt, 0)                   AS inactive_count,
@@ -1584,8 +1605,7 @@
     </select>
 
     <!-- 졸업 -->
-    <select id="selectGraduateList"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
+    <select id="selectGraduateList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
 
     </select>
 
@@ -1789,4 +1809,97 @@
           AND center_code = #{centerCode}
     </update>
 
+    <select id="findStudentList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PrivacyStudentListDTO">
+    SELECT
+        s.student_id                                                AS studentId,
+        s.student_name                                              AS studentName,
+        ISNULL(p.parent_tel_first,  '') + '-'
+            + ISNULL(p.parent_tel_middle, '') + '-'
+            + ISNULL(p.parent_tel_last,   '')                       AS parentTel,
+        CONVERT(VARCHAR(10), s.created_at, 120)                     AS regDate,
+        STUFF(
+        CASE WHEN s.sub_han  = 1 THEN ', 한스쿨' ELSE '' END +
+        CASE WHEN s.sub_book = 1 THEN ', 북스쿨' ELSE '' END +
+        CASE WHEN s.sub_hoho = 1 THEN ', 호호스쿨' ELSE '' END,
+        1, 2, ''
+    )                                                           AS className
+
+    FROM erp_student s
+    LEFT JOIN (
+        SELECT student_id,
+               parent_tel_first, parent_tel_middle, parent_tel_last
+        FROM erp_parent
+        WHERE id IN (
+            SELECT MIN(id) FROM erp_parent GROUP BY student_id
+        )
+    ) p ON p.student_id = s.student_id
+    WHERE s.center_code = #{centerCode}
+      AND FORMAT(s.created_at, 'yyyy') = #{yy}
+      AND FORMAT(s.created_at, 'MM')   = #{mm}
+        <if test="search != null and search != ''">
+      AND (
+        s.student_name LIKE '%' + #{search} + '%'
+        OR ISNULL(p.parent_tel_first,'') + '-'
+        + ISNULL(p.parent_tel_middle,'') + '-'
+        + ISNULL(p.parent_tel_last,'')
+        LIKE '%' + #{search} + '%'
+        )
+        </if>
+    ORDER BY s.created_at DESC
+    </select>
+
+    <select id="findConsentDocList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PrivacyConsentDocDTO">
+    SELECT
+        s.student_name                                              AS studentName,
+        s.billing_phone                                             AS studentTel,
+        CONVERT(VARCHAR(10), s.birth, 120)                          AS birthDate,
+        s.grade_key                                                 AS gradeKey,
+        s.sub_hoho                                                  AS subHoho,
+        s.sub_han                                                   AS subHan,
+        s.sub_book                                                  AS subBook,
+        ISNULL(s.address, '') + ' ' + ISNULL(s.address_detail, '') AS address,
+        p.parent_name                                               AS parentName,
+        ISNULL(p.parent_tel_first,  '') + '-'
+            + ISNULL(p.parent_tel_middle, '') + '-'
+            + ISNULL(p.parent_tel_last,   '')                       AS parentTel,
+        p.relation_key                                              AS relationState,
+        CASE WHEN p.signature IS NOT NULL
+              AND p.signature != '' THEN '1' ELSE '0' END          AS signatureState,
+        REPLACE(p.signature, 'signature.png', '_signature.png') AS signaturePath,
+        CONVERT(VARCHAR(10), s.created_at, 120)                     AS createdAtState,
+        STUFF((
+            SELECT ', ' + t.subject
+            FROM erp_time_table_assign a
+            JOIN erp_time_table t
+              ON t.time_table_key = a.time_table_key
+             AND t.center_code    = s.center_code
+            WHERE a.student_id = s.student_id
+            FOR XML PATH('')
+        ), 1, 2, '')                                                AS className,    
+        s.school                                                    AS school
+    FROM erp_student s
+    LEFT JOIN (
+        SELECT student_id, parent_name, relation_key, signature,
+               parent_tel_first, parent_tel_middle, parent_tel_last
+        FROM erp_parent
+        WHERE id IN (
+            SELECT MIN(id) FROM erp_parent GROUP BY student_id
+        )
+    ) p ON p.student_id = s.student_id
+    WHERE s.center_code = #{centerCode}
+      AND s.student_id IN
+        <foreach collection="studentIds" item="sid" open="(" separator="," close=")">
+            #{sid}
+        </foreach>
+    ORDER BY s.created_at DESC
+    </select>
+
+    <select id="findCenterInfo" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$PrivacyCenterDTO">
+    SELECT
+        center_name     AS centerName,
+        director_name   AS directorName,
+        center_address  AS centerAddress
+    FROM erp_center
+    WHERE center_code = #{centerCode}
+    </select>
 </mapper>

@@ -24,7 +24,7 @@ public class NoticeAppRespDTO {
         private String subtitle;
         private String note;
         private String subicon;
-        private String imagepath;
+        private String imgpath;
         private String linkurl;
     }
 

@@ -231,6 +231,7 @@ public class StudentWebRespDTO {
 
     @Data
     public static class TransferHistoryDTO {
+        private Integer transferId;
         private String moveAt;
         private String studentName;
         private String subject;
@@ -362,6 +363,48 @@ public class StudentWebRespDTO {
         private String school;
         private String parentPhone;
         private String isSibling;
+    }
+
+    @Data
+    public static class PrivacyStudentListDTO {
+        private String studentId;
+        private String studentName;
+        private String parentTel;
+        private String regDate;
+        private String className;
+    }
+
+    @Data
+    public static class PrivacyConsentDocDTO {
+        private String studentName;
+        private String studentTel;
+        private String birthDate;
+        private String gradeKey;
+        private String subHoho;
+        private String subHan;
+        private String subBook;
+        private String school;
+        private String address;
+        private String parentName;
+        private String parentTel;
+        private String relationState;
+        private String signatureState;
+        private String signaturePath;
+        private String createdAtState;
+        private String className;
+    }
+
+    @Data
+    public static class PrivacyCenterDTO {
+        private String centerName;
+        private String directorName;
+        private String centerAddress;
+    }
+
+    @Data
+    public static class PrivacyPrintResultDTO {
+        private List<PrivacyConsentDocDTO> printDataList;
+        private PrivacyCenterDTO centerInfo;
     }
 
 }

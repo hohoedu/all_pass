@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,137 +20,146 @@
     <script th:src="@{/js/sidebar.js}"></script>
     <title>앱 공지 관리</title>
 </head>
+
 <body>
-<div class="main-container">
-    <div class="main-frame">
-        <!-- left nav bar -->
-        <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
-        <main class="main-info">
-            <div class="line-second-frame">
-                <!-- section:left -->
-                <section class="edu-left">
-                    <div class="app-l-con">
-                        <div class="inout-head">
-                            <div class="common-title">
-                                <h2>앱 공지 관리</h2>
+    <div class="main-container">
+        <div class="main-frame">
+            <!-- left nav bar -->
+            <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+            <main class="main-info">
+                <div class="line-second-frame">
+                    <!-- section:left -->
+                    <section class="edu-left">
+                        <div class="app-l-con">
+                            <div class="inout-head">
+                                <div class="common-title">
+                                    <h2>앱 공지 관리</h2>
+                                </div>
+                                <div class="inout-btns">
+                                    <div class="common-btn notice-regist">+ 공지 등록하기</div>
+                                </div>
                             </div>
-                            <div class="inout-btns">
-                                <div class="common-btn notice-regist">+ 공지 등록하기</div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                                <div class="stats-item-left">
+                                    <div class="radio-group">
+                                        <input type="radio" name="period" id="period-3month" value="1y" checked>
+                                        <label for="period-3month">3개월</label>
+                                        <input type="radio" name="period" id="period-6month" value="6m">
+                                        <label for="period-6month">6개월</label>
+                                        <input type="radio" name="period" id="period-1year" value="3m">
+                                        <label for="period-1year">1년</label>
+                                        <input type="radio" name="period" id="period-custom" value="custom">
+                                        <label for="period-custom">일자지정</label>
+                                    </div>
+                                    <div class="icon-field basic-input cal-adjust" style="margin-bottom: 0;">
+                                        <span>2024-07 ~ 2025-06</span>
+                                        <button class="icon-btn" style="background: transparent;">
+                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="checkbox-group" style="display: flex;">
+                                    <input type="checkbox" name="myNotice" id="myNotice">
+                                    <label for="myNotice" class="class-label">내가 작성한 공지만 보기</label>
+                                </div>
                             </div>
-                        </div>
-                        <div class="stats-item-left">
-                            <div class="radio-group">
-                                <input type="radio" name="period" id="period-3month" value="1y" checked>
-                                <label for="period-3month">3개월</label>
-                                <input type="radio" name="period" id="period-6month" value="6m">
-                                <label for="period-6month">6개월</label>
-                                <input type="radio" name="period" id="period-1year" value="3m">
-                                <label for="period-1year">1년</label>
-                                <input type="radio" name="period" id="period-custom" value="custom">
-                                <label for="period-custom">일자지정</label>
-                            </div>
-                            <div class="icon-field basic-input cal-adjust" style="margin-bottom: 0;">
-                                <span>2024-07 ~ 2025-06</span>
-                                <button class="icon-btn" style="background: transparent;">
-                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                </button>
-                            </div>
-                        </div>
-                        <div style="margin-top: 20px; height: 83vh; overflow-y: auto">
-                            <div class="app-style app-con1" th:each="notice, iterStat : ${noticeList}"
-                                 th:attr="data-id=${notice.id}, data-key=${notice.centerNoticeKey}">
-                                <div class="acon-divide" onclick="loadNoticeDetail(this)">
-                                    <div class="acon-left">
-                                        <div class="acon-inner">
-                                            <h2 class="acon-title" th:text="${notice.title}">공지 제목</h2>
-                                            <span class="acon-sub" th:text="${notice.subTitle}">공지 부제목</span>
-                                            <p class="acon-info" th:utext="${notice.cleanContent}">
-                                                공지 내용
-                                            </p>
-                                            <div class="acon-desc">
-                                                <span class="acon-teacher"
-                                                      th:text="${notice.userName + ' 선생님'}">작성자</span>
-                                                <span class="clock-day"
-                                                      th:text="${#dates.format(notice.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
-                                                <span class="view-eyes" th:text="${notice.viewCount}">0</span>
+                            <div style="margin-top: 20px; height: 83vh; overflow-y: auto">
+                                <div class="app-style app-con1" th:each="notice, iterStat : ${noticeList}"
+                                    th:attr="data-id=${notice.id}, data-key=${notice.centerNoticeKey}">
+                                    <div class="acon-divide" onclick="loadNoticeDetail(this)">
+                                        <div class="acon-left">
+                                            <div class="acon-inner">
+                                                <h2 class="acon-title" th:text="${notice.title}">공지 제목</h2>
+                                                <span class="acon-sub" th:text="${notice.subTitle}">공지 부제목</span>
+                                                <p class="acon-info" th:utext="${notice.cleanContent}">
+                                                    공지 내용
+                                                </p>
+                                                <div class="acon-desc">
+                                                    <span class="acon-teacher"
+                                                        th:text="${notice.userName + ' 선생님'}">작성자</span>
+                                                    <span class="clock-day"
+                                                        th:text="${#dates.format(notice.createdAt, 'yyyy.MM.dd HH:mm')}"></span>
+                                                    <span class="view-eyes" th:text="${notice.viewCount}">0</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="acon-right">
-                                        <img th:src="@{|/image/notice0${notice.icon}.png|}"
-                                             alt="공지 썸네일">
+                                        <div class="acon-right">
+                                            <img th:src="@{|/image/notice0${notice.icon}.png|}" alt="공지 썸네일">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-                <!-- gray line -->
-                <div class="divider"></div>
-                <!-- section:right -->
-                <section class="edu-right">
-                    <div th:if="${noticeList != null and noticeList.size() > 0}">
-                        <div class="inout-head">
-                            <div class="common-title">
-                                <h2>상세 내용</h2>
+                    </section>
+                    <!-- gray line -->
+                    <div class="divider"></div>
+                    <!-- section:right -->
+                    <section class="edu-right">
+                        <div th:if="${noticeList != null and noticeList.size() > 0}">
+                            <div class="inout-head">
+                                <div class="common-title">
+                                    <h2>상세 내용</h2>
+                                </div>
+                                <div>
+                                    <div class="common-btn notice-update" th:data-id="${noticeList[0].id}">수정</div>
+                                    <div class="common-btn notice-delete" th:data-id="${noticeList[0].id}">삭제</div>
+                                </div>
                             </div>
-                            <div>
-                                <div class="common-btn notice-update" th:data-id="${noticeList[0].id}">수정</div>
-                                <div class="common-btn notice-delete" th:data-id="${noticeList[0].id}">삭제</div>
-                            </div>
-                        </div>
 
-                        <!-- 해시박스는 고정 -->
-                        <div class="hash-boxes">
+                            <!-- 해시박스는 고정 -->
+                            <!-- <div class="hash-boxes">
                             <div class="hash-box">#7세</div>
                             <div class="hash-box">#1학년</div>
                             <div class="hash-box">#2학년</div>
-                        </div>
+                        </div> -->
 
-                        <div class="app-info">
-                            <div class="app-info-t" th:text="${noticeList[0].title}">
-                                공지 제목
+                            <div class="app-info">
+                                <div class="app-info-t" th:text="${noticeList[0].title}">
+                                    공지 제목
+                                </div>
+                                <img th:src="@{|/image/notice0${noticeList[0].icon}.png|}" alt="">
                             </div>
-                            <img th:src="@{|/image/notice0${noticeList[0].icon}.png|}" alt="">
-                        </div>
 
-                        <div class="app-info-desc" th:utext="${noticeList[0].rawContent}">
-                            공지 내용이 들어갑니다.
-                        </div>
+                            <div class="app-info-desc" th:utext="${noticeList[0].rawContent}">
+                                공지 내용이 들어갑니다.
+                            </div>
 
-                        <div class="save-btn-frame">
-                            <button class="view-details">상세 보기</button>
-                        </div>
-                    </div>
-
-                    <div th:if="${noticeList == null or noticeList.size() == 0}">
-                        <div class="inout-head">
-                            <div class="common-title">
-                                <h2>상세 내용</h2>
+                            <div class="save-btn-frame">
+                                <button class="view-details">상세 보기</button>
                             </div>
                         </div>
 
-                        <div class="hash-boxes">
-                            <div class="hash-box">#7세</div>
-                            <div class="hash-box">#1학년</div>
-                            <div class="hash-box">#2학년</div>
-                        </div>
+                        <div th:if="${noticeList == null or noticeList.size() == 0}">
+                            <div class="inout-head">
+                                <div class="common-title">
+                                    <h2>상세 내용</h2>
+                                </div>
+                            </div>
 
-                        <div class="app-info">
-                            <div class="app-info-t">등록된 공지가 없습니다.</div>
-                            <img th:src="@{/image/notice00.png}" alt="">
-                        </div>
+                            <div class="hash-boxes">
+                                <div class="hash-box">#7세</div>
+                                <div class="hash-box">#1학년</div>
+                                <div class="hash-box">#2학년</div>
+                            </div>
 
-                        <div class="app-info-desc">
-                            공지 내용이 없습니다.
+                            <div class="app-info">
+                                <div class="app-info-t">등록된 공지가 없습니다.</div>
+                                <img th:src="@{/image/notice00.png}" alt="">
+                            </div>
+
+                            <div class="app-info-desc">
+                                공지 내용이 없습니다.
+                            </div>
                         </div>
-                    </div>
-                </section>
-            </div>
-        </main>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
-</div>
-<div th:replace="~{manage/notice/sms-modal :: centerNoticeInsertModal}"></div>
+    <div th:replace="~{manage/notice/sms-modal :: centerNoticeInsertModal}"></div>
 
 </body>
+
 </html>

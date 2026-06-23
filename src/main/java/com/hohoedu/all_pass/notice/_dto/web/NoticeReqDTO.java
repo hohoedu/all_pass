@@ -21,6 +21,7 @@ public class NoticeReqDTO {
         private String userCode;
         private String centerCode;
         private List<String> tokens;
+        private List<String> studentIds;
     }
 
     @Data

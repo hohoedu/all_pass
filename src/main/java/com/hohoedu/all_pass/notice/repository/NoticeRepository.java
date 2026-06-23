@@ -10,30 +10,30 @@ import java.util.List;
 
 @Mapper
 public interface NoticeRepository {
-    int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto);
+        int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto);
 
-    int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO);
+        int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO);
 
-    int deleteCenterNotice(Integer id);
+        int deleteCenterNotice(Integer id);
 
-    int insertRemedialNotice(NoticeReqDTO.RemedialNoticeDTO dto);
+        int insertRemedialNotice(NoticeReqDTO.RemedialNoticeDTO dto);
 
-    int insertRemedialNoticeMap(
-            @Param("centerNoticeKey") String centerNoticeKey,
-            @Param("studentId") String studentId);
+        int insertRemedialNoticeMap(
+                        @Param("centerNoticeKey") String centerNoticeKey,
+                        @Param("studentId") String studentId);
 
-    List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(
-            @Param("centerCode") String centerCode,
-            @Param("userCode") String userCode);
+        List<NoticeRespDTO.CenterNoticeDTO> findCenterNoticeByCenterCode(
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode);
 
-    NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(
-            @Param("centerCode") String centerCode, Integer id);
+        NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(
+                        @Param("centerCode") String centerCode, Integer id);
 
-    List<NoticeAppRespDTO.NoticeListRespDTO> findAppNoticeList(
-            @Param("studentId") String studentId,
-            @Param("count") Integer count);
+        List<NoticeAppRespDTO.NoticeListRespDTO> findAppNoticeList(
+                        @Param("studentId") String studentId,
+                        @Param("count") Integer count);
 
-    NoticeAppRespDTO.NoticeDetailRespDTO findAppNoticeDetail(@Param("id") Integer id);
+        NoticeAppRespDTO.NoticeDetailRespDTO findAppNoticeDetail(@Param("id") Integer id);
 
-    List<NoticeRespDTO.NoticeStudentDTO> findStudentByUserCode(String userCode, String centerCode);
+        List<NoticeRespDTO.NoticeStudentDTO> findStudentByCenterCode(String centerCode);
 }

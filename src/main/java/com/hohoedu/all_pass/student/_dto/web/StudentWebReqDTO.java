@@ -135,7 +135,11 @@ public class StudentWebReqDTO {
         private String userCode;
         private String moveAt;
         private String transferReason;
+    }
 
+    @Data
+    public static class TransferCancelDTO {
+        private List<Integer> ids;
     }
 
     @Data
@@ -190,7 +194,7 @@ public class StudentWebReqDTO {
     }
 
     @Data
-    public static class QrRegisterDTO{
+    public static class QrRegisterDTO {
         private String studentId;
         private String qrNumber;
     }
@@ -199,5 +203,17 @@ public class StudentWebReqDTO {
     public static class QrUpdateDTO {
         private String studentId;
         private String qrNumber;
+    }
+
+    @Data
+    public static class PrivacySearchReqDTO {
+        private String yy;
+        private String mm;
+        private String search;
+    }
+
+    @Data
+    public static class PrivacyPrintReqDTO {
+        private List<String> studentIds;
     }
 }

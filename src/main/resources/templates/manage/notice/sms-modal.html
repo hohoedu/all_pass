@@ -1,6 +1,6 @@
 <div th:fragment="centerNoticeInsertModal">
     <div class="modal notice-modal">
-        <div class="pre-view">
+        <div class="pre-view" style="width:70vw;">
             <div class="">
                 <div class="m-t-line" style="margin: 20px;">
                     <div>
@@ -17,81 +17,82 @@
                                     <col width="90%">
                                 </colgroup>
                                 <tbody>
-                                <tr>
-                                    <td>제목</td>
-                                    <td>
-                                        <input type="text" placeholder="제목을 입력해주세요." style="width:100%;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>부제목</td>
-                                    <td>
-                                        <input type="text" placeholder="부제목을 입력해주세요." style="width:100%;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>아이콘</td>
-                                    <td>
+                                    <tr>
+                                        <td>제목</td>
+                                        <td>
+                                            <input type="text" placeholder="제목을 입력해주세요." style="width:100%;">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>부제목</td>
+                                        <td>
+                                            <input type="text" placeholder="부제목을 입력해주세요." style="width:100%;">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>아이콘</td>
+                                        <td>
 
-                                        <div class="custom-select-wrap">
-                                            <div class="made-select" id="noticeSelect">
-                                                <div class="selected">
-                                                    <img th:src="@{/image/notice01.png}" alt=""> 공지 아이콘
-                                                    <span class="arrow"><i class="xi-angle-down"></i></span>
-                                                </div>
-                                                <ul class="select-options">
-                                                    <li data-value="icon1">
+                                            <div class="custom-select-wrap">
+                                                <div class="made-select" id="noticeSelect">
+                                                    <div class="selected">
                                                         <img th:src="@{/image/notice01.png}" alt=""> 공지 아이콘
-                                                    </li>
-                                                    <li data-value="icon2">
-                                                        <img th:src="@{/image/notice02.png}" alt=""> 알림 아이콘
-                                                    </li>
-                                                    <li data-value="icon3">
-                                                        <img th:src="@{/image/notice03.png}" alt=""> 긴급 아이콘
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                    </td>
-                                </tr>
-                                <tr class="app-textarea">
-                                    <td>내용</td>
-                                    <td style="padding:0;">
-                                        <textarea id="content" name="content"></textarea>
-                                    </td>
-                                </tr>
-                                <tr class="">
-                                    <td>링크</td>
-                                    <td>
-                                        <div id="linkRow" style="display: none;">
-                                            <input id="linkUrl" name="content" readonly>
-                                            <button class="save-url-btn" id="removeUrl">
-                                                <img th:src="@{/image/retract-icon.png}" alt="삭제">
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>이미지</td>
-                                    <td>
-                                        <div class="image-row">
-                                            <div class="left-wrapper">
-                                                <input type="file" id="imageInput" accept="image/*"
-                                                       style="display: none"/>
-                                                <div class="image-name" id="imageNameWrapper" style="display: none;">
-                                                    <span id="fileName">image.png</span>
-                                                    <button class="retract-btn" id="removeImage">
-                                                        <img th:src="@{/image/retract-icon.png}" alt="삭제">
-                                                    </button>
+                                                        <span class="arrow"><i class="xi-angle-down"></i></span>
+                                                    </div>
+                                                    <ul class="select-options">
+                                                        <li data-value="icon1">
+                                                            <img th:src="@{/image/notice01.png}" alt=""> 공지 아이콘
+                                                        </li>
+                                                        <li data-value="icon2">
+                                                            <img th:src="@{/image/notice02.png}" alt=""> 알림 아이콘
+                                                        </li>
+                                                        <li data-value="icon3">
+                                                            <img th:src="@{/image/notice03.png}" alt=""> 긴급 아이콘
+                                                        </li>
+                                                    </ul>
                                                 </div>
-                                                <input type="hidden" id="imagePath" name="imagePath">
                                             </div>
 
-                                            <button class="submit-btn" id="uploadBtn">등록하기</button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                    </tr>
+                                    <tr class="app-textarea">
+                                        <td>내용</td>
+                                        <td style="padding:0;">
+                                            <textarea id="content" name="content"></textarea>
+                                        </td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>링크</td>
+                                        <td>
+                                            <div id="linkRow" style="display: none;">
+                                                <input id="linkUrl" name="content" readonly>
+                                                <button class="save-url-btn" id="removeUrl">
+                                                    <img th:src="@{/image/retract-icon.png}" alt="삭제">
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>이미지</td>
+                                        <td>
+                                            <div class="image-row">
+                                                <div class="left-wrapper">
+                                                    <input type="file" id="imageInput" accept="image/*"
+                                                        style="display: none" />
+                                                    <div class="image-name" id="imageNameWrapper"
+                                                        style="display: none;">
+                                                        <span id="fileName">image.png</span>
+                                                        <button class="retract-btn" id="removeImage">
+                                                            <img th:src="@{/image/retract-icon.png}" alt="삭제">
+                                                        </button>
+                                                    </div>
+                                                    <input type="hidden" id="imagePath" name="imagePath">
+                                                </div>
+
+                                                <button class="submit-btn" id="uploadBtn">등록하기</button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -130,53 +131,54 @@
                                 <div class="table-frame choose-frame">
                                     <table class="basic-table pay-table yh">
                                         <colgroup>
-                                            <col width="15%">
-                                            <col width="25%">
-                                            <col width="25%">
-                                            <col width="25%">
+                                            <col width="10%">
+                                            <col width="20%">
+                                            <col width="50%">
+                                            <col width="20%">
+                                            <col width="10%">
                                         </colgroup>
                                         <thead>
-                                        <tr>
-                                            <th class="checkbox-group">
-                                                <input type="checkbox" id="selectAll">
-                                            </th>
-                                            <th class="sortable" data-column="name">
-                                                <img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름
-                                            </th>
-                                            <th class="sortable" data-column="subject">
-                                                <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강 과목
-                                            </th>
-                                            <th class="sortable" data-column="grade">
-                                                <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년
-                                            </th>
-                                            <th>앱 알림</th>
-                                        </tr>
+                                            <tr>
+                                                <th class="checkbox-group">
+                                                    <input type="checkbox" id="selectAll">
+                                                </th>
+                                                <th class="sortable" data-column="name">
+                                                    <img th:src="@{/image/sort_checked.svg}" alt="" class="svg-sort">이름
+                                                </th>
+                                                <th class="sortable" data-column="subject">
+                                                    <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">수강 과목
+                                                </th>
+                                                <th class="sortable" data-column="grade">
+                                                    <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">학년
+                                                </th>
+                                                <th>앱 알림</th>
+                                            </tr>
                                         </thead>
                                         <tbody id="student-tbody" class="stripe">
-                                        <tr th:each="student : ${studentList}"
-                                            th:attr="data-grade=${student.grade},
+                                            <tr th:each="student : ${studentList}" th:attr="data-grade=${student.grade},
+             data-han-class=${student.hanClassName},
              data-han-class=${student.hanClassName},
              data-han-class-type=${student.hanClassType},
              data-book-class=${student.bookClassName},
              data-book-class-type=${student.bookClassType}">
-                                            <td class="checkbox-group">
-                                                <input type="checkbox"
-                                                       th:value="${student.studentId}"
-                                                       th:attr="data-token=${student.appToken}"
-                                                       th:disabled="${student.appToken == null}">
-                                            </td>
-                                            <td th:text="${student.studentName}"></td>
-                                            <td th:text="${student.subject}"></td>
-                                            <td th:text="${student.grade}"></td>
-                                            <td>
-                                                <img th:if="${student.appToken != null}" th:src="@{/image/in_app.png}" style="width: 20px;">
-                                                <img th:if="${student.appToken == null}" th:src="@{/image/no_app.png}" style="width: 20px;">
-                                            </td>
-                                        </tr>
+                                                <td class="checkbox-group">
+                                                    <input type="checkbox" th:value="${student.studentId}"
+                                                        th:attr="data-token=${student.appToken},data-student-id=${student.studentId}">
+                                                </td>
+                                                <td th:text="${student.studentName}"></td>
+                                                <td th:text="${student.subject}"></td>
+                                                <td th:text="${student.grade}"></td>
+                                                <td>
+                                                    <img th:if="${student.appToken != null}"
+                                                        th:src="@{/image/in_app.png}" style="width: 20px;">
+                                                    <img th:if="${student.appToken == null}"
+                                                        th:src="@{/image/no_app.png}" style="width: 20px;">
+                                                </td>
+                                            </tr>
 
-                                        <tr th:if="${#lists.isEmpty(studentList)}">
-                                            <td colspan="5" style="text-align: center;">조회된 학생이 없습니다.</td>
-                                        </tr>
+                                            <tr th:if="${#lists.isEmpty(studentList)}">
+                                                <td colspan="5" style="text-align: center;">조회된 학생이 없습니다.</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -191,4 +193,3 @@
         </div>
     </div>
 </div>
-

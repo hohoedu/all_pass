@@ -155,7 +155,7 @@ public class ManageViewController {
             return "redirect:/login";
         }
 
-        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeService.findCenterNoticeByCenterCode(user);
+        List<NoticeRespDTO.CenterNoticeDTO> noticeList = noticeService.findCenterNoticeByCenterCode(user, false);
         List<NoticeRespDTO.NoticeStudentDTO> studentList = noticeService.findStudentByUserCode(user);
 
         model.addAttribute("noticeList", noticeList);

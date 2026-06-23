@@ -29,6 +29,7 @@ import com.hohoedu.all_pass.student.model.*;
 import com.hohoedu.all_pass.student.repository.*;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -75,7 +76,7 @@ public class StudentService {
     }
 
     public List<StudentWebRespDTO.StudentsListDTO> findStudentByCenterCode(String year, String month, String centerCode,
-                                                                           String userCode) {
+            String userCode) {
 
         List<StudentWebRespDTO.StudentsListDTO> student = studentRepository.findStudentByCenterCode(year, month,
                 centerCode, userCode);
@@ -319,7 +320,7 @@ public class StudentService {
     }
 
     public StudentWebRespDTO.StudentStatusDTO statusInsert(StudentWebReqDTO.StatusHistoryDTO historyDTO,
-                                                           String userCode) {
+            String userCode) {
         String today = DateConfig.currentYearMonth().get("today");
         historyDTO.setUserCode(userCode);
         if (historyDTO.getStatusKey().equals("ACTIVE")) {
@@ -635,6 +636,8 @@ public class StudentService {
                         reqDto.getTransferReason(),
                         userCode,
                         centerCode);
+
+                studentRepository.updatePendingHanTeacher(studentId, centerCode, reqDto.getUserCode());
             }
 
             if (reqDto.getSelectedBook() != null) {
@@ -661,6 +664,8 @@ public class StudentService {
                         reqDto.getTransferReason(),
                         userCode,
                         centerCode);
+
+                studentRepository.updatePendingBookTeacher(studentId, centerCode, reqDto.getUserCode());
             }
         }
     }
@@ -717,6 +722,42 @@ public class StudentService {
             // 4. 예약 완료 처리
             studentRepository.markAsApplied(t.getId());
         }
+    }
+
+    @Transactional
+    public void cancelTransfer(List<Integer> ids) {
+
+        List<StudentTransferSchedule> targets = studentRepository.findScheduleByIds(ids);
+
+        if (targets.isEmpty()) {
+            throw new Exception400("취소할 수 있는 내역이 없습니다.");
+        }
+
+        for (StudentTransferSchedule t : targets) {
+
+            // 1. pending 클리어
+            if ("1".equals(t.getClassType())) {
+                studentRepository.clearPendingHanTeacher(t.getStudentId());
+            } else if ("2".equals(t.getClassType())) {
+                studentRepository.clearPendingBookTeacher(t.getStudentId());
+            }
+
+            // 2. 히스토리 저장 (CANCELED 이력)
+            StudentTransferHistory history = StudentTransferHistory.builder()
+                    .student(Student.builder().studentId(t.getStudentId()).build())
+                    .fromUser(User.builder().userCode(t.getFromUser()).build())
+                    .toUser(User.builder().userCode(t.getToUser()).build())
+                    .centerCode(Center.builder().centerCode(t.getCenterCode()).build())
+                    .classType(t.getClassType())
+                    .transferReason("전입/전출 취소")
+                    .moveAt(t.getMoveAt())
+                    .build();
+
+            studentRepository.insertTransferHistory(history);
+        }
+
+        // 3. CANCELED 처리
+        studentRepository.cancelTransferSchedule(ids);
     }
 
     public StudentAppRespDTO.AppTokenRespDTO findAppTokenByAppId(String appId) {
@@ -1401,7 +1442,7 @@ public class StudentService {
     }
 
     public List<StudentWebRespDTO.SiblingSearchRespDTO> searchSibling(String currentStudentId, String searchKey,
-                                                                      String searchValue) {
+            String searchValue) {
 
         // 현재 학생의 center_code 조회 (같은 센터 내에서만 검색)
         String centerCode = studentRepository.getCenterCode(currentStudentId);
@@ -1500,4 +1541,24 @@ public class StudentService {
         studentRepository.updateQrNumber(studentId, qrNumber);
         return null;
     }
+
+    public List<StudentWebRespDTO.PrivacyStudentListDTO> getStudentList(
+            String centerCode, String yy, String mm) {
+        return studentRepository.findStudentList(centerCode, yy, mm, null);
+    }
+
+    public List<StudentWebRespDTO.PrivacyStudentListDTO> getStudentList(
+            String centerCode, String yy, String mm, String search) {
+        return studentRepository.findStudentList(centerCode, yy, mm, search);
+    }
+
+    public StudentWebRespDTO.PrivacyPrintResultDTO getConsentPrintData(
+            String centerCode, List<String> studentIds) {
+
+        StudentWebRespDTO.PrivacyPrintResultDTO result = new StudentWebRespDTO.PrivacyPrintResultDTO();
+        result.setPrintDataList(studentRepository.findConsentDocList(centerCode, studentIds));
+        result.setCenterInfo(studentRepository.findCenterInfo(centerCode));
+        return result;
+    }
+
 }

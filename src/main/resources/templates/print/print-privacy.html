@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xpressengine/XEIcon/xeicon.min.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&family=Noto+Serif+KR&display=swap">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/privacy-consent.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script th:src="@{/js/student/student_privacy.js}" defer></script>
+  <script th:src="@{/js/custom.js}"></script>
+  <script th:src="@{/js/sidebar.js}"></script>
+  <title>개인정보 동의서 출력</title>
+</head>
+
+<body th:data-yy="${yy}" th:data-mm="${mm}" th:data-center-code="${centerCode}">
+
+  <div class="main-container">
+    <div class="main-frame">
+
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+
+      <main class="main-info">
+        <div class="student-frame">
+          <section>
+
+            <div class="common-title">
+              <h2>개인정보동의서 출력</h2>
+            </div>
+
+            <div class="pc-layout">
+
+              <!-- 좌측 패널 -->
+              <div class="pc-left">
+
+                <div class="month-header2" style="align-items: center;">
+                  <div class="month-title2">
+                    <span id="currentMonth"></span>
+                    <div style="position:relative;">
+                      <input type="month" id="monthPicker" class="hidden-date" th:value="${yy + '-' + mm}">
+                      <button type="button" class="icon-btn" id="btnOpenPicker">
+                        <img th:src="@{/image/calendar.png}" alt="달력">
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <button type="button" class="explore common-btn" id="btnPreview">미리보기</button>
+                  </div>
+                </div>
+
+                <div class="pc-action-bar">
+                  <input type="text" class="basic-input" id="searchInput" placeholder="학생명 또는 연락처 검색" style="flex: 1;">
+                  <button type="button" class="explore common-btn" id="btnSearch"
+                    style="align-self: center;">검색</button>
+
+                </div>
+
+
+                <div class="pc-table-wrap mt">
+                  <table class="basic-table pc-table">
+                    <colgroup>
+                      <col style="width:5%">
+                      <col style="width:5%">
+                      <col style="width:20%">
+                      <col style="width:25%">
+                      <col style="width:20%">
+                      <col style="width:25%">
+                    </colgroup>
+                    <thead class="pc-thead">
+                      <tr>
+                        <th class="checkbox-group">
+                          <input type="checkbox" id="checkAll">
+                        </th>
+                        <th>No</th>
+                        <th>학생명</th>
+                        <th>학부모 연락처</th>
+                        <th>등록일자</th>
+                        <th>반</th>
+                      </tr>
+                    </thead>
+                  </table>
+
+                  <div class="pc-tbody-scroll">
+                    <table class="basic-table pc-table yh">
+                      <colgroup>
+                        <col style="width:5%">
+                        <col style="width:5%">
+                        <col style="width:20%">
+                        <col style="width:25%">
+                        <col style="width:20%">
+                        <col style="width:25%">
+                      </colgroup>
+                      <tbody id="pcListBody" class="stripe">
+                        <th:block th:each="row, stat : ${students}">
+                          <tr class="pc-row" th:data-id="${row.studentId}">
+                            <td class="checkbox-group">
+                              <input type="checkbox" th:value="${row.studentId}">
+                            </td>
+                            <td th:text="${stat.count}"></td>
+                            <td th:text="${row.studentName}"></td>
+                            <td th:text="${row.parentTel}"></td>
+                            <td th:text="${row.regDate}"></td>
+                            <td th:text="${row.className}"></td>
+                          </tr>
+                        </th:block>
+                        <tr th:if="${students == null or #lists.isEmpty(students)}">
+                          <td colspan="6" class="empty-row">조회된 데이터가 없습니다.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- 우측 패널 -->
+              <div class="pc-right">
+                <div class="pc-preview-bg">
+                  <div class="pc-empty-state" id="pcEmptyState">
+                    <i class="xi-document-o"></i>
+                    <p>항목을 선택한 후<br>미리보기 버튼을 눌러주세요.</p>
+                  </div>
+                  <div id="pcPreviewWrap" style="display:none;"></div>
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+
+</html>
