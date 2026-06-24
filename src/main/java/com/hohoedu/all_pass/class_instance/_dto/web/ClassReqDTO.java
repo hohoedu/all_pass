@@ -433,4 +433,14 @@ public class ClassReqDTO {
         private String mm;
     }
 
+    @Data
+    public static class CopyToTeacherDTO {
+        private String fromUserCode;
+        private String fromYy;
+        private String fromMm;
+        private String toUserCode;
+        private String toYy;
+        private String toMm;
+    }
+
 }

@@ -621,6 +621,32 @@ public class ClassService {
        return autoRegisterOrder(userCode, centerCode, year, month);
     }
 
+    @Transactional
+    public void copyTimeTableToTeacher(ClassReqDTO.CopyToTeacherDTO req, String centerCode) {
+
+        int count = classRepository.existsTimeTable(req.getToUserCode(), req.getToYy(), req.getToMm());
+        if (count > 0) throw new RuntimeException("해당 월에는 이미 시간표가 존재합니다.");
+
+        List<TimeTableDTO> rows = classRepository.findTimeTableBasic(req.getFromUserCode(), req.getFromYy(), req.getFromMm());
+        if (rows.isEmpty()) throw new RuntimeException("가져올 시간표가 없습니다.");
+
+        for (TimeTableDTO old : rows) {
+            ClassReqDTO.ClassRegisterDTO dto = new ClassReqDTO.ClassRegisterDTO();
+            dto.setYy(req.getToYy());
+            dto.setMm(req.getToMm());
+            dto.setDayname(old.getDayname());
+            dto.setPeriodNo(old.getPeriodNo());
+            dto.setStartTime(old.getStartTime());
+            dto.setEndTime(old.getEndTime());
+            dto.setClassKey(old.getClassKey());
+            dto.setUnitKey(old.getUnitKey());
+            dto.setGradeKey(old.getGradeKey());
+            dto.setUserCode(req.getToUserCode());
+            dto.setCenterCode(centerCode);
+
+            registerClass(dto);
+        }
+    }
 
     private String resolveNextClassKey(String classKey, Map<String, Object> next) {
         String nextClassKey = (String) next.get("class_key");

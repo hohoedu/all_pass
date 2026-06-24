@@ -107,6 +107,18 @@ public class UserController {
 
     }
 
+    @GetMapping("/active-users")
+    public ResponseEntity<?> getActiveUsers(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<User> users = userService.findActiveUser(user);
+        return ResponseEntity.ok(ApiUtils.success(users));
+    }
+
     @PostMapping("/password")
     public ResponseEntity<?> changePassword(@RequestBody UserReqDTO.PasswordChangeRequest request,
             HttpSession session) {

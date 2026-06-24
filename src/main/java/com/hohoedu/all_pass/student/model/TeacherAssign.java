@@ -56,6 +56,11 @@ public class TeacherAssign {
     @JoinColumn(name = "assign_book_class", referencedColumnName = "class_key")
     private ClassCode assignBookClass;
 
+    @Column(name = "pending_han_teacher")
+    private String pendingHanTeacher;
+
+    @Column(name = "pending_book_teacher")
+    private String pendingBookTeacher;
 
     @Builder
     public TeacherAssign(Student student, Boolean hanState, User assignHanTeacher, ClassCode assignHanClass, String entryHanDate, Integer hanMaterialFee, Boolean bookState, User assignBookTeacher, ClassCode assignBookClass, String entryBookDate, Integer bookMaterialFee) {

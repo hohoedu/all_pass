@@ -117,10 +117,12 @@ public class ClassController {
         }
 
         try {
+            String message = null;
             for (ClassReqDTO.AddStudentDTO dto : reqDTO.getAssignments()) {
-                classService.registerStudentFullProcess(dto, user.getUserCode(), user.getCenterCode(), false);
+                String result = classService.registerStudentFullProcess(dto, user.getUserCode(), user.getCenterCode(), false);
+                if (result != null) message = result;
             }
-            return ResponseEntity.ok(ApiUtils.success(true));
+            return ResponseEntity.ok(ApiUtils.success(message));
 
         } catch (Exception e) {
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
@@ -197,6 +199,25 @@ public class ClassController {
                 req.get("year"),
                 req.get("month"));
         return ResponseEntity.ok(ApiUtils.success(msg));
+    }
+
+    @PostMapping("/api/copy/to-teacher")
+    public ResponseEntity<?> copyTimeTableToTeacher(@RequestBody ClassReqDTO.CopyToTeacherDTO req, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        req.setToUserCode(user.getUserCode());
+
+        try {
+            classService.copyTimeTableToTeacher(req, user.getCenterCode());
+            return ResponseEntity.ok(ApiUtils.success(null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+        }
     }
 
     @PostMapping("/timetable/view")

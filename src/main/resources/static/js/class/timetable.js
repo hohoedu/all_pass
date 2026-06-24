@@ -1191,3 +1191,88 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+// 시간표 내보내기 (어드민 전용)
+document.addEventListener('DOMContentLoaded', () => {
+    const openBtn = document.getElementById('open-copy-modal-btn');
+    if (!openBtn) return;
+
+    const modal = document.getElementById('copy-timetable-modal');
+    const cancelBtn = document.getElementById('copy-modal-cancel');
+    const confirmBtn = document.getElementById('copy-modal-confirm');
+    const fromYmInput = document.getElementById('copy-from-ym');
+    const toYmInput = document.getElementById('copy-to-ym');
+    const teacherSelect = document.getElementById('copy-from-teacher');
+    // 모달 열기 — 현재 선택된 연월을 기본값으로
+    openBtn.addEventListener('click', async () => {
+        if (year && month) {
+            toYmInput.value = `${year}-${month.padStart(2, '0')}`;
+        }
+
+        // 선생님 목록 로드
+        try {
+            const res = await fetch('/user/active-users');
+            const json = await res.json();
+            const users = json.response ?? [];
+            teacherSelect.innerHTML = '<option value="">선생님 선택</option>';
+            users
+                .filter(u => u.useYn !== false)
+                .forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.userCode;
+                    opt.textContent = u.userName;
+                    teacherSelect.appendChild(opt);
+                });
+        } catch (e) {
+            showAlert({icon: 'error', title: '선생님 목록을 불러올 수 없습니다.'});
+            return;
+        }
+
+        modal.style.display = 'flex';
+    });
+
+    // 모달 닫기
+    cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+
+
+    // 가져오기 실행
+    confirmBtn.addEventListener('click', async () => {
+        if (confirmBtn.disabled) return;
+        confirmBtn.disabled = true;
+        const fromYm = fromYmInput.value;
+        const toYm = toYmInput.value;
+        const fromUserCode = teacherSelect.value;
+
+        if (!fromUserCode) { showAlert({icon: 'warning', text: '선생님을 선택해주세요.'}); return; }
+        if (!fromYm) { showAlert({icon: 'warning', text: '복사할 연월을 선택해주세요.'}); return; }
+        if (!toYm) { showAlert({icon: 'warning', text: '붙여넣을 연월을 선택해주세요.'}); return; }
+
+        const [fromYy, fromMm] = fromYm.split('-');
+        const [toYy, toMm] = toYm.split('-');
+
+        const body = {fromUserCode, fromYy, fromMm, toUserCode: null, toYy, toMm};
+
+        try {
+            const res = await fetch('/class/api/copy/to-teacher', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const json = await res.json();
+
+            if (json.success === false) {
+                showAlert({icon: 'error', title: json.error?.message || '처리 중 오류가 발생했습니다.'});
+                return;
+            }
+
+            modal.style.display = 'none';
+            showAlert({icon: 'success', title: '시간표를 가져왔습니다.', showConfirmButton: true, allowOutsideClick: false})
+                .then(() => location.reload());
+        } catch (e) {
+            showAlert({icon: 'error', title: '서버와 통신 중 오류가 발생했습니다.'});
+        } finally {
+            confirmBtn.disabled = false;
+        }
+    });
+});

@@ -39,6 +39,7 @@
                             <div class="class-btns">
                                 <div class="common-btn week-setting" id="openWeekModalBtn">주차 설정</div>
                                 <div class="common-btn last-data" id="load-last-time-table">전월 데이터 불러오기</div>
+                                <div class="common-btn last-data" id="open-copy-modal-btn">시간표 가져오기</div>
                                 <div class="common-btn record-save" id="table_register">저장</div>
                             </div>
                         </div>
@@ -263,6 +264,37 @@
             <div class="common-btn record-save" id="week-modal-save-btn">저장</div>
         </div>
 
+    </div>
+</div>
+
+<!-- 시간표 가져오기 모달 -->
+<div id="copy-timetable-modal" class="week-modal-overlay">
+    <div class="week-modal-box" style="width: 420px;">
+        <span class="week-modal-close" id="copy-modal-cancel">&times;</span>
+        <h2 class="week-modal-title">시간표 가져오기</h2>
+
+        <div class="form-row">
+            <label>가져올 선생님</label>
+            <div class="basic-select">
+                <select id="copy-from-teacher">
+                    <option value="">선생님 선택</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label>복사할 연월</label>
+            <input type="month" id="copy-from-ym" class="basic-input">
+        </div>
+
+        <div class="form-row">
+            <label>붙여넣을 연월</label>
+            <input type="month" id="copy-to-ym" class="basic-input">
+        </div>
+
+        <div class="week-modal-save-wrapper">
+            <div class="common-btn record-save" id="copy-modal-confirm">가져오기</div>
+        </div>
     </div>
 </div>
 

@@ -573,16 +573,24 @@ public class StudentService {
         dto.setBookState(oldBook || isBook);
 
         if (isHan) {
-            dto.setHanTeacher(info.getTeacherCode());
-            dto.setHanClass(info.getClassKey());
+            boolean isPendingHan = assign.getPendingHanTeacher() != null
+                    && info.getTeacherCode().equals(assign.getPendingHanTeacher());
+            if (!isPendingHan) {
+                dto.setHanTeacher(info.getTeacherCode());
+                dto.setHanClass(info.getClassKey());
+            }
             if (!oldHan) {
                 dto.setHanEntryDate(today);
             }
         }
 
         if (isBook) {
-            dto.setBookTeacher(info.getTeacherCode());
-            dto.setBookClass(info.getClassKey());
+            boolean isPendingBook = assign.getPendingBookTeacher() != null
+                    && info.getTeacherCode().equals(assign.getPendingBookTeacher());
+            if (!isPendingBook) {
+                dto.setBookTeacher(info.getTeacherCode());
+                dto.setBookClass(info.getClassKey());
+            }
             if (!oldBook) {
                 dto.setBookEntryDate(today);
             }

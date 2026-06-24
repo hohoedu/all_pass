@@ -8073,3 +8073,7 @@ td.middle {
 .regist-qr-btn{
     align-items: center;
 }
+
+.swal2-container {
+    z-index: 10001 !important;
+}
