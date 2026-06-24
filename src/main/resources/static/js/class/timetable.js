@@ -750,22 +750,30 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({assignments})
         })
-            .then(res => {
-                if (!res.ok) throw new Error('추가 요청 실패: ' + res.status);
-                return res.json();
-            })
-            .then(apiResult => {
+            .then(res => res.json().then(data => ({ok: res.ok, data})))
+            .then(({ok, data}) => {
+                if (!ok || !data.success) {
+                    const msgParts = (data.error?.message || '등록 실패').split('\n');
+                    return showAlert({
+                        icon: 'error',
+                        title: msgParts[0],
+                        text: msgParts[1] ?? undefined,
+                        showConfirmButton: true,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                }
                 return showAlert({
-                    icon: apiResult.success ? 'success' : 'error', // ✅ success 기준
-                    title: apiResult.success ? '학생이 추가되었습니다.' : '등록 실패',
-                    text: apiResult.response ?? apiResult.error?.message, // ✅ 마감일 메시지
+                    icon: 'success',
+                    title: '학생이 추가되었습니다.',
+                    text: data.response ?? undefined,
                     showConfirmButton: true,
                     allowOutsideClick: false,
                     allowEscapeKey: false
                 });
             })
             .then(result => {
-                if (result.isConfirmed) window.location.reload();
+                if (result && result.isConfirmed) window.location.reload();
             })
             .catch(err => {
                 showAlert({icon: 'error', title: '오류가 발생했습니다.', text: err.message});

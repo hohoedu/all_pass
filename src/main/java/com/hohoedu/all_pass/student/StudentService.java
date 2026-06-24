@@ -549,6 +549,10 @@ public class StudentService {
 
     }
 
+    public TeacherAssign getTeacherAssign(String studentId) {
+        return studentRepository.findTeacherAssign(studentId);
+    }
+
     public void assignTeacher(String studentId, ClassRespDTO.BasicTimeTableInfo info) {
 
         if (info == null)
@@ -708,7 +712,8 @@ public class StudentService {
                     yy,
                     mm);
 
-            if (dto != null) {
+            // 전출 선생님 시간표만 삭제 (전입 선생님이 미리 세팅한 경우 건드리지 않음)
+            if (dto != null && t.getFromUser().equals(dto.getUserCode())) {
                 classRepository.deleteByKeyAndStudentId(dto.getTimeTableKey(), t.getStudentId());
                 paymentService.deleteDetail(dto.getTimeTableKey(), t.getStudentId());
             }
@@ -721,6 +726,7 @@ public class StudentService {
                     .centerCode(Center.builder().centerCode(t.getCenterCode()).build())
                     .classType(t.getClassType())
                     .transferReason(t.getReason())
+                    .status("COMPLETED")
                     .updatedBy("SYSTEM")
                     .moveAt(today.toString())
                     .build();
@@ -743,14 +749,46 @@ public class StudentService {
 
         for (StudentTransferSchedule t : targets) {
 
-            // 1. pending 클리어
+            // 1. 전입 선생님이 미리 세팅한 시간표가 있으면 제거
+            if (t.getMoveAt() != null && t.getMoveAt().length() >= 7) {
+                String yy = t.getMoveAt().substring(0, 4);
+                String mm = t.getMoveAt().substring(5, 7);
+
+                // 전입 선생님이 미리 세팅한 시간표가 있으면 제거
+                StudentWebRespDTO.TransferTimeTableInfoDTO preSetup = classRepository.findTimeTableKeyByStudentId(
+                        t.getStudentId(), t.getClassType(), yy, mm);
+                if (preSetup != null && t.getToUser().equals(preSetup.getUserCode())) {
+                    classRepository.deleteByKeyAndStudentId(preSetup.getTimeTableKey(), t.getStudentId());
+                    paymentService.deleteDetail(preSetup.getTimeTableKey(), t.getStudentId());
+                }
+
+                // 전출 선생님 시간표 복구 (전입 선생님이 시간표 삭제 후 취소하는 경우도 포함)
+                StudentWebRespDTO.TransferTimeTableInfoDTO original = classRepository.findOriginalInHistory(
+                        t.getStudentId(), t.getFromUser(), t.getClassType(), yy, mm);
+                if (original != null && original.getWeekNo() != null) {
+                    classRepository.restoreStudent(original.getTimeTableKey(), t.getStudentId(), original.getWeekNo());
+
+                    // 결제 상세 복구
+                    String paymentKey = paymentService.createPayment(
+                            t.getStudentId(), yy, mm, t.getCenterCode(), t.getFromUser());
+                    ClassRespDTO.ClassInfoDTO classInfo = classRepository.findClassInfoByTimeTableKeyAndStudentId(
+                            original.getTimeTableKey(), t.getStudentId(), t.getCenterCode());
+                    if (classInfo != null && classInfo.getClassFee() != null) {
+                        int weekNo = Integer.parseInt(original.getWeekNo());
+                        classInfo.setClassFee(classInfo.getClassFee() * weekNo / 4);
+                        paymentService.createPaymentDetail(paymentKey, classInfo, t.getFromUser());
+                    }
+                }
+            }
+
+            // 2. pending 클리어
             if ("1".equals(t.getClassType())) {
                 studentRepository.clearPendingHanTeacher(t.getStudentId());
             } else if ("2".equals(t.getClassType())) {
                 studentRepository.clearPendingBookTeacher(t.getStudentId());
             }
 
-            // 2. 히스토리 저장 (CANCELED 이력)
+            // 3. 히스토리 저장 (CANCELED 이력)
             StudentTransferHistory history = StudentTransferHistory.builder()
                     .student(Student.builder().studentId(t.getStudentId()).build())
                     .fromUser(User.builder().userCode(t.getFromUser()).build())
@@ -758,13 +796,14 @@ public class StudentService {
                     .centerCode(Center.builder().centerCode(t.getCenterCode()).build())
                     .classType(t.getClassType())
                     .transferReason("전입/전출 취소")
+                    .status("CANCELED")
                     .moveAt(t.getMoveAt())
                     .build();
 
             studentRepository.insertTransferHistory(history);
         }
 
-        // 3. CANCELED 처리
+        // 4. CANCELED 처리
         studentRepository.cancelTransferSchedule(ids);
     }
 

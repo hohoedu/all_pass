@@ -83,6 +83,10 @@ public class NoticeService {
         return noticeRepository.findStudentByCenterCode(user.getCenterCode());
     }
 
+    public List<NoticeRespDTO.ClassCodeDTO> findClassListByCenterCode(UserRespDTO.LoginRespDTO user) {
+        return noticeRepository.findClassListByCenterCode(user.getCenterCode());
+    }
+
     public NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(UserRespDTO.LoginRespDTO user, Integer id) {
 
         NoticeRespDTO.CenterNoticeDetailDTO notice = noticeRepository.findCenterNoticeByNoticeId(user.getCenterCode(),

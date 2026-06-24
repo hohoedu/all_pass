@@ -36,4 +36,6 @@ public interface NoticeRepository {
         NoticeAppRespDTO.NoticeDetailRespDTO findAppNoticeDetail(@Param("id") Integer id);
 
         List<NoticeRespDTO.NoticeStudentDTO> findStudentByCenterCode(String centerCode);
+
+        List<NoticeRespDTO.ClassCodeDTO> findClassListByCenterCode(String centerCode);
 }

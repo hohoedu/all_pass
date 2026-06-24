@@ -100,7 +100,10 @@
                     <div class="sms-right">
                         <div class="student-wrapper">
                             <div class="student-select">
-                                <h3 class="title">학생 선택</h3>
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                    <h3 class="title" style="margin:0;">학생 선택</h3>
+                                    <span id="selectedCount" style="font-size:13px; color:#555; font-weight:600;">0건 선택</span>
+                                </div>
                                 <div class="filter-group" data-group="grade">
                                     <span class="filter-label">학년별</span>
                                     <button class="filter-btn" data-value="5세">5세</button>
@@ -111,6 +114,8 @@
                                     <button class="filter-btn" data-value="초3">초3</button>
                                     <button class="filter-btn" data-value="초4">초4</button>
                                     <button class="filter-btn" data-value="초5">초5</button>
+                                    <button class="filter-btn" data-value="초6">초6</button>
+                                    <button class="filter-btn" data-value="중등">중등</button>
                                 </div>
                                 <div style="display: flex">
                                     <div class="filter-group" data-group="subject">

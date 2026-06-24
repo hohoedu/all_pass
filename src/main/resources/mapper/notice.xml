@@ -102,6 +102,50 @@
 
     </select>
 
+    <select id="findClassListByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$ClassCodeDTO">
+        SELECT classKey, className, classType
+        FROM (
+            SELECT DISTINCT cc.class_key  AS classKey,
+                            cc.class_name AS className,
+                            cc.class_type AS classType
+            FROM erp_class_code cc
+                     JOIN erp_time_table t ON t.class_key = cc.class_key
+            WHERE t.center_code = #{centerCode}
+              AND (cc.class_key NOT LIKE 'NE%' OR #{centerCode} = 'PUS002')
+        ) sub
+        ORDER BY
+            CASE classKey
+                WHEN 'Y'   THEN 1
+                WHEN 'S'   THEN 2
+                WHEN 'P'   THEN 3
+                WHEN 'ES'  THEN 4
+                WHEN 'EP'  THEN 5
+                WHEN 'EG'  THEN 6
+                WHEN 'ED'  THEN 7
+                WHEN 'NES' THEN 8
+                WHEN 'NEP' THEN 9
+                WHEN 'NEG' THEN 10
+                WHEN 'NED' THEN 11
+                WHEN 'HSN' THEN 12
+                WHEN 'HSU' THEN 13
+                WHEN 'HSX' THEN 14
+                WHEN 'HSS' THEN 15
+                WHEN 'HSA' THEN 16
+                WHEN 'K'   THEN 17
+                WHEN 'M'   THEN 18
+                WHEN 'J'   THEN 19
+                WHEN 'SU'  THEN 20
+                WHEN 'DU'  THEN 21
+                WHEN 'TU'  THEN 22
+                WHEN 'BSN' THEN 23
+                WHEN 'BSU' THEN 24
+                WHEN 'BSX' THEN 25
+                WHEN 'BSS' THEN 26
+                WHEN 'BSA' THEN 27
+                ELSE 99
+            END
+    </select>
+
     <!--  // ======================================== APP ======================================== // -->
     <!--  앱 공지사항 리스트 조회  -->
     <select id="findAppNoticeList" resultType="com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO$NoticeListRespDTO">

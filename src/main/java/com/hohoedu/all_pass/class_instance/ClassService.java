@@ -41,8 +41,11 @@ import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableLabelD
 import com.hohoedu.all_pass.class_instance.repository.ClassCodeJpaRepository;
 import com.hohoedu.all_pass.class_instance.repository.ClassRepository;
 import com.hohoedu.all_pass.class_instance.repository.UnitCodeJpaRepository;
+import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.student.Student;
+import com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO;
 import com.hohoedu.all_pass.student.model.GradeCode;
+import com.hohoedu.all_pass.student.model.TeacherAssign;
 import com.hohoedu.all_pass.student.repository.GradeJpaRepository;
 
 import jakarta.transaction.Transactional;
@@ -477,6 +480,43 @@ public class ClassService {
     @Transactional
     public String registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode, boolean skipAutoOrder) {
 
+        // 시간표 기본 정보 먼저 조회
+        ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
+
+        // 전입 pending 체크
+        TeacherAssign assign = studentService.getTeacherAssign(dto.getStudentId());
+        if (assign != null) {
+            String classType = info.getClassType();
+            boolean isPendingHan = info.getTeacherCode().equals(assign.getPendingHanTeacher());
+            boolean isPendingBook = info.getTeacherCode().equals(assign.getPendingBookTeacher());
+
+            // 전입 대기 중인 학생을 전입 선생님이 아닌 다른 선생님이 추가하려는 경우 차단 (핑퐁 방지)
+            boolean hasPendingHan = assign.getPendingHanTeacher() != null;
+            boolean hasPendingBook = assign.getPendingBookTeacher() != null;
+            if (("1".equals(classType) && hasPendingHan && !isPendingHan)
+                    || ("2".equals(classType) && hasPendingBook && !isPendingBook)) {
+                throw new Exception400("전입/전출 대기 중인 학생입니다.\n전입/전출 취소 후 재등록해주세요.");
+            }
+
+            if (isPendingHan || isPendingBook) {
+                boolean classTypeMatch = ("1".equals(classType) && isPendingHan)
+                        || ("2".equals(classType) && isPendingBook);
+
+                if (!classTypeMatch) {
+                    String typeName = "1".equals(classType) ? "한자" : "독서";
+                    throw new Exception400("해당 학생의 " + typeName + " 수업은 전입 대상이 아닙니다.");
+                }
+
+                // 전출 선생님 시간표에서 자동 제거
+                StudentWebRespDTO.TransferTimeTableInfoDTO transferInfo = classRepository.findTimeTableKeyByStudentId(
+                        dto.getStudentId(), classType, dto.getYy(), dto.getMm());
+                if (transferInfo != null) {
+                    classRepository.deleteByKeyAndStudentId(transferInfo.getTimeTableKey(), dto.getStudentId());
+                    paymentService.deleteDetail(transferInfo.getTimeTableKey(), dto.getStudentId());
+                }
+            }
+        }
+
         // 히스토리 먼저 확인
         boolean restored = classRepository.existsAssignHistory(dto.getTimeTableKey(), dto.getStudentId()) > 0;
 
@@ -500,8 +540,6 @@ public class ClassService {
         }
 
         // 공통 실행
-        ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(),
-                centerCode);
         studentService.assignTeacher(dto.getStudentId(), info);
 
         ClassRespDTO.ClassInfoDTO classInfo = findClassInfoByTimeTableKeyAndStudentId(dto.getTimeTableKey(),

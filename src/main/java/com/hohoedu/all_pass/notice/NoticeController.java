@@ -114,6 +114,15 @@ public class NoticeController {
         return ResponseEntity.ok(savedPath);
     }
 
+    @GetMapping("/class-list")
+    public ResponseEntity<?> getClassList(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "/login").build();
+        List<NoticeRespDTO.ClassCodeDTO> list = noticeService.findClassListByCenterCode(user);
+        return ResponseEntity.ok(ApiUtils.success(list));
+    }
+
     @PostMapping("/detail")
     public ResponseEntity<?> centerNoticeDetail(@RequestBody Map<String, Integer> noticeId, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

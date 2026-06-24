@@ -72,6 +72,7 @@
           AND center_code = #{centerCode}
           AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
           AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
+          AND status = 'COMPLETED'
             ) AS transferInCount,
 
         -- 이번달 전출
@@ -82,6 +83,7 @@
           AND center_code = #{centerCode}
           AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 1, 4) = #{year}
           AND SUBSTRING(CONVERT(VARCHAR, move_at, 120), 6, 2) = #{month}
+          AND status = 'COMPLETED'
             ) AS transferOutCount
         -- @formatter:on
     </select>
@@ -189,7 +191,8 @@
             JOIN erp_class_code cc ON t.class_key = cc.class_key
             WHERE tta.student_id = s.student_id
               AND t.yy = #{year}
-            AND t.mm = #{month}
+              AND t.mm = #{month}
+              AND t.user_code = #{userCode}
             FOR XML PATH (''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '')
             AS registeredClassTypes
             ) reg
@@ -946,9 +949,9 @@
 
     <insert id="insertTransferHistory" parameterType="com.hohoedu.all_pass.student.model.StudentTransferHistory">
         INSERT INTO erp_student_transfer_history (student_id, from_user_code, to_user_code, center_code, class_type,
-                                                  transfer_reason, class_key, move_at, created_at)
+                                                  transfer_reason, status, class_key, move_at, created_at)
         VALUES (#{student.studentId}, #{fromUser.userCode}, #{toUser.userCode}, #{centerCode.centerCode}, #{classType},
-                #{transferReason}, #{classCode.classKey}, #{moveAt},
+                #{transferReason}, #{status}, #{classCode.classKey}, #{moveAt},
                 SYSDATETIME());
     </insert>
 
@@ -1405,11 +1408,13 @@
             WHERE (#{teacherCode} = 'all' OR to_user_code = #{teacherCode})
               AND substring(move_at, 1, 7) BETWEEN #{startYm} AND #{endYm}
               AND (#{teacherCode} = 'all' OR from_user_code != #{teacherCode})
+              AND status = 'COMPLETED'
               AND NOT EXISTS (SELECT 1
                               FROM erp_student_transfer_history t2
                               WHERE t2.student_id = erp_student_transfer_history.student_id
                                 AND (#{teacherCode} = 'all' OR t2.from_user_code = #{teacherCode})
-                                AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7))
+                                AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7)
+                                AND t2.status = 'COMPLETED')
             GROUP BY substring(move_at, 1, 7)) mi ON COALESCE(e.ym, i.ym) = mi.ym
                  FULL OUTER JOIN (
             -- 전출
@@ -1418,11 +1423,13 @@
             WHERE (#{teacherCode} = 'all' OR from_user_code = #{teacherCode})
               AND substring(move_at, 1, 7) BETWEEN #{startYm} AND #{endYm}
               AND (#{teacherCode} = 'all' OR to_user_code != #{teacherCode})
+              AND status = 'COMPLETED'
               AND NOT EXISTS (SELECT 1
                               FROM erp_student_transfer_history t2
                               WHERE t2.student_id = erp_student_transfer_history.student_id
                                 AND (#{teacherCode} = 'all' OR t2.to_user_code = #{teacherCode})
-                                AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7))
+                                AND substring(t2.move_at, 1, 7) = substring(erp_student_transfer_history.move_at, 1, 7)
+                                AND t2.status = 'COMPLETED')
             GROUP BY substring(move_at, 1, 7)) mo ON COALESCE(e.ym, i.ym, mi.ym) = mo.ym
         ORDER BY COALESCE(e.ym, i.ym, mi.ym, mo.ym)
     </select>
@@ -1470,13 +1477,15 @@
                 FROM erp_student_transfer_history
                 WHERE (#{roleKey} = 'ADMIN' OR to_user_code = #{userCode})
                   AND center_code = #{centerCode}
-                  AND SUBSTRING(move_at, 1, 7) = #{ym}) AS transferInCount,
+                  AND SUBSTRING(move_at, 1, 7) = #{ym}
+                  AND status = 'COMPLETED') AS transferInCount,
 
                (SELECT COUNT(DISTINCT student_id)
                 FROM erp_student_transfer_history
                 WHERE (#{roleKey} = 'ADMIN' OR from_user_code = #{userCode})
                   AND center_code = #{centerCode}
-                  AND SUBSTRING(move_at, 1, 7) = #{ym}) AS transferOutCount,
+                  AND SUBSTRING(move_at, 1, 7) = #{ym}
+                  AND status = 'COMPLETED') AS transferOutCount,
 
                0                                        AS graduateCount
 
@@ -1577,6 +1586,7 @@
         WHERE (#{roleKey} = 'ADMIN' OR th.to_user_code = #{userCode})
           AND th.center_code = #{centerCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+          AND th.status = 'COMPLETED'
         ORDER BY es.student_name
     </select>
 
@@ -1601,6 +1611,7 @@
         WHERE (#{roleKey} = 'ADMIN' OR th.from_user_code = #{userCode})
           AND th.center_code = #{centerCode}
           AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+          AND th.status = 'COMPLETED'
         ORDER BY es.student_name
     </select>
 

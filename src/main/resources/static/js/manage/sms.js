@@ -15,34 +15,31 @@ document.addEventListener("DOMContentLoaded", () => {
     class: null,
   };
 
-  // ========== classSelect 목록 구성 ==========
+  // ========== classSelect 목록 구성 (erp_class_code API) ==========
+  let allClassList = []; // 전체 클래스 목록 캐시
+
+  async function loadClassList() {
+    try {
+      const res = await fetch("/notice/class-list");
+      const data = await res.json();
+      allClassList = data.response ?? [];
+    } catch (e) {
+      allClassList = [];
+    }
+    populateClassSelect();
+  }
+
   function populateClassSelect(classType = null) {
     const classSelect = document.getElementById("classSelect");
-    const rows = document.querySelectorAll("#student-tbody tr[data-grade]");
-
-    const classNames = new Set();
-    rows.forEach((row) => {
-      const hanType = row.dataset.hanClassType;
-      const bookType = row.dataset.bookClassType;
-      const hanName = row.dataset.hanClass;
-      const bookName = row.dataset.bookClass;
-
-      if (!classType) {
-        if (hanName && hanName !== "null") classNames.add(hanName);
-        if (bookName && bookName !== "null") classNames.add(bookName);
-      } else {
-        if (hanType === classType && hanName && hanName !== "null")
-          classNames.add(hanName);
-        if (bookType === classType && bookName && bookName !== "null")
-          classNames.add(bookName);
-      }
-    });
+    const filtered = classType
+      ? allClassList.filter((c) => c.classType === classType)
+      : allClassList;
 
     classSelect.innerHTML = '<option value="">전체</option>';
-    classNames.forEach((name) => {
+    filtered.forEach((c) => {
       const opt = document.createElement("option");
-      opt.value = name;
-      opt.textContent = name;
+      opt.value = c.className;
+      opt.textContent = c.className;
       classSelect.appendChild(opt);
     });
 
@@ -85,6 +82,15 @@ document.addEventListener("DOMContentLoaded", () => {
     syncSelectAll();
   }
 
+  // ========== 선택 건수 표시 ==========
+  function updateSelectedCount() {
+    const count = document.querySelectorAll(
+      '#student-tbody input[type="checkbox"]:checked:not(:disabled)',
+    ).length;
+    const el = document.getElementById("selectedCount");
+    if (el) el.textContent = `${count}건 선택`;
+  }
+
   // ========== 전체 선택 체크박스 동기화 ==========
   function syncSelectAll() {
     const selectAllCheckbox = document.getElementById("selectAll");
@@ -102,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     selectAllCheckbox.checked = visibleCheckboxes.every((cb) => cb.checked);
+    updateSelectedCount();
   }
 
   // ========== 학년별 필터 버튼 ==========
@@ -177,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 필터 초기화
-    activeFilters.grade.clear();
+    activeFilters.grades.clear();
     activeFilters.subject = null;
     activeFilters.class = null;
     document
@@ -191,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((cb) => (cb.checked = false));
     const selectAllCheckbox = document.getElementById("selectAll");
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    updateSelectedCount();
     populateClassSelect();
   }
 
@@ -375,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ).filter((cb) => cb.closest("tr").style.display !== "none");
 
       visibleCheckboxes.forEach((cb) => (cb.checked = this.checked));
+      updateSelectedCount();
     });
   }
 
@@ -589,6 +598,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (token && token !== "null") tokens.push(token);
           if (studentId && studentId !== "null") studentIds.push(studentId);
         });
+
+        const totalSelected = checkedBoxes.length;
+        const confirmMsg = tokens.length > 0
+          ? `총 ${totalSelected}명 중 앱 알림 ${tokens.length}명에게 발송하시겠습니까?`
+          : `선택된 ${totalSelected}명에게 공지를 등록하시겠습니까? (앱 알림 미설치 학생 제외)`;
+        if (!confirm(confirmMsg)) return;
       }
 
       try {
@@ -649,7 +664,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========== 초기 classSelect 구성 ==========
-  populateClassSelect();
+  loadClassList();
 
   // ========== 내가 작성한 공지만 보기 ==========
   document.getElementById("myNotice")?.addEventListener("change", async () => {

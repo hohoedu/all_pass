@@ -246,6 +246,7 @@ public class StudentWebRespDTO {
         private String userCode;
         private String timeTableKey;
         private String classKey;
+        private String weekNo;
     }
 
     @Data

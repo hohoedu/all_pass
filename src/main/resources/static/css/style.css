@@ -6640,6 +6640,7 @@ textarea.record-review {
     width: 48px;
     height: 32px;
     font-size: 14px;
+    white-space: nowrap
 }
 
 .filter-btn.active {

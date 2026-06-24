@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyByClassCodeDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassMonthlyScoreDTO;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO.ClassRecordReqDTO;
@@ -124,6 +125,8 @@ public class ClassController {
             }
             return ResponseEntity.ok(ApiUtils.success(message));
 
+        } catch (Exception400 e) {
+            return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
         } catch (Exception e) {
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }

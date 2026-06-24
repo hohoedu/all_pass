@@ -156,7 +156,18 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
+    StudentWebRespDTO.TransferTimeTableInfoDTO findOriginalInHistory(
+            @Param("studentId") String studentId,
+            @Param("fromUser") String fromUser,
+            @Param("classType") String classType,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
     int deleteByKeyAndStudentId(
+            @Param("timeTableKey") String timeTableKey,
+            @Param("studentId") String studentId);
+
+    String findWeekByKeyAndStudent(
             @Param("timeTableKey") String timeTableKey,
             @Param("studentId") String studentId);
 

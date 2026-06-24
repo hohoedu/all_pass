@@ -53,6 +53,13 @@ public class NoticeRespDTO {
     }
 
     @Data
+    public static class ClassCodeDTO {
+        private String classKey;
+        private String className;
+        private String classType;
+    }
+
+    @Data
     public static class NoticeStudentDTO {
         private String studentId;
         private String studentName;

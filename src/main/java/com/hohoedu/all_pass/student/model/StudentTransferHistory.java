@@ -59,6 +59,9 @@ public class StudentTransferHistory {
     @Column(name = "transfer_reason", columnDefinition = "NVARCHAR(200)", nullable = false, length = 200)
     private String transferReason;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status;
+
     @Column(name = "move_at", nullable = false, length = 10)
     private String moveAt;
 
@@ -70,7 +73,7 @@ public class StudentTransferHistory {
     private Timestamp createdAt;
 
     @Builder
-    public StudentTransferHistory(Student student, User fromUser, User toUser, Center centerCode, String classType, ClassCode classCode, String transferReason, String moveAt, String updatedBy, Timestamp createdAt) {
+    public StudentTransferHistory(Student student, User fromUser, User toUser, Center centerCode, String classType, ClassCode classCode, String transferReason, String status, String moveAt, String updatedBy, Timestamp createdAt) {
         this.student = student;
         this.fromUser = fromUser;
         this.toUser = toUser;
@@ -78,6 +81,7 @@ public class StudentTransferHistory {
         this.classType = classType;
         this.classCode = classCode;
         this.transferReason = transferReason;
+        this.status = status;
         this.moveAt = moveAt;
         this.updatedBy = updatedBy;
         this.createdAt = createdAt;

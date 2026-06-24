@@ -392,11 +392,36 @@
           AND t.mm = #{mm}
     </select>
 
+    <select id="findOriginalInHistory"
+            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
+        SELECT TOP 1
+            h.time_table_key AS timeTableKey,
+            t.user_code      AS userCode,
+            t.class_key      AS classKey,
+            h.week           AS weekNo
+        FROM erp_time_table_assign_history h
+                 JOIN erp_time_table t ON h.time_table_key = t.time_table_key
+                 JOIN erp_class_code c ON t.class_key = c.class_key
+        WHERE h.student_id = #{studentId}
+          AND t.user_code = #{fromUser}
+          AND t.yy = #{yy}
+          AND t.mm = #{mm}
+          AND c.class_type = #{classType}
+        ORDER BY h.id DESC
+    </select>
+
     <update id="deleteByKeyAndStudentId" parameterType="map" statementType="CALLABLE">
         EXEC sp_delete_student
         #{timeTableKey},
         #{studentId}
     </update>
+
+    <select id="findWeekByKeyAndStudent" resultType="String">
+        SELECT week
+        FROM erp_time_table_assign
+        WHERE time_table_key = #{timeTableKey}
+          AND student_id = #{studentId}
+    </select>
 
     <select id="existsAttendanceHistory" parameterType="map" resultType="int">
         SELECT COUNT(*)
@@ -463,6 +488,7 @@
                  WHERE th.to_user_code = #{userCode}
                    AND th.center_code = #{centerCode}
                    AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+                   AND th.status = 'COMPLETED'
 
                  UNION ALL
 
@@ -478,6 +504,7 @@
                  WHERE th.from_user_code = #{userCode}
                    AND th.center_code = #{centerCode}
                    AND SUBSTRING(th.move_at, 1, 7) = #{ym}
+                   AND th.status = 'COMPLETED'
 
                  UNION ALL
 
