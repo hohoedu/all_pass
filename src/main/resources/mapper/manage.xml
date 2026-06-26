@@ -57,6 +57,7 @@
         where user_code = #{userCode}
           AND yy= #{yy}
           AND mm = #{mm}
+          AND confirmed = 'checked'
 
         ORDER BY cc.id, uc.id
     </select>

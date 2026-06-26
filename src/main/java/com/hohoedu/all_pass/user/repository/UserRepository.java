@@ -30,6 +30,10 @@ public interface UserRepository {
 
         UserRespDTO.LoginRespDTO findUserByUserId(@Param("userId") String userId);
 
+        UserRespDTO.LoginRespDTO findMasterUserByUserIdAndCenterCode(
+                        @Param("userId") String userId,
+                        @Param("centerCode") String centerCode);
+
         List<String> findReadableMenus(String userCode);
 
         UserRespDTO.UserAuthDTO findByLoginInfo(@Param("userId") String userId);

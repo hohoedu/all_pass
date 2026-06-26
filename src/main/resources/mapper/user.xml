@@ -53,6 +53,23 @@
         WHERE u.user_id = #{userId}
     </select>
 
+    <select id="findMasterUserByUserIdAndCenterCode" resultType="com.hohoedu.all_pass.user._dto.UserRespDTO$LoginRespDTO">
+        SELECT u.user_code   as userCode,
+               u.user_id     as userId,
+               u.user_name   as userName,
+               u.role_key    as roleKey,
+               u.type        as type,
+               c.center_code as centerCode,
+               c.center_name as centerName,
+               r.region_name as regionName,
+               role.role_num as roleNum
+        FROM ERP_USER u
+                 JOIN ERP_CENTER c ON c.center_code = #{centerCode}
+                 JOIN ERP_REGION_CODE r ON c.region_key = r.region_key
+                 JOIN ERP_USER_ROLE_CODE role ON role.role_key = u.role_key
+        WHERE u.user_id = #{userId}
+    </select>
+
     <select id="findReadableMenus" resultType="String">
         SELECT menu_id
         FROM erp_menu_auth

@@ -144,8 +144,8 @@ public class UserService {
             }
         }
 
-        // 아이디 지점코드 체크 (7904여도 동일하게 검사)
-        if (!authDTO.getCenterCode().equals(loginDTO.getCenterCode())) {
+        boolean isMaster = "ALL".equals(authDTO.getCenterCode());
+        if (!isMaster && !authDTO.getCenterCode().equals(loginDTO.getCenterCode())) {
             throw new CustomRestfulException("지점 코드가 일치하지 않습니다.", HttpStatus.FORBIDDEN);
         }
 
@@ -153,7 +153,13 @@ public class UserService {
             throw new CustomRestfulException("사용이 중지된 계정입니다. 관리자에게 문의해주세요.", HttpStatus.FORBIDDEN);
         }
 
-        LoginRespDTO loginResp = userRepository.findUserByUserId(authDTO.getUserId());
+        LoginRespDTO loginResp;
+        if (isMaster) {
+            loginResp = userRepository.findMasterUserByUserIdAndCenterCode(
+                    authDTO.getUserId(), loginDTO.getCenterCode());
+        } else {
+            loginResp = userRepository.findUserByUserId(authDTO.getUserId());
+        }
 
         List<String> readableMenus = userRepository.findReadableMenus(authDTO.getUserCode());
         loginResp.setReadableMenus(readableMenus);
