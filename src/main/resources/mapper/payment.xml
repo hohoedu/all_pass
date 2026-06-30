@@ -2269,7 +2269,7 @@
         </foreach>
         )
         SELECT * FROM detail
-        ORDER BY row_key, student_name, class_type, class_name
+        ORDER BY student_name, class_type, class_name
     </select>
 
     <select id="findCenterPrintInfo"

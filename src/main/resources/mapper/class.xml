@@ -395,10 +395,9 @@
     <select id="findOriginalInHistory"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
         SELECT TOP 1
-            h.time_table_key AS timeTableKey,
-            t.user_code      AS userCode,
-            t.class_key      AS classKey,
-            h.week           AS weekNo
+            h.time_table_key AS timeTableKey, t.user_code AS userCode,
+               t.class_key AS classKey,
+               h.week      AS weekNo
         FROM erp_time_table_assign_history h
                  JOIN erp_time_table t ON h.time_table_key = t.time_table_key
                  JOIN erp_class_code c ON t.class_key = c.class_key
@@ -2156,42 +2155,16 @@
         </foreach>
     </select>
 
+    <!-- @formatter:off -->
     <update id="generateProcedureNamCheon" statementType="CALLABLE">
-        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1
-            @yy          =
-        #{yy},
-        @
-        mm
-        =
-        #{mm},
-        @
-        center_code
-        =
-        #{centerCode},
-        @
-        user_code
-        =
-        #{userCode}
+        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1 @yy = #{yy}, @mm = #{mm}, @center_code = #{centerCode}, @user_code = #{userCode}
     </update>
-
+    <!-- @formatter:on -->
+    <!-- @formatter:off -->
     <update id="generateProcedureWolSung" statementType="CALLABLE">
-        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1_Dae001
-            @yy          =
-        #{yy},
-        @
-        mm
-        =
-        #{mm},
-        @
-        center_code
-        =
-        #{centerCode},
-        @
-        user_code
-        =
-        #{userCode}
+        EXEC USP_Final_Copy_And_Generate_2ndTime_V2_Grouped_20260318_1_Dae001 @yy = #{yy}, @mm = #{mm}, @center_code = #{centerCode}, @user_code = #{userCode}
     </update>
-
+    <!-- @formatter:on -->
 
     <select id="findEduTimeTableBasic" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
         SELECT t.time_table_key AS timeTableKey,

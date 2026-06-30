@@ -2172,7 +2172,7 @@ public class PaymentService {
         // 헤더
         Row hdr = sheet.createRow(0);
         hdr.setHeightInPoints(20);
-        String[] headers = {"월", "날짜", "적요", "채주", "수입금액", "지출금액", "잔액"};
+        String[] headers = {"월", "날짜", "적요", "이름", "수입금액", "지출금액", "잔액"};
         for (int i = 0; i < headers.length; i++) {
             Cell c = hdr.createCell(i);
             c.setCellValue(headers[i]);
