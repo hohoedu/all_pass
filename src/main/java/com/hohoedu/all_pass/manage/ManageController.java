@@ -236,6 +236,19 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success(dto));
     }
 
+    @PostMapping("/reorder/return-options")
+    public ResponseEntity<?> getReturnOptions(@RequestBody ManageReqDTO.GetOrderDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        List<ManageRespDTO.ReturnOptionDTO> options = manageService.getReturnOptions(
+                user.getUserCode(), user.getCenterCode(), reqDTO.getYy(), reqDTO.getMm());
+        return ResponseEntity.ok(ApiUtils.success(options));
+    }
+
     @PostMapping("/order/batch")
     public ResponseEntity<?> processBatchOrder(@RequestHeader("X-Scheduler-Key") String requestKey) {
         if (!schedulerKey.equals(requestKey)) {

@@ -104,4 +104,26 @@ public interface ManageRepository {
 
     void copyUserPermission(@Param("sourceUserCode") String sourceUserCode,
                             @Param("targetUserCode") String targetUserCode);
+
+    List<ManageRespDTO.ReturnOptionDTO> findReturnOptions(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
+    int findScheduleCount(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey);
+
+    int findCurrentReturnCount(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("classKey") String classKey,
+            @Param("unitKey") String unitKey);
 }

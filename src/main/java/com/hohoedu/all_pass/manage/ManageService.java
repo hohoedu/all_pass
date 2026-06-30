@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.manage;
 
+import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterJpaRepository;
 import com.hohoedu.all_pass.class_instance.ClassService;
@@ -151,6 +152,16 @@ public class ManageService {
         String userCode = user.getUserCode();
         String centerCode = user.getCenterCode();
 
+        if ("RETURN".equals(req.getReorderType())) {
+            for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
+                int scheduleCount = manageRepository.findScheduleCount(centerCode, userCode, yy, mm, item.getClassKey(), item.getUnitKey());
+                int currentReturnCount = manageRepository.findCurrentReturnCount(centerCode, userCode, yy, mm, item.getClassKey(), item.getUnitKey());
+                if (currentReturnCount + item.getCount() > scheduleCount) {
+                    throw new Exception400("반품 수량이 시간표 수량(" + scheduleCount + "건)을 초과할 수 없습니다.");
+                }
+            }
+        }
+
         for (ManageReqDTO.InsertReorderDTO.ReorderItemDTO item : req.getItems()) {
             manageRepository.insertReorder(userCode, centerCode, yy, mm, req.getReorderType(), item.getClassKey(),
                     item.getUnitKey(), item.getCount(), item.getReason());
@@ -158,6 +169,10 @@ public class ManageService {
         processAddReorder(req, user);
 
         return 1;
+    }
+
+    public List<ManageRespDTO.ReturnOptionDTO> getReturnOptions(String userCode, String centerCode, String yy, String mm) {
+        return manageRepository.findReturnOptions(centerCode, userCode, yy, mm);
     }
 
     private void processAddReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {

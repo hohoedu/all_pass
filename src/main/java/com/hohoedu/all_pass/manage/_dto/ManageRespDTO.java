@@ -120,5 +120,15 @@ public class ManageRespDTO {
         }
     }
 
+    @Data
+    public static class ReturnOptionDTO {
+        private String classKey;
+        private String className;
+        private String unitKey;
+        private String unitName;
+        private Integer scheduleCount;
+        private Integer currentReturnCount;
+        private Integer maxReturnCount;
+    }
 
 }
