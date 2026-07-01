@@ -84,6 +84,7 @@ public class ClassReqDTO {
     public static class WeekReqDTO {
         private String year;
         private String month;
+        private String centerCode;
         private Map<String, WeekDetailDTO> week;
 
         @Data

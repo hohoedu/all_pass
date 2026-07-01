@@ -4344,6 +4344,20 @@ input[type="time" i] {
     cursor: pointer;
 }
 
+.center-item {
+    cursor: pointer;
+}
+
+.center-item.active {
+    outline: 2px solid #c37df4;
+    outline-offset: -1px;
+    transition: none;
+}
+
+.center-item.active td {
+    font-weight: 600;
+}
+
 .time-boxes {
     display: flex;
     flex-direction: column;
@@ -4446,6 +4460,15 @@ input[type="time" i] {
     border-bottom: 1px solid #494770;
 }
 
+.timetable-lookup-table tbody td {
+    height: 155px;
+    vertical-align: top;
+}
+
+.timetable-lookup-table tbody td:first-child {
+    vertical-align: middle;
+}
+
 .timetable-lookup-table th:first-child,
 .timetable-lookup-table td:first-child {
     border-left: none;
@@ -4492,6 +4515,23 @@ input[type="time" i] {
     font-weight: bold;
     text-align: center;
     border-bottom: 1px dashed #60c0d4;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+}
+.timetable-lookup-box .header-left,
+.timetable-lookup-box .header-right {
+    flex: 1;
+}
+.timetable-lookup-box .header-center {
+    flex: 10;
+    text-align: center;
+}
+.timetable-lookup-box .header-right {
+    text-align: right;
+    font-size: 11px;
+    font-weight: normal;
+    white-space: nowrap;
 }
 
 .timetable-lookup-box.pink {
@@ -4506,6 +4546,9 @@ input[type="time" i] {
     font-weight: bold;
     text-align: center;
     border-bottom: 1px dashed #eb8baf;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
 }
 
 /* 작은 박스 */
@@ -4521,6 +4564,7 @@ input[type="time" i] {
     text-align: center;
     line-height: 1.8;
     font-size: 13px;
+    min-height: 23px;
 }
 
 .inner-grid > div:nth-last-child(-n+2) {
@@ -6919,4 +6963,107 @@ label {
 
 .master-content2 {
     height: 47.4vh;
+}
+/* ── 수업 주차 설정 모달 ── */
+.week-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+.week-modal-box {
+    width: 500px;
+    background: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    position: relative;
+}
+.week-modal-close {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 20px;
+}
+.week-modal-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+.week-modal-week-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    margin-bottom: 22px;
+    margin-top: 8px;
+}
+.week-modal-week-btn {
+    flex: 1;
+    margin: 0 4px;
+    padding: 10px 0;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #000;
+    font-weight: 500;
+    background: transparent;
+    border: 1px solid transparent;
+}
+.week-modal-week1:not(.active) { border: 1px solid #fecec8; }
+.week-modal-week2:not(.active) { border: 1px solid #c1e6c4; }
+.week-modal-week3:not(.active) { border: 1px solid #d5e4f7; }
+.week-modal-week4:not(.active) { border: 1px solid #d3c7e9; }
+.week-modal-week-btn.active.week-modal-week1 { background: #fecec8; border-color: #fecec8; }
+.week-modal-week-btn.active.week-modal-week2 { background: #c1e6c4; border-color: #c1e6c4; }
+.week-modal-week-btn.active.week-modal-week3 { background: #d5e4f7; border-color: #d5e4f7; }
+.week-modal-week-btn.active.week-modal-week4 { background: #d3c7e9; border-color: #d3c7e9; }
+.week-modal-calendar-container { margin-top: 10px; }
+.week-modal-calendar-header {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 600;
+}
+.week-modal-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #555;
+}
+.week-modal-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.week-modal-calendar-cell {
+    height: 42px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fafafa;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+.week-modal-calendar-cell.disabled {
+    background: #f3f3f3 !important;
+    color: #c2c2c2 !important;
+    cursor: default;
+    opacity: 0.8;
+}
+.week-modal-calendar-cell:hover { background: #e8edff; }
+.week-modal-save-wrapper {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

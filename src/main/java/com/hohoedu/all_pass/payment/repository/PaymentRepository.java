@@ -214,9 +214,9 @@ public interface PaymentRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    String findPaymentKeyByStudentId(String studentId, String timeTableKey);
+    String findPaymentKeyByStudentId(@Param("studentId") String studentId, @Param("timeTableKey") String timeTableKey);
 
-    void deletePaymentDetail(String paymentKey, String timeTableKey);
+    void deletePaymentDetail(@Param("paymentKey") String paymentKey, @Param("timeTableKey") String timeTableKey);
 
     int insertPaymentRefund();
 

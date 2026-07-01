@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.secondary.repository.SecondaryUserRepository">
+
+    <resultMap id="teacherMap" type="com.hohoedu.all_pass.secondary._dto.SecondaryDTO$TeacherDTO">
+        <result column="UID" property="userCode"/>
+        <result column="NAME" property="userName"/>
+    </resultMap>
+
+    <select id="findActiveTeachers" resultMap="teacherMap">
+        SELECT UID, NAME
+        FROM hohosc_office_user
+        WHERE SUID = 'admin'
+        ORDER BY NAME
+    </select>
+
+
+    <resultMap id="timetableRawMap" type="com.hohoedu.all_pass.secondary._dto.SecondaryDTO$TimetableRawDTO">
+        <result column="timelevel" property="timelevel"/>
+        <result column="daynumber" property="daynumber"/>
+        <result column="stime" property="stime"/>
+        <result column="etime" property="etime"/>
+        <result column="className" property="className"/>
+        <result column="unitName" property="unitName"/>
+        <result column="gb" property="gb"/>
+    </resultMap>
+
+    <select id="findTimetable" resultMap="timetableRawMap">
+        SELECT
+            dt.timelevel,
+            dt.daynumber,
+            dt.stime,
+            dt.etime,
+            c.note AS className,
+            dt.mgubun_note AS unitName,
+            dt.gb
+        FROM hohosc_DailyTime dt
+        JOIN hohosc_code c ON c.code = dt.ggubun
+        WHERE dt.Teaid  = #{userCode}
+          AND dt.Yyyy   = #{year}
+          AND dt.Mm     = #{month}
+        ORDER BY dt.timelevel, dt.daynumber
+    </select>
+
+</mapper>

@@ -17,6 +17,7 @@ import com.popbill.api.kakao.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -46,7 +47,7 @@ public class PopbillService {
                                 .center(Center.builder().centerCode(reqDTO.getCenterCode()).build())
                                 .build();
 
-                int result = popbillRepository.insertPopbillConfig(config);
+                popbillRepository.insertPopbillConfig(config);
 
         }
 
@@ -250,6 +251,7 @@ public class PopbillService {
                 }
         }
 
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public String sendAddReorderAlimtalk(UserRespDTO.LoginRespDTO user, String orderContent) {
                 String category = "add_reorder";
                 try {

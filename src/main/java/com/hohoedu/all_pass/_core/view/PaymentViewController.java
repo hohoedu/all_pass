@@ -69,8 +69,8 @@ public class PaymentViewController {
     }
 
     @GetMapping("/print-cashbill")
-    public String getCashbillPrint(@RequestParam String ym,
-                                   @RequestParam(required = false) String ids,
+    public String getCashbillPrint(@RequestParam(value = "ym") String ym,
+                                   @RequestParam(value = "ids", required = false) String ids,
                                    Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null)
@@ -98,7 +98,7 @@ public class PaymentViewController {
     }
 
     @GetMapping("/pay-receipt")
-    public String getReceiptPage(@RequestParam(required = false) String yy, @RequestParam(required = false) String mm,
+    public String getReceiptPage(@RequestParam(value = "yy", required = false) String yy, @RequestParam(value = "mm", required = false) String mm,
                                  Model model, HttpSession session) {
 
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");

@@ -804,6 +804,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const refreshCenterRequestCounts = async () => {
+        const [year, month] = monthPicker.value.split('-');
+        const res = await fetch('/logis/order/reorder-status-map', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({year, month})
+        });
+        const data = await res.json();
+        const statusMap = data.response || {};
+
+        document.querySelectorAll('.center-item').forEach(item => {
+            const centerCode = item.dataset.centerCode;
+            const status = statusMap[centerCode];
+            const requestCount = status ? status.requestCount : 0;
+            const confirmed = status ? status.confirmed : false;
+
+            item.querySelector('.request').textContent = `요청 ${requestCount}건`;
+
+            const badge = item.querySelector('.badge');
+            if (!status) {
+                badge.className = 'badge none';
+                badge.textContent = '-';
+            } else if (confirmed) {
+                badge.className = 'badge done';
+                badge.textContent = '승인완료';
+            } else {
+                badge.className = 'badge wait';
+                badge.textContent = '승인대기';
+            }
+        });
+    };
+
     monthPicker.addEventListener('change', () => {
         const [year, month] = monthPicker.value.split('-');
         monthDisplay.value = `${year}. ${month}`;
@@ -811,6 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeCenter = document.querySelector('.center-item.active');
         if (activeCenter) applyDeadlineToDisplay(activeCenter.dataset.centerCode);
 
+        refreshCenterRequestCounts();
         fetchReorderList();
     });
 

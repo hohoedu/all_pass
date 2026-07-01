@@ -52,7 +52,7 @@ public class UserController {
 
     @PostMapping("/login")
     public String loginUser(@ModelAttribute UserReqDTO.UserLoginDTO loginDTO,
-            @RequestParam(required = false) String redirectUrl, RedirectAttributes redirectAttributes) {
+            @RequestParam(value = "redirectUrl",required = false) String redirectUrl, RedirectAttributes redirectAttributes) {
 
         try {
             LoginRespDTO dto = userService.login(loginDTO);

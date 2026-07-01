@@ -41,8 +41,8 @@ public class ManageViewController {
 
     @GetMapping("/order")
     public String getManageOrderPage(
-            @RequestParam(required = false) String year,
-            @RequestParam(required = false) String month,
+            @RequestParam(value = "year", required = false) String year,
+            @RequestParam(value = "month", required = false) String month,
             HttpSession session,
             Model model) {
 
@@ -84,33 +84,33 @@ public class ManageViewController {
     }
 
     @GetMapping("/order/print")
-    public String getOrderListPage(@RequestParam String yy, @RequestParam String mm, Model model, HttpSession session) {
+    public String getOrderListPage(@RequestParam(value = "yy") String yy, @RequestParam(value = "mm") String mm, Model model, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
         String ym = yy + mm;
-        List<ManageRespDTO.TeacherOrderGroupDTO> response = manageService.getCenterOrderList(ym, user.getCenterCode(), user.getUserCode());
+        List<ManageRespDTO.TeacherOrderGroupDTO> response = manageService.getCenterOrderList(ym, user.getCenterCode(),
+                user.getUserCode());
 
-// 총계
-        int grandStudent   = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumStudent).sum();
-        int grandAdd       = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumAdd).sum();
-        int grandTotal     = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumTotal).sum();
+        // 총계
+        int grandStudent = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumStudent).sum();
+        int grandAdd = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumAdd).sum();
+        int grandTotal = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumTotal).sum();
         int grandTimeTable = response.stream().mapToInt(ManageRespDTO.TeacherOrderGroupDTO::getSumTimeTable).sum();
 
         model.addAttribute("yy", yy);
         model.addAttribute("mm", mm);
         model.addAttribute("centerName", user.getCenterName()); // 센터명
         model.addAttribute("response", response);
-        model.addAttribute("grandStudent",   grandStudent);
-        model.addAttribute("grandAdd",       grandAdd);
-        model.addAttribute("grandTotal",     grandTotal);
+        model.addAttribute("grandStudent", grandStudent);
+        model.addAttribute("grandAdd", grandAdd);
+        model.addAttribute("grandTotal", grandTotal);
         model.addAttribute("grandTimeTable", grandTimeTable);
         model.addAttribute("printDate", LocalDateTime.now()
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         return "print/print-order";
     }
-
 
     @GetMapping("/reorder")
     public String getManageReorderPage(Model model, HttpSession session) throws JsonProcessingException {

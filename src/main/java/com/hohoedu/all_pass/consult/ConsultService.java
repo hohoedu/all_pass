@@ -46,10 +46,6 @@ public class ConsultService {
         }
         List<ConsultRespDTO.ConsultDTO> response = consultRepository.findConsult(reqDTO);
 
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss[.S]]");
-
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
-
         response.forEach(dto -> {
             String sendAt = dto.getSendAt();
             if (sendAt != null && !sendAt.isBlank()) {

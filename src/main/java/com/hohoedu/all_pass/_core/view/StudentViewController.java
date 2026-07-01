@@ -59,7 +59,7 @@ public class StudentViewController {
 
     @GetMapping("/mobile/join")
     public String getStudentJoinPageByParent(@RequestParam(value = "centerCode") String centerCode,
-            @RequestParam(required = false) String invite, Model model, HttpSession session) {
+            @RequestParam(value = "invite", required = false) String invite, Model model, HttpSession session) {
 
         List<GradeCode> gradeCodes = studentService.findGrade();
         List<RelationCode> relationCodes = studentService.findRelation();
@@ -153,9 +153,9 @@ public class StudentViewController {
 
     @GetMapping("/print-withdraw")
     public String getStudentWithdrawPrintPage(
-            @RequestParam String ym,
-            @RequestParam String userCode,
-            @RequestParam String tab,
+            @RequestParam(value = "ym") String ym,
+            @RequestParam(value = "userCode") String userCode,
+            @RequestParam(value = "tab") String tab,
             Model model, HttpSession session) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -257,8 +257,8 @@ public class StudentViewController {
 
     @GetMapping("/privacy-print")
     public String consentPage(
-            @RequestParam(required = false) String yy,
-            @RequestParam(required = false) String mm,
+            @RequestParam(value = "yy", required = false) String yy,
+            @RequestParam(value = "mm", required = false) String mm,
             Model model, HttpSession session) {
 
         LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");

@@ -21,6 +21,12 @@ public class LogisticsController {
 
     private final LogisticsService logisticsService;
 
+    @PostMapping("/order/reorder-status-map")
+    public ResponseEntity<?> getReorderStatusMap(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
+        return ResponseEntity
+                .ok(ApiUtils.success(logisticsService.findReorderStatusMap(req.getYear(), req.getMonth())));
+    }
+
     @PostMapping("/order/reorder-list")
     public ResponseEntity<?> getReorderList(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
         log.info("getReorderList");
@@ -42,6 +48,7 @@ public class LogisticsController {
 
     @PostMapping("/order/deadline")
     public ResponseEntity<?> updateDeadline(@RequestBody LogisReqDTO.DeadlineUpdateReqDTO req) {
+        log.info("updateDeadline: {}", req.toString());
         logisticsService.updateDeadline(req);
         return ResponseEntity.ok(ApiUtils.success(null));
     }
@@ -116,6 +123,5 @@ public class LogisticsController {
         logisticsService.replaceReorderManualAdd(req);
         return ResponseEntity.ok(ApiUtils.success(null));
     }
-
 
 }

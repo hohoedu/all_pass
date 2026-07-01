@@ -129,7 +129,7 @@ public class ClassViewController {
     }
 
     @GetMapping("/print-timeview")
-    public String getPrintTimeView(@RequestParam String ym, @RequestParam String userCode, Model model,
+    public String getPrintTimeView(@RequestParam(value = "ym") String ym, @RequestParam(value = "userCode") String userCode, Model model,
                                    HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (user == null) {
@@ -469,9 +469,9 @@ public class ClassViewController {
 
     @GetMapping("/edu-print-timeview")
     public String getEduPrintTimeView(
-            @RequestParam String userCode,
-            @RequestParam String yy,
-            @RequestParam String mm,
+            @RequestParam(value = "userCode") String userCode,
+            @RequestParam(value = "yy") String yy,
+            @RequestParam(value = "mm") String mm,
             HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

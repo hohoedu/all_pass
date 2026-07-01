@@ -1,18 +1,21 @@
 package com.hohoedu.all_pass.center;
 
+import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
+import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
+import com.hohoedu.all_pass.secondary.repository.SecondaryUserRepository;
 import com.hohoedu.all_pass.student.StudentService;
+import com.hohoedu.all_pass.user.User;
 import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.threeten.bp.LocalDate;
 
 import java.util.HashMap;
@@ -29,9 +32,66 @@ public class CenterController {
     private final PaymentService paymentService;
     private final StudentService studentService;
     private final UserService userService;
+    private final SecondaryUserRepository secondaryUserRepository;
+
+    @GetMapping("/teachers")
+    public ResponseEntity<?> getTeachersByCenterCode(@RequestParam(value = "centerCode") String centerCode) {
+        if ("ULS001".equals(centerCode)) {
+            return ResponseEntity.ok(secondaryUserRepository.findActiveTeachers());
+        }
+        List<User> teachers = userService.findActiveUserByCenterCode(centerCode);
+        return ResponseEntity.ok(teachers);
+    }
+
+    @PostMapping("/week/get")
+    public ResponseEntity<?> getWeek(@RequestBody ClassReqDTO.GetWeekDTO reqDTO) {
+        return ResponseEntity.ok(ApiUtils.success(
+                classService.getClassWeek(reqDTO.getYear(), reqDTO.getMonth(), reqDTO.getCenterCode())));
+    }
+
+    @PostMapping("/week/save")
+    public ResponseEntity<?> saveWeek(@RequestBody ClassReqDTO.WeekReqDTO reqDTO) {
+        try {
+            classService.saveClassWeek(reqDTO, reqDTO.getCenterCode());
+            return ResponseEntity.ok(ApiUtils.success("success"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+        }
+    }
+
+    @GetMapping("/timetable")
+    public ResponseEntity<?> getTimetable(
+            @RequestParam(value = "centerCode") String centerCode,
+            @RequestParam(value = "userCode") String userCode,
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month) {
+        if ("ULS001".equals(centerCode)) {
+            return ResponseEntity.ok(convertSecondaryTimetable(
+                    secondaryUserRepository.findTimetable(userCode, year, month)));
+        }
+        return ResponseEntity.ok(classService.findTimeTableWithStudents(userCode, year, month));
+    }
+
+    private List<SecondaryDTO.TimetableDTO> convertSecondaryTimetable(
+            List<SecondaryDTO.TimetableRawDTO> raws) {
+        Map<Integer, String> dayMap = Map.of(2, "mon", 3, "tue", 4, "wed", 5, "thu", 6, "fri", 7, "sat");
+        List<SecondaryDTO.TimetableDTO> result = new java.util.ArrayList<>();
+        for (SecondaryDTO.TimetableRawDTO raw : raws) {
+            SecondaryDTO.TimetableDTO dto = new SecondaryDTO.TimetableDTO();
+            dto.setPeriodNo(raw.getTimelevel());
+            dto.setDayname(dayMap.getOrDefault(raw.getDaynumber(), "mon"));
+            dto.setStartTime(raw.getStime());
+            dto.setEndTime(raw.getEtime());
+            dto.setClassName(raw.getClassName());
+            dto.setUnitName(raw.getUnitName());
+            dto.setClassType("10".equals(raw.getGb()) ? "1" : "2");
+            result.add(dto);
+        }
+        return result;
+    }
 
     @GetMapping("/main/summary")
-    public ResponseEntity<?> getMainSummary(@RequestParam String userCode, HttpSession session) {
+    public ResponseEntity<?> getMainSummary(@RequestParam(value = "userCode") String userCode, HttpSession session) {
 
         UserRespDTO.LoginRespDTO loginUser = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         if (loginUser == null)

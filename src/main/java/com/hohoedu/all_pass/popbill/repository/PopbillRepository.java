@@ -4,7 +4,7 @@ import com.hohoedu.all_pass.popbill.PopbillConfig;
 import com.hohoedu.all_pass.popbill._dto.PopbillReqDTO;
 import com.hohoedu.all_pass.popbill._dto.PopbillRespDTO;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface PopbillRepository {

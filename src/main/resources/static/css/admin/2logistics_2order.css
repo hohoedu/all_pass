@@ -861,6 +861,12 @@ input[type="search"]::-webkit-search-cancel-button {
     background: #e9fbf6;
 }
 
+.badge.none {
+    color: #c0c2cc;
+    background: #f7f7f9;
+    border-color: #e0e1e7;
+}
+
 .badge.hold {
     color: #858895;
     background: #f1f2f4;

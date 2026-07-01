@@ -262,7 +262,7 @@ public class MainViewController {
 
     @GetMapping("/api/proxy/kindergarten")
     @ResponseBody
-    public String getKindergarten(@RequestParam String sidoCode, @RequestParam String sggCode) {
+    public String getKindergarten(@RequestParam(value = "sidoCode") String sidoCode, @RequestParam(value = "sggCode") String sggCode) {
         String url = "https://e-childschoolinfo.moe.go.kr/api/notice/basicInfo2.do?" +
                 "key=687efc54181d4faaa1f37b15d5399b52&sidoCode=" + sidoCode + "&sggCode=" + sggCode +
                 "&pageCnt=100&currentPage=1";

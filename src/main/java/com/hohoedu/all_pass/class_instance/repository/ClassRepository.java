@@ -145,8 +145,8 @@ public interface ClassRepository {
             @Param("yy") String yy,
             @Param("mm") String mm);
 
-    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(String userCode, String timeTableKey,
-                                                                          String ym);
+    List<ClassRespDTO.TimeTableDTO.StudentDTO> findStudentsByTimeTableKey(@Param("userCode") String userCode, @Param("timeTableKey") String timeTableKey,
+                                                                          @Param("ym") String ym);
 
     public int countByTimeTableKey(@Param("timeTableKey") String timeTableKey);
 

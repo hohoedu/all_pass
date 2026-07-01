@@ -101,9 +101,9 @@ public class StudentController {
     @GetMapping("/api/attendance")
     @ResponseBody
     public ResponseEntity<?> getAttendance(
-            @RequestParam String studentId,
-            @RequestParam String yy,
-            @RequestParam String mm) {
+            @RequestParam(value = "studentId") String studentId,
+            @RequestParam(value = "yy") String yy,
+            @RequestParam(value = "mm") String mm) {
         List<StudentWebRespDTO.StudentAttendanceDTO> attendance = studentService.getAttendanceByMonth(studentId, yy,
                 mm);
         return ResponseEntity.ok(ApiUtils.success(attendance));
@@ -225,7 +225,7 @@ public class StudentController {
     }
 
     @GetMapping("/api/transfer/history")
-    public ResponseEntity<?> getTransferHistory(@RequestParam String yearMonth, HttpSession session) {
+    public ResponseEntity<?> getTransferHistory(@RequestParam(value = "yearMonth") String yearMonth, HttpSession session) {
         String centerCode = ((UserRespDTO.LoginRespDTO) session.getAttribute("user")).getCenterCode();
         List<StudentWebRespDTO.TransferHistoryDTO> result = studentService.getHistory(centerCode, yearMonth);
         return ResponseEntity.ok(ApiUtils.success(result));
@@ -393,7 +393,7 @@ public class StudentController {
     // ================================================================================================================================================================================================================================================================//
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam String studentName) {
+    public ResponseEntity<?> search(@RequestParam(value = "studentName") String studentName) {
         try {
             List<StudentWebRespDTO.SearchRespDTO> result = studentService.searchByName(studentName);
             return ResponseEntity.ok(ApiUtils.success(result));
@@ -464,8 +464,8 @@ public class StudentController {
      * /student/api/family-search?currentStudentId=1&searchKey=name&searchValue=홍길동
      */
     @GetMapping("/api/family-search")
-    public ResponseEntity<?> searchFamily(@RequestParam String currentStudentId, @RequestParam String searchKey,
-            @RequestParam String searchValue) {
+    public ResponseEntity<?> searchFamily(@RequestParam(value = "currentStudentId") String currentStudentId, @RequestParam(value = "searchKey") String searchKey,
+            @RequestParam(value = "searchValue") String searchValue) {
         List<StudentWebRespDTO.SiblingSearchRespDTO> result = studentService.searchSibling(currentStudentId, searchKey,
                 searchValue);
         return ResponseEntity.ok(ApiUtils.success(result));
@@ -482,7 +482,7 @@ public class StudentController {
     }
 
     @GetMapping("/api/family-list")
-    public ResponseEntity<?> getFamilyList(@RequestParam String studentId) {
+    public ResponseEntity<?> getFamilyList(@RequestParam(value = "studentId") String studentId) {
         List<StudentWebRespDTO.SiblingSearchRespDTO> result = studentService.getFamilyList(studentId);
         return ResponseEntity.ok(ApiUtils.success(result));
     }

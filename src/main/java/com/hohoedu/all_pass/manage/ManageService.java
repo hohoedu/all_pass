@@ -176,6 +176,9 @@ public class ManageService {
     }
 
     private void processAddReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
+        if ("PUS001".equals(user.getCenterCode())) {
+            return;
+        }
         try {
 
             String orderContent = buildOrderContent(req.getReorderType(), req.getItems());

@@ -44,7 +44,7 @@ public interface UserRepository {
 
         String findUserPhoneByUserCode(String userCode);
 
-        void updatePassword(String userCode, String hashedPassword);
+        void updatePassword(@Param("userCode") String userCode, @Param("hashedPassword") String hashedPassword);
 
         List<UserRespDTO.UserListRespDTO> findAllByCenterCode(String centerCode);
 

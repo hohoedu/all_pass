@@ -15,6 +15,8 @@ import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -25,11 +27,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin")
 @RequiredArgsConstructor()
@@ -56,24 +60,26 @@ public class AdminViewController {
                 .stream()
                 .collect(Collectors.toMap(
                         LogisRespDTO.DeadlineDTO::getCenterCode,
-                        LogisRespDTO.DeadlineDTO::getDeadlineAt
-                ));
+                        LogisRespDTO.DeadlineDTO::getDeadlineAt));
         Map<String, String> dateConfig = DateConfig.currentYearMonth();
         String year = dateConfig.get("currentYear");
         String month = dateConfig.get("currentMonth");
 
-        Map<String, LogisRespDTO.ReorderStatusDTO> reorderStatusMap = logisticsService.findReorderStatusMap(year, month);
+        log.info("Year: {}, Month: {}", year, month);
+
+        Map<String, LogisRespDTO.ReorderStatusDTO> reorderStatusMap = logisticsService.findReorderStatusMap(year,
+                month);
         model.addAttribute("center", centerService.findAllCenter());
         model.addAttribute("deadlineMap", deadlineMap);
         model.addAttribute("reorderStatusMap", reorderStatusMap);
+        model.addAttribute("year", year);
+        model.addAttribute("month", month);
         return "/admin/order/order-list";
     }
 
     @GetMapping("/order/print-invoice")
-    public String printInvoice(@RequestParam String year,
-                               @RequestParam String month,
-                               @RequestParam String centerCode,
-                               Model model) {
+    public String printInvoice(@RequestParam(value = "year") String year, @RequestParam(value = "month") String month,
+            @RequestParam(value = "centerCode") String centerCode, Model model) {
 
         LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
 
@@ -91,7 +97,7 @@ public class AdminViewController {
     }
 
     @GetMapping("/order/print-manual-invoice")
-    public String printManualInvoice(@RequestParam String manualId, Model model) {
+    public String printManualInvoice(@RequestParam(value = "manualId") String manualId, Model model) {
 
         LogisReqDTO.ManualItemsReqDTO req = new LogisReqDTO.ManualItemsReqDTO();
         req.setManualId(manualId);
@@ -124,7 +130,8 @@ public class AdminViewController {
     }
 
     private int parseIntSafe(Object val) {
-        if (val == null) return 0;
+        if (val == null)
+            return 0;
         try {
             return Integer.parseInt(String.valueOf(val).replaceAll("[^0-9-]", ""));
         } catch (NumberFormatException e) {
@@ -133,7 +140,8 @@ public class AdminViewController {
     }
 
     @GetMapping("/order/invoice-excel")
-    public void downloadInvoiceExcel(@RequestParam String year, @RequestParam String month, @RequestParam String centerCode, HttpServletResponse response) throws IOException {
+    public void downloadInvoiceExcel(@RequestParam(value = "year") String year, @RequestParam(value = "month") String month,
+            @RequestParam(value = "centerCode") String centerCode, HttpServletResponse response) throws IOException {
 
         LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo = logisticsService.findCenterInfo(centerCode);
 
@@ -163,9 +171,9 @@ public class AdminViewController {
     }
 
     private void generateInvoiceExcel(String title, String fileNamePrefix,
-                                      LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo,
-                                      List<Map<String, Object>> items,
-                                      HttpServletResponse response) throws IOException {
+            LogisRespDTO.SelectCenterDTO.CenterInfoDTO centerInfo,
+            List<Map<String, Object>> items,
+            HttpServletResponse response) throws IOException {
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("거래명세서");
@@ -230,7 +238,7 @@ public class AdminViewController {
 
             rowIdx++;
 
-            String[] headers = {"주문일시", "품명", "규격", "수량", "단가", "금액", "비고"};
+            String[] headers = { "주문일시", "품명", "규격", "수량", "단가", "금액", "비고" };
             Row headerRow = sheet.createRow(rowIdx++);
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -301,7 +309,7 @@ public class AdminViewController {
     }
 
     @GetMapping("/order/manual-excel")
-    public void downloadManualExcel(@RequestParam String manualId, HttpServletResponse response) throws IOException {
+    public void downloadManualExcel(@RequestParam(value = "manualId") String manualId, HttpServletResponse response) throws IOException {
 
         LogisReqDTO.ManualItemsReqDTO req = new LogisReqDTO.ManualItemsReqDTO();
         req.setManualId(manualId);
@@ -333,9 +341,9 @@ public class AdminViewController {
         generateInvoiceExcel(title, fileNamePrefix, centerInfo, items, response);
     }
 
-
     @GetMapping("/order/print-aggregate")
-    public String printAggregate(@RequestParam String year, @RequestParam String month, @RequestParam String segmentType, @RequestParam String centerCodes, Model model) {
+    public String printAggregate(@RequestParam(value = "year") String year, @RequestParam(value = "month") String month,
+            @RequestParam(value = "segmentType") String segmentType, @RequestParam(value = "centerCodes") String centerCodes, Model model) {
 
         LogisReqDTO.AggregateReqDTO req = new LogisReqDTO.AggregateReqDTO();
         req.setYear(year);
@@ -355,7 +363,9 @@ public class AdminViewController {
     }
 
     @GetMapping("/order/aggregate-excel")
-    public void downloadAggregateExcel(@RequestParam String year, @RequestParam String month, @RequestParam String segmentType, @RequestParam String centerCodes, HttpServletResponse response) throws IOException {
+    public void downloadAggregateExcel(@RequestParam(value = "year") String year, @RequestParam(value = "month") String month,
+            @RequestParam(value = "segmentType") String segmentType, @RequestParam(value = "centerCodes") String centerCodes, HttpServletResponse response)
+            throws IOException {
 
         LogisReqDTO.AggregateReqDTO req = new LogisReqDTO.AggregateReqDTO();
         req.setYear(year);
@@ -423,10 +433,10 @@ public class AdminViewController {
             rowIdx++;
 
             String[] headers = isTeacherMode
-                    ? new String[]{"선생님", "단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량"}
+                    ? new String[] { "선생님", "단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량" }
                     : isAllMode
-                    ? new String[]{"단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계"}
-                    : new String[]{"단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량"};
+                            ? new String[] { "단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계" }
+                            : new String[] { "단계", "교재", "학생 수량", "선생님 수량", "추가수량", "합계", "시간표 수량" };
 
             Row headerRow = sheet.createRow(rowIdx++);
             for (int i = 0; i < headers.length; i++) {
@@ -438,20 +448,25 @@ public class AdminViewController {
             for (LogisRespDTO.CenterAggregateDTO center : list) {
                 Row centerRow = sheet.createRow(rowIdx++);
                 centerRow.createCell(0).setCellValue(center.getCenterName());
-                for (int i = 1; i < colCount; i++) centerRow.createCell(i);
+                for (int i = 1; i < colCount; i++)
+                    centerRow.createCell(i);
                 sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
-                for (int i = 0; i < colCount; i++) centerRow.getCell(i).setCellStyle(centerStyle);
+                for (int i = 0; i < colCount; i++)
+                    centerRow.getCell(i).setCellStyle(centerStyle);
 
                 if (center.getItems() == null || center.getItems().isEmpty()) {
                     Row emptyRow = sheet.createRow(rowIdx++);
                     emptyRow.createCell(0).setCellValue("데이터가 없습니다.");
-                    for (int i = 1; i < colCount; i++) emptyRow.createCell(i);
+                    for (int i = 1; i < colCount; i++)
+                        emptyRow.createCell(i);
                     sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
-                    for (int i = 0; i < colCount; i++) emptyRow.getCell(i).setCellStyle(cellStyle);
+                    for (int i = 0; i < colCount; i++)
+                        emptyRow.getCell(i).setCellStyle(cellStyle);
                     continue;
                 }
 
-                int totalBaseCount = 0, totalTeacherCount = 0, totalReorderCount = 0, totalCount = 0, totalTimeTable = 0;
+                int totalBaseCount = 0, totalTeacherCount = 0, totalReorderCount = 0, totalCount = 0,
+                        totalTimeTable = 0;
                 List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> items = center.getItems();
 
                 for (int idx = 0; idx < items.size(); idx++) {
@@ -462,24 +477,29 @@ public class AdminViewController {
                         if (isFirst) {
                             Row teacherRow = sheet.createRow(rowIdx++);
                             teacherRow.createCell(0).setCellValue(item.getUserName() + " 선생님");
-                            for (int i = 1; i < colCount; i++) teacherRow.createCell(i);
+                            for (int i = 1; i < colCount; i++)
+                                teacherRow.createCell(i);
                             sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, colCount - 1));
-                            for (int i = 0; i < colCount; i++) teacherRow.getCell(i).setCellStyle(teacherStyle);
+                            for (int i = 0; i < colCount; i++)
+                                teacherRow.getCell(i).setCellStyle(teacherStyle);
                         }
                     }
 
                     Row row = sheet.createRow(rowIdx++);
                     int col = 0;
-                    if (isTeacherMode) row.createCell(col++).setCellValue(item.getUserName());
+                    if (isTeacherMode)
+                        row.createCell(col++).setCellValue(item.getUserName());
                     row.createCell(col++).setCellValue(item.getClassName());
                     row.createCell(col++).setCellValue(item.getUnitName());
                     row.createCell(col++).setCellValue(item.getBaseCount());
                     row.createCell(col++).setCellValue(item.getTeacherCount());
                     row.createCell(col++).setCellValue(item.getReorderCount());
                     row.createCell(col++).setCellValue(item.getTotalCount());
-                    if (!isAllMode) row.createCell(col++).setCellValue(item.getTimeTableCount());
+                    if (!isAllMode)
+                        row.createCell(col++).setCellValue(item.getTimeTableCount());
 
-                    for (int i = 0; i < colCount; i++) row.getCell(i).setCellStyle(cellStyle);
+                    for (int i = 0; i < colCount; i++)
+                        row.getCell(i).setCellStyle(cellStyle);
 
                     totalBaseCount += item.getBaseCount();
                     totalTeacherCount += item.getTeacherCount();
@@ -488,17 +508,24 @@ public class AdminViewController {
                     totalTimeTable += item.getTimeTableCount();
 
                     if (isTeacherMode) {
-                        boolean isLast = idx == items.size() - 1 || !items.get(idx + 1).getUserName().equals(item.getUserName());
+                        boolean isLast = idx == items.size() - 1
+                                || !items.get(idx + 1).getUserName().equals(item.getUserName());
                         if (isLast) {
                             List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> sameTeacher = items.stream()
                                     .filter(i -> i.getUserName().equals(item.getUserName()))
                                     .toList();
 
-                            int tBase = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getBaseCount).sum();
-                            int tTeacher = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTeacherCount).sum();
-                            int tReorder = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getReorderCount).sum();
-                            int tTotal = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTotalCount).sum();
-                            int tTime = sameTeacher.stream().mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTimeTableCount).sum();
+                            int tBase = sameTeacher.stream()
+                                    .mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getBaseCount).sum();
+                            int tTeacher = sameTeacher.stream()
+                                    .mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTeacherCount).sum();
+                            int tReorder = sameTeacher.stream()
+                                    .mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getReorderCount).sum();
+                            int tTotal = sameTeacher.stream()
+                                    .mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTotalCount).sum();
+                            int tTime = sameTeacher.stream()
+                                    .mapToInt(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getTimeTableCount)
+                                    .sum();
 
                             Row subTotalRow = sheet.createRow(rowIdx++);
                             subTotalRow.createCell(0).setCellValue(item.getUserName() + " 합계");
@@ -509,9 +536,11 @@ public class AdminViewController {
                             subTotalRow.createCell(4).setCellValue(tTeacher);
                             subTotalRow.createCell(5).setCellValue(tReorder);
                             subTotalRow.createCell(6).setCellValue(tTotal);
-                            if (!isAllMode) subTotalRow.createCell(7).setCellValue(tTime);
+                            if (!isAllMode)
+                                subTotalRow.createCell(7).setCellValue(tTime);
 
-                            for (int i = 0; i < colCount; i++) subTotalRow.getCell(i).setCellStyle(subTotalStyle);
+                            for (int i = 0; i < colCount; i++)
+                                subTotalRow.getCell(i).setCellStyle(subTotalStyle);
                         }
                     }
                 }
@@ -519,18 +548,22 @@ public class AdminViewController {
                 Row totalRow = sheet.createRow(rowIdx++);
                 int labelSpan = isTeacherMode ? 3 : 2;
                 totalRow.createCell(0).setCellValue(center.getCenterName() + " 합계");
-                for (int i = 1; i < labelSpan; i++) totalRow.createCell(i);
+                for (int i = 1; i < labelSpan; i++)
+                    totalRow.createCell(i);
                 sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, labelSpan - 1));
                 totalRow.createCell(labelSpan).setCellValue(totalBaseCount);
                 totalRow.createCell(labelSpan + 1).setCellValue(totalTeacherCount);
                 totalRow.createCell(labelSpan + 2).setCellValue(totalReorderCount);
                 totalRow.createCell(labelSpan + 3).setCellValue(totalCount);
-                if (!isAllMode) totalRow.createCell(labelSpan + 4).setCellValue(totalTimeTable);
+                if (!isAllMode)
+                    totalRow.createCell(labelSpan + 4).setCellValue(totalTimeTable);
 
-                for (int i = 0; i < colCount; i++) totalRow.getCell(i).setCellStyle(totalStyle);
+                for (int i = 0; i < colCount; i++)
+                    totalRow.getCell(i).setCellStyle(totalStyle);
             }
 
-            for (int i = 0; i < colCount; i++) sheet.setColumnWidth(i, 4500);
+            for (int i = 0; i < colCount; i++)
+                sheet.setColumnWidth(i, 4500);
 
             String fileName = URLEncoder.encode(segmentType + "_" + year + month + ".xlsx",
                     StandardCharsets.UTF_8).replace("+", "%20");
@@ -547,6 +580,15 @@ public class AdminViewController {
         style.setBorderBottom(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
+    }
+
+    @GetMapping("/center/timeview")
+    public String getAdminTimeViewPage(Model model) {
+        LocalDate now = LocalDate.now();
+        model.addAttribute("year", String.valueOf(now.getYear()));
+        model.addAttribute("month", String.format("%02d", now.getMonthValue()));
+        model.addAttribute("center", centerService.findAllCenter());
+        return "/admin/center/center-timeview";
     }
 
     @GetMapping("/ebook/person")
@@ -573,7 +615,6 @@ public class AdminViewController {
         return "/admin/app/monthly";
     }
 
-
     @GetMapping("/app/book")
     public String book(Model model, HttpSession session) {
         List<ClassCode> classCodes = classService.findClassCodeExcludeMid();
@@ -581,13 +622,11 @@ public class AdminViewController {
         List<AdminRespDTO.BookSuggestViewDTO> list = adminService.findBookSuggest();
 
         // week 기준 Map (1~4)
-        Map<Integer, AdminRespDTO.BookSuggestViewDTO> bookMap =
-                list.stream()
-                        .collect(Collectors.toMap(
-                                b -> Integer.parseInt(b.getWeek()),
-                                b -> b,
-                                (a, b) -> a
-                        ));
+        Map<Integer, AdminRespDTO.BookSuggestViewDTO> bookMap = list.stream()
+                .collect(Collectors.toMap(
+                        b -> Integer.parseInt(b.getWeek()),
+                        b -> b,
+                        (a, b) -> a));
         model.addAttribute("subjects", subjects);
         model.addAttribute("classCodes", classCodes);
         model.addAttribute("bookMap", bookMap);

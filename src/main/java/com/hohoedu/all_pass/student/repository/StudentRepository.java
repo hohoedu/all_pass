@@ -83,7 +83,7 @@ public interface StudentRepository {
 
         PendingStudent findPendingStudentBySendKey(String sendKey);
 
-        void updatePendingStudentOnRegister(String sendKey, String studentId, String name, String gradeKey);
+        void updatePendingStudentOnRegister(@Param("sendKey") String sendKey, @Param("studentId") String studentId, @Param("name") String name, @Param("gradeKey") String gradeKey);
 
         public int statusHistoryInsert(StatusHistoryDTO historyDTO);
 
@@ -204,7 +204,7 @@ public interface StudentRepository {
 
         StudentWebRespDTO.TeacherDTO findTeacherAssignByStudentId(@Param("studentId") String studentId);
 
-        boolean existsTransferSchedule(String studentId, String fromUserCode);
+        boolean existsTransferSchedule(@Param("studentId") String studentId, @Param("fromUserCode") String fromUserCode);
 
         int insertTeacherAssign(TeacherAssign teacherAssign);
 

@@ -6945,6 +6945,13 @@ textarea.record-review {
     font-size: 14px;
     background-color: transparent;
     appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.custom-spinner input[type="number"]::-webkit-outer-spin-button,
+.custom-spinner input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .spinner-buttons {

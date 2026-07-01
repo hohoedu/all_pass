@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const classCodes = JSON.parse(rawCodes);
     const classUnits = JSON.parse(rawUnits);
 
+    let returnOptions = [];
+
     initAllMonthPickers();
     attachCancelEvents();
 
@@ -34,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
 
-            // 기존 span 삭제
             const old = display.querySelector(".month-text");
             if (old) old.remove();
 
@@ -60,6 +61,55 @@ document.addEventListener('DOMContentLoaded', () => {
         if (display.closest(".search-calendar")) {
             loadReorderList(year, month);
         }
+
+        if (display.closest(".save-calendar")) {
+            const orderType = document.querySelector('input[name="orderType"]:checked')?.value;
+            if (orderType === "RETURN") {
+                loadReturnOptionsAndRebuild(String(year), month);
+            }
+        }
+    }
+
+    async function loadReturnOptions(yy, mm) {
+        try {
+            const res = await fetch('/manage/reorder/return-options', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({yy, mm})
+            });
+            const data = await res.json();
+            returnOptions = data.response || [];
+        } catch (e) {
+            console.error('loadReturnOptions Error:', e);
+            returnOptions = [];
+        }
+    }
+
+    async function loadReturnOptionsAndRebuild(yy, mm) {
+        await loadReturnOptions(yy, mm);
+        rebuildReturnForm();
+    }
+
+    function rebuildReturnForm() {
+        const addContainer = document.querySelector(".all-add");
+        const firstExtra = addContainer.querySelector(".add-extra");
+
+        addContainer.innerHTML = "";
+
+        const cloned = firstExtra ? firstExtra.cloneNode(true) : createExtraTemplate();
+        addContainer.appendChild(cloned);
+
+        resetExtraInputs(cloned);
+        attachReturnSelectEvents(cloned);
+        applySpinnerEvents(addContainer);
+    }
+
+    function resetExtraInputs(box) {
+        box.querySelectorAll("input[type='number']").forEach(i => i.value = 0);
+        box.querySelectorAll("input[type='text']").forEach(i => i.value = "");
+        box.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        const hint = box.querySelector('.max-hint');
+        if (hint) hint.textContent = '';
     }
 
     const addView = document.querySelector(".add-order-view");
@@ -75,36 +125,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     radios.forEach(radio => {
-        radio.addEventListener("change", () => {
+        radio.addEventListener("change", async () => {
             if (radio.value === "ADD") {
                 addView.style.display = "block";
                 returnView.style.display = "none";
+
+                const addContainer = document.querySelector(".all-add");
+                const firstExtra = addContainer.querySelector(".add-extra");
+                addContainer.innerHTML = "";
+                const cloned = firstExtra ? firstExtra.cloneNode(true) : createExtraTemplate();
+                addContainer.appendChild(cloned);
+
+                resetExtraInputs(cloned);
+                attachSelectEvents(cloned);
+                applySpinnerEvents(addContainer);
+
             } else {
                 addView.style.display = "none";
                 returnView.style.display = "block";
+
+                const saveCalendar = document.querySelector(".save-calendar .hidden-picker");
+                if (saveCalendar?.value) {
+                    const [yy, mmRaw] = saveCalendar.value.split("-");
+                    await loadReturnOptions(yy, mmRaw.padStart(2, '0'));
+                }
+                rebuildReturnForm();
             }
-
-            const addContainer = document.querySelector(".all-add");
-            const firstExtra = addContainer.querySelector(".add-extra");
-
-            addContainer.innerHTML = "";
-
-            const cloned = firstExtra.cloneNode(true);
-            addContainer.appendChild(cloned);
-
-            const inputNum = cloned.querySelectorAll("input[type='number']");
-            inputNum.forEach(input => input.value = 0);
-            const inputText = cloned.querySelectorAll("input[type='text']");
-            inputText.forEach(input => input.value = "");
-
-            const selects = cloned.querySelectorAll("select");
-            selects.forEach(sel => sel.selectedIndex = 0);
 
             document.querySelector(".addition").innerText = "0";
             document.querySelector(".takeback").innerText = "0";
-
-            attachSelectEvents(cloned);
-            applySpinnerEvents(addContainer);
         });
     });
 
@@ -112,64 +161,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector(".book-add");
 
     addButton.addEventListener("click", () => {
+        const orderType = document.querySelector('input[name="orderType"]:checked')?.value;
+        const newExtra = createExtraTemplate();
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newExtra;
+        const extraEl = tempDiv.firstElementChild;
+        addContainer.appendChild(extraEl);
 
-        const extraTemplate = `
-            <div class="add-extra">
-                <div class="basic-select">
-                    <select name="bookStep">
-                        <option value="">단계 선택</option>
-                    </select>
-                </div>
-                <div class="basic-select" >
-                    <select name="bookChoice">
-                        <option value="">호수 선택</option>
-                    </select>
-                </div>
-                <div class="custom-spinner">
-                    <input type="number" min="0" max="100" step="1" value="0">
-                    <div class="spinner-buttons">
-                        <button type="button" class="increment-btn">▲</button>
-                        <button type="button" class="decrement-btn">▼</button>
-                    </div>
-                </div>
-                <div class="reason-box">
-                    <div>사유 입력:</div>
-                    <input type="text" placeholder="사유를 입력해주세요.">
-                </div>
-            </div>
-        `;
-
-        addContainer.insertAdjacentHTML("beforeend", extraTemplate);
-
-        const lastExtra = addContainer.lastElementChild;
-        attachSelectEvents(lastExtra);
-        applySpinnerEvents(lastExtra);
+        if (orderType === "RETURN") {
+            attachReturnSelectEvents(extraEl);
+        } else {
+            attachSelectEvents(extraEl);
+        }
+        applySpinnerEvents(addContainer);
     });
 
+    function createExtraTemplate() {
+        const div = document.createElement('div');
+        div.className = 'add-extra';
+        div.innerHTML = `
+            <div class="basic-select">
+                <select name="bookStep">
+                    <option value="">단계 선택</option>
+                </select>
+            </div>
+            <div class="basic-select">
+                <select name="bookChoice">
+                    <option value="">호수 선택</option>
+                </select>
+            </div>
+            <div class="custom-spinner">
+                <input type="number" min="0" max="100" step="1" value="0">
+            </div>
+            <div class="reason-box">
+                <div>사유 입력:</div>
+                <input type="text" placeholder="사유를 입력해주세요.">
+            </div>
+        `;
+        return div;
+    }
 
-    // 스피너
     function applySpinnerEvents(root) {
-        const spinners = root.querySelectorAll(".custom-spinner");
+        const inputs = root.querySelectorAll(".custom-spinner input[type='number']");
 
-        spinners.forEach(spinner => {
-            const input = spinner.querySelector("input[type='number']");
-            const incBtn = spinner.querySelector(".increment-btn");
-            const decBtn = spinner.querySelector(".decrement-btn");
-
-            incBtn?.addEventListener("click", () => {
-                input.value = Number(input.value || 0) + 1;
+        inputs.forEach(input => {
+            input.addEventListener("input", () => {
+                const val = parseInt(input.value, 10);
+                const max = Number(input.max) || 100;
+                if (isNaN(val) || val < 0) input.value = 0;
+                else if (val > max) input.value = max;
                 updateTotals();
             });
 
-            decBtn?.addEventListener("click", () => {
-                const now = Number(input.value || 0);
-                input.value = now > 0 ? now - 1 : 0;
-                updateTotals();
+            input.addEventListener("keydown", e => {
+                if (["e", "E", "+", "-", "."].includes(e.key)) e.preventDefault();
             });
 
-            input?.addEventListener("input", () => {
-                if (input.value === "" || isNaN(input.value)) input.value = 0;
-            });
             updateTotals();
         });
     }
@@ -194,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ── 추가 모드 select ──
     function attachSelectEvents(extraBox) {
         const stepSelect = extraBox.querySelector("select[name='bookStep']");
         const choiceSelect = extraBox.querySelector("select[name='bookChoice']");
@@ -230,6 +278,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── 반품 모드 select ──
+    function attachReturnSelectEvents(extraBox) {
+        const stepSelect = extraBox.querySelector("select[name='bookStep']");
+        const choiceSelect = extraBox.querySelector("select[name='bookChoice']");
+        const spinner = extraBox.querySelector("input[type='number']");
+
+        if (!stepSelect || !choiceSelect) return;
+
+        fillReturnStepSelect(stepSelect);
+
+        stepSelect.addEventListener("change", () => {
+            fillReturnChoiceSelect(choiceSelect, stepSelect.value, spinner);
+        });
+
+        choiceSelect.addEventListener("change", () => {
+            applyReturnMax(stepSelect.value, choiceSelect.value, spinner);
+        });
+    }
+
+    function fillReturnStepSelect(stepSelect) {
+        stepSelect.options.length = 0;
+        stepSelect.add(new Option("단계 선택", ""));
+
+        const seen = new Set();
+        returnOptions.forEach(o => {
+            if (!seen.has(o.classKey)) {
+                seen.add(o.classKey);
+                stepSelect.add(new Option(o.className, o.classKey));
+            }
+        });
+    }
+
+    function fillReturnChoiceSelect(choiceSelect, classKey, spinner) {
+        choiceSelect.options.length = 0;
+        choiceSelect.add(new Option("호수 선택", ""));
+
+        if (!classKey) return;
+
+        const units = returnOptions.filter(o => o.classKey === classKey);
+        units.forEach(o => {
+            const label = o.maxReturnCount > 0
+                ? `${o.unitName} (최대 ${o.maxReturnCount}권)`
+                : `${o.unitName} (반품 불가)`;
+            const opt = new Option(label, o.unitKey);
+            if (o.maxReturnCount <= 0) opt.disabled = true;
+            choiceSelect.add(opt);
+        });
+
+        if (spinner) {
+            spinner.max = 100;
+            spinner.value = 0;
+        }
+        updateTotals();
+    }
+
+    function applyReturnMax(classKey, unitKey, spinner) {
+        if (!spinner || !classKey || !unitKey) return;
+
+        const option = returnOptions.find(o => o.classKey === classKey && o.unitKey === unitKey);
+        if (option) {
+            spinner.max = option.maxReturnCount;
+            if (Number(spinner.value) > option.maxReturnCount) {
+                spinner.value = option.maxReturnCount;
+            }
+            updateTotals();
+        }
+    }
+
     applySpinnerEvents(document.querySelector(".all-add"));
     attachSelectEvents(document.querySelector(".add-extra"));
 
@@ -257,9 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.innerHTML = "";
         const confirmedTextMap = {
             checked: '승인', unchecked: '미승인', admin_cancel: '관리자 취소', user_cancel: '사용자 취소'
-        };
-        const confirmedCancelMap = {
-            unchecked: '취소', checked: '-', admin_cancel: '-', user_cancel: '-'
         };
 
         if (!list || list.length === 0) {
@@ -294,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tbody.insertAdjacentHTML("beforeend", html);
 
-            // 취소 버튼 이벤트 추가
             attachCancelEvents();
         });
     }
@@ -318,11 +430,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     const data = await res.json();
-                    console.log(data);
-                    console.log(data.response);
                     if (data.response === '0000') {
                         alert('취소되었습니다.');
-                        
+
                         const searchCalendar = document.querySelector(".search-calendar .hidden-picker");
                         if (searchCalendar.value) {
                             const date = new Date(searchCalendar.value);
@@ -389,6 +499,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`(${i + 1}번째 항목) 권수는 1권 이상이어야 합니다.`);
                 return;
             }
+
+            // 반품 모드: 프론트 max 재검증
+            if (orderType === "RETURN") {
+                const option = returnOptions.find(o => o.classKey === item.classKey && o.unitKey === item.unitKey);
+                if (option && item.count > option.maxReturnCount) {
+                    alert(`(${i + 1}번째 항목) 반품 가능 수량(${option.maxReturnCount}권)을 초과했습니다.`);
+                    return;
+                }
+            }
         }
 
         const totalCount = extras.reduce((sum, item) => sum + item.count, 0);
@@ -410,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(data.response);
                 window.location.reload();
             } else {
-                alert('저장을 실패했습니다.');
+                alert(data.msg || '저장을 실패했습니다.');
             }
         } catch (e) {
             console.error("saveReorder Error:", e);

@@ -62,12 +62,12 @@ public class ConsultViewController {
 
     @GetMapping("/print-consult")
     public String printConsult(
-            @RequestParam String startDate,
-            @RequestParam String endDate,
-            @RequestParam(defaultValue = "all") String progress,
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "consultDate") String sortColumn,
-            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(value = "startDate") String startDate,
+            @RequestParam(value = "endDate") String endDate,
+            @RequestParam(value = "progress", defaultValue = "all") String progress,
+            @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "sortColumn", defaultValue = "consultDate") String sortColumn,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             HttpSession session, Model model) {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -88,12 +88,12 @@ public class ConsultViewController {
 
     @GetMapping("/excel-consult")
     public void downloadConsultExcel(
-            @RequestParam String startDate,
-            @RequestParam String endDate,
-            @RequestParam(defaultValue = "all") String progress,
-            @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "consultDate") String sortColumn,
-            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(value = "startDate") String startDate,
+            @RequestParam(value = "endDate") String endDate,
+            @RequestParam(value = "progress", defaultValue = "all") String progress,
+            @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "sortColumn", defaultValue = "consultDate") String sortColumn,
+            @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             HttpSession session, HttpServletResponse response) throws IOException {
 
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");

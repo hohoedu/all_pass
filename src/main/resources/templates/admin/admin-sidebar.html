@@ -31,8 +31,10 @@
                 </div>
                 <div class="left-bottom">
                     <div class="sidebar-line"></div>
-                    <a href="/popbill/access-url" class="ecl-icon"><img th:src="@{/image/popbill.png}" width="30" height="30" alt=""></a>
-                    <a href="#" class="dokcl-icon"><img th:src="@{/image/payTeacher.png}" width="30" height="30" alt=""></a>
+                    <a href="/popbill/access-url" class="ecl-icon"><img th:src="@{/image/popbill.png}" width="30"
+                            height="30" alt=""></a>
+                    <a href="#" class="dokcl-icon"><img th:src="@{/image/payTeacher.png}" width="30" height="30"
+                            alt=""></a>
                 </div>
             </div>
         </div>
@@ -52,7 +54,7 @@
                 <!-- 3 -->
                 <div class="submenu" data-menu="center">
                     <a href="3center_1info.html" class="menu-link">학원 정보</a>
-                    <a href="3center_2table.html" class="menu-link">학원 시간표</a>
+                    <a th:href="@{/admin/center/timeview}" class="menu-link">학원 시간표</a>
                     <a href="3center_3resource.html" class="menu-link">공지/자료실</a>
                 </div>
                 <div class="submenu" data-menu="app">

@@ -17,6 +17,7 @@
         FROM Hohosc_book_order_add
         WHERE Yyyy = #{year}
           AND Mm = #{month}
+        HAVING COUNT(*) > 0
     </select>
 
     <select id="findInvoice" resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$InvoiceDTO">
@@ -26,7 +27,7 @@
 --Hohosc_book_order_add : 추가반품테이블
 --Hohosc_book_order_add_sugi  : 수기주문테이블
 --hohosc_office_user : 선생님 테이블
---codezip : 코드 테이을
+--codezip : 코드 테이블
 
 -- 선생님별 월 주문 집계 --
         SELECT CASE A.gb
@@ -365,5 +366,7 @@
                 END,
             unit_name
     </select>
+
+    
 
 </mapper>

@@ -61,6 +61,12 @@ public class UserService {
 
     }
 
+    public List<User> findActiveUserByCenterCode(String centerCode) {
+        return userRepository.findAllUserCode(centerCode).stream()
+                .filter(u -> Boolean.TRUE.equals(u.getIsHan()) || Boolean.TRUE.equals(u.getIsBook()))
+                .collect(Collectors.toList());
+    }
+
     public void registerTeacher(UserReqDTO.UserRegisterDTO dto, LoginRespDTO user) {
 
         if (userRepository.existsByUserId(dto.getUserId()) > 0) {

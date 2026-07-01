@@ -142,7 +142,7 @@ public class PopbillController {
     }
 
     @GetMapping("/point")
-    public ResponseEntity<?> getPopbillPoint(@RequestParam String param) {
+    public ResponseEntity<?> getPopbillPoint(@RequestParam(value = "param") String param) {
 
         return ResponseEntity.ok(ApiUtils.success(null));
     }
