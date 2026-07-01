@@ -310,10 +310,22 @@ public class ClassService {
 
     private String autoRegisterOrder(String userCode, String centerCode, String yy, String mm) {
 
-        // 마감일 체크
+        // 대상 월(yy/mm)의 자동 주문 마감일 = 전달 deadlineDay일
+        // 마감일이 지난 달은 자동 주문 안 됨
         String deadlineDay = manageRepository.findOrderDeadline(centerCode);
-        if (deadlineDay != null && LocalDate.now().getDayOfMonth() > Integer.parseInt(deadlineDay)) {
-            return "마감일이 지났습니다. 수량 변동이 있다면 추가 주문 / 반품을 이용해주세요.";
+        if (deadlineDay != null) {
+            LocalDate today = LocalDate.now();
+            LocalDate targetFirstDay = LocalDate.of(Integer.parseInt(yy), Integer.parseInt(mm), 1);
+            LocalDate orderDeadline = targetFirstDay.minusMonths(1).withDayOfMonth(Integer.parseInt(deadlineDay));
+
+            if (today.isAfter(orderDeadline)) {
+                // 이번 달에 마감된 경우(방금 마감) → 안내 메시지
+                if (today.getYear() == orderDeadline.getYear() && today.getMonthValue() == orderDeadline.getMonthValue()) {
+                    return "마감일이 지났습니다. 수량 변동이 있다면 추가 주문 / 반품을 이용해주세요.";
+                }
+                // 이미 지난 달 이전에 마감된 시간표 → 조용히 스킵
+                return null;
+            }
         }
 
         // 시간표 기준 base_count 조회
