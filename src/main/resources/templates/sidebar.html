@@ -81,6 +81,8 @@
             th:href="@{/student/withdraw}" class="menu-link">입·탈퇴 현황</a>
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('privacy_print')}"
             th:href="@{/student/privacy-print}" class="menu-link">개인정보 동의서</a>
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('student_main')}"
+            th:href="@{/student/roster}" class="menu-link">수강생 대장</a>
         </div>
         <div class="submenu" data-menu="class">
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_timetable')}"

@@ -216,4 +216,14 @@ public class StudentWebReqDTO {
     public static class PrivacyPrintReqDTO {
         private List<String> studentIds;
     }
+
+    @Data
+    public static class RosterReqDTO {
+        private String centerCode;
+        private String classType; // hoho | han | book
+        private String yy;
+        private String dateFrom;
+        private String dateTo;
+        private String dateFilter;
+    }
 }

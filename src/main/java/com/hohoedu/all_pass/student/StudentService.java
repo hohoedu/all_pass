@@ -1608,4 +1608,12 @@ public class StudentService {
         return result;
     }
 
+    public List<StudentWebRespDTO.RosterClassDTO> getClassListByCenterCode(String centerCode) {
+        return studentRepository.findClassListByCenterCode(centerCode);
+    }
+
+    public List<StudentWebRespDTO.RosterDTO> getRosterList(StudentWebReqDTO.RosterReqDTO req) {
+        return studentRepository.findRosterList(req);
+    }
+
 }

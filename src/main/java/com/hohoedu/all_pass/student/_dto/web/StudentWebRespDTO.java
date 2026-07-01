@@ -408,4 +408,21 @@ public class StudentWebRespDTO {
         private PrivacyCenterDTO centerInfo;
     }
 
+    @Data
+    public static class RosterClassDTO {
+        private String classKey;
+        private String className;
+        private String classType;
+    }
+
+    @Data
+    public static class RosterDTO {
+        private String studentId;
+        private String studentName;
+        private String address;
+        private String parentPhone;
+        private String entryDate;
+        private String inactiveDate;
+    }
+
 }

@@ -538,6 +538,23 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
+    @GetMapping("/api/roster/classes")
+    public ResponseEntity<?> getRosterClasses(HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.ok(ApiUtils.success(studentService.getClassListByCenterCode(user.getCenterCode())));
+    }
+
+    @PostMapping("/api/roster")
+    public ResponseEntity<?> getRoster(@RequestBody StudentWebReqDTO.RosterReqDTO req, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        req.setCenterCode(user.getCenterCode());
+        return ResponseEntity.ok(ApiUtils.success(studentService.getRosterList(req)));
+    }
+
     @PostMapping("/consent/search")
     public ResponseEntity<?> searchStudents(
             @RequestBody StudentWebReqDTO.PrivacySearchReqDTO req,

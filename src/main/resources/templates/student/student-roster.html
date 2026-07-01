@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/privacy-consent.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script th:src="@{/js/custom.js}"></script>
+  <script th:src="@{/js/sidebar.js}"></script>
+  <title>수강생 대장</title>
+  <style>
+    /* 좌측 패널 상단 필터 영역 */
+    .roster-filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 14px;
+    }
+
+    .roster-filter-block select,
+    .roster-filter-block input[type="date"] {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: #111827;
+      box-sizing: border-box;
+    }
+
+    .roster-section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .date-range-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .date-range-row input[type="date"] {
+      flex: 1;
+    }
+
+    .date-range-row span {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .result-count {
+      font-size: 12px;
+      font-weight: 700;
+      color: #c0392b;
+      margin-top: 4px;
+    }
+
+    /* 학생 상세 패널 */
+    .detail-empty {
+      color: #bbb;
+      font-size: 13px;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .detail-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .detail-row .d-label {
+      color: #9ca3af;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 1px;
+    }
+
+    .detail-row .d-val {
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .detail-item {
+      padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    /* 프린트 버튼 */
+    #btn-print {
+      width: 100%;
+      padding: 13px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+
+    #btn-print:hover { background: #a93226; }
+
+    /* A4 가로(landscape) 미리보기 시트 */
+    #pcPreviewWrap .roster-page {
+      width: 1060px;
+      padding: 30px 40px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      color: #111;
+    }
+
+    #pcPreviewWrap .roster-title {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      text-decoration: underline;
+      text-underline-offset: 6px;
+      margin: 0 0 6px 0;
+    }
+
+    #pcPreviewWrap .roster-subtitle {
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      margin: 0 0 18px 0;
+    }
+
+    #pcPreviewWrap .roster-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      margin-bottom: 10px;
+    }
+
+    #pcPreviewWrap .roster-meta .class-info { font-weight: 700; }
+    #pcPreviewWrap .roster-meta .count { color: #c0392b; }
+    #pcPreviewWrap .roster-meta .page-info { color: #6b7280; }
+
+    #pcPreviewWrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    #pcPreviewWrap th,
+    #pcPreviewWrap td {
+      border: 1px solid #374151;
+      padding: 6px 8px;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+
+    #pcPreviewWrap th {
+      background: #f3f4f6;
+      font-weight: 700;
+    }
+
+    #pcPreviewWrap td.td-addr {
+      text-align: left;
+      word-break: break-all;
+    }
+
+    #pcPreviewWrap tr.selected-row td {
+      background: #e0f2fe !important;
+    }
+
+    /* 인쇄 버튼 */
+    #pcPrintBtnWrap {
+      width: 1060px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 0 12px 0;
+    }
+
+    #btnPrint {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #btnPrint:hover { background: #a93226; }
+
+    @page { size: A4 landscape; margin: 0; }
+
+    @media print {
+      .pc-left,
+      .common-title,
+      #pcPrintBtnWrap { display: none !important; }
+      .pc-right { margin: 0; border: none; background: none; }
+      .pc-preview-bg { overflow: visible; padding: 0; }
+      .roster-page { box-shadow: none !important; margin-bottom: 0 !important; page-break-after: always; }
+      .roster-page:last-child { page-break-after: avoid; }
+    }
+  </style>
+</head>
+
+<body th:data-center-code="${centerCode}">
+
+  <div class="main-container">
+    <div class="main-frame">
+
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+
+      <main class="main-info">
+        <div class="student-frame">
+          <section>
+
+            <div class="common-title">
+              <h2>수강생 대장</h2>
+            </div>
+
+            <div class="pc-layout">
+
+              <!-- ===== 좌측 패널 ===== -->
+              <div class="pc-left">
+
+                <!-- 기준 필터 -->
+                <div class="roster-filter-block">
+                  <p class="roster-section-label">기준연도 (최근 3년 조회)</p>
+                  <select id="filter-year">
+                    <option value="">전체 연도</option>
+                    <th:block th:each="y : ${years}">
+                      <option th:value="${y}" th:text="${y} + '년'"></option>
+                    </th:block>
+                  </select>
+
+                  <select id="filter-class">
+                    <option value="">교습과목 선택</option>
+                    <option value="hoho">호호스쿨</option>
+                    <option value="han">한스쿨</option>
+                    <option value="book">북스쿨</option>
+                  </select>
+
+                  <button class="explore common-btn" id="btn-search" style="width:100%;">조회하기</button>
+                </div>
+
+                <!-- 결과 내 검색 -->
+                <div class="pc-action-bar" style="flex-direction:column; margin-inline:0; margin-block:0; margin-bottom:14px;">
+                  <div style="display:flex; gap:8px;">
+                    <input type="text" class="basic-input" id="search-name"
+                           placeholder="결과 내 성명/전화번호 검색" style="flex:1;">
+                  </div>
+                  <div class="result-count" id="result-count" style="display:none;">
+                    찾은 갯수: <span id="count-num">0</span>건
+                  </div>
+                </div>
+
+                <!-- 기간 필터 -->
+                <div class="roster-filter-block">
+                  <p class="roster-section-label">🗓 기간 필터 (입/탈퇴 기준)</p>
+                  <div class="date-range-row">
+                    <input type="date" id="date-from">
+                    <span>~</span>
+                    <input type="date" id="date-to">
+                  </div>
+                  <select id="date-filter">
+                    <option value="">전체 (기간 무시)</option>
+                    <option value="entry">입원일 기준</option>
+                    <option value="inactive">퇴원일 기준</option>
+                  </select>
+                  <button class="explore common-btn" id="btn-filter" style="width:100%;">필터 적용</button>
+                </div>
+
+                <!-- 학생 상세 수강정보 -->
+                <div style="flex:1; overflow:hidden;">
+                  <p class="roster-section-label">학생 상세 수강정보</p>
+                  <div id="detail-panel">
+                    <div class="detail-empty">리스트에서 학생을<br>선택해 주세요.</div>
+                  </div>
+                </div>
+
+                <!-- 프린트 -->
+                <button id="btn-print">프린트 하기</button>
+
+              </div>
+
+              <!-- ===== 우측 미리보기 패널 ===== -->
+              <div class="pc-right">
+                <div class="pc-preview-bg">
+                  <div class="pc-empty-state" id="pcEmptyState">
+                    <i class="fa fa-list-alt"></i>
+                    <p>교습과목을 선택하고<br>조회하기를 눌러주세요.</p>
+                  </div>
+                  <div id="pcPreviewWrap" style="display:none;"></div>
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var PAGE_SIZE = 25;
+      var allData = [];
+      var filteredData = [];
+      var selectedClassName = '';
+      var selectedClassType = '';
+      var rangeText = '';
+
+      /* ────────── 조회 ────────── */
+      document.getElementById('btn-search').addEventListener('click', function () {
+        var classEl = document.getElementById('filter-class');
+        var classType = classEl.value;
+        if (!classType) { alert('교습과목을 선택해 주세요.'); return; }
+
+        selectedClassName = classEl.options[classEl.selectedIndex].text;
+        selectedClassType = classType;
+
+        fetchRoster({
+          classType: classType,
+          yy: document.getElementById('filter-year').value || '',
+          dateFrom: '',
+          dateTo: '',
+          dateFilter: ''
+        });
+      });
+
+      /* ────────── 필터 적용 ────────── */
+      document.getElementById('btn-filter').addEventListener('click', function () {
+        if (allData.length === 0) { alert('먼저 조회하기를 눌러주세요.'); return; }
+
+        fetchRoster({
+          classType: selectedClassType,
+          yy: document.getElementById('filter-year').value || '',
+          dateFrom: document.getElementById('date-from').value || '',
+          dateTo: document.getElementById('date-to').value || '',
+          dateFilter: document.getElementById('date-filter').value || ''
+        });
+      });
+
+      function fetchRoster(req) {
+        fetch('/student/api/roster', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(req)
+        })
+          .then(function (r) { if (!r.ok) throw r; return r.json(); })
+          .then(function (data) {
+            allData = data.response || [];
+            filteredData = allData.slice();
+            document.getElementById('search-name').value = '';
+            document.getElementById('result-count').style.display = 'none';
+            rangeText = buildRangeText(req);
+            renderPreview(filteredData);
+          })
+          .catch(function () { alert('조회 중 오류가 발생했습니다.'); });
+      }
+
+      /* ────────── 이름/전화 실시간 검색 ────────── */
+      document.getElementById('search-name').addEventListener('input', function () {
+        var kw = this.value.trim();
+        if (!kw) {
+          filteredData = allData.slice();
+          document.getElementById('result-count').style.display = 'none';
+        } else {
+          filteredData = allData.filter(function (s) {
+            return s.studentName.includes(kw) || (s.parentPhone && s.parentPhone.includes(kw));
+          });
+          document.getElementById('result-count').style.display = 'block';
+          document.getElementById('count-num').textContent = filteredData.length;
+        }
+        renderPreview(filteredData);
+      });
+
+      /* ────────── 미리보기 렌더링 ────────── */
+      function renderPreview(data) {
+        var wrap = document.getElementById('pcPreviewWrap');
+        var empty = document.getElementById('pcEmptyState');
+
+        if (data.length === 0) {
+          wrap.style.display = 'none';
+          empty.style.display = 'flex';
+          empty.innerHTML = '<i class="fa fa-list-alt"></i><p>조회된 데이터가 없습니다.</p>';
+          return;
+        }
+
+        empty.style.display = 'none';
+        wrap.style.display = 'block';
+
+        var totalPages = Math.ceil(data.length / PAGE_SIZE);
+        var html = '<div id="pcPrintBtnWrap"><button type="button" id="btnPrint">인쇄하기</button></div>';
+
+        for (var p = 0; p < totalPages; p++) {
+          var pageData = data.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
+          html += buildRosterPage(pageData, p + 1, totalPages, data.length);
+        }
+
+        wrap.innerHTML = html;
+
+        document.getElementById('btnPrint').addEventListener('click', openPrintWindow);
+
+        /* 행 클릭 → 상세 */
+        wrap.querySelectorAll('tr[data-idx]').forEach(function (tr) {
+          tr.addEventListener('click', function () {
+            wrap.querySelectorAll('tr.selected-row').forEach(function (r) { r.classList.remove('selected-row'); });
+            tr.classList.add('selected-row');
+            showDetail(data[parseInt(tr.dataset.idx, 10)]);
+          });
+        });
+      }
+
+      function buildRosterPage(pageData, pageNum, totalPages, totalCount) {
+        var rows = pageData.map(function (s, i) {
+          var idx = (pageNum - 1) * PAGE_SIZE + i;
+          return '<tr data-idx="' + idx + '" style="cursor:pointer;">' +
+            '<td>' + esc(s.studentId) + '</td>' +
+            '<td><strong>' + esc(s.studentName) + '</strong></td>' +
+            '<td class="td-addr">' + esc(s.address) + '</td>' +
+            '<td>' + fmtPhone(s.parentPhone) + '</td>' +
+            '<td>' + esc(s.entryDate) + '</td>' +
+            '<td>' + esc(s.inactiveDate) + '</td>' +
+            '</tr>';
+        }).join('');
+
+        return '<div class="roster-page">' +
+          '<h2 class="roster-title">수 강 생   대 장</h2>' +
+          '<p class="roster-subtitle">조회 범위: ' + esc(rangeText) + '</p>' +
+          '<div class="roster-meta">' +
+          '<span class="class-info">교습과목: ' + esc(selectedClassName) +
+          ' <span class="count">(총 인원: ' + totalCount + '명)</span></span>' +
+          '<span class="page-info">' + pageNum + ' / ' + totalPages + ' 페이지</span>' +
+          '</div>' +
+          '<table>' +
+          '<colgroup>' +
+          '<col style="width:17%"><col style="width:9%"><col style="width:35%">' +
+          '<col style="width:14%"><col style="width:12%"><col style="width:13%">' +
+          '</colgroup>' +
+          '<thead><tr>' +
+          '<th>등록번호</th><th>성명</th><th>주소</th>' +
+          '<th>전화번호</th><th>입원 연월일</th><th>퇴원 연월일</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+          '</div>';
+      }
+
+      /* ────────── 학생 상세 ────────── */
+      function showDetail(s) {
+        document.getElementById('detail-panel').innerHTML =
+          '<div class="detail-row">' +
+          detailItem('등록번호', s.studentId) +
+          detailItem('성명', '<strong>' + esc(s.studentName) + '</strong>') +
+          detailItem('주소', s.address) +
+          detailItem('전화번호', fmtPhone(s.parentPhone)) +
+          detailItem('입원일', s.entryDate || '-') +
+          detailItem('퇴원일', s.inactiveDate || '(재원 중)') +
+          '</div>';
+      }
+
+      function detailItem(label, val) {
+        return '<div class="detail-item">' +
+          '<div class="d-label">' + label + '</div>' +
+          '<div class="d-val">' + (val || '-') + '</div>' +
+          '</div>';
+      }
+
+      /* ────────── 인쇄 ────────── */
+      document.getElementById('btn-print').addEventListener('click', function () {
+        if (filteredData.length === 0) { alert('조회된 데이터가 없습니다.'); return; }
+        openPrintWindow();
+      });
+
+      function openPrintWindow() {
+        var pages = Array.from(document.querySelectorAll('#pcPreviewWrap .roster-page'))
+          .map(function (el) { return el.outerHTML; }).join('');
+
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;border:0;opacity:0;';
+        document.body.appendChild(iframe);
+
+        iframe.onload = function () {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+          iframe.contentWindow.addEventListener('afterprint', function () {
+            document.body.removeChild(iframe);
+          });
+        };
+
+        var iDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iDoc.open();
+        iDoc.write(
+          '<!DOCTYPE html><html><head>' +
+          '<meta charset="UTF-8">' +
+          '<style>' + getPrintCss() + '</style>' +
+          '</head><body>' + pages + '</body></html>'
+        );
+        iDoc.close();
+      }
+
+      /* ────────── 헬퍼 ────────── */
+      function buildRangeText(req) {
+        if (req.dateFilter && req.dateFrom && req.dateTo) {
+          var label = req.dateFilter === 'entry' ? '입원일' : '퇴원일';
+          return label + ' ' + req.dateFrom + ' ~ ' + req.dateTo;
+        }
+        if (req.yy) return req.yy + '년 전체';
+        return '전체 기간 (전체 데이터)';
+      }
+
+      function fmtPhone(raw) {
+        if (!raw) return '';
+        var d = raw.replace(/\D/g, '');
+        if (d.length === 11) return d.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        if (d.length === 10) return d.replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+        return raw;
+      }
+
+      function esc(v) {
+        if (v == null) return '';
+        return String(v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function getPrintCss() {
+        return [
+          '@page { size: A4 landscape; margin: 0; }',
+          'html, body { margin: 0; padding: 0; background: #fff; }',
+          'body { font-family: "Noto Sans KR", sans-serif; color: #111;',
+          '       -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
+          '.roster-page { width: 1060px; padding: 30px 40px; background: #fff;',
+          '               box-sizing: border-box; page-break-after: always; }',
+          '.roster-page:last-child { page-break-after: avoid; }',
+          '.roster-title { text-align: center; font-size: 26px; font-weight: 900;',
+          '                letter-spacing: 6px; text-decoration: underline;',
+          '                text-underline-offset: 6px; margin: 0 0 6px; }',
+          '.roster-subtitle { text-align: center; font-size: 12px; color: #6b7280; margin: 0 0 18px; }',
+          '.roster-meta { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 10px; }',
+          '.roster-meta .class-info { font-weight: 700; }',
+          '.roster-meta .count { color: #c0392b; }',
+          '.roster-meta .page-info { color: #6b7280; }',
+          'table { width: 100%; border-collapse: collapse; font-size: 12px; }',
+          'th, td { border: 1px solid #374151; padding: 6px 8px;',
+          '         text-align: center; vertical-align: middle; line-height: 1.4; }',
+          'th { background: #f3f4f6; font-weight: 700; }',
+          'td.td-addr { text-align: left; word-break: break-all; }'
+        ].join('\n');
+      }
+
+    })();
+  </script>
+
+</body>
+
+</html>

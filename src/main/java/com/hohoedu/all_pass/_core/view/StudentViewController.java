@@ -255,6 +255,18 @@ public class StudentViewController {
         return "print/print-student-overview";
     }
 
+    @GetMapping("/roster")
+    public String getRosterPage(Model model, HttpSession session) {
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return "redirect:/login";
+
+        int nowYear = java.time.Year.now().getValue();
+        model.addAttribute("years", List.of(nowYear, nowYear - 1, nowYear - 2));
+
+        return "student/student-roster";
+    }
+
     @GetMapping("/privacy-print")
     public String consentPage(
             @RequestParam(value = "yy", required = false) String yy,

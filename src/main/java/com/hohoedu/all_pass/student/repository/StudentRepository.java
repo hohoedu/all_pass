@@ -489,4 +489,9 @@ public interface StudentRepository {
 
         StudentWebRespDTO.PrivacyCenterDTO findCenterInfo(
                         @Param("centerCode") String centerCode);
+
+        List<StudentWebRespDTO.RosterClassDTO> findClassListByCenterCode(
+                        @Param("centerCode") String centerCode);
+
+        List<StudentWebRespDTO.RosterDTO> findRosterList(StudentWebReqDTO.RosterReqDTO req);
 }
