@@ -7,11 +7,15 @@ import com.hohoedu.all_pass.admin.model.SubjectCode;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.CenterService;
 import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO.TimeTableDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.logistics.LogisticsService;
 import com.hohoedu.all_pass.logistics._dto.LogisReqDTO;
 import com.hohoedu.all_pass.logistics._dto.LogisRespDTO;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +35,10 @@ import java.time.LocalDate;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.hohoedu.all_pass._core.vo.Constants.DAYS;
 
 @Slf4j
 @Controller
@@ -43,13 +50,21 @@ public class AdminViewController {
     private final CenterService centerService;
     private final AdminService adminService;
     private final LogisticsService logisticsService;
+    private final UserService userService;
 
     @GetMapping("/order/order-list2")
     public String getAdminOrderList(Model model, HttpSession session) {
         List<Center> center = centerService.findAllCenter();
         adminService.findAdminOrderList();
 
+        Map<String, Integer> deadlineMap = logisticsService.findAllDeadlines()
+                .stream()
+                .collect(Collectors.toMap(
+                        LogisRespDTO.DeadlineDTO::getCenterCode,
+                        LogisRespDTO.DeadlineDTO::getDeadlineAt));
+
         model.addAttribute("center", center);
+        model.addAttribute("deadlineMap", deadlineMap);
 
         return "/admin/order/order-list-regacy";
     }
@@ -589,6 +604,44 @@ public class AdminViewController {
         model.addAttribute("month", String.format("%02d", now.getMonthValue()));
         model.addAttribute("center", centerService.findAllCenter());
         return "/admin/center/center-timeview";
+    }
+
+    @GetMapping("/center/print-timeview")
+    public String getAdminPrintTimeView(
+            @RequestParam("centerCode") String centerCode,
+            @RequestParam("userCode") String userCode,
+            @RequestParam("ym") String ym,
+            Model model) {
+        String yy = ym.substring(0, 4);
+        String mm = ym.substring(4, 6);
+
+        List<User> teachers = userService.findActiveUserByCenterCode(centerCode);
+        User selectedUser = teachers.stream()
+                .filter(u -> userCode.equals(u.getUserCode()))
+                .findFirst()
+                .orElse(null);
+
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(yy, mm, userCode, centerCode);
+
+        Map<String, Map<String, TimeTableDTO>> tableMap = viewData.getTables().stream()
+                .collect(Collectors.groupingBy(
+                        TimeTableDTO::getDayname,
+                        Collectors.toMap(TimeTableDTO::getPeriodNo, Function.identity())));
+        DAYS.forEach(d -> tableMap.putIfAbsent(d.get("id"), new HashMap<>()));
+
+        Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.StudentStatRespDTO::getGb));
+
+        model.addAttribute("yy", yy);
+        model.addAttribute("mm", mm);
+        model.addAttribute("selectedUser", selectedUser);
+        model.addAttribute("days", DAYS);
+        model.addAttribute("tableMap", tableMap);
+        model.addAttribute("statsMap", statsMap);
+        model.addAttribute("totalStudentsLong", viewData.getTotalStudentsLong());
+        model.addAttribute("totalStudentsDouble", viewData.getTotalStudentsDouble());
+
+        return "print/print-timeview";
     }
 
     @GetMapping("/ebook/person")

@@ -61,7 +61,15 @@ public class PaymentService {
             String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
-        return paymentRepository.findPaymentSummary(centerCode, userCode, roleKey, type, year, month, year, "01");
+
+        List<PaymentRespDTO.MainPaymentSummaryDTO> result = paymentRepository.findPaymentSummary(centerCode, userCode,
+                roleKey, type, year, month, year, "01");
+
+        int totalCount = paymentRepository.countTotalStudentsByPeriod(centerCode, userCode, roleKey, year, month, year,
+                "01");
+        applyUnpaidStats(result, totalCount);
+
+        return result;
     }
 
     // 기간별 미납 조회
@@ -69,7 +77,27 @@ public class PaymentService {
             String roleKey, String type) {
         String year = DateConfig.currentYearMonth().get("currentYear");
         String month = DateConfig.currentYearMonth().get("currentMonth");
-        return paymentRepository.findPaymentSummaryByPeriod(centerCode, userCode, roleKey, type, year, month);
+
+        List<PaymentRespDTO.MainPaymentSummaryDTO> result = paymentRepository.findPaymentSummaryByPeriod(centerCode,
+                userCode, roleKey, type, year, month);
+
+        int totalCount = paymentRepository.countTotalStudents(centerCode, userCode, roleKey, year, month);
+        applyUnpaidStats(result, totalCount);
+
+        return result;
+    }
+
+    // unpaidCount(=결과 건수)/totalCount/unpaidRate를 결과 리스트에 채워넣음
+    // (기존 SQL의 COUNT(*) OVER(), CROSS JOIN 서브쿼리, 나눗셈 로직과 동일한 결과를 보장)
+    private void applyUnpaidStats(List<PaymentRespDTO.MainPaymentSummaryDTO> result, int totalCount) {
+        int unpaidCount = result.size();
+        Double unpaidRate = totalCount == 0 ? null : (double) unpaidCount / totalCount * 100;
+
+        for (PaymentRespDTO.MainPaymentSummaryDTO dto : result) {
+            dto.setUnpaidCount(unpaidCount);
+            dto.setTotalCount(totalCount);
+            dto.setUnpaidRate(unpaidRate);
+        }
     }
 
     /**

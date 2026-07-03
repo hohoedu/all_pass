@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.admin;
 import com.hohoedu.all_pass.admin._dto.AdminReqDTO;
 import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
+import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminService {
+    private static final String SECONDARY_CENTER_CODE = "ULS001";
+
     private final AdminRepository adminRepository;
+    private final SecondaryLogisticsRepository secondaryLogisticsRepository;
 
     public int insertPersonYear(AdminReqDTO.PersonSettingDTO reqDTO) {
         int count = 0;
@@ -135,6 +139,10 @@ public class AdminService {
     }
 
     public void updateOrderDeadline(AdminReqDTO.OrderDeadlineDTO dto) {
-       adminRepository.updateOrderDeadline(dto);
+        adminRepository.updateOrderDeadline(dto);
+
+        if (SECONDARY_CENTER_CODE.equals(dto.getCenterCode())) {
+            secondaryLogisticsRepository.updateOrderDeadline(dto.getDeadline());
+        }
     }
 }

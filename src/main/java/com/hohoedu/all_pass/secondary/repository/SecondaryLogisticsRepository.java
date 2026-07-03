@@ -37,4 +37,8 @@ public interface SecondaryLogisticsRepository {
                         @Param("month") String month,
                         @Param("centerCode") String centerCode);
 
+        void updateOrderDeadline(@Param("deadline") Integer deadline);
+
+        Integer findOrderDeadline();
+
 }

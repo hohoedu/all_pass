@@ -66,6 +66,14 @@ bootRun {
     jvmArgs = ['-Djava.net.preferIPv4Stack=true']
 }
 
+bootWar {
+    archiveFileName = 'ROOT.war'
+}
+
+war {
+    archiveFileName = 'ROOT.war'
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

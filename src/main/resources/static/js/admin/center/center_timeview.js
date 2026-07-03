@@ -4,8 +4,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthDisplay = document.getElementById('monthDisplay');
     const teacherSelect = document.getElementById('teacherSelect');
     const tbody = document.querySelector('.timetable-lookup-table tbody');
+    const memberStatusBody = document.getElementById('memberStatusBody');
+    const memberStatusTotal = document.getElementById('memberStatusTotal');
+    const printTimeviewBtn = document.getElementById('printTimeviewBtn');
 
     const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
+    const STATUS_ROWS = [
+        { gb: 'entry', label: '입회' },
+        { gb: 'inactive', label: '탈퇴' },
+        { gb: 'move_in', label: '전입' },
+        { gb: 'move_out', label: '전출' },
+        { gb: 'week', label: '1-3주' }
+    ];
 
     // ────────────────────────────────────────
     // 시간표 렌더링
@@ -32,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const td = document.createElement('td');
                 const tt = byPeriod[period] && byPeriod[period][day];
                 if (tt) {
-                    const color = tt.classType === '1' ? 'blue' : 'pink';
+                    const color = tt.classType === '1' ? 'pink' : 'blue';
                     const students = tt.students || [];
                     const count = students.length;
                     const slots = Array.from({ length: 8 }, (_, i) =>
@@ -56,6 +67,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tbody.appendChild(tr);
         });
+    };
+
+    // ────────────────────────────────────────
+    // 학생 현황(회원현황) 렌더링
+    // ────────────────────────────────────────
+    const renderMemberStatus = (data) => {
+        const statsMap = (data && data.statsMap) || {};
+
+        memberStatusBody.innerHTML = STATUS_ROWS.map(row => {
+            const stats = statsMap[row.gb] || [];
+            const names = stats
+                .map(s => row.gb === 'week' ? `${s.studentName} ${s.week}` : s.studentName)
+                .join(', ');
+            return `
+                <tr>
+                    <td>${row.label}</td>
+                    <td>${stats.length}명</td>
+                    <td>${names}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const totalLong = data ? data.totalStudentsLong : 0;
+        const totalDouble = data ? data.totalStudentsDouble : 0;
+        memberStatusTotal.textContent = (totalLong !== totalDouble)
+            ? `${totalLong}명 (${totalDouble}강좌)`
+            : `${totalLong}명`;
+    };
+
+    const fetchStudentStatus = async () => {
+        const [year, month] = monthPicker.value.split('-');
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
+        const teacherCode = teacherSelect.value || '';
+
+        if (!centerCode || !teacherCode) {
+            renderMemberStatus(null);
+            return;
+        }
+
+        const res = await fetch(`/center/student-status?centerCode=${centerCode}&userCode=${teacherCode}&year=${year}&month=${month}`);
+        const json = await res.json();
+        renderMemberStatus(json.response);
     };
 
     // ────────────────────────────────────────
@@ -87,12 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const teacherCode = teacherSelect.value || '';
         if (!teacherCode) {
             tbody.innerHTML = '';
+            renderMemberStatus(null);
             return;
         }
 
         const res = await fetch(`/center/timetable?centerCode=${centerCode}&userCode=${teacherCode}&year=${year}&month=${month}`);
         const timetables = await res.json();
         renderTimetable(timetables);
+        fetchStudentStatus();
     };
 
     // ────────────────────────────────────────
@@ -249,7 +305,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const centerName = item.querySelector('.center-name').textContent;
             fetchTeachers(item.dataset.centerCode, centerName);
             tbody.innerHTML = '';
+            renderMemberStatus(null);
         });
+    });
+
+    // ────────────────────────────────────────
+    // 시간표 인쇄
+    // ────────────────────────────────────────
+    printTimeviewBtn?.addEventListener('click', () => {
+        const activeCenter = document.querySelector('.center-item.active');
+        const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
+        const teacherCode = teacherSelect.value || '';
+
+        if (!centerCode || !teacherCode) {
+            alert('센터와 선생님을 먼저 선택해주세요.');
+            return;
+        }
+
+        if (centerCode === 'ULS001') {
+            alert('해당 센터는 인쇄를 지원하지 않습니다.');
+            return;
+        }
+
+        const ym = monthPicker.value.replace('-', '');
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = `/admin/center/print-timeview?centerCode=${centerCode}&userCode=${teacherCode}&ym=${ym}`;
+        iframe.onload = () => iframe.contentWindow.print();
+        document.body.appendChild(iframe);
     });
 
     const searchInput = document.querySelector('.search-box input');

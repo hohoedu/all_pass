@@ -2,14 +2,14 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap"
-          rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" th:href="@{/css/media.css}">
     <link rel="stylesheet" th:href="@{/css/admin/2logistics_2order.css}">
     <script th:src="@{/js/custom.js}"></script>
@@ -19,214 +19,228 @@
 </head>
 
 <body>
-<div class="app-shell" id="appShell">
-    <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+    <div class="app-shell" id="appShell">
+        <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
 
-    <header class="header">
-        <h1 class="page-title">월별 교재 주문 관리</h1>
-        <div class="header-actions">
-            <button class="bell" type="button" aria-label="알림"><i class="fa-regular fa-bell"></i><em>8</em></button>
-        </div>
-    </header>
-
-    <main class="content">
-        <section class="filter-card" aria-label="조회 조건">
-            <div class="filter-left">
-                <div class="field">
-                    <label for="monthDisplay">시간표 기준 월</label>
-                    <div class="date-field">
-                        <input id="monthDisplay" type="text" th:value="${year + '. ' + month}" readonly/>
-                        <button class="calendar-btn" type="button" data-picker="monthPicker" aria-label="시간표 기준 월 선택">
-                            <i class="fa-regular fa-calendar"></i>
-                        </button>
-                        <input class="hidden-picker" id="monthPicker" type="month" th:value="${year + '-' + month}"/>
-                    </div>
-                </div>
-                <div class="field">
-                    <label for="deadlineDisplay">신청 마감일</label>
-                    <div class="date-field">
-                        <input id="deadlineDisplay" type="text" value="-" readonly/>
-                        <button class="calendar-btn" type="button" data-picker="deadlinePicker" aria-label="신청 마감일 선택">
-                            <i class="fa-regular fa-calendar"></i>
-                        </button>
-                        <input class="hidden-picker" id="deadlinePicker" type="date" value="2026-05-20"/>
-                    </div>
-                </div>
-                <div class="field">
-                    <label>조회 기준</label>
-                    <div class="segmented" role="group" aria-label="조회 기준">
-                        <!--                        <button class="active" type="button">거래명세서</button>-->
-                        <button type="button">전체 집계</button>
-                        <button type="button">센터별 집계</button>
-                        <button type="button">센터별 선생님 집계</button>
-                    </div>
-                </div>
-                <button class="primary-btn" type="button">조회</button>
+        <header class="header">
+            <h1 class="page-title">월별 교재 주문 관리</h1>
+            <div class="header-actions">
+                <button class="bell" type="button" aria-label="알림"><i class="fa-regular fa-bell"></i><em>8</em></button>
             </div>
-            <div class="filter-right">
-                <button class="outline-btn" type="button" id="order-add">현재 명세서에 수기로 추가</button>
-                <button class="outline-btn" type="button" id="order-manual">신규 수기 명세서 등록</button>
-            </div>
-        </section>
+        </header>
 
-        <section class="workspace">
-            <section class="panel center-panel" aria-labelledby="center-heading">
-                <div class="panel-head">
-                    <h2 id="center-heading" class="panel-title">센터별 주문 현황</h2>
-<!--                    <span class="count">총 8개</span>-->
+        <main class="content">
+            <section class="filter-card" aria-label="조회 조건">
+                <div class="filter-left">
+                    <div class="field">
+                        <label for="monthDisplay">시간표 기준 월</label>
+                        <div class="date-field">
+                            <input id="monthDisplay" type="text" th:value="${year + '. ' + month}" readonly />
+                            <button class="calendar-btn" type="button" data-picker="monthPicker"
+                                aria-label="시간표 기준 월 선택">
+                                <i class="fa-regular fa-calendar"></i>
+                            </button>
+                            <input class="hidden-picker" id="monthPicker" type="month"
+                                th:value="${year + '-' + month}" />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="deadline-header"
+                            style="display:flex; justify-content:space-between; align-items:center;">
+                            <label for="deadlineDisplay">신청 마감일</label>
+                            <button class="deadline-save-btn" id="deadlineSaveBtn" type="button"
+                                style="font-size: 12px; font-weight: bold; color: #fff; margin-bottom: 9px; background: var(--primary); border-radius: 5px; padding: 4px 10px;">
+                                저장</button>
+                        </div>
+                        <div class="date-field">
+                            <input id="deadlineDisplay" type="text" value="-" readonly />
+                            <button class="calendar-btn" type="button" data-picker="deadlinePicker"
+                                aria-label="신청 마감일 선택">
+                                <i class="fa-regular fa-calendar"></i>
+                            </button>
+                            <input class="hidden-picker" id="deadlinePicker" type="date" value="2026-05-20" />
+
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>조회 기준</label>
+                        <div class="segmented" role="group" aria-label="조회 기준">
+                            <!--                        <button class="active" type="button">거래명세서</button>-->
+                            <button type="button">전체 집계</button>
+                            <button type="button">센터별 집계</button>
+                            <button type="button">센터별 선생님 집계</button>
+                        </div>
+                    </div>
+                    <button class="primary-btn" type="button">조회</button>
                 </div>
-                <div class="search-box">
-                    <input type="search" placeholder="센터명 검색" aria-label="센터명 검색"/>
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
-                <div class="center-list">
-                    <th:block th:each="c, stat : ${center}">
-                        <article th:if="${c.centerCode != 'PUS001' and c.centerCode != 'ALL'}"
-                                 class="center-item"
-                                 th:classappend="${stat.first} ? ' active'"
-                                 th:data-center-code="${c.centerCode}"
-                                 th:data-deadline="${deadlineMap[c.centerCode]}"
-                                 th:with="status=${reorderStatusMap[c.centerCode]}">
-                            <label class="check-label">
-                                <input class="check-input" type="checkbox">
-                                <span class="check-mark"></span>
-                            </label>
-                            <div>
-                                <div class="center-name" th:text="${#strings.replace(c.centerName, '호호서당 ', '')}"></div>
-                                <div class="request" th:text="'요청 ' + (${status != null} ? ${status.requestCount} : 0) + '건'">요청 0건</div>
-                            </div>
-                            <span class="badge"
-                                  th:classappend="${status == null} ? 'none' : (${status.confirmed} ? 'done' : 'wait')"
-                                  th:text="${status == null} ? '-' : (${status.confirmed} ? '승인완료' : '승인대기')">-</span>
-                        </article>
-                    </th:block>
+                <div class="filter-right">
+                    <button class="outline-btn" type="button" id="order-add">현재 명세서에 수기로 추가</button>
+                    <button class="outline-btn" type="button" id="order-manual">신규 수기 명세서 등록</button>
                 </div>
             </section>
 
-            <section class="order-detail" aria-label="주문 상세 영역">
-                <section class="panel statement-panel">
-                    <div class="panel-head" style="border-bottom: 0">
-                        <h2 class="panel-title">주문 명세서 리스트</h2>
+            <section class="workspace">
+                <section class="panel center-panel" aria-labelledby="center-heading">
+                    <div class="panel-head">
+                        <h2 id="center-heading" class="panel-title">센터별 주문 현황</h2>
+                        <!--                    <span class="count">총 8개</span>-->
                     </div>
-                    <div class="statement-tabs-wrap">
-                        <button class="statement-arrow hidden" id="statementPrevBtn" type="button" aria-label="이전 명세서">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <div class="statement-tabs" id="statementTabs">
-                            <button class="statement-card active" type="button">
-                                <strong>정기 주문 명세서</strong>
-                                <p>-</p>
-                                <small>-</small>
+                    <div class="search-box">
+                        <input type="search" placeholder="센터명 검색" aria-label="센터명 검색" />
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <div class="center-list">
+                        <th:block th:each="c, stat : ${center}">
+                            <article th:if="${c.centerCode != 'PUS001' and c.centerCode != 'ALL'}" class="center-item"
+                                th:classappend="${stat.first} ? ' active'" th:data-center-code="${c.centerCode}"
+                                th:data-deadline="${deadlineMap[c.centerCode]}"
+                                th:with="status=${reorderStatusMap[c.centerCode]}">
+                                <label class="check-label">
+                                    <input class="check-input" type="checkbox">
+                                    <span class="check-mark"></span>
+                                </label>
+                                <div>
+                                    <div class="center-name" th:text="${#strings.replace(c.centerName, '호호서당 ', '')}">
+                                    </div>
+                                    <div class="request"
+                                        th:text="'요청 ' + (${status != null} ? ${status.requestCount} : 0) + '건'">요청 0건
+                                    </div>
+                                </div>
+                                <span class="badge"
+                                    th:classappend="${status == null} ? 'none' : (${status.confirmed} ? 'done' : 'wait')"
+                                    th:text="${status == null} ? '-' : (${status.confirmed} ? '승인완료' : '승인대기')">-</span>
+                            </article>
+                        </th:block>
+                    </div>
+                </section>
+
+                <section class="order-detail" aria-label="주문 상세 영역">
+                    <section class="panel statement-panel">
+                        <div class="panel-head" style="border-bottom: 0">
+                            <h2 class="panel-title">주문 명세서 리스트</h2>
+                        </div>
+                        <div class="statement-tabs-wrap">
+                            <button class="statement-arrow hidden" id="statementPrevBtn" type="button"
+                                aria-label="이전 명세서">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <div class="statement-tabs" id="statementTabs">
+                                <button class="statement-card active" type="button">
+                                    <strong>정기 주문 명세서</strong>
+                                    <p>-</p>
+                                    <small>-</small>
+                                </button>
+                            </div>
+                            <button class="statement-arrow hidden" id="statementNextBtn" type="button"
+                                aria-label="다음 명세서">
+                                <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
-                        <button class="statement-arrow hidden" id="statementNextBtn" type="button" aria-label="다음 명세서">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
-                    </div>
+                    </section>
+
+                    <section class="panel change-panel">
+                        <div class="panel-head">
+                            <h2 class="panel-title">변동 사항</h2>
+                            <label class="check-label" id="onlyWaitLabel" style="gap: 5px">
+                                <input class="check-input" type="checkbox" id="onlyWaitCheck">
+                                <span class="check-mark"></span>
+                                <span class="only-wait-text"
+                                    style="color:#5d606b; font-size:15px; font-weight:700;">미승인만 보기</span>
+                            </label>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <colgroup>
+                                    <col style="width: 5%">
+                                    <col style="width: 10%">
+                                    <col style="width: 15%">
+                                    <col style="width: 15%">
+                                    <col style="width: 15%">
+                                    <col style="width: 15%">
+                                    <col style="width: 10%">
+                                    <col style="width: 15%">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th><label class="check-label"><input class="check-input" type="checkbox"><span
+                                                    class="check-mark"></span></label></th>
+                                        <th>상태</th>
+                                        <th>등록일시</th>
+                                        <th>선생님</th>
+                                        <th>구분</th>
+                                        <th>교재</th>
+                                        <th>수량</th>
+                                        <th>승인 여부</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reorderTableBody"></tbody>
+                            </table>
+                        </div>
+                    </section>
                 </section>
 
-                <section class="panel change-panel">
-                    <div class="panel-head">
-                        <h2 class="panel-title">변동 사항</h2>
-                        <label class="check-label" id="onlyWaitLabel" style="gap: 5px">
-                            <input class="check-input" type="checkbox" id="onlyWaitCheck">
-                            <span class="check-mark"></span>
-                            <span class="only-wait-text"
-                                  style="color:#5d606b; font-size:15px; font-weight:700;">미승인만 보기</span>
-                        </label>
+                <aside class="panel invoice" aria-labelledby="invoice-heading">
+                    <div class="invoice-head">
+                        <div class="invoice-title">
+                            <h2 id="invoice-heading">거래명세서</h2>
+                            <span id="invoiceYyMm">-</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="excel-btn" type="button">엑셀 다운로드</button>
+                            <button class="print-btn" type="button">인쇄 미리보기</button>
+                        </div>
                     </div>
+                    <dl class="company-info" id="companyInfo">
+                        <dt>상호</dt>
+                        <dd id="infoCenterName">-</dd>
+                        <dt>등록번호</dt>
+                        <dd id="infoBizNum">-</dd>
+                        <dt>성명</dt>
+                        <dd id="infoDirectorName">-</dd>
+                        <dt>주소</dt>
+                        <dd id="infoAddress">-</dd>
+                        <dt>담당</dt>
+                        <dd id="infoManagerName">-</dd>
+                        <dt>연락처</dt>
+                        <dd id="infoManagerTel">-</dd>
+                    </dl>
                     <div class="table-wrap">
-                        <table>
+                        <table class="invoice-table">
                             <colgroup>
-                                <col style="width: 5%">
+                                <col style="width: 20%">
+                                <col style="width: 20%">
                                 <col style="width: 10%">
-                                <col style="width: 15%">
-                                <col style="width: 15%">
-                                <col style="width: 15%">
-                                <col style="width: 15%">
                                 <col style="width: 10%">
-                                <col style="width: 15%">
+                                <col style="width: 12%">
+                                <col style="width: 12%">
+                                <col style="width: 20%">
                             </colgroup>
                             <thead>
-                            <tr>
-                                <th><label class="check-label"><input class="check-input" type="checkbox"><span
-                                        class="check-mark"></span></label></th>
-                                <th>상태</th>
-                                <th>등록일시</th>
-                                <th>선생님</th>
-                                <th>구분</th>
-                                <th>교재</th>
-                                <th>수량</th>
-                                <th>승인 여부</th>
-                            </tr>
+                                <tr>
+                                    <th>주문일시</th>
+                                    <th>품명</th>
+                                    <th>규격</th>
+                                    <th>수량</th>
+                                    <th>단가</th>
+                                    <th>금액</th>
+                                    <th>비고</th>
+                                </tr>
                             </thead>
-                            <tbody id="reorderTableBody"></tbody>
+                            <tbody id="invoiceTableBody"></tbody>
                         </table>
                     </div>
-                </section>
+                    <div class="summary-box" id="summaryBox">
+                        <div class="summary-row"><span>주문 금액 합계</span><strong id="summaryOrder">-</strong></div>
+                        <div class="summary-row"><span>반품 차감 금액</span><strong id="summaryReturn">-</strong></div>
+                        <div class="summary-row"><span>추가 주문 금액</span><strong id="summaryAdd">-</strong></div>
+                        <div class="summary-total"><span>최종 합계 금액</span><strong id="summaryTotal">-</strong></div>
+                    </div>
+                </aside>
             </section>
-
-            <aside class="panel invoice" aria-labelledby="invoice-heading">
-                <div class="invoice-head">
-                    <div class="invoice-title">
-                        <h2 id="invoice-heading">거래명세서</h2>
-                        <span id="invoiceYyMm">-</span>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button class="excel-btn" type="button">엑셀 다운로드</button>
-                        <button class="print-btn" type="button">인쇄 미리보기</button>
-                    </div>
-                </div>
-                <dl class="company-info" id="companyInfo">
-                    <dt>상호</dt>
-                    <dd id="infoCenterName">-</dd>
-                    <dt>등록번호</dt>
-                    <dd id="infoBizNum">-</dd>
-                    <dt>성명</dt>
-                    <dd id="infoDirectorName">-</dd>
-                    <dt>주소</dt>
-                    <dd id="infoAddress">-</dd>
-                    <dt>담당</dt>
-                    <dd id="infoManagerName">-</dd>
-                    <dt>연락처</dt>
-                    <dd id="infoManagerTel">-</dd>
-                </dl>
-                <div class="table-wrap">
-                    <table class="invoice-table">
-                        <colgroup>
-                            <col style="width: 20%">
-                            <col style="width: 20%">
-                            <col style="width: 10%">
-                            <col style="width: 10%">
-                            <col style="width: 12%">
-                            <col style="width: 12%">
-                            <col style="width: 20%">
-                        </colgroup>
-                        <thead>
-                        <tr>
-                            <th>주문일시</th>
-                            <th>품명</th>
-                            <th>규격</th>
-                            <th>수량</th>
-                            <th>단가</th>
-                            <th>금액</th>
-                            <th>비고</th>
-                        </tr>
-                        </thead>
-                        <tbody id="invoiceTableBody"></tbody>
-                    </table>
-                </div>
-                <div class="summary-box" id="summaryBox">
-                    <div class="summary-row"><span>주문 금액 합계</span><strong id="summaryOrder">-</strong></div>
-                    <div class="summary-row"><span>반품 차감 금액</span><strong id="summaryReturn">-</strong></div>
-                    <div class="summary-row"><span>추가 주문 금액</span><strong id="summaryAdd">-</strong></div>
-                    <div class="summary-total"><span>최종 합계 금액</span><strong id="summaryTotal">-</strong></div>
-                </div>
-            </aside>
-        </section>
-    </main>
-</div>
-<div th:replace="~{admin/order/order-manual-modal :: orderManualModal}"></div>
-<div th:replace="~{admin/order/order-add-modal :: orderAddModal}"></div>
+        </main>
+    </div>
+    <div th:replace="~{admin/order/order-manual-modal :: orderManualModal}"></div>
+    <div th:replace="~{admin/order/order-add-modal :: orderAddModal}"></div>
 </body>
+
 </html>

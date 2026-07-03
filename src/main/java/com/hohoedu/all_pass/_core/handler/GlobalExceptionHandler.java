@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass._core.handler;
 
 import com.hohoedu.all_pass._core.handler.exception.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -53,6 +55,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppRestfulException.class)
     public ResponseEntity<?> handleAppException(AppRestfulException ex) {
+        log.error("AppRestfulException: {}", ex.getMessage(), ex);
         Map<String, Object> body = new HashMap<>();
         body.put("success", false);
         body.put("msg", ex.getMessage());
@@ -62,6 +65,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> handleRuntimeException(RuntimeException e) {
+        log.error("Unhandled RuntimeException: {}", e.getMessage(), e);
         Map<String, Object> body = new HashMap<>();
         body.put("success", false);
         body.put("msg", e.getMessage());

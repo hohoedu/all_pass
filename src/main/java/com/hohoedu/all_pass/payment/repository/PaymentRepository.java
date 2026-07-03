@@ -31,6 +31,22 @@ public interface PaymentRepository {
             @Param("year") String year,
             @Param("month") String month);
 
+    int countTotalStudentsByPeriod(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("roleKey") String roleKey,
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("startYear") String startYear,
+            @Param("startMonth") String startMonth);
+
+    int countTotalStudents(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("roleKey") String roleKey,
+            @Param("year") String year,
+            @Param("month") String month);
+
     int updateExpiredBillsToDestroyed();
 
     int sumManualAmountByPaymentKey(@Param("paymentKey") String paymentKey);

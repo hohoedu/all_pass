@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.center;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.payment.PaymentService;
 import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
 import com.hohoedu.all_pass.secondary.repository.SecondaryUserRepository;
@@ -21,6 +22,7 @@ import org.threeten.bp.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -70,6 +72,29 @@ public class CenterController {
                     secondaryUserRepository.findTimetable(userCode, year, month)));
         }
         return ResponseEntity.ok(classService.findTimeTableWithStudents(userCode, year, month));
+    }
+
+    @GetMapping("/student-status")
+    public ResponseEntity<?> getStudentStatus(
+            @RequestParam(value = "centerCode") String centerCode,
+            @RequestParam(value = "userCode") String userCode,
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month) {
+        if ("ULS001".equals(centerCode)) {
+            return ResponseEntity.ok(ApiUtils.success(null));
+        }
+
+        ClassRespDTO.TimeTableViewRespDTO viewData = classService.findTableViewWithStudents(year, month, userCode, centerCode);
+
+        Map<String, List<ClassRespDTO.StudentStatRespDTO>> statsMap = viewData.getStats().stream()
+                .collect(Collectors.groupingBy(ClassRespDTO.StudentStatRespDTO::getGb));
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("statsMap", statsMap);
+        result.put("totalStudentsLong", viewData.getTotalStudentsLong());
+        result.put("totalStudentsDouble", viewData.getTotalStudentsDouble());
+
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
     private List<SecondaryDTO.TimetableDTO> convertSecondaryTimetable(

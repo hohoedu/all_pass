@@ -1926,24 +1926,29 @@
 
     <select id="findRosterList" parameterType="com.hohoedu.all_pass.student._dto.web.StudentWebReqDTO$RosterReqDTO"
             resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$RosterDTO">
-        SELECT s.student_id                                                                         AS studentId,
-               s.student_name                                                                       AS studentName,
-               s.address + ' ' + ISNULL(s.address_detail, '')                                      AS address,
+        SELECT s.student_id AS studentId,
+               s.student_name AS studentName,
+               s.address + ' ' + ISNULL(s.address_detail, '') AS address,
                ISNULL(p.parent_tel_first, '') + ISNULL(p.parent_tel_middle, '') + ISNULL(p.parent_tel_last, '') AS parentPhone,
-               CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date   ELSE ta.entry_book_date   END AS entryDate,
+               COALESCE(
+                   NULLIF(CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date ELSE ta.entry_book_date END, ''),
+                   FORMAT(s.created_at, 'yyyy-MM-dd')
+               ) AS entryDate,
                CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END AS inactiveDate
         FROM erp_student s
-                 JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
-                 JOIN erp_parent p ON s.student_id = p.student_id
+                 LEFT JOIN erp_teacher_assign ta ON s.student_id = ta.student_id
+                 LEFT JOIN erp_parent p ON s.student_id = p.student_id
         WHERE s.center_code = #{centerCode}
           AND (
-            (#{classType} = 'hoho' AND s.sub_hoho = 1)
-                OR (#{classType} = 'han'  AND s.sub_han  = 1)
-                OR (#{classType} = 'book' AND s.sub_book = 1)
-            )
+              (#{classType} = 'hoho' AND s.sub_hoho = 1)
+              OR (#{classType} = 'han'  AND s.sub_han  = 1)
+              OR (#{classType} = 'book' AND s.sub_book = 1)
+          )
           <if test="yy != null and yy != ''">
-              AND CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date ELSE ta.entry_book_date END
-                  <![CDATA[<= #{yy} + '-12-31']]>
+              AND COALESCE(
+                      NULLIF(CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date ELSE ta.entry_book_date END, ''),
+                      FORMAT(s.created_at, 'yyyy-MM-dd')
+                  ) <![CDATA[<= #{yy} + '-12-31']]>
               AND (
                   CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END IS NULL
                   OR CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END = ''
@@ -1953,8 +1958,10 @@
           </if>
           <if test="dateFrom != null and dateFrom != '' and dateTo != null and dateTo != ''">
               <if test="dateFilter == 'entry'">
-                  AND CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date ELSE ta.entry_book_date END
-                      BETWEEN #{dateFrom} AND #{dateTo}
+                  AND COALESCE(
+                          NULLIF(CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date ELSE ta.entry_book_date END, ''),
+                          FORMAT(s.created_at, 'yyyy-MM-dd')
+                      ) BETWEEN #{dateFrom} AND #{dateTo}
               </if>
               <if test="dateFilter == 'inactive'">
                   AND CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END
@@ -1966,7 +1973,6 @@
                    OR (CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END) = ''
                  THEN 1 ELSE 0 END,
             CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.inactive_han_date ELSE ta.inactive_book_date END DESC,
-            CASE WHEN #{classType} IN ('hoho', 'han') THEN ta.entry_han_date    ELSE ta.entry_book_date    END DESC,
-            s.student_name
+            s.student_name ASC
     </select>
 </mapper>

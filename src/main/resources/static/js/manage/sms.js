@@ -566,6 +566,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveBtn = document.querySelector("#saveNotice");
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
+      if (saveBtn.disabled) return;
+
       const title = document
         .querySelector('input[placeholder="제목을 입력해주세요."]')
         .value.trim();
@@ -606,6 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!confirm(confirmMsg)) return;
       }
 
+      saveBtn.disabled = true;
       try {
         let url = "/notice/center/save";
         let requestData = {
@@ -654,11 +657,13 @@ document.addEventListener("DOMContentLoaded", () => {
           closeModal();
           location.reload();
         } else {
-          alert("저장 실패: " + result.message);
+          alert("저장 실패: " + (result.message ?? result.msg ?? "알 수 없는 오류"));
         }
       } catch (err) {
         console.error("❌ 저장 중 오류:", err);
         alert("저장 중 오류가 발생했습니다.");
+      } finally {
+        saveBtn.disabled = false;
       }
     });
   }

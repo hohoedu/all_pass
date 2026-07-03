@@ -4,7 +4,7 @@ import com.hohoedu.all_pass.notice._dto.app.NoticeAppRespDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
 import com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

@@ -26,11 +26,27 @@ public class LogisticsService {
     private final UserRepository userRepository;
 
     public List<LogisRespDTO.DeadlineDTO> findAllDeadlines() {
-        return logisticsRepository.findAllDeadlines();
+        List<LogisRespDTO.DeadlineDTO> result = new ArrayList<>(logisticsRepository.findAllDeadlines());
+
+        Integer secondaryDeadline = secondaryLogisticsRepository.findOrderDeadline();
+        if (secondaryDeadline != null) {
+            result.removeIf(d -> "ULS001".equals(d.getCenterCode()));
+
+            LogisRespDTO.DeadlineDTO dto = new LogisRespDTO.DeadlineDTO();
+            dto.setCenterCode("ULS001");
+            dto.setDeadlineAt(secondaryDeadline);
+            result.add(dto);
+        }
+
+        return result;
     }
 
     public void updateDeadline(LogisReqDTO.DeadlineUpdateReqDTO req) {
         logisticsRepository.updateDeadline(req.getCenterCode(), req.getDeadlineAt());
+
+        if (SECONDARY_CENTERS.contains(req.getCenterCode())) {
+            secondaryLogisticsRepository.updateOrderDeadline(req.getDeadlineAt());
+        }
     }
 
     public Map<String, LogisRespDTO.ReorderStatusDTO> findReorderStatusMap(String year, String month) {

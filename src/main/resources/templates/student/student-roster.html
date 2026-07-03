@@ -119,40 +119,47 @@
 
     #btn-print:hover { background: #a93226; }
 
-    /* A4 가로(landscape) 미리보기 시트 */
+    /* A4 가로(landscape) 미리보기 시트 — 1060 × 749px (297:210 비율) */
     #pcPreviewWrap .roster-page {
       width: 1060px;
-      padding: 30px 40px;
+      height: 749px;
+      overflow: hidden;
+      padding: 28px 40px 24px;
       background: #fff;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
       box-sizing: border-box;
       margin-bottom: 20px;
       color: #111;
+      display: flex;
+      flex-direction: column;
     }
 
     #pcPreviewWrap .roster-title {
       text-align: center;
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 900;
       letter-spacing: 6px;
       text-decoration: underline;
-      text-underline-offset: 6px;
-      margin: 0 0 6px 0;
+      text-underline-offset: 5px;
+      margin: 0 0 4px 0;
+      flex-shrink: 0;
     }
 
     #pcPreviewWrap .roster-subtitle {
       text-align: center;
-      font-size: 12px;
+      font-size: 11px;
       color: #6b7280;
-      margin: 0 0 18px 0;
+      margin: 0 0 10px 0;
+      flex-shrink: 0;
     }
 
     #pcPreviewWrap .roster-meta {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12.5px;
-      margin-bottom: 10px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
     }
 
     #pcPreviewWrap .roster-meta .class-info { font-weight: 700; }
@@ -162,16 +169,17 @@
     #pcPreviewWrap table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 11.5px;
+      flex-shrink: 0;
     }
 
     #pcPreviewWrap th,
     #pcPreviewWrap td {
       border: 1px solid #374151;
-      padding: 6px 8px;
+      padding: 5px 7px;
       text-align: center;
       vertical-align: middle;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     #pcPreviewWrap th {
@@ -323,12 +331,14 @@
 
   <script>
     (function () {
-      var PAGE_SIZE = 25;
+      var PAGE_SIZE = 18;
       var allData = [];
       var filteredData = [];
       var selectedClassName = '';
       var selectedClassType = '';
       var rangeText = '';
+
+      var PRINT_LABEL = { hoho: '호호스쿨', han: '한자', book: '독서' };
 
       /* ────────── 조회 ────────── */
       document.getElementById('btn-search').addEventListener('click', function () {
@@ -449,7 +459,7 @@
           '<h2 class="roster-title">수 강 생   대 장</h2>' +
           '<p class="roster-subtitle">조회 범위: ' + esc(rangeText) + '</p>' +
           '<div class="roster-meta">' +
-          '<span class="class-info">교습과목: ' + esc(selectedClassName) +
+          '<span class="class-info">교습과목: ' + esc(PRINT_LABEL[selectedClassType] || selectedClassName) +
           ' <span class="count">(총 인원: ' + totalCount + '명)</span></span>' +
           '<span class="page-info">' + pageNum + ' / ' + totalPages + ' 페이지</span>' +
           '</div>' +
@@ -549,24 +559,24 @@
 
       function getPrintCss() {
         return [
-          '@page { size: A4 landscape; margin: 0; }',
+          '@page { size: A4 landscape; margin: 10mm; }',
           'html, body { margin: 0; padding: 0; background: #fff; }',
           'body { font-family: "Noto Sans KR", sans-serif; color: #111;',
           '       -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
-          '.roster-page { width: 1060px; padding: 30px 40px; background: #fff;',
-          '               box-sizing: border-box; page-break-after: always; }',
-          '.roster-page:last-child { page-break-after: avoid; }',
-          '.roster-title { text-align: center; font-size: 26px; font-weight: 900;',
+          '.roster-page { width: 100%; padding: 0; box-sizing: border-box;',
+          '               page-break-after: always; break-after: page; }',
+          '.roster-page:last-child { page-break-after: avoid; break-after: avoid; }',
+          '.roster-title { text-align: center; font-size: 22px; font-weight: 900;',
           '                letter-spacing: 6px; text-decoration: underline;',
-          '                text-underline-offset: 6px; margin: 0 0 6px; }',
-          '.roster-subtitle { text-align: center; font-size: 12px; color: #6b7280; margin: 0 0 18px; }',
-          '.roster-meta { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 10px; }',
+          '                text-underline-offset: 5px; margin: 0 0 4px; }',
+          '.roster-subtitle { text-align: center; font-size: 11px; color: #6b7280; margin: 0 0 10px; }',
+          '.roster-meta { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; }',
           '.roster-meta .class-info { font-weight: 700; }',
           '.roster-meta .count { color: #c0392b; }',
           '.roster-meta .page-info { color: #6b7280; }',
-          'table { width: 100%; border-collapse: collapse; font-size: 12px; }',
-          'th, td { border: 1px solid #374151; padding: 6px 8px;',
-          '         text-align: center; vertical-align: middle; line-height: 1.4; }',
+          'table { width: 100%; border-collapse: collapse; font-size: 11.5px; }',
+          'th, td { border: 1px solid #374151; padding: 5px 7px;',
+          '         text-align: center; vertical-align: middle; line-height: 1.35; }',
           'th { background: #f3f4f6; font-weight: 700; }',
           'td.td-addr { text-align: left; word-break: break-all; }'
         ].join('\n');

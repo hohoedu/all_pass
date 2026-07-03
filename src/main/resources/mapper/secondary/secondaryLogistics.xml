@@ -215,6 +215,16 @@
         WHERE idx = #{id}
     </update>
 
+    <update id="updateOrderDeadline">
+        UPDATE hohosc_book_order_deadline
+        SET dd = #{deadline}
+    </update>
+
+    <select id="findOrderDeadline" resultType="java.lang.Integer">
+        SELECT TOP 1 dd
+        FROM hohosc_book_order_deadline
+    </select>
+
     <select id="findAggregateItemsByCenterCode"
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
         SELECT class_name                         AS className,

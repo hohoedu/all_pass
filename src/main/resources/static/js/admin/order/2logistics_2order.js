@@ -847,28 +847,55 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchReorderList();
     });
 
-    deadlinePicker.addEventListener('change', async () => {
+    deadlinePicker.addEventListener('change', () => {
         const [year, month, day] = deadlinePicker.value.split('-');
         deadlineDisplay.value = `${year}. ${month}. ${day}`;
         deadlineDisplay.classList.remove('danger');
+    });
 
+    document.getElementById('deadlineSaveBtn')?.addEventListener('click', async () => {
         const activeCenter = document.querySelector('.center-item.active');
-        if (!activeCenter) return;
+        if (!activeCenter) {
+            alert('먼저 센터를 선택해주세요.');
+            return;
+        }
 
+        const [year, month, day] = deadlinePicker.value.split('-');
+        if (!day) {
+            alert('마감일을 선택해주세요.');
+            return;
+        }
+
+        const newDay = parseInt(day);
+        const originalDay = activeCenter.dataset.deadline ? parseInt(activeCenter.dataset.deadline) : null;
         const centerCode = activeCenter.dataset.centerCode;
         const centerName = activeCenter.querySelector('.center-name').textContent;
-        activeCenter.dataset.deadline = parseInt(day);
+
+        if (originalDay === newDay) {
+            alert('변경된 내용이 없습니다.');
+            return;
+        }
+
+        const beforeText = originalDay ? `${originalDay}일` : '없음';
+        const confirmed = confirm(
+            `${centerName}의 주문마감일을 변경하시겠습니까?\n\n변경 전: ${beforeText}\n변경 후: ${newDay}일`
+        );
+        if (!confirmed) return;
 
         try {
             const res = await fetch('/logis/order/deadline', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({centerCode, deadlineAt: parseInt(day)})
+                body: JSON.stringify({centerCode, deadlineAt: newDay})
             });
             const data = await res.json();
 
-            if (data.success) alert(`${centerName}의 주문마감일이 변경되었습니다.`);
-            else alert(`${centerName}의 주문마감일 변경에 실패했습니다.`);
+            if (data.success) {
+                activeCenter.dataset.deadline = newDay;
+                alert(`${centerName}의 주문마감일이 변경되었습니다.`);
+            } else {
+                alert(`${centerName}의 주문마감일 변경에 실패했습니다.`);
+            }
         } catch (e) {
             alert(`${centerName}의 주문마감일 변경 중 오류가 발생했습니다.`);
         }

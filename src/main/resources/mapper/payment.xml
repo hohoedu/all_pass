@@ -26,9 +26,7 @@
                                    ORDER BY cc2.class_type, cc2.class_name
                                       FOR XML PATH (''), TYPE ).value('.', 'nvarchar(max)'), 1, 2, '')
                    ELSE MAX(cc.class_name)
-                   END                                                           AS className,
-               COUNT(*)                                                             OVER () AS unpaidCount, ts.total_count AS totalCount,
-               CAST(COUNT(*) OVER () AS FLOAT) / NULLIF(ts.total_count, 0) * 100 AS unpaidRate
+                   END                                                           AS className
 
         FROM erp_student s
 
@@ -73,18 +71,6 @@
                                   WHERE bill_type IN ('EDU_FEE', 'BOOK_FEE')) x
                             WHERE rn = 1) lb ON p.payment_key = lb.payment_key AND pd.item_type = lb.bill_type
 
-                 CROSS JOIN (SELECT COUNT(DISTINCT s2.student_id) AS total_count
-                             FROM erp_student s2
-                                      JOIN erp_time_table_assign ta2 ON s2.student_id = ta2.student_id
-                                      JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
-                            <![CDATA[
-                             WHERE (t2.yy > #{startYear} OR (t2.yy = #{startYear} AND t2.mm >= #{startMonth}))
-                               AND (t2.yy
-                                        <
-                                    #{year} OR (t2.yy = #{year} AND t2.mm <= #{month}))
-                               AND t2.center_code = #{centerCode}
-                               AND (#{roleKey} = 'ADMIN' OR t2.user_code = #{userCode})) ts
-                               ]]>
         WHERE s.center_code = #{centerCode}
 
         GROUP BY s.student_id, s.student_name,
@@ -92,7 +78,6 @@
                  pd.item_type,
                  ab.bill_amount,
                  mp.manual_amount,
-                 ts.total_count,
                  CASE WHEN #{type} = 'ALL' THEN NULL ELSE cc.class_name END
 
         HAVING SUM(pd.amount) > 0
@@ -103,6 +88,20 @@
                    END = 0
 
         ORDER BY p.yy DESC, p.mm DESC, s.student_name, pd.item_type
+    </select>
+
+    <!-- ===== 미납 학생 대상 전체 학생 수 (findPaymentSummary용, 기간) ===== -->
+    <select id="countTotalStudentsByPeriod" resultType="int">
+        SELECT COUNT(DISTINCT s2.student_id)
+        FROM erp_student s2
+                 JOIN erp_time_table_assign ta2 ON s2.student_id = ta2.student_id
+                 JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+        <![CDATA[
+        WHERE (t2.yy > #{startYear} OR (t2.yy = #{startYear} AND t2.mm >= #{startMonth}))
+          AND (t2.yy < #{year} OR (t2.yy = #{year} AND t2.mm <= #{month}))
+          AND t2.center_code = #{centerCode}
+          AND (#{roleKey} = 'ADMIN' OR t2.user_code = #{userCode})
+        ]]>
     </select>
 
     <!-- ===== 기간별 미납 조회 ===== -->
@@ -129,9 +128,7 @@
                                    ORDER BY cc2.class_type, cc2.class_name
                                       FOR XML PATH (''), TYPE ).value('.', 'nvarchar(max)'), 1, 2, '')
                    ELSE MAX(cc.class_name)
-                   END                                                           AS className,
-               COUNT(*)                                                             OVER ()AS unpaidCount, ts.total_count AS totalCount,
-               CAST(COUNT(*) OVER () AS FLOAT) / NULLIF(ts.total_count, 0) * 100 AS unpaidRate
+                   END                                                           AS className
 
         FROM erp_student s
 
@@ -175,15 +172,6 @@
                                   WHERE bill_type IN ('EDU_FEE', 'BOOK_FEE')) x
                             WHERE rn = 1) lb ON p.payment_key = lb.payment_key AND pd.item_type = lb.bill_type
 
-                 CROSS JOIN (SELECT COUNT(DISTINCT s2.student_id) AS total_count
-                             FROM erp_student s2
-                                      JOIN erp_time_table_assign ta2 ON s2.student_id = ta2.student_id
-                                      JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
-                             WHERE t2.yy = #{year}
-                               AND t2.mm = #{month}
-                               AND t2.center_code = #{centerCode}
-                               AND (#{roleKey} = 'ADMIN' OR t2.user_code = #{userCode})) ts
-
         WHERE s.center_code = #{centerCode}
 
         GROUP BY s.student_id, s.student_name,
@@ -191,7 +179,6 @@
                  pd.item_type,
                  ab.bill_amount,
                  mp.manual_amount,
-                 ts.total_count,
                  CASE WHEN #{type} = 'ALL' THEN NULL ELSE cc.class_name END
 
         HAVING SUM(pd.amount) > 0
@@ -202,6 +189,18 @@
                    END = 0
 
         ORDER BY p.yy DESC, p.mm DESC, s.student_name, pd.item_type
+    </select>
+
+    <!-- ===== 미납 학생 대상 전체 학생 수 (findPaymentSummaryByPeriod용, 단일월) ===== -->
+    <select id="countTotalStudents" resultType="int">
+        SELECT COUNT(DISTINCT s2.student_id)
+        FROM erp_student s2
+                 JOIN erp_time_table_assign ta2 ON s2.student_id = ta2.student_id
+                 JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+        WHERE t2.yy = #{year}
+          AND t2.mm = #{month}
+          AND t2.center_code = #{centerCode}
+          AND (#{roleKey} = 'ADMIN' OR t2.user_code = #{userCode})
     </select>
 
 
