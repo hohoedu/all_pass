@@ -646,9 +646,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (mode === "edit") {
             alert("공지사항이 수정되었습니다!");
           } else {
-            if (tokens.length > 0) {
+            const progressKey = result.response?.progressKey;
+            if (progressKey) {
+              const total = result.response.total ?? tokens.length;
+              await showFcmProgress(progressKey, total);
               alert(
-                `공지사항이 등록되고 ${tokens.length}명의 학생에게 알림이 발송되었습니다!`,
+                `공지사항이 등록되고 ${total}명의 학생에게 알림이 발송되었습니다!`,
               );
             } else {
               alert("공지사항이 성공적으로 등록되었습니다!");
@@ -666,6 +669,47 @@ document.addEventListener("DOMContentLoaded", () => {
         saveBtn.disabled = false;
       }
     });
+  }
+
+  // ========== FCM 발송 진행률 표시 ==========
+  async function showFcmProgress(progressKey, total) {
+    const overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;";
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:12px;padding:32px 48px;text-align:center;min-width:280px;">
+        <div style="font-size:16px;font-weight:600;margin-bottom:16px;">앱 알림 발송 중...</div>
+        <div id="fcmProgressText" style="font-size:20px;font-weight:700;margin-bottom:16px;">${total}건 중 0건 완료</div>
+        <div style="background:#eee;border-radius:8px;height:10px;overflow:hidden;">
+          <div id="fcmProgressBar" style="background:#4f8df9;height:100%;width:0%;transition:width 0.3s;"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const textElem = overlay.querySelector("#fcmProgressText");
+    const barElem = overlay.querySelector("#fcmProgressBar");
+
+    try {
+      while (true) {
+        const res = await fetch(
+          `/notice/fcm-progress?key=${encodeURIComponent(progressKey)}`,
+        );
+        const data = await res.json();
+        const p = data.response ?? {};
+        const sent = p.done ? (p.total ?? total) : (p.sent ?? 0);
+        const t = p.total ?? total;
+
+        textElem.textContent = `${t}건 중 ${sent}건 완료`;
+        barElem.style.width = t > 0 ? `${Math.round((sent / t) * 100)}%` : "100%";
+
+        if (p.done) break;
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    } catch (err) {
+      console.error("진행률 조회 오류:", err);
+    } finally {
+      overlay.remove();
+    }
   }
 
   // ========== 초기 classSelect 구성 ==========

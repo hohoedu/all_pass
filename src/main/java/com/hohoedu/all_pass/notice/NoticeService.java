@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.threeten.bp.LocalDateTime;
 import org.threeten.bp.format.DateTimeFormatter;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO.CenterNoticeDTO.sanitizeHtml;
 
@@ -26,14 +28,15 @@ public class NoticeService {
     private final NoticeRepository noticeRepository;
     private final FcmService fcmService;
 
-    public int insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto, UserRespDTO.LoginRespDTO user) {
+    public Map<String, Object> insertCenterNotice(NoticeReqDTO.CenterNoticeSaveReqDTO dto,
+            UserRespDTO.LoginRespDTO user) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         dto.setCenterNoticeKey(user.getUserCode() + now.format(formatter));
         dto.setCenterCode(user.getCenterCode());
         dto.setUserCode(user.getUserCode());
         dto.setViewCount(0);
-        int result = noticeRepository.insertCenterNotice(dto);
+        noticeRepository.insertCenterNotice(dto);
 
         if (dto.getStudentIds() != null && !dto.getStudentIds().isEmpty()) {
             for (String studentId : dto.getStudentIds()) {
@@ -41,6 +44,7 @@ public class NoticeService {
             }
         }
 
+        Map<String, Object> result = new HashMap<>();
         if (dto.getTokens() != null && !dto.getTokens().isEmpty()) {
             // HTML 태그 제거
             String message = dto.getContent().replaceAll("<[^>]*>", "");
@@ -49,15 +53,10 @@ public class NoticeService {
                 message = message.substring(0, 100) + "...";
             }
 
-            // 선택된 학생들에게 알림 발송
-            for (String token : dto.getTokens()) {
-                try {
-                    fcmService.sendMessage(token, dto.getTitle(), message);
-                } catch (Exception e) {
-                    // 개별 토큰 실패 시 로그만 남기고 계속 진행
-                    System.err.println("FCM 발송 실패 (token: " + token + "): " + e.getMessage());
-                }
-            }
+            // 선택된 학생들에게 비동기 알림 발송 (진행률은 progressKey로 조회)
+            fcmService.sendMessagesAsync(dto.getCenterNoticeKey(), dto.getTokens(), dto.getTitle(), message);
+            result.put("progressKey", dto.getCenterNoticeKey());
+            result.put("total", dto.getTokens().size());
         }
 
         return result;

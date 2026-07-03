@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass.notice;
 
+import com.hohoedu.all_pass._core.firebase.FcmService;
 import com.hohoedu.all_pass._core.utils.ApiUtils;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.notice._dto.web.NoticeReqDTO;
@@ -24,6 +25,7 @@ public class NoticeController {
 
     private final NoticeService noticeService;
     private final FileUploadService fileUploadService;
+    private final FcmService fcmService;
 
     @PostMapping("/center/save")
     public ResponseEntity<?> insertCenterNotice(@RequestBody NoticeReqDTO.CenterNoticeSaveReqDTO reqDTO,
@@ -34,8 +36,23 @@ public class NoticeController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        noticeService.insertCenterNotice(reqDTO, user);
-        return ResponseEntity.ok(ApiUtils.success("등록 완료"));
+        Map<String, Object> result = noticeService.insertCenterNotice(reqDTO, user);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
+    @GetMapping("/fcm-progress")
+    public ResponseEntity<?> getFcmProgress(@RequestParam("key") String key) {
+        FcmService.SendProgress progress = fcmService.getProgress(key);
+        Map<String, Object> result = new HashMap<>();
+        if (progress == null) {
+            // 발송 정보가 없으면 완료로 간주 (서버 재시작 등)
+            result.put("done", true);
+        } else {
+            result.put("total", progress.getTotal());
+            result.put("sent", progress.getSent().get());
+            result.put("done", progress.isDone());
+        }
+        return ResponseEntity.ok(ApiUtils.success(result));
     }
 
     @PostMapping("/center/update")
