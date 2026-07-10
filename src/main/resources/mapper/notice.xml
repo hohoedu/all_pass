@@ -102,6 +102,12 @@
 
     </select>
 
+    <select id="findSentStudentIdsByNoticeKey" resultType="String">
+        SELECT student_id
+        FROM erp_student_notice_map
+        WHERE notice_key = #{centerNoticeKey}
+    </select>
+
     <select id="findClassListByCenterCode" resultType="com.hohoedu.all_pass.notice._dto.web.NoticeRespDTO$ClassCodeDTO">
         SELECT classKey, className, classType
         FROM (

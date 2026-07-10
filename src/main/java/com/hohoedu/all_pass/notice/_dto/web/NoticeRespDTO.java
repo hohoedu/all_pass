@@ -3,6 +3,7 @@ package com.hohoedu.all_pass.notice._dto.web;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Data
 public class NoticeRespDTO {
@@ -43,6 +44,7 @@ public class NoticeRespDTO {
         private Integer viewCount;
         private Timestamp createdAt;
         private String userName;
+        private List<String> sentStudentIds;
 
         public static String sanitizeHtml(String html) {
             if (html == null)

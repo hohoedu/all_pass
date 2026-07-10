@@ -70,8 +70,36 @@ public class NoticeService {
             .toList();
 }
 
-    public int updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO) {
-        return noticeRepository.updateCenterNotice(noticeDTO);
+    public Map<String, Object> updateCenterNotice(NoticeReqDTO.CenterNoticeUpdateDTO noticeDTO) {
+        int updated = noticeRepository.updateCenterNotice(noticeDTO);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("updated", updated);
+
+        if (updated > 0 && noticeDTO.getStudentIds() != null && !noticeDTO.getStudentIds().isEmpty()) {
+            // 이미 발송된 학생은 중복 저장하지 않고, 신규 학생만 발송대상 테이블에 추가
+            List<String> alreadySent = noticeRepository.findSentStudentIdsByNoticeKey(noticeDTO.getCenterNoticeKey());
+            for (String studentId : noticeDTO.getStudentIds()) {
+                if (!alreadySent.contains(studentId)) {
+                    noticeRepository.insertRemedialNoticeMap(noticeDTO.getCenterNoticeKey(), studentId);
+                }
+            }
+
+            // 알림은 신규/재발송 구분 없이 체크된 전체 학생에게 발송
+            if (noticeDTO.getTokens() != null && !noticeDTO.getTokens().isEmpty()) {
+                String message = noticeDTO.getContent().replaceAll("<[^>]*>", "");
+                if (message.length() > 100) {
+                    message = message.substring(0, 100) + "...";
+                }
+
+                String progressKey = noticeDTO.getCenterNoticeKey() + "_add_" + System.currentTimeMillis();
+                fcmService.sendMessagesAsync(progressKey, noticeDTO.getTokens(), noticeDTO.getTitle(), message);
+                result.put("progressKey", progressKey);
+                result.put("total", noticeDTO.getTokens().size());
+            }
+        }
+
+        return result;
     }
 
     public int deleteCenterNotice(Integer id) {
@@ -91,6 +119,7 @@ public class NoticeService {
         NoticeRespDTO.CenterNoticeDetailDTO notice = noticeRepository.findCenterNoticeByNoticeId(user.getCenterCode(),
                 id);
         notice.setCleanContent(sanitizeHtml(notice.getRawContent()));
+        notice.setSentStudentIds(noticeRepository.findSentStudentIdsByNoticeKey(notice.getCenterNoticeKey()));
         return notice;
     }
 

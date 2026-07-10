@@ -66,11 +66,16 @@ public class NoticeController {
                 return ResponseEntity.ok(response);
             }
 
-            int result = noticeService.updateCenterNotice(reqDTO);
+            Map<String, Object> result = noticeService.updateCenterNotice(reqDTO);
+            int updated = (int) result.get("updated");
 
-            if (result > 0) {
+            if (updated > 0) {
                 response.put("success", true);
                 response.put("message", "공지사항이 수정되었습니다.");
+                if (result.containsKey("progressKey")) {
+                    response.put("progressKey", result.get("progressKey"));
+                    response.put("total", result.get("total"));
+                }
             } else {
                 response.put("success", false);
                 response.put("message", "공지사항 수정에 실패했습니다.");

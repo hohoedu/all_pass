@@ -27,7 +27,7 @@ public interface NoticeRepository {
                         @Param("userCode") String userCode);
 
         NoticeRespDTO.CenterNoticeDetailDTO findCenterNoticeByNoticeId(
-                        @Param("centerCode") String centerCode, Integer id);
+                        @Param("centerCode") String centerCode, @Param("id") Integer id);
 
         List<NoticeAppRespDTO.NoticeListRespDTO> findAppNoticeList(
                         @Param("studentId") String studentId,
@@ -38,4 +38,6 @@ public interface NoticeRepository {
         List<NoticeRespDTO.NoticeStudentDTO> findStudentByCenterCode(String centerCode);
 
         List<NoticeRespDTO.ClassCodeDTO> findClassListByCenterCode(String centerCode);
+
+        List<String> findSentStudentIdsByNoticeKey(@Param("centerNoticeKey") String centerNoticeKey);
 }

@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleElem = modal.querySelector(".pre-title");
   let mode = "create";
   let currentNoticeId = null; // 수정할 공지 ID 저장
+  let currentNoticeKey = null; // 수정할 공지 key 저장 (추가 발송용)
+  let previousSentStudentIds = new Set(); // 이미 발송된 학생 id 목록
 
   // ========== 필터 상태 ==========
   const activeFilters = {
@@ -164,8 +166,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ========== 함수 정의 먼저 ==========
+  function resetStudentSelection() {
+    activeFilters.grades.clear();
+    activeFilters.subject = null;
+    activeFilters.class = null;
+    document
+      .querySelectorAll(".filter-btn")
+      .forEach((b) => b.classList.remove("active"));
+    document
+      .querySelectorAll("#student-tbody tr")
+      .forEach((r) => (r.style.display = ""));
+    document
+      .querySelectorAll('#student-tbody input[type="checkbox"]')
+      .forEach((cb) => {
+        cb.checked = false;
+        cb.disabled = false;
+      });
+    document
+      .querySelectorAll("#student-tbody .sent-badge")
+      .forEach((badge) => (badge.style.display = "none"));
+    const selectAllCheckbox = document.getElementById("selectAll");
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    updateSelectedCount();
+    populateClassSelect();
+  }
+
   function clearForm() {
     currentNoticeId = null; // ID 초기화
+    currentNoticeKey = null;
+    previousSentStudentIds = new Set();
     modal
       .querySelectorAll("input[type='text'], textarea")
       .forEach((el) => (el.value = ""));
@@ -183,27 +212,26 @@ document.addEventListener("DOMContentLoaded", () => {
       selected.innerHTML = `<img src="/image/notice01.png" alt=""> 아이콘 1<span class="arrow"><i class="xi-angle-down"></i></span>`;
     }
 
-    // 필터 초기화
-    activeFilters.grades.clear();
-    activeFilters.subject = null;
-    activeFilters.class = null;
-    document
-      .querySelectorAll(".filter-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document
-      .querySelectorAll("#student-tbody tr")
-      .forEach((r) => (r.style.display = ""));
-    document
-      .querySelectorAll('#student-tbody input[type="checkbox"]')
-      .forEach((cb) => (cb.checked = false));
-    const selectAllCheckbox = document.getElementById("selectAll");
-    if (selectAllCheckbox) selectAllCheckbox.checked = false;
-    updateSelectedCount();
-    populateClassSelect();
+    resetStudentSelection();
   }
 
   function fillForm(data) {
     currentNoticeId = data.id; // ID 저장
+    currentNoticeKey = data.centerNoticeKey || null;
+    resetStudentSelection();
+
+    // 이미 발송된 학생은 "발송됨" 뱃지만 표시 (기본 체크 해제).
+    // 다시 체크하면 재발송 대상으로 포함됨.
+    previousSentStudentIds = new Set((data.sentStudentIds || []).map(String));
+    previousSentStudentIds.forEach((studentId) => {
+      const cb = document.querySelector(
+        `#student-tbody input[type="checkbox"][data-student-id="${studentId}"]`,
+      );
+      if (!cb) return;
+      const badge = cb.closest("tr").querySelector(".sent-badge");
+      if (badge) badge.style.display = "inline";
+    });
+
     const inputs = modal.querySelectorAll("input[type='text']");
     inputs[0].value = data.title || "";
     inputs[1].value = data.subTitle || "";
@@ -232,10 +260,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ========== 학생 테이블 "발송여부" 컬럼 표시/숨김 + 비율 재조정 ==========
+  function setStudentTableSentColumn(visible) {
+    document
+      .querySelectorAll(".sent-status-col")
+      .forEach((el) => (el.style.display = visible ? "" : "none"));
+
+    const colCheckbox = document.getElementById("colCheckbox");
+    const colName = document.getElementById("colName");
+    const colSubject = document.getElementById("colSubject");
+    const colGrade = document.getElementById("colGrade");
+    const colApp = document.getElementById("colApp");
+    const colSent = document.getElementById("colSent");
+
+    if (visible) {
+      colCheckbox.width = "8%";
+      colName.width = "18%";
+      colSubject.width = "40%";
+      colGrade.width = "14%";
+      colApp.width = "10%";
+      if (colSent) colSent.width = "10%";
+    } else {
+      colCheckbox.width = "9%";
+      colName.width = "20%";
+      colSubject.width = "45%";
+      colGrade.width = "16%";
+      colApp.width = "10%";
+    }
+  }
+
   const openModal = (type, data) => {
     mode = type;
     modal.style.display = "flex";
     document.body.classList.add("modal-open");
+
+    // 발송여부 컬럼은 기존 발송 이력이 있는 수정 모드에서만 표시 (컬럼 비율도 재조정)
+    setStudentTableSentColumn(mode === "edit");
 
     if (mode === "create") {
       titleElem.textContent = "공지 등록하기";
@@ -587,24 +647,45 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // ✅ 수정: tokens + studentIds 함께 수집
+      // ✅ tokens + studentIds 수집 (수정 모드에서는 새로 추가 체크된 학생만)
       let tokens = [];
       let studentIds = [];
-      if (mode === "create") {
-        const checkedBoxes = document.querySelectorAll(
-          '#student-tbody input[type="checkbox"]:checked:not(:disabled)',
-        );
-        checkedBoxes.forEach((cb) => {
-          const token = cb.dataset.token;
-          const studentId = cb.dataset.studentId;
-          if (token && token !== "null") tokens.push(token);
-          if (studentId && studentId !== "null") studentIds.push(studentId);
-        });
+      const checkedBoxes = document.querySelectorAll(
+        '#student-tbody input[type="checkbox"]:checked:not(:disabled)',
+      );
+      checkedBoxes.forEach((cb) => {
+        const token = cb.dataset.token;
+        const studentId = cb.dataset.studentId;
+        if (token && token !== "null") tokens.push(token);
+        if (studentId && studentId !== "null") studentIds.push(studentId);
+      });
 
+      if (mode === "create") {
         const totalSelected = checkedBoxes.length;
         const confirmMsg = tokens.length > 0
           ? `총 ${totalSelected}명 중 앱 알림 ${tokens.length}명에게 발송하시겠습니까?`
           : `선택된 ${totalSelected}명에게 공지를 등록하시겠습니까? (앱 알림 미설치 학생 제외)`;
+        if (!confirm(confirmMsg)) return;
+      } else if (studentIds.length > 0) {
+        const resendIds = studentIds.filter((id) =>
+          previousSentStudentIds.has(id),
+        );
+        const newIds = studentIds.filter(
+          (id) => !previousSentStudentIds.has(id),
+        );
+
+        let confirmMsg;
+        if (resendIds.length > 0 && newIds.length > 0) {
+          confirmMsg =
+            `선택된 ${studentIds.length}명 중 이미 발송된 학생이 ${resendIds.length}명 포함되어 있습니다.\n` +
+            `신규 ${newIds.length}명 + 재발송 ${resendIds.length}명, 총 앱 알림 ${tokens.length}명에게 발송하시겠습니까?`;
+        } else if (resendIds.length > 0) {
+          confirmMsg = `이미 발송된 학생 ${resendIds.length}명입니다. 다시 발송하시겠습니까? (앱 알림 ${tokens.length}명)`;
+        } else {
+          confirmMsg = tokens.length > 0
+            ? `추가로 선택된 ${newIds.length}명 중 앱 알림 ${tokens.length}명에게 발송하시겠습니까?`
+            : `추가로 선택된 ${newIds.length}명을 발송 대상에 추가하시겠습니까? (앱 알림 미설치 학생 제외)`;
+        }
         if (!confirm(confirmMsg)) return;
       }
 
@@ -626,12 +707,15 @@ document.addEventListener("DOMContentLoaded", () => {
           url = "/notice/center/update";
           requestData = {
             id: currentNoticeId,
+            centerNoticeKey: currentNoticeKey,
             title,
             subTitle,
             icon: parseInt(icon),
             content,
             linkUrl,
             image,
+            tokens,
+            studentIds,
           };
         }
 
@@ -644,7 +728,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await response.json();
         if (result.success) {
           if (mode === "edit") {
-            alert("공지사항이 수정되었습니다!");
+            if (result.progressKey) {
+              const total = result.total ?? tokens.length;
+              await showFcmProgress(result.progressKey, total);
+              alert(
+                `공지사항이 수정되고 선택한 ${total}명의 학생에게 알림이 발송되었습니다!`,
+              );
+            } else {
+              alert("공지사항이 수정되었습니다!");
+            }
           } else {
             const progressKey = result.response?.progressKey;
             if (progressKey) {
