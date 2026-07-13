@@ -289,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setValue('#new-tab2 .s_phone', formatPhone(info.parentPhone));
         setValue('#new-tab2 .s_birth', formatBirthDisplay(info.birth));
         setValue('#new-tab2 .s_billing_phone', formatPhone(info.billingPhone));
+        setValue('.regist-qr-input', info.serialNum ?? '');
 
         renderGender(info.genderKey);
         renderParent(info.parentRelation);
@@ -837,7 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 alert('QR카드가 등록되었습니다.');
-                input.value = '';
+                input.value = qrNumber;
 
             } catch {
                 alert('등록 중 오류가 발생했습니다.');

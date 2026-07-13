@@ -1364,7 +1364,7 @@ public class StudentService {
             attendanceRepository.deleteRemedialForStudent(
                     dto.getStudentId(),
                     dto.getTimeTableKey(),
-                    dto.getWeek());
+                    dto.getAbsenceDate());
         }
     }
 

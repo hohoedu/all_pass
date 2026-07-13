@@ -6,8 +6,8 @@ import java.util.Map;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import org.apache.ibatis.annotations.Mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
-import org.springframework.data.repository.query.Param;
 
 @Mapper
 public interface AttendanceRepository {
@@ -47,7 +47,7 @@ public interface AttendanceRepository {
     int insertRemedialForStudent(
             @Param("studentId") String studentId,
             @Param("timeTableKey") String timeTableKey,
-            @Param("absenseDate") String absenceDate,
+            @Param("absenceDate") String absenceDate,
             @Param("week") String week,
             @Param("yy") String yy,
             @Param("mm") String mm,
@@ -55,7 +55,7 @@ public interface AttendanceRepository {
 
     int deleteRemedialForStudent(@Param("studentId") String studentId,
                                  @Param("timeTableKey") String timeTableKey,
-                                 @Param("week") String week);
+                                 @Param("absenceDate") String absenceDate);
 
     String findClassStartTime(
             @Param("timeTableKey") String timeTableKey

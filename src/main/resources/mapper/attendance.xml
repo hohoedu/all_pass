@@ -141,7 +141,7 @@
         DELETE FROM erp_remedial
         WHERE student_id = #{studentId}
           AND time_table_key = #{timeTableKey}
-          AND week = #{week}
+          AND absence_date = #{absenceDate}
     </delete>
 
     <select id="findClassStartTime" resultType="String">

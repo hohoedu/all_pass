@@ -72,7 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {
         rowHanClass === activeFilters.class ||
         rowBookClass === activeFilters.class;
 
-      const visible = gradeMatch && subjectMatch && classMatch;
+      const hideSentCheckbox = document.getElementById("hideSentCheckbox");
+      const sentMatch =
+        !hideSentCheckbox ||
+        !hideSentCheckbox.checked ||
+        row.getAttribute("data-sent") !== "true";
+
+      const visible = gradeMatch && subjectMatch && classMatch && sentMatch;
       row.style.display = visible ? "" : "none";
 
       if (!visible) {
@@ -165,6 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ========== 발송된 학생 숨기기 ==========
+  const hideSentCheckbox = document.getElementById("hideSentCheckbox");
+  if (hideSentCheckbox) {
+    hideSentCheckbox.addEventListener("change", applyFilters);
+  }
+
   // ========== 함수 정의 먼저 ==========
   function resetStudentSelection() {
     activeFilters.grades.clear();
@@ -185,8 +197,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .querySelectorAll("#student-tbody .sent-badge")
       .forEach((badge) => (badge.style.display = "none"));
+    document
+      .querySelectorAll("#student-tbody tr")
+      .forEach((r) => r.removeAttribute("data-sent"));
     const selectAllCheckbox = document.getElementById("selectAll");
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    const hideSentCheckbox = document.getElementById("hideSentCheckbox");
+    if (hideSentCheckbox) hideSentCheckbox.checked = false;
     updateSelectedCount();
     populateClassSelect();
   }
@@ -228,8 +245,10 @@ document.addEventListener("DOMContentLoaded", () => {
         `#student-tbody input[type="checkbox"][data-student-id="${studentId}"]`,
       );
       if (!cb) return;
-      const badge = cb.closest("tr").querySelector(".sent-badge");
+      const row = cb.closest("tr");
+      const badge = row.querySelector(".sent-badge");
       if (badge) badge.style.display = "inline";
+      row.setAttribute("data-sent", "true");
     });
 
     const inputs = modal.querySelectorAll("input[type='text']");
@@ -296,6 +315,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 발송여부 컬럼은 기존 발송 이력이 있는 수정 모드에서만 표시 (컬럼 비율도 재조정)
     setStudentTableSentColumn(mode === "edit");
+    const hideSentGroup = document.getElementById("hideSentGroup");
+    if (hideSentGroup)
+      hideSentGroup.style.display = mode === "edit" ? "flex" : "none";
 
     if (mode === "create") {
       titleElem.textContent = "공지 등록하기";
