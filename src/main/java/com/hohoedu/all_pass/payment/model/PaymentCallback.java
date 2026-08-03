@@ -86,11 +86,20 @@ public class PaymentCallback {
     @Column(name = "appr_origin_num")
     private String apprOriginNum;
 
+    @Column(name = "yy")
+    private String yy;
+
+    @Column(name = "mm")
+    private String mm;
+
+    @Column(name = "center_code")
+    private String centerCode;
+
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
-    public PaymentCallback(String apiKey, String billId, String apprCatId, String apprPayType, String apprCardType, String apprDate, String apprIssuer, String apprIssuerCode, String apprIssuerNum, String apprNum, String apprPrice, String apprState, String apprMonthly, String apprAcquirerCode, String apprAcquirerName, String apprOriginDate, String apprOriginNum) {
+    public PaymentCallback(String apiKey, String billId, String apprCatId, String apprPayType, String apprCardType, String apprDate, String apprIssuer, String apprIssuerCode, String apprIssuerNum, String apprNum, String apprPrice, String apprState, String apprMonthly, String apprAcquirerCode, String apprAcquirerName, String apprOriginDate, String apprOriginNum, String yy, String mm, String centerCode) {
         this.apiKey = apiKey;
         this.billId = billId;
         this.apprCatId = apprCatId;
@@ -108,5 +117,8 @@ public class PaymentCallback {
         this.apprAcquirerName = apprAcquirerName;
         this.apprOriginDate = apprOriginDate;
         this.apprOriginNum = apprOriginNum;
+        this.yy = yy;
+        this.mm = mm;
+        this.centerCode = centerCode;
     }
 }

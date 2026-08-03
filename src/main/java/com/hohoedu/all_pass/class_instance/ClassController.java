@@ -99,7 +99,7 @@ public class ClassController {
             return ResponseEntity.ok(ApiUtils.success(msg));
 
         } catch (Exception e) {
-            System.out.println("============" + e.getMessage() + "============");
+            log.error("시간표 등록 처리 중 예외 발생", e);
             return ResponseEntity.ok(ApiUtils.error("시간표 등록 실패", HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
@@ -128,6 +128,7 @@ public class ClassController {
         } catch (Exception400 e) {
             return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
         } catch (Exception e) {
+            log.error("학생 수업 등록 처리 중 예외 발생", e);
             return ResponseEntity.ok(ApiUtils.error("오류가 발생했습니다.", HttpStatus.OK));
         }
     }

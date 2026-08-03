@@ -865,6 +865,21 @@ public class PaymentService {
     public void insertPaymentCallback(PaymentReqDTO.PayCallbackDTO dto) {
 
         log.info("paymentCallBack = {}", dto.toString());
+
+        // 웹훅 재전송으로 동일 승인 건이 중복 저장되는 것 방지
+        if (paymentRepository.existsPaymentCallback(dto.getBill_id(), dto.getAppr_num())) {
+            log.info("paymentCallBack 중복 수신, 저장 스킵 - bill_id={}, appr_num={}", dto.getBill_id(), dto.getAppr_num());
+            return;
+        }
+
+        // 청구서 목록에서 yy, mm, center_code 조회 (콜백 자체에는 포함되어 있지 않음)
+        List<PaymentRespDTO.PaymentAllBillDTO> bills = paymentRepository.findPaymentBill(dto.getBill_id());
+        PaymentRespDTO.PaymentAllBillDTO bill = (bills == null || bills.isEmpty()) ? null : bills.get(0);
+        if (bill == null) {
+            log.error("❌ insertPaymentCallback: bill 정보를 찾을 수 없어 yy/mm/center_code 없이 저장됨. bill_id={}",
+                    dto.getBill_id());
+        }
+
         PaymentCallback paymentCallback = PaymentCallback.builder().apiKey(dto.getApikey()) // 연동코드
                 .billId(dto.getBill_id()) // 청구서 ID
                 .apprCatId(dto.getAppr_cat_id()).apprPayType(dto.getAppr_pay_type()) // 결제수단
@@ -881,6 +896,9 @@ public class PaymentService {
                 .apprAcquirerName(dto.getAppr_acquirer_nm()) // 매입사 명
                 .apprOriginDate(dto.getAppr_origin_dt()) // 원거래 일시
                 .apprOriginNum(dto.getAppr_origin_num()) // 원거래 승인번호
+                .yy(bill == null ? null : bill.getYy())
+                .mm(bill == null ? null : bill.getMm())
+                .centerCode(bill == null ? null : bill.getCenterCode())
                 .build();
 
         paymentRepository.createPaymentCallback(paymentCallback);

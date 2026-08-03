@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchStudents(year, month, teacherCode) {
         try {
             tbody.style.visibility = 'hidden';
+            showLoading();
             const itemType = document.querySelector('input[name="feeView"]:checked').value;
 
             const res = await fetch('/pay/students', {
@@ -90,6 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {
             console.error(e);
             alert('학생 목록을 불러오지 못했습니다.');
+        } finally {
+            hideLoading();
         }
     }
 

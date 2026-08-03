@@ -218,6 +218,14 @@ public interface PaymentRepository {
 
     void createPaymentCallback(PaymentCallback paymentCallback);
 
+    boolean existsPaymentCallback(@Param("billId") String billId, @Param("apprNum") String apprNum);
+
+    // 승인번호 대조: 거래일(appr_date) 범위 내 콜백 조회
+    List<com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.CallbackRow> findCallbacksForReconcile(
+            @Param("centerCode") String centerCode,
+            @Param("dateFrom") String dateFrom,
+            @Param("dateTo") String dateTo);
+
     List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(PaymentReqDTO.PersonalDTO dto);
 
     Payment findPaymentByBillId(String billId);

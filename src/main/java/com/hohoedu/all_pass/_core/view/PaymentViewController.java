@@ -119,4 +119,13 @@ public class PaymentViewController {
         return "pay/pay-receipt";
     }
 
+    // 매출자료 ↔ 결제내역 승인번호 대조 화면
+    @GetMapping("/pay-reconcile")
+    public String getReconcilePage(HttpSession session, Model model) {
+        LoginRespDTO user = (LoginRespDTO) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+        model.addAttribute("user", user);
+        return "pay/pay-reconcile";
+    }
+
 }

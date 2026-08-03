@@ -4,8 +4,7 @@
 
 <mapper namespace="com.hohoedu.all_pass.class_instance.repository.ClassRepository">
 
-    <select id="findAbsentSummary"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainAbsentSummaryDTO">
+    <select id="findAbsentSummary" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainAbsentSummaryDTO">
         SELECT
             -- 이번달 누적 결석
             (SELECT COUNT(*)
@@ -36,8 +35,7 @@
                AND er.action = 0)                AS intendedRemedialCount
     </select>
 
-    <select id="findClassSummary"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainClassSummaryDTO">
+    <select id="findClassSummary" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MainClassSummaryDTO">
         SELECT t.time_table_key                         AS timeTableKey,
                t.start_time                             AS startTime,
                CONCAT(cc.class_name, ' ', uc.unit_name) AS className,
@@ -72,8 +70,7 @@
     </select>
 
     <!--  센터별 수업 주차 설정  -->
-    <select id="getClassWeek"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassWeekDTO">
+    <select id="getClassWeek" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassWeekDTO">
         SELECT *
         FROM erp_class_week
         WHERE year = #{year}
@@ -157,8 +154,7 @@
         ORDER BY orderFlag ASC;
     </select>
 
-    <select id="findPersonUnitsInRange"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassUnitDTO">
+    <select id="findPersonUnitsInRange" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassUnitDTO">
         SELECT py.class_key   AS classKey,
                py.unit_key    AS unitKey,
                main.unit_name AS unitName,
@@ -194,8 +190,7 @@
     </select>
 
     <!--시간표 추가-->
-    <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true"
-            keyProperty="id" keyColumn="id">
+    <insert id="registerClass" parameterType="com.hohoedu.all_pass.class_instance.TimeTable" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table
         (yy, mm, dayname, period_no, start_time, end_time, class_key, unit_key, grade_key, user_code, created_at,
          time_table_key, center_code, subject)
@@ -227,9 +222,7 @@
         WHERE time_table_key = #{timeTableKey}
     </update>
 
-    <select id="existsSameClassType"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AddStudentDTO"
-            resultType="int">
+    <select id="existsSameClassType" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AddStudentDTO" resultType="int">
         SELECT COUNT(*)
         FROM erp_time_table t
                  JOIN erp_time_table_assign ta
@@ -247,8 +240,7 @@
     </select>
 
     <!-- 시간표 학생 추가 -->
-    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" keyProperty="id"
-            keyColumn="id">
+    <insert id="addStudent" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableAssign" keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table_assign
             (student_id, time_table_key, week)
         values (#{studentId}, #{timeTableKey}, #{weekNo});
@@ -270,8 +262,7 @@
         #{weekNo}
     </update>
 
-    <select id="findClassInfoByTimeTableKeyAndStudentId"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
+    <select id="findClassInfoByTimeTableKeyAndStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ClassInfoDTO">
         SELECT t.time_table_key AS timeTableKey,
                c.class_type     AS classType,
                c.class_key      AS classKey,
@@ -313,8 +304,7 @@
         WHERE time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findClassWeekByCenter"
-            resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
+    <select id="findClassWeekByCenter" resultType="com.hohoedu.all_pass.class_instance.model.ClassWeek">
         SELECT *
         FROM erp_class_week
         WHERE center_code = #{centerCode}
@@ -323,8 +313,7 @@
         ORDER BY week
     </select>
 
-    <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance"
-            keyProperty="id" keyColumn="id">
+    <insert id="createAttendance" parameterType="com.hohoedu.all_pass.class_instance.model.StudentAttendance" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student_attendance
             (student_id, attendance_key, time_table_key, center_code, week, yy, mm, created_at)
         SELECT #{studentId}      AS student_id,
@@ -364,8 +353,7 @@
           AND is_after_send IS NULL
     </update>
 
-    <insert id="insertMonthlyScore" parameterType="com.hohoedu.all_pass.class_instance.model.MonthlyScore"
-            keyProperty="id" keyColumn="id">
+    <insert id="insertMonthlyScore" parameterType="com.hohoedu.all_pass.class_instance.model.MonthlyScore" keyProperty="id" keyColumn="id">
         INSERT INTO erp_monthly_score
         (question1, question2, question3, question4, question5, question6, question7, question8, student_id, yy, mm,
          time_table_key, created_at)
@@ -378,8 +366,7 @@
         WHERE time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findTimeTableKeyByStudentId"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
+    <select id="findTimeTableKeyByStudentId" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
         SELECT ta.time_table_key,
                t.user_code,
                t.class_key
@@ -392,8 +379,7 @@
           AND t.mm = #{mm}
     </select>
 
-    <select id="findOriginalInHistory"
-            resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
+    <select id="findOriginalInHistory" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$TransferTimeTableInfoDTO">
         SELECT TOP 1
             h.time_table_key AS timeTableKey, t.user_code AS userCode,
                t.class_key AS classKey,
@@ -573,8 +559,7 @@
         ORDER BY st.student_name
     </select>
 
-    <select id="findTimeTableStudents"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+    <select id="findTimeTableStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT
         ta.time_table_key,
         s.student_id,
@@ -613,9 +598,7 @@
           AND mm = #{mm}
     </select>
 
-    <insert id="createTimeTableKey" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableCode"
-            useGeneratedKeys="true"
-            keyProperty="id" keyColumn="id">
+    <insert id="createTimeTableKey" parameterType="com.hohoedu.all_pass.class_instance.model.TimeTableCode" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_time_table_code
             (time_table_key, time_table_label, time_table_ym)
         values (#{timeTableKey}, #{timeTableLabel}, #{timeTableYm});
@@ -626,8 +609,7 @@
         {call sp_delete_time_table_row(#{timeTableKey}, #{userCode})}
     </delete>
 
-    <select id="findClassLabelByUserCode"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
+    <select id="findClassLabelByUserCode" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT
         tc.time_table_key as timeTableKey,
         tc.time_table_label as classLabel,
@@ -645,8 +627,7 @@
         ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
     </select>
 
-    <select id="findClassLabelByUserCodeAndDayname"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
+    <select id="findClassLabelByUserCodeAndDayname" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT
         tc.time_table_key as timeTableKey,
         tc.time_table_label as classLabel,
@@ -661,11 +642,10 @@
         <if test="userCode != null and userCode != 'all'">
             AND t.user_code = #{userCode}
         </if>
-        ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun');
+        ORDER BY CHARINDEX(dayname, 'mon,tue,wed,thu,fri,sat,sun'),t.start_time;
     </select>
 
-    <select id="findStudentsByTimeTableKey"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
+    <select id="findStudentsByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">
         SELECT st.student_id                                         AS studentId,
                st.student_name                                       AS studentName,
                tta.week                                              AS week,
@@ -684,8 +664,7 @@
         ORDER BY st.student_name
     </select>
 
-    <select id="existsByYearAndMonthAndPeriodNo"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
+    <select id="existsByYearAndMonthAndPeriodNo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO">
         SELECT tt.id             as timeTableId,
                tt.time_table_key as timeTableKey,
                tt.period_no      as periodNo,
@@ -710,8 +689,7 @@
           and tt.user_code = #{userCode}
     </select>
 
-    <select id="findComClassStudentsByTimeTableKey"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ComClassStudentDTO">
+    <select id="findComClassStudentsByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ComClassStudentDTO">
         SELECT s.student_id     AS studentId,
                s.student_name   AS studentName,
                t.time_table_key AS timeTableKey,
@@ -732,8 +710,7 @@
           AND t.class_key = 'COM'
     </select>
 
-    <select id="findComClassStudentsByUserCode"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ComClassStudentDTO">
+    <select id="findComClassStudentsByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$ComClassStudentDTO">
         SELECT s.student_id     AS studentId,
                s.student_name   AS studentName,
                t.time_table_key AS timeTableKey,
@@ -780,8 +757,7 @@
     </update>
 
     <!-- 수업 일지 리스트 불러오기 -->
-    <select id="findTimeTableByUserCode"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordLabelDTO">
+    <select id="findTimeTableByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RecordLabelDTO">
         SELECT t.time_table_key as timeTableKey,
         tc.time_table_label as classLabel,
         t.class_key as classKey,
@@ -873,8 +849,7 @@
         WHERE tta.time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findBeforeClassVariant"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
+    <select id="findBeforeClassVariant" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
         SELECT CASE #{week}
                    WHEN 'ju_1' THEN bc.ju_1
                    WHEN 'ju_2' THEN bc.ju_2
@@ -898,8 +873,7 @@
     </select>
 
     <!--  수업 전 안내 내용  -->
-    <select id="findBeforeClass"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
+    <select id="findBeforeClass" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeClassRespDTO">
         SELECT CASE #{week}
                    WHEN 'ju_1' THEN bc.ju_1
                    WHEN 'ju_2' THEN bc.ju_2
@@ -923,8 +897,7 @@
     </select>
 
 
-    <select id="findAfterClassNoticeByStudentIds"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+    <select id="findAfterClassNoticeByStudentIds" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         SELECT
         after_class_key AS afterClassKey,
         student_id AS studentId,
@@ -942,11 +915,7 @@
 
         <if test="studentIds != null and studentIds.size() > 0">
             AND student_id IN
-            <foreach collection="studentIds"
-                     item="studentId"
-                     open="("
-                     separator=","
-                     close=")">
+            <foreach collection="studentIds" item="studentId" open="(" separator="," close=")">
                 #{studentId}
             </foreach>
         </if>
@@ -954,8 +923,7 @@
 
 
     <!--  수업 후 발송 내용  -->
-    <select id="findAfterClass"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+    <select id="findAfterClass" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         SELECT ac.after_class_key  AS afterClassKey,
                ac.content          AS content,
                ac.word             AS word,
@@ -975,8 +943,7 @@
             , 2) = #{yy}
     </select>
 
-    <select id="findAfterClassNotice"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+    <select id="findAfterClassNotice" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         select after_class_key AS afterClassKey,
                content,
                word,
@@ -993,8 +960,7 @@
           and acn.week = #{week}
     </select>
 
-    <select id="findAfterClassVariant"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
+    <select id="findAfterClassVariant" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$AfterClassRespDTO">
         SELECT ac.after_class_key  AS afterClassKey,
                ac.content          AS content,
                ac.word             AS word,
@@ -1015,8 +981,7 @@
     </select>
 
     <!-- 선생님별 보강 조회 -->
-    <select id="findRemedialByUserCode"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemedialDTO">
+    <select id="findRemedialByUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RemedialDTO">
         SELECT *
         FROM erp_remedial r
                  JOIN erp_student s ON r.student_id = s.student_id
@@ -1092,8 +1057,7 @@
     </delete>
 
     <!-- 클래스 코드별 학생 및 본문 조회 -->
-    <resultMap id="MonthlyStudentMap"
-               type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO">
+    <resultMap id="MonthlyStudentMap" type="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO">
         <id property="studentId" column="student_id"/>
         <result property="studentName" column="student_name"/>
         <result property="appToken" column="app_token"/>
@@ -1101,8 +1065,7 @@
         <result property="feedback" column="feedback"/>
         <result property="bottomComment" column="bottom_comment"/>
         <result property="isSend" column="is_send"/>
-        <collection property="scores"
-                    ofType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
+        <collection property="scores" ofType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$MonthlyStudentDTO$MonthlyScoreDTO">
             <result property="question1" column="question1"/>
             <result property="question2" column="question2"/>
             <result property="question3" column="question3"/>
@@ -1359,8 +1322,7 @@
         ORDER BY f.number ASC;
     </select>
 
-    <select id="findMonthlyReport"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyReportRespDTO">
+    <select id="findMonthlyReport" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyReportRespDTO">
         SELECT CASE WHEN ms.question1 = 1 THEN 'Y' ELSE '' END                  AS part1,
                CASE WHEN ms.question2 = 1 THEN 'Y' ELSE '' END                  AS part2,
                CASE WHEN ms.question3 = 1 THEN 'Y' ELSE '' END                  AS part3,
@@ -1416,8 +1378,7 @@
           AND mm = #{mm}
     </update>
 
-    <update id="updateMonthlyComment"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$MonthlySaveRequestDTO$MonthlySaveDTO">
+    <update id="updateMonthlyComment" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$MonthlySaveRequestDTO$MonthlySaveDTO">
         UPDATE erp_monthly_result
         SET bottom_comment = #{bottomComment},
             updated_at     = SYSDATETIME()
@@ -1428,8 +1389,7 @@
     </update>
 
 
-    <select id="findAppInfantHani"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
+    <select id="findAppInfantHani" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyHaniRespDTO">
         SELECT *,
                CONCAT('https://sunandtree2.cafe24.com/report/haniimg/rimg/', img_url) AS img
 
@@ -1440,8 +1400,7 @@
           AND is_send = '1'
     </select>
 
-    <select id="findAppInfantBuki"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyBukiRespDTO">
+    <select id="findAppInfantBuki" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$MonthlyBukiRespDTO">
         SELECT *,
                main_title                                                          AS title,
                subtitle                                                            AS titleSub,
@@ -1453,8 +1412,7 @@
           AND is_send = '1'
     </select>
 
-    <select id="findClassInfoByStudentId"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClassInfoRespDTO">
+    <select id="findClassInfoByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClassInfoRespDTO">
         SELECT CASE c.class_type
                    WHEN '1' THEN 'S'
                    WHEN '2' THEN 'I'
@@ -1486,8 +1444,7 @@
     </select>
 
 
-    <select id="findClassByTimeTableKey"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RawClassDTO">
+    <select id="findClassByTimeTableKey" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$RawClassDTO">
         SELECT cc.class_type AS classType,
                t.yy          AS yy,
                t.mm          AS mm,
@@ -1504,8 +1461,7 @@
         WHERE t.time_table_key = #{timeTableKey}
     </select>
 
-    <select id="findInfantClassLabel"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
+    <select id="findInfantClassLabel" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableLabelDTO">
         SELECT tc.time_table_key   AS timeTableKey,
                tc.time_table_label AS classLabel,
                t.class_key         AS classKey,
@@ -1542,8 +1498,7 @@
           AND yy = #{year}
     </select>
 
-    <select id="findInfantHanStudents"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO$StudentInfo">
+    <select id="findInfantHanStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantHanDTO$StudentInfo">
         SELECT s.student_id         AS studentId,
                s.student_name       AS studentName,
                s.app_id             AS appId,
@@ -1578,8 +1533,7 @@
     </select>
 
 
-    <select id="findInfantBookStudents"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO$StudentInfo">
+    <select id="findInfantBookStudents" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$InfantBookDTO$StudentInfo">
         SELECT s.student_id         AS studentId,
                s.student_name       AS studentName,
                s.app_id             AS appId,
@@ -1772,8 +1726,7 @@
                 #{dto.isSend})
     </insert>
 
-    <select id="countStudentsByDateAndUserCode"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllCountRespDTO">
+    <select id="countStudentsByDateAndUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllCountRespDTO">
         SELECT COUNT(DISTINCT ta.student_id) AS studentCount,
                COUNT(ta.student_id)          AS classCount
         FROM erp_time_table t
@@ -1794,8 +1747,7 @@
             )
     </select>
 
-    <select id="selectStudentsByDateAndUserCode"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllStudentDTO">
+    <select id="selectStudentsByDateAndUserCode" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BeforeAllStudentDTO">
         SELECT ta.student_id     AS studentId,
                ta.time_table_key AS timeTableKey,
                s.app_token       AS appToken,
@@ -1853,16 +1805,14 @@
     </select>
 
     <!-- 수업 전 안내 발송 후 내용 저장 -->
-    <insert id="insertBeforeClassNotice"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$BeforeClassNoticeDTO">
+    <insert id="insertBeforeClassNotice" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$BeforeClassNoticeDTO">
         INSERT INTO erp_before_class_notice(student_id, time_table_key, week, dayname, class_time, class_date,
                                             class_type, class_label, content, user_code, created_at)
         VALUES (#{studentId}, #{timeTableKey}, #{week}, #{dayname}, #{classTime}, #{classDate}, #{classType},
                 #{classLabel}, #{content}, #{userCode}, SYSDATETIME())
     </insert>
 
-    <update id="upsertAfterClassNotice"
-            parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
+    <update id="upsertAfterClassNotice" parameterType="com.hohoedu.all_pass.class_instance._dto.web.ClassReqDTO$AfterClassNoticeDTO">
         MERGE erp_after_class_notice AS T
             USING (
             SELECT
@@ -1882,9 +1832,7 @@
             T.review = #{review},
             T.class_type = #{classType},
             T.class_label = #{classLabel},
-            T.dayname = #{dayname},
-            T.counsel_content=#{counselContent},
-            T.counsel_type=#{counselType},
+            T.dayname = #{dayname}, T.counsel_content=#{counselContent}, T.counsel_type=#{counselType},
             T.updated_at = GETDATE()
             WHEN NOT MATCHED THEN
         INSERT
@@ -1927,8 +1875,7 @@
     </update>
 
 
-    <select id="findBeforeClassByStudentId"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">
+    <select id="findBeforeClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$BeforeClassRespDTO">
         SELECT TOP(#{count})
                              class_type AS gubun, class_label AS note,
                CASE dayname
@@ -1949,8 +1896,7 @@
         ORDER BY created_at DESC, id DESC;
 
     </select>
-    <select id="findAfterClassByStudentId"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassRespDTO">
+    <select id="findAfterClassByStudentId" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassRespDTO">
         SELECT class_type  AS gubun,
                class_label AS title,
                dayname     AS dayname,
@@ -1963,8 +1909,7 @@
         ORDER BY created_at DESC, id DESC;
     </select>
 
-    <resultMap id="afterClassDetailMap"
-               type="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassDetailRespDTO">
+    <resultMap id="afterClassDetailMap" type="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$AfterClassDetailRespDTO">
 
         <result column="gamok" property="gamok"/>
         <result column="title" property="title"/>
@@ -2009,8 +1954,7 @@
         WHERE unit_type = 'lv'
     </select>
 
-    <select id="findBasicTimeTableInfo"
-            resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BasicTimeTableInfo">
+    <select id="findBasicTimeTableInfo" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$BasicTimeTableInfo">
         SELECT c.class_key  AS classKey,
                t.user_code  AS teacherCode,
                c.class_type AS classType
@@ -2021,8 +1965,7 @@
     </select>
 
 
-    <select id="findClinicResult"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicResultRespDTO">
+    <select id="findClinicResult" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicResultRespDTO">
         --   book_result.html --
 
         WITH RawData AS (
@@ -2070,8 +2013,7 @@
         ORDER BY rd.per DESC;
     </select>
 
-    <select id="findClinicList"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicListRespDTO">
+    <select id="findClinicList" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicListRespDTO">
         select b.title, a.study_date as sdate
         from (Select *
               from erp_book_clinic_study_log
@@ -2082,8 +2024,7 @@
         Order by a.study_date, b.title
     </select>
 
-    <select id="findClinicTotal"
-            resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicTotalRespDTO">
+    <select id="findClinicTotal" resultType="com.hohoedu.all_pass.class_instance._dto.app.ClassAppRespDTO$ClinicTotalRespDTO">
         SELECT yy + mm  AS ym,
                COUNT(*) AS cnt
         FROM erp_book_clinic_study_log

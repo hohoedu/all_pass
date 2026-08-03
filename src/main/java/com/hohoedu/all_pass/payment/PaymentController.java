@@ -29,6 +29,7 @@ import java.util.Map;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final PaymentReconcileService paymentReconcileService;
     private final SseEmitterHolder sseEmitterHolder;
     private final StudentService studentService;
 
@@ -462,6 +463,48 @@ public class PaymentController {
     }
 
 
+    // 매출자료(여신금융/홈택스) ↔ 결제내역 승인번호 대조
+    @PostMapping("/reconcile")
+    public ResponseEntity<?> reconcile(@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+                                       @RequestParam(value = "source", defaultValue = "yeoshin") String source,
+                                       HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        try {
+            com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.Result result =
+                    paymentReconcileService.reconcile(file, source, user.getCenterCode());
+            return ResponseEntity.ok(ApiUtils.success(result));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(Map.of("success", false, "msg", e.getMessage()));
+        } catch (Exception e) {
+            log.error("승인번호 대조 실패", e);
+            return ResponseEntity.ok(Map.of("success", false, "msg", "대조 처리 중 오류가 발생했습니다."));
+        }
+    }
+
+    @PostMapping("/reconcile/download")
+    public ResponseEntity<byte[]> downloadReconcile(
+            @RequestBody com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.ExportRequest req,
+            HttpSession session) throws IOException {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+        byte[] excel = paymentReconcileService.exportResult(req.getResult());
+        String filename = URLEncoder.encode("매출대조_불일치내역.xlsx", StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
+    }
+
     @PostMapping("/ledger/download")
     public ResponseEntity<byte[]> downloadLedger(@RequestBody PaymentReqDTO.LedgerReqDTO req, HttpSession session) throws IOException {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
@@ -470,12 +513,12 @@ public class PaymentController {
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
         }
-        System.out.println("현금출납부 요청 - yy: " + req.getYy() + ", mm: " + req.getMm());
+        System.out.println("수강료 수출입 내역 요청 - yy: " + req.getYy() + ", mm: " + req.getMm());
 
         byte[] excel = paymentService.generateLedger(req.getYy(), req.getMm(), user.getCenterCode());
 
         String filename = URLEncoder.encode(
-                "현금출납부_" + req.getYy() + "_" + req.getMm() + ".xlsx",
+                "수강료_수출입내역_" + req.getYy() + "_" + req.getMm() + ".xlsx",
                 StandardCharsets.UTF_8);
 
         return ResponseEntity.ok()

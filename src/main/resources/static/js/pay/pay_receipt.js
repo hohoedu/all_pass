@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     /* ════════════════════════════════
-        현금 출납부 다운로드
+        수강료 수출입 내역 다운로드
     ════════════════════════════════ */
     document.getElementById('btn-ledger-download').addEventListener('click', function () {
         const parts = document.getElementById('monthPickerInput').value.split('-');
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const mm = parts[1];
         const centerCode = document.body.dataset.centerCode;
 
-        console.log('현금출납부 다운로드 요청 - yy:', yy, 'mm:', mm);
+        console.log('수강료 수출입 내역 다운로드 요청 - yy:', yy, 'mm:', mm);
 
         fetch('/pay/ledger/download', {
             method: 'POST',
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = '현금출납부_' + yy + '_' + mm + '.xlsx';
+                link.download = '수강료_수출입내역_' + yy + '_' + mm + '.xlsx';
                 link.click();
                 URL.revokeObjectURL(url);
             })

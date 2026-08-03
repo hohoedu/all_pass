@@ -60,7 +60,7 @@
                             GROUP BY payment_key, bill_type) ab ON p.payment_key = ab.payment_key AND pd.item_type = ab.bill_type
 
                  LEFT JOIN (SELECT payment_key,
-                                   SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                                   SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
                             GROUP BY payment_key) mp ON p.payment_key = mp.payment_key
 
@@ -161,7 +161,7 @@
                             GROUP BY payment_key, bill_type) ab ON p.payment_key = ab.payment_key AND pd.item_type = ab.bill_type
 
                  LEFT JOIN (SELECT payment_key,
-                                   SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                                   SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
                             GROUP BY payment_key) mp ON p.payment_key = mp.payment_key
 
@@ -284,11 +284,11 @@
     <insert id="insertPaymentManual"
             parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$ManualPaymentReqDTO">
         INSERT INTO erp_payment_manual(manual_key, card_amount, transfer_amount, cash_amount, card_name, paid_date,
-                                       status, student_id, payment_key, user_code, yy, mm,
+                                       status, student_id, payment_key, user_code, yy, mm, center_code,
                                        prepaid_amount, preset_balance_after,
                                        created_at)
         VALUES (#{manualKey}, #{cardAmount}, #{transferAmount}, #{cashAmount}, #{cardName}, #{paidDate}, #{status},
-                #{studentId}, #{paymentKey}, #{userCode}, #{yy}, #{mm},
+                #{studentId}, #{paymentKey}, #{userCode}, #{yy}, #{mm}, #{centerCode},
                 #{prepaidAmount}, #{presetBalanceAfter},
                 SYSDATETIME())
     </insert>
@@ -397,7 +397,7 @@
     <insert id="insertPaymentManualFromPreset" parameterType="map">
         INSERT INTO
         erp_payment_manual(manual_key, card_amount, transfer_amount, cash_amount, card_name, paid_date, status, student_id,
-        payment_key,user_code,yy,mm,prepaid_amount,preset_id,is_auto_from_preset,created_at, preset_balance_before,
+        payment_key,user_code,yy,mm,center_code,prepaid_amount,preset_id,is_auto_from_preset,created_at, preset_balance_before,
         preset_balance_after
         )
         VALUES (
@@ -419,7 +419,7 @@
         </choose>
         ,
         #{cardName}, #{dto.paidDate}, 'approved', #{dto.studentId}, #{dto.paymentKey},
-        #{dto.userCode}, #{dto.yy}, #{dto.mm}, #{dto.prepaidAmount}, #{presetId},
+        #{dto.userCode}, #{dto.yy}, #{dto.mm}, #{dto.centerCode}, #{dto.prepaidAmount}, #{presetId},
         1, SYSDATETIME(),
         #{balanceBefore},
         #{balanceAfter} )
@@ -480,7 +480,7 @@
     </select>
 
     <select id="findAlreadyPaidAmount" parameterType="string" resultType="int">
-        SELECT ISNULL(SUM(card_amount + cash_amount + transfer_amount), 0)
+        SELECT ISNULL(SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)), 0)
         FROM erp_payment_manual
         WHERE payment_key = #{paymentKey}
           AND status != 'canceled'
@@ -740,6 +740,57 @@
                    AND t.center_code = #{centerCode}
                    AND pd.item_type = #{itemType}
                  GROUP BY pd.payment_key
+             ),
+             otherClassInfo AS (
+                 SELECT ta.student_id,
+                        STUFF((
+                                  SELECT DISTINCT ',' + u2.user_name
+                                  FROM erp_time_table_assign ta2
+                                           JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
+                                           JOIN erp_user u2 ON t2.user_code = u2.user_code
+                                  WHERE ta2.student_id = ta.student_id
+                                    AND t2.yy = #{year}
+                                    AND t2.mm = #{month}
+                                    AND t2.center_code = #{centerCode}
+                                    AND t2.user_code != #{userCode}
+                                  FOR XML PATH (''), TYPE
+                            ).value('.', 'nvarchar(max)'), 1, 1, '') AS other_teachers,
+                        STUFF((
+                                  SELECT ',' + cc2.class_name
+                                  FROM erp_time_table_assign ta3
+                                           JOIN erp_time_table t3 ON ta3.time_table_key = t3.time_table_key
+                                           JOIN erp_class_code cc2 ON t3.class_key = cc2.class_key
+                                  WHERE ta3.student_id = ta.student_id
+                                    AND t3.yy = #{year}
+                                    AND t3.mm = #{month}
+                                    AND t3.center_code = #{centerCode}
+                                    AND t3.user_code != #{userCode}
+                                  ORDER BY cc2.class_type
+                                  FOR XML PATH (''), TYPE
+                            ).value('.', 'nvarchar(max)'), 1, 1, '') AS other_class_names,
+                        (
+                            SELECT CASE
+                                       WHEN MAX(CAST(s.is_hoho AS TINYINT)) = 1 THEN 'hoho'
+                                       WHEN MAX(CASE WHEN cc2.class_type = '1' THEN 1 ELSE 0 END) = 1 THEN 'han'
+                                       WHEN MAX(CASE WHEN cc2.class_type = '2' THEN 1 ELSE 0 END) = 1 THEN 'book'
+                                       ELSE NULL
+                                       END
+                            FROM erp_time_table_assign ta4
+                                     JOIN erp_time_table t4 ON ta4.time_table_key = t4.time_table_key
+                                     JOIN erp_class_code cc2 ON t4.class_key = cc2.class_key
+                                     JOIN erp_student s ON ta4.student_id = s.student_id
+                            WHERE ta4.student_id = ta.student_id
+                              AND t4.yy = #{year}
+                              AND t4.mm = #{month}
+                              AND t4.center_code = #{centerCode}
+                              AND t4.user_code != #{userCode}
+                        ) AS other_subject_type
+                 FROM erp_time_table_assign ta
+                          JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                 WHERE t.yy = #{year}
+                   AND t.mm = #{month}
+                   AND t.center_code = #{centerCode}
+                 GROUP BY ta.student_id
              )
         SELECT b.student_id AS studentId,
                b.payment_key AS paymentKey,
@@ -851,63 +902,7 @@
                  LEFT JOIN manualPayments mp ON b.payment_key = mp.payment_key
                  LEFT JOIN approvedBills ab ON b.payment_key = ab.payment_key
                  LEFT JOIN totalBillByPayment tbp ON b.payment_key = tbp.payment_key
-
-            OUTER APPLY (
-    SELECT
-    CASE
-    WHEN #{userCode} != 'all' THEN
-            STUFF((
-            SELECT DISTINCT ',' + u2.user_name
-            FROM erp_time_table_assign ta2
-            JOIN erp_time_table t2 ON ta2.time_table_key = t2.time_table_key
-            JOIN erp_user u2 ON t2.user_code = u2.user_code
-            WHERE ta2.student_id = b.student_id
-            AND t2.yy = #{year}
-            AND t2.mm = #{month}
-            AND t2.center_code = #{centerCode}
-            AND t2.user_code != #{userCode}
-            FOR XML PATH (''), TYPE
-            ).value('.', 'nvarchar(max)'), 1, 1, '')
-            END AS other_teachers,
-
-            CASE
-            WHEN #{userCode} != 'all' THEN
-            STUFF((
-            SELECT ',' + cc2.class_name
-            FROM erp_time_table_assign ta3
-            JOIN erp_time_table t3 ON ta3.time_table_key = t3.time_table_key
-            JOIN erp_class_code cc2 ON t3.class_key = cc2.class_key
-            WHERE ta3.student_id = b.student_id
-            AND t3.yy = #{year}
-            AND t3.mm = #{month}
-            AND t3.center_code = #{centerCode}
-            AND t3.user_code != #{userCode}
-            ORDER BY cc2.class_type
-            FOR XML PATH (''), TYPE
-            ).value('.', 'nvarchar(max)'), 1, 1, '')
-            END AS other_class_names,
-
-            CASE
-            WHEN #{userCode} = 'all' THEN NULL
-            ELSE (
-            SELECT CASE
-            WHEN MAX(CAST(s.is_hoho AS TINYINT)) = 1 THEN 'hoho'
-            WHEN MAX(CASE WHEN cc2.class_type = '1' THEN 1 ELSE 0 END) = 1 THEN 'han'
-            WHEN MAX(CASE WHEN cc2.class_type = '2' THEN 1 ELSE 0 END) = 1 THEN 'book'
-            ELSE NULL
-            END
-            FROM erp_time_table_assign ta4
-            JOIN erp_time_table t4 ON ta4.time_table_key = t4.time_table_key
-            JOIN erp_class_code cc2 ON t4.class_key = cc2.class_key
-            JOIN erp_student s ON ta4.student_id = s.student_id
-            WHERE ta4.student_id = b.student_id
-            AND t4.yy = #{year}
-            AND t4.mm = #{month}
-            AND t4.center_code = #{centerCode}
-            AND t4.user_code != #{userCode}
-            )
-            END AS other_subject_type
-            ) oc
+                 LEFT JOIN otherClassInfo oc ON b.student_id = oc.student_id
 
         GROUP BY b.student_id, b.payment_key, b.student_name,
             lb.bill_id, lb.status,
@@ -1103,12 +1098,38 @@
         INSERT INTO erp_payment_callback (bill_id, api_key, appr_cat_id, appr_pay_type, appr_card_type, appr_date,
                                           appr_issuer, appr_issuer_code, appr_issuer_num, appr_num,
                                           appr_price, appr_state, appr_monthly, appr_acquirer_code, appr_acquirer_name,
-                                          appr_origin_date, appr_origin_num, created_at)
+                                          appr_origin_date, appr_origin_num, yy, mm, center_code, created_at)
         VALUES (#{billId}, #{apiKey}, #{apprCatId}, #{apprPayType}, #{apprCardType}, #{apprDate}, #{apprIssuer},
                 #{apprIssuerCode}, #{apprIssuerNum}, #{apprNum}, #{apprPrice},
                 #{apprState}, #{apprMonthly}, #{apprAcquirerCode}, #{apprAcquirerName}, #{apprOriginDate},
-                #{apprOriginNum}, SYSDATETIME());
+                #{apprOriginNum}, #{yy}, #{mm}, #{centerCode}, SYSDATETIME());
     </insert>
+
+    <select id="existsPaymentCallback" resultType="boolean">
+        SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM erp_payment_callback
+            WHERE bill_id = #{billId}
+              AND appr_num = #{apprNum}
+        ) THEN 1 ELSE 0 END
+    </select>
+
+    <!-- 승인번호 대조: 거래일(appr_date) 범위 내 콜백 조회 -->
+    <select id="findCallbacksForReconcile"
+            resultType="com.hohoedu.all_pass.payment._dto.web.ReconcileDTO$CallbackRow">
+        SELECT appr_num    AS apprNum,
+               appr_date   AS apprDate,
+               appr_price  AS apprPrice,
+               appr_issuer AS apprIssuer,
+               appr_state  AS apprState
+        FROM erp_payment_callback
+        WHERE appr_num IS NOT NULL
+          AND appr_num &lt;&gt; ''
+          <if test="centerCode != null and centerCode != ''">
+              AND center_code = #{centerCode}
+          </if>
+          <!-- appr_date 포맷: yyyyMMddHHmmss (구분자 없음) → 앞 8자리 일자 비교 -->
+          AND LEFT(appr_date, 8) BETWEEN REPLACE(#{dateFrom}, '-', '') AND REPLACE(#{dateTo}, '-', '')
+    </select>
 
     <select id="findPaymentByBillId" resultType="com.hohoedu.all_pass.payment.Payment">
         SELECT p.*
@@ -1690,7 +1711,7 @@
                                   FROM erp_payment_bill
                                   WHERE bill_type = #{itemType}) sub
                             WHERE rn = 1) pb ON p.payment_key = pb.payment_key
-                 LEFT JOIN (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+                 LEFT JOIN (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
                             GROUP BY payment_key) pm ON p.payment_key = pm.payment_key
                  LEFT JOIN (SELECT payment_key, SUM(amount) AS bill_amount
@@ -1775,7 +1796,7 @@
                         AND pd.item_type IN ('EDU_FEE', 'BOOK_FEE')
                         AND p.status NOT IN ('pending')
                       GROUP BY s.student_id, p.payment_key, s.student_name, pd.item_type),
-             manualPayments AS (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount) AS manual_amount
+             manualPayments AS (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                                 FROM erp_payment_manual
                                 GROUP BY payment_key),
              approvedBills AS (SELECT payment_key, bill_type, SUM(amount) AS bill_amount

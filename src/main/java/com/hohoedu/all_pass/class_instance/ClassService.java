@@ -215,7 +215,7 @@ public class ClassService {
     }
 
     public Map<String, List<ClassRespDTO.ClassUnitDTO>> findClassUnitsOverPeriod(String centerCode, String startYear,
-                                                                                 String startMonth, String endYear, String endMonth) {
+            String startMonth, String endYear, String endMonth) {
         Map<String, List<ClassRespDTO.ClassUnitDTO>> result = new HashMap<>();
 
         List<ClassRespDTO.ClassUnitDTO> baseList = classRepository.findClassUnitMap();
@@ -320,7 +320,8 @@ public class ClassService {
 
             if (today.isAfter(orderDeadline)) {
                 // 이번 달에 마감된 경우(방금 마감) → 안내 메시지
-                if (today.getYear() == orderDeadline.getYear() && today.getMonthValue() == orderDeadline.getMonthValue()) {
+                if (today.getYear() == orderDeadline.getYear()
+                        && today.getMonthValue() == orderDeadline.getMonthValue()) {
                     return "마감일이 지났습니다. 수량 변동이 있다면 추가 주문 / 반품을 이용해주세요.";
                 }
                 // 이미 지난 달 이전에 마감된 시간표 → 조용히 스킵
@@ -329,16 +330,16 @@ public class ClassService {
         }
 
         // 시간표 기준 base_count 조회
-        List<ManageRespDTO.BasicOrderListDTO> basicList =
-                manageRepository.findBasicOrderList(centerCode, userCode, yy, mm);
+        List<ManageRespDTO.BasicOrderListDTO> basicList = manageRepository.findBasicOrderList(centerCode, userCode, yy,
+                mm);
 
-        if (basicList.isEmpty()) return null;
+        if (basicList.isEmpty())
+            return null;
 
         // DTO 변환
         List<ManageReqDTO.InsertOrderHistoryDTO.InsertOrder> insertOrders = basicList.stream()
                 .map(b -> {
-                    ManageReqDTO.InsertOrderHistoryDTO.InsertOrder order =
-                            new ManageReqDTO.InsertOrderHistoryDTO.InsertOrder();
+                    ManageReqDTO.InsertOrderHistoryDTO.InsertOrder order = new ManageReqDTO.InsertOrderHistoryDTO.InsertOrder();
                     order.setClassKey(b.getClassKey());
                     order.setUnitKey(b.getUnitKey());
                     order.setBaseCount(b.getBaseCount());
@@ -403,7 +404,7 @@ public class ClassService {
     }
 
     public ClassRespDTO.TimeTableViewRespDTO findTableViewWithStudents(String year, String month, String userCode,
-                                                                       String centerCode) {
+            String centerCode) {
 
         String ym = year + "-" + month;
 
@@ -478,7 +479,7 @@ public class ClassService {
         int duplicated = classRepository.existsSameClassType(dto);
 
         if (duplicated > 0) {
-            throw new RuntimeException("이미 동일한 클래스 타입의 수업을 수강 중입니다.");
+            throw new Exception400("이미 동일한 클래스 타입의 수업을 수강 중입니다.");
         }
 
         int count = classRepository.countByTimeTableKey(dto.getTimeTableKey());
@@ -490,10 +491,12 @@ public class ClassService {
     }
 
     @Transactional
-    public String registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode, boolean skipAutoOrder) {
+    public String registerStudentFullProcess(AddStudentDTO dto, String userCode, String centerCode,
+            boolean skipAutoOrder) {
 
         // 시간표 기본 정보 먼저 조회
-        ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(), centerCode);
+        ClassRespDTO.BasicTimeTableInfo info = classRepository.findBasicTimeTableInfo(dto.getTimeTableKey(),
+                centerCode);
 
         // 전입 pending 체크
         TeacherAssign assign = studentService.getTeacherAssign(dto.getStudentId());
@@ -576,7 +579,7 @@ public class ClassService {
         }
 
         if (!skipAutoOrder) {
-          return  autoRegisterOrder(info.getTeacherCode(), centerCode, dto.getYy(), dto.getMm());
+            return autoRegisterOrder(info.getTeacherCode(), centerCode, dto.getYy(), dto.getMm());
         }
         return null;
     }
@@ -585,11 +588,13 @@ public class ClassService {
     public String copyLastMonthTimeTableAndStudents(String userCode, String centerCode, String year, String month) {
 
         int count = classRepository.existsTimeTable(userCode, year, month);
-        if (count > 0) throw new RuntimeException("이번 달 시간표 등록 내역이 있습니다.");
+        if (count > 0)
+            throw new RuntimeException("이번 달 시간표 등록 내역이 있습니다.");
 
         Map<String, String> req = Map.of("year", year, "month", month);
         List<TimeTableDTO> lastTables = getLastTimeTable(userCode, req);
-        if (lastTables.isEmpty()) return null;
+        if (lastTables.isEmpty())
+            return null;
 
         Map<String, String> keyMap = new HashMap<>();
 
@@ -634,8 +639,8 @@ public class ClassService {
                 }
 
             } else if (Constants.PERSON_YEAR_CLASS_KEYS.contains(classKey)) {
-                List<ClassRespDTO.ClassUnitDTO> personUnits =
-                        classRepository.findPersonUnit(centerCode, year, month, classKey);
+                List<ClassRespDTO.ClassUnitDTO> personUnits = classRepository.findPersonUnit(centerCode, year, month,
+                        classKey);
 
                 if (!personUnits.isEmpty()) {
                     dto.setUnitKey(personUnits.get(0).getUnitKey());
@@ -655,7 +660,8 @@ public class ClassService {
 
         for (TimeTableDTO old : lastTables) {
             String newTimeTableKey = keyMap.get(old.getTimeTableKey());
-            if (newTimeTableKey == null) continue;
+            if (newTimeTableKey == null)
+                continue;
 
             for (TimeTableDTO.StudentDTO stu : old.getStudents()) {
                 ClassReqDTO.AddStudentDTO addDto = new ClassReqDTO.AddStudentDTO();
@@ -668,17 +674,20 @@ public class ClassService {
                 registerStudentFullProcess(addDto, userCode, centerCode, true);
             }
         }
-       return autoRegisterOrder(userCode, centerCode, year, month);
+        return autoRegisterOrder(userCode, centerCode, year, month);
     }
 
     @Transactional
     public void copyTimeTableToTeacher(ClassReqDTO.CopyToTeacherDTO req, String centerCode) {
 
         int count = classRepository.existsTimeTable(req.getToUserCode(), req.getToYy(), req.getToMm());
-        if (count > 0) throw new RuntimeException("해당 월에는 이미 시간표가 존재합니다.");
+        if (count > 0)
+            throw new RuntimeException("해당 월에는 이미 시간표가 존재합니다.");
 
-        List<TimeTableDTO> rows = classRepository.findTimeTableBasic(req.getFromUserCode(), req.getFromYy(), req.getFromMm());
-        if (rows.isEmpty()) throw new RuntimeException("가져올 시간표가 없습니다.");
+        List<TimeTableDTO> rows = classRepository.findTimeTableBasic(req.getFromUserCode(), req.getFromYy(),
+                req.getFromMm());
+        if (rows.isEmpty())
+            throw new RuntimeException("가져올 시간표가 없습니다.");
 
         for (TimeTableDTO old : rows) {
             ClassReqDTO.ClassRegisterDTO dto = new ClassReqDTO.ClassRegisterDTO();
@@ -712,14 +721,15 @@ public class ClassService {
         String lookupKey = isNE ? Constants.NE_TO_E.get(classKey) : classKey;
 
         Map<String, Object> current = classRepository.findUnitByClassAndUnit(lookupKey, unitKey);
-        if (current == null) return null;
+        if (current == null)
+            return null;
 
         int nextId = ((Number) current.get("id")).intValue() + 1;
         return classRepository.findNextUnitById(nextId);
     }
 
     public ClassRespDTO.ClassInfoDTO findClassInfoByTimeTableKeyAndStudentId(String timeTableKey, String studentId,
-                                                                             String centerCode) {
+            String centerCode) {
         ClassRespDTO.ClassInfoDTO classInfo = classRepository.findClassInfoByTimeTableKeyAndStudentId(timeTableKey,
                 studentId, centerCode);
         return classInfo;
@@ -792,7 +802,7 @@ public class ClassService {
     }
 
     public List<ClassRespDTO.ComClassStudentDTO> findComClassStudentsByTimeTableKey(String timeTableKey,
-                                                                                    String userCode) {
+            String userCode) {
         List<ClassRespDTO.ComClassStudentDTO> students = classRepository
                 .findComClassStudentsByTimeTableKey(timeTableKey, userCode);
 
@@ -875,7 +885,7 @@ public class ClassService {
 
     // ================ 수업 일지 서비스 =====================//
     public List<ClassRespDTO.RecordLabelDTO> getTimeTableByUserCode(String dateStr, String dayName, String userCode,
-                                                                    String centerCode) {
+            String centerCode) {
         java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
 
         // ✅ 현월 → 전월 → 익월 순으로 매칭 확인
@@ -898,7 +908,8 @@ public class ClassService {
 
             if (isMatch) {
                 log.info("[라벨조회] {}-{}월 기준으로 매칭됨", yy, mm);
-                List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName, userCode, centerCode);
+                List<ClassRespDTO.RecordLabelDTO> response = classRepository.findTimeTableByUserCode(yy, mm, dayName,
+                        userCode, centerCode);
                 log.info("[라벨조회] {}-{}월 결과: {}건", yy, mm, response.size());
                 return response;
             }
@@ -924,7 +935,7 @@ public class ClassService {
     }
 
     public ClassRespDTO.RecordBundleDTO getTimeTableByKey(String userCode, String timeTableKey, String date,
-                                                          String classKey, String unitKey, String centerCode) {
+            String classKey, String unitKey, String centerCode) {
 
         String week = calculateWeekFromDate(date, centerCode);
 
@@ -1016,7 +1027,7 @@ public class ClassService {
 
     // 탐색 로직 분리
     private String findWeekFromRepository(String dateStr, java.time.LocalDate date, String year, String month,
-                                          String centerCode) {
+            String centerCode) {
         List<ClassRespDTO.ClassWeekDTO> weeks = classRepository.getClassWeek(year, month, centerCode);
         if (weeks.isEmpty()) {
             return null;
@@ -1052,11 +1063,12 @@ public class ClassService {
     }
 
     public ClassRespDTO.BeforeClassRespDTO getBeforeClassContent(String classKey, String unitKey, String week,
-                                                                 String timeTableKey, String centerCode) {
+            String timeTableKey, String centerCode) {
 
         String currentYear = DateConfig.currentYearMonth().get("currentYear");
         String yy = currentYear.substring(2, 4);
-        ClassRespDTO.BeforeClassRespDTO variant = classRepository.findBeforeClassVariant(centerCode, classKey, unitKey, week, timeTableKey, currentYear);
+        ClassRespDTO.BeforeClassRespDTO variant = classRepository.findBeforeClassVariant(centerCode, classKey, unitKey,
+                week, timeTableKey, currentYear);
         if (variant != null) {
             return variant;
         }
@@ -1066,14 +1078,15 @@ public class ClassService {
         return response;
     }
 
-    public ClassRespDTO.BeforeAllCountRespDTO countAllBeforeClassStudents(String date, String userCode, String centerCode) {
+    public ClassRespDTO.BeforeAllCountRespDTO countAllBeforeClassStudents(String date, String userCode,
+            String centerCode) {
         return classRepository.countStudentsByDateAndUserCode(date, userCode, centerCode);
     }
 
     public ClassRespDTO.BeforeAllSendRespDTO sendAllBeforeClassNotice(String date, String userCode, String centerCode) {
 
-        List<ClassRespDTO.BeforeAllStudentDTO> students =
-                classRepository.selectStudentsByDateAndUserCode(date, userCode, centerCode);
+        List<ClassRespDTO.BeforeAllStudentDTO> students = classRepository.selectStudentsByDateAndUserCode(date,
+                userCode, centerCode);
 
         Map<String, String> weekMap = Map.of("ju_1", "1주", "ju_2", "2주", "ju_3", "3주", "ju_4", "4주");
         Map<String, String> typeMap = Map.of("1", "S", "2", "I");
@@ -1213,7 +1226,6 @@ public class ClassService {
         return classRepository.findAbsentFlags(year, month, userCode);
     }
 
-
     public int updateRemedialAction(UpdateRemedialDTO dto) {
         int result = classRepository.updateRemedialAction(dto.getRemedialKey(), dto.isAction());
         return result;
@@ -1285,7 +1297,7 @@ public class ClassService {
     }
 
     public List<TimeTableLabelDTO> getMonthlyClassList(String userCode, String yy, String mm, String dayname,
-                                                       String centerCode) {
+            String centerCode) {
         List<TimeTableLabelDTO> labels = classRepository
                 .findClassLabelByUserCodeAndDayname(userCode, yy, mm, dayname, centerCode)
                 .stream()
@@ -1370,7 +1382,8 @@ public class ClassService {
 
         log.info("response={}", response);
 
-        MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(), dto.getMm());
+        MonthlyResult exist = classRepository.findMonthlyResult(dto.getStudentId(), dto.getTimeTableKey(), dto.getYy(),
+                dto.getMm());
 
         if (exist == null) {
             MonthlyResult insertResult = MonthlyResult.builder()
@@ -1581,7 +1594,7 @@ public class ClassService {
     }
 
     public void saveInfantSendHistory(String classType, String timeTableKey, String senderUser, String centerCode,
-                                      List<String> studentIds) {
+            List<String> studentIds) {
 
         for (String studentId : studentIds) {
 

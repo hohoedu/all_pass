@@ -289,11 +289,11 @@
                c.class_name                                                                         AS className,
                base.unit_key                                                                        AS unitKey,
                u.unit_name                                                                          AS unitName,
-               COALESCE(t.assign_count, 0) + COALESCE(a.add_count, 0)                              AS scheduleCount,
+               COALESCE(o.base_count, 0) + COALESCE(a.add_count, 0)                                AS scheduleCount,
                COALESCE(r.return_count, 0)                                                          AS currentReturnCount,
                CASE
-                   WHEN COALESCE(t.assign_count, 0) + COALESCE(a.add_count, 0) - COALESCE(r.return_count, 0) > 0
-                       THEN COALESCE(t.assign_count, 0) + COALESCE(a.add_count, 0) - COALESCE(r.return_count, 0)
+                   WHEN COALESCE(o.base_count, 0) + COALESCE(a.add_count, 0) - COALESCE(r.return_count, 0) > 0
+                       THEN COALESCE(o.base_count, 0) + COALESCE(a.add_count, 0) - COALESCE(r.return_count, 0)
                    ELSE 0
                    END                                                                              AS maxReturnCount
         FROM (SELECT class_key, unit_key
@@ -313,17 +313,12 @@
                 AND confirmed = 'checked') base
                  JOIN erp_class_code c ON base.class_key = c.class_key
                  JOIN erp_unit_code u ON base.unit_key = u.unit_key
-                 LEFT JOIN (SELECT tt.class_key,
-                                   tt.unit_key,
-                                   COUNT(ta.student_id) AS assign_count
-                            FROM erp_time_table tt
-                                     JOIN erp_time_table_assign ta ON tt.time_table_key = ta.time_table_key
-                            WHERE tt.center_code = #{centerCode}
-                              AND tt.user_code = #{userCode}
-                              AND tt.yy = #{yy}
-                              AND tt.mm = #{mm}
-                            GROUP BY tt.class_key, tt.unit_key) t
-                           ON t.class_key = base.class_key AND t.unit_key = base.unit_key
+                 LEFT JOIN erp_order o
+                           ON o.class_key = base.class_key AND o.unit_key = base.unit_key
+                               AND o.center_code = #{centerCode}
+                               AND o.user_code = #{userCode}
+                               AND o.yy = #{yy}
+                               AND o.mm = #{mm}
                  LEFT JOIN (SELECT class_key,
                                    unit_key,
                                    SUM(count) AS add_count
