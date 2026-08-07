@@ -339,6 +339,10 @@ public class StudentWebRespDTO {
         private String graduateDate;
         private String reason;
         private String attendMonths;
+        // 입회 탭 전용: '1' 한스쿨 / '2' 북스쿨
+        private String classType;
+        // 이 취소로 학생 데이터가 완전히 삭제되는지 (상대 과목 이력이 없으면 true)
+        private Boolean willDeleteStudent;
     }
 
     @Data

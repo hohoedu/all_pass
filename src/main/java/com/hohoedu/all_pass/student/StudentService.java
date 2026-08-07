@@ -1377,12 +1377,19 @@ public class StudentService {
         }
     }
 
-    public void cancelJoin(String studentId) {
+    /**
+     * 과목(담당 선생님)별 입회 취소.
+     * 상대 과목 이력이 전혀 없으면 SP 내부에서 학생 전체 삭제까지 이어진다.
+     */
+    public void cancelJoin(String studentId, String classType, String userCode, boolean isAdmin) {
         if (studentRepository.countStudent(studentId) == 0) {
             throw new IllegalArgumentException("존재하지 않는 학생입니다.");
         }
+        if (!"1".equals(classType) && !"2".equals(classType)) {
+            throw new IllegalArgumentException("잘못된 과목 구분입니다.");
+        }
         try {
-            studentRepository.cancelJoinStudent(studentId);
+            studentRepository.cancelJoinStudent(studentId, classType, userCode, isAdmin);
         } catch (Exception e) {
             Throwable cause = e;
             while (cause != null) {
@@ -1392,8 +1399,20 @@ public class StudentService {
                     if (msg.contains("결제 이력이 있습니다. 결제를 먼저 취소해주세요.")) {
                         throw new IllegalArgumentException("결제 내역이 있습니다. 결제를 먼저 취소해주세요.");
                     }
-                    if (msg.contains("수업 이력이 존재하는 학생은 입회 취소가 불가합니다.")) {
-                        throw new IllegalArgumentException("수업 이력이 존재하는 학생은 입회 취소가 불가합니다.");
+                    if (msg.contains("입회 첫 주 이후 수업 이력이 있어")) {
+                        throw new IllegalArgumentException("입회 첫 주 이후 수업 이력이 있어 입회 취소가 불가합니다.");
+                    }
+                    if (msg.contains("탈퇴 처리된 과목") || msg.contains("탈퇴 이력이 있어")) {
+                        throw new IllegalArgumentException("탈퇴 이력이 있는 과목은 입회 취소가 불가합니다.");
+                    }
+                    if (msg.contains("담당 선생님만")) {
+                        throw new IllegalArgumentException("담당 선생님만 입회 취소가 가능합니다.");
+                    }
+                    if (msg.contains("해당 과목의 입회 내역이 없습니다.")) {
+                        throw new IllegalArgumentException("해당 과목의 입회 내역이 없습니다.");
+                    }
+                    if (msg.contains("잘못된 과목 구분입니다.")) {
+                        throw new IllegalArgumentException("잘못된 과목 구분입니다.");
                     }
                 }
                 cause = cause.getCause();

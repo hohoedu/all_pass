@@ -331,9 +331,18 @@ public class StudentController {
     }
 
     @PostMapping("/cancel-join")
-    public ResponseEntity<?> cancelJoin(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<?> cancelJoin(@RequestBody Map<String, Object> body, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
         String studentId = body.get("studentId").toString();
-        studentService.cancelJoin(studentId);
+        Object classType = body.get("classType");
+        if (classType == null)
+            return ResponseEntity.badRequest().body(Map.of("success", false, "msg", "과목 구분이 없습니다."));
+
+        boolean isAdmin = "ADMIN".equals(user.getRoleKey());
+        studentService.cancelJoin(studentId, classType.toString(), user.getUserCode(), isAdmin);
         return ResponseEntity.ok(ApiUtils.success("입회가 취소되었습니다."));
     }
 

@@ -163,7 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${s.teacherName ?? ""}</td>
                     <td>${s.gradeName ?? ""}</td>
                     <td>${s.joinDate ?? ""}</td>
-                    <td><button class="class-action-btn" data-id="${s.studentId}">입회 취소</button></td>
+                    <td><button class="class-action-btn"
+                                data-id="${s.studentId}"
+                                data-class-type="${s.classType ?? ""}"
+                                data-full="${s.willDeleteStudent === true}">입회 취소</button></td>
                 </tr>
             `).join("");
     }
@@ -259,10 +262,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const panelId = panel?.dataset.panel;
 
         if (panelId === "t1") {
+            const classType = btn.dataset.classType;
+            const isFullDelete = btn.dataset.full === "true";
+            const subjectName = classType === "1" ? "한스쿨" : "북스쿨";
+            const otherName = classType === "1" ? "북스쿨" : "한스쿨";
+
             const result = await Swal.fire({
                 title: "입회 취소",
-                html: `
+                html: isFullDelete
+                    ? `
                 <p>해당 학생의 <strong>모든 데이터가 삭제</strong>됩니다.</p>
+                <p style="color:#e53e3e; margin-top:8px;">
+                    ⚠️ 삭제된 데이터는 <strong>복구할 수 없습니다.</strong>
+                </p>
+            `
+                    : `
+                <p><strong>${subjectName}</strong> 수업 데이터만 삭제됩니다.</p>
+                <p style="margin-top:8px;">${otherName} 정보는 그대로 유지됩니다.</p>
                 <p style="color:#e53e3e; margin-top:8px;">
                     ⚠️ 삭제된 데이터는 <strong>복구할 수 없습니다.</strong>
                 </p>
@@ -281,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch("/student/cancel-join", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ studentId }),
+                    body: JSON.stringify({ studentId, classType }),
                 });
 
                 const data = await res.json();

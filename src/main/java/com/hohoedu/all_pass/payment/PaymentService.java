@@ -464,7 +464,7 @@ public class PaymentService {
         paymentRepository.createPaymentDetail(bookDetail);
 
         // 🔥 개선: payment 상태 재계산
-        // recalculatePaymentStatus(paymentKey, userCode);
+        recalculatePaymentStatus(paymentKey, userCode);
     }
 
     /**
@@ -1225,6 +1225,7 @@ public class PaymentService {
         for (String paymentKey : paymentKeys) {
             paymentRepository.updateEduFeeDetailByPaymentKey(paymentKey, hanEduFee, hanMaterialFee, bookEduFee,
                     bookMaterialFee);
+            recalculatePaymentStatus(paymentKey, null);
 
             paymentRepository.updateTeacherAssiginMaterialFee(dto.getStudentId(), dto.getHanMaterialFee(),
                     dto.getBookMaterialFee());

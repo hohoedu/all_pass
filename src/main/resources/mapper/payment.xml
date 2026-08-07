@@ -1124,8 +1124,9 @@
         FROM erp_payment_callback
         WHERE appr_num IS NOT NULL
           AND appr_num &lt;&gt; ''
+          <!-- 콜백 저장 시 bill 미해결이면 center_code가 null로 들어가므로 null도 포함 -->
           <if test="centerCode != null and centerCode != ''">
-              AND center_code = #{centerCode}
+              AND (center_code = #{centerCode} OR center_code IS NULL)
           </if>
           <!-- appr_date 포맷: yyyyMMddHHmmss (구분자 없음) → 앞 8자리 일자 비교 -->
           AND LEFT(appr_date, 8) BETWEEN REPLACE(#{dateFrom}, '-', '') AND REPLACE(#{dateTo}, '-', '')

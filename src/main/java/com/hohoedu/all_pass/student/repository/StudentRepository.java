@@ -278,7 +278,11 @@ public interface StudentRepository {
 
         int countStudent(String studentId);
 
-        void cancelJoinStudent(String studentId);
+        void cancelJoinStudent(
+                        @Param("studentId") String studentId,
+                        @Param("classType") String classType,
+                        @Param("userCode") String userCode,
+                        @Param("isAdmin") boolean isAdmin);
 
         // 출석 여부 체크
         public Integer countByStudentAndDate(

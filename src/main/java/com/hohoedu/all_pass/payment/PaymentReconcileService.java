@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -45,17 +46,21 @@ public class PaymentReconcileService {
             }
         }
 
-        // 거래일자 범위 산출(yyyy-MM-dd)
-        String from = null, to = null;
+        // 엑셀 거래일자 최소/최대 산출
+        LocalDate minD = null, maxD = null;
         for (ReconcileDTO.ExcelRow r : approved) {
             String d = normalizeDate(r.getTxDate());
             if (d == null) continue;
-            if (from == null || d.compareTo(from) < 0) from = d;
-            if (to == null || d.compareTo(to) > 0) to = d;
+            LocalDate ld = LocalDate.parse(d);
+            if (minD == null || ld.isBefore(minD)) minD = ld;
+            if (maxD == null || ld.isAfter(maxD)) maxD = ld;
         }
-        if (from == null || to == null) {
+        if (minD == null) {
             throw new IllegalArgumentException("엑셀에서 거래일자를 찾을 수 없습니다. 파일 형식을 확인해주세요.");
         }
+        // 대조 범위: 거래월 1일 -3일 ~ 거래월 말일 (월초 반영지연 흡수)
+        String from = minD.withDayOfMonth(1).minusDays(3).toString();
+        String to = java.time.YearMonth.from(maxD).atEndOfMonth().toString();
 
         // DB 콜백 조회(거래일 범위) → 승인번호 정규화 맵
         List<ReconcileDTO.CallbackRow> callbacks =

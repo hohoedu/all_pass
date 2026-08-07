@@ -160,10 +160,25 @@
     <insert id="insert" parameterType="com.hohoedu.all_pass.student.Student" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO erp_student
         (student_id, student_name, birth, gender, school, address, address_detail, app_id, app_password, created_at,
-         center_code, grade_key, status_key, student_privacy_agree, sub_han, sub_book, sub_hoho, is_hoho, billing_phone)
+         center_code, grade_key, status_key, student_privacy_agree, sub_han, sub_book, sub_hoho, is_hoho, billing_phone,
+         clinic_grade_key)
         values (#{studentId}, #{studentName}, #{birth}, #{gender}, #{school}, #{address}, #{addressDetail}, #{appId},
                 #{appPassword}, SYSDATETIME(), #{centerCode}, #{gradeKey}, #{statusKey}, #{studentPrivacyAgree},
-                #{subHan}, #{subBook}, #{subHoho}, #{subHoho}, #{billingPhone});
+                #{subHan}, #{subBook}, #{subHoho}, #{subHoho}, #{billingPhone},
+                -- 책방(클리닉) 학년
+                -- 11~16(초1~초6) -> 01~06 / 21~23(중1~3) -> 07 / 05~07(미취학) -> 01
+                CASE #{gradeKey}
+                    WHEN '11' THEN '01'
+                    WHEN '12' THEN '02'
+                    WHEN '13' THEN '03'
+                    WHEN '14' THEN '04'
+                    WHEN '15' THEN '05'
+                    WHEN '16' THEN '06'
+                    WHEN '21' THEN '07'
+                    WHEN '22' THEN '07'
+                    WHEN '23' THEN '07'
+                    ELSE '01'
+                    END);
     </insert>
 
     <select id="findMaxAppIdSuffix" resultType="java.lang.Integer">
@@ -1447,20 +1462,30 @@
         WHERE student_id = #{studentId}
     </select>
 
+    <!-- 과목(담당 선생님)별 입회 취소.
+         남은 과목 이력이 전혀 없으면 SP 내부에서 학생 전체 삭제까지 이어진다. -->
     <select id="cancelJoinStudent" statementType="CALLABLE">
         EXEC sp_cancel_join_student
-        #{studentId}
+        #{studentId}, #{classType}, #{userCode}, #{isAdmin}
     </select>
 
     <select id="selectWithdrawCounts" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawCountDTO">
-        SELECT (SELECT COUNT(DISTINCT t.student_id)
-                FROM erp_teacher_assign t
-                         JOIN erp_student es ON t.student_id = es.student_id
-                WHERE es.center_code = #{centerCode}
-                  AND (
-                    ((#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode}) AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
-                        OR ((#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode}) AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym})
-                    ))                                  AS joinCount,
+        SELECT (
+                   -- selectJoinList 가 과목당 1행을 내려주므로 카운트도 과목 단위로 센다.
+                   (SELECT COUNT(*)
+                    FROM erp_teacher_assign t
+                             JOIN erp_student es ON t.student_id = es.student_id
+                    WHERE es.center_code = #{centerCode}
+                      AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym}
+                      AND (#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode}))
+                   +
+                   (SELECT COUNT(*)
+                    FROM erp_teacher_assign t
+                             JOIN erp_student es ON t.student_id = es.student_id
+                    WHERE es.center_code = #{centerCode}
+                      AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym}
+                      AND (#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode}))
+                   )                                    AS joinCount,
 
                (SELECT COUNT(DISTINCT wl.student_id)
                 FROM erp_student_withdraw_log wl
@@ -1492,35 +1517,48 @@
     </select>
 
     <!-- 입회 -->
+    <!-- 입회 취소가 과목별로 동작하므로 과목당 1행을 내려준다.
+         한스쿨/북스쿨을 모두 다니는 학생은 2행으로 나온다. -->
     <select id="selectJoinList" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$WithdrawItemDTO">
         SELECT es.student_id   AS studentId,
                es.student_name AS studentName,
                gc.grade_name   AS gradeName,
-               CASE
-                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
-                       THEN (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_han_class)
-                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
-                       THEN (SELECT c.class_name FROM erp_class_code c WHERE c.class_key = t.assign_book_class)
-                   END         AS className,
-               CASE
-                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
-                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_han_teacher)
-                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
-                       THEN (SELECT u.user_name FROM erp_user u WHERE u.user_code = t.assign_book_teacher)
-                   END         AS teacherName,
-               CASE
-                   WHEN t.assign_han_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_han_teacher IS NOT NULL)
-                       THEN t.entry_han_date
-                   WHEN t.assign_book_teacher = #{userCode} OR (#{roleKey} = 'ADMIN' AND t.assign_book_teacher IS NOT NULL)
-                       THEN t.entry_book_date
-                   END         AS joinDate
+               '1'             AS classType,
+               hc.class_name   AS className,
+               hu.user_name    AS teacherName,
+               t.entry_han_date AS joinDate,
+               CAST(CASE WHEN t.entry_book_date IS NULL AND t.inactive_book_date IS NULL
+                             THEN 1 ELSE 0 END AS BIT) AS willDeleteStudent
         FROM erp_teacher_assign t
                  JOIN erp_student es ON t.student_id = es.student_id
                  JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
+                 LEFT JOIN erp_class_code hc ON hc.class_key = t.assign_han_class
+                 LEFT JOIN erp_user hu ON hu.user_code = t.assign_han_teacher
         WHERE es.center_code = #{centerCode}
-          AND (((#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode}) AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym})
-            OR ((#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode}) AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym}))
-        ORDER BY es.student_name
+          AND SUBSTRING(t.entry_han_date, 1, 7) = #{ym}
+          AND (#{roleKey} = 'ADMIN' OR t.assign_han_teacher = #{userCode})
+
+        UNION ALL
+
+        SELECT es.student_id   AS studentId,
+               es.student_name AS studentName,
+               gc.grade_name   AS gradeName,
+               '2'             AS classType,
+               bc.class_name   AS className,
+               bu.user_name    AS teacherName,
+               t.entry_book_date AS joinDate,
+               CAST(CASE WHEN t.entry_han_date IS NULL AND t.inactive_han_date IS NULL
+                             THEN 1 ELSE 0 END AS BIT) AS willDeleteStudent
+        FROM erp_teacher_assign t
+                 JOIN erp_student es ON t.student_id = es.student_id
+                 JOIN erp_grade_code gc ON es.grade_key = gc.grade_key
+                 LEFT JOIN erp_class_code bc ON bc.class_key = t.assign_book_class
+                 LEFT JOIN erp_user bu ON bu.user_code = t.assign_book_teacher
+        WHERE es.center_code = #{centerCode}
+          AND SUBSTRING(t.entry_book_date, 1, 7) = #{ym}
+          AND (#{roleKey} = 'ADMIN' OR t.assign_book_teacher = #{userCode})
+
+        ORDER BY studentName, classType
     </select>
 
     <!-- 탈퇴 -->

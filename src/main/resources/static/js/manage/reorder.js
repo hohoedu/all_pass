@@ -162,10 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addButton.addEventListener("click", () => {
         const orderType = document.querySelector('input[name="orderType"]:checked')?.value;
-        const newExtra = createExtraTemplate();
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = newExtra;
-        const extraEl = tempDiv.firstElementChild;
+        const extraEl = createExtraTemplate();
         addContainer.appendChild(extraEl);
 
         if (orderType === "RETURN") {

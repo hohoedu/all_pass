@@ -347,15 +347,17 @@
 
     <select id="findScheduleCount" resultType="int">
         SELECT
-            (SELECT COUNT(ta.student_id)
-             FROM erp_time_table t
-                      JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
-             WHERE t.center_code = #{centerCode}
-               AND t.user_code = #{userCode}
-               AND t.yy = #{yy}
-               AND t.mm = #{mm}
-               AND t.class_key = #{classKey}
-               AND t.unit_key = #{unitKey})
+            COALESCE(
+                (SELECT base_count
+                 FROM erp_order
+                 WHERE center_code = #{centerCode}
+                   AND user_code = #{userCode}
+                   AND yy = #{yy}
+                   AND mm = #{mm}
+                   AND class_key = #{classKey}
+                   AND unit_key = #{unitKey}),
+                0
+            )
             +
             COALESCE(
                 (SELECT SUM(count)
