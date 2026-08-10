@@ -644,10 +644,17 @@ public class AdminViewController {
         return "print/print-timeview";
     }
 
+    @GetMapping("/ebook/keycode")
+    public String getAdminKeycodePage(Model model, HttpSession session) {
+        List<Center> center = centerService.findBranchCenter();
+        model.addAttribute("center", center);
+        return "/admin/ebook/keycode";
+    }
+
     @GetMapping("/ebook/person")
     public String getAdminPersonPage(Model model, HttpSession session) {
         List<UnitCode> unitCodes = classService.findUnitCodeForPerson();
-        List<Center> center = centerService.findAllCenter();
+        List<Center> center = centerService.findBranchCenter();
         model.addAttribute("unitCodes", unitCodes);
         model.addAttribute("center", center);
         return "/admin/ebook/person";

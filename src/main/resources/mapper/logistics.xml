@@ -22,6 +22,7 @@
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderStatusDTO">
         SELECT center_code AS centerCode,
                COUNT(*)    AS requestCount,
+               SUM(CASE WHEN confirmed = 'unchecked' THEN 1 ELSE 0 END) AS waitCount,
                CASE
                    WHEN SUM(CASE WHEN confirmed = 'unchecked' THEN 1 ELSE 0 END) > 0
                        THEN CAST(0 AS BIT)

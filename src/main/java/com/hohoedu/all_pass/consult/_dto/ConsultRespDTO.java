@@ -1,5 +1,8 @@
 package com.hohoedu.all_pass.consult._dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Data;
 
 public class ConsultRespDTO {
@@ -35,7 +38,7 @@ public class ConsultRespDTO {
     public static class ConsultPrintDTO {
         private Integer id;
         private String consultKey;
-        private String username;
+        private String userName;
         private String consultDate;
         private String studentName;
         private String school;
@@ -47,6 +50,25 @@ public class ConsultRespDTO {
         private String progressName;
         private String sendAt;
         private String type;
+
+        private boolean inquiryHoho;
+        private boolean inquiryHan;
+        private boolean inquiryBook;
+        private boolean inquiryDoc;
+
+        // 문의 과목 표기 (예: 한스쿨, 북스쿨)
+        public String getSubjectNames() {
+            List<String> names = new ArrayList<>();
+            if (inquiryHoho)
+                names.add("호호스쿨");
+            if (inquiryHan)
+                names.add("한스쿨");
+            if (inquiryBook)
+                names.add("북스쿨");
+            if (inquiryDoc)
+                names.add("독서클리닉");
+            return String.join(", ", names);
+        }
     }
 
     @Data

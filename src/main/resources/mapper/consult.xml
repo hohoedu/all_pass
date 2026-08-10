@@ -73,6 +73,15 @@
             OR u.user_name = #{keyword}
             )
         </if>
+        <if test="gradeKey != null and gradeKey != ''">
+            AND c.grade_key = #{gradeKey}
+        </if>
+        <choose>
+            <when test="subject == 'hoho'">AND c.inquiry_hoho = 1</when>
+            <when test="subject == 'han'">AND c.inquiry_han = 1</when>
+            <when test="subject == 'book'">AND c.inquiry_book = 1</when>
+            <when test="subject == 'doc'">AND c.inquiry_doc = 1</when>
+        </choose>
         <if test="userCode != null and userCode != ''">
             AND c.user_code = #{userCode}
         </if>
@@ -251,6 +260,10 @@
         c.progress_key AS progressKey,
         pc.progress_name AS progressName,
         c.consult_type AS type,
+        c.inquiry_hoho AS inquiryHoho,
+        c.inquiry_han  AS inquiryHan,
+        c.inquiry_book AS inquiryBook,
+        c.inquiry_doc  AS inquiryDoc,
         u.user_name AS userName,
         c.send_at AS sendAt
         FROM ERP_CONSULT c
@@ -268,6 +281,18 @@
             c.student_name LIKE CONCAT('%', #{keyword}, '%')
             OR c.phone LIKE CONCAT('%', #{keyword}, '%')
             )
+        </if>
+        <if test="gradeKey != null and gradeKey != ''">
+            AND c.grade_key = #{gradeKey}
+        </if>
+        <choose>
+            <when test="subject == 'hoho'">AND c.inquiry_hoho = 1</when>
+            <when test="subject == 'han'">AND c.inquiry_han = 1</when>
+            <when test="subject == 'book'">AND c.inquiry_book = 1</when>
+            <when test="subject == 'doc'">AND c.inquiry_doc = 1</when>
+        </choose>
+        <if test="userCode != null and userCode != ''">
+            AND c.user_code = #{userCode}
         </if>
         ORDER BY
         CASE WHEN #{sortDir} = 'asc' THEN

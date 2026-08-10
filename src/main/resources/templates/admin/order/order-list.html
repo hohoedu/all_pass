@@ -25,7 +25,8 @@
         <header class="header">
             <h1 class="page-title">월별 교재 주문 관리</h1>
             <div class="header-actions">
-                <button class="bell" type="button" aria-label="알림"><i class="fa-regular fa-bell"></i><em>8</em></button>
+                <button class="bell" type="button" aria-label="미승인 건수"><i class="fa-regular fa-bell"></i><em
+                        id="waitCountBadge" style="display:none;">0</em></button>
             </div>
         </header>
 
@@ -94,7 +95,8 @@
                             <article th:if="${c.centerCode != 'PUS001' and c.centerCode != 'ALL'}" class="center-item"
                                 th:classappend="${stat.first} ? ' active'" th:data-center-code="${c.centerCode}"
                                 th:data-deadline="${deadlineMap[c.centerCode]}"
-                                th:with="status=${reorderStatusMap[c.centerCode]}">
+                                th:with="status=${reorderStatusMap[c.centerCode]}"
+                                th:data-wait-count="${status != null} ? ${status.waitCount} : 0">
                                 <label class="check-label">
                                     <input class="check-input" type="checkbox">
                                     <span class="check-mark"></span>

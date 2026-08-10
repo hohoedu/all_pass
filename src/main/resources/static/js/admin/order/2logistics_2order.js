@@ -804,6 +804,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // 헤더 벨 뱃지 = 화면에 보이는 전체 센터의 해당 월 미승인 건수 합
+    const refreshWaitCountBadge = () => {
+        const badge = document.getElementById('waitCountBadge');
+        if (!badge) return;
+
+        const total = Array.from(document.querySelectorAll('.center-item'))
+            .reduce((sum, item) => sum + (parseInt(item.dataset.waitCount) || 0), 0);
+
+        badge.textContent = total;
+        badge.style.display = total > 0 ? '' : 'none';
+    };
+
     const refreshCenterRequestCounts = async () => {
         const [year, month] = monthPicker.value.split('-');
         const res = await fetch('/logis/order/reorder-status-map', {
@@ -821,6 +833,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = status ? status.confirmed : false;
 
             item.querySelector('.request').textContent = `요청 ${requestCount}건`;
+            item.dataset.waitCount = status ? status.waitCount : 0;
 
             const badge = item.querySelector('.badge');
             if (!status) {
@@ -834,6 +847,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 badge.textContent = '승인대기';
             }
         });
+
+        refreshWaitCountBadge();
     };
 
     monthPicker.addEventListener('change', () => {
@@ -907,10 +922,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!day) return;
 
         const [year, month] = monthPicker.value.split('-');
+
+        // 마감일은 대상 월의 '전월' 기준 (예: 8월 주문 → 7월 20일)
+        const deadlineDate = new Date(Number(year), Number(month) - 2, 1);
+        const deadlineYear = deadlineDate.getFullYear();
+        const deadlineMonth = String(deadlineDate.getMonth() + 1).padStart(2, '0');
         const paddedDay = String(day).padStart(2, '0');
 
-        deadlinePicker.value = `${year}-${month}-${paddedDay}`;
-        deadlineDisplay.value = `${year}. ${month}. ${paddedDay}`;
+        deadlinePicker.value = `${deadlineYear}-${deadlineMonth}-${paddedDay}`;
+        deadlineDisplay.value = `${deadlineYear}. ${deadlineMonth}. ${paddedDay}`;
         deadlineDisplay.classList.remove('danger');
     };
 
@@ -1023,6 +1043,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (data.success) {
                         alert(`${labelMap[confirmed]}되었습니다.`);
+                        // 좌측 센터 목록의 승인 상태/요청 건수 실시간 갱신
+                        await refreshCenterRequestCounts();
                     } else {
                         alert('변경에 실패했습니다.');
                     }
@@ -1485,6 +1507,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ────────────────────────────────────────
     document.getElementById('reorderTableBody').innerHTML =
         `<tr><td colspan="8" style="text-align:center; color:#9a9da7;">조회하실 센터를 선택해주세요.</td></tr>`;
+
+    refreshWaitCountBadge();
     document.getElementById('invoiceTableBody').innerHTML =
         `<tr><td colspan="7" style="text-align:center; color:#9a9da7;">조회하실 센터를 선택해주세요.</td></tr>`;
 });

@@ -154,11 +154,6 @@ BEGIN
                                       WHERE payment_key = p.payment_key) d
                 WHERE p.student_id = @studentId;
 
-                DELETE p
-                FROM erp_payment p
-                WHERE p.student_id = @studentId
-                  AND NOT EXISTS (SELECT 1 FROM erp_payment_detail pd WHERE pd.payment_key = p.payment_key);
-
                 IF @classType = '1'
                     UPDATE erp_teacher_assign
                     SET han_state          = NULL,

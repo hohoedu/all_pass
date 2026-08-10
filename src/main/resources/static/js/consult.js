@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const endDateInput = document.getElementById('end-date');
     const consultListBox = document.getElementById('consult-list-box');
     const progressFilter = document.getElementById('progress-filter');
+    const subjectFilter = document.getElementById('subject-filter');
+    const gradeFilter = document.getElementById('grade-filter');
+    const teacherFilter = document.getElementById('teacher-filter');
     const keywordInput = document.getElementById('keyword-input');
     const consultModal = document.getElementById('consult-modal');
 
@@ -86,7 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('cnt-ended').innerHTML = `${counts.ended}<em>건</em>`;
     }
 
-    document.getElementById('myConsult')?.addEventListener('change', async () => {
+    // 내가 작성한 상담만 보기 → 선생님 필터를 본인으로 고정
+    document.getElementById('myConsult')?.addEventListener('change', async function () {
+        if (teacherFilter) {
+            teacherFilter.value = this.checked ? currentUserCode : '';
+            teacherFilter.disabled = this.checked;
+        }
         await fetchConsults(startDateInput.value, endDateInput.value);
     });
 
@@ -96,7 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchConsults(startDate, endDate) {
         const progress = progressFilter?.value || 'all';
         const keyword = keywordInput?.value.trim() || '';
-        const myConsultOnly = document.getElementById('myConsult')?.checked ?? false; // 추가
+        const gradeKey = gradeFilter?.value || '';
+        const subject = subjectFilter?.value || '';
+        const myConsultOnly = document.getElementById('myConsult')?.checked ?? false;
+        const userCode = myConsultOnly ? currentUserCode : (teacherFilter?.value || '');
         try {
             const res = await fetch('/consult/search', {
                 method: 'POST',
@@ -104,9 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     startDate,
                     endDate,
-                    userCode: myConsultOnly ? currentUserCode : '',  // 수정
+                    userCode,
                     progress,
                     keyword,
+                    gradeKey,
+                    subject,
                     sortColumn: sortColumn ?? 'consultDate',
                     sortDir: sortDir ?? 'desc'
                 })
@@ -126,9 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!data || data.length === 0) {
             updateSummary([]);
-            consultListBox.insertAdjacentHTML('beforeend',
-                `<div class="empty-msg">조회된 데이터가 없습니다.</div>`
-            );
+            consultListBox.insertAdjacentHTML('beforeend', `
+                <div class="empty-msg">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <span>조회된 데이터가 없습니다.</span>
+                    <small>조회 기간이나 필터 조건을 변경해 주세요.</small>
+                </div>
+            `);
             return;
         }
 
@@ -477,21 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* =================== *
-     *   기간 라디오        *
+     *   필터 변경          *
      * =================== */
-    document.querySelectorAll('input[name="period"]').forEach(radio => {
-        radio.addEventListener('change', async (e) => {
-            if (e.target.value === 'custom') return;
-            const months = e.target.value === '6month' ? 6 : e.target.value === '3month' ? 3 : 1;
-            const range = getDateRange(months);
-            startDateInput.value = range.startDate;
-            endDateInput.value = range.endDate;
-            await fetchConsults(range.startDate, range.endDate);
+    [progressFilter, gradeFilter, subjectFilter, teacherFilter].forEach(el => {
+        el?.addEventListener('change', async () => {
+            await fetchConsults(startDateInput.value, endDateInput.value);
         });
-    });
-
-    progressFilter?.addEventListener('change', async () => {
-        await fetchConsults(startDateInput.value, endDateInput.value);
     });
 
     /* =================== *
@@ -530,8 +538,13 @@ document.addEventListener('DOMContentLoaded', () => {
         startDateInput.value = range.startDate;
         endDateInput.value = range.endDate;
         if (progressFilter) progressFilter.value = 'all';
+        if (gradeFilter) gradeFilter.value = '';
+        if (subjectFilter) subjectFilter.value = '';
+        if (teacherFilter) {
+            teacherFilter.value = '';
+            teacherFilter.disabled = false;
+        }
         if (keywordInput) keywordInput.value = '';
-        document.querySelector('input[name="period"][value="1month"]').checked = true;
         document.getElementById('myConsult').checked = false;
         await fetchConsults(range.startDate, range.endDate);
     });
@@ -796,13 +809,17 @@ document.addEventListener('DOMContentLoaded', () => {
      *   인쇄 / 엑셀        *
      * =================== */
     function buildPrintParams() {
+        const myConsultOnly = document.getElementById('myConsult')?.checked ?? false;
         return new URLSearchParams({
             startDate: startDateInput.value,
             endDate: endDateInput.value,
             progress: progressFilter?.value || 'all',
             keyword: keywordInput?.value.trim() || '',
-            sortColumn,
-            sortDir
+            gradeKey: gradeFilter?.value || '',
+            subject: subjectFilter?.value || '',
+            userCode: myConsultOnly ? currentUserCode : (teacherFilter?.value || ''),
+            sortColumn: sortColumn ?? 'consultDate',
+            sortDir: sortDir ?? 'desc'
         });
     }
 

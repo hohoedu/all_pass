@@ -36,28 +36,7 @@
 
                 <section class="filter-box">
                     <div class="filter-group">
-                        <label>조회 기간</label>
-                        <div class="period-radio-group">
-                            <label class="period-radio">
-                                <input type="radio" name="period" value="1month" checked>
-                                <span>1개월</span>
-                            </label>
-                            <label class="period-radio">
-                                <input type="radio" name="period" value="3month">
-                                <span>3개월</span>
-                            </label>
-                            <label class="period-radio">
-                                <input type="radio" name="period" value="6month">
-                                <span>6개월</span>
-                            </label>
-                            <label class="period-radio">
-                                <input type="radio" name="period" value="custom">
-                                <span>기간 지정</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="filter-group">
+                        <label>기간 선택</label>
                         <input type="date" id="start-date"/> -
                         <input type="date" id="end-date"/>
                     </div>
@@ -74,6 +53,41 @@
                     </div>
 
                     <div class="filter-group">
+                        <label>학년</label>
+                        <select id="grade-filter">
+                            <option value="">전체</option>
+                            <th:block th:each="grade : ${grades}">
+                                <option th:value="${grade.gradeKey}" th:text="${grade.gradeName}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>문의 과목</label>
+                        <select id="subject-filter">
+                            <option value="">전체</option>
+                            <option value="hoho">호호스쿨</option>
+                            <option value="han">한스쿨</option>
+                            <option value="book">북스쿨</option>
+                            <option value="doc">독서클리닉</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>선생님</label>
+                        <select id="teacher-filter">
+                            <option value="">전체</option>
+                            <th:block th:each="teacher : ${teachers}">
+                                <option th:value="${teacher.userCode}"
+                                        th:text="${teacher.userName + ' 선생님'}"></option>
+                            </th:block>
+                            <option th:if="${!isMeInList}" th:value="${session.user.userCode}"
+                                    th:text="${session.user.userName + ' 선생님'}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>이름/연락처 조회</label>
                         <input class="search-input" type="text" id="keyword-input"
                                placeholder="학생명 / 연락처 입력"/>
                     </div>

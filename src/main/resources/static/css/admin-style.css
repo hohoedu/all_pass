@@ -4230,6 +4230,106 @@ input[type="time" i] {
     border-bottom: none;
 }
 
+/* ---------- 이북 코드 생성 (keycode.html) ---------- */
+.ebook-code-left .stu-chocie-table tbody tr {
+    cursor: pointer;
+}
+
+.ebook-code-left .stu-chocie-table tbody tr.selected,
+.ebook-code-left .stu-chocie-table tbody tr.selected td {
+    background-color: #fdf6c9;
+    font-weight: 600;
+}
+
+/* 오른쪽 영역을 왼쪽 패널(80vh) 바닥선까지 채운다 */
+.ebook-code-right3 {
+    display: flex;
+    flex-direction: column;
+}
+
+.ebook-code-right3 .ebook-keycode-table {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.ebook-code-right3 .ebook-keycode-table .table-frame {
+    flex: 1;
+    min-height: 0;
+}
+
+.ebook-code-right3 .ebook-keycode-table table {
+    border-top: none;
+    border-bottom: none;
+    margin-bottom: 0; /* .base-info-t 의 공통 margin-bottom:40px 제거 */
+}
+
+/* thead 가 sticky 라서 table 의 border-top 은 스크롤 시 같이 밀려난다.
+   경계선을 sticky 인 th 자체에 그려서 항상 붙어 있게 한다. */
+.ebook-code-right3 .ebook-keycode-table thead th {
+    box-shadow: inset 0 1px 0 #3e3e3e;
+}
+
+/* 마지막 행은 점선 없이 */
+.ebook-code-right3 .ebook-keycode-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ebook-code-right3 td:last-child {
+    border-right: none;
+}
+
+.ebook-code-right3 td:first-child {
+    text-align: center;
+    background-color: #f7f7f7;
+    color: #878787;
+}
+
+.ebook-keycode-table .base-info-t thead th {
+    height: 45px;
+    padding: 10px 0;
+}
+
+.ebook-keycode-table .sort-th {
+    cursor: pointer;
+}
+
+.ebook-keycode-table td {
+    height: 45px;
+    padding: 4px 6px;
+    text-align: center;
+}
+
+.ebook-keycode-table tbody tr:hover td {
+    background-color: #fdf6c9;
+}
+
+/* 세팅값: 셀 전체를 클릭 영역으로 */
+.ebook-keycode-table td:nth-child(5) {
+    padding: 0;
+}
+
+.ebook-keycode-table td:nth-child(5) .select-wrap {
+    height: 45px;
+}
+
+.ebook-keycode-table .setting-value {
+    height: 100%;
+    padding: 0 30px 0 12px;
+    font-size: 14px;
+    text-align: center;
+    text-align-last: center; /* 닫힌 상태의 선택값도 가운데 정렬 */
+}
+
+.ebook-keycode-table .miniButton {
+    padding: 5px 14px;
+    font-size: 13px;
+    margin: 0 2px;
+    display: inline-block;
+}
+
 .ebook-person-table .base-info-t thead th {
     height: 38px; /* 원하는 값 */
     padding: 10px 0;
@@ -4264,6 +4364,21 @@ input[type="time" i] {
     line-height: 28px;
     padding: 0 6px; /* 내부 여백 줄이기 */
     font-size: 13px; /* 글자 크기를 조금만 줄이면 더 컴팩트해짐 */
+}
+
+/* 연간 e-book 세팅: 연도 선택 */
+.year-select {
+    font-size: 22px;
+    color: #686868;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    padding: 0 4px;
+    cursor: pointer;
+}
+
+.year-select:focus {
+    outline: none;
 }
 
 .month-header2 {

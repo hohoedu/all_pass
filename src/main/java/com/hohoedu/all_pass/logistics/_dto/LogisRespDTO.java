@@ -17,6 +17,7 @@ public class LogisRespDTO {
     public static class ReorderStatusDTO {
         private String centerCode;
         private int requestCount;
+        private int waitCount;
         private boolean confirmed;
     }
 

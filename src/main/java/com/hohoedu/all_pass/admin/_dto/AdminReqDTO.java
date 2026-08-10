@@ -34,6 +34,13 @@ public class AdminReqDTO {
     }
 
     @Data
+    public static class KeycodeFindDTO {
+        private String centerCode;   // "PUS001"
+        private String year;         // "2025"
+        private String month;        // "10"
+    }
+
+    @Data
     public static class BookSuggestSaveReqDTO {
 
         private String classKey;   // 7세, 새움, 다움...

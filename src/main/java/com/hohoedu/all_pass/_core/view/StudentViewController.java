@@ -188,7 +188,7 @@ public class StudentViewController {
             Map<String, List<ConsultRespDTO.ConsultPrintDTO>> consultGrouped = consultService
                     .findConsultForPrint(userCode, startDate, endDate)
                     .stream()
-                    .collect(Collectors.groupingBy(s -> s.getUsername() != null ? s.getUsername() : "미지정"));
+                    .collect(Collectors.groupingBy(s -> s.getUserName() != null ? s.getUserName() : "미지정"));
 
             model.addAttribute("consultGrouped", consultGrouped);
             model.addAttribute("tab", "all");

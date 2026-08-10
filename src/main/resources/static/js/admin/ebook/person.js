@@ -4,23 +4,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. 기본 상태 변수 & DOM 요소 등록  //
     // ---------------------------------- */
 
+    // 유곡점: 외부(secondary) DB 사용 지점 → 현재는 조회 전용
+    const SECONDARY_CENTER_CODE = 'ULS001';
+
     let selectedCenter = null;
     let selectedYear = null;
 
-    const monthInput = document.querySelector('.hidden-picker');
-    const monthBtn = document.querySelector('.calendar-open');
-    const monthDisplay = document.querySelector('.day-display');
+    const yearSelect = document.querySelector('.year-select');
 
-    initCurrentMonth();
+    initYearSelect();
 
-    /* ------------------------------------- //
-    // 2. 월 선택 이벤트 (input[type=month]) //
-    // ------------------------------------- */
+    /* ------------------ //
+    // 2. 연도 선택 이벤트 //
+    // ------------------ */
 
-    monthBtn.addEventListener('click', () => monthInput.showPicker());
-    monthInput.addEventListener('change', async () => {
-        await onMonthChange();
-        selectedYear = getSelectedYear();
+    yearSelect.addEventListener('change', async () => {
+        selectedYear = yearSelect.value;
         await loadTableIfReady();
     });
 
@@ -50,13 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5. 테이블 렌더링 //
     // ---------------- */
 
+    const classKeys = ["K", "M", "J"];     // 3개 class 순서 정의
+    const types = ["unit", "sub"];         // 메인, 서브
+
     function renderTable() {
         const tbody = document.querySelector('.ebook-person-table tbody');
 
         let html = "";
-
-        const classKeys = ["K", "M", "J"];     // 추가: 3개 class 순서 정의
-        const types = ["unit", "sub"];        // 메인, 서브
 
         for (let m = 1; m <= 12; m++) {
             const month = String(m).padStart(2, '0');
@@ -88,6 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.innerHTML = html;
     }
+
+
+    /* --------------------------------------------------------------- //
+    // 5-1. 유곡점: 반 구분이 없어 K/M/J 를 같은 값으로 묶어서 편집한다 //
+    // --------------------------------------------------------------- */
+    document.querySelector('.ebook-person-table tbody')
+        .addEventListener('change', (e) => {
+            const changed = e.target;
+            if (!changed.matches('select.styled-select')) return;
+            if (selectedCenter !== SECONDARY_CENTER_CODE) return;
+
+            const {month, type} = changed.dataset;
+
+            classKeys.forEach(classKey => {
+                const target = document.querySelector(
+                    `select[data-class="${classKey}"][data-month="${month}"][data-type="${type}"]`
+                );
+                if (target && target !== changed) target.value = changed.value;
+            });
+        });
 
 
     /* ----------------------------------- //
@@ -124,12 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadTableIfReady() {
         if (!selectedCenter || !selectedYear) return;
 
-        renderTable();
-
         const body = {
             centerCode: selectedCenter,
             year: selectedYear
         };
+
+        let data = null;
 
         try {
             const res = await fetch("/admin/load/person", {
@@ -138,13 +157,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(body)
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            data = text ? JSON.parse(text) : null;
 
-            if (data && data.classes) {
-                fillTable(data);
-            }
         } catch (e) {
             console.error("조회 실패:", e);
+        }
+
+        renderTable();
+
+        if (data && data.classes) {
+            fillTable(data);
         }
     }
 
@@ -160,7 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const year = getSelectedYear();
+        // 유곡점은 외부(유곡) DB에 직접 반영되므로 한 번 더 확인
+        if (selectedCenter === SECONDARY_CENTER_CODE
+            && !confirm(`${selectedYear}년 울산 유곡점 세팅을 유곡 프로그램에 반영합니다. 저장할까요?`)) {
+            return;
+        }
+
+        const year = selectedYear;
         const classes = collectTableData();
 
         const body = {
@@ -192,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 9. 테이블 값 → JSON 구조로 변환 //
     // ------------------------------- */
     function collectTableData() {
-        const classKeys = ["K", "M", "J"];
         const classes = [];
 
         classKeys.forEach(classKey => {
@@ -226,27 +254,18 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ------------------ //
     // 10. 기타 유틸 함수 //
     // ------------------ */
-    function initCurrentMonth() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
+    // 올해 기준 -5 ~ +1 년 목록 생성, 기본값은 올해
+    function initYearSelect() {
+        const thisYear = new Date().getFullYear();
 
-        monthInput.value = `${year}-${String(month).padStart(2, '0')}`;
-        monthDisplay.insertAdjacentText('afterbegin', `${year}년`);
+        let html = "";
+        for (let y = thisYear + 1; y >= thisYear - 5; y--) {
+            html += `<option value="${y}">${y}년</option>`;
+        }
+        yearSelect.innerHTML = html;
 
-        selectedYear = year.toString();
-    }
-
-    async function onMonthChange() {
-        const date = new Date(monthInput.value);
-        if (isNaN(date)) return;
-        const year = date.getFullYear();
-        monthDisplay.childNodes[0].textContent = `${year}년`;
-    }
-
-    function getSelectedYear() {
-        const yearMonth = document.querySelector('.hidden-date').value;
-        return yearMonth.split('-')[0];
+        yearSelect.value = String(thisYear);
+        selectedYear = String(thisYear);
     }
 
 });

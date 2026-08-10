@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Custom Css / Js -->
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/admin/ebook/keycode.js}"></script>
+    <!-- Html menu Load -->
+    <script th:src="@{/js/sidebar.js}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <title>이북 코드 생성</title>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- header -->
+        <div class="main-frame">
+            <!-- left nav bar -->
+            <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+            <main class="main-info">
+                <div class="student-frame time-regist-frame">
+                    <!-- section:top -->
+                    <section>
+                        <div class="class-desc">
+                            <div class="class-header">
+                                <div class="common-title">
+                                    <h2>이북 코드 생성</h2>
+                                </div>
+                                <div class="class-btns">
+                                    <div class="common-btn record-save">저장</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- section:month -->
+                    <div class="month-header2 month-today" style="padding: 10px 15px;">
+                        <div class="month-title2 month-today">
+                            <span class="current-month"></span>
+                            <div style="position: relative;">
+                                <div class="day-display">
+                                    <input type="month" class="hidden-date hidden-picker" />
+                                    <button type="button" class="icon-btn calendar-open">
+                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- section:bottom -->
+                    <div class="second-frame" style="padding: 0 15px;">
+                        <section class="ebook-code-left">
+                            <div class="student-content">
+                                <h4>학원 선택</h4>
+                                <div class="mt">
+                                    <div class="table-frame stu-chocie-frame">
+                                        <table class="basic-table stu-chocie-table stripe">
+                                            <colgroup>
+                                                <col width="60%">
+                                                <col width="40%">
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th><img th:src="@{/image/sort_checked.svg}" alt=""
+                                                            class="svg-sort">지점명
+                                                    </th>
+                                                    <th>상태</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="" class="stripe">
+                                                <tr th:each="c : ${center}" th:attr="data-center-code=${c.centerCode}">
+                                                    <td class="stu-badge">
+                                                        <span class="names"
+                                                            th:text="${#strings.replace(c.centerName, '호호서당 ', '')}"></span>
+                                                    </td>
+                                                    <td>
+                                                        <span th:text="${c.status == 'open' ? '사용중' : '미사용'}"></span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="ebook-code-right ebook-code-right3">
+                            <div class="small-title">지점을 선택해주세요.</div>
+                            <div class="ebook-keycode-table">
+                                <div class="table-frame move-t-frame">
+                                    <table class="base-info-t none-border">
+                                        <colgroup>
+                                            <col width="6%">
+                                            <col width="16%">
+                                            <col width="12%">
+                                            <col width="13%">
+                                            <col width="17%">
+                                            <col width="9%">
+                                            <col width="9%">
+                                            <col width="18%">
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th class="sort-th" data-sort-key="className">
+                                                    <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">교재
+                                                </th>
+                                                <th class="sort-th" data-sort-key="unitName">
+                                                    <img th:src="@{/image/sort.svg}" alt="" class="svg-sort">호수
+                                                </th>
+                                                <th>keyCode</th>
+                                                <th>세팅값</th>
+                                                <th>Ggubun</th>
+                                                <th>Mgubun</th>
+                                                <th>저장</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="8"
+                                                    style="text-align:center; padding:50px; color:#777; background-color: #fff;">
+                                                    지점을 선택하면 이북 코드 정보가 표시됩니다.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

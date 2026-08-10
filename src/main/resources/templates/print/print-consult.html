@@ -133,8 +133,16 @@
             width: 24mm;
         }
 
+        col.subject {
+            width: 24mm;
+        }
+
+        col.teacher {
+            width: 18mm;
+        }
+
         col.memo {
-            width: 92mm;
+            width: 50mm;
         }
 
         col.channel {
@@ -207,6 +215,8 @@
             <col class="school"/>
             <col class="grade"/>
             <col class="phone"/>
+            <col class="subject"/>
+            <col class="teacher"/>
             <col class="memo"/>
             <col class="channel"/>
             <col class="status"/>
@@ -220,6 +230,8 @@
             <th>학교</th>
             <th>학년</th>
             <th>연락처</th>
+            <th>문의 과목</th>
+            <th>상담 선생님</th>
             <th>메모사항</th>
             <th>유입경로</th>
             <th>진행상황</th>
@@ -234,6 +246,8 @@
             <td class="center" th:text="${c.school}"></td>
             <td class="center" th:text="${c.gradeName}"></td>
             <td class="center" th:text="${c.phone}"></td>
+            <td class="center" th:text="${c.subjectNames}"></td>
+            <td class="center" th:text="${c.userName}"></td>
             <td class="memo" th:text="${c.content}"></td>
             <td class="center" th:text="${c.inflowRouteName}"></td>
             <td class="center">

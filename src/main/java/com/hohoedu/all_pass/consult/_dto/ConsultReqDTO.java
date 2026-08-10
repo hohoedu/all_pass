@@ -12,6 +12,7 @@ public class ConsultReqDTO {
         private String school;
         private String phone;
         private String gradeKey;
+        private String subject;
         private String inflowRouteKey;
         private String progressKey;
         private String consultKey;
@@ -34,6 +35,8 @@ public class ConsultReqDTO {
         private String endDate;
         private String progress;
         private String keyword;
+        private String gradeKey;
+        private String subject;
         private String sortColumn;
         private String sortDir;
     }
@@ -64,6 +67,9 @@ public class ConsultReqDTO {
         private String endDate;
         private String progress;
         private String keyword;
+        private String gradeKey;
+        private String subject;
+        private String userCode;
         private String sortColumn;
         private String sortDir;
         private String centerCode;

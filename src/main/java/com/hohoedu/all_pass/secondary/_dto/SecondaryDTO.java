@@ -36,6 +36,22 @@ public class SecondaryDTO {
     }
 
     @Data
+    public static class KeycodeRawDTO {
+        private String className; // 교재명 (codezip.note)
+        private String unitName;  // 호수명 (hohosc_code.note)
+        private String ggubun;    // 교재 코드 (codezip.code2 - U1~U3, E1~E4, UA~UC, EA~EB)
+        private String mgubun;    // 호수 코드 (hohosc_code.code)
+    }
+
+    @Data
+    public static class EbookYearConfigDTO {
+        private String yy;
+        private String mm;      // "01" ~ "12"
+        private String unitNo;     // code  - 메인, "01" ~ "30" (우리 unit_key A01 ~ C10 에 대응)
+        private String subUnitNo;  // code2 - 서브
+    }
+
+    @Data
     public static class TestDTO {
         private String yyyy;
         private String mm;

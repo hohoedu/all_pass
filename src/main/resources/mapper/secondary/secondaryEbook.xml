@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hohoedu.all_pass.secondary.repository.SecondaryEbookRepository">
+
+    <!-- 유곡점 연간 e-book(인물) 세팅: 연-월당 1건(PK: yy+mm), code=메인 / code2=서브 -->
+    <select id="findEbookYearConfig" resultType="com.hohoedu.all_pass.secondary._dto.SecondaryDTO$EbookYearConfigDTO">
+        SELECT yy,
+               mm,
+               code  AS unitNo,
+               code2 AS subUnitNo
+        FROM hohosc_book_yy_config
+        WHERE yy = #{year}
+        ORDER BY mm
+    </select>
+
+    <!-- 이북 코드 생성: 유곡점 시간표에 편성된 교재(ggubun) x 호수 목록 -->
+    <select id="findKeycodeList" resultType="com.hohoedu.all_pass.secondary._dto.SecondaryDTO$KeycodeRawDTO">
+        SELECT DISTINCT c.note  AS className,
+                        hc.note AS unitName,
+                        c.code2 AS ggubun,
+                        hc.code AS mgubun
+        FROM hohosc_DailyTime dt
+                 JOIN codezip c ON dt.gbcd = c.code
+                 JOIN hohosc_code hc ON dt.mgubun = hc.code AND dt.ggubun = hc.gubun
+        WHERE dt.Yyyy = #{year}
+          AND dt.Mm = #{month}
+          AND dt.ggubun IS NOT NULL
+          AND dt.ggubun &lt;&gt; ''
+        ORDER BY c.code2, hc.code
+    </select>
+
+    <update id="upsertEbookYearConfig">
+        MERGE INTO hohosc_book_yy_config AS target
+        USING (SELECT #{year} AS yy, #{month} AS mm) AS src
+        ON (target.yy = src.yy AND target.mm = src.mm)
+        WHEN MATCHED THEN
+            UPDATE SET code = #{unitNo}, code2 = #{subUnitNo}
+        WHEN NOT MATCHED THEN
+            INSERT (yy, mm, code, code2)
+                VALUES (#{year}, #{month}, #{unitNo}, #{subUnitNo});
+    </update>
+
+</mapper>

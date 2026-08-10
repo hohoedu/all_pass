@@ -41,14 +41,9 @@
                 <!-- section:bottom -->
                 <div class="month-header2 month-today" style="padding: 10px 0;">
                     <div class="month-title2 month-today">
-                        <span class="current-month"></span>
-                        <div style="position: relative;">
-                            <div class="day-display">
-                                <input type="month" class="hidden-date hidden-picker"/>
-                                <button type="button" class="icon-btn calendar-open">
-                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                </button>
-                            </div>
+                        <div class="day-display">
+                            <!-- 연간 설정이라 연도만 선택 -->
+                            <select class="year-select"></select>
                         </div>
                     </div>
                 </div>
@@ -80,7 +75,8 @@
                                             th:attr="data-center-code=${c.centerCode}">
                                             <td th:text="${iterStat.index + 1}"></td>
                                             <td class="stu-badge">
-                                                <span class="names" th:text="${c.region.getRegionName() + ' ' + c.centerName}"></span>
+                                                <span class="names"
+                                                      th:text="${#strings.replace(c.centerName, '호호서당 ', '')}"></span>
                                             </td>
                                             <td>
                                                 <span th:text="${c.status == 'open' ? '사용중' : '미사용'}"></span>

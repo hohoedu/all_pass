@@ -30,6 +30,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CenterService {
 
+    /** 지점 목록에서 제외할 코드 - 본사, 마스터 */
+    private static final List<String> EXCLUDED_CENTER_CODES = List.of("PUS001", "ALL");
+
     private final CenterJpaRepository centerJpaRepository;
     private final CenterRepository centerRepository;
     private final PopbillRepository popbillRepository;
@@ -38,6 +41,13 @@ public class CenterService {
     public List<Center> findAllCenter() {
         List<Center> center = centerJpaRepository.findAll();
         return center;
+    }
+
+    /** 본사(PUS001)·마스터(ALL)를 제외한 실제 지점 목록 (교재 주문리스트와 동일 기준) */
+    public List<Center> findBranchCenter() {
+        return centerJpaRepository.findAll().stream()
+                .filter(c -> !EXCLUDED_CENTER_CODES.contains(c.getCenterCode()))
+                .toList();
     }
 
     public int findPaymintPoint(String centerCode) {

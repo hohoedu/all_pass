@@ -40,6 +40,12 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/load/keycode")
+    public ResponseEntity<?> loadKeycodeList(@RequestBody AdminReqDTO.KeycodeFindDTO reqDTO) {
+        List<AdminRespDTO.KeycodeDTO> result = adminService.findKeycodeList(reqDTO);
+        return ResponseEntity.ok(ApiUtils.success(result));
+    }
+
     @PostMapping("/save/book")
     public Object saveBooks(@RequestBody AdminReqDTO.BookSuggestSaveReqDTO reqDTO) {
         try {

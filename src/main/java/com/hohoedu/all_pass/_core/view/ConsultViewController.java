@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import com.hohoedu.all_pass.consult._dto.ConsultReqDTO;
+import com.hohoedu.all_pass.user.User;
+import com.hohoedu.all_pass.user.UserService;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +35,7 @@ public class ConsultViewController {
 
     private final StudentService studentService;
     private final ConsultService consultService;
+    private final UserService userService;
 
     @GetMapping("consult_v2")
     public String getConsultV2Page(Model model, HttpServletRequest request, HttpSession session) {
@@ -53,9 +56,15 @@ public class ConsultViewController {
 
         List<GradeCode> grades = studentService.findGrade();
         List<InflowRoute> inflowRoutes = consultService.findInflowRoute();
+        List<User> teachers = userService.findActiveUser(user);
+
+        boolean isMeInList = teachers.stream()
+                .anyMatch(t -> t.getUserCode().equals(user.getUserCode()));
 
         model.addAttribute("grades", grades);
         model.addAttribute("inflowRoutes", inflowRoutes);
+        model.addAttribute("teachers", teachers);
+        model.addAttribute("isMeInList", isMeInList);
 
         return "/consult/consult";
     }
@@ -66,6 +75,9 @@ public class ConsultViewController {
             @RequestParam(value = "endDate") String endDate,
             @RequestParam(value = "progress", defaultValue = "all") String progress,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "gradeKey", defaultValue = "") String gradeKey,
+            @RequestParam(value = "subject", defaultValue = "") String subject,
+            @RequestParam(value = "userCode", defaultValue = "") String userCode,
             @RequestParam(value = "sortColumn", defaultValue = "consultDate") String sortColumn,
             @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             HttpSession session, Model model) {
@@ -75,7 +87,7 @@ public class ConsultViewController {
             return "redirect:/login";
 
         ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword,
-                sortColumn, sortDir);
+                gradeKey, subject, userCode, sortColumn, sortDir);
         List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
         model.addAttribute("consults", consults);
@@ -92,6 +104,9 @@ public class ConsultViewController {
             @RequestParam(value = "endDate") String endDate,
             @RequestParam(value = "progress", defaultValue = "all") String progress,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "gradeKey", defaultValue = "") String gradeKey,
+            @RequestParam(value = "subject", defaultValue = "") String subject,
+            @RequestParam(value = "userCode", defaultValue = "") String userCode,
             @RequestParam(value = "sortColumn", defaultValue = "consultDate") String sortColumn,
             @RequestParam(value = "sortDir", defaultValue = "desc") String sortDir,
             HttpSession session, HttpServletResponse response) throws IOException {
@@ -103,7 +118,7 @@ public class ConsultViewController {
         }
 
         ConsultReqDTO.ConsultPrintReqDTO reqDTO = buildPrintReqDTO(user, startDate, endDate, progress, keyword,
-                sortColumn, sortDir);
+                gradeKey, subject, userCode, sortColumn, sortDir);
         List<ConsultRespDTO.ConsultPrintDTO> consults = consultService.findConsultForPrint(reqDTO);
 
         String fileName = URLEncoder.encode(
@@ -136,7 +151,8 @@ public class ConsultViewController {
         memoStyle.setWrapText(true);
         setBorder(memoStyle);
 
-        String[] headers = { "No", "일자", "이름", "학교", "학년", "연락처", "메모사항", "유입경로", "진행상황", "발송/입회일" };
+        String[] headers = { "No", "일자", "이름", "학교", "학년", "연락처", "문의 과목", "상담 선생님", "메모사항", "유입경로", "진행상황",
+                "발송/입회일" };
         Row headerRow = sheet.createRow(0);
         headerRow.setHeight((short) 500);
         for (int i = 0; i < headers.length; i++) {
@@ -155,14 +171,16 @@ public class ConsultViewController {
             createCell(row, 3, c.getSchool(), centerStyle);
             createCell(row, 4, c.getGradeName(), centerStyle);
             createCell(row, 5, c.getPhone(), centerStyle);
-            createCell(row, 6, c.getContent(), memoStyle);
-            createCell(row, 7, c.getInflowRouteName(), centerStyle);
-            createCell(row, 8, c.getProgressName(), centerStyle);
-            createCell(row, 9, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
+            createCell(row, 6, c.getSubjectNames(), centerStyle);
+            createCell(row, 7, c.getUserName(), centerStyle);
+            createCell(row, 8, c.getContent(), memoStyle);
+            createCell(row, 9, c.getInflowRouteName(), centerStyle);
+            createCell(row, 10, c.getProgressName(), centerStyle);
+            createCell(row, 11, c.getSendAt() != null ? c.getSendAt() : "-", centerStyle);
             rowNum++;
         }
 
-        int[] colWidths = { 2000, 4000, 3000, 5000, 3000, 5000, 12000, 4000, 4000, 5000 };
+        int[] colWidths = { 2000, 4000, 3000, 5000, 3000, 5000, 6000, 4000, 12000, 4000, 4000, 5000 };
         for (int i = 0; i < colWidths.length; i++)
             sheet.setColumnWidth(i, colWidths[i]);
 
@@ -174,6 +192,7 @@ public class ConsultViewController {
             UserRespDTO.LoginRespDTO user,
             String startDate, String endDate,
             String progress, String keyword,
+            String gradeKey, String subject, String userCode,
             String sortColumn, String sortDir) {
 
         ConsultReqDTO.ConsultPrintReqDTO req = new ConsultReqDTO.ConsultPrintReqDTO();
@@ -182,6 +201,9 @@ public class ConsultViewController {
         req.setEndDate(endDate);
         req.setProgress(progress.equals("all") ? null : progress);
         req.setKeyword(keyword);
+        req.setGradeKey(gradeKey);
+        req.setSubject(subject);
+        req.setUserCode(userCode);
         req.setSortColumn(sortColumn);
         req.setSortDir(sortDir);
         return req;
