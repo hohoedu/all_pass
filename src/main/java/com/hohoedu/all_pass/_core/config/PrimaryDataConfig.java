@@ -27,6 +27,10 @@ import javax.sql.DataSource;
                         pattern = "com\\.hohoedu\\.all_pass\\.secondary\\..*"
                 ),
                 @ComponentScan.Filter(
+                        type = FilterType.REGEX,
+                        pattern = "com\\.hohoedu\\.all_pass\\.third\\..*"
+                ),
+                @ComponentScan.Filter(
                         type = FilterType.ASSIGNABLE_TYPE,
                         classes = org.springframework.data.jpa.repository.JpaRepository.class
                 )
@@ -35,10 +39,16 @@ import javax.sql.DataSource;
 )
 @EnableJpaRepositories(
         basePackages = "com.hohoedu.all_pass",
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.REGEX,
-                pattern = "com\\.hohoedu\\.all_pass\\.secondary\\..*"
-        ),
+        excludeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.REGEX,
+                        pattern = "com\\.hohoedu\\.all_pass\\.secondary\\..*"
+                ),
+                @ComponentScan.Filter(
+                        type = FilterType.REGEX,
+                        pattern = "com\\.hohoedu\\.all_pass\\.third\\..*"
+                )
+        },
         entityManagerFactoryRef = "primaryEntityManagerFactory",
         transactionManagerRef = "primaryTransactionManager"
 )

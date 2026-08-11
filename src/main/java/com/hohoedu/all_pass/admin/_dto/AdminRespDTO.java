@@ -26,6 +26,8 @@ public class AdminRespDTO {
         private boolean levelUnit; // 급수 여부 (급수는 이북 코드를 만들지 않는다)
         private String ggubun; // 외부 DB 교재 코드 (유곡점만)
         private String mgubun; // 외부 DB 호수 코드 (유곡점만)
+        private String keyCode; // 이미 생성된 이북 코드 (third DB, 없으면 화면에서 생성)
+        private String settingValue; // 이북 코드 접두어 둘째 자리에서 읽어낸 세팅값 (X/Y/Z/A)
     }
 
     @Data

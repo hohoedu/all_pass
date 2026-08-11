@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const SETTING_OPTIONS = {
         '1': [
             {value: 'X', label: 'X:분권:놀이북'},
-            {value: 'Y', label: 'Y:온권:놀이터'}
+            {value: 'Z', label: 'Z:온권:놀이터'}
         ],
         '2': [
             {value: 'X', label: 'X:22'},
@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
             {value: 'A', label: 'A:25,26'}
         ]
     };
+
+    /* 영재/수재의 5호·10호는 상/하반기 수업이라 세팅값이 하나뿐이다 */
+    const HALF_TERM_CLASS_KEYS = ['Y', 'S'];
+    const HALF_TERM_UNIT_KEYS = ['H05', 'H10'];
+    const HALF_TERM_OPTIONS = [{value: 'X', label: 'X:22 ~ 26'}];
 
     initCurrentMonth();
 
@@ -219,12 +224,20 @@ document.addEventListener('DOMContentLoaded', () => {
             </tr>`).join('');
     }
 
+    /* 교재별 세팅값 옵션 (영재/수재의 5호·10호는 상/하반기라 따로 준다) */
+    function settingOptionsOf(r) {
+        if (HALF_TERM_CLASS_KEYS.includes(r.classKey) && HALF_TERM_UNIT_KEYS.includes(r.unitKey)) {
+            return HALF_TERM_OPTIONS;
+        }
+        return SETTING_OPTIONS[r.classType] ?? [];
+    }
+
     /* 지정된 교재만 세팅값 드롭다운을 노출 */
     function buildSettingCell(r) {
         if (r.levelUnit) return '-';                              // 급수는 이북 코드 대상이 아니다
         if (!SETTING_CLASS_KEYS.includes(r.classKey)) return '-';
 
-        const options = SETTING_OPTIONS[r.classType] ?? [];
+        const options = settingOptionsOf(r);
 
         const optionHtml = ['<option value="">선택</option>']
             .concat(options.map(o =>

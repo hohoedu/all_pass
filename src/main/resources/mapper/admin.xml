@@ -58,6 +58,7 @@
         FROM CLASS_KEY ck
                  JOIN erp_class_code cc ON ck.class_key = cc.class_key
                  JOIN erp_unit_code uc ON ck.unit_key = uc.unit_key
+        WHERE uc.unit_type &lt;&gt; 'lv' <!-- 급수는 이북 코드 대상이 아니다 -->
         ORDER BY cc.id, uc.id;
     </select>
 

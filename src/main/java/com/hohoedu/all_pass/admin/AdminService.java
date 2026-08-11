@@ -8,6 +8,8 @@ import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
 import com.hohoedu.all_pass.secondary.repository.SecondaryEbookRepository;
 import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
+import com.hohoedu.all_pass.third._dto.ThirdDTO;
+import com.hohoedu.all_pass.third.repository.ThirdEbookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,9 +29,36 @@ public class AdminService {
     /** 유곡점 저장 시 기준이 되는 반 (세 반 값이 동일하므로 하나만 저장) */
     private static final String SECONDARY_BASE_CLASS_KEY = "K";
 
+    /**
+     * 이북 코드가 보관된 third DB(hohosc_TableBookLabel)는 지점을 preschool_code 로 구분한다.
+     * 본사(PUS001)는 이북 코드 대상이 아니라 매핑하지 않는다.
+     */
+    private static final Map<String, String> PRESCHOOL_CODE_BY_CENTER = Map.of(
+            "PUS002", "000",
+            "DAE001", "hohows",
+            "ULS001", "onlyjyu");
+
+    /** 호수가 인물명인 교재 (unit_key A01~C10). 그 외는 호수 교재(H01~) */
+    private static final Set<String> PERSON_EXT_CODES = Set.of("UA", "UB", "UC");
+
+    /**
+     * 이북 코드 접두어 둘째 자리에 세팅값이 들어가는 교재 (그 외는 ocode 2자리를 그대로 쓴다).
+     * 화면의 SETTING_CLASS_KEYS 와 같은 목록이다.
+     */
+    private static final Set<String> SETTING_CLASS_KEYS = Set.of("Y", "S", "P", "K", "M", "J");
+
+    /**
+     * 교재 타입별 세팅값. 화면의 SETTING_OPTIONS 와 같은 목록이다.
+     * 여기에 없는 값(옛 데이터의 한자 Z, C)은 세팅값으로 보지 않는다.
+     */
+    private static final Map<String, Set<String>> SETTING_VALUES_BY_CLASS_TYPE = Map.of(
+            "1", Set.of("X", "Z"), // 한자
+            "2", Set.of("X", "Y", "Z", "A")); // 독서
+
     private final AdminRepository adminRepository;
     private final SecondaryLogisticsRepository secondaryLogisticsRepository;
     private final SecondaryEbookRepository secondaryEbookRepository;
+    private final ThirdEbookRepository thirdEbookRepository;
 
     public int insertPersonYear(AdminReqDTO.PersonSettingDTO reqDTO) {
 
@@ -113,8 +142,7 @@ public class AdminService {
 
             if (configs != null) {
                 for (SecondaryDTO.EbookYearConfigDTO config : configs) {
-                    AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO m =
-                            new AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO();
+                    AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO m = new AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO();
                     m.setMonth(config.getMm());
                     m.setUnit_key(toUnitKey(config.getUnitNo()));
                     m.setSub_unit_key(toUnitKey(config.getSubUnitNo()));
@@ -145,7 +173,8 @@ public class AdminService {
         AdminReqDTO.PersonSettingDTO.EbookClassDTO baseClass = reqDTO.getClasses().stream()
                 .filter(c -> SECONDARY_BASE_CLASS_KEY.equals(c.getClass_key()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("유곡점 저장 실패 - " + SECONDARY_BASE_CLASS_KEY + " 반 데이터가 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "유곡점 저장 실패 - " + SECONDARY_BASE_CLASS_KEY + " 반 데이터가 없습니다."));
 
         int count = 0;
         for (AdminReqDTO.PersonSettingDTO.EbookClassDTO.EbookMonthDTO m : baseClass.getMonths()) {
@@ -211,25 +240,183 @@ public class AdminService {
     public List<AdminRespDTO.KeycodeDTO> findKeycodeList(AdminReqDTO.KeycodeFindDTO req) {
 
         if (SECONDARY_CENTER_CODE.equals(req.getCenterCode())) {
-            return findSecondaryKeycodeList(req);
+            List<AdminRespDTO.KeycodeDTO> secondaryList = findSecondaryKeycodeList(req);
+            fillExistingKeycodes(secondaryList, req);
+            return secondaryList;
         }
 
-        List<AdminRespDTO.KeycodeDTO> list =
-                adminRepository.selectKeycodeList(req.getCenterCode(), req.getYear(), req.getMonth());
+        List<AdminRespDTO.KeycodeDTO> list = adminRepository.selectKeycodeList(req.getCenterCode(), req.getYear(),
+                req.getMonth());
 
         // 교재 코드는 지점과 무관하게 같은 체계이므로, 매핑을 역방향으로 읽어 Ggubun / ocode 를 채운다
-        Map<String, Map<String, String>> mapByClassKey =
-                adminRepository.selectSecondaryClassMap(SECONDARY_CENTER_CODE).stream()
-                        .collect(Collectors.toMap(m -> m.get("classKey"), m -> m, (a, b) -> a));
+        Map<String, Map<String, String>> mapByClassKey = adminRepository.selectSecondaryClassMap(SECONDARY_CENTER_CODE)
+                .stream()
+                .collect(Collectors.toMap(m -> m.get("classKey"), m -> m, (a, b) -> a));
 
         list.forEach(d -> {
             Map<String, String> m = mapByClassKey.get(d.getClassKey());
-            if (m == null) return;
+            if (m == null)
+                return;
             d.setGgubun(m.get("extCode"));
             d.setOcode(m.get("ocode"));
         });
 
+        fillExistingKeycodes(list, req);
+
         return list;
+    }
+
+    /**
+     * third DB(hohosc_TableBookLabel)에 이미 만들어 둔 이북 코드를 각 행에 붙인다.
+     * 매핑이 없는 지점(본사)이나 코드가 없는 행은 그대로 두고, 화면에서 새로 생성한다.
+     */
+    private void fillExistingKeycodes(List<AdminRespDTO.KeycodeDTO> list, AdminReqDTO.KeycodeFindDTO req) {
+
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+
+        String preschoolCode = PRESCHOOL_CODE_BY_CENTER.get(req.getCenterCode());
+        if (preschoolCode == null) {
+            return;
+        }
+
+        List<ThirdDTO.KeycodeRawDTO> raws = thirdEbookRepository.findKeycodeList(preschoolCode,
+                req.getYear() + req.getMonth());
+
+        if (raws == null || raws.isEmpty()) {
+            return;
+        }
+
+        // 외부 교재 코드(ggubun) → 우리 class_key. 교재 코드 체계는 지점과 무관하게 같다
+        Map<String, String> classKeyByExtCode = adminRepository.selectSecondaryClassMap(SECONDARY_CENTER_CODE)
+                .stream()
+                .collect(Collectors.toMap(m -> m.get("extCode"), m -> m.get("classKey"), (a, b) -> a));
+
+        // mgubun 이 있으면 그대로, 없으면 keycode 안의 호수 자리로 찾는다
+        Map<String, String> byUnitNo = new HashMap<>();
+        Map<String, String> byKeycodeNo = new HashMap<>();
+
+        for (ThirdDTO.KeycodeRawDTO raw : raws) {
+            String classKey = classKeyByExtCode.get(raw.getGgubun());
+            if (classKey == null)
+                continue;
+
+            String unitNo = toUnitNoDigits(raw.getMgubun());
+            if (unitNo != null) {
+                byUnitNo.putIfAbsent(classKey + "|" + unitNo, raw.getKeycode());
+                continue;
+            }
+
+            String keycodeNo = unitNoInKeycode(raw.getKeycode());
+            if (keycodeNo != null) {
+                byKeycodeNo.putIfAbsent(classKey + "|" + keycodeNo, raw.getKeycode());
+            }
+        }
+
+        for (AdminRespDTO.KeycodeDTO d : list) {
+            if (d.isLevelUnit())
+                continue; // 급수는 이북 코드 대상이 아니다
+
+            String unitNo = unitNoOf(d);
+            String keyCode = unitNo == null ? null : byUnitNo.get(d.getClassKey() + "|" + unitNo);
+
+            // mgubun 이 비어 있던 행은 keycode 의 호수 자리로 맞춘다.
+            // 이 자리는 unit_key 의 숫자 부분과 같다 (H08 → 08, B06 → 06)
+            if (keyCode == null) {
+                String keycodeNo = toUnitNoDigits(d.getUnitKey());
+                if (keycodeNo != null) {
+                    keyCode = byKeycodeNo.get(d.getClassKey() + "|" + keycodeNo);
+                }
+            }
+
+            d.setSettingValue(settingValueOf(d, keyCode));
+            d.setKeyCode(formatKeyCode(keyCode));
+        }
+    }
+
+    /**
+     * 이북 코드 접두어 둘째 자리에서 세팅값을 읽는다. 예) GX08X3AR → X
+     * 세팅값을 쓰지 않는 교재(접두어가 ocode 2자리 그대로)는 null 을 준다.
+     * 교재 타입에 없는 값(옛 데이터의 한자 Z, C)도 null 로 두어 화면에서 다시 고르게 한다.
+     */
+    private String settingValueOf(AdminRespDTO.KeycodeDTO dto, String keyCode) {
+        if (keyCode == null || keyCode.length() < 2) {
+            return null;
+        }
+
+        if (!SETTING_CLASS_KEYS.contains(dto.getClassKey())) {
+            return null;
+        }
+
+        Set<String> allowed = SETTING_VALUES_BY_CLASS_TYPE.get(dto.getClassType());
+        if (allowed == null) {
+            return null;
+        }
+
+        String value = keyCode.substring(1, 2).toUpperCase();
+
+        return allowed.contains(value) ? value : null;
+    }
+
+    /**
+     * 화면 표기용으로 접두어 4자리와 난수 4자리 사이에 '-' 를 넣는다. 예) GX08X3AR → GX08-X3AR
+     * 이미 '-' 가 있거나 8자리가 아닌 값은 그대로 둔다.
+     */
+    private String formatKeyCode(String keyCode) {
+        if (keyCode == null || keyCode.length() != 8 || keyCode.contains("-")) {
+            return keyCode;
+        }
+
+        return keyCode.substring(0, 4) + "-" + keyCode.substring(4);
+    }
+
+    /**
+     * keycode 의 호수 자리(접두어 2자리 뒤 숫자 2자리)를 뽑는다. 예) GX08X3AR → 08
+     * 인물 교재는 이 자리가 unit_key 의 숫자 부분이라 A/B/C 구분은 담기지 않는다.
+     */
+    private String unitNoInKeycode(String keycode) {
+        if (keycode == null || keycode.length() < 4) {
+            return null;
+        }
+
+        String no = keycode.substring(2, 4);
+        if (!no.matches("\\d{2}")) {
+            return null;
+        }
+
+        return no;
+    }
+
+    /**
+     * 우리 unit_key 를 외부 DB 의 호수 번호(2자리)로 바꾼다.
+     * - 인물 교재: A01~C10 → 01~30
+     * - 호수 교재: H01~H15 → 01~15
+     */
+    private String unitNoOf(AdminRespDTO.KeycodeDTO dto) {
+        String unitKey = dto.getUnitKey();
+        if (unitKey == null || unitKey.isBlank()) {
+            return null;
+        }
+
+        if (PERSON_EXT_CODES.contains(dto.getGgubun())) {
+            return toUnitNo(unitKey);
+        }
+        return toUnitNoDigits(unitKey);
+    }
+
+    /** 숫자만 뽑아 2자리로 맞춘다. 숫자가 없으면 null */
+    private String toUnitNoDigits(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String digits = value.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) {
+            return null;
+        }
+
+        return String.format("%02d", Integer.parseInt(digits));
     }
 
     /**
@@ -238,8 +425,7 @@ public class AdminService {
      */
     private List<AdminRespDTO.KeycodeDTO> findSecondaryKeycodeList(AdminReqDTO.KeycodeFindDTO req) {
 
-        List<SecondaryDTO.KeycodeRawDTO> raws =
-                secondaryEbookRepository.findKeycodeList(req.getYear(), req.getMonth());
+        List<SecondaryDTO.KeycodeRawDTO> raws = secondaryEbookRepository.findKeycodeList(req.getYear(), req.getMonth());
 
         if (raws == null || raws.isEmpty()) {
             return List.of();
@@ -261,7 +447,12 @@ public class AdminService {
         for (SecondaryDTO.KeycodeRawDTO raw : raws) {
 
             // 조회 컬럼이 모두 NULL 인 행은 MyBatis 가 null 로 담아준다
-            if (raw == null || raw.getGgubun() == null) continue;
+            if (raw == null || raw.getGgubun() == null)
+                continue;
+
+            // 급수는 이북 코드 대상이 아니다
+            if (isSecondaryLevelUnit(raw.getGgubun(), raw.getMgubun()))
+                continue;
 
             Map<String, String> classMap = mapByExtCode.get(raw.getGgubun());
             String classKey = classMap == null ? null : classMap.get("classKey");
@@ -276,7 +467,6 @@ public class AdminService {
             dto.setUnitName(raw.getUnitName());
             dto.setOcode(classMap == null ? null : classMap.get("ocode"));
             // 유곡 호수 코드 2x 는 급수
-            dto.setLevelUnit(raw.getMgubun() != null && raw.getMgubun().startsWith("2"));
             dto.setGgubun(raw.getGgubun());
             dto.setMgubun(raw.getMgubun());
             result.add(dto);
@@ -288,6 +478,19 @@ public class AdminService {
                 .thenComparingInt(d -> codeOrder(unitByName.get(d.getUnitName()))));
 
         return result;
+    }
+
+    /**
+     * 유곡 호수 코드가 급수인지 판단한다.
+     * 호수 교재는 호수가 1~10 이라 2x 가 급수(21=8급, 22=7급 ...)지만,
+     * 인물 교재(키움/만남/자람)는 인물이 01~30 이라 2x 도 정상 호수다.
+     */
+    private boolean isSecondaryLevelUnit(String ggubun, String mgubun) {
+        if (mgubun == null || !mgubun.startsWith("2")) {
+            return false;
+        }
+
+        return !PERSON_EXT_CODES.contains(ggubun);
     }
 
     /** 우리 코드 테이블에 없는 값은 정렬에서 맨 뒤로 */
