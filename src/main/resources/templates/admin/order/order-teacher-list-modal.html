@@ -1,0 +1,53 @@
+<div class="modal-backdrop" id="order-teacher-list-modal" th:fragment="orderTeacherListModal">
+    <div class="modal2 modal2-wide">
+        <button type="button" class="modal-close" id="teacher-list-modal-close-btn">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 class="modal-title">선생님별 주문 내역 조회</h2>
+
+        <div style="display:flex; justify-content:flex-end; margin-bottom: 20px;">
+            <div class="basic-select">
+                <select id="teacherSelect">
+                    <option value="">선생님을 선택해주세요.</option>
+                </select>
+            </div>
+        </div>
+
+        <section class="modal-panel">
+            <div class="modal-panel-title item-title">
+                <span>주문 내역</span>
+                <span id="teacherSelectedName" style="color:#9a9da7; font-weight:700; font-size:13px;">선택된 선생님이
+                    없습니다.</span>
+            </div>
+            <div class="modal-item-table-wrap" style="max-height: 420px;">
+                <table class="invoice-item-table">
+                    <colgroup>
+                        <col style="width: 20%">
+                        <col style="width: 22%">
+                        <col style="width: 10%">
+                        <col style="width: 10%">
+                        <col style="width: 13%">
+                        <col style="width: 13%">
+                        <col style="width: 12%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>주문일시</th>
+                            <th>품명</th>
+                            <th>규격</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>금액</th>
+                            <th>비고</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacherHistoryTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align:center; color:#9a9da7;">선생님을 선택해주세요.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

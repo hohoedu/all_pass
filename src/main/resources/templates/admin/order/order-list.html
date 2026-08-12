@@ -192,20 +192,25 @@
                             <button class="print-btn" type="button">인쇄 미리보기</button>
                         </div>
                     </div>
-                    <dl class="company-info" id="companyInfo">
-                        <dt>상호</dt>
-                        <dd id="infoCenterName">-</dd>
-                        <dt>등록번호</dt>
-                        <dd id="infoBizNum">-</dd>
-                        <dt>성명</dt>
-                        <dd id="infoDirectorName">-</dd>
-                        <dt>주소</dt>
-                        <dd id="infoAddress">-</dd>
-                        <dt>담당</dt>
-                        <dd id="infoManagerName">-</dd>
-                        <dt>연락처</dt>
-                        <dd id="infoManagerTel">-</dd>
-                    </dl>
+                    <div style="display:flex; justify-content:space-between; margin-bottom: 10px;">
+                        <dl class="company-info" id="companyInfo">
+                            <dt>상호</dt>
+                            <dd id="infoCenterName">-</dd>
+                            <dt>등록번호</dt>
+                            <dd id="infoBizNum">-</dd>
+                            <dt>성명</dt>
+                            <dd id="infoDirectorName">-</dd>
+                            <dt>주소</dt>
+                            <dd id="infoAddress">-</dd>
+                            <dt>담당</dt>
+                            <dd id="infoManagerName">-</dd>
+                            <dt>연락처</dt>
+                            <dd id="infoManagerTel">-</dd>
+                        </dl>
+                        <div style="padding-right:50px;">
+                            <button class="list-btn" type="button">선생님별 주문 내역 조회</button>
+                        </div>
+                    </div>
                     <div class="table-wrap">
                         <table class="invoice-table">
                             <colgroup>
@@ -243,6 +248,7 @@
     </div>
     <div th:replace="~{admin/order/order-manual-modal :: orderManualModal}"></div>
     <div th:replace="~{admin/order/order-add-modal :: orderAddModal}"></div>
+    <div th:replace="~{admin/order/order-teacher-list-modal :: orderTeacherListModal}"></div>
 </body>
 
 </html>

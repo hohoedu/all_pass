@@ -99,4 +99,10 @@ public interface LogisticsRepository {
                         @Param("year") String year,
                         @Param("month") String month,
                         @Param("centerCode") String centerCode);
+
+        List<LogisRespDTO.OrderHistoryDTO> findTeacherOrderHistory(
+                        @Param("centerCode") String centerCode,
+                        @Param("userCode") String userCode,
+                        @Param("year") String year,
+                        @Param("month") String month);
 }

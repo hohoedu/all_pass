@@ -94,10 +94,18 @@
           AND mm = #{mm}
     </select>
 
+    <select id="selectNextRound" resultType="int">
+        SELECT ISNULL(MAX(round), 0) + 1
+        FROM erp_order_history
+        WHERE user_code = #{userCode}
+          AND yy = #{yy}
+          AND mm = #{mm}
+    </select>
+
     <insert id="insertOrderHistory">
-        INSERT INTO erp_order_history(center_code, user_code, yy, mm, class_key, unit_key, count, created_at) VALUES
+        INSERT INTO erp_order_history(center_code, user_code, yy, mm, class_key, unit_key, count, round, created_at) VALUES
         <foreach collection="insertOrders" item="order" separator=",">
-            (#{centerCode}, #{userCode}, #{yy}, #{mm}, #{order.classKey}, #{order.unitKey}, #{order.baseCount}, SYSDATETIME())
+            (#{centerCode}, #{userCode}, #{yy}, #{mm}, #{order.classKey}, #{order.unitKey}, #{order.baseCount}, #{round}, SYSDATETIME())
         </foreach>
     </insert>
 

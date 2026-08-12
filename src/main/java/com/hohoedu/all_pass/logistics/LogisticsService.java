@@ -300,4 +300,10 @@ public class LogisticsService {
             }
         }
     }
+
+    // ── 선생님별 회차별 주문 내역 ──
+    public List<LogisRespDTO.OrderHistoryDTO> getTeacherOrderHistory(LogisReqDTO.TeacherOrderHistoryReqDTO req) {
+        return logisticsRepository.findTeacherOrderHistory(req.getCenterCode(), req.getUserCode(), req.getYear(),
+                req.getMonth());
+    }
 }

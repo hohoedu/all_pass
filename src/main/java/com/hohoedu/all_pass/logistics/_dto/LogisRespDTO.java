@@ -72,6 +72,19 @@ public class LogisRespDTO {
     }
 
     @Data
+    public static class OrderHistoryDTO {
+        private Integer round;
+        private String orderDate;
+        private String classKey;
+        private String className;
+        private String unitKey;
+        private String unitName;
+        private Integer count;
+        private Integer unitPrice;
+        private Integer totalPrice;
+    }
+
+    @Data
     public static class CenterAggregateDTO {
         private String centerCode;
         private String centerName;

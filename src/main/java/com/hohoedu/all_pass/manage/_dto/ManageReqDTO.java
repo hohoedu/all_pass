@@ -14,6 +14,7 @@ public class ManageReqDTO {
         private String userCode;
         private String yy;
         private String mm;
+        private Integer round;
 
         List<InsertOrder> insertOrders;
 

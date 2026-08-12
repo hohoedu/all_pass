@@ -61,6 +61,7 @@ public class ManageService {
     public void insertOrder(ManageReqDTO.InsertOrderHistoryDTO reqDTO) {
 
         // 1) order_history insert (무조건 insert)
+        reqDTO.setRound(manageRepository.selectNextRound(reqDTO.getUserCode(), reqDTO.getYy(), reqDTO.getMm()));
         manageRepository.insertOrderHistory(reqDTO);
 
         // 2) order 조회
@@ -76,6 +77,24 @@ public class ManageService {
         // 4) 없으면 인서트
         manageRepository.insertOrder(reqDTO);
 
+    }
+
+    // 기존 저장된 주문(erp_order)과 새로 계산된 주문 목록이 (class_key, unit_key, base_count) 기준으로 완전히 같은지 비교
+    private boolean isSameOrder(List<ManageRespDTO.BaseOrderListDTO> currentOrderList,
+                                 List<ManageReqDTO.InsertOrderHistoryDTO.InsertOrder> newOrders) {
+        if (currentOrderList.size() != newOrders.size()) {
+            return false;
+        }
+
+        Set<String> currentKeys = currentOrderList.stream()
+                .map(o -> o.getClassKey() + "|" + o.getUnitKey() + "|" + o.getBaseCount())
+                .collect(Collectors.toSet());
+
+        Set<String> newKeys = newOrders.stream()
+                .map(o -> o.getClassKey() + "|" + o.getUnitKey() + "|" + o.getBaseCount())
+                .collect(Collectors.toSet());
+
+        return currentKeys.equals(newKeys);
     }
 
     public List<ManageRespDTO.ReorderListDTO> getReorderList(String userCode, String centerCode, String year,
@@ -412,9 +431,15 @@ public class ManageService {
                 reqDTO.setMm(mm);
                 reqDTO.setInsertOrders(insertOrders);
 
-                manageRepository.insertOrderHistory(reqDTO);
-
                 List<ManageRespDTO.BaseOrderListDTO> baseOrderList = manageRepository.findOrder(reqDTO);
+
+                // 기존 주문과 완전히 같으면(=변동 없음) 다시 기록하지 않음
+                if (isSameOrder(baseOrderList, insertOrders)) {
+                    continue;
+                }
+
+                reqDTO.setRound(manageRepository.selectNextRound(userCode, yy, mm));
+                manageRepository.insertOrderHistory(reqDTO);
 
                 if (!baseOrderList.isEmpty()) {
                     manageRepository.deleteOrderByCondition(reqDTO.getUserCode(), reqDTO.getCenterCode(), reqDTO.getYy(),

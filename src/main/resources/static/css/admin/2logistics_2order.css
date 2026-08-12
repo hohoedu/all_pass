@@ -1147,6 +1147,16 @@ select.status-select.rejected {
     font-weight: 800;
 }
 
+.list-btn {
+    color: #5A8AC5;
+    background: #fff;
+    border: 1px solid #B3D5FF;
+    border-radius: 7px;
+    height: 40px;
+    padding: 0 17px;
+    font-weight: 600;
+}
+
 .company-info {
     padding: 0 22px 0;
     display: grid;
@@ -1172,6 +1182,43 @@ select.status-select.rejected {
 
 .invoice-table th {
     background: #f3f4f8;
+}
+
+.round-header-row td {
+    background: #f7f5ff;
+    color: var(--primary);
+    font-weight: 800;
+    text-align: left !important;
+    padding-left: 14px !important;
+}
+
+.diff-plus {
+    color: #1d6f3e;
+    font-weight: 800;
+}
+
+.diff-minus {
+    color: red;
+    font-weight: 800;
+}
+
+.diff-new {
+    color: var(--primary);
+    font-weight: 800;
+}
+
+.diff-removed-row td {
+    color: #b3b6bf;
+}
+
+.diff-removed-row td:nth-child(2),
+.diff-removed-row td:nth-child(3) {
+    text-decoration: line-through;
+}
+
+.diff-removed {
+    color: red;
+    font-weight: 800;
 }
 
 .invoice-table td:first-child {
@@ -1250,6 +1297,45 @@ select.status-select.rejected {
     z-index: 10000;
 }
 
+.modal2-wide {
+    width: 1320px;
+    max-width: 92vw;
+    min-height: 640px;
+    max-height: 92vh;
+}
+
+.basic-select {
+    position: relative;
+    width: 220px;
+}
+
+.basic-select select {
+    width: 100%;
+    height: 36px;
+    border-radius: 30px;
+    background: #FFFBEB;
+    border: 1px solid #e2e2e2;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding: 3px 30px 3px 14px;
+    font-size: 14px;
+}
+
+.basic-select::after {
+    content: "\f078";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    color: #999;
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
 .modal-title {
     text-align: center;
     font-size: 21px;
@@ -1266,17 +1352,64 @@ select.status-select.rejected {
 }
 
 .modal-content2 {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     overflow: hidden;
     gap: 20px;
     justify-content: center;
-    flex-direction: column;
 }
 
 .modal-panel {
     min-width: 0;
     overflow: hidden;
+    border: 1px solid #e4e4e4;
+    border-radius: 12px;
     padding: 22px;
+}
+
+.step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.modal-search {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.modal-search input {
+    flex: 1;
+    height: 42px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    padding: 0 14px;
+}
+
+.history-result-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.history-result-card:hover {
+    border-color: var(--primary);
+}
+
+.history-result-card.active {
+    border: 1px solid var(--primary);
+    background: #f7f5ff;
 }
 
 .modal-panel-title {
@@ -1318,13 +1451,6 @@ select.status-select.rejected {
     height: 28px;
     border-radius: 5px;
     color: #999;
-}
-
-.history-result-card {
-    border: 1px solid rgb(221, 221, 221);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 14px;
 }
 
 .result-top {
@@ -1478,4 +1604,14 @@ textarea {
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+
+.modal-cancel-btn {
+    color: #5d606b;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    height: 40px;
+    padding: 0 17px;
+    font-weight: 700;
 }

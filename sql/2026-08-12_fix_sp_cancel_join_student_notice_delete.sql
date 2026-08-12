@@ -1,3 +1,13 @@
+-- sp_cancel_join_student 버그 수정
+-- 문제: 과목별 취소(classType='1'/'2')로 시작해 두 과목이 모두 해제되어
+--       전체삭제(doFullDelete=1)로 넘어가는 경로에서는 erp_before_class_notice /
+--       erp_after_class_notice 를 지우지 않아, 다른 과목분 notice가 남은 채로
+--       DELETE FROM erp_student를 실행 → FK(FKms79cjss2aakp9a0jvjwdh0u9) 위반 발생.
+-- 조치: 전체삭제 블록에 두 notice 테이블 DELETE를 추가 (다른 테이블들과 동일하게 무조건 삭제).
+
+IF OBJECT_ID('sp_cancel_join_student', 'P') IS NOT NULL
+    DROP PROCEDURE sp_cancel_join_student;
+
 CREATE PROCEDURE sp_cancel_join_student
     @studentId NVARCHAR(50),
     @classType CHAR(1)      = NULL,

@@ -30,6 +30,14 @@ public class LogisReqDTO {
     }
 
     @Data
+    public static class TeacherOrderHistoryReqDTO {
+        private String centerCode;
+        private String userCode;
+        private String year;
+        private String month;
+    }
+
+    @Data
     public static class ConfirmedUpdateReqDTO {
         private String id;
         private String confirmed;

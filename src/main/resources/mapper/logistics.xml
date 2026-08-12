@@ -656,4 +656,29 @@
           AND mm = #{month}
           AND sugi = 'Y'
     </delete>
+
+    <select id="findTeacherOrderHistory"
+            resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$OrderHistoryDTO">
+        SELECT h.round                                        AS round,
+               CONVERT(VARCHAR (19), h.created_at, 120)        AS orderDate,
+               h.class_key                                      AS classKey,
+               cc.class_name                                   AS className,
+               h.unit_key                                       AS unitKey,
+               uc.unit_name                                    AS unitName,
+               h.count                                          AS count,
+               up.unit_price                                    AS unitPrice,
+               h.count * ISNULL(up.unit_price, 0)               AS totalPrice
+        FROM erp_order_history h
+                 JOIN erp_class_code cc ON CASE
+                                                WHEN h.class_key LIKE 'N%'
+                                                    THEN SUBSTRING(h.class_key, 2, LEN(h.class_key))
+                                                ELSE h.class_key END = cc.class_key
+                 JOIN erp_unit_code uc ON h.unit_key = uc.unit_key
+                 LEFT JOIN erp_unit_price up ON h.class_key = up.class_key
+        WHERE h.center_code = #{centerCode}
+          AND h.user_code = #{userCode}
+          AND h.yy = #{year}
+          AND h.mm = #{month}
+        ORDER BY h.round, cc.id, uc.id
+    </select>
 </mapper>

@@ -356,11 +356,37 @@ public class ClassService {
         orderDto.setMm(mm);
         orderDto.setInsertOrders(insertOrders);
 
+        // 기존에 저장된 주문과 수량이 완전히 같다면(=시간표 변동이 실제 주문에 영향 없음) 새로 기록하지 않음
+        List<ManageRespDTO.BaseOrderListDTO> currentOrderList = manageRepository.findOrder(orderDto);
+        if (isSameOrder(currentOrderList, insertOrders)) {
+            return null;
+        }
+
+        orderDto.setRound(manageRepository.selectNextRound(userCode, yy, mm));
+
         manageRepository.deleteOrderByCondition(userCode, centerCode, yy, mm);
         manageRepository.insertOrder(orderDto);
         manageRepository.insertOrderHistory(orderDto);
 
         return null; // 정상 처리
+    }
+
+    // 기존 저장된 주문(erp_order)과 새로 계산된 주문 목록이 (class_key, unit_key, base_count) 기준으로 완전히 같은지 비교
+    private boolean isSameOrder(List<ManageRespDTO.BaseOrderListDTO> currentOrderList,
+                                 List<ManageReqDTO.InsertOrderHistoryDTO.InsertOrder> newOrders) {
+        if (currentOrderList.size() != newOrders.size()) {
+            return false;
+        }
+
+        Set<String> currentKeys = currentOrderList.stream()
+                .map(o -> o.getClassKey() + "|" + o.getUnitKey() + "|" + o.getBaseCount())
+                .collect(Collectors.toSet());
+
+        Set<String> newKeys = newOrders.stream()
+                .map(o -> o.getClassKey() + "|" + o.getUnitKey() + "|" + o.getBaseCount())
+                .collect(Collectors.toSet());
+
+        return currentKeys.equals(newKeys);
     }
 
     private String createTimeTableLabel(ClassReqDTO.ClassRegisterDTO dto) {

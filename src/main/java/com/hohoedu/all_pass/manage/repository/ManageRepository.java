@@ -52,6 +52,12 @@ public interface ManageRepository {
     // order_history insert
     void insertOrderHistory(ManageReqDTO.InsertOrderHistoryDTO dto);
 
+    // 해당 선생님/월의 다음 주문 회차
+    int selectNextRound(
+            @Param("userCode") String userCode,
+            @Param("yy") String yy,
+            @Param("mm") String mm);
+
     // 주문서 조회
     List<ManageRespDTO.BaseOrderListDTO> findOrder(ManageReqDTO.InsertOrderHistoryDTO dto);
 

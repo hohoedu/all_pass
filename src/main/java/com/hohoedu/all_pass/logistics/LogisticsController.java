@@ -124,4 +124,9 @@ public class LogisticsController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/order/teacher-history")
+    public ResponseEntity<?> getTeacherOrderHistory(@RequestBody LogisReqDTO.TeacherOrderHistoryReqDTO req) {
+        return ResponseEntity.ok(ApiUtils.success(logisticsService.getTeacherOrderHistory(req)));
+    }
+
 }

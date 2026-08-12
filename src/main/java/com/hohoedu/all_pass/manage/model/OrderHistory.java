@@ -40,12 +40,15 @@ public class OrderHistory {
     @Column(name = "mm")
     private String mm;
 
+    @Column(name = "round")
+    private Integer round;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private Timestamp createdAt;
 
     @Builder
-    public OrderHistory(String classKey, String unitKey, String centerCode, String userCode, Integer count, String yy, String mm) {
+    public OrderHistory(String classKey, String unitKey, String centerCode, String userCode, Integer count, String yy, String mm, Integer round) {
         this.classKey = classKey;
         this.unitKey = unitKey;
         this.centerCode = centerCode;
@@ -53,5 +56,6 @@ public class OrderHistory {
         this.count = count;
         this.yy = yy;
         this.mm = mm;
+        this.round = round;
     }
 }
