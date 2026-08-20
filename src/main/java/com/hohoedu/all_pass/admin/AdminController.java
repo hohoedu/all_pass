@@ -46,6 +46,18 @@ public class AdminController {
         return ResponseEntity.ok(ApiUtils.success(result));
     }
 
+    @PostMapping("/save/keycode")
+    public ResponseEntity<?> saveKeycode(@RequestBody AdminReqDTO.KeycodeSaveDTO reqDTO) {
+        try {
+            int saved = adminService.saveKeycodeList(reqDTO);
+            return ResponseEntity.ok(ApiUtils.success(saved + "건 저장되었습니다."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(ApiUtils.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiUtils.error("저장 실패: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+    }
+
     @PostMapping("/save/book")
     public Object saveBooks(@RequestBody AdminReqDTO.BookSuggestSaveReqDTO reqDTO) {
         try {

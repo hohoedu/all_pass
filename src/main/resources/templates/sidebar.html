@@ -91,6 +91,9 @@
             th:href="@{/class/timeview}" id="tableViewLink" class="menu-link">시간표 조회</a>
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_record')}"
             th:href="@{/class/record}" class="menu-link">수업 일지</a>
+          <!-- 호호책방 SSO 브릿지 — 별도 권한 키가 없어 수업 일지와 같은 class_record 권한을 그대로 쓴다 -->
+          <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_record')}"
+            th:href="@{/sso/to-book-clinic(redirectUrl='/admin/growth/diary')}" class="menu-link">독서일지</a>
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_remedial')}"
             th:href="@{/class/remedial}" id="remedial" class="menu-link">보강 관리</a>
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('class_monthly')}"

@@ -226,6 +226,12 @@ public interface PaymentRepository {
             @Param("dateFrom") String dateFrom,
             @Param("dateTo") String dateTo);
 
+    // 승인번호 대조: 수기결제(오프라인 카드) 그룹 조회
+    List<com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.CallbackRow> findManualGroupsForReconcile(
+            @Param("centerCode") String centerCode,
+            @Param("dateFrom") String dateFrom,
+            @Param("dateTo") String dateTo);
+
     List<PaymentRespDTO.PaymentModalDTO> findPaymentByStudentId(PaymentReqDTO.PersonalDTO dto);
 
     Payment findPaymentByBillId(String billId);
@@ -363,7 +369,8 @@ public interface PaymentRepository {
     // 매뉴얼 그룹 수정
     void updateManualGroup(@Param("manualKey") String manualKey,
                            @Param("paidDate") String paidDate,
-                           @Param("totalAmount") Long totalAmount);
+                           @Param("totalAmount") Long totalAmount,
+                           @Param("apprNum") String apprNum);
 
     // 매뉴얼 전체 삭제 (같은 manualKey)
     void deleteAllByManualKey(String manualKey);

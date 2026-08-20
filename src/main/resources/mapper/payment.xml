@@ -296,9 +296,9 @@
     <insert id="insertPaymentManualGroup"
             parameterType="com.hohoedu.all_pass.payment._dto.web.PaymentReqDTO$InsertManualGroupDTO">
         INSERT INTO erp_payment_manual_group (manual_key, total_amount, card_name, method, paid_date, yy, mm,
-                                              student_id, user_code, center_code, status, created_at)
+                                              student_id, user_code, center_code, status, appr_num, created_at)
         VALUES (#{manualKey}, #{totalAmount}, #{cardName}, #{method}, #{paidDate}, #{yy}, #{mm}, #{studentId},
-                #{userCode}, #{centerCode}, #{status}, SYSDATETIME())
+                #{userCode}, #{centerCode}, #{status}, #{apprNum}, SYSDATETIME())
     </insert>
 
     <insert id="insertPaymentPreset"
@@ -1132,6 +1132,26 @@
           AND LEFT(appr_date, 8) BETWEEN REPLACE(#{dateFrom}, '-', '') AND REPLACE(#{dateTo}, '-', '')
     </select>
 
+    <!-- 승인번호 대조: 수기결제(오프라인 카드) 그룹 조회. 그룹 total_amount 엔 현금/계좌 몫도 섞일 수 있어 자식 manual 의 card_amount 를 합산한다 -->
+    <select id="findManualGroupsForReconcile"
+            resultType="com.hohoedu.all_pass.payment._dto.web.ReconcileDTO$CallbackRow">
+        SELECT pmg.appr_num                          AS apprNum,
+               pmg.paid_date                         AS apprDate,
+               CAST(SUM(pm.card_amount) AS VARCHAR)  AS apprPrice,
+               pmg.card_name                         AS apprIssuer,
+               '수기입력'                              AS apprState
+        FROM erp_payment_manual_group pmg
+                 JOIN erp_payment_manual pm ON pm.manual_key = pmg.manual_key
+        WHERE pmg.appr_num IS NOT NULL
+          AND pmg.appr_num &lt;&gt; ''
+          <if test="centerCode != null and centerCode != ''">
+              AND (pmg.center_code = #{centerCode} OR pmg.center_code IS NULL)
+          </if>
+          AND pmg.paid_date BETWEEN #{dateFrom} AND #{dateTo}
+        GROUP BY pmg.appr_num, pmg.paid_date, pmg.card_name
+        HAVING SUM(pm.card_amount) > 0
+    </select>
+
     <select id="findPaymentByBillId" resultType="com.hohoedu.all_pass.payment.Payment">
         SELECT p.*
         FROM erp_payment p
@@ -1505,7 +1525,9 @@
                    ELSE 0
                    END                                              AS actualPaid,
                pmg.source                                           AS source,
-               epc.appr_cash_num
+               epc.appr_cash_num,
+               pmg.card_name                                        AS cardName,
+               pmg.appr_num                                         AS apprNum
         FROM erp_payment_manual pm
                  JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
                  JOIN erp_student s ON pm.student_id = s.student_id
@@ -1529,7 +1551,9 @@
                SUM(pm.cash_amount + pm.card_amount + pm.transfer_amount) AS paidAmount,
                SUM(pm.prepaid_amount)                                    AS actualPaid,
                'preset'                                                  AS source,
-               NULL                                                      AS appr_cash_num
+               NULL                                                      AS appr_cash_num,
+               NULL                                                      AS cardName,
+               NULL                                                      AS apprNum
         FROM erp_payment_manual pm
                  JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
                  JOIN erp_student s ON pm.student_id = s.student_id
@@ -1887,7 +1911,8 @@
     <update id="updateManualGroup">
         UPDATE erp_payment_manual_group
         SET total_amount = #{totalAmount},
-            paid_date    = #{paidDate}
+            paid_date    = #{paidDate},
+            appr_num     = #{apprNum}
         WHERE manual_key = #{manualKey}
     </update>
 
@@ -2169,7 +2194,7 @@
         ).value('.', 'NVARCHAR(MAX)'), 1, 2, '') AS class_name,
         pmg.total_amount AS amount,
         card.card_name AS card_name,
-        NULL AS appr_num,
+        pmg.appr_num AS appr_num,
         NULL AS monthly,
         CONVERT(VARCHAR(16), pm.paid_date, 120) AS paid_date,
         CASE pmg.method
@@ -2304,36 +2329,55 @@
         WHERE center_code = #{centerCode}
     </select>
     <select id="getLedgerData" resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$LedgerRespDTO">
+        ;WITH ledger_base AS (
+            SELECT
+                epc.appr_date AS raw_date,
+                CAST(epc.id AS VARCHAR(50)) AS row_key,
+                CASE
+                    WHEN pb.status = 'approved' THEN pb.mm + '월 수강료 수입'
+                    WHEN pb.status = 'canceled' THEN pb.mm + '월 수강료 환불'
+                END AS description,
+                s.student_name AS creditor,
+                CASE WHEN pb.status = 'approved' THEN pb.amount ELSE 0 END AS incomeAmount,
+                CASE WHEN pb.status = 'canceled' THEN pb.amount ELSE 0 END AS expenseAmount
+            FROM erp_payment_callback epc
+            JOIN erp_payment_bill pb ON pb.bill_id    = epc.bill_id
+            JOIN erp_payment p       ON p.payment_key = pb.payment_key
+            JOIN erp_student s       ON p.student_id  = s.student_id
+            WHERE SUBSTRING(epc.appr_date, 1, 4) = #{yy}
+                AND SUBSTRING(epc.appr_date, 5, 2) = #{mm}
+                AND p.center_code = #{centerCode}
+                AND pb.bill_type  = 'EDU_FEE'
+                AND pb.status     IN ('approved', 'canceled')
+
+            UNION ALL
+
+            SELECT
+                pm.yy + pm.mm + RIGHT('0' + CAST(ISNULL(DAY(pm.paid_date), 1) AS VARCHAR(2)), 2) AS raw_date,
+                CAST(pm.id AS VARCHAR(50)) AS row_key,
+                pm.mm + '월 수강료 수입(현장결제)' AS description,
+                s.student_name AS creditor,
+                pm.card_amount + pm.cash_amount + pm.transfer_amount + COALESCE(pm.prepaid_amount, 0) AS incomeAmount,
+                0 AS expenseAmount
+            FROM erp_payment_manual pm
+            JOIN erp_student s ON pm.student_id = s.student_id
+            WHERE pm.yy = #{yy}
+                AND pm.mm = #{mm}
+                AND pm.center_code = #{centerCode}
+        )
         SELECT
-            CAST(CAST(SUBSTRING(epc.appr_date, 5, 2) AS INT) AS VARCHAR) + '월' AS month,
-        LEFT(epc.appr_date, 4) + '-' + SUBSTRING(epc.appr_date, 5, 2) + '-' + SUBSTRING(epc.appr_date, 7, 2) AS date,
-        CASE
-            WHEN pb.status = 'approved' THEN pb.mm + '월 수강료 수입'
-            WHEN pb.status = 'canceled' THEN pb.mm + '월 수강료 환불'
-        END AS description,
-        s.student_name AS creditor,
-        CASE WHEN pb.status = 'approved' THEN pb.amount ELSE 0 END AS incomeAmount,
-        CASE WHEN pb.status = 'canceled' THEN pb.amount ELSE 0 END AS expenseAmount,
-        SUM(
-            CASE
-                WHEN pb.status = 'approved' THEN  pb.amount
-                WHEN pb.status = 'canceled' THEN -pb.amount
-                ELSE 0
-            END
-        ) OVER (
-            ORDER BY epc.appr_date, epc.id
-            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-        ) AS balance
-    FROM erp_payment_callback epc
-    JOIN erp_payment_bill pb ON pb.bill_id    = epc.bill_id
-    JOIN erp_payment p       ON p.payment_key = pb.payment_key
-    JOIN erp_student s       ON p.student_id  = s.student_id
-    WHERE SUBSTRING(epc.appr_date, 1, 4) = #{yy}
-        AND SUBSTRING(epc.appr_date, 5, 2) = #{mm}
-        AND p.center_code = #{centerCode}
-        AND pb.bill_type  = 'EDU_FEE'
-        AND pb.status     IN ('approved', 'canceled')
-        ORDER BY epc.appr_date, epc.id
+            CAST(CAST(SUBSTRING(raw_date, 5, 2) AS INT) AS VARCHAR) + '월' AS month,
+            LEFT(raw_date, 4) + '-' + SUBSTRING(raw_date, 5, 2) + '-' + SUBSTRING(raw_date, 7, 2) AS date,
+            description,
+            creditor,
+            incomeAmount,
+            expenseAmount,
+            SUM(incomeAmount - expenseAmount) OVER (
+                ORDER BY raw_date, row_key
+                ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+            ) AS balance
+        FROM ledger_base
+        ORDER BY raw_date, row_key
     </select>
 
 

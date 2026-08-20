@@ -362,6 +362,9 @@ document.addEventListener("DOMContentLoaded", () => {
             cardSelect.value = payment.cardName;
         }
 
+        // 카드 승인번호
+        document.getElementById('edit-appr-num').value = payment.apprNum || '';
+
         // 현재 수정 중인 id
         modal.dataset.currentId = payment.id;
 
@@ -409,6 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const cashAmount = Number(document.getElementById('edit-cash-amount').value || 0);
         const transferAmount = Number(document.getElementById('edit-transfer-amount').value || 0);
         const cardName = document.getElementById('edit-card-select').value || '';
+        const apprNum = document.getElementById('edit-appr-num').value.trim();
 
         if (!paidDate) {
             Swal.fire('알림', '결제일을 선택해주세요.', 'warning');
@@ -425,7 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const dto = { paidDate, cardAmount, cashAmount, transferAmount, cardName };
+        const dto = { paidDate, cardAmount, cashAmount, transferAmount, cardName, apprNum };
 
         try {
             const res = await fetch(`/pay/manual/update/${id}`, {

@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,7 +38,18 @@ public class AdminService {
     private static final Map<String, String> PRESCHOOL_CODE_BY_CENTER = Map.of(
             "PUS002", "000",
             "DAE001", "hohows",
-            "ULS001", "onlyjyu");
+            "ULS001", "onlyjyu",
+            "PUS003", "8170900"); // 임시 테스트용 지점. third DB에 대응 데이터 없음
+
+    /** third DB 샘플에서 지점별로 고정돼 있던 id 값. 저장 시 그대로 채운다 */
+    private static final Map<String, String> ID_BY_PRESCHOOL_CODE = Map.of(
+            "000", "6288890",
+            "hohows", "2628890",
+            "onlyjyu", "37807059");
+
+    /** third DB idate 컬럼 표기 양식 (예: "07 27 2026 04:43PM") */
+    private static final DateTimeFormatter IDATE_FORMATTER =
+            DateTimeFormatter.ofPattern("MM dd yyyy hh:mma", Locale.ENGLISH);
 
     /** 호수가 인물명인 교재 (unit_key A01~C10). 그 외는 호수 교재(H01~) */
     private static final Set<String> PERSON_EXT_CODES = Set.of("UA", "UB", "UC");
@@ -267,6 +280,74 @@ public class AdminService {
     }
 
     /**
+     * 화면에서 만든 이북 코드를 임시 테이블(erp_table_book_label_temp)에 저장한다.
+     * PK 가 keycode 단독이라 재생성 시 값이 바뀌므로, 자연키(preschool_code, orderym, ggubun, mgubun)
+     * 기준으로 기존 행을 지우고 새로 넣는다(delete-then-insert).
+     */
+    public int saveKeycodeList(AdminReqDTO.KeycodeSaveDTO req) {
+
+        String preschoolCode = PRESCHOOL_CODE_BY_CENTER.get(req.getCenterCode());
+        if (preschoolCode == null) {
+            throw new IllegalStateException("이북 코드 저장 대상 지점이 아닙니다.");
+        }
+
+        String orderym = req.getYear() + req.getMonth();
+
+        Map<String, String> extCodeByClassKey = adminRepository.selectSecondaryClassMap(SECONDARY_CENTER_CODE)
+                .stream()
+                .collect(Collectors.toMap(m -> m.get("classKey"), m -> m.get("extCode"), (a, b) -> a));
+
+        LocalDateTime now = LocalDateTime.now();
+        String idate = now.format(IDATE_FORMATTER);
+        String startdate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String expiration = now.plusDays(40).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String id = ID_BY_PRESCHOOL_CODE.get(preschoolCode);
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+
+        for (AdminReqDTO.KeycodeSaveDTO.KeycodeItemDTO item : Optional.ofNullable(req.getCodes()).orElse(List.of())) {
+            if (item.getKeyCode() == null || item.getKeyCode().isBlank()) {
+                continue; // 세팅값 미선택 등으로 아직 완성되지 않은 행
+            }
+
+            String ggubun = extCodeByClassKey.get(item.getClassKey());
+            if (ggubun == null) {
+                log.warn("이북 코드 저장 실패 - class_key 매핑 없음: {}", item.getClassKey());
+                continue;
+            }
+
+            String mgubun = unitNoOf(ggubun, item.getUnitKey());
+            if (mgubun == null) {
+                log.warn("이북 코드 저장 실패 - 호수 계산 실패: classKey={}, unitKey={}", item.getClassKey(), item.getUnitKey());
+                continue;
+            }
+
+            Map<String, Object> row = new HashMap<>();
+            row.put("keycode", item.getKeyCode().replace("-", "").toUpperCase());
+            row.put("preschoolCode", preschoolCode);
+            row.put("yy", req.getYear());
+            row.put("idate", idate);
+            row.put("startdate", startdate);
+            row.put("expiration", expiration);
+            row.put("oldqty", 0);
+            row.put("id", id);
+            row.put("orderym", orderym);
+            row.put("ggubun", ggubun);
+            row.put("mgubun", mgubun);
+            rows.add(row);
+        }
+
+        if (rows.isEmpty()) {
+            return 0;
+        }
+
+        thirdEbookRepository.deleteKeycodes(rows);
+        thirdEbookRepository.insertKeycodes(rows);
+
+        return rows.size();
+    }
+
+    /**
      * third DB(hohosc_TableBookLabel)에 이미 만들어 둔 이북 코드를 각 행에 붙인다.
      * 매핑이 없는 지점(본사)이나 코드가 없는 행은 그대로 두고, 화면에서 새로 생성한다.
      */
@@ -281,8 +362,8 @@ public class AdminService {
             return;
         }
 
-        List<ThirdDTO.KeycodeRawDTO> raws = thirdEbookRepository.findKeycodeList(preschoolCode,
-                req.getYear() + req.getMonth());
+        String orderym = req.getYear() + req.getMonth();
+        List<ThirdDTO.KeycodeRawDTO> raws = thirdEbookRepository.findKeycodeList(preschoolCode, orderym);
 
         if (raws == null || raws.isEmpty()) {
             return;
@@ -394,12 +475,20 @@ public class AdminService {
      * - 호수 교재: H01~H15 → 01~15
      */
     private String unitNoOf(AdminRespDTO.KeycodeDTO dto) {
-        String unitKey = dto.getUnitKey();
+        return unitNoOf(dto.getGgubun(), dto.getUnitKey());
+    }
+
+    /**
+     * 우리 unit_key 를 외부 DB 의 호수 번호(2자리)로 바꾼다. 저장 로직에서도 같은 계산이 필요해 분리했다.
+     * - 인물 교재: A01~C10 → 01~30
+     * - 호수 교재: H01~H15 → 01~15
+     */
+    private String unitNoOf(String ggubun, String unitKey) {
         if (unitKey == null || unitKey.isBlank()) {
             return null;
         }
 
-        if (PERSON_EXT_CODES.contains(dto.getGgubun())) {
+        if (PERSON_EXT_CODES.contains(ggubun)) {
             return toUnitNo(unitKey);
         }
         return toUnitNoDigits(unitKey);

@@ -35,4 +35,32 @@
         WHERE rn = 1
     </select>
 
+    <!--
+      화면에서 만든 이북 코드를 저장한다. PK 가 keycode 단독이라 재생성 시 값이 바뀌므로,
+      자연키(preschool_code, orderym, ggubun, mgubun) 기준으로 기존 행을 지우고 새로 넣는다.
+      mgubun 은 우리가 저장하는 행에선 항상 채워져 있어(빈 값 아님), mgubun 이 비어 있는
+      기존 레거시 행(findKeycodeList 주석 참고)과는 절대 겹치지 않는다.
+    -->
+    <delete id="deleteKeycodes">
+        DELETE FROM hohosc_TableBookLabel
+        WHERE
+        <foreach collection="items" item="item" separator=" OR ">
+            (RTRIM(preschool_code) = #{item.preschoolCode}
+                AND orderym = #{item.orderym}
+                AND ggubun = #{item.ggubun}
+                AND RTRIM(mgubun) = #{item.mgubun})
+        </foreach>
+    </delete>
+
+    <insert id="insertKeycodes">
+        INSERT INTO hohosc_TableBookLabel
+        (keycode, preschool_code, yy, idate, startdate, expiration, oldqty, id, orderym, ggubun, mgubun)
+        VALUES
+        <foreach collection="items" item="item" separator=",">
+            (#{item.keycode}, #{item.preschoolCode}, #{item.yy}, #{item.idate},
+             #{item.startdate}, #{item.expiration}, #{item.oldqty}, #{item.id},
+             #{item.orderym}, #{item.ggubun}, #{item.mgubun})
+        </foreach>
+    </insert>
+
 </mapper>

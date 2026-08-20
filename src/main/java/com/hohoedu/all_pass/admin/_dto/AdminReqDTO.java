@@ -41,6 +41,22 @@ public class AdminReqDTO {
     }
 
     @Data
+    public static class KeycodeSaveDTO {
+        private String centerCode;
+        private String year;
+        private String month;
+        private List<KeycodeItemDTO> codes;
+
+        @Data
+        public static class KeycodeItemDTO {
+            private String classKey;
+            private String unitKey;
+            private String settingValue;
+            private String keyCode;
+        }
+    }
+
+    @Data
     public static class BookSuggestSaveReqDTO {
 
         private String classKey;   // 7세, 새움, 다움...

@@ -119,6 +119,7 @@ public class PaymentReqDTO {
         private Integer prepaidAmount;
         private CashbillInfoDTO cashbillInfo;
         private Integer presetBalanceAfter;
+        private String apprNum; // 오프라인 카드 승인번호 (결제 1건 단위)
 
         @Data
         @Builder
@@ -159,6 +160,7 @@ public class PaymentReqDTO {
         private String status;
         private String cancelReason;
         private String cashbillId;
+        private String apprNum;
     }
 
     @Data
@@ -271,6 +273,7 @@ public class PaymentReqDTO {
         private Long cashAmount;
         private Long transferAmount;
         private String cardName; // 카드사 코드
+        private String apprNum; // 오프라인 카드 승인번호
     }
 
     @Data

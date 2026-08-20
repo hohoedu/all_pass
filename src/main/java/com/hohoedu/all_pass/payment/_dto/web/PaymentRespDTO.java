@@ -232,6 +232,8 @@ public class PaymentRespDTO {
         private Integer actualPaid;
         private String source;
         private String apprCashNum;
+        private String cardName;
+        private String apprNum;
     }
 
     @Data

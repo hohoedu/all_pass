@@ -173,6 +173,33 @@ public class UserService {
         return loginResp;
     }
 
+    /**
+     * SSO 브릿지(호호책방 → 올패스) 전용 — 비밀번호 검증 없이 이미 검증된 userId로
+     * {@link #login}과 동일한 LoginRespDTO를 조립한다. 호출부(SsoController)가 RS256
+     * 서명 토큰 검증을 이미 마친 뒤에만 불러야 한다.
+     */
+    public LoginRespDTO loginRespDTOFor(String userId) {
+        UserRespDTO.UserAuthDTO authDTO = userRepository.findByLoginInfo(userId);
+        if (authDTO == null) {
+            throw new CustomRestfulException("존재하지 않는 계정입니다.", HttpStatus.FORBIDDEN);
+        }
+        if (!authDTO.getUseYn()) {
+            throw new CustomRestfulException("사용이 중지된 계정입니다. 관리자에게 문의해주세요.", HttpStatus.FORBIDDEN);
+        }
+        if ("ALL".equals(authDTO.getCenterCode())) {
+            // 마스터 계정은 로그인 시 지점을 직접 선택하는데(findMasterUserByUserIdAndCenterCode),
+            // SSO 브릿지는 그 선택 UI가 없어 어느 지점 컨텍스트로 만들어야 할지 알 수 없다.
+            // 지원 범위를 넘어서므로 명시적으로 막는다.
+            throw new CustomRestfulException("마스터 계정은 SSO 연동을 지원하지 않습니다.", HttpStatus.FORBIDDEN);
+        }
+
+        LoginRespDTO loginResp = userRepository.findUserByUserId(authDTO.getUserId());
+        List<String> readableMenus = userRepository.findReadableMenus(authDTO.getUserCode());
+        loginResp.setReadableMenus(readableMenus);
+
+        return loginResp;
+    }
+
     public void changePassword(UserReqDTO.PasswordChangeRequest req) throws Exception {
         User user = userRepository.findByUserCode(req.getUserCode());
         String hashedPassword = hashPassword(user.getSalt(), req.getNewPassword());

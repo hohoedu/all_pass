@@ -28,6 +28,7 @@ const cashMethod = document.getElementById('cashMethod');
 const transferMethod = document.getElementById('transferMethod');
 const cardCompany = document.getElementById('cardCompany');
 const cardAmount = document.getElementById('cardAmount');
+const cardApprNum = document.getElementById('cardApprNum');
 const cashAmount = document.getElementById('cashAmount');
 const transferAmount = document.getElementById('transferAmount');
 const enteredAmount = document.getElementById('enteredAmount');
@@ -289,6 +290,7 @@ function prepareRegisterSheet() {
     useTransfer.checked = false;
     cardCompany.value = '';
     cardAmount.value = '';
+    cardApprNum.value = '';
     cashAmount.value = '';
     transferAmount.value = '';
 
@@ -506,6 +508,7 @@ saveRegisterBtn.addEventListener('click', () => {
             cashAmount: useCash.checked ? getMoneyValue(cashAmount) : 0,
             transferAmount: useTransfer.checked ? getMoneyValue(transferAmount) : 0,
             cardName: cardCompany.value,
+            apprNum: useCard.checked ? cardApprNum.value.trim() : null,
             paidDate: paymentDate.value,
             yy: currentYm.slice(0, 4),
             mm: currentYm.slice(4, 6),

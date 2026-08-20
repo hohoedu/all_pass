@@ -65,12 +65,20 @@ public class PaymentReconcileService {
         // DB 콜백 조회(거래일 범위) → 승인번호 정규화 맵
         List<ReconcileDTO.CallbackRow> callbacks =
                 paymentRepository.findCallbacksForReconcile(centerCode, from, to);
+        // 수기결제(오프라인 카드) 승인번호도 대조 대상에 포함
+        List<ReconcileDTO.CallbackRow> manualGroups =
+                paymentRepository.findManualGroupsForReconcile(centerCode, from, to);
 
         Map<String, ReconcileDTO.CallbackRow> dbByNorm = new LinkedHashMap<>();
         for (ReconcileDTO.CallbackRow c : callbacks) {
             String n = normalizeApprNum(c.getApprNum());
             if (n == null) continue;
             dbByNorm.putIfAbsent(n, c); // 승인/취소 중복 시 첫 건 대표
+        }
+        for (ReconcileDTO.CallbackRow c : manualGroups) {
+            String n = normalizeApprNum(c.getApprNum());
+            if (n == null) continue;
+            dbByNorm.putIfAbsent(n, c);
         }
 
         // 파일 승인번호 정규화 집합

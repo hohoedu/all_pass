@@ -109,10 +109,13 @@ public class PaymentService {
      * - 교재비(BOOK_FEE)는 독립적 (bill 상태로만 관리)
      * <p>
      * 상태 결정:
-     * - pending: 청구된 금액이 없음
-     * - issued: 청구는 되었으나 결제 금액이 없음
+     * - pending: 청구된 금액이 없음, 또는 청구금액은 있으나 실제 발행된 bill이 없음
+     * - issued: 청구금액이 있고 실제 bill이 발행되었으나 결제 금액이 없음
      * - partial: 부분 결제
      * - approved: 전액 결제
+     * <p>
+     * ⚠️ detail이 0이 되어도(수업 배정 취소 등) 이미 발행/승인된 bill이 남아있으면
+     * 상태를 pending으로 되돌리지 않고 기존 상태(oldStatus)를 유지한다.
      *
      * @param paymentKey - payment 키
      * @param userCode   - 작업자 코드
@@ -197,14 +200,20 @@ public class PaymentService {
         /*
          * =========================================================
          * 7️⃣ payment 상태 결정 (교육비 기준 ONLY)
+         * - issued/approved 판정은 실제 청구서(bill) 발행 이력이 있을 때만 인정
+         *   (수업 배정만으로 detail이 생겼다고 자동으로 issued가 되지 않도록 함)
          * =========================================================
          */
+        boolean hasEduBillIssued = bills.stream().filter(b -> "EDU_FEE".equals(b.getBillType()))
+                .anyMatch(b -> "issued".equals(b.getStatus()) || "approved".equals(b.getStatus()));
+
         String newStatus;
 
         if (eduDetailTotal == 0) {
-            newStatus = "pending";
+            // 이미 발행/승인된 청구서가 남아있으면(수업 배정만 취소된 경우) 상태를 임의로 되돌리지 않음
+            newStatus = hasEduBillIssued ? oldStatus : "pending";
         } else if (eduPaidTotal == 0) {
-            newStatus = "issued";
+            newStatus = hasEduBillIssued ? "issued" : "pending";
         } else if (eduUnpaidAmount == 0) {
             newStatus = "approved";
         } else {
@@ -1346,6 +1355,7 @@ public class PaymentService {
                 .status(groupStatus)
                 .cancelReason(null)
                 .cashbillId(null)
+                .apprNum(reqDTO.getApprNum())
                 .build();
 
         paymentRepository.insertPaymentManualGroup(groupDTO);
@@ -2059,8 +2069,8 @@ public class PaymentService {
                 })
                 .sum();
 
-        // 5. 매뉴얼 그룹 수정 (paidDate + totalAmount)
-        paymentRepository.updateManualGroup(manualKey, dto.getPaidDate(), totalAmount);
+        // 5. 매뉴얼 그룹 수정 (paidDate + totalAmount + apprNum)
+        paymentRepository.updateManualGroup(manualKey, dto.getPaidDate(), totalAmount, dto.getApprNum());
     }
 
     /* ── 삭제 ── */
@@ -2219,7 +2229,7 @@ public class PaymentService {
         // 헤더
         Row hdr = sheet.createRow(0);
         hdr.setHeightInPoints(20);
-        String[] headers = {"월", "날짜", "적요", "이름", "수입금액", "지출금액", "잔액"};
+        String[] headers = {"월", "날짜", "내용", "이름", "수입금액", "지출금액", "잔액"};
         for (int i = 0; i < headers.length; i++) {
             Cell c = hdr.createCell(i);
             c.setCellValue(headers[i]);

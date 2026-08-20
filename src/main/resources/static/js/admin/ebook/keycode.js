@@ -294,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
             codes: collectTableData()
         };
 
-        /* TODO: 백엔드 연동 시 아래 하드코딩을 제거하고 fetch 블록을 활성화
         try {
             const res = await fetch("/admin/save/keycode", {
                 method: "POST",
@@ -303,15 +302,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
+            if (!res.ok || data.success === false) {
+                alert(data.error?.message ?? "저장 실패!");
+                return;
+            }
             alert(data.response ?? "저장되었습니다.");
 
         } catch (e) {
             console.error(e);
             alert("저장 실패!");
         }
-        */
-        console.log(JSON.stringify(body, null, 2));
-        alert("저장 API 연동 전입니다. (콘솔에서 전송 값 확인)");
     });
 
     /* ------------------------------- //
