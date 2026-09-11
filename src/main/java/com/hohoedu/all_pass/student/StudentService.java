@@ -1211,9 +1211,22 @@ public class StudentService {
                 .ihak(ihak)
                 .profileimg("1")
                 .appid(row.getAppId())
+                .useCenter(Boolean.TRUE.equals(row.getUseCenter()))
+                .useBookstore(Boolean.TRUE.equals(row.getUseBookstore()))
+                .serviceType(resolveServiceType(row.getUseCenter(), row.getUseBookstore()))
                 .build();
 
         return respDTO;
+    }
+
+    /** 서당/책방 이용 여부로 서비스 구분값을 계산한다. (DB 저장 없이 로그인 응답에서만 사용) */
+    private String resolveServiceType(Boolean useCenter, Boolean useBookstore) {
+        boolean center = Boolean.TRUE.equals(useCenter);
+        boolean bookstore = Boolean.TRUE.equals(useBookstore);
+        if (center && bookstore) return "BOTH";
+        if (center) return "CENTER";
+        if (bookstore) return "BOOKSTORE";
+        return "NONE";
     }
 
     public StudentAppRespDTO.AppLoginRespDTO loginSkip(String appId) {
@@ -1243,6 +1256,9 @@ public class StudentService {
                 .ihak(ihak)
                 .profileimg("1")
                 .appid(row.getAppId())
+                .useCenter(Boolean.TRUE.equals(row.getUseCenter()))
+                .useBookstore(Boolean.TRUE.equals(row.getUseBookstore()))
+                .serviceType(resolveServiceType(row.getUseCenter(), row.getUseBookstore()))
                 .build();
 
         return respDTO;

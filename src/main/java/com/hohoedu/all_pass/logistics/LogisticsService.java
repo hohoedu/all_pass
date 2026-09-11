@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -171,19 +173,30 @@ public class LogisticsService {
         return result;
     }
 
+    /**
+     * 올패스(primary) class_key 순서. secondaryLogistics.xml의 findAggregateItemsByCenterCode에서
+     * 유곡 ggubun 코드를 이 class_key 값으로 치환해서 내려주므로, 두 DB 결과가 같은 척도로 정렬된다.
+     * logistics.xml의 findAggregateItemsAll ORDER BY에 있던 CASE 목록과 동일하다.
+     */
+    private static final List<String> AGGREGATE_CLASS_KEY_ORDER = List.of(
+            "Y", "S", "P", "ES", "EP", "EG", "ED", "HSN", "HSU", "HSX", "HSS", "HSA",
+            "K", "M", "J", "SU", "DU", "TU", "BSN", "BSU", "BSX", "BSS");
+
+    private static final Pattern UNIT_NUMBER_PATTERN = Pattern.compile("\\d+");
+
     private List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> mergeAggregateItems(
             List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> a,
             List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> b) {
 
-        Map<String, LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> merged = new LinkedHashMap<>();
-
-        for (var item : a) {
-            merged.put(item.getClassName() + "|" + item.getUnitName(), item);
+        List<LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> merged = new ArrayList<>(a);
+        Map<String, LogisRespDTO.CenterAggregateDTO.AggregateItemDTO> index = new HashMap<>();
+        for (var item : merged) {
+            index.put(aggregateKey(item), item);
         }
 
         for (var item : b) {
-            String key = item.getClassName() + "|" + item.getUnitName();
-            var existing = merged.get(key);
+            String key = aggregateKey(item);
+            var existing = index.get(key);
             if (existing != null) {
                 existing.setBaseCount(existing.getBaseCount() + item.getBaseCount());
                 existing.setTeacherCount(existing.getTeacherCount() + item.getTeacherCount());
@@ -191,11 +204,37 @@ public class LogisticsService {
                 existing.setTotalCount(existing.getTotalCount() + item.getTotalCount());
                 existing.setTimeTableCount(existing.getTimeTableCount() + item.getTimeTableCount());
             } else {
-                merged.put(key, item);
+                merged.add(item);
+                index.put(key, item);
             }
         }
 
-        return new ArrayList<>(merged.values());
+        merged.sort(Comparator
+                .comparingInt((LogisRespDTO.CenterAggregateDTO.AggregateItemDTO item) -> classKeyOrder(item.getClassKey()))
+                .thenComparingInt(item -> extractUnitNumber(item.getUnitName()))
+                .thenComparing(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getUnitName));
+
+        return merged;
+    }
+
+    private String aggregateKey(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO item) {
+        return item.getClassName() + "|" + item.getUnitName();
+    }
+
+    private int classKeyOrder(String classKey) {
+        if (classKey == null) {
+            return Integer.MAX_VALUE;
+        }
+        int idx = AGGREGATE_CLASS_KEY_ORDER.indexOf(classKey);
+        return idx >= 0 ? idx : Integer.MAX_VALUE;
+    }
+
+    private int extractUnitNumber(String unitName) {
+        if (unitName == null) {
+            return Integer.MAX_VALUE;
+        }
+        Matcher matcher = UNIT_NUMBER_PATTERN.matcher(unitName);
+        return matcher.find() ? Integer.parseInt(matcher.group()) : Integer.MAX_VALUE;
     }
 
     public LogisRespDTO.SelectCenterDTO.CenterInfoDTO findCenterInfo(String centerCode) {

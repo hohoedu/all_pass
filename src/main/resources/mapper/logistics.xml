@@ -214,6 +214,7 @@
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
         SELECT o.class_name,
                o.unit_name,
+               o.class_key                  as classKey,
                o.baseCount,
                0                            as teacherCount,
                o.reorderCount,
@@ -313,6 +314,7 @@
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
         SELECT o.class_name,
                o.unit_name,
+               o.class_key                  as classKey,
                o.baseCount,
                0                            as teacherCount,
                o.reorderCount,

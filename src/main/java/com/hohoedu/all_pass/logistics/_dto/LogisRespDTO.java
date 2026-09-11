@@ -96,6 +96,7 @@ public class LogisRespDTO {
             private String userName;
             private String className;
             private String unitName;
+            private String classKey;
             private int baseCount;
             private int teacherCount;
             private int reorderCount;

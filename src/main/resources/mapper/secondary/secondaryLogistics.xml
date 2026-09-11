@@ -9,9 +9,9 @@
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$ReorderStatusDTO">
         SELECT 'ULS001' AS centerCode,
                COUNT(*) AS requestCount,
-               SUM(CASE WHEN schk = 'N' THEN 1 ELSE 0 END) AS waitCount,
+               SUM(CASE WHEN isnull(schk, 'N') = 'N' THEN 1 ELSE 0 END) AS waitCount,
                CASE
-                   WHEN SUM(CASE WHEN schk = 'N' THEN 1 ELSE 0 END) > 0
+                   WHEN SUM(CASE WHEN isnull(schk, 'N') = 'N' THEN 1 ELSE 0 END) > 0
                        THEN CAST(0 AS BIT)
                    ELSE CAST(1 AS BIT)
                    END AS confirmed
@@ -230,6 +230,21 @@
             resultType="com.hohoedu.all_pass.logistics._dto.LogisRespDTO$CenterAggregateDTO$AggregateItemDTO">
         SELECT class_name                         AS className,
                unit_name                          AS unitName,
+               CASE ggubun
+                   WHEN 'U1' THEN 'Y'
+                   WHEN 'U2' THEN 'S'
+                   WHEN 'U3' THEN 'P'
+                   WHEN 'E1' THEN 'ES'
+                   WHEN 'E2' THEN 'EP'
+                   WHEN 'E3' THEN 'EG'
+                   WHEN 'E4' THEN 'ED'
+                   WHEN 'UA' THEN 'K'
+                   WHEN 'UB' THEN 'M'
+                   WHEN 'UC' THEN 'J'
+                   WHEN 'EA' THEN 'SU'
+                   WHEN 'EB' THEN 'DU'
+                   ELSE ggubun
+                   END                             AS classKey,
                SUM(baseCount)                     AS baseCount,
                0                                  AS teacherCount,
                SUM(reorderCount)                  AS reorderCount,

@@ -1222,9 +1222,14 @@
                s.grade_key    as gradeKey,
                s.app_id       as appId,
                s.app_password as appPassword,
-               s.grade_key    as ihak
+               s.grade_key    as ihak,
+               CASE WHEN ISNULL(ta.han_state, 0) = 1 OR ISNULL(ta.book_state, 0) = 1
+                        THEN 1 ELSE 0 END AS useCenter,
+               CASE WHEN ISNULL(ta.bookstore_state, 0) = 1
+                        THEN 1 ELSE 0 END AS useBookstore
         FROM ERP_STUDENT s
                  JOIN erp_center c ON s.center_code = c.center_code
+                 LEFT JOIN erp_teacher_assign ta ON ta.student_id = s.student_id
         WHERE s.app_id = #{appId}
     </select>
 

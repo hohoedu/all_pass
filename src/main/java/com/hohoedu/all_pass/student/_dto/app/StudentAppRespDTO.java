@@ -19,9 +19,12 @@ public class StudentAppRespDTO {
         private String hak;         // 학년
         private String ihak;        // 북 코드
         private String appid;       // 앱 아이디
+        private Boolean useCenter;  // 서당(한문/독서) 이용 여부
+        private Boolean useBookstore; // 책방 이용 여부
+        private String serviceType; // BOTH | CENTER | BOOKSTORE | NONE
 
         @Builder
-        public AppLoginRespDTO(String stuid, String name, String cid, String cname, String brotherGb, String sibling, String firstlogin, String profileimg, String hak, String ihak, String appid) {
+        public AppLoginRespDTO(String stuid, String name, String cid, String cname, String brotherGb, String sibling, String firstlogin, String profileimg, String hak, String ihak, String appid, Boolean useCenter, Boolean useBookstore, String serviceType) {
             this.stuid = stuid;
             this.name = name;
             this.cid = cid;
@@ -33,6 +36,9 @@ public class StudentAppRespDTO {
             this.hak = hak;
             this.ihak = ihak;
             this.appid = appid;
+            this.useCenter = useCenter;
+            this.useBookstore = useBookstore;
+            this.serviceType = serviceType;
         }
     }
 
@@ -65,6 +71,8 @@ public class StudentAppRespDTO {
         private String ihak;        // 북 코드
         private String appId;       // 앱 아이디
         private String appPassword; // 앱 패스워드
+        private Boolean useCenter;    // 서당 이용 여부 (han_state=1 OR book_state=1)
+        private Boolean useBookstore; // 책방 이용 여부 (bookstore_state=1)
     }
 
     @Data
