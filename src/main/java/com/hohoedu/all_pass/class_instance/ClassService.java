@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.hohoedu.all_pass._core.firebase.FcmDTO;
 import com.hohoedu.all_pass._core.firebase.FcmService;
@@ -303,6 +304,8 @@ public class ClassService {
                 return "fail-update";
             }
 
+            recalculateSubject(timeTable.getTimeTableKey());
+
             return autoRegisterOrder(classReqDTO.getUserCode(), classReqDTO.getCenterCode(),
                     classReqDTO.getYy(), classReqDTO.getMm()); //
         }
@@ -513,7 +516,37 @@ public class ClassService {
             return false;
 
         classRepository.addStudent(dto);
+        recalculateSubject(dto.getTimeTableKey());
         return true;
+    }
+
+    // 시간표에 배정된 학생들의 is_hoho(hoho) / class_type(han=1, book=2)을 다수결로 집계해 subject 갱신
+    // 동률일 경우 han > book > hoho 순으로 우선 반영 (erp_class_fee_map_copy의 category 산정 로직과 동일한 기준 재사용)
+    private void recalculateSubject(String timeTableKey) {
+        List<Map<String, Object>> voteRows = classRepository.findSubjectVoteRows(timeTableKey);
+
+        Map<String, Long> counts = voteRows.stream()
+                .map(row -> {
+                    Object isHoho = row.get("is_hoho");
+                    if (isHoho != null && ("1".equals(String.valueOf(isHoho)) || Boolean.TRUE.equals(isHoho))) {
+                        return "hoho";
+                    }
+                    Object classType = row.get("class_type");
+                    if ("1".equals(String.valueOf(classType)))
+                        return "han";
+                    if ("2".equals(String.valueOf(classType)))
+                        return "book";
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(v -> v, Collectors.counting()));
+
+        String subject = Stream.of("han", "book", "hoho")
+                .max(Comparator.comparingLong(s -> counts.getOrDefault(s, 0L)))
+                .filter(s -> counts.getOrDefault(s, 0L) > 0)
+                .orElse(null);
+
+        classRepository.updateSubject(timeTableKey, subject);
     }
 
     @Transactional
@@ -554,6 +587,7 @@ public class ClassService {
                 if (transferInfo != null) {
                     classRepository.deleteByKeyAndStudentId(transferInfo.getTimeTableKey(), dto.getStudentId());
                     paymentService.deleteDetail(transferInfo.getTimeTableKey(), dto.getStudentId());
+                    recalculateSubject(transferInfo.getTimeTableKey());
                 }
             }
         }
@@ -568,6 +602,7 @@ public class ClassService {
                 throw new IllegalStateException("정원 초과");
 
             classRepository.restoreStudent(dto.getTimeTableKey(), dto.getStudentId(), dto.getWeekNo());
+            recalculateSubject(dto.getTimeTableKey());
 
         } else {
             // 신규 등록 기존 로직 그대로
@@ -766,6 +801,7 @@ public class ClassService {
         ClassRespDTO.TimeTableMetaDTO meta = classRepository.findTimeTableMeta(timeTableKey);
         classRepository.deleteByKeyAndStudentId(timeTableKey, studentId);
         paymentService.deleteDetail(timeTableKey, studentId);
+        recalculateSubject(timeTableKey);
 
         return autoRegisterOrder(meta.getUserCode(), meta.getCenterCode(), meta.getYy(), meta.getMm());
     }
@@ -1860,6 +1896,12 @@ public class ClassService {
         }
 
         return tables;
+    }
+
+    // 출석부 출력 - 선생님/연월 기준 반별 수강생 명단
+    public List<ClassRespDTO.AttendanceRosterDTO> findAttendanceRoster(
+            String yy, String mm, String userCode, String centerCode) {
+        return classRepository.findAttendanceRoster(yy, mm, userCode, centerCode);
     }
 
 }

@@ -556,4 +556,17 @@ public interface ClassRepository {
 
     List<ClassRespDTO.TimeTableDTO.StudentDTO> findEduStudentsByTimeTables(
             @Param("timeTableKeys") List<String> timeTableKeys);
+
+    // 시간표 subject(han/book/hoho) 다수결 산정을 위한 배정 학생별 is_hoho/class_type 조회
+    List<Map<String, Object>> findSubjectVoteRows(@Param("timeTableKey") String timeTableKey);
+
+    // 시간표 subject(han/book/hoho) 갱신
+    void updateSubject(@Param("timeTableKey") String timeTableKey, @Param("subject") String subject);
+
+    // 출석부 출력 - 선생님/연월 기준 반별 수강생 명단
+    List<ClassRespDTO.AttendanceRosterDTO> findAttendanceRoster(
+            @Param("yy") String yy,
+            @Param("mm") String mm,
+            @Param("userCode") String userCode,
+            @Param("centerCode") String centerCode);
 }

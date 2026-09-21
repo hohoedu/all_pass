@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/privacy-consent.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script th:src="@{/js/custom.js}"></script>
+  <script th:src="@{/js/sidebar.js}"></script>
+  <title>출석부 출력</title>
+  <style>
+    /* 좌측 패널 필터 */
+    .att-filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 14px;
+    }
+
+    .att-filter-block select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: #111827;
+      box-sizing: border-box;
+    }
+
+    .att-section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .att-summary-block { margin-bottom: 12px; }
+
+    .att-summary-head {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111827;
+      padding: 6px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .att-summary-head span { color: #6b7280; font-weight: 600; }
+
+    .att-summary-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .att-summary-item:last-child { border-bottom: none; }
+    .att-summary-item .s-name { color: #111827; font-weight: 600; }
+    .att-summary-item .s-count { color: #c0392b; font-weight: 700; }
+
+    .att-empty { color: #bbb; font-size: 13px; text-align: center; padding: 20px 0; }
+
+    #btn-print {
+      width: 100%;
+      padding: 13px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+
+    #btn-print:hover { background: #a93226; }
+
+    /* A4 세로(portrait) 미리보기 시트 — 794 × 1123px */
+    #pcPreviewWrap .att-page {
+      width: 794px;
+      height: 1123px;
+      overflow: hidden;
+      padding: 40px 42px 32px;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      color: #111;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pcPreviewWrap .att-title {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin: 0 0 14px 0;
+      flex-shrink: 0;
+    }
+
+    #pcPreviewWrap .att-meta {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      font-size: 13px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    #pcPreviewWrap .att-meta .subject-info { font-weight: 700; font-size: 15px; }
+    #pcPreviewWrap .att-meta .count { color: #c0392b; font-size: 13px; }
+    #pcPreviewWrap .att-meta .page-info { color: #6b7280; }
+
+    #pcPreviewWrap table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    #pcPreviewWrap th,
+    #pcPreviewWrap td {
+      border: 1px solid #374151;
+      padding: 6px 4px;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 1.4;
+      height: 26px;
+    }
+
+    #pcPreviewWrap th { background: #d9d9d9; font-weight: 700; }
+    #pcPreviewWrap td.td-no { background: #d9d9d9; font-weight: 700; }
+    #pcPreviewWrap td.td-subject,
+    #pcPreviewWrap td.td-name { font-weight: 600; }
+
+    #pcPrintBtnWrap {
+      width: 794px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 0 12px 0;
+    }
+
+    #btnPrint {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #btnPrint:hover { background: #a93226; }
+
+    @page { size: A4 portrait; margin: 0; }
+
+    @media print {
+      .pc-left,
+      .common-title,
+      #pcPrintBtnWrap { display: none !important; }
+      .pc-right { margin: 0; border: none; background: none; }
+      .pc-preview-bg { overflow: visible; padding: 0; }
+      .att-page { box-shadow: none !important; margin-bottom: 0 !important; page-break-after: always; }
+      .att-page:last-child { page-break-after: avoid; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="main-container">
+    <div class="main-frame">
+
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+
+      <main class="main-info">
+        <div class="student-frame">
+          <section>
+
+            <div class="common-title">
+              <h2>출석부 출력</h2>
+            </div>
+
+            <div class="pc-layout">
+
+              <!-- ===== 좌측 패널 ===== -->
+              <div class="pc-left">
+
+                <div class="att-filter-block">
+                  <p class="att-section-label">조회 조건</p>
+
+                  <select id="filter-year">
+                    <th:block th:each="y : ${years}">
+                      <option th:value="${y}" th:text="${y} + '년'"
+                              th:selected="${y.toString() == currentYy}"></option>
+                    </th:block>
+                  </select>
+
+                  <select id="filter-month">
+                    <th:block th:each="m : ${#numbers.sequence(1, 12)}">
+                      <option th:value="${#numbers.formatInteger(m, 2)}"
+                              th:text="${m} + '월'"
+                              th:selected="${#numbers.formatInteger(m, 2) == currentMm}"></option>
+                    </th:block>
+                  </select>
+
+                  <select id="filter-teacher">
+                    <option value="">선생님 선택</option>
+                    <option value="ALL">전체 선생님 (한 번에 출력)</option>
+                    <option th:each="u : ${users}" th:value="${u.userCode}" th:text="${u.userName}"></option>
+                  </select>
+
+                  <button class="explore common-btn" id="btn-search" style="width:100%;">조회하기</button>
+                </div>
+
+                <div style="flex:1; overflow:auto;">
+                  <p class="att-section-label">과정별 인원</p>
+                  <div id="summary-panel">
+                    <div class="att-empty">선생님과 연월을 선택 후<br>조회해 주세요.</div>
+                  </div>
+                </div>
+
+                <button id="btn-print">프린트 하기</button>
+
+              </div>
+
+              <!-- ===== 우측 미리보기 패널 ===== -->
+              <div class="pc-right">
+                <div class="pc-preview-bg">
+                  <div class="pc-empty-state" id="pcEmptyState">
+                    <i class="fa fa-list-alt"></i>
+                    <p>선생님과 연월을 선택하고<br>조회하기를 눌러주세요.</p>
+                  </div>
+                  <div id="pcPreviewWrap" style="display:none;"></div>
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script th:src="@{/js/class/attendance-print.js}"></script>
+
+</body>
+
+</html>

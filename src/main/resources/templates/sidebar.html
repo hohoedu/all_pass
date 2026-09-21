@@ -107,6 +107,10 @@
                                 )}" th:href="@{/class/edu-timeview}" class="menu-link">
             시간표 조회(교)
           </a>
+          <a th:if="${session.user.roleKey == 'ADMIN'}"
+            th:href="@{/class/attendance-print}" class="menu-link">
+            출석부 출력
+          </a>
         </div>
         <div class="submenu" data-menu="consult">
           <a th:if="${session.readableMenus != null and session.readableMenus.contains('consult_history')}"

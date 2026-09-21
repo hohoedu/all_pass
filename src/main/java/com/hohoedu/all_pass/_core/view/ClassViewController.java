@@ -501,4 +501,26 @@ public class ClassViewController {
         return "print/print-edu-timeview";
     }
 
+    // 출석부 출력 화면
+    @GetMapping("/attendance-print")
+    public String getAttendancePrintPage(HttpSession session, Model model) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return "redirect:/login";
+
+        if (!"ADMIN".equals(user.getRoleKey()))
+            return "redirect:/main";
+
+        List<User> users = userService.findActiveUser(user);
+        model.addAttribute("users", users);
+        model.addAttribute("currentYy", DateConfig.currentYearMonth().get("currentYear"));
+        model.addAttribute("currentMm", DateConfig.currentYearMonth().get("currentMonth"));
+
+        int nowYear = java.time.Year.now().getValue();
+        model.addAttribute("years", List.of(nowYear + 1, nowYear, nowYear - 1, nowYear - 2));
+
+        return "class/attendance-print";
+    }
+
 }

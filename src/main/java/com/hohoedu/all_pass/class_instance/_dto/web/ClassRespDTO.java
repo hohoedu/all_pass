@@ -470,4 +470,15 @@ public class ClassRespDTO {
         private String centerCode;
     }
 
+    // 출석부 출력용 (반별 수강생 명단)
+    @Data
+    public static class AttendanceRosterDTO {
+        private String userCode;
+        private String teacherName;
+        private String classKey;
+        private String subject;
+        private String studentId;
+        private String studentName;
+    }
+
 }

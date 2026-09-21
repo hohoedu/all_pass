@@ -152,7 +152,7 @@
 
                                 <tbody id="main-student-tbody" class="stripe" th:if="${students}">
                                 <tr th:each="s, iterStat : ${students}" th:data-id="${s.studentId}"
-                                    th:data-phone="${#strings.substring(s.appId, 0, 8)}">
+                                    th:data-phone="${s.appId != null ? (#strings.length(s.appId) >= 8 ? #strings.substring(s.appId, 0, 8) : s.appId) : ''}">
                                     <td th:text="${iterStat.count}">1</td>
                                     <td th:text="${s.studentName}">김호호</td>
                                     <td th:text="${s.statusName}"></td>

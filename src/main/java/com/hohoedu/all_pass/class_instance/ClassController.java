@@ -713,4 +713,18 @@ public class ClassController {
         return ResponseEntity.ok(ApiUtils.success(tables));
     }
 
+    // 출석부 출력 - 선생님/연월 기준 반별 수강생 명단 조회
+    @PostMapping("/attendance-print/data")
+    public ResponseEntity<?> getAttendanceRoster(@RequestBody EduTimeTableCheckReqDTO reqDTO, HttpSession session) {
+
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<ClassRespDTO.AttendanceRosterDTO> rows = classService.findAttendanceRoster(
+                reqDTO.getYy(), reqDTO.getMm(), reqDTO.getUserCode(), user.getCenterCode());
+
+        return ResponseEntity.ok(ApiUtils.success(rows));
+    }
+
 }
