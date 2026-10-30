@@ -3,6 +3,7 @@ package com.hohoedu.all_pass._core.view;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.hohoedu.all_pass._core.vo.Constants;
 import com.hohoedu.all_pass.class_instance.ClassService;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
@@ -206,6 +207,21 @@ public class ManageViewController {
         model.addAttribute("centerCode", user.getCenterCode());
 
         return "manage/tuition";
+    }
+
+    @GetMapping("/qr-print")
+    public String getManageQrPrintPage(HttpSession session, Model model) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        if (!Constants.QR_PRINT_USER_ID.equals(user.getUserId())) {
+            return "redirect:/";
+        }
+
+        model.addAttribute("unprintedCount", manageService.countUnprintedQr(user.getCenterCode()));
+        return "manage/qr-print";
     }
 
     @GetMapping("notice")

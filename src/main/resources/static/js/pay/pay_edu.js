@@ -658,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="checkbox" class="claim-checkbox">
         </td>
         <td>${formatYm(item.ym)}</td>
-        <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+        <td>${item.billType === 'EDU_FEE' ? '교육비' : item.billType === 'SYSTEM_FEE' ? '시스템비' : '교재비'}</td>
         <td>${item.expireDate || '-'}</td>
         <td>${paidDate}</td>
         <td class="payment-method-cell" style="${tooltipStyle}" ${tooltipAttr}>
@@ -1076,8 +1076,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const eduChecked = document.querySelector('input[name="eduFee"]').checked;
         const bookChecked = document.querySelector('input[name="bookFee"]').checked;
+        const systemChecked = document.querySelector('input[name="systemFee"]')?.checked;
 
-        if (!eduChecked && !bookChecked) return alert('청구 종류를 선택하세요.');
+        if (!eduChecked && !bookChecked && !systemChecked) return alert('청구 종류를 선택하세요.');
 
         const selectedMonth = document.querySelector('.hidden-date.hidden-picker').value;
         const [yy, mm] = selectedMonth.split('-');
@@ -1097,6 +1098,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const types = [];
         if (eduChecked) types.push({type: 'edu', label: '교육비'});
         if (bookChecked) types.push({type: 'material', label: '교재비'});
+        if (systemChecked) types.push({type: 'system', label: '시스템비'});
 
         const jobId = crypto.randomUUID();
         const overlay = showProgressOverlay();
@@ -1547,7 +1549,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <input type="checkbox" class="claim-checkbox">
         </td>
         <td>${item.ym || '-'}</td>
-        <td>${item.billType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+        <td>${item.billType === 'EDU_FEE' ? '교육비' : item.billType === 'SYSTEM_FEE' ? '시스템비' : '교재비'}</td>
         <td>${item.expireDate || '-'}</td>
         <td>${paidDate}</td>
         <td class="payment-method-cell" style="${tooltipStyle}" ${tooltipAttr}>

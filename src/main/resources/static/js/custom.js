@@ -710,7 +710,7 @@ function bindAllUnpaidSummary(list) {
             <td>${item.yy}년 ${item.mm}월</td>
             <td>${item.billExpireAt ?? '-'}</td>
             <td>${item.studentName ?? ''}</td>
-            <td>${item.itemType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+            <td>${item.itemType === 'EDU_FEE' ? '교육비' : item.itemType === 'SYSTEM_FEE' ? '시스템비' : '교재비'}</td>
             <td>${formatComma(item.billPrice)}</td>
         `;
         tbody.appendChild(tr);
@@ -739,7 +739,7 @@ function bindPaymentSummary(list) {
         tr.innerHTML = `
             <td>${item.billExpireAt ?? '-'}</td>
             <td>${item.studentName ?? ''}</td>
-            <td>${item.itemType === 'EDU_FEE' ? '교육비' : '교재비'}</td>
+            <td>${item.itemType === 'EDU_FEE' ? '교육비' : item.itemType === 'SYSTEM_FEE' ? '시스템비' : '교재비'}</td>
             <td>${formatComma(item.billPrice)}</td>
         `;
         tbody.appendChild(tr);

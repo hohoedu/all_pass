@@ -395,4 +395,32 @@
           AND confirmed != 'user_cancel'
     </select>
 
+    <!-- QR 카드 출력 -->
+    <select id="countUnprintedQr" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_qr_newid
+        WHERE center_code = #{centerCode}
+          AND [print] = 0
+    </select>
+
+    <select id="findUnprintedQrList" resultType="com.hohoedu.all_pass.manage._dto.ManageRespDTO$QrPrintDTO">
+        SELECT TOP (#{count})
+               create_qr_id AS createQrId
+        FROM erp_qr_newid
+        WHERE center_code = #{centerCode}
+          AND [print] = 0
+        ORDER BY create_qr_id
+    </select>
+
+    <update id="updateQrPrinted">
+        UPDATE erp_qr_newid
+        SET [print] = 1
+        WHERE center_code = #{centerCode}
+          AND [print] = 0
+          AND create_qr_id IN
+        <foreach collection="qrIds" item="qrId" open="(" separator="," close=")">
+            #{qrId}
+        </foreach>
+    </update>
+
 </mapper>

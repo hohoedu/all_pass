@@ -101,6 +101,18 @@ public class StudentWebReqDTO {
         private String paymentKey;
     }
 
+    // 책방 수강 정보 저장 (erp_bookstore_assign) — 레벨은 받지 않는다(책방 쪽 계산값 유지).
+    // 수강상태 저장(StudentCourseUpdateDTO.bookstore)에 실려 오며 studentId 는 컨트롤러가 채운다.
+    @Data
+    public static class BookstoreAssignSaveDTO {
+        private String studentId;
+        private Boolean state;          // true=수강 / false=미수강
+        private Integer eduFee;
+        private String entryDate;       // yyyy-MM-dd
+        private String inactiveDate;    // yyyy-MM-dd
+        private String inactiveReason;
+    }
+
     @Data
     public static class StudentCourseUpdateDTO {
 
@@ -125,6 +137,9 @@ public class StudentWebReqDTO {
         private String bookClassKey;
         private String hanTeacherCode;
         private String bookTeacherCode;
+
+        // 책방 수강 정보 — 화면에서 바뀐 게 있을 때만 실려 온다(null 이면 책방은 저장하지 않음)
+        private BookstoreAssignSaveDTO bookstore;
     }
 
     @Data

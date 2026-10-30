@@ -102,6 +102,13 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/center/status/data")
+    public ResponseEntity<?> getCenterStatus(
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month) {
+        return ResponseEntity.ok(ApiUtils.success(adminService.findCenterStatus(year, month)));
+    }
+
     @PostMapping("/order/deadline")
     @ResponseBody
     public ResponseEntity<?> updateOrderDeadline(@RequestBody AdminReqDTO.OrderDeadlineDTO dto) {

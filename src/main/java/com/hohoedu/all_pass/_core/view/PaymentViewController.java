@@ -1,5 +1,6 @@
 package com.hohoedu.all_pass._core.view;
 
+import com.hohoedu.all_pass._core.vo.Constants;
 import com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO;
 import com.hohoedu.all_pass.payment.model.CardCode;
 import com.hohoedu.all_pass.user.User;
@@ -48,6 +49,7 @@ public class PaymentViewController {
 
         model.addAttribute("user", user);
         model.addAttribute("users", users);
+        model.addAttribute("systemFeeEnabled", Constants.SYSTEM_FEE_CENTER_CODES.contains(user.getCenterCode()));
         // model.addAttribute("students", students);
         return "pay/pay-edu";
     }

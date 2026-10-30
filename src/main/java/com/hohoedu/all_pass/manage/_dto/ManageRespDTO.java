@@ -131,4 +131,9 @@ public class ManageRespDTO {
         private Integer maxReturnCount;
     }
 
+    @Data
+    public static class QrPrintDTO {
+        private String createQrId;
+    }
+
 }

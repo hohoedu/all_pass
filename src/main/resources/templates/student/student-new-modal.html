@@ -244,7 +244,7 @@
 
                             <!-- 수강과목(독서) -->
                             <div class="small-title">수강과목(독서)</div>
-                            <table class="base-info-t" style="margin-bottom: 5px;">
+                            <table class="base-info-t">
                                 <colgroup>
                                     <col style="width: 10%">
                                     <col style="width: 40%">
@@ -316,6 +316,69 @@
                                     <th>교재비</th>
                                     <td>
                                         <input type="text" name="bookMaterialFee" class="no-spin p_book_material_fee" id="bookMaterialFee">
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- 수강과목(책방) — book_clinic 과 같은 erp_bookstore_assign 을 직접 읽고 쓴다. 저장은 '수강상태 저장' 버튼에 함께 실려 간다(student_new.js) -->
+                            <div class="small-title">수강과목(책방)</div>
+                            <table class="base-info-t" style="margin-bottom: 5px;">
+                                <colgroup>
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                    <col style="width: 10%">
+                                    <col style="width: 40%">
+                                </colgroup>
+                                <tbody>
+                                <tr>
+                                    <th>독서 레벨</th>
+                                    <td>
+                                        <!-- 책방 서버가 자동계산하는 레벨이라 읽기 전용 -->
+                                        <span class="p_bookstore_level">-</span>
+                                    </td>
+                                    <th>수강 상태</th>
+                                    <td class="choose-group" data-type="bookstore">
+                                        <button type="button" class="btn-choose" data-value="active">수강</button>
+                                        <button type="button" class="btn-choose" data-value="inactive">미수강</button>
+                                        <input type="hidden" name="bookstoreStatus" value=""/>
+                                    </td>
+                                </tr>
+                                <!-- 책방 미수강 입력 영역 -->
+                                <tr class="course-inactive-input bookstore-inactive hide-input">
+                                    <th>미수강 사유</th>
+                                    <td>
+                                        <input type="text" id="bookstore-inactive-reason" maxlength="200" placeholder="미수강 사유를 입력해주세요" style="width: 100%;">
+                                    </td>
+                                    <th>미수강 날짜</th>
+                                    <td>
+                                        <div style="position: relative; display: flex; gap: 10px; align-items: center;">
+                                            <div style="position: relative;">
+                                                <input type="text" class="bookstore-date-display styled-input" placeholder="날짜를 선택해주세요" readonly>
+                                                <input type="date" id="bookstore-inactive-date" class="hidden-date hidden-picker" style="position: absolute; opacity: 0; pointer-events: none;"/>
+                                            </div>
+                                            <button type="button" class="icon-btn bookstore-calendar-open">
+                                                <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="bookstore-course-info">
+                                    <th class="tuition-fee">교육비</th>
+                                    <td>
+                                        <input type="text" name="bookstoreFee" class="no-spin p_bookstore_fee" id="bookstoreFee">
+                                    </td>
+                                    <th>시작일자</th>
+                                    <td class="day-picker" style="position: relative;">
+                                        <div class="icon-field">
+                                            <div class="birth-display s_birth s_entry_bookstore_date">날짜를 선택하세요.</div>
+                                            <div>
+                                                <input type="date" class="hidden-date" id="entry-bookstore-date" name="s_entry_bookstore_date" data-type="bookstore">
+                                                <button type="button" class="icon-btn">
+                                                    <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                                 </tbody>

@@ -48,6 +48,7 @@ public class AppController {
         try {
             StudentAppRespDTO.AppLoginRespDTO respDTO = studentService.checkAppIdAndPassword(reqDTO.getId(),
                     reqDTO.getSha_pwd());
+            log.info("AppLogin Response: {}", respDTO);
             return ResponseEntity.ok(AppApiUtils.successClinicOne(respDTO));
         } catch (Exception e) {
 
@@ -276,7 +277,8 @@ public class AppController {
     }
 
     @GetMapping("/pay/search")
-    public ResponseEntity<?> search(@RequestParam(value = "keyword") String keyword, @RequestParam(value = "ym") String ym, HttpSession session) {
+    public ResponseEntity<?> search(@RequestParam(value = "keyword") String keyword,
+            @RequestParam(value = "ym") String ym, HttpSession session) {
         UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
         List<PaymentAppRespDTO.StudentDTO> response = paymentService.search(keyword, user, ym);
         return ResponseEntity.ok(response);

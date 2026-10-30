@@ -42,4 +42,30 @@ public class AdminRespDTO {
         private String bookImageUrl;
     }
 
+    @Data
+    public static class CenterStatusDTO {
+        private String centerCode;
+        private String centerName;
+        private int studentCount; // 재원 (해당 월 시간표 배정 학생)
+        private int newCount; // 신규 (해당 월 입회)
+        private int leaveCount; // 퇴원 (해당 월 탈퇴 로그)
+        private int unpaidCount; // 교재비 미납 학생 수
+        private int unpaidAmount; // 교재비 미납 금액
+        private double unpaidRate; // 미납률 (미납 / 재원 * 100)
+    }
+
+    @Data
+    public static class UnpaidBookFeeDTO {
+        private String centerCode;
+        private String centerName;
+        private String studentId;
+        private String studentName;
+        private String gradeName;
+        private String teacherName;
+        private String bookName;
+        private int amount;
+        private String ym;
+        private String status; // unbilled: 미청구, issued: 청구중, expired: 기한만료/취소
+    }
+
 }

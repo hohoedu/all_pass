@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hohoedu.all_pass._core.config.DateConfig;
 import com.hohoedu.all_pass._core.utils.KeyGenerator;
 import com.hohoedu.all_pass._core.utils.PaymentKeyGenerator;
+import com.hohoedu.all_pass._core.vo.Constants;
 import com.hohoedu.all_pass._core.utils.SseEmitterHolder;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
@@ -230,7 +231,7 @@ public class PaymentService {
          * =========================================================
          */
         int totalPaidAmount = eduBillApprovedAmount + manualPaidAmount
-                + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType()))
+                + bills.stream().filter(b -> "BOOK_FEE".equals(b.getBillType()) || "SYSTEM_FEE".equals(b.getBillType()))
                         .filter(b -> "approved".equals(b.getStatus())).mapToInt(PaymentBill::getAmount).sum();
 
         int totalUnpaidAmount = totalDetailAmount - totalPaidAmount;
@@ -309,12 +310,12 @@ public class PaymentService {
      * - 날짜 코드 (36진수, 3자리)
      * - 시간 코드 (36진수, 4자리)
      * - 순번 (00~99)
-     * - 타입 코드 (교육비:1, 교재비:0)
+     * - 타입 코드 (교육비:1, 교재비:0, 시스템비:2)
      * <p>
      * 예시: ABC1a2b3c041
      *
      * @param prefix - 센터별 접두사
-     * @param type   - "edu" 또는 "material"
+     * @param type   - billType (EDU_FEE / BOOK_FEE / SYSTEM_FEE)
      * @return 생성된 청구서 ID
      */
     private String generateBillId(String prefix, String type) {
@@ -352,9 +353,75 @@ public class PaymentService {
         String dayCode = String.format("%3s", Long.toString(diffDays, 36)).replace(" ", "0");
         String timeCode = String.format("%4s", Integer.toString(secondsOfDay, 36)).replace(" ", "0");
         String indexStr = String.format("%2s", Integer.toString(index, 36)).replace(" ", "0");
-        String typeCode = type.equals("edu") ? "1" : "0";
+        // 교재비와 시스템비는 같은 사업자(PUS001)로 나가므로 타입 코드로 구분한다
+        String typeCode = switch (type) {
+            case "EDU_FEE", "edu" -> "1";
+            case "SYSTEM_FEE" -> "2";
+            default -> "0";
+        };
 
         return prefix + dayCode + timeCode + indexStr + typeCode;
+    }
+
+    /**
+     * 청구 유형별 결제 설정 센터코드
+     * <p>
+     * - 교육비(EDU_FEE): 로그인 센터
+     * - 교재비(BOOK_FEE) / 시스템비(SYSTEM_FEE): 교재비 사업자(PUS001)
+     */
+    private String resolveConfigCenterCode(String billType, String centerCode) {
+        if ("EDU_FEE".equals(billType)) {
+            return centerCode;
+        }
+        if ("BOOK_FEE".equals(billType) || "SYSTEM_FEE".equals(billType)) {
+            return "PUS001";
+        }
+        throw new RuntimeException("알 수 없는 billType=" + billType);
+    }
+
+    /**
+     * 시스템비(책방) detail 준비
+     * <p>
+     * 시점: 시스템비 청구서 발행 직전 (sendBill)
+     * <p>
+     * 기능:
+     * 1. 책방 수강중(bookstore_state=1)인 학생의 책방 교육비(bookstore_edu_fee) 조회
+     * 2. 해당 월 payment가 없으면 생성 (책방만 다니는 학생)
+     * 3. SYSTEM_FEE detail이 없으면 생성, 금액이 바뀌었으면 수정
+     */
+    private void prepareSystemFeeDetails(List<String> studentIds, String yy, String mm, String centerCode,
+            String userCode) {
+
+        if (studentIds == null || studentIds.isEmpty()) {
+            return;
+        }
+
+        List<PaymentRespDTO.BookstoreFeeDTO> fees = paymentRepository.findBookstoreFeesByStudentIds(studentIds,
+                centerCode);
+
+        for (PaymentRespDTO.BookstoreFeeDTO fee : fees) {
+            String paymentKey = createPayment(fee.getStudentId(), yy, mm, centerCode, userCode);
+
+            Integer currentAmount = paymentRepository.findSystemFeeDetailAmount(paymentKey);
+
+            if (currentAmount == null) {
+                PaymentDetail systemDetail = PaymentDetail.builder()
+                        .payment(Payment.builder().paymentKey(paymentKey).build())
+                        .user(User.builder().userCode(userCode).build())
+                        .itemType("SYSTEM_FEE")
+                        .classType("3")
+                        .amount(fee.getFee())
+                        .note("시스템비 (책방)")
+                        .build();
+                paymentRepository.createPaymentDetail(systemDetail);
+            } else if (!currentAmount.equals(fee.getFee())) {
+                paymentRepository.updateSystemFeeDetailAmount(paymentKey, fee.getFee());
+            } else {
+                continue;
+            }
+
+            recalculatePaymentStatus(paymentKey, userCode);
+        }
     }
 
     /**
@@ -507,12 +574,17 @@ public class PaymentService {
             billType = "EDU_FEE";
         } else if ("material".equals(req.getType())) {
             billType = "BOOK_FEE";
+        } else if ("system".equals(req.getType())) {
+            if (!Constants.SYSTEM_FEE_CENTER_CODES.contains(user.getCenterCode())) {
+                throw new IllegalArgumentException("시스템비 청구를 사용할 수 없는 센터입니다.");
+            }
+            billType = "SYSTEM_FEE";
         } else {
             throw new IllegalArgumentException("잘못된 타입: " + req.getType());
         }
 
         // 2. 결제 설정 조회
-        String configCenterCode = "EDU_FEE".equals(billType) ? user.getCenterCode() : "PUS001";
+        String configCenterCode = resolveConfigCenterCode(billType, user.getCenterCode());
         PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(configCenterCode);
 
         if (conf == null) {
@@ -528,8 +600,18 @@ public class PaymentService {
                 throw new RuntimeException("청구서를 발행할 번호가 없습니다.");
             }
 
+            if ("SYSTEM_FEE".equals(billType)) {
+                prepareSystemFeeDetails(paymentRepository.findStudentIdsByParentPhones(parentPhones), req.getYy(),
+                        req.getMm(), user.getCenterCode(), user.getUserCode());
+            }
+
             targets = paymentRepository.findTargetsByParentPhones(parentPhones, req.getYy(), req.getMm(), billType);
         } else {
+            if ("SYSTEM_FEE".equals(billType)) {
+                prepareSystemFeeDetails(req.getStudentIds(), req.getYy(), req.getMm(), user.getCenterCode(),
+                        user.getUserCode());
+            }
+
             targets = paymentRepository.findTargetsByStudentIds(req.getStudentIds(), req.getYy(), req.getMm(),
                     billType);
         }
@@ -692,6 +774,8 @@ public class PaymentService {
                     } else {
                         message = req.getMessage();
                     }
+                } else if ("SYSTEM_FEE".equals(billType)) {
+                    message = req.getMessage();
                 } else {
                     if (hasAdditionalCharge) {
                         message = "교재비 관련 카카오페이 결제는 현재 가맹 및 시스템 연동 절차를 진행 중으로, "
@@ -705,7 +789,7 @@ public class PaymentService {
 
                 Map<String, Object> bill = Map.of(
                         "bill_id", billId,
-                        "product_nm", "EDU_FEE".equals(billType) ? "교육비" : "교재비",
+                        "product_nm", toBillTypeLabel(billType),
                         "message", message,
                         "member_nm", memberName,
                         "phone", sendPhone,
@@ -774,6 +858,16 @@ public class PaymentService {
         return Map.of("successCount", successCount, "failCount", failCount);
     }
 
+    private String toBillTypeLabel(String billType) {
+        if ("EDU_FEE".equals(billType)) {
+            return "교육비";
+        }
+        if ("SYSTEM_FEE".equals(billType)) {
+            return "시스템비";
+        }
+        return "교재비";
+    }
+
     private void sendProgress(String jobId, int current, int total, String status,
             String studentName, int successCount, int failCount) {
         if (jobId == null || jobId.isBlank())
@@ -834,6 +928,14 @@ public class PaymentService {
      */
     public List<PaymentRespDTO.AssignStudentsDTO> findByAssignStudent(String year, String month, String userCode,
             String centerCode, String itemType) {
+        // 책방은 시간표 배정이 없으므로 책방 수강 정보 기준으로 조회 (선생님 필터 없음)
+        if ("SYSTEM_FEE".equals(itemType)) {
+            if (!Constants.SYSTEM_FEE_CENTER_CODES.contains(centerCode)) {
+                return List.of();
+            }
+            return paymentRepository.findBookstoreAssignStudents(year, month, centerCode);
+        }
+
         List<PaymentRespDTO.AssignStudentsDTO> students = paymentRepository.findByAssignStudents(year, month, userCode,
                 centerCode, itemType);
         return students;
@@ -976,13 +1078,22 @@ public class PaymentService {
                 logHistory("callback_received", "callback", oldStatus, updatedPayment.getStatus(), bill.getAmount(),
                         "Paymint 교육비 결제 승인 콜백 처리", paymentKey, null);
             } else {
-                // 교재비 bill → payment 상태에 영향 없음 (bill.status로만 관리)
+                // 교재비/시스템비 bill → payment 상태에 영향 없음 (bill.status로만 관리)
+                boolean hasSystemBill = paymentBills.stream()
+                        .anyMatch(b -> "SYSTEM_FEE".equals(b.getBillType()) && dto.getBill_id().equals(b.getBillId()));
+                String label = hasSystemBill ? "시스템비" : "교재비";
+
+                // payment.amount / unpaid_amount 갱신 (상태는 교육비 기준이라 바뀌지 않음)
+                if (hasSystemBill) {
+                    recalculatePaymentStatus(paymentKey, null);
+                }
+
                 logHistory("callback_received", "callback", null, "approved", bill.getAmount(),
-                        "Paymint 교재비 결제 승인 콜백 처리 (payment 영향 없음)", paymentKey, null);
+                        "Paymint " + label + " 결제 승인 콜백 처리 (payment 영향 없음)", paymentKey, null);
             }
 
             log.info("✅ 콜백 처리 완료 paymentKey={}, billId={}, amount={}, type={}", paymentKey, dto.getBill_id(),
-                    bill.getAmount(), hasEduBill ? "교육비" : "교재비");
+                    bill.getAmount(), hasEduBill ? "교육비" : "교재비/시스템비");
         }
     }
 
@@ -1025,14 +1136,7 @@ public class PaymentService {
             throw new RuntimeException("결제 완료된 청구서는 파기할 수 없습니다.");
         }
 
-        String targetCenterCode;
-        if ("BOOK_FEE".equals(req.getDestroyType())) {
-            targetCenterCode = "PUS001";
-        } else if ("EDU_FEE".equals(req.getDestroyType())) {
-            targetCenterCode = user.getCenterCode();
-        } else {
-            throw new RuntimeException("알 수 없는 billType=" + req.getDestroyType());
-        }
+        String targetCenterCode = resolveConfigCenterCode(req.getDestroyType(), user.getCenterCode());
 
         PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(targetCenterCode);
 
@@ -1153,14 +1257,7 @@ public class PaymentService {
             throw new RuntimeException("결제 정보가 없습니다.");
         }
 
-        String targetCenterCode;
-        if ("BOOK_FEE".equals(req.getCancelType())) {
-            targetCenterCode = "PUS001";
-        } else if ("EDU_FEE".equals(req.getCancelType())) {
-            targetCenterCode = user.getCenterCode();
-        } else {
-            throw new RuntimeException("알 수 없는 cancelType=" + req.getCancelType());
-        }
+        String targetCenterCode = resolveConfigCenterCode(req.getCancelType(), user.getCenterCode());
 
         PaymentRespDTO.PaymentConfigDTO conf = paymentRepository.findPayConfigByCenterCode(targetCenterCode);
 

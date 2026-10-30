@@ -43,6 +43,14 @@ public interface StudentRepository {
 
         public StudentWebRespDTO.StudentPaymentDTO findStudentPaymentByStudentId(@Param("studentId") String studentId);
 
+        // 책방 수강 정보 (erp_bookstore_assign) — book_clinic StudentMapper 와 같은 테이블을 직접 읽고 쓴다
+        StudentWebRespDTO.BookstoreAssignDTO findBookstoreAssign(@Param("studentId") String studentId);
+
+        void saveBookstoreAssign(@Param("s") StudentWebReqDTO.BookstoreAssignSaveDTO dto);
+
+        // 입회 시 책방 수강 정보 기본 행(미수강) 생성
+        void createBookstoreAssign(@Param("studentId") String studentId);
+
         List<StudentWebRespDTO.StudentAttendanceDTO> findStudentAttendanceByStudentId(
                         @Param("studentId") String studentId,
                         @Param("year") String year,

@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.manage;
 
 import com.hohoedu.all_pass._core.utils.ApiUtils;
+import com.hohoedu.all_pass._core.vo.Constants;
 import com.hohoedu.all_pass.manage._dto.ManageReqDTO;
 import com.hohoedu.all_pass.manage._dto.ManageRespDTO;
 import com.hohoedu.all_pass.user._dto.UserRespDTO;
@@ -258,4 +259,47 @@ public class ManageController {
         return ResponseEntity.ok(ApiUtils.success("저장 완료"));
     }
 
+    @PostMapping("/qr/list")
+    public ResponseEntity<?> getUnprintedQrList(@RequestBody ManageReqDTO.QrPrintListReqDTO reqDTO,
+            HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        if (!Constants.QR_PRINT_USER_ID.equals(user.getUserId())) {
+            return ResponseEntity.ok(ApiUtils.error("접근 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        }
+
+        if (reqDTO.getCount() == null || reqDTO.getCount() <= 0) {
+            return ResponseEntity.ok(ApiUtils.error("출력할 장수를 입력해주세요.", HttpStatus.BAD_REQUEST));
+        }
+
+        List<ManageRespDTO.QrPrintDTO> response = manageService.getUnprintedQrList(user.getCenterCode(),
+                reqDTO.getCount());
+        return ResponseEntity.ok(ApiUtils.success(response));
+    }
+
+    @PostMapping("/qr/printed")
+    public ResponseEntity<?> markQrPrinted(@RequestBody ManageReqDTO.QrPrintDoneReqDTO reqDTO, HttpSession session) {
+        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header(HttpHeaders.LOCATION, "/login")
+                    .build();
+        }
+
+        if (!Constants.QR_PRINT_USER_ID.equals(user.getUserId())) {
+            return ResponseEntity.ok(ApiUtils.error("접근 권한이 없습니다.", HttpStatus.FORBIDDEN));
+        }
+
+        if (reqDTO.getQrIds() == null || reqDTO.getQrIds().isEmpty()) {
+            return ResponseEntity.ok(ApiUtils.error("처리할 QR이 없습니다.", HttpStatus.BAD_REQUEST));
+        }
+
+        int updated = manageService.markQrPrinted(user.getCenterCode(), reqDTO.getQrIds());
+        return ResponseEntity.ok(ApiUtils.success(updated));
+    }
 }

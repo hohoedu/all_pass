@@ -88,19 +88,30 @@ public class LogisticsService {
     }
 
     public void updateConfirmed(LogisReqDTO.ConfirmedUpdateReqDTO req) {
-        boolean isSecondary = SECONDARY_CENTERS.contains(req.getCenterCode());
+        updateConfirmed(req.getCenterCode(), req.getId(), req.getConfirmed());
+    }
+
+    /** 변동 사항에서 체크한 행들의 승인 여부를 한 번에 바꾼다 */
+    public int updateConfirmedBulk(LogisReqDTO.ConfirmedBulkUpdateReqDTO req) {
+        List<String> ids = Optional.ofNullable(req.getIds()).orElse(List.of());
+        ids.forEach(id -> updateConfirmed(req.getCenterCode(), id, req.getConfirmed()));
+        return ids.size();
+    }
+
+    private void updateConfirmed(String centerCode, String id, String confirmed) {
+        boolean isSecondary = SECONDARY_CENTERS.contains(centerCode);
 
         if (isSecondary) {
-            String schk = switch (req.getConfirmed()) {
+            String schk = switch (confirmed) {
                 case "checked" -> "Y";
                 case "unchecked" -> "N";
                 case "user_cancel" -> "C";
                 case "acancel" -> "D";
                 default -> throw new IllegalArgumentException("invalid confirmed value");
             };
-            secondaryLogisticsRepository.updateConfirmed(req.getId(), schk);
+            secondaryLogisticsRepository.updateConfirmed(id, schk);
         } else {
-            logisticsRepository.updateConfirmed(req.getId(), req.getConfirmed());
+            logisticsRepository.updateConfirmed(id, confirmed);
         }
     }
 

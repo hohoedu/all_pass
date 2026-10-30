@@ -569,6 +569,167 @@
 
     </select>
 
+    <!-- 시스템비(책방) — 책방 수강중 학생의 책방 교육비 -->
+    <select id="findBookstoreFeesByStudentIds"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$BookstoreFeeDTO">
+        SELECT ba.student_id        AS studentId,
+               ba.bookstore_edu_fee AS fee
+        FROM erp_bookstore_assign ba
+        JOIN erp_student s ON s.student_id = ba.student_id
+        WHERE ba.student_id IN
+        <foreach collection="studentIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND ba.bookstore_state = 1
+        AND ba.bookstore_edu_fee &gt; 0
+        AND s.center_code = #{centerCode}
+        AND s.status_key NOT IN ('WITHDRAWN')
+    </select>
+
+    <select id="findStudentIdsByParentPhones" resultType="String">
+        SELECT DISTINCT s.student_id
+        FROM erp_student s
+        JOIN erp_parent pa ON pa.student_id = s.student_id
+        WHERE ISNULL(s.billing_phone,
+        pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last
+        ) IN
+        <foreach collection="parentPhones" item="phone" open="(" separator="," close=")">
+            #{phone}
+        </foreach>
+    </select>
+
+    <select id="findSystemFeeDetailAmount" resultType="Integer">
+        SELECT SUM(amount)
+        FROM erp_payment_detail
+        WHERE payment_key = #{paymentKey}
+          AND item_type = 'SYSTEM_FEE'
+    </select>
+
+    <update id="updateSystemFeeDetailAmount">
+        UPDATE erp_payment_detail
+        SET amount = #{amount}
+        WHERE payment_key = #{paymentKey}
+          AND item_type = 'SYSTEM_FEE'
+    </update>
+
+    <!--
+      수강료 청구 화면 — 시스템비(책방) 탭.
+      책방은 시간표 배정이 없어서 erp_bookstore_assign(수강중) 기준으로 학생을 뽑는다.
+      아직 시스템비 detail이 없는 달은 책방 교육비를 청구 예정 금액으로 보여준다.
+    -->
+    <select id="findBookstoreAssignStudents"
+            resultType="com.hohoedu.all_pass.payment._dto.web.PaymentRespDTO$AssignStudentsDTO">
+        -- @formatter:off
+        WITH base AS (
+            SELECT s.student_id,
+                   s.student_name,
+                   p.payment_key,
+                   ba.bookstore_edu_fee                          AS standard_fee,
+                   COALESCE(pd.amount, ba.bookstore_edu_fee, 0)  AS bill_price
+            FROM erp_bookstore_assign ba
+                     JOIN erp_student s ON s.student_id = ba.student_id
+                     LEFT JOIN erp_payment p ON p.student_id = s.student_id
+                AND p.yy = #{year}
+                AND p.mm = #{month}
+                     LEFT JOIN (SELECT payment_key, SUM(amount) AS amount
+                                FROM erp_payment_detail
+                                WHERE item_type = 'SYSTEM_FEE'
+                                GROUP BY payment_key) pd ON pd.payment_key = p.payment_key
+            WHERE ba.bookstore_state = 1
+              AND s.center_code = #{centerCode}
+              AND s.status_key NOT IN ('WITHDRAWN')
+              AND (ba.entry_bookstore_date IS NULL
+                OR ba.entry_bookstore_date &lt; DATEADD(MONTH, 1, DATEFROMPARTS(CAST(#{year} AS INT), CAST(#{month} AS INT), 1)))
+        ),
+             approvedBills AS (
+                 SELECT payment_key,
+                        SUM(amount) AS bill_amount
+                 FROM erp_payment_bill
+                 WHERE status = 'approved'
+                   AND bill_type = 'SYSTEM_FEE'
+                 GROUP BY payment_key
+             ),
+             latestBill AS (
+                 SELECT payment_key, status, bill_id
+                 FROM (
+                          SELECT *,
+                                 ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) AS rn
+                          FROM erp_payment_bill
+                          WHERE bill_type = 'SYSTEM_FEE'
+                      ) x
+                 WHERE rn = 1
+             )
+        SELECT b.student_id   AS studentId,
+               b.payment_key  AS paymentKey,
+               lb.bill_id     AS billId,
+               b.student_name AS studentName,
+               b.bill_price   AS billPrice,
+               '책방'          AS subject,
+
+               COALESCE(ab.bill_amount, 0) AS paidAmount,
+
+               CASE
+                   WHEN b.bill_price - COALESCE(ab.bill_amount, 0) &lt; 0 THEN 0
+                   ELSE b.bill_price - COALESCE(ab.bill_amount, 0)
+                   END AS unpaidAmount,
+
+               CASE
+                   WHEN b.bill_price = 0 THEN '할인'
+                   WHEN COALESCE(ab.bill_amount, 0) = 0 THEN '미결제'
+                   WHEN COALESCE(ab.bill_amount, 0) &gt;= b.bill_price THEN '결제완료'
+                   ELSE '부분결제'
+                   END AS payStatus,
+
+               CASE
+                   WHEN b.bill_price = 0 THEN 'discount'
+                   WHEN lb.bill_id IS NULL THEN 'nonIssue'
+                   WHEN lb.status = 'destroyed' THEN 'destroyed'
+                   WHEN lb.status = 'canceled' THEN 'canceled'
+                   ELSE 'issued'
+                   END AS issuanceStatus,
+
+               pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last AS parentPhone,
+
+               NULLIF(
+                       STUFF((
+                                 SELECT ', ' + s2.student_name
+                                 FROM erp_student s2
+                                          LEFT JOIN erp_parent pa2 ON s2.student_id = pa2.student_id
+                                 WHERE pa2.parent_tel_first = pa.parent_tel_first
+                                   AND pa2.parent_tel_middle = pa.parent_tel_middle
+                                   AND pa2.parent_tel_last = pa.parent_tel_last
+                                   AND s2.student_id != b.student_id
+                                   AND s2.center_code = #{centerCode}
+                                   AND s2.status_key NOT IN ('WITHDRAWN')
+                                 FOR XML PATH (''), TYPE
+                           ).value('.', 'NVARCHAR(MAX)'), 1, 2, ''),
+                       '') AS samePhoneStudents,
+
+               0              AS isPriceModified,
+               b.standard_fee AS standardFee
+
+        FROM base b
+                 LEFT JOIN erp_parent pa ON b.student_id = pa.student_id
+                 LEFT JOIN latestBill lb ON b.payment_key = lb.payment_key
+                 LEFT JOIN approvedBills ab ON b.payment_key = ab.payment_key
+
+        ORDER BY
+            CASE
+                WHEN b.bill_price = 0 THEN 4
+                WHEN COALESCE(ab.bill_amount, 0) = 0 THEN 1
+                WHEN COALESCE(ab.bill_amount, 0) &lt; b.bill_price THEN 2
+                ELSE 3
+                END,
+            CASE
+                WHEN lb.bill_id IS NULL THEN 1
+                WHEN lb.status = 'destroyed' THEN 2
+                WHEN lb.status = 'canceled' THEN 3
+                ELSE 4
+                END,
+            b.student_name
+        -- @formatter:on
+    </select>
+
 
     <select id="findBillIdByBillId" resultType="String">
         SELECT bill_id AS billId

@@ -22,10 +22,16 @@
                         c.code2 AS ggubun,
                         hc.code AS mgubun
         FROM hohosc_DailyTime dt
+        	join Hohosc_DailyLogSub s  on dt.daynumber = s.day1 and dt.timelevel = s.time1 
+        join Hohosc_DailyLogMst m on m.num  = s.num and dt.Teaid = m.Teaid
                  JOIN codezip c ON dt.gbcd = c.code
                  JOIN hohosc_code hc ON dt.mgubun = hc.code AND dt.ggubun = hc.gubun
         WHERE dt.Yyyy = #{year}
           AND dt.Mm = #{month}
+          AND m.Yyyy = #{year}
+          AND m.Mm = #{month}
+          AND s.Yyyy = #{year}
+          AND s.Mm = #{month}
           AND dt.ggubun IS NOT NULL
           AND dt.ggubun &lt;&gt; ''
         ORDER BY c.code2, hc.code

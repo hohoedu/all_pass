@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.hohoedu.all_pass._core.handler.exception.Exception400;
 import com.hohoedu.all_pass._core.utils.FileUploadService;
 import com.hohoedu.all_pass.student._dto.app.StudentAppReqDTO;
 import com.hohoedu.all_pass.student._dto.app.StudentAppRespDTO;
@@ -164,6 +165,7 @@ public class StudentController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    // 수강상태 저장 — 서당(한자/독서)과 책방을 한 번에 저장한다(분기·트랜잭션은 StudentService.updateCourseStatus).
     @PostMapping("/update/course-status")
     public ResponseEntity<?> updateCourse(@RequestBody StudentWebReqDTO.StudentCourseUpdateDTO req,
             HttpSession session) {
@@ -179,6 +181,9 @@ public class StudentController {
             studentService.updateCourseStatus(req, user.getUserCode());
 
             return ResponseEntity.ok(ApiUtils.success("수강상태가 성공적으로 변경되었습니다."));
+        } catch (Exception400 e) {
+            // 입력 검증 실패(책방 미수강 사유 누락 등)는 GlobalExceptionHandler 가 메시지와 함께 400 으로 내려준다
+            throw e;
         } catch (Exception e) {
             log.error("수강상태 변경 오류: ", e);
             return ResponseEntity.status(500).body("수강상태 변경 중 오류가 발생했습니다.");

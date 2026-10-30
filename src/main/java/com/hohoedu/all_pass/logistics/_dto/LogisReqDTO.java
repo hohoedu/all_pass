@@ -45,6 +45,13 @@ public class LogisReqDTO {
     }
 
     @Data
+    public static class ConfirmedBulkUpdateReqDTO {
+        private List<String> ids;
+        private String confirmed;
+        private String centerCode;
+    }
+
+    @Data
     public static class OrderManualSaveReqDTO {
         private String yy;
         private String mm;

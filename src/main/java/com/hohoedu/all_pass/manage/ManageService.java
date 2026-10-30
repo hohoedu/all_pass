@@ -1,6 +1,7 @@
 package com.hohoedu.all_pass.manage;
 
 import com.hohoedu.all_pass._core.handler.exception.Exception400;
+import com.hohoedu.all_pass._core.vo.Constants;
 import com.hohoedu.all_pass.center.Center;
 import com.hohoedu.all_pass.center.repository.CenterJpaRepository;
 import com.hohoedu.all_pass.class_instance.ClassService;
@@ -159,8 +160,7 @@ public class ManageService {
     }
 
     public String getOrderDeadline(String centerCode) {
-        String result = manageRepository.findOrderDeadline(centerCode);
-        return result;
+        return Constants.resolveOrderDeadline(centerCode, () -> manageRepository.findOrderDeadline(centerCode));
     }
 
     public int insertReorder(ManageReqDTO.InsertReorderDTO req, UserRespDTO.LoginRespDTO user) {
@@ -380,7 +380,8 @@ public class ManageService {
         int count = 0;
         for (Center center : centerList) {
             String centerCode = center.getCenterCode();
-            String targetDay = manageRepository.findOrderDeadline(centerCode);
+            String targetDay = Constants.resolveOrderDeadline(centerCode,
+                    () -> manageRepository.findOrderDeadline(centerCode));
             if (targetDay == null) {
                 log.info("주문일이 없습니다.");
                 continue;
@@ -450,5 +451,17 @@ public class ManageService {
             }
 
         }
+    }
+
+    public int countUnprintedQr(String centerCode) {
+        return manageRepository.countUnprintedQr(centerCode);
+    }
+
+    public List<ManageRespDTO.QrPrintDTO> getUnprintedQrList(String centerCode, int count) {
+        return manageRepository.findUnprintedQrList(centerCode, count);
+    }
+
+    public int markQrPrinted(String centerCode, List<String> qrIds) {
+        return manageRepository.updateQrPrinted(centerCode, qrIds);
     }
 }

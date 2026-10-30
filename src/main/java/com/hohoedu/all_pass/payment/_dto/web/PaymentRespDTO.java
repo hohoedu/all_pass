@@ -83,6 +83,13 @@ public class PaymentRespDTO {
         private boolean additionalCharge;
     }
 
+    // 시스템비(책방) 청구 금액 — erp_bookstore_assign.bookstore_edu_fee
+    @Data
+    public static class BookstoreFeeDTO {
+        private String studentId;
+        private Integer fee;
+    }
+
     @Data
     public static class PaymentBillDTO {
         private String billId;

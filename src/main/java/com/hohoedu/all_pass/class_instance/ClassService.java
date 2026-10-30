@@ -315,7 +315,8 @@ public class ClassService {
 
         // 대상 월(yy/mm)의 자동 주문 마감일 = 전달 deadlineDay일
         // 마감일이 지난 달은 자동 주문 안 됨
-        String deadlineDay = manageRepository.findOrderDeadline(centerCode);
+        String deadlineDay = Constants.resolveOrderDeadline(centerCode,
+                () -> manageRepository.findOrderDeadline(centerCode));
         if (deadlineDay != null) {
             LocalDate today = LocalDate.now();
             LocalDate targetFirstDay = LocalDate.of(Integer.parseInt(yy), Integer.parseInt(mm), 1);

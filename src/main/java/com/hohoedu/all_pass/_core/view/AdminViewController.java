@@ -606,6 +606,14 @@ public class AdminViewController {
         return "/admin/center/center-timeview";
     }
 
+    @GetMapping("/center/status")
+    public String getAdminCenterStatusPage(Model model) {
+        LocalDate now = LocalDate.now();
+        model.addAttribute("year", String.valueOf(now.getYear()));
+        model.addAttribute("month", String.format("%02d", now.getMonthValue()));
+        return "/admin/center/center-status";
+    }
+
     @GetMapping("/center/print-timeview")
     public String getAdminPrintTimeView(
             @RequestParam("centerCode") String centerCode,

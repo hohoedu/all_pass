@@ -232,6 +232,12 @@ public class AdminService {
         }
 
         String key = unitKey.trim().toUpperCase();
+
+        // D01 은 A10 과 같은 호수로 본다 (유곡 코드 체계에는 D 계열이 없음)
+        if ("D01".equals(key)) {
+            key = "A10";
+        }
+
         char prefix = key.charAt(0);
 
         int seq;
@@ -656,5 +662,30 @@ public class AdminService {
         if (SECONDARY_CENTER_CODE.equals(dto.getCenterCode())) {
             secondaryLogisticsRepository.updateOrderDeadline(dto.getDeadline());
         }
+    }
+
+    /**
+     * 센터별 현황 : 센터별 인원수 + 교재비 미납 학생
+     * - 미납 인원/금액은 미납 학생 목록에서 센터별로 집계해 넣는다 (두 표의 숫자가 항상 일치)
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> findCenterStatus(String year, String month) {
+        List<AdminRespDTO.CenterStatusDTO> centers = adminRepository.findCenterStatusSummary(year, month, year + "-" + month);
+        List<AdminRespDTO.UnpaidBookFeeDTO> unpaidStudents = adminRepository.findUnpaidBookFeeStudents(year, month);
+
+        Map<String, List<AdminRespDTO.UnpaidBookFeeDTO>> unpaidByCenter = unpaidStudents.stream()
+                .collect(Collectors.groupingBy(AdminRespDTO.UnpaidBookFeeDTO::getCenterCode));
+
+        for (AdminRespDTO.CenterStatusDTO center : centers) {
+            List<AdminRespDTO.UnpaidBookFeeDTO> unpaid = unpaidByCenter.getOrDefault(center.getCenterCode(), List.of());
+            center.setUnpaidCount(unpaid.size());
+            center.setUnpaidAmount(unpaid.stream().mapToInt(AdminRespDTO.UnpaidBookFeeDTO::getAmount).sum());
+            center.setUnpaidRate(center.getStudentCount() == 0 ? 0 : (double) unpaid.size() / center.getStudentCount() * 100);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("centers", centers);
+        result.put("unpaidStudents", unpaidStudents);
+        return result;
     }
 }

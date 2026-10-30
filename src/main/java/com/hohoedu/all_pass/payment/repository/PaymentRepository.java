@@ -140,6 +140,23 @@ public interface PaymentRepository {
             @Param("mm") String mm,
             @Param("type") String type);
 
+    // 시스템비(책방) — 책방 수강중 학생의 책방 교육비
+    List<PaymentRespDTO.BookstoreFeeDTO> findBookstoreFeesByStudentIds(
+            @Param("studentIds") List<String> studentIds,
+            @Param("centerCode") String centerCode);
+
+    List<String> findStudentIdsByParentPhones(@Param("parentPhones") List<String> parentPhones);
+
+    Integer findSystemFeeDetailAmount(@Param("paymentKey") String paymentKey);
+
+    int updateSystemFeeDetailAmount(@Param("paymentKey") String paymentKey, @Param("amount") Integer amount);
+
+    // 수강료 청구 화면 — 시스템비(책방) 탭
+    List<PaymentRespDTO.AssignStudentsDTO> findBookstoreAssignStudents(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("centerCode") String centerCode);
+
     Payment findByStudentAndYm(@Param("studentId") String studentId, @Param("year") String year,
                                @Param("month") String month);
 

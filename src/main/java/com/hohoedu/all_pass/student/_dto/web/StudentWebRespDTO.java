@@ -82,6 +82,18 @@ public class StudentWebRespDTO {
         private List<BookClass> bookClasses; // ← 추가
         private List<HanTeacher> hanTeachers; // ← 추가
         private List<BookTeacher> bookTeachers; // ← 추가
+        private BookstoreAssignDTO bookstoreAssign; // 책방 수강 정보 (erp_bookstore_assign, 없으면 null)
+    }
+
+    // 책방 수강 정보 — book_clinic 과 같은 DB 의 erp_bookstore_assign 1행
+    @Data
+    public static class BookstoreAssignDTO {
+        private Boolean state;          // true=수강 / false=미수강
+        private Integer eduFee;
+        private Integer level;          // 책방이 저장 시점에 찍는 레벨 스냅샷 (all_pass 에선 읽기 전용)
+        private String entryDate;       // yyyy-MM-dd
+        private String inactiveDate;    // yyyy-MM-dd
+        private String inactiveReason;
     }
 
     @Data

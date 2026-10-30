@@ -138,4 +138,121 @@
         SET dead_line_at = #{deadline}
         WHERE center_code = #{centerCode}
     </update>
+
+    <!-- ===== 센터별 현황 : 센터별 인원수 (재원 / 신규 / 퇴원) ===== -->
+    <select id="findCenterStatusSummary" resultType="com.hohoedu.all_pass.admin._dto.AdminRespDTO$CenterStatusDTO">
+        SELECT c.center_code              AS centerCode,
+               c.center_name              AS centerName,
+               COALESCE(st.cnt, 0)        AS studentCount,
+               COALESCE(nw.cnt, 0)        AS newCount,
+               COALESCE(lv.cnt, 0)        AS leaveCount
+        FROM erp_center c
+
+                 -- 재원 : 해당 월 시간표에 배정된 학생
+                 LEFT JOIN (SELECT t.center_code,
+                                   COUNT(DISTINCT ta.student_id) AS cnt
+                            FROM erp_time_table t
+                                     JOIN erp_time_table_assign ta ON t.time_table_key = ta.time_table_key
+                            WHERE t.yy = #{year}
+                              AND t.mm = #{month}
+                            GROUP BY t.center_code) st ON c.center_code = st.center_code
+
+                 -- 신규 : 해당 월 한자/독서 입회
+                 LEFT JOIN (SELECT es.center_code,
+                                   COUNT(DISTINCT ta.student_id) AS cnt
+                            FROM erp_teacher_assign ta
+                                     JOIN erp_student es ON ta.student_id = es.student_id
+                            WHERE CONVERT(VARCHAR(7), ta.entry_han_date, 120) = #{ym}
+                               OR CONVERT(VARCHAR(7), ta.entry_book_date, 120) = #{ym}
+                            GROUP BY es.center_code) nw ON c.center_code = nw.center_code
+
+                 -- 퇴원 : 해당 월 탈퇴 로그
+                 LEFT JOIN (SELECT es.center_code,
+                                   COUNT(DISTINCT wl.student_id) AS cnt
+                            FROM erp_student_withdraw_log wl
+                                     JOIN erp_student es ON wl.student_id = es.student_id
+                            WHERE wl.withdraw_date IS NOT NULL
+                              AND CONVERT(VARCHAR(7), wl.withdraw_date, 120) = #{ym}
+                            GROUP BY es.center_code) lv ON c.center_code = lv.center_code
+
+        WHERE c.center_code NOT IN ('PUS001', 'ALL')
+          AND c.status = 'open'
+        ORDER BY c.center_name
+    </select>
+
+    <!-- ===== 센터별 현황 : 교재비 미납 학생 (BOOK_FEE 승인 청구 없음) ===== -->
+    <select id="findUnpaidBookFeeStudents" resultType="com.hohoedu.all_pass.admin._dto.AdminRespDTO$UnpaidBookFeeDTO">
+        WITH base AS (SELECT t.center_code,
+                             p.payment_key,
+                             p.student_id,
+                             p.yy,
+                             p.mm,
+                             SUM(pd.amount) AS amount
+                      FROM erp_payment p
+                               JOIN erp_payment_detail pd
+                                    ON p.payment_key = pd.payment_key
+                                        AND pd.item_type = 'BOOK_FEE'
+                               JOIN erp_time_table_assign ta
+                                    ON pd.time_table_key = ta.time_table_key
+                                        AND ta.student_id = p.student_id
+                               JOIN erp_time_table t ON ta.time_table_key = t.time_table_key
+                      WHERE p.yy = #{year}
+                        AND p.mm = #{month}
+                      GROUP BY t.center_code, p.payment_key, p.student_id, p.yy, p.mm
+                      HAVING SUM(pd.amount) > 0),
+             approvedBills AS (SELECT payment_key,
+                                      SUM(amount) AS bill_amount
+                               FROM erp_payment_bill
+                               WHERE status = 'approved'
+                                 AND bill_type = 'BOOK_FEE'
+                               GROUP BY payment_key),
+             latestBill AS (SELECT payment_key, status, expire_date
+                            FROM (SELECT payment_key,
+                                         status,
+                                         expire_date,
+                                         ROW_NUMBER() OVER (PARTITION BY payment_key ORDER BY created_at DESC) AS rn
+                                  FROM erp_payment_bill
+                                  WHERE bill_type = 'BOOK_FEE') x
+                            WHERE rn = 1)
+        SELECT b.center_code   AS centerCode,
+               c.center_name   AS centerName,
+               s.student_id    AS studentId,
+               s.student_name  AS studentName,
+               g.grade_name    AS gradeName,
+               STUFF((SELECT DISTINCT ', ' + u2.user_name
+                      FROM erp_payment_detail pd2
+                               JOIN erp_time_table t2 ON pd2.time_table_key = t2.time_table_key
+                               JOIN erp_user u2 ON t2.user_code = u2.user_code
+                      WHERE pd2.payment_key = b.payment_key
+                        AND pd2.item_type = 'BOOK_FEE'
+                        AND t2.center_code = b.center_code
+                      FOR XML PATH (''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') AS teacherName,
+               STUFF((SELECT ', ' + cc2.class_name + COALESCE(' ' + uc2.unit_name, '')
+                      FROM erp_payment_detail pd2
+                               JOIN erp_time_table t2 ON pd2.time_table_key = t2.time_table_key
+                               JOIN erp_class_code cc2 ON t2.class_key = cc2.class_key
+                               LEFT JOIN erp_unit_code uc2 ON t2.unit_key = uc2.unit_key
+                      WHERE pd2.payment_key = b.payment_key
+                        AND pd2.item_type = 'BOOK_FEE'
+                        AND t2.center_code = b.center_code
+                      ORDER BY cc2.class_type, cc2.class_name
+                      FOR XML PATH (''), TYPE).value('.', 'nvarchar(max)'), 1, 2, '') AS bookName,
+               b.amount        AS amount,
+               b.yy + '.' + b.mm AS ym,
+               CASE
+                   WHEN lb.payment_key IS NULL THEN 'unbilled'
+                   WHEN lb.status = 'issued'
+                       AND lb.expire_date &gt;= CONVERT(VARCHAR(10), GETDATE(), 23) THEN 'issued'
+                   ELSE 'expired'
+                   END         AS status
+        FROM base b
+                 JOIN erp_student s ON b.student_id = s.student_id
+                 JOIN erp_center c ON b.center_code = c.center_code
+                 LEFT JOIN erp_grade_code g ON s.grade_key = g.grade_key
+                 LEFT JOIN approvedBills ab ON b.payment_key = ab.payment_key
+                 LEFT JOIN latestBill lb ON b.payment_key = lb.payment_key
+        WHERE COALESCE(ab.bill_amount, 0) = 0
+          AND b.center_code NOT IN ('PUS001', 'ALL')
+        ORDER BY c.center_name, s.student_name
+    </select>
 </mapper>

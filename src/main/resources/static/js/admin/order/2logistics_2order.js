@@ -1069,6 +1069,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ────────────────────────────────────────
+  // 변동 사항 일괄 변경
+  // ────────────────────────────────────────
+  const getCheckedReorderIds = () =>
+    [...document.querySelectorAll("#reorderTableBody .reorder-check:checked")].map(
+      (c) => c.dataset.id,
+    );
+
+  const syncBulkCount = () => {
+    const all = document.querySelectorAll("#reorderTableBody .reorder-check");
+    const checkedCount = getCheckedReorderIds().length;
+    document.getElementById("bulkCount").textContent = `${checkedCount}건 선택`;
+    // 하나라도 체크했을 때만 일괄 변경 영역을 보여준다
+    document.getElementById("bulkConfirm").hidden = checkedCount === 0;
+    document.getElementById("reorderCheckAll").checked =
+      all.length > 0 && checkedCount === all.length;
+  };
+
+  // ────────────────────────────────────────
   // 렌더링
   // ────────────────────────────────────────
   const renderCenterInfo = (info) => {
@@ -1098,6 +1116,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderReorderTable = (list) => {
     const tbody = document.getElementById("reorderTableBody");
     tbody.innerHTML = "";
+    document.getElementById("reorderCheckAll").checked = false;
+    syncBulkCount();
 
     if (!list || list.length === 0) {
       const onlyWait = document.getElementById("onlyWaitCheck").checked;
@@ -1126,7 +1146,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tr.innerHTML = `
                     <td>
                         <label class="check-label">
-                            <input class="check-input" type="checkbox">
+                            <input class="check-input reorder-check" type="checkbox" data-id="${item.id}">
                             <span class="check-mark"></span>
                         </label>
                     </td>
@@ -1569,6 +1589,58 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("onlyWaitCheck")
     .addEventListener("change", fetchReorderList);
+
+  document.getElementById("reorderCheckAll").addEventListener("change", (e) => {
+    document
+      .querySelectorAll("#reorderTableBody .reorder-check")
+      .forEach((c) => (c.checked = e.target.checked));
+    syncBulkCount();
+  });
+
+  document.getElementById("reorderTableBody").addEventListener("change", (e) => {
+    if (e.target.classList.contains("reorder-check")) syncBulkCount();
+  });
+
+  document.getElementById("bulkConfirmSelect").addEventListener("change", (e) =>
+    syncStatusSelectColor(e.target),
+  );
+
+  document.getElementById("bulkConfirmBtn").addEventListener("click", async () => {
+    const ids = getCheckedReorderIds();
+    const select = document.getElementById("bulkConfirmSelect");
+    const confirmed = select.value;
+
+    if (ids.length === 0) {
+      alert("변경할 항목을 선택해 주세요.");
+      return;
+    }
+    const label = select.options[select.selectedIndex].text;
+    if (!confirm(`선택한 ${ids.length}건을 '${label}'(으)로 변경하시겠습니까?`)) return;
+
+    const activeCenter = document.querySelector(".center-item.active");
+    const centerCode = activeCenter ? activeCenter.dataset.centerCode : null;
+
+    try {
+      const res = await fetch("/logis/order/confirmed/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, confirmed, centerCode }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        alert(`${ids.length}건이 '${label}'(으)로 변경되었습니다.`);
+        select.value = "checked";
+        syncStatusSelectColor(select);
+        await fetchReorderList();
+        await refreshCenterRequestCounts();
+      } else {
+        alert("일괄 변경에 실패했습니다.");
+      }
+    } catch (e) {
+      alert("일괄 변경 중 오류가 발생했습니다.");
+    }
+  });
 
   // ────────────────────────────────────────
   // 모드 전환

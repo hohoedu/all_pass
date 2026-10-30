@@ -65,6 +65,10 @@
                                         <input type="radio" name="feeView" value="BOOK_FEE">
                                         <span>교재비</span>
                                     </label>
+                                    <label class="radio-group" style="margin-left: 20px" th:if="${systemFeeEnabled}">
+                                        <input type="radio" name="feeView" value="SYSTEM_FEE">
+                                        <span>시스템비</span>
+                                    </label>
                                 </div>
                             </div>
                             <div class="info-filters">
@@ -198,6 +202,9 @@
                                     </div>
                                     <div class="checkbox-group2">
                                         <input type="checkbox" name="bookFee">교재비
+                                    </div>
+                                    <div class="checkbox-group2" th:if="${systemFeeEnabled}">
+                                        <input type="checkbox" name="systemFee">시스템비
                                     </div>
                                 </div>
                             </td>

@@ -98,4 +98,14 @@ public class ManageReqDTO {
         private String targetUserCode;
     }
 
+    @Data
+    public static class QrPrintListReqDTO {
+        private Integer count;
+    }
+
+    @Data
+    public static class QrPrintDoneReqDTO {
+        private List<String> qrIds;
+    }
+
 }

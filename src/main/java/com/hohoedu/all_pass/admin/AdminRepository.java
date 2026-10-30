@@ -49,4 +49,15 @@ public interface AdminRepository {
     int upsertBookSuggest(AdminReqDTO.BookSuggestDTO dto);
 
     void updateOrderDeadline(AdminReqDTO.OrderDeadlineDTO dto);
+
+    List<AdminRespDTO.CenterStatusDTO> findCenterStatusSummary(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("ym") String ym
+    );
+
+    List<AdminRespDTO.UnpaidBookFeeDTO> findUnpaidBookFeeStudents(
+            @Param("year") String year,
+            @Param("month") String month
+    );
 }

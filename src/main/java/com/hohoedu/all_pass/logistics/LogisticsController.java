@@ -40,6 +40,12 @@ public class LogisticsController {
         return ResponseEntity.ok(ApiUtils.success(null));
     }
 
+    @PostMapping("/order/confirmed/bulk")
+    public ResponseEntity<?> updateConfirmedBulk(@RequestBody LogisReqDTO.ConfirmedBulkUpdateReqDTO req) {
+        int count = logisticsService.updateConfirmedBulk(req);
+        return ResponseEntity.ok(ApiUtils.success(count));
+    }
+
     @PostMapping("/order/invoice")
     public ResponseEntity<?> getInvoice(@RequestBody LogisReqDTO.ReorderListReqDTO req) {
         List<LogisRespDTO.InvoiceDTO> list = logisticsService.findInvoice(req);

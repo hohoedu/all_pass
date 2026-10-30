@@ -143,6 +143,15 @@
                     <section class="panel change-panel">
                         <div class="panel-head">
                             <h2 class="panel-title">변동 사항</h2>
+                            <div class="bulk-confirm" id="bulkConfirm" hidden>
+                                <span class="bulk-count" id="bulkCount">0건 선택</span>
+                                <select class="status-select approved" id="bulkConfirmSelect" aria-label="일괄 변경할 승인 여부">
+                                    <option value="checked" selected>승인</option>
+                                    <option value="user_cancel">사용자 취소</option>
+                                    <option value="acancel">관리자 취소</option>
+                                </select>
+                                <button class="bulk-confirm-btn" id="bulkConfirmBtn" type="button">일괄 변경</button>
+                            </div>
                             <label class="check-label" id="onlyWaitLabel" style="gap: 5px">
                                 <input class="check-input" type="checkbox" id="onlyWaitCheck">
                                 <span class="check-mark"></span>
@@ -164,7 +173,7 @@
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th><label class="check-label"><input class="check-input" type="checkbox"><span
+                                        <th><label class="check-label"><input class="check-input" type="checkbox" id="reorderCheckAll"><span
                                                     class="check-mark"></span></label></th>
                                         <th>상태</th>
                                         <th>등록일시</th>

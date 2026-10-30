@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/privacy-consent.css}">
+  <link rel="stylesheet" th:href="@{/css/media.css}">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script th:src="@{/js/custom.js}"></script>
+  <script th:src="@{/js/sidebar.js}"></script>
+  <title>QR 카드 출력</title>
+  <style>
+    .qr-filter-block {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 14px;
+    }
+
+    .qr-filter-block input[type="number"] {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: #111827;
+      box-sizing: border-box;
+    }
+
+    .qr-section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .qr-remain {
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .qr-remain span {
+      font-weight: 700;
+      color: #c0392b;
+    }
+
+    .qr-help {
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+
+    #btn-print {
+      width: 100%;
+      padding: 13px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: auto;
+      margin-bottom: 14px;
+    }
+
+    #btn-print:hover { background: #a93226; }
+
+    .qr-filter-block select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: #111827;
+      box-sizing: border-box;
+    }
+
+    #pcPreviewWrap .qr-page {
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+
+    /* A4 세로 미리보기 시트 — 카드 3열 × 3행 = 9장 */
+    #pcPreviewWrap .qr-page.mode-a4 {
+      width: 210mm;
+      height: 297mm;
+      padding: 18mm 15mm;
+    }
+
+    /* 카드 프린터 미리보기 — 카드 1장 = 1페이지 */
+    #pcPreviewWrap .qr-page.mode-card {
+      display: inline-block;
+      vertical-align: top;
+      margin-right: 20px;
+    }
+  </style>
+</head>
+
+<body th:data-center-name="${session.user.centerName}">
+
+  <div class="main-container">
+    <div class="main-frame">
+
+      <aside id="sidebar-load" th:replace="~{sidebar :: sidebar}"></aside>
+
+      <main class="main-info">
+        <div class="student-frame">
+          <section>
+
+            <div class="common-title">
+              <h2>QR 카드 출력</h2>
+            </div>
+
+            <div class="pc-layout">
+
+              <!-- ===== 좌측 패널 ===== -->
+              <div class="pc-left">
+
+                <div class="qr-filter-block">
+                  <p class="qr-section-label">미출력 QR 카드</p>
+                  <div class="qr-remain">남은 수량: <span id="remain-count" th:text="${unprintedCount}">0</span>장</div>
+                </div>
+
+                <div class="qr-filter-block">
+                  <p class="qr-section-label">출력 방식</p>
+                  <select id="print-mode">
+                    <option value="card">카드 프린터 (1장씩)</option>
+                    <option value="a4">A4 용지 (9장씩)</option>
+                  </select>
+                </div>
+
+                <div class="qr-filter-block">
+                  <p class="qr-section-label">출력 장수</p>
+                  <input type="number" id="print-count" min="1" step="1"
+                         th:max="${unprintedCount}" th:value="${unprintedCount > 10 ? 10 : unprintedCount}">
+                  <button class="explore common-btn" id="btn-search" style="width:100%;">조회하기</button>
+                  <p class="qr-help">
+                    미출력 QR 카드를 번호순으로 입력한 장수만큼 조회합니다.<br>
+                    인쇄 후 출력 완료 처리하면 다음 조회에서 제외됩니다.<br>
+                    카드 프린터는 용지를 CR80(54×85.6mm) 세로, 배율 100%·여백 없음으로 설정해주세요.
+                  </p>
+                </div>
+
+                <button id="btn-print">인쇄하기</button>
+
+              </div>
+
+              <!-- ===== 우측 미리보기 패널 ===== -->
+              <div class="pc-right">
+                <div class="pc-preview-bg">
+                  <div class="pc-empty-state" id="pcEmptyState">
+                    <i class="fa fa-qrcode"></i>
+                    <p>출력 장수를 입력하고<br>조회하기를 눌러주세요.</p>
+                  </div>
+                  <div id="pcPreviewWrap" style="display:none;"></div>
+                </div>
+              </div>
+
+            </div>
+
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // card: 카드 프린터(카드 1장 = 1페이지), a4: A4 한 장에 3 × 3
+      var PAGE_SIZE = { card: 1, a4: 9 };
+      var MODE_KEY = 'qrPrintMode';
+      // 지점명에서 브랜드명(호호서당)은 빼고 출력
+      var CENTER_NAME = (document.body.dataset.centerName || '').replace(/호호서당/g, '').trim();
+      var qrList = [];
+
+      var modeEl = document.getElementById('print-mode');
+      try {
+        var savedMode = localStorage.getItem(MODE_KEY);
+        if (PAGE_SIZE[savedMode]) modeEl.value = savedMode;
+      } catch (e) { /* 저장소 사용 불가 시 기본값 */ }
+
+      modeEl.addEventListener('change', function () {
+        try { localStorage.setItem(MODE_KEY, modeEl.value); } catch (e) { /* 무시 */ }
+        if (qrList.length > 0) renderPreview();
+      });
+
+      function getMode() {
+        return PAGE_SIZE[modeEl.value] ? modeEl.value : 'card';
+      }
+
+      /* ────────── 조회 ────────── */
+      document.getElementById('btn-search').addEventListener('click', function () {
+        var count = parseInt(document.getElementById('print-count').value, 10);
+        var remain = parseInt(document.getElementById('remain-count').textContent, 10) || 0;
+
+        if (!count || count <= 0) { alert('출력할 장수를 입력해주세요.'); return; }
+        if (remain === 0) { alert('출력할 QR 카드가 없습니다.'); return; }
+        if (count > remain) {
+          alert('남은 수량(' + remain + '장)보다 많이 출력할 수 없습니다.');
+          return;
+        }
+
+        fetch('/manage/qr/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count: count })
+        })
+          .then(function (r) { if (!r.ok) throw r; return r.json(); })
+          .then(function (data) {
+            if (!data.success) { alert(data.error ? data.error.message : '조회 중 오류가 발생했습니다.'); return; }
+            qrList = data.response || [];
+            renderPreview();
+          })
+          .catch(function () { alert('조회 중 오류가 발생했습니다.'); });
+      });
+
+      /* ────────── 미리보기 렌더링 ────────── */
+      function renderPreview() {
+        var wrap = document.getElementById('pcPreviewWrap');
+        var empty = document.getElementById('pcEmptyState');
+
+        if (qrList.length === 0) {
+          wrap.style.display = 'none';
+          empty.style.display = 'flex';
+          empty.innerHTML = '<i class="fa fa-qrcode"></i><p>조회된 QR 카드가 없습니다.</p>';
+          return;
+        }
+
+        empty.style.display = 'none';
+        wrap.style.display = 'block';
+
+        var mode = getMode();
+        var size = PAGE_SIZE[mode];
+        var html = '<style>' + getCardCss() + '</style>';
+        for (var p = 0; p * size < qrList.length; p++) {
+          var cards = qrList.slice(p * size, (p + 1) * size).map(buildCard).join('');
+          html += mode === 'card'
+            ? '<div class="qr-page mode-card">' + cards + '</div>'
+            : '<div class="qr-page mode-a4"><div class="qr-grid">' + cards + '</div></div>';
+        }
+        wrap.innerHTML = html;
+      }
+
+      function buildCard(item) {
+        var qr = qrcode(0, 'M');
+        qr.addData(item.createQrId);
+        qr.make();
+
+        return '<div class="qr-card">' +
+          // 이미지(GIF)는 확대·리샘플링되며 번지므로 벡터(SVG)로 출력
+          '<div class="qr-img">' + qr.createSvgTag({ cellSize: 1, margin: 0, scalable: true }) + '</div>' +
+          '<div class="qr-center">' + esc(CENTER_NAME) + '</div>' +
+          '<div class="qr-no">ID: ' + esc(item.createQrId) + '</div>' +
+          '</div>';
+      }
+
+      /* ────────── 인쇄 ────────── */
+      document.getElementById('btn-print').addEventListener('click', function () {
+        if (qrList.length === 0) { alert('먼저 조회하기를 눌러주세요.'); return; }
+        openPrintWindow();
+      });
+
+      function openPrintWindow() {
+        var pages = Array.from(document.querySelectorAll('#pcPreviewWrap .qr-page'))
+          .map(function (el) { return el.outerHTML; }).join('');
+
+        var iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;border:0;opacity:0;';
+        document.body.appendChild(iframe);
+
+        iframe.onload = function () {
+          iframe.contentWindow.addEventListener('afterprint', function () {
+            document.body.removeChild(iframe);
+            setTimeout(confirmPrinted, 0);
+          });
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        };
+
+        var iDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iDoc.open();
+        iDoc.write(
+          '<!DOCTYPE html><html><head>' +
+          '<meta charset="UTF-8">' +
+          '<style>' + getPrintCss(getMode()) + getCardCss() + '</style>' +
+          '</head><body>' + pages + '</body></html>'
+        );
+        iDoc.close();
+      }
+
+      /* ────────── 출력 완료 처리 ────────── */
+      function confirmPrinted() {
+        if (!confirm('QR 카드가 정상적으로 출력되었습니까?\n확인을 누르면 ' + qrList.length + '장이 출력 완료 처리됩니다.')) return;
+
+        fetch('/manage/qr/printed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrIds: qrList.map(function (q) { return q.createQrId; }) })
+        })
+          .then(function (r) { if (!r.ok) throw r; return r.json(); })
+          .then(function (data) {
+            if (!data.success) { alert(data.error ? data.error.message : '처리 중 오류가 발생했습니다.'); return; }
+
+            var remainEl = document.getElementById('remain-count');
+            var remain = Math.max(0, (parseInt(remainEl.textContent, 10) || 0) - data.response);
+            remainEl.textContent = remain;
+
+            var countEl = document.getElementById('print-count');
+            countEl.max = remain;
+            countEl.value = Math.min(10, remain);
+
+            qrList = [];
+            document.getElementById('pcPreviewWrap').style.display = 'none';
+            var empty = document.getElementById('pcEmptyState');
+            empty.style.display = 'flex';
+            empty.innerHTML = '<i class="fa fa-qrcode"></i><p>출력 완료 처리되었습니다.</p>';
+
+            alert(data.response + '장이 출력 완료 처리되었습니다.');
+          })
+          .catch(function () { alert('처리 중 오류가 발생했습니다.'); });
+      }
+
+      /* ────────── 헬퍼 ────────── */
+      function esc(v) {
+        if (v == null) return '';
+        return String(v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      /*
+       * 카드: 신용카드 규격 세로(54mm × 85.6mm), 점선(outline)은 재단선이라 카드 치수에 포함되지 않는다
+       * QR      : 위 19mm, 22mm × 22mm 가운데 정렬(좌우 16mm) (하단 41mm)
+       * 지점명  : QR 하단 + 8.5mm → top 49.5mm (줄 높이 5mm)
+       * ID      : 지점명 하단 + 14.5mm → top 69mm
+       */
+      function getCardCss() {
+        return [
+          '.qr-grid { display: grid; grid-template-columns: repeat(3, 54mm);',
+          '           grid-auto-rows: 85.6mm; gap: 2mm 6mm; justify-content: center; }',
+          '.qr-card { position: relative; width: 54mm; height: 85.6mm; box-sizing: border-box;',
+          '           outline: 1px dashed #9ca3af; font-family: "Noto Sans KR", sans-serif; color: #000; }',
+          '.qr-img { position: absolute; top: 19mm; left: 16mm; width: 22mm; height: 22mm; }',
+          '.qr-img svg { display: block; width: 100%; height: 100%; shape-rendering: crispEdges; }',
+          '.qr-center, .qr-no { position: absolute; left: 0; right: 0; height: 5mm; line-height: 5mm;',
+          '                     text-align: center; white-space: nowrap; overflow: hidden; }',
+          '.qr-center { top: 49.5mm; font-size: 9pt; font-weight: 400; }',
+          '.qr-no { top: 69mm; font-size: 8pt; font-weight: 400; letter-spacing: 0.5px; }',
+          // 카드 프린터는 카드 자체가 용지라 재단선이 필요 없다
+          '.mode-card .qr-card { outline: none; }'
+        ].join('\n');
+      }
+
+      function getPrintCss(mode) {
+        var page = mode === 'card'
+          ? ['@page { size: 54mm 85.6mm; margin: 0; }',
+             '.qr-page { width: 54mm; height: 85.6mm; padding: 0; }']
+          : ['@page { size: A4 portrait; margin: 0; }',
+             '.qr-page { width: 210mm; height: 297mm; padding: 18mm 15mm; }'];
+
+        return page.concat([
+          'html, body { margin: 0; padding: 0; background: #fff; }',
+          'body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }',
+          '.qr-page { box-sizing: border-box; overflow: hidden;',
+          '           page-break-after: always; break-after: page; }',
+          '.qr-page:last-child { page-break-after: avoid; break-after: avoid; }'
+        ]).join('\n');
+      }
+
+    })();
+  </script>
+
+</body>
+
+</html>

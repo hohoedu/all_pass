@@ -132,4 +132,15 @@ public interface ManageRepository {
             @Param("mm") String mm,
             @Param("classKey") String classKey,
             @Param("unitKey") String unitKey);
+
+    // QR 카드 출력
+    int countUnprintedQr(@Param("centerCode") String centerCode);
+
+    List<ManageRespDTO.QrPrintDTO> findUnprintedQrList(
+            @Param("centerCode") String centerCode,
+            @Param("count") int count);
+
+    int updateQrPrinted(
+            @Param("centerCode") String centerCode,
+            @Param("qrIds") List<String> qrIds);
 }

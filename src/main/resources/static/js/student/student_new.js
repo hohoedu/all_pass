@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('student-tbody');
     const modal = document.querySelector('.student-new-modal');
     let currentStudentId = null;
+    // 모달을 연 시점의 책방 값(JSON) — 수강상태 저장 때 책방이 바뀌었는지 비교용
+    let initialBookstorePayload = null;
 
 
     /* =================== *
@@ -317,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setCourseState('han', payment.hanState);
         setCourseState('book', payment.bookState);
+        renderBookstoreAssign(data.bookstoreAssign);
         renderFeeTable(payment);
         updateTotalFee();
 
@@ -510,6 +513,47 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.toggle('active', isActive);
             if (isActive && hidden) hidden.value = btn.dataset.value;
         });
+    }
+
+    // 책방 수강 정보 (erp_bookstore_assign) — 모달을 학생마다 재사용하므로 값이 없어도 전부 다시 채운다.
+    // 책방 행이 없는 학생(assign=null)은 수강 상태를 아무것도 선택하지 않은 채로 둔다.
+    function renderBookstoreAssign(assign) {
+        const a = assign ?? {};
+        const state = a.state === true ? 1 : a.state === false ? 0 : null;
+
+        const group = modal.querySelector('#new-tab3 .choose-group[data-type="bookstore"]');
+        if (group) {
+            group.querySelectorAll('.btn-choose').forEach(b => b.classList.remove('active'));
+            group.querySelector('input[type="hidden"]').value = '';
+        }
+        if (state !== null) setCourseState('bookstore', state);
+
+        setValue('#new-tab3 .p_bookstore_level', a.level != null ? `Lv. ${a.level}` : '-');
+        setValue('#bookstoreFee', formatMoney(a.eduFee));
+        setValue('#entry-bookstore-date', a.entryDate ?? '');
+        setValue('#new-tab3 .s_entry_bookstore_date', formatDateDisplay(a.entryDate) || '날짜를 선택하세요.');
+        setValue('#bookstore-inactive-reason', a.inactiveReason ?? '');
+        setValue('#bookstore-inactive-date', a.inactiveDate ?? '');
+        setValue('.bookstore-date-display', formatDateDisplay(a.inactiveDate));
+        modal.querySelector('.bookstore-inactive')?.classList.toggle('hide-input', state !== 0);
+
+        initialBookstorePayload = JSON.stringify(collectBookstorePayload());
+    }
+
+    // 책방 화면 값 → 저장용 객체. 수강 상태를 아무것도 고르지 않았으면 null (책방 행이 없는 학생)
+    function collectBookstorePayload() {
+        const status = modal.querySelector('#new-tab3 .choose-group[data-type="bookstore"] input[type="hidden"]')?.value;
+        if (!status) return null;
+
+        const attending = status === 'active';
+        const fee = (getValue('#bookstoreFee') ?? '').replace(/,/g, '').trim();
+        return {
+            state: attending,
+            eduFee: fee === '' ? null : Number(fee),
+            entryDate: getValue('#entry-bookstore-date') || null,
+            inactiveDate: attending ? null : (getValue('#bookstore-inactive-date') || null),
+            inactiveReason: attending ? null : getValue('#bookstore-inactive-reason').trim()
+        };
     }
 
     function renderFeeTable(payment) {
@@ -893,6 +937,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        modal.querySelector('#bookstore-inactive-date')?.addEventListener('change', function () {
+            const display = modal.querySelector('.bookstore-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+
         window.saveInitialCourseState = function (hanState, bookState) {
             initialHanState = (hanState === 1 || hanState === '1') ? 'active' : 'inactive';
             initialBookState = (bookState === 1 || bookState === '1') ? 'active' : 'inactive';
@@ -936,6 +988,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 bookTeacherCode: modal.querySelector('#new-tab3 .p_book_teacher')?.value || null,
             };
 
+            // 책방 — 모달을 연 뒤 바뀐 게 있을 때만 같이 보낸다 (서버가 같은 트랜잭션에서 저장)
+            const bookstorePayload = collectBookstorePayload();
+            if (bookstorePayload && JSON.stringify(bookstorePayload) !== initialBookstorePayload) {
+                if (bookstorePayload.eduFee !== null && Number.isNaN(bookstorePayload.eduFee)) {
+                    alert('책방 교육비는 숫자로 입력해주세요.');
+                    return;
+                }
+                requestBody.bookstore = bookstorePayload;
+            }
+
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {
                 const shouldChange = await showStudentStatusModal();
                 if (!shouldChange) return;
@@ -948,8 +1010,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(requestBody)
                 });
-                if (!res.ok) throw new Error('수강상태 변경 실패');
+                if (!res.ok) {
+                    // 책방 입력 검증 실패(400)는 서버 메시지를 그대로 보여준다
+                    const body = await res.json().catch(() => null);
+                    throw new Error(body?.error?.message ?? '수강상태 변경 실패');
+                }
                 alert('수강상태가 성공적으로 변경되었습니다.');
+
+                // 책방은 저장된 값(수강 복귀 시 비워진 사유/날짜 등)으로 다시 그린다
+                const detailRes = await fetch(`/student/${currentStudentId}`);
+                if (detailRes.ok) {
+                    const detail = await detailRes.json();
+                    renderBookstoreAssign(detail.response?.bookstoreAssign);
+                }
 
                 initialHanState = currentHanState;
                 initialBookState = currentBookState;
@@ -973,8 +1046,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modal.querySelector('.han-inactive')?.classList.add('hide-input');
                 modal.querySelector('.book-inactive')?.classList.add('hide-input');
 
-            } catch {
-                alert('수강상태 변경 중 오류가 발생했습니다.');
+            } catch (err) {
+                console.error(err);
+                alert(err.message && err.message !== '수강상태 변경 실패'
+                    ? err.message
+                    : '수강상태 변경 중 오류가 발생했습니다.');
             }
         });
     }

@@ -272,6 +272,44 @@
 
     </select>
 
+    <!-- 책방 수강 정보 — book_clinic StudentMapper.findBookstoreAssign 과 같은 조회 -->
+    <select id="findBookstoreAssign" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$BookstoreAssignDTO">
+        SELECT bookstore_state                                   AS state,
+               bookstore_edu_fee                                 AS eduFee,
+               bookstore_level                                   AS level,
+               CONVERT(VARCHAR(10), entry_bookstore_date, 23)    AS entryDate,
+               CONVERT(VARCHAR(10), inactive_bookstore_date, 23) AS inactiveDate,
+               inactive_bookstore_reason                         AS inactiveReason
+        FROM erp_bookstore_assign
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!--
+      책방 수강 정보 저장 — 학생당 1행(UX_bookstore_assign_student)이라 MERGE 로 upsert.
+      bookstore_level 은 책방이 자동계산해 찍는 값이라 UPDATE 때는 건드리지 않고,
+      새 행일 때만 책방 가입 기본값(1)으로 넣는다.
+      jdbcType 은 null 값이 varbinary 로 추론돼 DATETIME2 변환이 터지는 걸 막으려고 붙인다(book_clinic 과 동일).
+    -->
+    <update id="saveBookstoreAssign">
+        MERGE erp_bookstore_assign AS target
+        USING (SELECT #{s.studentId,jdbcType=VARCHAR} AS student_id) AS source
+        ON target.student_id = source.student_id
+        WHEN MATCHED THEN UPDATE SET
+            bookstore_state           = #{s.state,jdbcType=BIT},
+            bookstore_edu_fee         = #{s.eduFee,jdbcType=INTEGER},
+            entry_bookstore_date      = CONVERT(DATETIME2, #{s.entryDate,jdbcType=VARCHAR}, 23),
+            inactive_bookstore_date   = CONVERT(DATETIME2, #{s.inactiveDate,jdbcType=VARCHAR}, 23),
+            inactive_bookstore_reason = #{s.inactiveReason,jdbcType=VARCHAR},
+            updated_at                = DATEADD(HOUR, 9, GETUTCDATE())
+        WHEN NOT MATCHED THEN INSERT
+            (student_id, bookstore_state, bookstore_edu_fee, bookstore_level,
+             entry_bookstore_date, inactive_bookstore_date, inactive_bookstore_reason)
+            VALUES (source.student_id, #{s.state,jdbcType=BIT}, #{s.eduFee,jdbcType=INTEGER}, 1,
+                    CONVERT(DATETIME2, #{s.entryDate,jdbcType=VARCHAR}, 23),
+                    CONVERT(DATETIME2, #{s.inactiveDate,jdbcType=VARCHAR}, 23),
+                    #{s.inactiveReason,jdbcType=VARCHAR});
+    </update>
+
 
     <select id="findStudentPaymentByStudentId" parameterType="String" resultType="com.hohoedu.all_pass.student._dto.web.StudentWebRespDTO$StudentPaymentDTO">
 
@@ -497,6 +535,18 @@
     <insert id="createTeacherAssign">
         insert into erp_teacher_assign (student_id, center_code, created_at)
         values (#{studentId}, #{centerCode}, SYSDATETIME())
+    </insert>
+
+    <!--
+      입회 시 책방 수강 정보 기본 행 — all_pass 입회는 서당 입회라 책방은 미수강(0)으로 시작한다.
+      레벨은 book_clinic 가입(insertAssignOnJoin)과 같은 1, 시작일/미수강 사유·날짜는 비워 둔다
+      (책방을 시작할 때 수강상태 저장에서 시작일자를 받는다).
+    -->
+    <insert id="createBookstoreAssign">
+        INSERT INTO erp_bookstore_assign
+            (student_id, bookstore_state, bookstore_level)
+        VALUES
+            (#{studentId}, 0, 1)
     </insert>
 
     <update id="updateStudentInfo">
@@ -1225,11 +1275,12 @@
                s.grade_key    as ihak,
                CASE WHEN ISNULL(ta.han_state, 0) = 1 OR ISNULL(ta.book_state, 0) = 1
                         THEN 1 ELSE 0 END AS useCenter,
-               CASE WHEN ISNULL(ta.bookstore_state, 0) = 1
+               CASE WHEN ISNULL(ba.bookstore_state, 0) = 1
                         THEN 1 ELSE 0 END AS useBookstore
         FROM ERP_STUDENT s
                  JOIN erp_center c ON s.center_code = c.center_code
                  LEFT JOIN erp_teacher_assign ta ON ta.student_id = s.student_id
+                 LEFT JOIN erp_bookstore_assign ba ON ba.student_id = s.student_id
         WHERE s.app_id = #{appId}
     </select>
 
@@ -1242,10 +1293,16 @@
                ss.sibling_key             as sibling,
                s.grade_key                as hak,
                ISNULL(s.profile_img, '1') as profileimg,
-               s.app_id                   as appId
+               s.app_id                   as appId,
+               CASE WHEN ISNULL(ta.han_state, 0) = 1 OR ISNULL(ta.book_state, 0) = 1
+                        THEN 1 ELSE 0 END AS useCenter,
+               CASE WHEN ISNULL(ba.bookstore_state, 0) = 1
+                        THEN 1 ELSE 0 END AS useBookstore
         FROM ERP_STUDENT s
                  JOIN erp_center c ON s.center_code = c.center_code
                  JOIN erp_sibling ss ON s.student_id = ss.student_id
+                 LEFT JOIN erp_teacher_assign ta ON ta.student_id = s.student_id
+                 LEFT JOIN erp_bookstore_assign ba ON ba.student_id = s.student_id
         WHERE ss.sibling_key = #{siblingKey}
     </select>
 

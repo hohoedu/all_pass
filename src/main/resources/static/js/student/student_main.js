@@ -550,6 +550,9 @@ function renderStudentModal(data) {
     setCourseDate("han", payment.entryHanDate);
     setCourseDate("book", payment.entryBookDate);
 
+    // 책방 수강 정보 (erp_bookstore_assign)
+    renderBookstoreAssign(data.bookstoreAssign);
+
     // 회비 합계
     updateTotalFee(payment);
     renderFeeTable(payment);
@@ -824,6 +827,58 @@ function updateTotalFee() {
     const total = hanFee + bookFee + hanMat + bookMat;
 
     document.querySelector(".dues-sum span").innerText = formatMoney(total);
+}
+
+// 모달을 연 시점의 책방 값(JSON) — 수강상태 저장 때 책방이 바뀌었는지 비교용
+let initialBookstorePayload = null;
+
+// 책방 수강 정보 탭 영역 — 모달을 학생마다 재사용하므로 값이 없어도 전부 다시 채운다.
+// 책방 행이 없는 학생(assign=null)은 수강 상태를 아무것도 선택하지 않은 채로 둔다.
+function renderBookstoreAssign(assign) {
+    const a = assign ?? {};
+    const state = a.state === true ? 1 : a.state === false ? 0 : null;
+
+    const group = document.querySelector('#tab3 .choose-group[data-type="bookstore"]');
+    if (group) {
+        group.querySelectorAll(".btn-choose").forEach(b => b.classList.remove("active"));
+        group.querySelector('input[type="hidden"]').value = "";
+    }
+    if (state !== null) setCourseState("bookstore", state);
+
+    const levelEl = document.querySelector("#tab3 .p_bookstore_level");
+    if (levelEl) levelEl.innerText = a.level != null ? `Lv. ${a.level}` : "-";
+
+    const feeEl = document.getElementById("bookstoreFee");
+    if (feeEl) feeEl.value = formatMoney(a.eduFee);
+
+    const entryInput = document.getElementById("entry-bookstore-date");
+    if (entryInput) entryInput.value = a.entryDate ?? "";
+    const entryDisplay = document.querySelector("#tab3 .s_entry_bookstore_date");
+    if (entryDisplay) entryDisplay.innerText = formatDate(a.entryDate) || "날짜를 선택해주세요.";
+
+    document.getElementById("bookstore-inactive-reason").value = a.inactiveReason ?? "";
+    document.getElementById("bookstore-inactive-date").value = a.inactiveDate ?? "";
+    document.querySelector(".bookstore-date-display").value = formatDate(a.inactiveDate);
+    document.querySelector(".bookstore-inactive")?.classList.toggle("hide-input", state !== 0);
+
+    // 수강상태 저장 때 바뀐 게 있는지 비교하려고 처음 값을 기억해 둔다
+    initialBookstorePayload = JSON.stringify(collectBookstorePayload());
+}
+
+// 책방 화면 값 → 저장용 객체. 수강 상태를 아무것도 고르지 않았으면 null (책방 미이용 학생)
+function collectBookstorePayload() {
+    const status = document.querySelector('#tab3 .choose-group[data-type="bookstore"] input[type="hidden"]')?.value;
+    if (!status) return null;
+
+    const attending = status === "active";
+    const fee = (document.getElementById("bookstoreFee").value ?? "").replace(/,/g, "").trim();
+    return {
+        state: attending,
+        eduFee: fee === "" ? null : Number(fee),
+        entryDate: document.getElementById("entry-bookstore-date").value || null,
+        inactiveDate: attending ? null : (document.getElementById("bookstore-inactive-date").value || null),
+        inactiveReason: attending ? null : document.getElementById("bookstore-inactive-reason").value.trim()
+    };
 }
 
 function setCourseDate(type, value) {
@@ -1213,6 +1268,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // 책방 달력 아이콘 클릭
+    const bookstoreCalendarBtn = document.querySelector('.bookstore-calendar-open');
+    if (bookstoreCalendarBtn) {
+        bookstoreCalendarBtn.addEventListener('click', function () {
+            const dateInput = document.getElementById('bookstore-inactive-date');
+            if (dateInput) {
+                dateInput.focus();
+                dateInput.click();
+            }
+        });
+    }
+
     // 한자 날짜 선택 시 표시 업데이트
     const hanDateInput = document.getElementById('han-inactive-date');
     if (hanDateInput) {
@@ -1230,6 +1297,18 @@ document.addEventListener('DOMContentLoaded', function () {
     if (bookDateInput) {
         bookDateInput.addEventListener('change', function () {
             const display = document.querySelector('.book-date-display');
+            if (display && this.value) {
+                const [y, m, d] = this.value.split('-');
+                display.value = `${y}년 ${m}월 ${d}일`;
+            }
+        });
+    }
+
+    // 책방 날짜 선택 시 표시 업데이트
+    const bookstoreDateInput = document.getElementById('bookstore-inactive-date');
+    if (bookstoreDateInput) {
+        bookstoreDateInput.addEventListener('change', function () {
+            const display = document.querySelector('.bookstore-date-display');
             if (display && this.value) {
                 const [y, m, d] = this.value.split('-');
                 display.value = `${y}년 ${m}월 ${d}일`;
@@ -1318,6 +1397,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 bookTeacherCode: document.querySelector("#tab3 .p_book_teacher")?.value || null,
             };
 
+            // 책방 — 모달을 연 뒤 바뀐 게 있을 때만 같이 보낸다 (서버가 같은 요청 안에서 따로 저장)
+            const bookstorePayload = collectBookstorePayload();
+            if (bookstorePayload && JSON.stringify(bookstorePayload) !== initialBookstorePayload) {
+                if (bookstorePayload.eduFee !== null && Number.isNaN(bookstorePayload.eduFee)) {
+                    alert('책방 교육비는 숫자로 입력해주세요.');
+                    return;
+                }
+                requestBody.bookstore = bookstorePayload;
+            }
+
             if (currentHanState === 'inactive' && currentBookState === 'inactive') {
                 const shouldChangeStudentStatus = await showStudentStatusModal();
                 if (!shouldChangeStudentStatus) {
@@ -1334,7 +1423,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
 
                 if (!res.ok) {
-                    throw new Error('수강상태 변경 실패');
+                    // 책방 입력 검증 실패(400)는 서버 메시지를 그대로 보여준다
+                    const body = await res.json().catch(() => null);
+                    throw new Error(body?.error?.message ?? '수강상태 변경 실패');
                 }
 
                 if (requestBody.changeStudentStatus) {
@@ -1386,7 +1477,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } catch (err) {
                 console.error(err);
-                alert('수강상태 변경 중 오류가 발생했습니다.');
+                alert(err.message && err.message !== '수강상태 변경 실패'
+                    ? err.message
+                    : '수강상태 변경 중 오류가 발생했습니다.');
             }
         });
     }

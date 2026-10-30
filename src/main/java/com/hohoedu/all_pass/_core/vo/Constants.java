@@ -3,8 +3,14 @@ package com.hohoedu.all_pass._core.vo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class Constants {
+
+    public static final String QR_PRINT_USER_ID = "hohoedu";
+
+    // 수강료 청구 시스템비(책방) 사용 센터 — 우선 PUS001만 적용, 전체 오픈 시 이 조건을 제거
+    public static final Set<String> SYSTEM_FEE_CENTER_CODES = Set.of("PUS001");
 
     public static final Map<String, String> DAY_NAME_MAP = Map.of(
             "mon", "월",
@@ -47,4 +53,12 @@ public class Constants {
 
     public static final Map<String, String> E_TO_NE = Map.of(
             "ES", "NES", "EP", "NEP", "EG", "NEG", "ED", "NED");
+
+    // 교재 자동 주문 마감일(매월 20일 고정). 유곡(ULS001)은 별도 DB 설정으로 운영
+    public static final String ORDER_DEADLINE_DAY = "20";
+    public static final String SECONDARY_CENTER_CODE = "ULS001";
+
+    public static String resolveOrderDeadline(String centerCode, Supplier<String> dbDeadline) {
+        return SECONDARY_CENTER_CODE.equals(centerCode) ? dbDeadline.get() : ORDER_DEADLINE_DAY;
+    }
 }

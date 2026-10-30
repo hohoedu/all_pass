@@ -431,8 +431,9 @@ function renderRecordStudentList(list, afterClassList = [], tbodySel = '#record_
             </ul>
         </td>`;
 
-        const counselType = afterClass?.counselType || '';
         const counselContent = afterClass?.counselContent || '';
+        // 상담 내용이 없으면 유형도 선택하지 않은 상태로 표시
+        const counselType = counselContent.trim() ? (afterClass?.counselType || '') : '';
 
         tr.innerHTML += `
         <td class="cell-middle">
@@ -928,7 +929,11 @@ async function saveAfterClassNotice(checkedRows) {
         const contentTextarea = row.querySelector(".record-content");
         const reviewTextarea  = row.querySelectorAll(".comment-text")[1];
         const counselTextarea = row.querySelector(".counsel-box textarea");
-        const counselType     = row.querySelector(".counsel-type button.active")?.textContent || "전화";
+        const counselContent  = counselTextarea?.value || "";
+        // 상담 내용이 없으면 유형도 저장하지 않음
+        const counselType     = counselContent.trim()
+            ? (row.querySelector(".counsel-type button.active")?.textContent || "")
+            : "";
         const contentWord     = row.querySelector(".record-word");
 
         return {
@@ -943,7 +948,7 @@ async function saveAfterClassNotice(checkedRows) {
             word:           contentWord?.value || "",
             review:         reviewTextarea?.value || "",
             counselType:    counselType,
-            counselContent: counselTextarea?.value || ""
+            counselContent: counselContent
         };
     });
 
@@ -962,7 +967,10 @@ async function insertAfterClassNotice(checkedRows) {
         const contentTextarea = row.querySelector(".record-content");
         const reviewTextarea  = row.querySelectorAll(".comment-text")[1];
         const counselTextarea = row.querySelector(".counsel-box textarea");
-        const counselType     = row.querySelector(".counsel-type button.active")?.textContent || "";
+        const counselContent  = counselTextarea?.value || "";
+        const counselType     = counselContent.trim()
+            ? (row.querySelector(".counsel-type button.active")?.textContent || "")
+            : "";
 
         return {
             studentId:      row.getAttribute("data-student-id"),
@@ -973,7 +981,7 @@ async function insertAfterClassNotice(checkedRows) {
             word:           row.querySelector(".record-word")?.value || "",
             review:         reviewTextarea?.value || "",
             counselType:    counselType,
-            counselContent: counselTextarea?.value || ""
+            counselContent: counselContent
         };
     });
 

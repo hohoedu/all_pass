@@ -120,9 +120,53 @@ public class StudentService {
                 .bookClasses(bookClasses)
                 .hanTeachers(hanTeachers)
                 .bookTeachers(bookTeachers)
+                .bookstoreAssign(studentRepository.findBookstoreAssign(studentId))
                 .build();
         log.info(studentDetailRespDTO.toString());
         return studentDetailRespDTO;
+    }
+
+    /**
+     * 책방 수강 정보 검증 + 정리(빈 문자열→null, 수강중이면 미수강 값 비움).
+     * 규칙은 book_clinic StudentService.saveBookstoreAssign 과 맞춘다.
+     * updateCourseStatus 맨 앞에서 불러, 책방 입력이 잘못됐으면 DB 에 아무것도 쓰기 전에 멈춘다.
+     */
+    private void validateBookstoreAssign(StudentWebReqDTO.BookstoreAssignSaveDTO dto) {
+        if (dto.getStudentId() == null || studentRepository.findStudentInfoByStudentId(dto.getStudentId()) == null) {
+            throw new Exception400("학생 정보를 찾을 수 없습니다.");
+        }
+        if (dto.getState() == null) {
+            throw new Exception400("책방 수강 상태를 선택해주세요.");
+        }
+        dto.setEntryDate(blankToNull(dto.getEntryDate()));
+        if (dto.getEntryDate() == null) {
+            throw new Exception400("책방 시작일자를 입력해주세요.");
+        }
+        if (dto.getEduFee() != null && dto.getEduFee() < 0) {
+            throw new Exception400("책방 교육비는 0원 이상이어야 합니다.");
+        }
+
+        if (dto.getState()) {
+            // 수강중이면 미수강 일자/사유는 남길 이유가 없다 (미수강 → 수강 복귀)
+            dto.setInactiveDate(null);
+            dto.setInactiveReason(null);
+        } else {
+            dto.setInactiveDate(blankToNull(dto.getInactiveDate()));
+            dto.setInactiveReason(blankToNull(dto.getInactiveReason()));
+            if (dto.getInactiveReason() == null) {
+                throw new Exception400("책방 미수강 사유를 입력해주세요.");
+            }
+            if (dto.getInactiveDate() == null) {
+                throw new Exception400("책방 미수강 날짜를 입력해주세요.");
+            }
+            if (dto.getInactiveDate().compareTo(dto.getEntryDate()) < 0) {
+                throw new Exception400("책방 미수강 날짜는 시작일자보다 빠를 수 없습니다.");
+            }
+        }
+    }
+
+    private String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     public void createPendingStudent(PendingStudent pendingStudent) {
@@ -228,6 +272,8 @@ public class StudentService {
         }
 
         studentRepository.createTeacherAssign(studentDTO.getStudentId(), studentDTO.getCenterCode());
+        // 책방 수강 정보도 같이 만든다 — 서당 입회라 책방은 미수강으로 시작
+        studentRepository.createBookstoreAssign(studentDTO.getStudentId());
 
         return studentDTO.getStudentId();
     }
@@ -400,8 +446,19 @@ public class StudentService {
         return 1;
     }
 
+    /**
+     * 수강상태 저장 — 서당(한자/독서)과 책방(erp_bookstore_assign)을 한 트랜잭션으로 저장한다.
+     * 책방 값(request.bookstore)은 화면에서 바뀐 게 있을 때만 실려 온다. 어느 쪽이 실패해도 전부 롤백된다.
+     */
     @Transactional
     public void updateCourseStatus(StudentWebReqDTO.StudentCourseUpdateDTO request, String userCode) {
+        // 책방 입력 검증은 DB 에 쓰기 전에 먼저 — 잘못된 입력이면 서당도 저장하지 않는다
+        StudentWebReqDTO.BookstoreAssignSaveDTO bookstore = request.getBookstore();
+        if (bookstore != null) {
+            bookstore.setStudentId(request.getStudentId());
+            validateBookstoreAssign(bookstore);
+        }
+
         StudentWebRespDTO.TeacherDTO teacherDTO = studentRepository
                 .findTeacherAssignByStudentId(request.getStudentId());
 
@@ -488,6 +545,11 @@ public class StudentService {
         if (request.getHanState() == 1 || request.getBookState() == 1) {
             studentRepository.updatePendingIsDeletedByStudentId(request.getStudentId());
             studentRepository.updateStudentStatusToActive(request.getStudentId());
+        }
+
+        // 책방 수강 정보 (레벨은 책방 계산값 유지 — 매퍼가 UPDATE 때 건드리지 않음)
+        if (bookstore != null) {
+            studentRepository.saveBookstoreAssign(bookstore);
         }
     }
 
@@ -1327,6 +1389,7 @@ public class StudentService {
                     year,
                     month);
             sibling.setIhak(ihak);
+            sibling.setServiceType(resolveServiceType(sibling.getUseCenter(), sibling.getUseBookstore()));
         }
 
         return siblings;

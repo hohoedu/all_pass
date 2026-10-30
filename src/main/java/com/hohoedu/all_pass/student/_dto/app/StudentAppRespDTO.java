@@ -55,6 +55,9 @@ public class StudentAppRespDTO {
         private String hak;
         private String ihak;
         private String appid;
+        private Boolean useCenter;    // 서당 이용 여부
+        private Boolean useBookstore; // 책방 이용 여부
+        private String serviceType;   // BOTH | CENTER | BOOKSTORE | NONE
     }
 
     @Data
