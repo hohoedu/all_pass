@@ -541,6 +541,7 @@
                tt.class_key   AS classKey,
                tt.unit_key    AS unitKey,
                cc.class_type  AS classType,
+               tt.subject     AS subject,
                cc.class_name  AS className,
                uc.unit_name   AS unitName,
                G.grade_key    AS gradeKey,
@@ -553,6 +554,92 @@
           AND mm = #{month}
           AND user_code = #{userCode}
         ORDER BY dayname, period_no
+    </select>
+
+    <!-- 선생님 월 교재 주문 수량 : erp_order.base_count + 승인된 erp_reorder (add 는 +, return 은 -) -->
+    <!-- 수량 계산은 manage.xml findCenterOrderList 와 동일 기준 -->
+    <!-- class_key 가 'N' 으로 시작하면 N 을 떼고 erp_class_code 와 매칭 (logistics.xml 과 동일), 같은 교재는 합산 -->
+    <select id="findTeacherBookOrders" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TeacherBookOrderDTO">
+        WITH o AS (SELECT class_key, unit_key, SUM(base_count) AS base_sum
+                   FROM (SELECT CASE WHEN class_key LIKE 'N%' THEN SUBSTRING(class_key, 2, LEN(class_key))
+                                     ELSE class_key END AS class_key,
+                                unit_key,
+                                base_count
+                         FROM erp_order
+                         WHERE center_code = #{centerCode}
+                           AND user_code = #{userCode}
+                           AND yy = #{year}
+                           AND mm = #{month}) x
+                   GROUP BY class_key, unit_key),
+             r AS (SELECT class_key, unit_key, SUM(cnt) AS reorder_sum
+                   FROM (SELECT CASE WHEN class_key LIKE 'N%' THEN SUBSTRING(class_key, 2, LEN(class_key))
+                                     ELSE class_key END AS class_key,
+                                unit_key,
+                                CASE LOWER(reorder_type)
+                                    WHEN 'add' THEN count
+                                    WHEN 'return' THEN -count
+                                    ELSE 0 END AS cnt
+                         FROM erp_reorder
+                         WHERE center_code = #{centerCode}
+                           AND user_code = #{userCode}
+                           AND yy = #{year}
+                           AND mm = #{month}
+                           AND confirmed = 'checked') x
+                   GROUP BY class_key, unit_key),
+             base AS (SELECT class_key, unit_key FROM o
+                      UNION
+                      SELECT class_key, unit_key FROM r)
+        SELECT base.class_key                                       AS classKey,
+               base.unit_key                                        AS unitKey,
+               cc.class_name                                        AS className,
+               uc.unit_name                                         AS unitName,
+               cc.class_type                                        AS classType,
+               COALESCE(o.base_sum, 0) + COALESCE(r.reorder_sum, 0) AS qty
+        FROM base
+                 LEFT JOIN o ON o.class_key = base.class_key AND o.unit_key = base.unit_key
+                 LEFT JOIN r ON r.class_key = base.class_key AND r.unit_key = base.unit_key
+                 JOIN erp_class_code cc ON base.class_key = cc.class_key
+                 JOIN erp_unit_code uc ON base.unit_key = uc.unit_key
+        <!-- 초등(신동·수재·천재·박사) → 한스쿨(기본·중급·상급·고급·심화) → 호호(영재·수재·신동) → 키움·만남·자람
+             → 북스쿨(새움·다움·티움·채움·북스쿨 5학년·6학년·중등) → 나머지 -->
+        ORDER BY CASE base.class_key
+                     WHEN 'EP' THEN 1
+                     WHEN 'ES' THEN 2
+                     WHEN 'EG' THEN 3
+                     WHEN 'ED' THEN 4
+                     WHEN 'HSN' THEN 5
+                     WHEN 'HSU' THEN 6
+                     WHEN 'HSX' THEN 7
+                     WHEN 'HSS' THEN 8
+                     WHEN 'HSA' THEN 9
+                     WHEN 'Y' THEN 10
+                     WHEN 'S' THEN 11
+                     WHEN 'P' THEN 12
+                     WHEN 'K' THEN 13
+                     WHEN 'M' THEN 14
+                     WHEN 'J' THEN 15
+                     WHEN 'SU' THEN 16
+                     WHEN 'DU' THEN 17
+                     WHEN 'TU' THEN 18
+                     WHEN 'CU' THEN 19
+                     WHEN 'BSN' THEN 20
+                     WHEN 'BSU' THEN 21
+                     WHEN 'BSX' THEN 22
+                     WHEN 'BSS' THEN 23
+                     WHEN 'BSA' THEN 24
+                     ELSE 99 END,
+                 cc.class_name,
+                 uc.id
+    </select>
+
+    <!-- 해당 월에 특정 과목(subject) 시간표가 있는 센터 선생님 user_code 목록 -->
+    <select id="findUserCodesBySubject" resultType="string">
+        SELECT DISTINCT tt.user_code
+        FROM erp_time_table tt
+        WHERE tt.center_code = #{centerCode}
+          AND tt.yy = #{year}
+          AND tt.mm = #{month}
+          AND tt.subject = #{subject}
     </select>
 
     <select id="findStudentsByTimeTables" resultType="com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO$TimeTableDTO$StudentDTO">

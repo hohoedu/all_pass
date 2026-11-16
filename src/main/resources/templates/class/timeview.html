@@ -115,9 +115,9 @@
                         </tr>
                         <tr>
                             <td>탈퇴</td>
-                            <td th:text="${statsMap['withdraw'] != null ? statsMap['withdraw'].size() : 0} +'명'">0</td>
+                            <td th:text="${statsMap['inactive'] != null ? statsMap['inactive'].size() : 0} +'명'">0</td>
                             <td>
-                                <span th:each="stat, iterStat : ${statsMap['withdraw']}" th:if="${statsMap['withdraw'] != null}">
+                                <span th:each="stat, iterStat : ${statsMap['inactive']}" th:if="${statsMap['inactive'] != null}">
                                     <span th:text="${stat.studentName}"></span><span th:if="${!iterStat.last}">, </span>
                                 </span>
                             </td>

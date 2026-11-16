@@ -223,7 +223,8 @@ public class LogisticsService {
         merged.sort(Comparator
                 .comparingInt((LogisRespDTO.CenterAggregateDTO.AggregateItemDTO item) -> classKeyOrder(item.getClassKey()))
                 .thenComparingInt(item -> extractUnitNumber(item.getUnitName()))
-                .thenComparing(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getUnitName));
+                .thenComparing(LogisRespDTO.CenterAggregateDTO.AggregateItemDTO::getUnitName,
+                        Comparator.nullsLast(Comparator.naturalOrder())));
 
         return merged;
     }

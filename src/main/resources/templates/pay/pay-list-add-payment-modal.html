@@ -72,9 +72,61 @@
 
                             </tr>
                         </tbody>
+                        <!-- 결제일 (#paid-student 의 td 순서에 영향 없도록 별도 tbody) -->
+                        <tbody>
+                            <tr>
+                                <td>결제일</td>
+                                <td colspan="3" class="pay-date-cell">
+                                    <span class="current-month" id="pay-date-text">2025년 12월 29일</span>
+                                    <input type="date" class="basic-input pay-date hidden-date" id="manual-pay-date">
+                                    <button type="button" class="icon-btn calendar-open" data-target="manual-pay-date">
+                                        <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
-                    <!-- 청구 종류 -->
+                    <!-- 결제 방법 및 금액 -->
                     <table class="manual-payment-table pay-edu-table">
+                        <colgroup>
+                            <col width="20%">
+                            <col width="80%">
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <td class="label-cell">결제 방법 및 금액</td>
+                                <td class="content-cell white-bg" style="border-right:0px;">
+                                    <div class="pay-input-group">
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-green">오프라인 카드</span>
+                                            </label>
+                                            <input type="text" inputmode="numeric" class="pay-input border-green" placeholder="0">
+                                        </div>
+
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-blue2">현금</span>
+                                            </label>
+                                            <input type="text" inputmode="numeric" class="pay-input border-blue" placeholder="0">
+                                        </div>
+
+                                        <div class="pay-row">
+                                            <label class="pay-label-container radio-group">
+                                                <input type="radio" name="pay-method" class="pay-radio">
+                                                <span class="pay-label color-olive">계좌이체</span>
+                                            </label>
+                                            <input type="text" inputmode="numeric" class="pay-input border-olive" placeholder="0">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- 오프라인 카드 선택 시 표시 : 카드사 + 승인번호 -->
+                    <table id="card-table" class="manual-payment-table pay-edu-table">
                         <colgroup>
                             <col width="20%">
                             <col width="30%">
@@ -82,7 +134,6 @@
                             <col width="30%">
                         </colgroup>
                         <tbody>
-
                             <tr>
                                 <td class="label-cell">카드사</td>
                                 <td class="content-cell white-bg">
@@ -96,50 +147,12 @@
                                         </select>
                                     </div>
                                 </td>
-                                <td class="label-cell">결제일</td>
-                                <td>
-                                    <div style="margin: 20px">
-                                        <span class="current-month" id="pay-date-text">2025년 12월 29일</span>
-                                        <input type="date" class="basic-input pay-date hidden-date"
-                                            id="manual-pay-date">
-                                        <button type="button" class="icon-btn calendar-open"
-                                            data-target="manual-pay-date">
-                                            <img th:src="@{/image/calendar.png}" alt="달력 아이콘">
-                                        </button>
-                                    </div>
+                                <td class="label-cell">승인번호</td>
+                                <td class="content-cell white-bg">
+                                    <input type="text" class="basic-input" id="manual-appr-num"
+                                        placeholder="카드 승인번호(필수)" style="width: 100%; max-width: 220px;">
                                 </td>
                             </tr>
-                            <tr>
-                                <td class="label-cell">결제 방법 및 금액</td>
-                                <td class="content-cell white-bg" colspan="3" style="border-right:0px;">
-                                    <div class="pay-input-group">
-                                        <div class="pay-row">
-                                            <label class="pay-label-container radio-group">
-                                                <input type="radio" name="pay-method" class="pay-radio">
-                                                <span class="pay-label color-green">오프라인 카드</span>
-                                            </label>
-                                            <input type="number" class="pay-input border-green">
-                                        </div>
-
-                                        <div class="pay-row">
-                                            <label class="pay-label-container radio-group">
-                                                <input type="radio" name="pay-method" class="pay-radio">
-                                                <span class="pay-label color-blue2">현금</span>
-                                            </label>
-                                            <input type="number" class="pay-input border-blue">
-                                        </div>
-
-                                        <div class="pay-row">
-                                            <label class="pay-label-container radio-group">
-                                                <input type="radio" name="pay-method" class="pay-radio">
-                                                <span class="pay-label color-olive">계좌이체</span>
-                                            </label>
-                                            <input type="number" class="pay-input border-olive">
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-
                         </tbody>
                     </table>
                     <!--                    <button type="button" class="charge-add">-->

@@ -60,4 +60,25 @@ public interface AdminRepository {
             @Param("year") String year,
             @Param("month") String month
     );
+
+    List<Map<String, String>> findMemberChangeTeachers(@Param("centerCode") String centerCode, @Param("year") String year);
+
+    List<Map<String, Object>> findMcTimetableRows(@Param("centerCode") String centerCode, @Param("year") String year);
+
+    List<Map<String, Object>> findMcStatRows(@Param("centerCode") String centerCode, @Param("year") String year);
+
+    List<String> findHohoStudentIds(@Param("centerCode") String centerCode);
+
+    List<String> findGraduateKeys(@Param("year") String year);
+
+    List<AdminRespDTO.MemberChangeRowDTO> findConsultRows(@Param("centerCode") String centerCode, @Param("year") String year);
+
+    List<Map<String, Object>> findMemberChangeEvents(@Param("centerCode") String centerCode, @Param("year") String year);
+
+    void upsertMemberChangeEvent(@Param("centerCode") String centerCode, @Param("year") String year,
+                                 @Param("month") int month, @Param("content") String content,
+                                 @Param("userCode") String userCode);
+
+    void deleteMemberChangeEvent(@Param("centerCode") String centerCode, @Param("year") String year,
+                                 @Param("month") int month);
 }

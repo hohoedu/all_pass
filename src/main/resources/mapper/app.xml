@@ -62,6 +62,46 @@
         WHERE (#{gubun} = 0 OR gubun = #{gubun});
     </select>
 
+    <!-- 알림 설정 조회: 저장 안 한 종류는 Y -->
+    <select id="findNotiOptions" resultType="com.hohoedu.all_pass.app._dto.AppRespDTO$NotiOptionRespDTO">
+        SELECT t.type_code               AS typeCode,
+               t.type_name               AS typeName,
+               ISNULL(o.enabled_yn, 'Y') AS enabled
+        FROM erp_app_noti_type t
+                 LEFT JOIN erp_app_noti_option o
+                           ON o.type_code = t.type_code
+                               AND o.student_id = #{studentId}
+        WHERE t.use_yn = 'Y'
+        ORDER BY t.sort
+    </select>
+
+    <!-- 알림 설정 저장: 없는 종류 코드는 USING 이 비어서 무시된다 -->
+    <update id="upsertNotiOption">
+        MERGE erp_app_noti_option AS o
+        USING (SELECT type_code FROM erp_app_noti_type WHERE type_code = #{typeCode}) AS s
+        ON o.student_id = #{studentId} AND o.type_code = s.type_code
+        WHEN MATCHED THEN
+            UPDATE SET enabled_yn = #{enabledYn}, updated_at = GETDATE()
+        WHEN NOT MATCHED THEN
+            INSERT (student_id, type_code, enabled_yn) VALUES (#{studentId}, s.type_code, #{enabledYn});
+    </update>
+
+    <!-- 이 토큰을 쓰는 학생 중 이 종류를 명시적으로 끈(N) 학생이 있으면 1.
+         "모두 껐을 때"로 하면 이 기기로 예전에 로그인했던 다른 계정(설정 없음 = 기본 Y)에 토큰이 남아 있어 계속 발송된다.
+         형제는 설정을 같이 저장하므로(saveNotiOptions) 서로 어긋나지 않는다. -->
+    <select id="isNotiMuted" resultType="boolean">
+        SELECT CASE
+                   WHEN EXISTS (SELECT 1
+                                FROM erp_student s
+                                         JOIN erp_app_noti_option o
+                                              ON o.student_id = s.student_id
+                                                  AND o.type_code = #{typeCode}
+                                WHERE s.app_token = #{token}
+                                  AND o.enabled_yn = 'N')
+                       THEN 1
+                   ELSE 0 END
+    </select>
+
 
 
 </mapper>

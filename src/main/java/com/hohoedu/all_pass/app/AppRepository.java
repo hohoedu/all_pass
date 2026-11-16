@@ -26,4 +26,16 @@ public interface AppRepository {
 
     List<AppRespDTO.QnaRespDTO> findQnaList(
             @Param("gubun") String gubun);
+
+    List<AppRespDTO.NotiOptionRespDTO> findNotiOptions(
+            @Param("studentId") String studentId);
+
+    void upsertNotiOption(
+            @Param("studentId") String studentId,
+            @Param("typeCode") String typeCode,
+            @Param("enabledYn") String enabledYn);
+
+    boolean isNotiMuted(
+            @Param("token") String token,
+            @Param("typeCode") String typeCode);
 }

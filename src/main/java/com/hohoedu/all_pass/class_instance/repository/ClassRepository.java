@@ -119,6 +119,18 @@ public interface ClassRepository {
             @Param("mm") String mm,
             @Param("timeTableKey") String timeTableKey);
 
+    List<ClassRespDTO.TeacherBookOrderDTO> findTeacherBookOrders(
+            @Param("centerCode") String centerCode,
+            @Param("userCode") String userCode,
+            @Param("year") String year,
+            @Param("month") String month);
+
+    List<String> findUserCodesBySubject(
+            @Param("centerCode") String centerCode,
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("subject") String subject);
+
     List<ClassRespDTO.TimeTableDTO> findTimeTableBasic(
             @Param("userCode") String userCode,
             @Param("year") String year,

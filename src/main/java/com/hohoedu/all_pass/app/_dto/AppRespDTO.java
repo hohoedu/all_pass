@@ -23,4 +23,11 @@ public class AppRespDTO {
         private String answer;
     }
 
+    @Data
+    public static class NotiOptionRespDTO {
+        private String typeCode;
+        private String typeName;
+        private String enabled; // "Y" / "N"
+    }
+
 }

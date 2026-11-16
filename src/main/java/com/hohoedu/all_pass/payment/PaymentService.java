@@ -251,6 +251,10 @@ public class PaymentService {
             if (eduPaidTotal > 0 && (paidDate == null || paidDate.isBlank())) {
                 paidDate = DateConfig.currentYearMonth().get("today");
             }
+            if (eduPaidTotal == 0) {
+                // 납부액이 모두 취소된 경우 결제일도 비움
+                paidDate = null;
+            }
 
             String method;
             if (manualPaidAmount > 0 && eduBillApprovedAmount > 0) {
@@ -2170,8 +2174,13 @@ public class PaymentService {
         paymentRepository.updateManualGroup(manualKey, dto.getPaidDate(), totalAmount, dto.getApprNum());
     }
 
-    /* ── 삭제 ── */
-    public void deletePayment(Integer id, String centerCode) {
+    /* ── 삭제(취소) ──
+     * 행은 지우지 않고 manual / manual_group 을 canceled 로 바꾼 뒤,
+     * 영향받은 erp_payment 의 status · unpaid_amount 를 남은 납부액 기준으로 재계산한다.
+     * (이전에는 DELETE 만 해서 erp_payment 가 결제완료(approved)로 남는 문제가 있었음)
+     */
+    @Transactional
+    public void deletePayment(Integer id, String userCode) {
 
         // 1. id로 매뉴얼 조회
         PaymentManual manual = paymentRepository.findManualById(id);
@@ -2181,14 +2190,33 @@ public class PaymentService {
 
         String manualKey = manual.getManualKey();
 
-        // 2. 같은 매뉴얼 키를 가진 매뉴얼이 몇 개인지 확인
-        List<PaymentManual> siblings = paymentRepository.findAllByManualKey(manualKey);
+        // 2. 그룹 확인 : 이미 취소됐거나 선납금 사용분이면 취소 불가
+        Map<String, Object> group = paymentRepository.findManualGroupSourceAndStatus(manualKey);
+        if (group != null && "canceled".equals(group.get("status"))) {
+            throw new IllegalArgumentException("이미 삭제된 결제 내역입니다.");
+        }
+        if (group != null && "preset".equals(group.get("source"))) {
+            throw new IllegalArgumentException("선납금 사용 내역은 삭제할 수 없습니다.");
+        }
 
-        // 3. 매뉴얼 키로 연결된 매뉴얼 전체 삭제 (형제 매뉴얼 포함)
-        paymentRepository.deleteAllByManualKey(manualKey);
+        // 3. 이 결제로 생긴 선납금이 이미 다른 달에 쓰였으면 취소 불가, 아니면 선납금도 취소
+        if (paymentRepository.countUsedPresetsByManualKey(manualKey) > 0) {
+            throw new IllegalArgumentException("이 결제로 생긴 선납금이 이미 사용되어 삭제할 수 없습니다.");
+        }
 
-        // 4. 매뉴얼 그룹 삭제
-        paymentRepository.deleteManualGroup(manualKey);
+        List<String> paymentKeys = paymentRepository.findPaymentKeysByManualKey(manualKey);
+
+        paymentRepository.cancelPresetsByManualKey(manualKey);
+
+        // 4. 매뉴얼(형제 포함) · 매뉴얼 그룹 취소
+        paymentRepository.cancelManualsByManualKey(manualKey);
+        paymentRepository.cancelManualGroup(manualKey, "수기 결제 삭제");
+
+        // 5. erp_payment 재계산 (status, unpaid_amount 원복)
+        for (String paymentKey : paymentKeys) {
+            recalculatePaymentStatus(paymentKey, userCode);
+        }
+        log.info("수기결제 취소 완료 manualKey={}, paymentKeys={}", manualKey, paymentKeys);
     }
 
     public List<PaymentRespDTO.CashbillPrintDTO> findCashbillPrint(String yy, String mm,

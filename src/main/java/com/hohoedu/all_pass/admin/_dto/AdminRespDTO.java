@@ -2,6 +2,9 @@ package com.hohoedu.all_pass.admin._dto;
 
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 public class AdminRespDTO {
 
@@ -68,4 +71,21 @@ public class AdminRespDTO {
         private String status; // unbilled: 미청구, issued: 청구중, expired: 기한만료/취소
     }
 
+    // 입탈퇴 조회 : 쿼리 원시 행
+    @Data
+    public static class MemberChangeRowDTO {
+        private Integer mm;
+        private String subject; // book / han / hoho
+        private String teacherName;
+        private String kind; // member / join / withdraw / in / out / consult
+        private double val;
+    }
+
+    // 입탈퇴 조회 : 과목 1개 블록 (선생님 컬럼 + 12개월)
+    public record MemberChangeSubject(String key, String title, List<String> teachers, List<MemberChangeMonth> months) {
+    }
+
+    // cells : 선생님 → (kind → 값)
+    public record MemberChangeMonth(int month, double consult, double total, Map<String, Map<String, Double>> cells) {
+    }
 }

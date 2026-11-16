@@ -16,6 +16,7 @@ import java.util.List;
 public class AppService {
 
     private final AppRepository appRepository;
+    private final com.hohoedu.all_pass.student.repository.StudentRepository studentRepository;
 
     public ClassAppRespDTO.BookListMainRespDTO getBookMainInfo(ClassAppReqDTO.BookListMainReqDTO dto) {
 
@@ -84,5 +85,26 @@ public class AppService {
 
     public List<AppRespDTO.QnaRespDTO> getQnaList(String gubun){
         return appRepository.findQnaList(gubun);
+    }
+
+    public List<AppRespDTO.NotiOptionRespDTO> getNotiOptions(String studentId) {
+        return appRepository.findNotiOptions(studentId);
+    }
+
+    public void saveNotiOptions(com.hohoedu.all_pass.app._dto.AppReqDTO.NotiOptionSaveReqDTO dto) {
+        // 형제는 앱 토큰을 같이 쓰므로(updateAppToken) 설정도 형제 모두에게 같이 저장한다 — 한 기기에 설정 하나
+        java.util.Set<String> studentIds = new java.util.LinkedHashSet<>();
+        studentIds.add(dto.getStuid());
+        studentRepository.findSiblingByStudentId(dto.getStuid())
+                .forEach(s -> studentIds.add(s.getStudentId()));
+
+        for (var item : dto.getOptions()) {
+            if (item.getTypeCode() == null) continue;
+            // Y/N 외의 값은 받는 것으로 본다
+            String yn = "N".equalsIgnoreCase(item.getEnabled()) ? "N" : "Y";
+            for (String studentId : studentIds) {
+                appRepository.upsertNotiOption(studentId, item.getTypeCode(), yn);
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@
                  LEFT JOIN (SELECT payment_key,
                                    SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
+                            WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                             GROUP BY payment_key) mp ON p.payment_key = mp.payment_key
 
                  LEFT JOIN (SELECT payment_key, bill_type, expire_date
@@ -163,6 +164,7 @@
                  LEFT JOIN (SELECT payment_key,
                                    SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
+                            WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                             GROUP BY payment_key) mp ON p.payment_key = mp.payment_key
 
                  LEFT JOIN (SELECT payment_key, bill_type, expire_date
@@ -213,6 +215,7 @@
                         ), 0) as total_amount
         FROM erp_payment_manual
         WHERE payment_key = #{paymentKey}
+          AND ISNULL(status, '') &lt;&gt; 'canceled'
     </select>
 
     <insert id="insertPaymentHistory"
@@ -266,6 +269,7 @@
         from erp_payment_detail epd
                  join erp_payment p on epd.payment_key = p.payment_key
                  LEFT join erp_payment_manual pm on pm.payment_key = p.payment_key AND p.student_id = pm.student_id
+                     AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         where p.student_id = #{studentId}
           and p.yy = #{yy}
           and p.mm = #{mm}
@@ -279,6 +283,7 @@
           AND payment_key = #{paymentKey}
           AND yy = #{yy}
           AND mm = #{mm}
+          AND ISNULL(status, '') &lt;&gt; 'canceled'
     </select>
 
     <insert id="insertPaymentManual"
@@ -868,6 +873,7 @@
                  SELECT payment_key,
                         SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                  FROM erp_payment_manual
+                 WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                  GROUP BY payment_key
              ),
              approvedBills AS (
@@ -1277,20 +1283,25 @@
     <!-- 승인번호 대조: 거래일(appr_date) 범위 내 콜백 조회 -->
     <select id="findCallbacksForReconcile"
             resultType="com.hohoedu.all_pass.payment._dto.web.ReconcileDTO$CallbackRow">
-        SELECT appr_num    AS apprNum,
-               appr_date   AS apprDate,
-               appr_price  AS apprPrice,
-               appr_issuer AS apprIssuer,
-               appr_state  AS apprState
-        FROM erp_payment_callback
-        WHERE appr_num IS NOT NULL
-          AND appr_num &lt;&gt; ''
+        SELECT c.appr_num    AS apprNum,
+               c.appr_date   AS apprDate,
+               c.appr_price  AS apprPrice,
+               c.appr_issuer AS apprIssuer,
+               c.appr_state  AS apprState,
+               c.center_code AS centerCode,
+               <!-- 결제선생 취소는 콜백이 따로 쌓이지 않고 청구서 상태가 canceled 로 바뀜 -->
+               CASE WHEN EXISTS (SELECT 1 FROM erp_payment_bill b
+                                 WHERE b.bill_id = c.bill_id AND b.status = 'canceled')
+                    THEN 1 ELSE 0 END AS canceled
+        FROM erp_payment_callback c
+        WHERE c.appr_num IS NOT NULL
+          AND c.appr_num &lt;&gt; ''
           <!-- 콜백 저장 시 bill 미해결이면 center_code가 null로 들어가므로 null도 포함 -->
           <if test="centerCode != null and centerCode != ''">
-              AND (center_code = #{centerCode} OR center_code IS NULL)
+              AND (c.center_code = #{centerCode} OR c.center_code IS NULL)
           </if>
           <!-- appr_date 포맷: yyyyMMddHHmmss (구분자 없음) → 앞 8자리 일자 비교 -->
-          AND LEFT(appr_date, 8) BETWEEN REPLACE(#{dateFrom}, '-', '') AND REPLACE(#{dateTo}, '-', '')
+          AND LEFT(c.appr_date, 8) BETWEEN REPLACE(#{dateFrom}, '-', '') AND REPLACE(#{dateTo}, '-', '')
     </select>
 
     <!-- 승인번호 대조: 수기결제(오프라인 카드) 그룹 조회. 그룹 total_amount 엔 현금/계좌 몫도 섞일 수 있어 자식 manual 의 card_amount 를 합산한다 -->
@@ -1300,16 +1311,18 @@
                pmg.paid_date                         AS apprDate,
                CAST(SUM(pm.card_amount) AS VARCHAR)  AS apprPrice,
                pmg.card_name                         AS apprIssuer,
-               '수기입력'                              AS apprState
+               '수기입력'                              AS apprState,
+               pmg.center_code                       AS centerCode,
+               0                                     AS canceled
         FROM erp_payment_manual_group pmg
-                 JOIN erp_payment_manual pm ON pm.manual_key = pmg.manual_key
+                 JOIN erp_payment_manual pm ON pm.manual_key = pmg.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         WHERE pmg.appr_num IS NOT NULL
           AND pmg.appr_num &lt;&gt; ''
           <if test="centerCode != null and centerCode != ''">
               AND (pmg.center_code = #{centerCode} OR pmg.center_code IS NULL)
           </if>
           AND pmg.paid_date BETWEEN #{dateFrom} AND #{dateTo}
-        GROUP BY pmg.appr_num, pmg.paid_date, pmg.card_name
+        GROUP BY pmg.appr_num, pmg.paid_date, pmg.card_name, pmg.center_code
         HAVING SUM(pm.card_amount) > 0
     </select>
 
@@ -1413,6 +1426,7 @@
              manual_payments AS (SELECT payment_key,
                                         SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                                  FROM erp_payment_manual
+                                 WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                                  GROUP BY payment_key),
 -- 승인된 청구서 합계 (item_type별 분리)
              approved_bills AS (SELECT payment_key,
@@ -1561,6 +1575,7 @@
                  LEFT JOIN erp_card_code card on pm.card_name = card.card_code
                  LEFT JOIN erp_payment p on pm.payment_key = p.payment_key
         WHERE pm.student_id = #{studentId}
+          AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         ORDER BY createdAt DESC;
     </select>
 
@@ -1690,7 +1705,7 @@
                pmg.card_name                                        AS cardName,
                pmg.appr_num                                         AS apprNum
         FROM erp_payment_manual pm
-                 JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
+                 JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
                  JOIN erp_student s ON pm.student_id = s.student_id
                  LEFT JOIN erp_payment_cashbill epc ON pmg.cashbill_id = epc.bill_id
         WHERE pmg.center_code = #{centerCode}
@@ -1716,7 +1731,7 @@
                NULL                                                      AS cardName,
                NULL                                                      AS apprNum
         FROM erp_payment_manual pm
-                 JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key
+                 JOIN erp_payment_manual_group pmg ON pm.manual_key = pmg.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
                  JOIN erp_student s ON pm.student_id = s.student_id
         WHERE pmg.center_code = #{centerCode}
           AND pm.yy = #{yy}
@@ -1784,7 +1799,7 @@
                (pm.cash_amount + pm.transfer_amount)                             as amount,
                (pa.parent_tel_first + pa.parent_tel_middle + pa.parent_tel_last) as phoneNumber
         FROM erp_payment_manual_group pmg
-                 JOIN erp_payment_manual pm on pmg.manual_key = pm.manual_key
+                 JOIN erp_payment_manual pm on pmg.manual_key = pm.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
                  JOIN erp_student s ON pmg.student_id = s.student_id
                  LEFT JOIN erp_grade_code g ON s.grade_key = g.grade_key
                  LEFT JOIN erp_teacher_assign eta ON s.student_id = eta.student_id
@@ -1899,6 +1914,7 @@
                             WHERE rn = 1) pb ON p.payment_key = pb.payment_key
                  LEFT JOIN (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                             FROM erp_payment_manual
+                            WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                             GROUP BY payment_key) pm ON p.payment_key = pm.payment_key
                  LEFT JOIN (SELECT payment_key, SUM(amount) AS bill_amount
                             FROM erp_payment_bill
@@ -1984,6 +2000,7 @@
                       GROUP BY s.student_id, p.payment_key, s.student_name, pd.item_type),
              manualPayments AS (SELECT payment_key, SUM(card_amount + cash_amount + transfer_amount + COALESCE(prepaid_amount, 0)) AS manual_amount
                                 FROM erp_payment_manual
+                                WHERE ISNULL(status, '') &lt;&gt; 'canceled'
                                 GROUP BY payment_key),
              approvedBills AS (SELECT payment_key, bill_type, SUM(amount) AS bill_amount
                                FROM erp_payment_bill
@@ -2059,6 +2076,50 @@
         WHERE manual_key = #{manualKey}
     </select>
 
+    <!-- 수기결제 취소(삭제) 처리용 -->
+    <select id="findPaymentKeysByManualKey" resultType="string">
+        SELECT DISTINCT payment_key
+        FROM erp_payment_manual
+        WHERE manual_key = #{manualKey}
+          AND payment_key IS NOT NULL
+    </select>
+
+    <select id="findManualGroupSourceAndStatus" resultType="map">
+        SELECT source, status
+        FROM erp_payment_manual_group
+        WHERE manual_key = #{manualKey}
+    </select>
+
+    <!-- 이 수기결제로 생긴 선납금 중 이미 사용된 건수 -->
+    <select id="countUsedPresetsByManualKey" resultType="int">
+        SELECT COUNT(*)
+        FROM erp_payment_preset
+        WHERE original_manual_payment_id IN (SELECT id FROM erp_payment_manual WHERE manual_key = #{manualKey})
+          AND status &lt;&gt; 'canceled'
+          AND COALESCE(used_months, 0) &gt; 0
+    </select>
+
+    <update id="cancelPresetsByManualKey">
+        UPDATE erp_payment_preset
+        SET status     = 'canceled',
+            updated_at = SYSDATETIME()
+        WHERE original_manual_payment_id IN (SELECT id FROM erp_payment_manual WHERE manual_key = #{manualKey})
+          AND status &lt;&gt; 'canceled'
+    </update>
+
+    <update id="cancelManualsByManualKey">
+        UPDATE erp_payment_manual
+        SET status = 'canceled'
+        WHERE manual_key = #{manualKey}
+    </update>
+
+    <update id="cancelManualGroup">
+        UPDATE erp_payment_manual_group
+        SET status        = 'canceled',
+            cancel_reason = #{cancelReason}
+        WHERE manual_key = #{manualKey}
+    </update>
+
     <update id="updateManual">
         UPDATE erp_payment_manual
         SET paid_date       = #{dto.paidDate},
@@ -2097,9 +2158,9 @@
                 pm2.payment_key AS sibling_payment_key
             FROM erp_payment_cashbill pc
                      JOIN erp_payment p     ON pc.payment_key = p.payment_key
-                     JOIN erp_payment_manual pm   ON p.payment_key  = pm.payment_key
+                     JOIN erp_payment_manual pm   ON p.payment_key  = pm.payment_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
                      JOIN erp_payment_manual_group pmg ON pm.manual_key   = pmg.manual_key
-                     JOIN erp_payment_manual pm2  ON pmg.manual_key  = pm2.manual_key
+                     JOIN erp_payment_manual pm2  ON pmg.manual_key  = pm2.manual_key AND ISNULL(pm2.status, '') &lt;&gt; 'canceled'
             WHERE p.yy + '-' + p.mm = #{ym}
               AND pc.student_id IN (
                 SELECT student_id FROM erp_student WHERE center_code = #{centerCode}
@@ -2227,7 +2288,8 @@
           AND NOT EXISTS (SELECT 1
                           FROM erp_payment_manual pm
                           WHERE pm.student_id = s.student_id
-                            AND pm.yy + pm.mm = #{ym});
+                            AND pm.yy + pm.mm = #{ym}
+                            AND ISNULL(pm.status, '') &lt;&gt; 'canceled');
     </select>
 
     <!-- 형제 ID 조회 -->
@@ -2368,7 +2430,7 @@
         PARTITION BY pmg.manual_key ORDER BY pm.payment_key
         ) - 1 AS rn
         FROM erp_payment_manual_group pmg
-        JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
+        JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         JOIN erp_payment p ON pm.payment_key = p.payment_key
         JOIN erp_student s ON p.student_id = s.student_id
         LEFT JOIN erp_card_code card ON pm.card_name = card.card_code
@@ -2461,7 +2523,7 @@
         WHEN 'TRANSFER' THEN '계좌이체'
         END AS pay_type
         FROM erp_payment_manual_group pmg
-        JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
+        JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         JOIN erp_payment p ON pm.payment_key = p.payment_key
         JOIN erp_payment_detail pd ON p.payment_key = pd.payment_key
         JOIN erp_time_table tt ON pd.time_table_key = tt.time_table_key
@@ -2525,6 +2587,7 @@
             WHERE pm.yy = #{yy}
                 AND pm.mm = #{mm}
                 AND pm.center_code = #{centerCode}
+                AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
         )
         SELECT
             CAST(CAST(SUBSTRING(raw_date, 5, 2) AS INT) AS VARCHAR) + '월' AS month,
@@ -2597,7 +2660,7 @@
         PARTITION BY pmg.manual_key ORDER BY pm.payment_key, pd.id
         ) - 1                                                              AS rn
                       FROM erp_payment_manual_group pmg
-                               JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key
+                               JOIN erp_payment_manual pm ON pmg.manual_key = pm.manual_key AND ISNULL(pm.status, '') &lt;&gt; 'canceled'
                                JOIN erp_payment p ON pm.payment_key = p.payment_key
                                JOIN erp_student s ON p.student_id = s.student_id
                                LEFT JOIN erp_card_code card ON pm.card_name = card.card_code

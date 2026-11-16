@@ -28,7 +28,7 @@ public class FcmController {
         if (fcmDTO.getToken() == null || fcmDTO.getToken().isEmpty()) {
             throw new IllegalArgumentException("토큰이 없습니다.");
         }
-        fcmService.sendMessage(fcmDTO.getToken(), fcmDTO.getTitle(), fcmDTO.getBody());
+        fcmService.sendMessage(fcmDTO.getToken(), FcmService.TYPE_ATTENDANCE, fcmDTO.getTitle(), fcmDTO.getBody());
         return ResponseEntity.ok(ApiUtils.success("success"));
     }
 
@@ -41,7 +41,7 @@ public class FcmController {
         }
 
         for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            fcmService.sendMessage(token, FcmService.TYPE_LESSON, fcmDTO.getTitle(), fcmDTO.getBody());
         }
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
     }
@@ -50,7 +50,7 @@ public class FcmController {
     public ResponseEntity<?> afterClass(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
 
         for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            fcmService.sendMessage(token, FcmService.TYPE_CLASS_RESULT, fcmDTO.getTitle(), fcmDTO.getBody());
         }
 
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
@@ -64,7 +64,7 @@ public class FcmController {
         // FCM 발송
         for (int i = 0; i < fcmDTO.getTokens().size(); i++) {
             String token = fcmDTO.getTokens().get(i);
-            boolean success = fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            boolean success = fcmService.sendMessage(token, FcmService.TYPE_MONTH_EVAL, fcmDTO.getTitle(), fcmDTO.getBody());
 
             if (success && i < fcmDTO.getStudents().size()) {
                 successStudentIds.add(fcmDTO.getStudents().get(i).getStudentId());
@@ -100,8 +100,7 @@ public class FcmController {
         List<String> successStudentIds = new ArrayList<>();
 
         for (FcmDTO.InfantFcmDTO.StudentTokenDTO s : fcmDTO.getStudents()) {
-            boolean ok = fcmService.sendMessage(
-                    s.getToken(),
+            boolean ok = fcmService.sendMessage(s.getToken(), FcmService.TYPE_CLASS_RESULT,
                     fcmDTO.getTitle(),
                     fcmDTO.getBody()
             );
@@ -126,7 +125,7 @@ public class FcmController {
     public ResponseEntity<?> clinic(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
 
         for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            fcmService.sendMessage(token, FcmService.TYPE_READING_CLINIC, fcmDTO.getTitle(), fcmDTO.getBody());
         }
 
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
@@ -136,7 +135,7 @@ public class FcmController {
     public ResponseEntity<?> guide(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
 
         for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            fcmService.sendMessage(token, FcmService.TYPE_CLASS_BOOK, fcmDTO.getTitle(), fcmDTO.getBody());
         }
 
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));
@@ -146,7 +145,7 @@ public class FcmController {
     public ResponseEntity<?> notice(@RequestBody FcmDTO.MultiFcmDTO fcmDTO) {
 
         for (String token : fcmDTO.getTokens()) {
-            fcmService.sendMessage(token, fcmDTO.getTitle(), fcmDTO.getBody());
+            fcmService.sendMessage(token, FcmService.TYPE_NOTICE, fcmDTO.getTitle(), fcmDTO.getBody());
         }
 
         return ResponseEntity.ok(ApiUtils.success("발송 성공"));

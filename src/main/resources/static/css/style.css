@@ -1133,6 +1133,69 @@ table .checkbox-group {
     pointer-events: auto;
 }
 
+/* 납부내역 추가 : 오프라인 카드 선택(또는 카드 금액 입력) 시에만 카드사·승인번호 행 표시 */
+#card-table {
+    display: none;
+}
+
+#card-table.show {
+    display: table;
+}
+
+.add-payment-modal .pay-date-cell {
+    padding: 10px 20px;
+}
+
+/* 납부내역 추가 모달 : 고정 높이(65vh) 대신 남는 공간을 채우고, 저장 버튼은 항상 모달 하단에 */
+.add-payment-modal .add-m-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
+}
+
+.add-payment-modal .add-m-frame {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.add-payment-modal .add-m-frame > .second-frame {
+    flex: 1;
+    min-height: 0;
+}
+
+.add-payment-modal .left-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.add-payment-modal .add-m-left {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+.add-payment-modal .add-m-right {
+    height: auto;
+    min-height: 0;
+}
+
+/* 표 사이를 벌리지 않고 위에서부터 쌓음 */
+.add-payment-modal .manual-m-right {
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+.add-payment-modal .stu-m-tbl td {
+    height: 56px;
+}
+
+.add-payment-modal .save-btn-frame {
+    flex-shrink: 0;
+}
+
 
 /* ======================= login page ======================= */
 .login-container {

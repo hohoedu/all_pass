@@ -16,4 +16,21 @@ public class AppReqDTO {
     public static class QnaReqDTO {
         private String gubun;
     }
+
+    @Data
+    public static class NotiOptionViewReqDTO {
+        private String stuid;
+    }
+
+    @Data
+    public static class NotiOptionSaveReqDTO {
+        private String stuid;
+        private java.util.List<NotiOptionItem> options;
+
+        @Data
+        public static class NotiOptionItem {
+            private String typeCode;
+            private String enabled; // "Y" / "N"
+        }
+    }
 }

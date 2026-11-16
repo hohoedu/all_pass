@@ -606,12 +606,52 @@ public class AdminViewController {
         return "/admin/center/center-timeview";
     }
 
+    @GetMapping("/center/timeview-legacy")
+    public String getAdminTimeViewLegacyPage(Model model) {
+        LocalDate now = LocalDate.now();
+        model.addAttribute("year", String.valueOf(now.getYear()));
+        model.addAttribute("month", String.format("%02d", now.getMonthValue()));
+        model.addAttribute("center", centerService.findAllCenter());
+        return "/admin/center/center-timeview_legacy";
+    }
+
+    // 매출자료 ↔ 결제내역 승인번호 대조 (사용자 화면에서 이전)
+    @GetMapping("/center/reconcile")
+    public String getAdminReconcilePage(Model model) {
+        model.addAttribute("center", centerService.findAllCenter());
+        return "/admin/center/center-reconcile";
+    }
+
     @GetMapping("/center/status")
     public String getAdminCenterStatusPage(Model model) {
         LocalDate now = LocalDate.now();
         model.addAttribute("year", String.valueOf(now.getYear()));
         model.addAttribute("month", String.format("%02d", now.getMonthValue()));
         return "/admin/center/center-status";
+    }
+
+    // 입탈퇴 조회
+    @GetMapping("/center/member-change")
+    public String getAdminMemberChangePage(Model model) {
+        model.addAttribute("center", centerService.findAllCenter());
+        model.addAttribute("year", LocalDate.now().getYear());
+        return "/admin/center/center-member-change";
+    }
+
+    @GetMapping("/center/member-change/excel")
+    public void downloadMemberChangeExcel(@RequestParam("centerCode") String centerCode,
+                                          @RequestParam("year") String year,
+                                          @RequestParam(value = "userCodes", required = false) Set<String> userCodes,
+                                          HttpServletResponse response) throws IOException {
+        String centerName = centerService.findAllCenter().stream()
+                .filter(c -> centerCode.equals(c.getCenterCode()))
+                .map(Center::getCenterName).findFirst().orElse(centerCode);
+        String fileName = URLEncoder.encode(year + "년 " + centerName + " 회원현황.xlsx", StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+        adminService.writeMemberChangeExcel(adminService.findMemberChange(centerCode, year, userCodes),
+                adminService.findMemberChangeEvents(centerCode, year), centerName, year, response.getOutputStream());
     }
 
     @GetMapping("/center/print-timeview")

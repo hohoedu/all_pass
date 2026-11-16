@@ -419,6 +419,15 @@ public class ClassService {
 
     }
 
+    public List<ClassRespDTO.TeacherBookOrderDTO> findTeacherBookOrders(String centerCode, String userCode,
+            String year, String month) {
+        return classRepository.findTeacherBookOrders(centerCode, userCode, year, month);
+    }
+
+    public List<String> findUserCodesBySubject(String centerCode, String year, String month, String subject) {
+        return classRepository.findUserCodesBySubject(centerCode, year, month, subject);
+    }
+
     public List<TimeTableDTO> findTimeTableWithStudents(String userCode, String year, String month) {
         String ym = year + "-" + month;
 
@@ -1160,7 +1169,7 @@ public class ClassService {
 
             // 1. FCM 발송
             if (s.getAppToken() != null && !s.getAppToken().isBlank()) {
-                fcmService.sendMessage(s.getAppToken(), "수업 안내", "수업 전 안내가 등록되었습니다.");
+                fcmService.sendMessage(s.getAppToken(), FcmService.TYPE_LESSON, "수업 안내", "수업 전 안내가 등록되었습니다.");
                 sentCount++;
             } else {
                 skippedCount++;
@@ -1321,7 +1330,7 @@ public class ClassService {
                     + day + "일 "
                     + response.getSTime() + "에 진행될 예정이에요.<br>⏰시간에 맞춰 도착해 주세요.";
 
-            boolean isSend = fcmService.sendMessage(response.getAppToken(), "보강 안내", pushContent);
+            boolean isSend = fcmService.sendMessage(response.getAppToken(), FcmService.TYPE_LESSON, "보강 안내", pushContent);
 
             if (isSend) {
                 LocalDateTime now = LocalDateTime.now();

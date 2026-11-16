@@ -33,94 +33,221 @@ public class PaymentReconcileService {
     private static final List<String> H_CARD = List.of("카드사", "발급사", "가맹점", "카드종류");
     private static final List<String> H_AMOUNT = List.of("승인금액", "거래금액", "합계금액", "금액");
 
-    /** 엑셀 업로드 → 대조 결과 */
+    /**
+     * 엑셀 업로드 → 대조 결과
+     * <p>
+     * 승인번호 단위로 엑셀 순금액(승인 - 취소)과 DB 유효 결제 금액(취소 제외)을 비교한다.
+     * - 여신 엑셀의 취소 행은 원 승인번호 + 음수 금액으로 들어오고, 이전 달 승인분 취소도 섞여 있다.
+     * - 같은 승인번호가 서로 다른 거래에 재사용되기도 해서, 승인번호별로 금액을 합산해 비교한다.
+     * - 결제선생 취소는 콜백이 따로 쌓이지 않고 청구서가 canceled 로 바뀌므로 DB 취소는 청구서 상태로 판단한다.
+     */
     public ReconcileDTO.Result reconcile(MultipartFile file, String source, String centerCode) throws IOException {
         List<ReconcileDTO.ExcelRow> rows = parseExcel(file);
 
-        // 승인 건만 대조 대상(취소 제외)
-        List<ReconcileDTO.ExcelRow> approved = new ArrayList<>();
-        for (ReconcileDTO.ExcelRow r : rows) {
-            String g = r.getGubun() == null ? "" : r.getGubun().trim();
-            if (g.isEmpty() || g.contains("승인")) {
-                approved.add(r);
-            }
-        }
-
-        // 엑셀 거래일자 최소/최대 산출
+        // 1) 엑셀 : 승인 / 취소 분리, 승인번호별 순금액
+        Map<String, List<ReconcileDTO.ExcelRow>> fileApprovals = new LinkedHashMap<>();
+        Map<String, List<ReconcileDTO.ExcelRow>> fileCancels = new LinkedHashMap<>();
+        List<ReconcileDTO.ExcelRow> noApprNum = new ArrayList<>();
+        int approvedCount = 0, canceledCount = 0;
+        long fileApprovedAmount = 0, fileCanceledAmount = 0;
         LocalDate minD = null, maxD = null;
-        for (ReconcileDTO.ExcelRow r : approved) {
+
+        for (ReconcileDTO.ExcelRow r : rows) {
+            boolean isCancel = isCancelGubun(r.getGubun()) || parseAmount(r.getAmount()) < 0;
+            long amount = Math.abs(parseAmount(r.getAmount()));
+            String n = normalizeApprNum(r.getApprNum());
+
+            if (isCancel) {
+                canceledCount++;
+                fileCanceledAmount += amount;
+            } else {
+                approvedCount++;
+                fileApprovedAmount += amount;
+            }
+
+            if (n == null) {
+                if (!isCancel) noApprNum.add(r);
+            } else {
+                (isCancel ? fileCancels : fileApprovals).computeIfAbsent(n, k -> new ArrayList<>()).add(r);
+            }
+
             String d = normalizeDate(r.getTxDate());
-            if (d == null) continue;
-            LocalDate ld = LocalDate.parse(d);
-            if (minD == null || ld.isBefore(minD)) minD = ld;
-            if (maxD == null || ld.isAfter(maxD)) maxD = ld;
+            if (d != null) {
+                LocalDate ld = LocalDate.parse(d);
+                if (minD == null || ld.isBefore(minD)) minD = ld;
+                if (maxD == null || ld.isAfter(maxD)) maxD = ld;
+            }
         }
         if (minD == null) {
             throw new IllegalArgumentException("엑셀에서 거래일자를 찾을 수 없습니다. 파일 형식을 확인해주세요.");
         }
-        // 대조 범위: 거래월 1일 -3일 ~ 거래월 말일 (월초 반영지연 흡수)
-        String from = minD.withDayOfMonth(1).minusDays(3).toString();
-        String to = java.time.YearMonth.from(maxD).atEndOfMonth().toString();
 
-        // DB 콜백 조회(거래일 범위) → 승인번호 정규화 맵
-        List<ReconcileDTO.CallbackRow> callbacks =
-                paymentRepository.findCallbacksForReconcile(centerCode, from, to);
-        // 수기결제(오프라인 카드) 승인번호도 대조 대상에 포함
-        List<ReconcileDTO.CallbackRow> manualGroups =
-                paymentRepository.findManualGroupsForReconcile(centerCode, from, to);
+        // 2) DB 조회 : 엑셀 첫 거래일 -3일(반영 지연 흡수) ~ 엑셀 마지막 거래일
+        //    (월말까지 조회하면 부분월 엑셀에서 이후 결제가 전부 '파일 없음'으로 잡힘)
+        String from = minD.minusDays(3).toString();
+        String to = maxD.toString();
 
-        Map<String, ReconcileDTO.CallbackRow> dbByNorm = new LinkedHashMap<>();
-        for (ReconcileDTO.CallbackRow c : callbacks) {
+        List<ReconcileDTO.CallbackRow> dbRows = new ArrayList<>();
+        dbRows.addAll(paymentRepository.findCallbacksForReconcile(centerCode, from, to));
+        dbRows.addAll(paymentRepository.findManualGroupsForReconcile(centerCode, from, to)); // 수기 카드결제
+
+        Map<String, List<ReconcileDTO.CallbackRow>> dbByNorm = new LinkedHashMap<>();
+        for (ReconcileDTO.CallbackRow c : dbRows) {
             String n = normalizeApprNum(c.getApprNum());
             if (n == null) continue;
-            dbByNorm.putIfAbsent(n, c); // 승인/취소 중복 시 첫 건 대표
-        }
-        for (ReconcileDTO.CallbackRow c : manualGroups) {
-            String n = normalizeApprNum(c.getApprNum());
-            if (n == null) continue;
-            dbByNorm.putIfAbsent(n, c);
+            if (isCancelState(c.getApprState())) c.setCanceled(true);
+            dbByNorm.computeIfAbsent(n, k -> new ArrayList<>()).add(c);
         }
 
-        // 파일 승인번호 정규화 집합
-        Set<String> fileNorms = new HashSet<>();
-        for (ReconcileDTO.ExcelRow r : approved) {
-            String n = normalizeApprNum(r.getApprNum());
-            if (n != null) fileNorms.add(n);
-        }
-
-        // 🔴 파일엔 있으나 DB에 없음
-        List<ReconcileDTO.ExcelRow> missingInDb = new ArrayList<>();
-        int matched = 0;
-        Set<String> counted = new HashSet<>();
-        for (ReconcileDTO.ExcelRow r : approved) {
-            String n = normalizeApprNum(r.getApprNum());
-            if (n == null) { missingInDb.add(r); continue; }
-            if (dbByNorm.containsKey(n)) {
-                if (counted.add(n)) matched++;
-            } else {
-                missingInDb.add(r);
-            }
-        }
-
-        // 🟡 DB엔 있으나 파일에 없음
+        // 3) 승인번호별 비교
+        List<ReconcileDTO.ExcelRow> missingInDb = new ArrayList<>(noApprNum);
         List<ReconcileDTO.CallbackRow> missingInFile = new ArrayList<>();
-        for (Map.Entry<String, ReconcileDTO.CallbackRow> e : dbByNorm.entrySet()) {
-            if (!fileNorms.contains(e.getKey())) {
-                missingInFile.add(e.getValue());
+        List<ReconcileDTO.MismatchRow> cancelNotReflected = new ArrayList<>();
+        List<ReconcileDTO.MismatchRow> amountMismatch = new ArrayList<>();
+        List<ReconcileDTO.ExcelRow> prevMonthCancels = new ArrayList<>();
+        List<ReconcileDTO.CallbackRow> unknownCenter = new ArrayList<>();
+        int matched = 0;
+        int dbCount = 0; // DB 합계(dbAmount)에 들어간 건수 (센터 미확인·기간 밖·취소 제외)
+        long dbAmount = 0, prevCancelAmount = 0, unknownCenterAmount = 0;
+
+        Set<String> keys = new LinkedHashSet<>();
+        keys.addAll(fileApprovals.keySet());
+        keys.addAll(fileCancels.keySet());
+        keys.addAll(dbByNorm.keySet());
+
+        String minDate = minD.toString(), maxDate = maxD.toString();
+
+        for (String key : keys) {
+            List<ReconcileDTO.ExcelRow> appr = fileApprovals.getOrDefault(key, List.of());
+            List<ReconcileDTO.ExcelRow> canc = fileCancels.getOrDefault(key, List.of());
+            List<ReconcileDTO.CallbackRow> db = dbByNorm.getOrDefault(key, List.of());
+
+            long fileAppr = appr.stream().mapToLong(r -> Math.abs(parseAmount(r.getAmount()))).sum();
+            long fileCanc = canc.stream().mapToLong(r -> Math.abs(parseAmount(r.getAmount()))).sum();
+            long fileNet = fileAppr - fileCanc;
+            long dbActive = db.stream().filter(c -> !c.isCanceled()).mapToLong(c -> parseAmount(c.getApprPrice())).sum();
+            boolean inFile = !appr.isEmpty() || !canc.isEmpty();
+
+            // 이전 달 승인분 취소 : 이번 달 엑셀엔 취소만 있음
+            if (appr.isEmpty() && !canc.isEmpty()) {
+                prevMonthCancels.addAll(canc);
+                prevCancelAmount += fileCanc;
+                if (dbActive > 0) {
+                    cancelNotReflected.add(mismatch(key, canc.get(0), -fileCanc, dbActive,
+                            "이전 달 승인 취소 → DB 결제 유지"));
+                    dbAmount += dbActive;
+                    dbCount += activeCount(db);
+                }
+                continue;
+            }
+
+            if (!inFile) {
+                // DB에만 있음 : 취소건·엑셀 기간 밖 건은 제외, 센터 미확인 건은 별도
+                for (ReconcileDTO.CallbackRow c : db) {
+                    if (c.isCanceled()) continue;
+                    String d = normalizeDate(c.getApprDate());
+                    if (d == null || d.compareTo(minDate) < 0 || d.compareTo(maxDate) > 0) continue;
+                    long price = parseAmount(c.getApprPrice());
+                    if (c.getCenterCode() == null || c.getCenterCode().isBlank()) {
+                        unknownCenter.add(c);
+                        unknownCenterAmount += price;
+                    } else {
+                        missingInFile.add(c);
+                        dbAmount += price;
+                        dbCount++;
+                    }
+                }
+                continue;
+            }
+
+            dbAmount += dbActive;
+            dbCount += activeCount(db);
+            ReconcileDTO.ExcelRow rep = appr.get(0);
+
+            if (db.isEmpty()) {
+                // 엑셀에서 승인 후 같은 달에 전액 취소된 거래는 DB에 없어도 정상
+                if (fileNet != 0) missingInDb.addAll(appr);
+                else matched++;
+                continue;
+            }
+
+            if (fileNet == dbActive) {
+                matched++;
+            } else if (fileNet == 0 && !canc.isEmpty()) {
+                cancelNotReflected.add(mismatch(key, rep, fileNet, dbActive, "카드사 취소 → DB 결제 유지"));
+            } else if (dbActive == 0) {
+                amountMismatch.add(mismatch(key, rep, fileNet, dbActive, "DB에서만 취소됨"));
+            } else {
+                amountMismatch.add(mismatch(key, rep, fileNet, dbActive,
+                        canc.isEmpty() ? "금액 다름" : "부분 취소 금액 다름"));
             }
         }
+
+        long fileNetAmount = fileApprovedAmount - fileCanceledAmount;
 
         return ReconcileDTO.Result.builder()
                 .source(source)
                 .fileTotal(rows.size())
-                .fileApproved(approved.size())
-                .dbTotal(dbByNorm.size())
+                .fileApproved(approvedCount)
+                .fileCanceled(canceledCount)
+                .dbTotal(dbCount)
                 .matched(matched)
-                .dateFrom(from)
-                .dateTo(to)
+                .dateFrom(minDate)
+                .dateTo(maxDate)
+                .fileApprovedAmount(fileApprovedAmount)
+                .fileCanceledAmount(fileCanceledAmount)
+                .fileNetAmount(fileNetAmount)
+                .dbAmount(dbAmount)
+                .diffAmount(fileNetAmount - dbAmount)
+                .prevCancelAmount(prevCancelAmount)
+                .unknownCenterAmount(unknownCenterAmount)
                 .missingInDb(missingInDb)
                 .missingInFile(missingInFile)
+                .cancelNotReflected(cancelNotReflected)
+                .amountMismatch(amountMismatch)
+                .prevMonthCancels(prevMonthCancels)
+                .unknownCenter(unknownCenter)
                 .build();
+    }
+
+    private ReconcileDTO.MismatchRow mismatch(String apprNum, ReconcileDTO.ExcelRow rep, long fileAmount,
+                                              long dbAmount, String note) {
+        return ReconcileDTO.MismatchRow.builder()
+                .apprNum(apprNum)
+                .txDate(rep.getTxDate())
+                .cardName(rep.getCardName())
+                .fileAmount(fileAmount)
+                .dbAmount(dbAmount)
+                .note(note)
+                .build();
+    }
+
+    private int activeCount(List<ReconcileDTO.CallbackRow> db) {
+        return (int) db.stream().filter(c -> !c.isCanceled()).count();
+    }
+
+    private boolean isCancelGubun(String gubun) {
+        return gubun != null && gubun.contains("취소");
+    }
+
+    /** 결제선생 appr_state 가 취소를 뜻하는지 (값 체계가 확인되지 않아 보수적으로 판단) */
+    private boolean isCancelState(String state) {
+        if (state == null) return false;
+        String s = state.trim().toLowerCase();
+        return s.equals("c") || s.contains("cancel") || s.contains("취소");
+    }
+
+    /** "140,000" / "-140,000" / "140000원" → long (숫자 없으면 0) */
+    static long parseAmount(String raw) {
+        if (raw == null) return 0;
+        String t = raw.trim();
+        boolean negative = t.startsWith("-") || (t.startsWith("(") && t.endsWith(")"));
+        int dot = t.indexOf('.');
+        if (dot >= 0) t = t.substring(0, dot); // "140000.00" 같은 소수점 이하 제거
+        String d = t.replaceAll("\\D", "");
+        if (d.isEmpty()) return 0;
+        long v = Long.parseLong(d);
+        return negative ? -v : v;
     }
 
     /** 엑셀 파싱: 헤더 행을 자동 탐지(승인번호 컬럼 기준)하여 필요한 컬럼만 추출 */
@@ -223,10 +350,31 @@ public class PaymentReconcileService {
         return d.substring(0, 4) + "-" + d.substring(4, 6) + "-" + d.substring(6, 8);
     }
 
-    /** 대조 결과 → 엑셀(불일치 목록) */
+    /** 대조 결과 → 엑셀(요약 + 불일치 목록) */
     public byte[] exportResult(ReconcileDTO.Result result) throws IOException {
         try (Workbook wb = new XSSFWorkbook()) {
             CellStyle header = headerStyle(wb);
+
+            // 시트0: 요약
+            Sheet s0 = wb.createSheet("요약");
+            String[][] summary = {
+                    {"대조 기간", nz(result.getDateFrom()) + " ~ " + nz(result.getDateTo())},
+                    {"엑셀 승인 합계", String.format("%,d", result.getFileApprovedAmount())},
+                    {"엑셀 취소 합계", String.format("%,d", result.getFileCanceledAmount())},
+                    {"엑셀 순매출", String.format("%,d", result.getFileNetAmount())},
+                    {"DB 카드 결제 합계", String.format("%,d", result.getDbAmount())},
+                    {"차이 (엑셀 - DB)", String.format("%,d", result.getDiffAmount())},
+                    {"└ 이전 달 승인 취소분", String.format("%,d", result.getPrevCancelAmount())},
+                    {"센터 미확인 DB 결제 (제외)", String.format("%,d", result.getUnknownCenterAmount())},
+            };
+            for (int i = 0; i < summary.length; i++) {
+                Row row = s0.createRow(i);
+                Cell k = row.createCell(0);
+                k.setCellValue(summary[i][0]);
+                k.setCellStyle(header);
+                row.createCell(1).setCellValue(summary[i][1]);
+            }
+            autoSize(s0, 2);
 
             // 시트1: 매출 확인 필요(파일엔 있고 DB엔 없음)
             Sheet s1 = wb.createSheet("매출확인필요");
@@ -262,10 +410,34 @@ public class PaymentReconcileService {
             }
             autoSize(s2, h2.length);
 
+            // 시트3: 취소 미반영 + 금액 불일치
+            Sheet s3 = wb.createSheet("취소미반영_금액불일치");
+            String[] h3 = {"구분", "거래일자", "카드사", "승인번호", "엑셀 순금액", "DB 금액", "내용"};
+            writeHeader(s3, h3, header);
+            ri = 1;
+            ri = writeMismatch(s3, ri, "취소 미반영", result.getCancelNotReflected());
+            writeMismatch(s3, ri, "금액 불일치", result.getAmountMismatch());
+            autoSize(s3, h3.length);
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
             return out.toByteArray();
         }
+    }
+
+    private int writeMismatch(Sheet sheet, int ri, String type, List<ReconcileDTO.MismatchRow> list) {
+        if (list == null) return ri;
+        for (ReconcileDTO.MismatchRow m : list) {
+            Row row = sheet.createRow(ri++);
+            row.createCell(0).setCellValue(type);
+            row.createCell(1).setCellValue(nz(m.getTxDate()));
+            row.createCell(2).setCellValue(nz(m.getCardName()));
+            row.createCell(3).setCellValue(nz(m.getApprNum()));
+            row.createCell(4).setCellValue(m.getFileAmount());
+            row.createCell(5).setCellValue(m.getDbAmount());
+            row.createCell(6).setCellValue(nz(m.getNote()));
+        }
+        return ri;
     }
 
     private void writeHeader(Sheet sheet, String[] headers, CellStyle style) {

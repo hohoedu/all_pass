@@ -402,6 +402,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    /* ── 수정 모달 금액 칸 : text 입력이라 숫자 외 문자 제거 ── */
+    ['edit-card-amount', 'edit-cash-amount', 'edit-transfer-amount'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('input', (e) => {
+            const digits = e.target.value.replace(/[^0-9]/g, '');
+            if (digits !== e.target.value) e.target.value = digits;
+        });
+    });
+
     /* ── 수정 저장 API ── */
     async function saveEditPayment() {
         const modal = document.getElementById('edit-payment-modal');
@@ -426,6 +434,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (cardAmount > 0 && !cardName) {
             Swal.fire('알림', '카드사를 선택해주세요.', 'warning');
+            return;
+        }
+
+        if (cardAmount > 0 && !apprNum) {
+            Swal.fire('알림', '카드 승인번호를 입력해주세요.', 'warning');
             return;
         }
 
@@ -675,7 +688,16 @@ document.addEventListener("DOMContentLoaded", () => {
         📝 수기 결제 모달 - 현금영수증 자동 입력
     ======================================== */
     const setupManualPaymentCashbill = () => {
-        const payInputs = document.querySelectorAll('.add-payment-modal .pay-input');
+        // 승인번호 칸은 금액 입력이 아니라 라디오(카드/현금/계좌이체) 순서 매칭에서 제외
+        const payInputs = document.querySelectorAll('.add-payment-modal .pay-input:not(#manual-appr-num)');
+
+        // 금액 칸은 text 입력이라 숫자 외 문자는 바로 제거 (capture 로 아래 금액 처리 리스너보다 먼저 실행)
+        payInputs.forEach((input) => {
+            input.addEventListener('input', (e) => {
+                const digits = e.target.value.replace(/[^0-9]/g, '');
+                if (digits !== e.target.value) e.target.value = digits;
+            }, true);
+        });
         const payRadios = document.querySelectorAll('.add-payment-modal .pay-radio');
         const cashPriceInput = document.querySelector(".add-payment-modal #cash-price");
         const supplyPriceInput = document.querySelector(".add-payment-modal #supply-price");
@@ -996,6 +1018,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const receiptSection = document.querySelector('.add-payment-modal .cashbill-section');
             if (receiptSection) receiptSection.classList.remove('show');
+            document.getElementById('receipt-table')?.classList.remove('show');
+
+            document.getElementById('card-table')?.classList.remove('show');
+            const manualApprNum = document.getElementById('manual-appr-num');
+            if (manualApprNum) manualApprNum.value = '';
 
             document.querySelectorAll("#unpaid-student-list tr").forEach(r => r.classList.remove("selected"));
 
@@ -1030,9 +1057,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const cashAmount = Number(document.querySelector('.border-blue')?.value || 0);
         const transferAmount = Number(document.querySelector('.border-olive')?.value || 0);
         const cardCode = document.getElementById('cardCodeSelect')?.value || '';
+        const apprNum = document.getElementById('manual-appr-num')?.value.trim() || '';
 
         if (cardAmount > 0 && !cardCode) {
             alert("카드사를 선택해주세요.");
+            return;
+        }
+
+        // 매출자료 대조(승인번호 기준)를 위해 카드 결제는 승인번호 필수
+        if (cardAmount > 0 && !apprNum) {
+            alert("카드 승인번호를 입력해주세요.");
             return;
         }
 
@@ -1102,6 +1136,7 @@ document.addEventListener("DOMContentLoaded", () => {
             cashAmount: cashAmount,
             transferAmount: transferAmount,
             cardName: cardCode,
+            apprNum: cardAmount > 0 ? apprNum : null,
             paidDate: payDateInput.value,
             yy: modalYY,    // ← 모달 월
             mm: modalMM,
@@ -1144,7 +1179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert(result.response.message || "수기 결제가 완료되었습니다.");
                 location.reload();
             } else {
-                alert("수기 결제 실패");
+                alert(result.error?.message || result.msg || "수기 결제 실패");
             }
         } catch (err) {
             alert("오류가 발생했습니다.");
@@ -1260,6 +1295,17 @@ document.addEventListener("DOMContentLoaded", () => {
     ----------------------------- */
     const payMethodRadios = document.querySelectorAll('input[name="pay-method"]');
 
+    // 카드사·승인번호 행 : 오프라인 카드를 선택했거나 카드 금액이 있으면 표시 (현금/계좌와 혼합 결제 대비)
+    const cardTable = document.getElementById('card-table');
+    const manualCardAmountInput = document.querySelector('.add-payment-modal .border-green');
+    const updateCardTable = () => {
+        if (!cardTable) return;
+        const cardRadio = document.querySelector('.add-payment-modal .pay-radio');
+        const hasCardAmount = Number(manualCardAmountInput?.value || 0) > 0;
+        cardTable.classList.toggle('show', !!cardRadio?.checked || hasCardAmount);
+    };
+    manualCardAmountInput?.addEventListener('input', updateCardTable);
+
     payMethodRadios.forEach(radio => {
         radio.addEventListener('change', function () {
             const labelText = this.nextElementSibling.textContent.trim();
@@ -1270,6 +1316,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 receiptTable.classList.remove('show');
             }
+            updateCardTable();
         });
     });
 });

@@ -452,6 +452,13 @@ transferIssueType.addEventListener('change', () => {
 cardCompany.addEventListener('change', updateRegisterStatus);
 
 saveRegisterBtn.addEventListener('click', () => {
+    // 매출자료 대조(승인번호 기준)를 위해 카드 결제는 승인번호 필수
+    if (useCard.checked && getMoneyValue(cardAmount) > 0 && !cardApprNum.value.trim()) {
+        alert('카드 승인번호를 입력해주세요.');
+        cardApprNum.focus();
+        return;
+    }
+
     const total = (useCard.checked ? getMoneyValue(cardAmount) : 0)
         + (useCash.checked ? getMoneyValue(cashAmount) : 0)
         + (useTransfer.checked ? getMoneyValue(transferAmount) : 0);

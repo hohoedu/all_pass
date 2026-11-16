@@ -54,7 +54,7 @@ public class NoticeService {
             }
 
             // 선택된 학생들에게 비동기 알림 발송 (진행률은 progressKey로 조회)
-            fcmService.sendMessagesAsync(dto.getCenterNoticeKey(), dto.getTokens(), dto.getTitle(), message);
+            fcmService.sendMessagesAsync(dto.getCenterNoticeKey(), dto.getTokens(), FcmService.TYPE_NOTICE, dto.getTitle(), message);
             result.put("progressKey", dto.getCenterNoticeKey());
             result.put("total", dto.getTokens().size());
         }
@@ -93,7 +93,7 @@ public class NoticeService {
                 }
 
                 String progressKey = noticeDTO.getCenterNoticeKey() + "_add_" + System.currentTimeMillis();
-                fcmService.sendMessagesAsync(progressKey, noticeDTO.getTokens(), noticeDTO.getTitle(), message);
+                fcmService.sendMessagesAsync(progressKey, noticeDTO.getTokens(), FcmService.TYPE_NOTICE, noticeDTO.getTitle(), message);
                 result.put("progressKey", progressKey);
                 result.put("total", noticeDTO.getTokens().size());
             }

@@ -99,4 +99,13 @@ public class AdminReqDTO {
         private String centerCode;
         private Integer deadline;
     }
+
+    // 입탈퇴 조회 "행사 or 이슈" 저장
+    @Data
+    public static class MemberChangeEventDTO {
+        private String centerCode;
+        private String year;
+        private int month;
+        private String content;
+    }
 }

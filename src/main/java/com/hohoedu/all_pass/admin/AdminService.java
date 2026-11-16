@@ -3,6 +3,8 @@ package com.hohoedu.all_pass.admin;
 import com.hohoedu.all_pass.admin._dto.AdminReqDTO;
 import com.hohoedu.all_pass.admin._dto.AdminRespDTO;
 import com.hohoedu.all_pass.admin.model.SubjectCode;
+import com.hohoedu.all_pass.class_instance.ClassService;
+import com.hohoedu.all_pass.class_instance._dto.web.ClassRespDTO;
 import com.hohoedu.all_pass.class_instance.model.ClassCode;
 import com.hohoedu.all_pass.class_instance.model.UnitCode;
 import com.hohoedu.all_pass.secondary._dto.SecondaryDTO;
@@ -11,10 +13,19 @@ import com.hohoedu.all_pass.secondary.repository.SecondaryLogisticsRepository;
 import com.hohoedu.all_pass.third._dto.ThirdDTO;
 import com.hohoedu.all_pass.third.repository.ThirdEbookRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -72,6 +83,7 @@ public class AdminService {
     private final SecondaryLogisticsRepository secondaryLogisticsRepository;
     private final SecondaryEbookRepository secondaryEbookRepository;
     private final ThirdEbookRepository thirdEbookRepository;
+    private final ClassService classService;
 
     public int insertPersonYear(AdminReqDTO.PersonSettingDTO reqDTO) {
 
@@ -687,5 +699,471 @@ public class AdminService {
         result.put("centers", centers);
         result.put("unpaidStudents", unpaidStudents);
         return result;
+    }
+
+    // ===== 입탈퇴 조회 =====
+    private static final String[][] MC_SUBJECTS = {{"book", "북스쿨"}, {"han", "한스쿨"}, {"hoho", "호호스쿨"}};
+    // 엑셀 선생님 칸 순서 (목록에 없는 선생님은 뒤에 이름순)
+    // shortcut: 해와나무 센터 기준 하드코딩, 다른 센터도 같은 순서가 필요해지면 DB 설정으로 이동
+    private static final Map<String, List<String>> MC_TEACHER_ORDER = Map.of(
+            "han", List.of("이정애", "김도경", "장혜진"),
+            "book", List.of("남지영", "이경은", "노수연", "성해랑"),
+            "hoho", List.of("이경진", "장혜진"));
+    // 집계에서 아예 빼는 선생님 (전체총원·요약에도 포함 안 됨)
+    private static final Set<String> MC_EXCLUDED_TEACHERS = Set.of("미지정", "조정로");
+    private static final String[][] MC_KINDS = {
+            {"join", "입회"}, {"withdraw", "탈퇴"}, {"in", "전입"}, {"out", "전출"}, {"graduate", "졸업"}, {"member", "회원"}};
+
+    // 회원 현황 gb → 입탈퇴 조회 kind
+    private static final Map<String, String> MC_STAT_KIND = Map.of(
+            "entry", "join", "inactive", "withdraw", "move_in", "in", "move_out", "out");
+
+    /**
+     * 센터·연도별 입탈퇴 현황 : 과목(북/한/호호) × 선생님 × 12개월
+     * 선생님×월마다 시간표 조회 「회원 현황」과 같은 코드(findTableViewWithStudents)를 호출해 숫자를 그대로 옮긴다.
+     * - 회원 : 한·북 = 강좌(수업 횟수 합 × 0.25), 호호 = 총원(학생 수). 학생 단위로 호호(is_hoho) / 반 종류 구분
+     * - 입회·탈퇴·전입·전출 : 회원 현황 목록. 호호 학생은 호호스쿨, 나머지는 선생님 과목(MC_TEACHER_ORDER)
+     * - 졸업 : 회원 현황 탈퇴 중 사유에 '졸업'
+     */
+    /**
+     * 입탈퇴 조회 (빠른 방식) : 시간표 조회 「회원 현황」 쿼리와 같은 조건을 1년치로 한 번에 조회.
+     * 회원 = 한·북은 강좌(수업 횟수 합 × 0.25), 호호는 총원(학생 수). 결과가 화면과 같은지는 verifyMemberChange 로 확인.
+     */
+    @Transactional(readOnly = true)
+    public List<AdminRespDTO.MemberChangeSubject> findMemberChange(String centerCode, String year) {
+        return findMemberChange(centerCode, year, null);
+    }
+
+    /** userCodes : 선택한 선생님만 (null·빈 값이면 전체). 상담문의는 센터 전체 숫자라 항상 포함 */
+    @Transactional(readOnly = true)
+    public List<AdminRespDTO.MemberChangeSubject> findMemberChange(String centerCode, String year, Set<String> userCodes) {
+        return aggregateMemberChange(mcFastRows(centerCode, year, userCodes == null || userCodes.isEmpty() ? null : userCodes));
+    }
+
+    // 조회 화면 선생님 선택 목록 : 이 센터에 그 해 시간표가 있는 선생님 (제외 선생님 빼고, 한·북·호호 지정 순서 → 이름순)
+    @Transactional(readOnly = true)
+    public List<Map<String, String>> findMemberChangeTeacherList(String centerCode, String year) {
+        List<String> order = new ArrayList<>(MC_TEACHER_ORDER.get("han"));
+        for (String key : new String[]{"book", "hoho"})
+            MC_TEACHER_ORDER.get(key).stream().filter(t -> !order.contains(t)).forEach(order::add);
+        return adminRepository.findMemberChangeTeachers(centerCode, year).stream()
+                .filter(t -> !MC_EXCLUDED_TEACHERS.contains(t.get("userName")))
+                .sorted(Comparator.comparingInt((Map<String, String> t) -> order.contains(t.get("userName"))
+                                ? order.indexOf(t.get("userName")) : order.size())
+                        .thenComparing(t -> t.get("userName")))
+                .toList();
+    }
+
+    private List<AdminRespDTO.MemberChangeRowDTO> mcFastRows(String centerCode, String year, Set<String> userCodes) {
+        Set<String> hoho = new HashSet<>(adminRepository.findHohoStudentIds(centerCode));
+        Set<String> graduates = new HashSet<>(adminRepository.findGraduateKeys(year));
+        // 상담문의 : 전체면 센터 전체, 선생님을 고르면 그 선생님이 받은 상담만 (ERP_CONSULT.user_code)
+        List<AdminRespDTO.MemberChangeRowDTO> rows = new ArrayList<>();
+        for (AdminRespDTO.MemberChangeRowDTO c : adminRepository.findConsultRows(centerCode, year)) {
+            if (userCodes != null && !userCodes.contains(c.getTeacherName())) continue;
+            c.setTeacherName(null); // 상담은 선생님 칸이 아니라 과목별 상담문의 칸에 들어감
+            rows.add(c);
+        }
+        Map<String, String> names = new HashMap<>();
+        for (Map<String, String> t : adminRepository.findMemberChangeTeachers(centerCode, year))
+            names.put(t.get("userCode"), t.get("userName"));
+
+        // 선생님|월 → (과목 → 강좌). 키가 있으면 그 달 시간표가 있는 것
+        Map<String, Map<String, Double>> members = new TreeMap<>();
+        for (Map<String, Object> r : adminRepository.findMcTimetableRows(centerCode, year)) {
+            String subj = r.get("subject").toString();
+            // 호호는 강좌가 아니라 총원(학생 수)
+            double val = "hoho".equals(subj) ? ((Number) r.get("heads")).intValue()
+                    : ((Number) r.get("weeks")).intValue() * 0.25;
+            members.computeIfAbsent(r.get("userCode") + "|" + r.get("mm"), k -> new HashMap<>())
+                    .merge(subj, val, Double::sum);
+        }
+        Map<String, List<String[]>> stats = new HashMap<>(); // 선생님|월 → [gb, studentId]
+        for (Map<String, Object> r : adminRepository.findMcStatRows(centerCode, year))
+            stats.computeIfAbsent(r.get("userCode") + "|" + r.get("ym").toString().substring(5, 7), k -> new ArrayList<>())
+                    .add(new String[]{r.get("gb").toString(), String.valueOf(r.get("studentId"))});
+
+        for (Map.Entry<String, Map<String, Double>> e : members.entrySet()) {
+            String[] key = e.getKey().split("\\|");
+            String name = names.get(key[0]);
+            if (name == null || MC_EXCLUDED_TEACHERS.contains(name)) continue;
+            if (userCodes != null && !userCodes.contains(key[0])) continue;
+            mcAddTeacherMonth(rows, Integer.parseInt(key[1]), year, name, e.getValue(),
+                    stats.getOrDefault(e.getKey(), List.of()), hoho, graduates);
+        }
+        return rows;
+    }
+
+    // 선생님 1명·1개월 → 원시 행 (빠른 방식·화면 코드 방식 공통)
+    private static void mcAddTeacherMonth(List<AdminRespDTO.MemberChangeRowDTO> rows, int m, String year, String name,
+                                          Map<String, Double> memberBySubject, List<String[]> stats,
+                                          Set<String> hoho, Set<String> graduates) {
+        for (Map.Entry<String, Double> e : memberBySubject.entrySet())
+            rows.add(mcRow(m, e.getKey(), name, "member", e.getValue()));
+        String teacherSubject = MC_TEACHER_ORDER.get("han").contains(name) ? "han"
+                : MC_TEACHER_ORDER.get("book").contains(name) ? "book"
+                : memberBySubject.getOrDefault("book", 0d) > memberBySubject.getOrDefault("han", 0d) ? "book" : "han";
+        String ym = year + "-" + String.format("%02d", m);
+        for (String[] stat : stats) {
+            String kind = MC_STAT_KIND.get(stat[0]);
+            if (kind == null) continue; // 1-3주 목록
+            if ("withdraw".equals(kind) && graduates.contains(stat[1] + "|" + ym)) kind = "graduate";
+            rows.add(mcRow(m, hoho.contains(stat[1]) ? "hoho" : teacherSubject, name, kind, 1));
+        }
+    }
+
+    /**
+     * 검증 : 빠른 방식 결과와 시간표 조회 화면 코드(findTableViewWithStudents)를 선생님×월로 돌린 결과를 비교.
+     * 다른 칸만 "과목 월 선생님 항목 : 빠른=x 화면=y" 로 돌려준다 (비어 있으면 일치).
+     */
+    public List<String> verifyMemberChange(String centerCode, String year) {
+        List<AdminRespDTO.MemberChangeSubject> fast = findMemberChange(centerCode, year);
+        List<AdminRespDTO.MemberChangeSubject> screen = aggregateMemberChange(mcScreenRows(centerCode, year));
+        List<String> diffs = new ArrayList<>();
+        for (int b = 0; b < fast.size(); b++)
+            for (int m = 0; m < 12; m++) {
+                AdminRespDTO.MemberChangeMonth f = fast.get(b).months().get(m), sc = screen.get(b).months().get(m);
+                Set<String> teachers = new TreeSet<>(f.cells().keySet());
+                teachers.addAll(sc.cells().keySet());
+                for (String t : teachers)
+                    for (String[] k : MC_KINDS) {
+                        double fv = f.cells().getOrDefault(t, Map.of()).getOrDefault(k[0], 0d);
+                        double sv = sc.cells().getOrDefault(t, Map.of()).getOrDefault(k[0], 0d);
+                        if (Math.abs(fv - sv) > 1e-9)
+                            diffs.add(fast.get(b).title() + " " + (m + 1) + "월 " + t + " " + k[1] + " : 빠른=" + fv + " 화면=" + sv);
+                    }
+            }
+        return diffs;
+    }
+
+    // 화면 코드 방식 (검증용) : 선생님×월마다 findTableViewWithStudents 를 6개씩 병렬 호출
+    private List<AdminRespDTO.MemberChangeRowDTO> mcScreenRows(String centerCode, String year) {
+        Set<String> hoho = new HashSet<>(adminRepository.findHohoStudentIds(centerCode));
+        Set<String> graduates = new HashSet<>(adminRepository.findGraduateKeys(year));
+        List<AdminRespDTO.MemberChangeRowDTO> rows = new ArrayList<>();
+        List<java.util.concurrent.Callable<List<AdminRespDTO.MemberChangeRowDTO>>> tasks = new ArrayList<>();
+        for (Map<String, String> teacher : adminRepository.findMemberChangeTeachers(centerCode, year)) {
+            if (MC_EXCLUDED_TEACHERS.contains(teacher.get("userName"))) continue;
+            for (int m = 1; m <= 12; m++) {
+                int month = m;
+                tasks.add(() -> {
+                    String mm = String.format("%02d", month);
+                    ClassRespDTO.TimeTableViewRespDTO view =
+                            classService.findTableViewWithStudents(year, mm, teacher.get("userCode"), centerCode);
+                    List<AdminRespDTO.MemberChangeRowDTO> out = new ArrayList<>();
+                    if (view.getTables().isEmpty()) return out;
+                    Map<String, Double> memberBySubject = new HashMap<>();
+                    Set<String> hohoHeads = new HashSet<>();
+                    for (ClassRespDTO.TimeTableDTO tt : view.getTables()) {
+                        String tableSubject = "1".equals(tt.getClassType()) ? "han" : "book";
+                        for (ClassRespDTO.TimeTableDTO.StudentDTO st : tt.getStudents()) {
+                            if (st.getStudentId() == null || st.getStudentId().isEmpty()
+                                    || "\u00A0".equals(st.getStudentName())) continue;
+                            int week;
+                            try {
+                                week = Integer.parseInt(st.getWeek());
+                            } catch (Exception e) {
+                                week = 0;
+                            }
+                            if (hoho.contains(st.getStudentId())) hohoHeads.add(st.getStudentId());
+                            else memberBySubject.merge(tableSubject, week * 0.25, Double::sum);
+                        }
+                    }
+                    if (!hohoHeads.isEmpty()) memberBySubject.put("hoho", (double) hohoHeads.size());
+                    List<String[]> stats = view.getStats().stream()
+                            .map(st -> new String[]{st.getGb(), st.getStudentId()}).toList();
+                    mcAddTeacherMonth(out, month, year, teacher.get("userName"), memberBySubject, stats, hoho, graduates);
+                    return out;
+                });
+            }
+        }
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(6);
+        try {
+            for (java.util.concurrent.Future<List<AdminRespDTO.MemberChangeRowDTO>> f : pool.invokeAll(tasks))
+                rows.addAll(f.get());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("검증이 중단되었습니다.", e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            throw new IllegalStateException("검증 중 오류가 발생했습니다.", e.getCause());
+        } finally {
+            pool.shutdownNow();
+        }
+        return rows;
+    }
+
+    private static AdminRespDTO.MemberChangeRowDTO mcRow(int mm, String subject, String teacher, String kind, double val) {
+        AdminRespDTO.MemberChangeRowDTO r = new AdminRespDTO.MemberChangeRowDTO();
+        r.setMm(mm);
+        r.setSubject(subject);
+        r.setTeacherName(teacher);
+        r.setKind(kind);
+        r.setVal(val);
+        return r;
+    }
+
+    // 원시 행 → 과목 블록(선생님 순서·제외 적용) × 12개월
+    static List<AdminRespDTO.MemberChangeSubject> aggregateMemberChange(List<AdminRespDTO.MemberChangeRowDTO> rows) {
+        List<AdminRespDTO.MemberChangeSubject> result = new ArrayList<>();
+
+        for (String[] subject : MC_SUBJECTS) {
+            List<AdminRespDTO.MemberChangeRowDTO> subjectRows = rows.stream()
+                    .filter(r -> subject[0].equals(r.getSubject()) && r.getMm() != null)
+                    .filter(r -> r.getVal() != 0) // 빈 시간표(회원 0)로 다른 과목에 빈 선생님 칸이 생기지 않게
+                    .filter(r -> "consult".equals(r.getKind())
+                            || (r.getTeacherName() != null && !MC_EXCLUDED_TEACHERS.contains(r.getTeacherName())))
+                    .toList();
+            List<String> order = MC_TEACHER_ORDER.getOrDefault(subject[0], List.of());
+            List<String> teachers = subjectRows.stream()
+                    .filter(r -> !"consult".equals(r.getKind()))
+                    .map(AdminRespDTO.MemberChangeRowDTO::getTeacherName)
+                    .distinct()
+                    .sorted(Comparator.comparingInt((String t) -> order.contains(t) ? order.indexOf(t) : order.size())
+                            .thenComparing(Comparator.naturalOrder()))
+                    .toList();
+
+            List<AdminRespDTO.MemberChangeMonth> months = new ArrayList<>();
+            for (int m = 1; m <= 12; m++) {
+                double consult = 0, total = 0;
+                Map<String, Map<String, Double>> cells = new LinkedHashMap<>();
+                for (AdminRespDTO.MemberChangeRowDTO r : subjectRows) {
+                    if (r.getMm() != m) continue;
+                    if ("consult".equals(r.getKind())) {
+                        consult += r.getVal();
+                        continue;
+                    }
+                    cells.computeIfAbsent(r.getTeacherName(), k -> new HashMap<>()).merge(r.getKind(), r.getVal(), Double::sum);
+                    if ("member".equals(r.getKind())) total += r.getVal();
+                }
+                months.add(new AdminRespDTO.MemberChangeMonth(m, consult, total, cells));
+            }
+            result.add(new AdminRespDTO.MemberChangeSubject(subject[0], subject[1], teachers, months));
+        }
+        return result;
+    }
+
+    // 입탈퇴 조회 "행사 or 이슈" : 월(1~12) → 내용
+    @Transactional(readOnly = true)
+    public Map<Integer, String> findMemberChangeEvents(String centerCode, String year) {
+        Map<Integer, String> events = new TreeMap<>();
+        try {
+            for (Map<String, Object> r : adminRepository.findMemberChangeEvents(centerCode, year))
+                events.put(((Number) r.get("mm")).intValue(), String.valueOf(r.get("content")));
+        } catch (org.springframework.dao.DataAccessException e) {
+            // 테이블 생성 전(sql/2026-11-16_erp_yearly_event.sql 미실행)에도 조회·엑셀은 동작하게
+            log.warn("행사 or 이슈 조회 실패 (erp_yearly_event 테이블 확인): {}", e.getMessage());
+        }
+        return events;
+    }
+
+    // 입력하면 바로 저장, 빈 값이면 삭제
+    @Transactional
+    public void saveMemberChangeEvent(AdminReqDTO.MemberChangeEventDTO dto, String userCode) {
+        if (dto.getCenterCode() == null || dto.getCenterCode().isBlank()
+                || dto.getYear() == null || !dto.getYear().matches("\\d{4}")
+                || dto.getMonth() < 1 || dto.getMonth() > 12)
+            throw new IllegalArgumentException("센터·연도·월을 확인해주세요.");
+        String content = dto.getContent() == null ? "" : dto.getContent().trim();
+        if (content.length() > 100) throw new IllegalArgumentException("100자 이내로 입력해주세요.");
+        if (content.isEmpty())
+            adminRepository.deleteMemberChangeEvent(dto.getCenterCode(), dto.getYear(), dto.getMonth());
+        else
+            adminRepository.upsertMemberChangeEvent(dto.getCenterCode(), dto.getYear(), dto.getMonth(), content, userCode);
+    }
+
+    /**
+     * 입탈퇴 조회 엑셀 : resources/excel/member-change-template.xlsx(원본 양식) 를 4시트로 나눠 값·수식을 채운다.
+     * 1 전체 현황(양식 1~19행) / 2 한스쿨(양식 38행~) / 3 북스쿨(양식 20행~) / 4 호호스쿨(양식 56행~)
+     * 스쿨 시트는 양식 블록을 복사해 맨 위로 올린 것. 선생님이 양식 칸 수(북·한 3명, 호호 2명)보다 많으면
+     * 첫 선생님 칸 서식을 복사해 오른쪽으로 늘린다. 전체 현황의 회원 = 각 스쿨 시트 전체총원.
+     */
+    public void writeMemberChangeExcel(List<AdminRespDTO.MemberChangeSubject> report, Map<Integer, String> events,
+                                       String centerName, String year, OutputStream out) throws IOException {
+        try (InputStream in = new ClassPathResource("excel/member-change-template.xlsx").getInputStream();
+             XSSFWorkbook wb = new XSSFWorkbook(in)) {
+            String yy = year.length() == 4 ? year.substring(2) : year;
+            int[] templateStart = {19, 37, 55};  // report 순서(북·한·호호)별 양식 블록 시작 행 (0-based)
+            int[] templateGroups = {3, 3, 2};    // 양식에 서식이 잡힌 선생님 칸 수
+            String[] sheetNames = new String[3];
+
+            // 스쿨 시트 : 양식 복사 → 해당 블록만 남겨 맨 위로
+            for (int b = 0; b < 3; b++) {
+                sheetNames[b] = report.get(b).title() + " 현황";
+                Sheet c = wb.cloneSheet(0);
+                wb.setSheetName(wb.getSheetIndex(c), sheetNames[b]);
+                mcKeepRows(c, templateStart[b], templateStart[b] + 16);
+            }
+            Sheet sum = wb.getSheetAt(0);
+            wb.setSheetName(0, "전체 현황");
+            mcKeepRows(sum, 0, 18);
+            wb.setSheetOrder("한스쿨 현황", 1);
+            wb.setSheetOrder("북스쿨 현황", 2);
+            wb.setSheetOrder("호호스쿨 현황", 3);
+
+            // 전체 현황 제목 병합은 표 너비(A~R)까지만
+            for (int i = sum.getNumMergedRegions() - 1; i >= 0; i--)
+                if (sum.getMergedRegion(i).isInRange(0, 0)) sum.removeMergedRegion(i);
+            sum.addMergedRegion(new CellRangeAddress(0, 0, 0, 17));
+            mcPut(sum, 0, 0, yy + "년 " + centerName + " 회원 변동");
+            mcPut(sum, 18, 4, "1월 입회 제외 \n누적 입회");
+
+            // [블록][월] → 요약표에서 쓸 셀 목록 (다른 시트 참조)
+            List<List<String>> joinRefs = new ArrayList<>(), withdrawRefs = new ArrayList<>();
+
+            for (int b = 0; b < 3; b++) {
+                AdminRespDTO.MemberChangeSubject subject = report.get(b);
+                List<String> teachers = subject.teachers();
+                Sheet sh = wb.getSheet(sheetNames[b]);
+                String ref = "'" + sheetNames[b] + "'!";
+                int lastCol = 21;
+                mcPut(sh, 0, 0, yy + "년 " + centerName + " " + subject.title() + " 회원 변동");
+
+                for (int g = 0; g < teachers.size(); g++) {
+                    int c0 = 4 + g * MC_KINDS.length;
+                    if (g >= templateGroups[b]) {
+                        for (int r = 2; r <= 16; r++)
+                            for (int k = 0; k < MC_KINDS.length; k++)
+                                mcCellAt(sh, r, c0 + k).setCellStyle(mcCellAt(sh, r, 4 + k).getCellStyle());
+                        for (int k = 0; k < MC_KINDS.length; k++) {
+                            mcPut(sh, 3, c0 + k, MC_KINDS[k][1]);
+                            if (c0 + k > 21) sh.setColumnWidth(c0 + k, sh.getColumnWidth(4 + k));
+                        }
+                        sh.addMergedRegion(new CellRangeAddress(2, 2, c0, c0 + MC_KINDS.length - 1));
+                    }
+                    mcPut(sh, 2, c0, teachers.get(g));
+                    lastCol = Math.max(lastCol, c0 + MC_KINDS.length - 1);
+                }
+
+                List<String> joins = new ArrayList<>(), withdraws = new ArrayList<>();
+                for (int m = 1; m <= 12; m++) {
+                    AdminRespDTO.MemberChangeMonth mon = subject.months().get(m - 1);
+                    int r = 3 + m;
+                    String row = String.valueOf(r + 1);
+                    mcPut(sh, r, 2, mon.consult());
+                    List<String> members = new ArrayList<>(), j = new ArrayList<>(), w = new ArrayList<>();
+                    for (int g = 0; g < teachers.size(); g++) {
+                        int c0 = 4 + g * MC_KINDS.length;
+                        Map<String, Double> cell = mon.cells().getOrDefault(teachers.get(g), Map.of());
+                        for (int k = 0; k < MC_KINDS.length; k++) {
+                            double v = cell.getOrDefault(MC_KINDS[k][0], 0d);
+                            // 양식처럼 전입·전출·졸업은 0 이면 빈칸
+                            mcPut(sh, r, c0 + k, v == 0 && k >= 2 && k <= 4 ? null : v);
+                        }
+                        j.add(ref + mcCol(c0) + row);
+                        w.add(ref + mcCol(c0 + 1) + row);
+                        members.add(mcCol(c0 + 5) + row);
+                    }
+                    mcFx(sh, r, 3, members);
+                    joins.add(mcSumOf(j));
+                    withdraws.add(mcSumOf(w));
+                }
+                joinRefs.add(joins);
+                withdrawRefs.add(withdraws);
+
+                // 누적 (17행)
+                mcFormula(sh, 16, 2, "SUM(C5:C16)");
+                for (int g = 0; g < teachers.size(); g++)
+                    for (int k = 0; k < MC_KINDS.length; k++) {
+                        int c = 4 + g * MC_KINDS.length + k;
+                        if ("member".equals(MC_KINDS[k][0])) mcPut(sh, 16, c, "ㅡ");
+                        else mcFormula(sh, 16, c, "SUM(" + mcCol(c) + "5:" + mcCol(c) + "16)");
+                    }
+                wb.setPrintArea(wb.getSheetIndex(sh), 0, lastCol, 0, 16);
+            }
+
+            // 전체 현황 (5~16행) : 양식 열 순서 북/한/호호 = report 0/1/2
+            for (int m = 1; m <= 12; m++) {
+                int r = 3 + m;
+                String row = String.valueOf(r + 1);
+                List<String> consult = new ArrayList<>();
+                for (int b = 0; b < 3; b++) {
+                    String ref = "'" + sheetNames[b] + "'!";
+                    consult.add(ref + "C" + row);
+                    mcFormula(sum, r, 4 + b, joinRefs.get(b).get(m - 1));     // E,F,G 입회
+                    mcFormula(sum, r, 9 + b, withdrawRefs.get(b).get(m - 1)); // J,K,L 탈퇴
+                    mcFormula(sum, r, 12 + b * 2, ref + "D" + row);           // M,O,Q 회원 = 스쿨 전체총원
+                }
+                mcFx(sum, r, 2, consult);
+                mcFormula(sum, r, 3, "M" + row + "+O" + row + "+Q" + row);
+            }
+            mcFormula(sum, 16, 2, "SUM(C5:C16)");
+            for (int c : new int[]{4, 5, 6, 9, 10, 11})
+                mcFormula(sum, 16, c, "SUM(" + mcCol(c) + "5:" + mcCol(c) + "16)");
+            mcFormula(sum, 17, 3, "D16-D5");
+            mcFormula(sum, 17, 6, "SUM(E17:G17)");
+            mcFormula(sum, 17, 11, "SUM(J17:L17)");
+            mcFormula(sum, 18, 6, "SUM(E6:G16)");
+            wb.setPrintArea(0, 0, 17, 0, 18);
+
+            // 행사 or 이슈 (A열, 4시트 모두 월 행이 5~16행)
+            for (int i = 0; i < wb.getNumberOfSheets(); i++)
+                for (int m = 1; m <= 12; m++)
+                    mcPut(wb.getSheetAt(i), 3 + m, 0, events.get(m));
+
+            // 인쇄 : 시트마다 A4 가로 1페이지에 맞춤 (가운데 정렬, 좁은 여백)
+            for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                Sheet p = wb.getSheetAt(i);
+                p.setFitToPage(true);
+                p.setHorizontallyCenter(true);
+                PrintSetup ps = p.getPrintSetup();
+                ps.setPaperSize(PrintSetup.A4_PAPERSIZE);
+                ps.setLandscape(true);
+                ps.setFitWidth((short) 1);
+                ps.setFitHeight((short) 1);
+                p.setMargin(PageMargin.LEFT, 0.3);
+                p.setMargin(PageMargin.RIGHT, 0.3);
+                p.setMargin(PageMargin.TOP, 0.4);
+                p.setMargin(PageMargin.BOTTOM, 0.4);
+            }
+
+            wb.setActiveSheet(0);
+            wb.setSelectedTab(0);
+            wb.setForceFormulaRecalculation(true);
+            XSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
+            wb.write(out);
+        }
+    }
+
+    // 시트에서 [from, to] 행만 남기고 맨 위로 올린다 (병합 영역 포함)
+    private static void mcKeepRows(Sheet sh, int from, int to) {
+        for (int i = sh.getNumMergedRegions() - 1; i >= 0; i--) {
+            CellRangeAddress m = sh.getMergedRegion(i);
+            if (m.getFirstRow() < from || m.getLastRow() > to) sh.removeMergedRegion(i);
+        }
+        for (int r = sh.getLastRowNum(); r >= 0; r--) {
+            Row row = sh.getRow(r);
+            if (row != null && (r < from || r > to)) sh.removeRow(row);
+        }
+        if (from > 0) sh.shiftRows(from, to, -from);
+    }
+
+    private static Cell mcCellAt(Sheet sh, int r, int c) {
+        Row row = sh.getRow(r) != null ? sh.getRow(r) : sh.createRow(r);
+        return row.getCell(c) != null ? row.getCell(c) : row.createCell(c);
+    }
+
+    // 값 쓰기 (서식은 양식 그대로 유지)
+    private static void mcPut(Sheet sh, int r, int c, Object v) {
+        Cell cell = mcCellAt(sh, r, c);
+        if (v instanceof Number n) cell.setCellValue(n.doubleValue());
+        else if (v != null) cell.setCellValue(v.toString());
+        else cell.setBlank();
+    }
+
+    private static void mcFormula(Sheet sh, int r, int c, String f) {
+        mcCellAt(sh, r, c).setCellFormula(f);
+    }
+
+    // 셀 목록 합계 수식, 비어 있으면 0
+    private static void mcFx(Sheet sh, int r, int c, List<String> refs) {
+        mcFormula(sh, r, c, mcSumOf(refs));
+    }
+
+    private static String mcSumOf(List<String> refs) {
+        return refs.isEmpty() ? "0" : "SUM(" + String.join(",", refs) + ")";
+    }
+
+    private static String mcCol(int c) {
+        return CellReference.convertNumToColString(c);
     }
 }

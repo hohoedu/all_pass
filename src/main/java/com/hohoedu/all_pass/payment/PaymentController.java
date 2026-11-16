@@ -29,7 +29,6 @@ import java.util.Map;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final PaymentReconcileService paymentReconcileService;
     private final SseEmitterHolder sseEmitterHolder;
     private final StudentService studentService;
 
@@ -124,6 +123,13 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "/login")
                     .build();
+        }
+
+        // 매출자료 대조(승인번호 기준)를 위해 카드 결제는 승인번호 필수
+        if (dto.getCardAmount() != null && dto.getCardAmount() > 0
+                && (dto.getApprNum() == null || dto.getApprNum().isBlank())) {
+            return ResponseEntity.badRequest()
+                    .body(ApiUtils.error("카드 승인번호를 입력해주세요.", HttpStatus.BAD_REQUEST));
         }
 
         dto.setUserCode(user.getUserCode());
@@ -398,6 +404,11 @@ public class PaymentController {
                     .build();
         }
 
+        if (dto.getCardAmount() != null && dto.getCardAmount() > 0
+                && (dto.getApprNum() == null || dto.getApprNum().isBlank())) {
+            return ResponseEntity.ok(Map.of("success", false, "message", "카드 승인번호를 입력해주세요."));
+        }
+
         paymentService.updatePayment(id, dto, user.getCenterCode());
 
         Map<String, Object> result = new HashMap<>();
@@ -416,7 +427,11 @@ public class PaymentController {
                     .build();
         }
 
-        paymentService.deletePayment(id, user.getCenterCode());
+        try {
+            paymentService.deletePayment(id, user.getUserCode());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
+        }
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
@@ -462,48 +477,6 @@ public class PaymentController {
         return ResponseEntity.ok(ApiUtils.success(students));
     }
 
-
-    // 매출자료(여신금융/홈택스) ↔ 결제내역 승인번호 대조
-    @PostMapping("/reconcile")
-    public ResponseEntity<?> reconcile(@RequestParam("file") org.springframework.web.multipart.MultipartFile file,
-                                       @RequestParam(value = "source", defaultValue = "yeoshin") String source,
-                                       HttpSession session) {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-        try {
-            com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.Result result =
-                    paymentReconcileService.reconcile(file, source, user.getCenterCode());
-            return ResponseEntity.ok(ApiUtils.success(result));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.ok(Map.of("success", false, "msg", e.getMessage()));
-        } catch (Exception e) {
-            log.error("승인번호 대조 실패", e);
-            return ResponseEntity.ok(Map.of("success", false, "msg", "대조 처리 중 오류가 발생했습니다."));
-        }
-    }
-
-    @PostMapping("/reconcile/download")
-    public ResponseEntity<byte[]> downloadReconcile(
-            @RequestBody com.hohoedu.all_pass.payment._dto.web.ReconcileDTO.ExportRequest req,
-            HttpSession session) throws IOException {
-        UserRespDTO.LoginRespDTO user = (UserRespDTO.LoginRespDTO) session.getAttribute("user");
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "/login")
-                    .build();
-        }
-        byte[] excel = paymentReconcileService.exportResult(req.getResult());
-        String filename = URLEncoder.encode("매출대조_불일치내역.xlsx", StandardCharsets.UTF_8);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
-                .contentType(MediaType.parseMediaType(
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(excel);
-    }
 
     @PostMapping("/ledger/download")
     public ResponseEntity<byte[]> downloadLedger(@RequestBody PaymentReqDTO.LedgerReqDTO req, HttpSession session) throws IOException {

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" th:href="@{/css/media.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/2logistics_2order.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/center_reconcile.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/center_member_change.css}">
+    <script th:src="@{/js/custom.js}"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/admin/center/center_member_change.js}" defer></script>
+    <title>입탈퇴 조회</title>
+</head>
+
+<body>
+    <div class="app-shell" id="appShell">
+        <aside th:replace="~{admin/admin-sidebar :: adminSidebar}"></aside>
+
+        <header class="header">
+            <h1 class="page-title">입탈퇴 조회</h1>
+        </header>
+
+        <main class="content">
+            <section class="filter-card" aria-label="조회 조건">
+                <div class="filter-left">
+                    <div class="field">
+                        <label for="centerSelect">센터 선택</label>
+                        <div class="select-field">
+                            <select id="centerSelect">
+                                <option value="">센터를 선택해주세요</option>
+                                <th:block th:each="c : ${center}">
+                                    <option th:if="${c.centerCode != 'PUS001' and c.centerCode != 'ALL'}"
+                                        th:value="${c.centerCode}"
+                                        th:text="${#strings.replace(c.centerName, '호호서당 ', '')}">센터명</option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="yearSelect">연도</label>
+                        <div class="select-field">
+                            <!-- 2026년(올패스 입탈퇴 데이터 시작)부터 올해까지 자동 -->
+                            <select id="yearSelect">
+                                <option th:each="y : ${#numbers.sequence(year, 2026, -1)}"
+                                    th:value="${y}" th:text="${y + '년'}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="teacherBtn">선생님</label>
+                        <div class="select-field mc-dd">
+                            <button type="button" class="mc-dd-btn" id="teacherBtn" aria-haspopup="true"
+                                aria-expanded="false">전체</button>
+                            <div class="mc-dd-panel" id="teacherBox" hidden>센터를 먼저 선택해주세요.</div>
+                        </div>
+                    </div>
+                    <button class="primary-btn" type="button" id="searchBtn">조회</button>
+                    <span class="loading-text" id="searchLoading" hidden>
+                        <i class="fa-solid fa-spinner fa-spin"></i>조회 중...
+                    </span>
+                </div>
+                <div class="filter-right">
+                    <button class="outline-btn" type="button" id="excelBtn">
+                        <i class="fa-solid fa-download"></i>엑셀 다운로드
+                    </button>
+                </div>
+            </section>
+
+            <p class="mc-note">회원 수 : 한·북스쿨 = 강좌(수업 횟수 합 ÷ 4) · 호호스쿨(초2 이하) = 총원(학생 수)</p>
+
+            <div id="reportArea">
+                <section class="panel mc-panel">
+                    <p class="mc-empty">센터와 연도를 선택한 뒤 조회해주세요.</p>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

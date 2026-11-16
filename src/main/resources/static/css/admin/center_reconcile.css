@@ -1,0 +1,265 @@
+/* 매출자료 대조 전용 스타일 (공통 레이아웃은 2logistics_2order.css) */
+
+/* 필터 : 드롭다운 */
+.select-field {
+    position: relative;
+    width: 170px;
+}
+
+.select-field select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dcdfe8;
+    border-radius: 7px;
+    padding: 0 36px 0 12px;
+    color: #6b6e77;
+    background: #fff;
+    font-weight: 600;
+    outline: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+.select-field::after {
+    content: "\f078";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 11px;
+    color: #7e828d;
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* 필터 : 파일 선택 */
+.file-field {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    width: 280px;
+    height: 40px;
+    margin: 0 !important;
+    padding: 0 12px;
+    border: 1px dashed #c9ccd6;
+    border-radius: 7px;
+    background: #fff;
+    color: #8a8d97;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.file-field span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-field i {
+    color: #1d8f4e;
+    font-size: 16px;
+}
+
+.file-field.selected {
+    border-style: solid;
+    border-color: var(--primary);
+    color: #33353d;
+}
+
+.hidden-file {
+    display: none;
+}
+
+.primary-btn:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+.loading-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 42px;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.loading-text[hidden] {
+    display: none;
+}
+
+.filter-right .outline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 금액 요약 : 엑셀 순매출 − DB = 차이 (한 줄 띠) */
+.amount-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 10px 20px;
+    margin-bottom: 12px;
+}
+
+.amount-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.amount-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b6e77;
+}
+
+.amount-value {
+    font-size: 17px;
+    font-weight: 800;
+    color: #33353d;
+}
+
+.amount-sub {
+    font-size: 12px;
+    color: #9a9da7;
+}
+
+.amount-op {
+    font-size: 17px;
+    font-weight: 800;
+    color: #c9ccd6;
+}
+
+.amount-item.diff {
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: #f7f8fa;
+}
+
+.amount-item.diff.ok { background: #eef8f0; }
+.amount-item.diff.ok .amount-value { color: #1e8e3e; }
+.amount-item.diff.ng { background: #fff1f0; }
+.amount-item.diff.ng .amount-value { color: #d93025; }
+
+/* 요약 카드 */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.summary-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 12px;
+    border-top: 4px solid #dcdfe8;
+}
+
+.summary-card.green { border-top-color: #34a853; }
+.summary-card.red { border-top-color: #d93025; }
+.summary-card.yellow { border-top-color: #f2b705; }
+.summary-card.orange { border-top-color: #f08a24; }
+
+.summary-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #6b6e77;
+}
+
+.summary-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #33353d;
+}
+
+.summary-card.green .summary-num { color: #1e8e3e; }
+.summary-card.red .summary-num { color: #d93025; }
+.summary-card.yellow .summary-num { color: #b07d00; }
+.summary-card.orange .summary-num { color: #c76a10; }
+
+.date-range {
+    min-height: 20px;
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #6b6e77;
+}
+
+/* 불일치 내역 2열 */
+.reconcile-workspace {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    min-height: 0;
+}
+
+.reconcile-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 48vh;
+    min-height: 0;
+}
+
+.reconcile-panel .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reconcile-panel .panel-title small {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9a9da7;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot.red { background: #d93025; }
+.dot.yellow { background: #f2b705; }
+.dot.orange { background: #f08a24; }
+.dot.gray { background: #9a9da7; }
+
+/* sticky 헤더와 collapse 테두리 충돌 방지 */
+.reconcile-table {
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+}
+
+.reconcile-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 1px 0 #dcdfe8;
+}
+
+.reconcile-table .empty-row td {
+    height: 120px;
+    color: #9a9da7;
+}
+
+@media (max-width: 1440px) {
+    .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .reconcile-workspace {
+        grid-template-columns: 1fr;
+    }
+}

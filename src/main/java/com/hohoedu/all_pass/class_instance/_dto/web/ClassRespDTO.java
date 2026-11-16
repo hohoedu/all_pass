@@ -108,6 +108,7 @@ public class ClassRespDTO {
         private String subUnitKey;
         private String gradeKey;
         private String classType;
+        private String subject; // han / book / hoho
 
         private List<StudentDTO> students = new ArrayList<>();
 
@@ -479,6 +480,17 @@ public class ClassRespDTO {
         private String subject;
         private String studentId;
         private String studentName;
+    }
+
+    // 관리자 센터별 시간표 - 교재 현황 (선생님별 월 주문 수량 = 정기 주문 + 승인된 추가/반품)
+    @Data
+    public static class TeacherBookOrderDTO {
+        private String classKey;
+        private String unitKey;
+        private String className;
+        private String unitName;
+        private String classType;
+        private Integer qty;
     }
 
 }

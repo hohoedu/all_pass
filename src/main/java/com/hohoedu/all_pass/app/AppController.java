@@ -302,4 +302,20 @@ public class AppController {
         return ResponseEntity.ok(AppApiUtils.successList(response));
     }
 
+    // 알림 설정 조회
+    @PostMapping("/fcm_option_view")
+    public ResponseEntity<?> AppNotiOptionView(@RequestBody AppReqDTO.NotiOptionViewReqDTO request) {
+        return ResponseEntity.ok(AppApiUtils.successList(appService.getNotiOptions(request.getStuid())));
+    }
+
+    // 알림 설정 저장
+    @PostMapping("/fcm_option")
+    public ResponseEntity<?> AppNotiOptionSave(@RequestBody AppReqDTO.NotiOptionSaveReqDTO request) {
+        if (request.getStuid() == null || request.getStuid().isBlank() || request.getOptions() == null) {
+            return ResponseEntity.ok(AppApiUtils.error("9999", "invalid_request"));
+        }
+        appService.saveNotiOptions(request);
+        return ResponseEntity.ok(AppApiUtils.successOne(null));
+    }
+
 }

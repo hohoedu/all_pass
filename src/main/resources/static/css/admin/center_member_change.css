@@ -1,0 +1,169 @@
+.mc-note {
+    margin: 8px 0 12px;
+    font-size: 13px;
+    color: #6b6f7b;
+}
+
+.mc-panel {
+    margin-bottom: 16px;
+    padding: 16px;
+}
+
+.mc-panel h2 {
+    margin: 0 0 10px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.mc-empty {
+    padding: 60px 0;
+    text-align: center;
+    color: #9a9da7;
+}
+
+.mc-scroll {
+    overflow-x: auto;
+}
+
+.mc-table {
+    border-collapse: collapse;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.mc-table th,
+.mc-table td {
+    min-width: 48px;
+    padding: 6px 8px;
+    border: 1px solid #dcdfe8;
+    text-align: center;
+}
+
+.mc-table thead th {
+    background: #f3f4f8;
+    font-weight: 600;
+}
+
+.mc-table tfoot td {
+    background: #f9fafc;
+    font-weight: 700;
+}
+
+/* 행사 or 이슈 : 칸은 좁게, 입력창은 칸을 꽉 채우게 */
+.mc-table td.mc-event-cell {
+    width: 150px;
+    padding: 3px;
+}
+
+.mc-event {
+    box-sizing: border-box;
+    width: 100%;
+    height: 32px;
+    padding: 4px 8px;
+    border: 1px solid #dcdfe8;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.mc-event.mc-saved {
+    border-color: #34a853;
+}
+
+.mc-event.mc-error {
+    border-color: #d93025;
+}
+
+/* 결과 영역 : .content 가 화면 높이 고정 + overflow hidden 이라 여기서 스크롤 */
+#reportArea {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* 선생님 다중 선택 드롭다운 (센터·연도 선택과 같은 모양) */
+.mc-dd-btn {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dcdfe8;
+    border-radius: 7px;
+    padding: 0 36px 0 12px;
+    color: #6b6e77;
+    background: #fff;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.mc-dd-panel {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    z-index: 20;
+    min-width: 100%;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 8px 0;
+    background: #fff;
+    border: 1px solid #dcdfe8;
+    border-radius: 7px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+    font-size: 13px;
+    color: #6b6e77;
+}
+
+.mc-dd-panel[hidden] {
+    display: none;
+}
+
+.field .mc-dd-panel label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #222;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.field .mc-dd-panel label:hover {
+    background: #f3f4f8;
+}
+
+.mc-dd-panel .mc-dd-all {
+    border-bottom: 1px solid #eef0f4;
+    font-weight: 700;
+}
+
+/* 행사 저장 알림 배너 (우측 상단) */
+.mc-toast {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 1000;
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: #1e8e3e;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+}
+
+.mc-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.mc-toast.mc-toast-error {
+    background: #d93025;
+}

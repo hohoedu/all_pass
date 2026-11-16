@@ -45,6 +45,24 @@ public class CenterController {
         return ResponseEntity.ok(teachers);
     }
 
+    @GetMapping("/book-orders")
+    public ResponseEntity<?> getTeacherBookOrders(
+            @RequestParam(value = "centerCode") String centerCode,
+            @RequestParam(value = "userCode") String userCode,
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month) {
+        return ResponseEntity.ok(classService.findTeacherBookOrders(centerCode, userCode, year, month));
+    }
+
+    @GetMapping("/teachers/by-subject")
+    public ResponseEntity<?> getTeacherCodesBySubject(
+            @RequestParam(value = "centerCode") String centerCode,
+            @RequestParam(value = "year") String year,
+            @RequestParam(value = "month") String month,
+            @RequestParam(value = "subject") String subject) {
+        return ResponseEntity.ok(classService.findUserCodesBySubject(centerCode, year, month, subject));
+    }
+
     @PostMapping("/week/get")
     public ResponseEntity<?> getWeek(@RequestBody ClassReqDTO.GetWeekDTO reqDTO) {
         return ResponseEntity.ok(ApiUtils.success(

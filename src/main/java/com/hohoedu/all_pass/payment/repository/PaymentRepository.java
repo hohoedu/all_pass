@@ -380,6 +380,19 @@ public interface PaymentRepository {
     // 같은 manualKey 매뉴얼 전체 조회
     List<PaymentManual> findAllByManualKey(String manualKey);
 
+    // 수기결제 취소(삭제) 처리용
+    List<String> findPaymentKeysByManualKey(String manualKey);
+
+    java.util.Map<String, Object> findManualGroupSourceAndStatus(String manualKey);
+
+    int countUsedPresetsByManualKey(String manualKey);
+
+    void cancelPresetsByManualKey(String manualKey);
+
+    void cancelManualsByManualKey(String manualKey);
+
+    void cancelManualGroup(@Param("manualKey") String manualKey, @Param("cancelReason") String cancelReason);
+
     // 매뉴얼 수정
     void updateManual(@Param("id") Integer id, @Param("dto") PaymentReqDTO.UpdatePaymentDTO dto);
 

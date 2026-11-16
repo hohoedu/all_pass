@@ -255,4 +255,136 @@
           AND b.center_code NOT IN ('PUS001', 'ALL')
         ORDER BY c.center_name, s.student_name
     </select>
+
+    <!-- ===== 입탈퇴 조회 =====
+         시간표 조회 「회원 현황」(class.xml findStudentStat / findTimeTableBasic + findStudentsByTimeTables)과
+         같은 조건을 1년치로 한 번에 조회한다. 화면과 같은지는 /admin/center/member-change/verify 로 확인. -->
+
+    <!-- 해당 연도에 이 센터 시간표가 있는 선생님 -->
+    <select id="findMemberChangeTeachers" resultType="map">
+        SELECT DISTINCT t.user_code AS userCode, u.user_name AS userName
+        FROM erp_time_table t
+                 JOIN erp_user u ON u.user_code = t.user_code
+        WHERE t.center_code = #{centerCode}
+          AND t.yy = #{year}
+    </select>
+
+    <!-- 회원 : 한·북 = 강좌(weeks × 0.25), 호호 = 총원(heads, 학생 수). class.xml findTimeTableBasic + findStudentsByTimeTables 를 1년치로.
+         과목은 학생 단위 : 초2 이하(grade_key ≤ 12 : 5·6·7세, 초1, 초2) → hoho, 초3 이상은 시간표 반 종류(1=han, 그 외 book).
+         (erp_time_table.subject 는 9월 이후·다수결 값이라 쓰지 않음)
+         시간표가 있는 선생님·월은 학생이 없어도 1행 (화면은 시간표가 없으면 회원 현황도 비움) -->
+    <select id="findMcTimetableRows" resultType="map">
+        SELECT t.user_code AS userCode,
+               t.mm        AS mm,
+               CASE WHEN TRY_CAST(st.grade_key AS INT) &lt;= 12 THEN 'hoho' WHEN cc.class_type = '1' THEN 'han' ELSE 'book' END AS subject,
+               SUM(CASE WHEN st.student_id IS NOT NULL AND tta.week NOT LIKE '%[^0-9]%' AND tta.week &lt;&gt; ''
+                        THEN CAST(tta.week AS INT) ELSE 0 END) AS weeks,
+               COUNT(DISTINCT st.student_id) AS heads -- 총원(명) : 호호스쿨 회원 수
+        FROM erp_time_table t
+                 LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
+                 LEFT JOIN erp_time_table_assign tta ON tta.time_table_key = t.time_table_key
+                 LEFT JOIN erp_student st ON st.student_id = tta.student_id
+                     AND EXISTS (SELECT 1 FROM erp_grade_code gc WHERE gc.grade_key = st.grade_key)
+        WHERE t.yy = #{year}
+          AND t.user_code IN (SELECT user_code FROM erp_time_table WHERE center_code = #{centerCode} AND yy = #{year})
+        GROUP BY t.user_code, t.mm,
+                 CASE WHEN TRY_CAST(st.grade_key AS INT) &lt;= 12 THEN 'hoho' WHEN cc.class_type = '1' THEN 'han' ELSE 'book' END
+    </select>
+
+    <!-- 회원 현황 목록 : class.xml findStudentStat 을 선생님·월 조건 없이 1년치로 (조건식은 동일) -->
+    <select id="findMcStatRows" resultType="map">
+        SELECT x.userCode, x.ym, x.gb, CAST(x.studentId AS VARCHAR(20)) AS studentId
+        FROM (
+                 -- 입회 : 한 행에서 한/독서 (선생님,월) 이 같으면 1번만 (화면의 OR 조건과 동일)
+                 SELECT v.u AS userCode, v.ym, 'entry' AS gb, t.student_id AS studentId
+                 FROM erp_teacher_assign t
+                          JOIN erp_student es ON t.student_id = es.student_id
+                          CROSS APPLY (VALUES (1, t.assign_han_teacher, SUBSTRING(t.entry_han_date, 1, 7)),
+                                              (2, t.assign_book_teacher, SUBSTRING(t.entry_book_date, 1, 7))) v(n, u, ym)
+                 WHERE es.center_code = #{centerCode}
+                   AND v.u IS NOT NULL
+                   AND v.ym IS NOT NULL
+                   AND NOT (v.n = 2
+                       AND ISNULL(t.assign_han_teacher, '') = ISNULL(t.assign_book_teacher, '')
+                       AND ISNULL(SUBSTRING(t.entry_han_date, 1, 7), '') = ISNULL(SUBSTRING(t.entry_book_date, 1, 7), ''))
+
+                 UNION ALL
+
+                 -- 탈퇴 : 선생님·월·학생 단위 DISTINCT
+                 SELECT DISTINCT CASE WHEN wl.log_type = 'han' THEN wl.before_han_teacher ELSE wl.before_book_teacher END,
+                                 SUBSTRING(wl.withdraw_date, 1, 7), 'inactive', wl.student_id
+                 FROM erp_student_withdraw_log wl
+                          JOIN erp_student es ON wl.student_id = es.student_id
+                 WHERE wl.withdraw_date IS NOT NULL
+                   AND wl.log_type IN ('han', 'book')
+
+                 UNION ALL
+
+                 -- 전입 / 전출
+                 SELECT d.u, SUBSTRING(th.move_at, 1, 7), d.gb, th.student_id
+                 FROM erp_student_transfer_history th
+                          JOIN erp_student es ON th.student_id = es.student_id
+                          CROSS APPLY (VALUES ('move_in', th.to_user_code), ('move_out', th.from_user_code)) d(gb, u)
+                 WHERE th.center_code = #{centerCode}
+                   AND th.status = 'COMPLETED') x
+        WHERE LEFT(x.ym, 4) = #{year}
+          AND x.userCode IN (SELECT user_code FROM erp_time_table WHERE center_code = #{centerCode} AND yy = #{year})
+    </select>
+
+    <!-- 호호 학생 : 초2 이하 (grade_key ≤ 12 : 5·6·7세, 초1, 초2). 현재 학년 기준 -->
+    <select id="findHohoStudentIds" resultType="String">
+        SELECT CAST(student_id AS VARCHAR(20))
+        FROM erp_student
+        WHERE center_code = #{centerCode}
+          AND TRY_CAST(grade_key AS INT) &lt;= 12
+    </select>
+
+    <!-- 졸업 : 탈퇴 사유에 '졸업' → "학생ID|yyyy-MM" (회원 현황 탈퇴와 같은 월 기준) -->
+    <select id="findGraduateKeys" resultType="String">
+        SELECT DISTINCT CAST(student_id AS VARCHAR(20)) + '|' + SUBSTRING(withdraw_date, 1, 7)
+        FROM erp_student_withdraw_log
+        WHERE withdraw_date IS NOT NULL
+          AND SUBSTRING(withdraw_date, 1, 4) = #{year}
+          AND withdraw_reason LIKE '%졸업%'
+    </select>
+
+    <!-- 상담문의 : 과목별 문의 체크 기준 (선생님 구분 없음) -->
+    <select id="findConsultRows" resultType="com.hohoedu.all_pass.admin._dto.AdminRespDTO$MemberChangeRowDTO">
+        SELECT CAST(SUBSTRING(CONVERT(VARCHAR(10), c.consult_date, 120), 6, 2) AS INT) AS mm,
+               v.subject                                                           AS subject,
+               c.user_code                                                         AS teacherName, -- 상담 담당 선생님 (선생님 선택 시 필터)
+               'consult'                                                           AS kind,
+               1                                                                   AS val
+        FROM ERP_CONSULT c
+                 CROSS APPLY (VALUES ('han', c.inquiry_han), ('book', c.inquiry_book), ('hoho', c.inquiry_hoho)) v(subject, flag)
+        WHERE c.center_code = #{centerCode}
+          AND v.flag = 1
+          AND LEFT(CONVERT(VARCHAR(10), c.consult_date, 120), 4) = #{year}
+    </select>
+
+    <!-- 입탈퇴 조회 "행사 or 이슈" (sql/2026-11-16_erp_yearly_event.sql) -->
+    <select id="findMemberChangeEvents" resultType="map">
+        SELECT mm, content
+        FROM erp_yearly_event
+        WHERE center_code = #{centerCode}
+          AND yy = #{year}
+    </select>
+
+    <update id="upsertMemberChangeEvent">
+        MERGE erp_yearly_event AS t
+        USING (SELECT #{centerCode} AS center_code, #{year} AS yy, #{month} AS mm) AS s
+        ON t.center_code = s.center_code AND t.yy = s.yy AND t.mm = s.mm
+        WHEN MATCHED THEN
+            UPDATE SET content = #{content}, updated_by = #{userCode}, updated_at = SYSDATETIME()
+        WHEN NOT MATCHED THEN
+            INSERT (center_code, yy, mm, content, updated_by, updated_at)
+            VALUES (#{centerCode}, #{year}, #{month}, #{content}, #{userCode}, SYSDATETIME());
+    </update>
+
+    <delete id="deleteMemberChangeEvent">
+        DELETE FROM erp_yearly_event
+        WHERE center_code = #{centerCode}
+          AND yy = #{year}
+          AND mm = #{month}
+    </delete>
 </mapper>
