@@ -23,6 +23,29 @@ class AdminServiceMemberChangeTest {
     }
 
     @Test
+    void subjectRule() throws Exception {
+        var m = AdminService.class.getDeclaredMethod("mcSubjectOf", boolean.class, boolean.class, String.class, String.class);
+        m.setAccessible(true);
+        // 기본 센터 : 시간표 subject 그대로, 비면 반 종류
+        assertEquals("hoho", m.invoke(null, false, false, "hoho", "1"));
+        assertEquals("book", m.invoke(null, false, true, "book", "1"));
+        assertEquals("han", m.invoke(null, false, false, null, "1"));
+        // 남천점 : 초2 이하 호호, 초3 이상 반 종류 (시간표 subject 무시)
+        assertEquals("hoho", m.invoke(null, true, true, "han", "1"));
+        assertEquals("han", m.invoke(null, true, false, "hoho", "1"));
+        assertEquals("book", m.invoke(null, true, false, "hoho", "2"));
+    }
+
+    @Test
+    void wolseongTeacherOrder() {
+        // 월성점(DAE001) : 황아름 → 권은미 → 송민경, 목록에 없는 선생님은 뒤에 이름순
+        var report = AdminService.aggregateMemberChange(List.of(
+                row(1, "han", "송민경", "member", 1), row(1, "han", "가나다", "member", 1),
+                row(1, "han", "권은미", "member", 1), row(1, "han", "황아름", "member", 1)), "DAE001");
+        assertEquals(List.of("황아름", "권은미", "송민경", "가나다"), report.get(1).teachers());
+    }
+
+    @Test
     void aggregatesAndWritesExcel() throws Exception {
         List<AdminRespDTO.MemberChangeRowDTO> rows = List.of(
                 row(1, "book", "김선생", "member", 2.5),
@@ -39,7 +62,7 @@ class AdminServiceMemberChangeTest {
                 row(2, "han", "다", "join", 1), row(2, "han", "라", "join", 1));
         AdminService service = new AdminService(null, null, null, null, null);
 
-        List<AdminRespDTO.MemberChangeSubject> report = AdminService.aggregateMemberChange(rows);
+        List<AdminRespDTO.MemberChangeSubject> report = AdminService.aggregateMemberChange(rows, "PUS002");
         AdminRespDTO.MemberChangeSubject book = report.get(0);
         assertEquals(List.of("남지영", "김선생", "이선생"), book.teachers()); // 지정 순서 먼저, 미지정·조정로 제외
         AdminRespDTO.MemberChangeMonth jan = book.months().get(0);

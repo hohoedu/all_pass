@@ -703,12 +703,24 @@ public class AdminService {
 
     // ===== 입탈퇴 조회 =====
     private static final String[][] MC_SUBJECTS = {{"book", "북스쿨"}, {"han", "한스쿨"}, {"hoho", "호호스쿨"}};
-    // 엑셀 선생님 칸 순서 (목록에 없는 선생님은 뒤에 이름순)
-    // shortcut: 해와나무 센터 기준 하드코딩, 다른 센터도 같은 순서가 필요해지면 DB 설정으로 이동
+    // 센터별 선생님 칸 순서 (목록에 없는 선생님은 뒤에 이름순)
+    // shortcut: 센터별 하드코딩, 센터가 늘어 관리가 번거로워지면 DB 설정으로 이동
+    // 과목별 목록 : 칸 순서 + 시간표에 없는 학생의 입회·탈퇴를 어느 스쿨로 넣을지(선생님 과목)에도 사용
+    private static final Map<String, Map<String, List<String>>> MC_TEACHER_SUBJECTS = Map.of(
+            "PUS002", Map.of( // 남천점
+                    "han", List.of("이정애", "김도경", "장혜진"),
+                    "book", List.of("남지영", "이경은", "노수연", "성해랑"),
+                    "hoho", List.of("이경진", "장혜진")));
+    // 과목 구분 없이 순서만 정한 센터
     private static final Map<String, List<String>> MC_TEACHER_ORDER = Map.of(
-            "han", List.of("이정애", "김도경", "장혜진"),
-            "book", List.of("남지영", "이경은", "노수연", "성해랑"),
-            "hoho", List.of("이경진", "장혜진"));
+            "DAE001", List.of("황아름", "권은미", "송민경")); // 월성점
+
+    // 센터·과목별 선생님 칸 순서
+    private static List<String> mcOrder(String centerCode, String subject) {
+        Map<String, List<String>> bySubject = MC_TEACHER_SUBJECTS.get(centerCode);
+        if (bySubject != null) return bySubject.getOrDefault(subject, List.of());
+        return MC_TEACHER_ORDER.getOrDefault(centerCode, List.of());
+    }
     // 집계에서 아예 빼는 선생님 (전체총원·요약에도 포함 안 됨)
     private static final Set<String> MC_EXCLUDED_TEACHERS = Set.of("미지정", "조정로");
     private static final String[][] MC_KINDS = {
@@ -717,45 +729,72 @@ public class AdminService {
     // 회원 현황 gb → 입탈퇴 조회 kind
     private static final Map<String, String> MC_STAT_KIND = Map.of(
             "entry", "join", "inactive", "withdraw", "move_in", "in", "move_out", "out");
+    // 학년으로 과목을 나누는 센터 (남천점) : 초2 이하 호호, 초3 이상 반 종류(한·북). 그 외 센터는 시간표 subject
+    private static final Set<String> MC_GRADE_RULE_CENTERS = Set.of("PUS002");
 
-    /**
-     * 센터·연도별 입탈퇴 현황 : 과목(북/한/호호) × 선생님 × 12개월
-     * 선생님×월마다 시간표 조회 「회원 현황」과 같은 코드(findTableViewWithStudents)를 호출해 숫자를 그대로 옮긴다.
-     * - 회원 : 한·북 = 강좌(수업 횟수 합 × 0.25), 호호 = 총원(학생 수). 학생 단위로 호호(is_hoho) / 반 종류 구분
-     * - 입회·탈퇴·전입·전출 : 회원 현황 목록. 호호 학생은 호호스쿨, 나머지는 선생님 과목(MC_TEACHER_ORDER)
-     * - 졸업 : 회원 현황 탈퇴 중 사유에 '졸업'
-     */
+    // 시간표에 든 학생 1명의 과목 : 남천점은 학년, 기본은 시간표 subject(han/book/hoho, 비면 반 종류)
+    private static String mcSubjectOf(boolean gradeRule, boolean hohoGrade, String tableSubject, String classType) {
+        if (gradeRule && hohoGrade) return "hoho";
+        if (!gradeRule && tableSubject != null && !tableSubject.isBlank()) return tableSubject;
+        return "1".equals(classType) ? "han" : "book";
+    }
+
+    // 선생님 1명·1개월 회원 집계 : 한·북 = 강좌(수업 횟수 합 × 0.25), 호호 = 총원(학생 수)
+    private static final class McMonth {
+        final Map<String, Double> weeks = new HashMap<>();
+        final Set<String> hohoStudents = new HashSet<>();
+        final Map<String, String> studentSubject = new HashMap<>(); // 입회·탈퇴 등 과목 판정용
+
+        void add(String studentId, String subject, int week) {
+            if (studentId == null) return; // 빈 시간표 : 그 달 시간표 존재 표시만
+            studentSubject.putIfAbsent(studentId, subject);
+            if ("hoho".equals(subject)) hohoStudents.add(studentId);
+            else weeks.merge(subject, week * 0.25, Double::sum);
+        }
+
+        Map<String, Double> members() {
+            Map<String, Double> m = new HashMap<>(weeks);
+            if (!hohoStudents.isEmpty()) m.put("hoho", (double) hohoStudents.size());
+            return m;
+        }
+    }
+
     /**
      * 입탈퇴 조회 (빠른 방식) : 시간표 조회 「회원 현황」 쿼리와 같은 조건을 1년치로 한 번에 조회.
      * 회원 = 한·북은 강좌(수업 횟수 합 × 0.25), 호호는 총원(학생 수). 결과가 화면과 같은지는 verifyMemberChange 로 확인.
+     * 과목 : 기본은 시간표 subject, 남천점(MC_GRADE_RULE_CENTERS)만 학년 기준.
      */
     @Transactional(readOnly = true)
     public List<AdminRespDTO.MemberChangeSubject> findMemberChange(String centerCode, String year) {
         return findMemberChange(centerCode, year, null);
     }
 
-    /** userCodes : 선택한 선생님만 (null·빈 값이면 전체). 상담문의는 센터 전체 숫자라 항상 포함 */
+    /** userCodes : 선택한 선생님만 (null·빈 값이면 전체). 상담문의도 선택한 선생님이 받은 상담만 */
     @Transactional(readOnly = true)
     public List<AdminRespDTO.MemberChangeSubject> findMemberChange(String centerCode, String year, Set<String> userCodes) {
-        return aggregateMemberChange(mcFastRows(centerCode, year, userCodes == null || userCodes.isEmpty() ? null : userCodes));
+        return aggregateMemberChange(mcFastRows(centerCode, year, userCodes == null || userCodes.isEmpty() ? null : userCodes),
+                centerCode);
     }
 
-    // 조회 화면 선생님 선택 목록 : 이 센터에 그 해 시간표가 있는 선생님 (제외 선생님 빼고, 한·북·호호 지정 순서 → 이름순)
+    // 조회 화면 선생님 선택 목록 : 이 센터에 그 해 시간표가 있는 선생님 (제외 선생님 빼고, 센터 지정 순서(한·북·호호) → 이름순)
     @Transactional(readOnly = true)
     public List<Map<String, String>> findMemberChangeTeacherList(String centerCode, String year) {
-        List<String> order = new ArrayList<>(MC_TEACHER_ORDER.get("han"));
-        for (String key : new String[]{"book", "hoho"})
-            MC_TEACHER_ORDER.get(key).stream().filter(t -> !order.contains(t)).forEach(order::add);
+        List<String> order = new ArrayList<>();
+        for (String key : new String[]{"han", "book", "hoho"})
+            mcOrder(centerCode, key).stream().filter(t -> !order.contains(t)).forEach(order::add);
+        // 타입을 명시 : VS Code(Eclipse 컴파일러)가 thenComparing 람다 타입을 추론하지 못함
+        Comparator<Map<String, String>> byOrder = Comparator.comparingInt(
+                t -> order.contains(t.get("userName")) ? order.indexOf(t.get("userName")) : order.size());
+        Comparator<Map<String, String>> byName = Comparator.comparing(t -> t.get("userName"));
         return adminRepository.findMemberChangeTeachers(centerCode, year).stream()
                 .filter(t -> !MC_EXCLUDED_TEACHERS.contains(t.get("userName")))
-                .sorted(Comparator.comparingInt((Map<String, String> t) -> order.contains(t.get("userName"))
-                                ? order.indexOf(t.get("userName")) : order.size())
-                        .thenComparing(t -> t.get("userName")))
+                .sorted(byOrder.thenComparing(byName))
                 .toList();
     }
 
     private List<AdminRespDTO.MemberChangeRowDTO> mcFastRows(String centerCode, String year, Set<String> userCodes) {
-        Set<String> hoho = new HashSet<>(adminRepository.findHohoStudentIds(centerCode));
+        boolean gradeRule = MC_GRADE_RULE_CENTERS.contains(centerCode);
+        Set<String> hoho = gradeRule ? new HashSet<>(adminRepository.findHohoStudentIds(centerCode)) : Set.of();
         Set<String> graduates = new HashSet<>(adminRepository.findGraduateKeys(year));
         // 상담문의 : 전체면 센터 전체, 선생님을 고르면 그 선생님이 받은 상담만 (ERP_CONSULT.user_code)
         List<AdminRespDTO.MemberChangeRowDTO> rows = new ArrayList<>();
@@ -768,47 +807,54 @@ public class AdminService {
         for (Map<String, String> t : adminRepository.findMemberChangeTeachers(centerCode, year))
             names.put(t.get("userCode"), t.get("userName"));
 
-        // 선생님|월 → (과목 → 강좌). 키가 있으면 그 달 시간표가 있는 것
-        Map<String, Map<String, Double>> members = new TreeMap<>();
+        // 선생님|월 → 회원 집계. 키가 있으면 그 달 시간표가 있는 것
+        Map<String, McMonth> members = new TreeMap<>();
         for (Map<String, Object> r : adminRepository.findMcTimetableRows(centerCode, year)) {
-            String subj = r.get("subject").toString();
-            // 호호는 강좌가 아니라 총원(학생 수)
-            double val = "hoho".equals(subj) ? ((Number) r.get("heads")).intValue()
-                    : ((Number) r.get("weeks")).intValue() * 0.25;
-            members.computeIfAbsent(r.get("userCode") + "|" + r.get("mm"), k -> new HashMap<>())
-                    .merge(subj, val, Double::sum);
+            Object grade = r.get("grade");
+            String subj = mcSubjectOf(gradeRule, grade != null && ((Number) grade).intValue() <= 12,
+                    (String) r.get("subject"), r.get("classType") == null ? null : r.get("classType").toString());
+            members.computeIfAbsent(r.get("userCode") + "|" + r.get("mm"), k -> new McMonth())
+                    .add((String) r.get("studentId"), subj, ((Number) r.get("weeks")).intValue());
         }
         Map<String, List<String[]>> stats = new HashMap<>(); // 선생님|월 → [gb, studentId]
         for (Map<String, Object> r : adminRepository.findMcStatRows(centerCode, year))
             stats.computeIfAbsent(r.get("userCode") + "|" + r.get("ym").toString().substring(5, 7), k -> new ArrayList<>())
                     .add(new String[]{r.get("gb").toString(), String.valueOf(r.get("studentId"))});
 
-        for (Map.Entry<String, Map<String, Double>> e : members.entrySet()) {
+        for (Map.Entry<String, McMonth> e : members.entrySet()) {
             String[] key = e.getKey().split("\\|");
             String name = names.get(key[0]);
             if (name == null || MC_EXCLUDED_TEACHERS.contains(name)) continue;
             if (userCodes != null && !userCodes.contains(key[0])) continue;
-            mcAddTeacherMonth(rows, Integer.parseInt(key[1]), year, name, e.getValue(),
-                    stats.getOrDefault(e.getKey(), List.of()), hoho, graduates);
+            mcAddTeacherMonth(rows, centerCode, Integer.parseInt(key[1]), year, name, e.getValue(),
+                    stats.getOrDefault(e.getKey(), List.of()), gradeRule, hoho, graduates);
         }
         return rows;
     }
 
     // 선생님 1명·1개월 → 원시 행 (빠른 방식·화면 코드 방식 공통)
-    private static void mcAddTeacherMonth(List<AdminRespDTO.MemberChangeRowDTO> rows, int m, String year, String name,
-                                          Map<String, Double> memberBySubject, List<String[]> stats,
-                                          Set<String> hoho, Set<String> graduates) {
+    // 입회·탈퇴·전입·전출 과목 : 그 달 그 선생님 시간표에서 학생이 속한 과목 → (남천점) 초2 이하면 호호 → 선생님 과목
+    private static void mcAddTeacherMonth(List<AdminRespDTO.MemberChangeRowDTO> rows, String centerCode, int m,
+                                          String year, String name, McMonth month, List<String[]> stats,
+                                          boolean gradeRule, Set<String> hoho, Set<String> graduates) {
+        Map<String, Double> memberBySubject = month.members();
         for (Map.Entry<String, Double> e : memberBySubject.entrySet())
             rows.add(mcRow(m, e.getKey(), name, "member", e.getValue()));
-        String teacherSubject = MC_TEACHER_ORDER.get("han").contains(name) ? "han"
-                : MC_TEACHER_ORDER.get("book").contains(name) ? "book"
-                : memberBySubject.getOrDefault("book", 0d) > memberBySubject.getOrDefault("han", 0d) ? "book" : "han";
+        // 선생님 과목 : 센터에 과목별 선생님 목록이 있으면(남천점) 그것, 없으면 그 달 학생이 가장 많은 과목
+        Map<String, List<String>> bySubject = MC_TEACHER_SUBJECTS.getOrDefault(centerCode, Map.of());
+        String teacherSubject = bySubject.getOrDefault("han", List.of()).contains(name) ? "han"
+                : bySubject.getOrDefault("book", List.of()).contains(name) ? "book"
+                : month.studentSubject.values().stream()
+                        .collect(java.util.stream.Collectors.groupingBy(s -> s, java.util.stream.Collectors.counting()))
+                        .entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey).orElse("han");
         String ym = year + "-" + String.format("%02d", m);
         for (String[] stat : stats) {
             String kind = MC_STAT_KIND.get(stat[0]);
             if (kind == null) continue; // 1-3주 목록
             if ("withdraw".equals(kind) && graduates.contains(stat[1] + "|" + ym)) kind = "graduate";
-            rows.add(mcRow(m, hoho.contains(stat[1]) ? "hoho" : teacherSubject, name, kind, 1));
+            String subj = month.studentSubject.get(stat[1]);
+            if (subj == null) subj = gradeRule && hoho.contains(stat[1]) ? "hoho" : teacherSubject;
+            rows.add(mcRow(m, subj, name, kind, 1));
         }
     }
 
@@ -818,7 +864,7 @@ public class AdminService {
      */
     public List<String> verifyMemberChange(String centerCode, String year) {
         List<AdminRespDTO.MemberChangeSubject> fast = findMemberChange(centerCode, year);
-        List<AdminRespDTO.MemberChangeSubject> screen = aggregateMemberChange(mcScreenRows(centerCode, year));
+        List<AdminRespDTO.MemberChangeSubject> screen = aggregateMemberChange(mcScreenRows(centerCode, year), centerCode);
         List<String> diffs = new ArrayList<>();
         for (int b = 0; b < fast.size(); b++)
             for (int m = 0; m < 12; m++) {
@@ -838,7 +884,8 @@ public class AdminService {
 
     // 화면 코드 방식 (검증용) : 선생님×월마다 findTableViewWithStudents 를 6개씩 병렬 호출
     private List<AdminRespDTO.MemberChangeRowDTO> mcScreenRows(String centerCode, String year) {
-        Set<String> hoho = new HashSet<>(adminRepository.findHohoStudentIds(centerCode));
+        boolean gradeRule = MC_GRADE_RULE_CENTERS.contains(centerCode);
+        Set<String> hoho = gradeRule ? new HashSet<>(adminRepository.findHohoStudentIds(centerCode)) : Set.of();
         Set<String> graduates = new HashSet<>(adminRepository.findGraduateKeys(year));
         List<AdminRespDTO.MemberChangeRowDTO> rows = new ArrayList<>();
         List<java.util.concurrent.Callable<List<AdminRespDTO.MemberChangeRowDTO>>> tasks = new ArrayList<>();
@@ -852,10 +899,8 @@ public class AdminService {
                             classService.findTableViewWithStudents(year, mm, teacher.get("userCode"), centerCode);
                     List<AdminRespDTO.MemberChangeRowDTO> out = new ArrayList<>();
                     if (view.getTables().isEmpty()) return out;
-                    Map<String, Double> memberBySubject = new HashMap<>();
-                    Set<String> hohoHeads = new HashSet<>();
+                    McMonth acc = new McMonth();
                     for (ClassRespDTO.TimeTableDTO tt : view.getTables()) {
-                        String tableSubject = "1".equals(tt.getClassType()) ? "han" : "book";
                         for (ClassRespDTO.TimeTableDTO.StudentDTO st : tt.getStudents()) {
                             if (st.getStudentId() == null || st.getStudentId().isEmpty()
                                     || "\u00A0".equals(st.getStudentName())) continue;
@@ -865,14 +910,13 @@ public class AdminService {
                             } catch (Exception e) {
                                 week = 0;
                             }
-                            if (hoho.contains(st.getStudentId())) hohoHeads.add(st.getStudentId());
-                            else memberBySubject.merge(tableSubject, week * 0.25, Double::sum);
+                            acc.add(st.getStudentId(), mcSubjectOf(gradeRule, hoho.contains(st.getStudentId()),
+                                    tt.getSubject(), tt.getClassType()), week);
                         }
                     }
-                    if (!hohoHeads.isEmpty()) memberBySubject.put("hoho", (double) hohoHeads.size());
                     List<String[]> stats = view.getStats().stream()
                             .map(st -> new String[]{st.getGb(), st.getStudentId()}).toList();
-                    mcAddTeacherMonth(out, month, year, teacher.get("userName"), memberBySubject, stats, hoho, graduates);
+                    mcAddTeacherMonth(out, centerCode, month, year, teacher.get("userName"), acc, stats, gradeRule, hoho, graduates);
                     return out;
                 });
             }
@@ -903,7 +947,8 @@ public class AdminService {
     }
 
     // 원시 행 → 과목 블록(선생님 순서·제외 적용) × 12개월
-    static List<AdminRespDTO.MemberChangeSubject> aggregateMemberChange(List<AdminRespDTO.MemberChangeRowDTO> rows) {
+    static List<AdminRespDTO.MemberChangeSubject> aggregateMemberChange(List<AdminRespDTO.MemberChangeRowDTO> rows,
+                                                                        String centerCode) {
         List<AdminRespDTO.MemberChangeSubject> result = new ArrayList<>();
 
         for (String[] subject : MC_SUBJECTS) {
@@ -913,7 +958,7 @@ public class AdminService {
                     .filter(r -> "consult".equals(r.getKind())
                             || (r.getTeacherName() != null && !MC_EXCLUDED_TEACHERS.contains(r.getTeacherName())))
                     .toList();
-            List<String> order = MC_TEACHER_ORDER.getOrDefault(subject[0], List.of());
+            List<String> order = mcOrder(centerCode, subject[0]);
             List<String> teachers = subjectRows.stream()
                     .filter(r -> !"consult".equals(r.getKind()))
                     .map(AdminRespDTO.MemberChangeRowDTO::getTeacherName)

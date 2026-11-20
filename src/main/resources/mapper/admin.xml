@@ -269,17 +269,18 @@
           AND t.yy = #{year}
     </select>
 
-    <!-- 회원 : 한·북 = 강좌(weeks × 0.25), 호호 = 총원(heads, 학생 수). class.xml findTimeTableBasic + findStudentsByTimeTables 를 1년치로.
-         과목은 학생 단위 : 초2 이하(grade_key ≤ 12 : 5·6·7세, 초1, 초2) → hoho, 초3 이상은 시간표 반 종류(1=han, 그 외 book).
-         (erp_time_table.subject 는 9월 이후·다수결 값이라 쓰지 않음)
-         시간표가 있는 선생님·월은 학생이 없어도 1행 (화면은 시간표가 없으면 회원 현황도 비움) -->
+    <!-- 회원 : class.xml findTimeTableBasic + findStudentsByTimeTables 를 1년치로, 선생님·월·시간표 과목·학생 단위.
+         과목 판정은 서비스에서 : 기본은 시간표 subject(han/book/hoho, 비면 반 종류), 남천점(PUS002)만 학년(초2 이하 호호).
+         시간표가 있는 선생님·월은 학생이 없어도 1행(studentId NULL) (화면은 시간표가 없으면 회원 현황도 비움) -->
     <select id="findMcTimetableRows" resultType="map">
-        SELECT t.user_code AS userCode,
-               t.mm        AS mm,
-               CASE WHEN TRY_CAST(st.grade_key AS INT) &lt;= 12 THEN 'hoho' WHEN cc.class_type = '1' THEN 'han' ELSE 'book' END AS subject,
+        SELECT t.user_code                              AS userCode,
+               t.mm                                     AS mm,
+               t.subject                                AS subject,
+               cc.class_type                            AS classType,
+               CAST(st.student_id AS VARCHAR(20))       AS studentId,
+               TRY_CAST(st.grade_key AS INT)            AS grade,
                SUM(CASE WHEN st.student_id IS NOT NULL AND tta.week NOT LIKE '%[^0-9]%' AND tta.week &lt;&gt; ''
-                        THEN CAST(tta.week AS INT) ELSE 0 END) AS weeks,
-               COUNT(DISTINCT st.student_id) AS heads -- 총원(명) : 호호스쿨 회원 수
+                        THEN CAST(tta.week AS INT) ELSE 0 END) AS weeks
         FROM erp_time_table t
                  LEFT JOIN erp_class_code cc ON t.class_key = cc.class_key
                  LEFT JOIN erp_time_table_assign tta ON tta.time_table_key = t.time_table_key
@@ -287,8 +288,7 @@
                      AND EXISTS (SELECT 1 FROM erp_grade_code gc WHERE gc.grade_key = st.grade_key)
         WHERE t.yy = #{year}
           AND t.user_code IN (SELECT user_code FROM erp_time_table WHERE center_code = #{centerCode} AND yy = #{year})
-        GROUP BY t.user_code, t.mm,
-                 CASE WHEN TRY_CAST(st.grade_key AS INT) &lt;= 12 THEN 'hoho' WHEN cc.class_type = '1' THEN 'han' ELSE 'book' END
+        GROUP BY t.user_code, t.mm, t.subject, cc.class_type, st.student_id, st.grade_key
     </select>
 
     <!-- 회원 현황 목록 : class.xml findStudentStat 을 선생님·월 조건 없이 1년치로 (조건식은 동일) -->
